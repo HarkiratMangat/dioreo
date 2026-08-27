@@ -335,7 +335,7 @@ function StateKey() {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
     useEffect(() => { installTips(); }, []);
@@ -385,11 +385,27 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                                  title them the same way, and a prop that exists so a caller COULD disagree with
                                  that is an invitation rather than a feature. -->
                             <span class="t">${realm}</span>
+                            <!-- ⚠️ THE MODE GROUP SITS AHEAD OF THE VIEWS BECAUSE IT IS A LARGER STATEMENT THAN THEY ARE.
+                                 A view says which way you are looking at a set; a mode says which set. Reading the bar
+                                 left to right then answers "which armory · seen how", which is the order the two
+                                 questions actually occur in. It renders only for a realm that passes modeOptions, so no
+                                 other realm grows an empty control. -->
+                            ${modeOptions ? html`
+                                <div class="modesw" role="tablist" aria-label=${modeLabel}>
+                                    ${modeOptions.map((m) => html`
+                                        <button key=${m} role="tab" data-arm=${m} aria-pressed=${m === mode ? 'true' : 'false'}
+                                                onClick=${() => onSetMode(m)}>${m}</button>`)}
+                                </div>` : null}
                             <div class="seg" role="tablist" aria-label="View">
                                 ${viewOptions.map((v) => html`
                                     <button role="tab" aria-pressed=${v === view} onClick=${() => onSetView(v)}>${v}</button>`)}
                             </div>
                             ${stateKey ? html`<${StateKey} />` : null}
+                            <!-- A realm may add ONE key of its own beside the shared one. The shared key explains SHAPE
+                                 (live/staged/conflict), which every realm draws; a realm key explains marks only that
+                                 realm draws. It is a slot rather than a prop of named states, because the only rule that
+                                 matters is the one the realm has to enforce itself: name a state only while it is on screen. -->
+                            ${realmKey}
                             ${tools}
                         </div>
                         ${viewSlot}

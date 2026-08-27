@@ -752,6 +752,12 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ✅ **`docs/reference/session-handoff-guide.md` gained §3b — the seven ways a handoff misleads a reader who TRUSTS it**, each with the convention that prevents it, plus a third boolean (**filed?**) and a mandatory filesystem-verified reader test in its own "how to know it is DONE" checks. **The reader test is not polish — it is the step that catches what care does not.**
 
+⚠️ **RUNNING TEXT HAD NO MEASURE ON FIVE SELECTORS, AND THE STYLESHEET ALREADY HAD THE CONVENTION.** `.masthead p` caps at 78ch, `.failbox p` at 70ch, `.hmast p` at 56ch, `.rvnone p` at 46ch and `.estate p` at 44ch — prose is capped everywhere this file thought about it. `.racknote`, `.chint`, `.hint`, `.nodraft p` and `.hbanner p` were never capped, and **measured at 1700px — the width Arc with its side tab bar actually gives the page — they ran to 180–193 characters per line**, roughly double a comfortable measure. Capped at 78ch, the most generous figure already in the file, so nothing narrows past a line already considered acceptable. ⚠️ **`.callout` is deliberately excluded**: it carries a tint and a 3px left border, so it is a BOX, and capping it leaves a 625px tinted panel floating in a 1534px one — a layout fault dressed as a measure. Its long line is a known, accepted cost.
+
+✅ **The 1700px pass otherwise came back clean** — no horizontal overflow on any of the seven routes, every realm mounts, no orphaned right gap. That width had never been checked before.
+
+⚠️ **And a rendered typo, from a line break inside a template literal.** Coverage read *"something actually wrong withthem"* — htm collapses a whitespace run containing a newline to nothing at an expression boundary, so breaking the line after `with` deleted the space. The space now lives inside the string, with the reason beside it.
+
 ## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel
 
 The old `/draw calculator` was a setup form: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate — five interactions before a single figure appeared, and Harkirat called it "terrible, lacks intuitive, lacks design/style, and is not user friendly." It is rebuilt from the ground up.

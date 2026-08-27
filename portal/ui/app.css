@@ -130,6 +130,15 @@ main{overflow:auto;padding-bottom:96px}
 .key .l i{background:var(--ink3)}
 .key .s i{border:1.5px dashed var(--ink3)}
 .key .c i{border:1.5px dashed var(--warn);background-image:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px)}
+/* A REALM KEY, beside the shared one. `clean` is an EMPTY slot on purpose -- a clean build carries
+   no mark at all, so a filled swatch would name a mark the page never draws. See ArmoryKey. */
+.rkey i{box-shadow:inset 0 0 0 1px var(--rule2)}
+.rkey .rk-clean i{background:none}
+.rkey .rk-bad i{background:var(--warn)}
+.rkey .rk-age i{background:var(--ink4)}
+/* The mode group shares the view bar with .seg, so it has to share its height: .seg is 32px of button
+   inside 2px of padding inside a 1px border. .modesw has no padding, so its buttons carry the whole 38px. */
+.ph .modesw button{min-height:38px;padding:0 14px}
 .layer-note{font-family:var(--data);font-size:9px;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;padding:5px 12px;background:var(--sunk);border-bottom:1px solid var(--rule)}
 
 /* ═══ SHAPE CARRIES STATE — the one rule that must never invert ═══ */
@@ -2778,6 +2787,19 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .callout{margin:0;padding:12px 16px;font-size:12.5px;line-height:1.55;color:var(--ink2);
   border-left:3px solid var(--warn);background:rgba(242,153,74,.05)}
 .callout b{color:var(--ink)}
+
+/* 🔴 PROSE MEASURE — the stylesheet already had this convention and five selectors escaped it.
+   .masthead p caps at 78ch, .failbox p at 70ch, .hmast p at 56ch, .rvnone p at 46ch and .estate p
+   at 44ch, so running text is capped everywhere the file thought about it. These five were never
+   capped, and measured at 1700px — the width Harkirat's Arc window with its side tab bar gives the
+   page — they ran to 180–193 characters per line, roughly double the upper bound of a comfortable
+   measure. 78ch is chosen because it is the most generous figure already in this file, so nothing
+   narrows further than a line that was always considered acceptable.
+   ⚠️ .callout IS DELIBERATELY NOT IN THIS LIST. It carries a tint and a 3px left border, so it is a
+   BOX, not bare prose: capping it leaves a 625px tinted box floating in a 1534px panel, which reads
+   as a layout fault rather than as a measure. Its text is long at wide widths and that is a known,
+   accepted cost — a ragged box would be a worse one. */
+.racknote,.chint,.hint,.nodraft p,.hbanner p,.ow-i .ow-t{max-width:78ch}
 
 @media (max-width:860px){
   .scope{grid-template-columns:1fr;gap:6px}

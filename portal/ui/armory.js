@@ -217,8 +217,8 @@ function Coverage({ builds, active, onFilter }) {
                 return html`
                     <div class="repbar">
                         <b>${faulted}</b>
-                        <span>${faulted === 1 ? 'build has' : 'builds have'} something actually wrong with
-                            ${faulted === 1 ? 'it' : 'them'}${stale ? html`, and ${stale} more ${stale === 1 ? 'is' : 'are'} merely old` : ''}.</span>
+                        <!-- The space before the pronoun is INSIDE the string on purpose: htm collapses a whitespace run containing a newline to nothing at an expression boundary, so breaking this line after "with" rendered "withthem". -->
+                        <span>${faulted === 1 ? 'build has' : 'builds have'} something actually wrong with ${faulted === 1 ? 'it' : 'them'}${stale ? html`, and ${stale} more ${stale === 1 ? 'is' : 'are'} merely old` : ''}.</span>
                     </div>`;
             })()}
             <!-- ⚠️ THE COUNTS ARE PER BUILD AND THE FIX IS PER WEAPON, which is the single most confusing
@@ -277,9 +277,10 @@ const CATEGORY_LABEL = {
 const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
     'Stock — e.g. No Stock', 'Ammunition — e.g. 48 Round Extended Mag', 'Rear grip — e.g. Granulated Grip Tape'];
 
-function AddBuildForm({ onSubmit, onCancel }) {
+function AddBuildForm({ onSubmit, onCancel, mode = 'MP' }) {
+    // The form opens in the armory you are standing in. It keeps its own switch because this one sets a PROPERTY OF THE RECORD -- which armory the build is filed under -- rather than which armory you are looking at, and those are different acts that happen to use the same two words.
     const [f, setF] = useState({
-        weaponName: '', category: 'AR', mode: 'MP', buildName: '', imageKey: '',
+        weaponName: '', category: 'AR', mode, buildName: '', imageKey: '',
         shareCode: '', description: '', isMeta: false, isToxic: false, rank: '',
     });
     const [atts, setAtts] = useState(['', '', '', '', '']);
@@ -809,7 +810,7 @@ function ArmoryAddChips({ onAdd }) {
         </div>`;
 }
 
-function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
+function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
     const [text, setText] = useState('');
     const [preview, setPreview] = useState(null);
     const [busy, setBusy] = useState(false);
@@ -851,11 +852,7 @@ function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
 
     return html`
         <div class="bulkview">
-            <div class="modesw" role="group" aria-label="Which armory this paste and export apply to">
-                ${MODES.map((m) => html`
-                    <button key=${m} data-arm=${m} aria-pressed=${mode === m ? 'true' : 'false'}
-                            onClick=${() => { onSetMode(m); setPreview(null); setExported(null); setExportCat(''); }}>${m}</button>`)}
-            </div>
+            <!-- ⚠️ THIS PANEL USED TO CARRY ITS OWN MP/DMZ SWITCH AND NO LONGER DOES. The view bar owns the mode for the whole realm, so a second switch here would be two controls over one quantity -- and they could disagree, which is the failure this repo keeps finding rather than a harmless duplicate. The mode is still stated in words on the paste card and the export card, because a destination you cannot see is the thing that made a switch feel necessary. -->
             <div class="bvgrid">
                 <section class="bvcard">
                     <h4>Paste in <em class="modetag">${mode}</em></h4>
@@ -930,6 +927,26 @@ function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
     `;
 }
 
+// 🔴 THE VIEW NAMES LIVE IN ONE TABLE so the tab strip, the command palette and every branch below read the same strings. They were four bare literals in five places, which is how a rename becomes a silent dead branch: `view === 'Rack'` against a strip offering `Tier board` compiles, runs, and renders the fallback view forever.
+const VIEWS = { rack: 'Tier board', coverage: 'Repairs', compare: 'Compare', bulk: 'Bulk & export' };
+const VIEW_ORDER = [VIEWS.rack, VIEWS.coverage, VIEWS.compare, VIEWS.bulk];
+
+// 🔴 THE KEY NAMES ONLY STATES THAT ARE ON SCREEN, which is the whole discipline of a legend and the one thing a hardcoded list cannot do. Filter to DMZ where nothing is stale and a fixed key still advertises "stale", sending a reader hunting for a mark that is not drawn anywhere -- the mockup hit exactly this and recorded it. `clean` is drawn as an EMPTY slot rather than a colour, because clean has no mark on a build chip: inventing a green square for it would teach a mark the page does not use.
+function ArmoryKey({ split }) {
+    const bad = split.filter((c) => c.faults.length).length;
+    const age = split.filter((c) => c.aged && !c.faults.length).length;
+    const clean = split.length - bad - age;
+    const items = [];
+    if (clean) items.push(['rk-clean', 'clean']);
+    if (bad) items.push(['rk-bad', 'needs repair']);
+    if (age) items.push(['rk-age', 'stale']);
+    if (!items.length) return null;
+    return html`
+        <span class="key rkey" aria-label="What a build's marks mean">
+            ${items.map(([cls, label]) => html`<span key=${cls} class=${cls}><i></i>${label}</span>`)}
+        </span>`;
+}
+
 export function ArmoryRealm({ session }) {
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
     const [weaponFilter, setWeaponFilter] = useState(null);
@@ -937,10 +954,12 @@ export function ArmoryRealm({ session }) {
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
-    const [view, setView] = useState('Rack');
+    // ⚠️ THE VIEW NAMES ARE THE MOCKUP'S, chosen at Harkirat's call on 2026-08-27 after seeing both bars rendered side by side. `Repairs` is the one that earns it outright: `Coverage` named a measurement, `Repairs` names what you came to do, and Season already calls the same idea by the same word -- so the two realms finally agree.
+    const [view, setView] = useState(VIEWS.rack);
     const [compared, setCompared] = useState([]);
     const [editingId, setEditingId] = useState(null);
-    const [bulkMode, setBulkMode] = useState('MP');
+    // 🔴 THE MODE IS A PROPERTY OF THE REALM, NOT OF ONE PANEL. It began as BulkView's private state, so the Rack, Repairs and Compare all showed MP and DMZ mixed together while a fourth view quietly filtered to one of them. MP and DMZ are two armories with different rules -- DMZ has no share code and ranks by combat range -- and every figure on this page is a count of one population or the other, so a masthead that totals both answers a question nobody asked.
+    const [armMode, setArmMode] = useState('MP');
     const overlay = useOverlay();
 
     // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
@@ -956,20 +975,19 @@ export function ArmoryRealm({ session }) {
                                                onRetry=${load.reload} skeleton=${{ rows: 8, lines: [30, 22, 18, 14, 10] }} />`;
     const builds = load.data.builds || [];
 
-    // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page.
-    const weapons = new Set(builds.map((b) => b.weaponName));
+    // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page. Every derived figure below reads from `inMode`, never from `builds`, so the masthead cannot describe a population the views are not showing. `builds` survives only where BOTH armories are genuinely in scope: the export strip, which offers each mode as its own scope.
+    const inMode = builds.filter((b) => b.mode === armMode);
+    const weapons = new Set(inMode.map((b) => b.weaponName));
     // 🔴 FAULTS AND AGE ARE COUNTED SEPARATELY HERE FOR THE SAME REASON splitCoverage EXISTS, and the masthead was the one surface still conflating them. A single `flagged` read 117 of 133 — a number so close to the total that it says nothing — because it counted "not touched in 90 days" as a defect. Coverage's own headline has always made the distinction in words ("66 builds have something actually wrong with them, and 106 more are merely old"); the figures above it now make it too, and both read from splitCoverage so they cannot disagree.
-    const split = builds.map(splitCoverage);
+    const split = inMode.map(splitCoverage);
     const needRepair = split.filter((c) => c.faults.length).length;
     const stale = split.filter((c) => c.aged).length;
-    const modes = [...new Set(builds.map((b) => b.mode))].sort();
-    const modeLine = modes.length ? modes.join(' · ') : '';
     // 🔴 THIS BLOCK CRASHED THE WHOLE REALM UNTIL 2026-08-27 — a bare `data` (Broadcast's binding name, not this file's) instead of `load.data`, thrown on every load since the null-check was added. No gate caught it: coverage/orphans/refs all scan source text and never execute it, so it shipped green through two audits that were specifically hunting this class of bug. Only opening the page in a browser found it. See docs/db-deferred-list.md's harness-in-npm-test item. 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
     const stagedHere = load.data.stagedUnknown ? null
         : (load.data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     // ⚠️ THE LEAD FIGURE WAS ALSO A STAT — `builds` appeared twice in the same row, as the hero number and again three columns to its right, reading as two different measurements that happened to agree. The mockup's Armory masthead has no repetition in it: a lead, then four figures that each say something the lead does not.
     const armoryStats = [
-        { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
+        { value: inMode.length, label: inMode.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
         { value: needRepair, label: 'need repair', tone: needRepair ? 'bad' : undefined },
         { value: stale, label: 'stale' },
@@ -978,7 +996,7 @@ export function ArmoryRealm({ session }) {
     ];
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
-    const rows = builds
+    const rows = inMode
         .filter((b) => !coverageFilter || (b.coverage || []).includes(coverageFilter.flag))
         .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
         .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent }));
@@ -1045,15 +1063,17 @@ export function ArmoryRealm({ session }) {
     }));
 
     return html`
-        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare', 'Bulk']} onSetView=${setView} stateKey
+        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView} stateKey
+                  modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
+                  realmKey=${html`<${ArmoryKey} split=${split} />`}
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Armory" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
                       { label: 'Compare the selected builds', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['diff', 'side by side', 'duplicate'], run: () => setView('Compare') },
+                        keywords: ['diff', 'side by side', 'duplicate'], run: () => setView(VIEWS.compare) },
                       { label: 'Paste a list of builds', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['bulk', 'import', 'many', 'export', 'backup'], run: () => { setEditingId(null); setView('Bulk'); } },
+                        keywords: ['bulk', 'import', 'many', 'export', 'backup'], run: () => { setEditingId(null); setView(VIEWS.bulk); } },
                       { label: 'Clear the rack and coverage filters', group: 'armory', local: true, accent: 'var(--ink3)',
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
@@ -1066,7 +1086,7 @@ export function ArmoryRealm({ session }) {
                                                         code and ranks by combat range — and a single "New build" made the mode a
                                                         thing you discovered inside the form. Season's masthead already works this
                                                         way for its five item types; this is the same control. -->
-                                                   <${ArmoryAddChips} onAdd=${(m) => { setBulkMode(m); setShowAdd(true); }} />`} />`}
+                                                   <${ArmoryAddChips} onAdd=${(m) => { setArmMode(m); setShowAdd(true); }} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
@@ -1077,7 +1097,7 @@ export function ArmoryRealm({ session }) {
                            that, and the page rendered blank with "Cannot read properties of null (reading 'bed')".) -->
                       <div class="bed" id="armory">
                           <div>
-                              ${showAdd ? html`<${AddBuildForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+                              ${showAdd ? html`<${AddBuildForm} mode=${armMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${editingId ? html`
                                   <${BuildEditor} build=${builds.find((b) => String(b._id) === editingId)}
                                                   csrfToken=${session.csrfToken}
@@ -1088,20 +1108,20 @@ export function ArmoryRealm({ session }) {
                                                       refresh();
                                                   }}
                                                   onClose=${() => setEditingId(null)} />`
-                              : view === 'Rack'
-                                  ? html`<${Rack} builds=${builds} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
-                                  : view === 'Compare'
+                              : view === VIEWS.rack
+                                  ? html`<${Rack} builds=${inMode} onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)} />`
+                                  : view === VIEWS.compare
                                       ? html`<${Compare} builds=${rows} picked=${compared}
                                                          onPick=${(id) => setCompared(compared.includes(id) ? compared.filter((x) => x !== id) : [...compared, id])} />`
-                                  : view === 'Bulk'
-                                      ? html`<${BulkView} builds=${builds} mode=${bulkMode} onSetMode=${setBulkMode}
+                                  : view === VIEWS.bulk
+                                      ? html`<${BulkView} builds=${builds} mode=${armMode}
                                                           csrfToken=${session.csrfToken} overlay=${overlay}
                                                           onStaged=${(s) => {
                                                               overlay.say(`${s.understood} build${s.understood === 1 ? '' : 's'} staged — ${s.updates} update, ${s.creates} new. Nothing is live until you commit.`,
                                                                   'Review', () => { location.hash = '#/review'; });
                                                               refresh();
                                                           }} />`
-                                      : html`<${Coverage} builds=${builds} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
+                                      : html`<${Coverage} builds=${inMode} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                           </div>
                           <!-- 🔴 THE STANDALONE LIVE PREVIEW PANEL IS GONE. It showed the card for whichever row was
                                last clicked, beside a table you were not editing — a preview with nothing to preview
