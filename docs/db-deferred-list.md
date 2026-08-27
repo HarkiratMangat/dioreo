@@ -259,6 +259,8 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 **Review** — the masthead counted every blocker and the footer named the first one only. All are listed now. ⚠️ **Its composition was otherwise left alone deliberately** — it is ahead of the mockup (typed confirmation, real export gate, per-op transactions), and the mockup's own sample data renders `[object Object]` in four places.
 
+✅ **Verified by the item's own test, measured rather than eyeballed.** The plan's condition is *"blur the text on any two realms; if they are the same image, it is not done"* — implemented as a geometry fingerprint: every bordered block over 200×40px in the first 1,400px of each realm, quantised to a 40px grid, text ignored entirely. **Six distinct signatures across six realms, zero identical pairs.** ⚠️ And the regression the Armory change could have caused was checked rather than assumed: the editor has its OWN nested bed grid, so with a build open the outer grid is one column at 1,158px and the inner one is `752px 340px` with the preview column still 340px wide and visible.
+
 ⚠️ **What this did NOT do:** the mockup's Armory also puts the MP/DMZ toggle inside the view bar, names its views *Tier board · Repairs · Compare · Bulk & export*, and carries a realm-specific legend (*clean · needs repair · stale*) where the portal shows the generic state legend. Those are vocabulary and control-placement decisions rather than composition, and they are a separate pass.
 
 ### 🔎 OPEN QUESTION — four mockup COMPOSITION changes Harkirat has not seen `[P2 · XS]`
