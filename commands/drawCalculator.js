@@ -20,8 +20,6 @@ const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPacka
 const DRAW_KEYS = Object.keys(DRAW_META);
 const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the component cap (spec §2)
 
-const BAR_FILLED = '▰';
-const BAR_EMPTY = '▱';
 
 function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
 function regionLabel(region) { return `${(region || 'region_10').split('_')[1]} CP`; }
@@ -30,11 +28,6 @@ function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
 const DRAW_DATA = require('./drawprices').DRAW_DATA;
 function entryFor(region, drawKey) { return (DRAW_DATA[region] && DRAW_DATA[region][drawKey]) || null; }
 function regionsWithData(drawKey) { return REGION_ORDER.filter(r => entryFor(r, drawKey)); }
-
-function progressBar(done, total) {
-    const filled = Math.max(0, Math.min(done, total));
-    return BAR_FILLED.repeat(filled) + BAR_EMPTY.repeat(Math.max(0, total - filled));
-}
 
 function upgradeCardEmoji(drawKey) {
     if (drawKey === 'mythicWeapon') return emojis.mythicCard;
@@ -586,6 +579,6 @@ async function execute(interaction) {
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
     buildCalculatorPanel, buildLandingPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel,
-    buildCostBlock, entryFor, regionsWithData, progressBar, usedTypes, groupForDisplay,
+    buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute
 };
