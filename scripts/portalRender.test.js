@@ -200,8 +200,9 @@ const SEASON_COLUMNS = [
 
     check('every Manifest control is labelled for a screen reader', () => {
         const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} />`);
-        const labels = (out.match(/class="sr-only"/g) || []).length;
-        assert.ok(labels >= SEASON_ROWS.length + 1, `expected a label for the search box and each row checkbox, found ${labels}`);
+        // ⚠️ IT COUNTS THE ASSOCIATION, NOT THE CLASS NAME. This used to count `class="sr-only"` occurrences, which passed for the wrong reason twice over: a visually-hidden SPAN counted as a label, and renaming the utility class to the adopted sheet's own `.sr` broke a test whose subject — every control has a label bound to it — had not changed at all.
+        const labels = (out.match(/<label[^>]*\sfor="/g) || []).length;
+        assert.ok(labels >= SEASON_ROWS.length + 1, `expected a label bound to the search box and to each row checkbox, found ${labels}`);
     });
 
     check('the Board renders four pipeline columns and each one says what it means', () => {

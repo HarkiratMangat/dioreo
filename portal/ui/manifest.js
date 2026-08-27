@@ -101,7 +101,7 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
                 <span class="mlabel">${title || 'Rows'}</span>
-                <span class="srch"><label class="sr-only" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
+                <span class="srch"><label class="sr" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
                 ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
                 <span class="rt">${visible.length} of ${rows.length} shown${selected.size ? ` · ${selected.size} selected` : ''}</span>
                 ${onAdd ? html`<button class="accent-fill" onClick=${onAdd}>${addLabel}</button>` : null}
@@ -137,18 +137,31 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                                 ${c.label}
                             </button>
                         </th>`)}
-                    ${onRemove ? html`<th class="ra"><span class="sr-only">${removeLabel}</span></th>` : null}
+                    ${onRemove ? html`<th class="ra"><span class="sr">${removeLabel}</span></th>` : null}
                 </tr></thead>
                 <tbody>
                     ${visible.map(row => html`
                         <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId === row.id ? ' preview-sel' : '')}
                             onClick=${onRowClick ? () => onRowClick(row) : null} style=${onRowClick ? 'cursor:pointer' : ''}>
-                            <td onClick=${(e) => e.stopPropagation()}><label class="sr-only" for=${`sel-${row.id}`}>Select ${row[columns[0].key]}</label><input id=${`sel-${row.id}`} type="checkbox" checked=${selected.has(row.id)} onChange=${() => setSelected(toggleSelection(selected, row.id))} /></td>
+                            <!-- 🔴 THE ONLY BROWSER-DEFAULT CONTROL LEFT IN THE PORTAL, on the row of every table.
+                                 The adopted sheet has drawn a checkbox since it was adopted — a 16px sunk square that
+                                 fills with the accent and strokes a tick — and the Manifest rendered a UA checkbox
+                                 beside it, so a design that reset every other control to its own vocabulary had a
+                                 native blue tick on 39 rows. The input is still the input: it is visually hidden
+                                 rather than replaced, so it keeps its focus, its keyboard behaviour and its label. -->
+                            <td onClick=${(e) => e.stopPropagation()}>
+                                <label class="cbl" for=${`sel-${row.id}`}>
+                                    <span class="sr">Select ${row[columns[0].key]}</span>
+                                    <input class="sr" id=${`sel-${row.id}`} type="checkbox" checked=${selected.has(row.id)}
+                                           onChange=${() => setSelected(toggleSelection(selected, row.id))} />
+                                    <span class=${'cb' + (selected.has(row.id) ? ' on' : '')} aria-hidden="true"></span>
+                                </label>
+                            </td>
                             ${columns.map((c, ci) => {
                                 const isEditing = editingCell && editingCell.rowId === row.id && editingCell.columnKey === c.key;
                                 if (isEditing) {
                                     return html`<td key=${c.key} onClick=${(e) => e.stopPropagation()}>
-                                        <label class="sr-only" for=${`edit-${row.id}-${c.key}`}>Edit ${c.label}</label>
+                                        <label class="sr" for=${`edit-${row.id}-${c.key}`}>Edit ${c.label}</label>
                                         <input id=${`edit-${row.id}-${c.key}`} value=${editValue} autoFocus
                                                onInput=${(e) => setEditValue(e.target.value)}
                                                onKeyDown=${(e) => { if (e.key === 'Enter') commitEdit(row, c.key); if (e.key === 'Escape') setEditingCell(null); }}

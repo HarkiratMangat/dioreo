@@ -4778,3 +4778,8 @@ button .ic,a .ic{pointer-events:none}
 /* The record is the last block on the page; `.rec` sets no bottom margin, so it butted against the
  * viewport edge with no room to read the final row. */
 .rec-b{margin-bottom:var(--gap)}
+/* The label that carries the drawn checkbox. The input inside it is visually hidden rather than
+ * removed, so the box keeps a real control's keyboard behaviour — and the focus ring has to be
+ * borrowed onto the drawn box, because a hidden input's own outline is hidden with it. */
+.cbl{display:inline-flex;align-items:center;cursor:pointer}
+.cbl input:focus-visible + .cb{outline:2px solid var(--patch);outline-offset:2px}

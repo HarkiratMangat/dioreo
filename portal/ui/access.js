@@ -32,9 +32,9 @@ function GrantForm({ onGrant, scopes }) {
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
     return html`
         <div class="addrow">
-            <label class="sr-only" for="grant-discordid">Discord ID to grant</label>
+            <label class="sr" for="grant-discordid">Discord ID to grant</label>
             <input id="grant-discordid" placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
-            <label class="sr-only" for="grant-confirm">Type the Discord ID to confirm</label>
+            <label class="sr" for="grant-confirm">Type the Discord ID to confirm</label>
             <input id="grant-confirm" placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
             <button class="accent-fill" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText)}>
                 ${picked.length ? `Grant ${picked.length}` : 'Grant nothing yet'}</button>

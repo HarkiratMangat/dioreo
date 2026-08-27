@@ -18,7 +18,7 @@ const BROADCAST_COLUMNS = [
     { key: 'text', label: 'Announcement', editable: true },
     { key: 'createdAt', label: 'Posted', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
     // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
-    { key: 'startsAt', label: 'Starts', dataKind: 'date', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : 'immediately') },
+    { key: 'startsAt', label: 'Starts', col: 'c-type', dataKind: 'date', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
     // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
     { key: 'expiresAt', label: 'Ends', dataKind: 'date', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<span style="color:var(--warn)">never</span>`) },
     { key: 'state', label: 'State' },
@@ -214,14 +214,14 @@ function PostForm({ onSubmit, onCancel }) {
         <div class="panel" style="margin-bottom:14px">
             <div class="ph"><span class="t">Post an announcement</span></div>
             <div style="padding:12px 14px">
-                <label class="sr-only" for="post-text">Announcement text</label>
+                <label class="sr" for="post-text">Announcement text</label>
                 <textarea id="post-text" placeholder="Announcement text" value=${text} onInput=${(e) => setText(e.target.value)} rows="3"
                           style="width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;color:var(--ink);font-size:13px;padding:7px 10px"></textarea>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 14px 12px;align-items:center">
-                <label class="sr-only" for="post-starts">Starts at (blank = immediately)</label>
+                <label class="sr" for="post-starts">Starts at (blank = immediately)</label>
                 <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} />
-                <label class="sr-only" for="post-expires">Expires at (blank = 60-day default)</label>
+                <label class="sr" for="post-expires">Expires at (blank = 60-day default)</label>
                 <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} />
                 <button class="accent-fill" disabled=${!ready} onClick=${submit}>Stage</button>
                 <button onClick=${onCancel}>Cancel</button>

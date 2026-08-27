@@ -6,7 +6,8 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 
-export function Tray({ notices, onUndo, onDismiss }) {
+// 🔴 THE ONE THING THAT STOPS A COMMIT WAS SAID ON A DIFFERENT SCREEN. A tier-3 changeset will not commit until an export of the same data exists — Review enforces it, the Board's blocked card says it — and the tray, which is what an admin actually watches while working, said nothing at all. The line is absent when the count is zero rather than reading "0 blocked", the same rule the commit chip follows.
+export function Tray({ notices, onUndo, onDismiss, blocked = 0 }) {
     if (!notices || notices.length === 0) return null;
     return html`
         <div class="tray" role="status" aria-label="Recently saved">
@@ -23,6 +24,9 @@ export function Tray({ notices, onUndo, onDismiss }) {
                                 aria-label=${`Undo ${n.summary}`}>Undo</button>
                     </div>`)}
             </div>
+            ${blocked ? html`
+                <p class="hint">${blocked} tier-3 change${blocked === 1 ? '' : 's'}${' '}
+                    ${blocked === 1 ? 'needs' : 'need'} an export before ${blocked === 1 ? 'it' : 'they'} will commit.</p>` : null}
             <div class="tray-f">
                 <button class="btn no" onClick=${() => notices.forEach((n) => onDismiss(n.changeId))}>Dismiss all</button>
             </div>

@@ -422,10 +422,9 @@ button[aria-busy="true"]::after {
     outline: 2px solid var(--patch);
     outline-offset: 2px;
 }
-.sr-only {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-}
+/* 🔴 `.sr-only` WAS THIS FILE'S NAME FOR `.sr`, WHICH THE ADOPTED SHEET ALREADY DECLARES — two
+   identical visually-hidden rules for one job, and the markup used the one the design does not.
+   The rule is gone rather than aliased: an alias is the duplicate with a comment on it. */
 
 /* Below 900px every control gets a 44px minimum. Measured before this rule existed: EVERY control
    on EVERY realm was under 44px -- 48 of 48 on Season, 145 of 145 on Armory, 106 of 106 on

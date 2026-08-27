@@ -235,8 +235,9 @@ export function HomeRealm({ session }) {
     // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
     const stats = [
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
-        { value: live, label: 'live now' },
-        { value: staged, label: 'staged' },
+        // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour.
+        { value: live, label: 'live now', tone: live ? 'live' : undefined },
+        { value: staged, label: 'staged', tone: staged ? 'stg' : undefined },
     ];
 
     return html`

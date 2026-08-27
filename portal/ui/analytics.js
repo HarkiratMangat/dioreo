@@ -60,7 +60,7 @@ const RIVER_COLUMNS = [
         return html`<span class="sev ${sev}"></span>${summaryOf(r)}${r.kind === 'alert' && r.level
             ? html`<span class=${`lvtag lv-${r.level}`}>${r.level}</span>` : null}`;
     } },
-    { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : 'system') },
+    { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
 
 const RIVER_FILTERS = [

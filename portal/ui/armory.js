@@ -30,7 +30,7 @@ const ARMORY_COLUMNS = [
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`
           : (r.shareCode ? html`<span class="code">${r.shareCode}</span>` : html`<span class="none">not set</span>`)) },
-    { key: 'attachments', label: 'Runs', dataKind: 'detail', render: (r) => {
+    { key: 'attachments', label: 'Runs', col: 'c-spark', dataKind: 'detail', render: (r) => {
         const atts = r.attachments || [];
         if (!atts.length) return html`<div class="detcell"><span class="none">none</span></div>`;
         return html`
@@ -330,7 +330,7 @@ function AddBuildForm({ onSubmit, onCancel }) {
                         ${atts.map((a, i) => html`
                             <div class="atr" key=${i}>
                                 <span class="atn">${i + 1}</span>
-                                <label class="sr-only" for=${`ab-att-${i}`}>Attachment ${i + 1}</label>
+                                <label class="sr" for=${`ab-att-${i}`}>Attachment ${i + 1}</label>
                                 <input class="ati" id=${`ab-att-${i}`} value=${a} placeholder=${ATT_HINTS[i] || 'Attachment'}
                                        onInput=${(e) => setAtts(atts.map((v, n) => (n === i ? e.target.value : v)))} />
                                 <button class="atx" aria-label=${`Clear attachment ${i + 1}`} tabIndex=${-1}
@@ -407,7 +407,7 @@ function BulkBadgesPanel({ ids, onApply, onCancel }) {
     const [badges, setBadges] = useState('');
     return html`
         <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px dashed var(--rule)">
-            <label class="sr-only" for="bulk-badges">Badges to apply to ${ids.length} selected build(s)</label>
+            <label class="sr" for="bulk-badges">Badges to apply to ${ids.length} selected build(s)</label>
             <input id="bulk-badges" placeholder=${`Badges for ${ids.length} build(s) (e.g. meta, top3)`} value=${badges} onInput=${(e) => setBadges(e.target.value)} style="flex:1" />
             <button class="accent-fill" onClick=${() => onApply(badges)}>Apply</button>
             <button onClick=${onCancel}>Cancel</button>
@@ -865,7 +865,7 @@ function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
                         staged deletion recoverable: the export you take first re-imports through the same grammar.</p>
                     <div class="bvexp">
                         <button class="chip" onClick=${() => runExport('mode')}>All ${inMode.length} ${mode} builds</button>
-                        <label class="sr-only" for="bv-cat">Category to export</label>
+                        <label class="sr" for="bv-cat">Category to export</label>
                         <select id="bv-cat" value=${exportCat}
                                 onChange=${(e) => { setExportCat(e.target.value); if (e.target.value) runExport('category', e.target.value); }}>
                             <option value="">By category…</option>

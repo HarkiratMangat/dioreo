@@ -917,6 +917,8 @@ export function SeasonRealm({ session }) {
                                                    onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />
                                   <${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
-                  traySlot=${html`<${Tray} notices=${notices} onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
+                  traySlot=${html`<${Tray} notices=${notices}
+                                           blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}
+                                           onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
     `;
 }
