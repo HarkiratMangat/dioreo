@@ -384,6 +384,23 @@ export function AccessRealm({ session }) {
     if (!load.data) return html`<${RealmShell} realm="access" session=${session} error=${load.error} slow=${load.slow}
                                                onRetry=${load.reload} skeleton=${{ rows: 5, lines: [28, 44, 16] }} />`;
     const data = load.data;
+
+    // 🔴 THE PERMISSION MODEL COULD NOT LEAVE THE PORTAL. `AdminUser` is the only record of who can do what, a grant is derivable from nothing else, and the one page that shows it is owner-only -- so this is the realm where a copy matters most and the only one that had no way to take one. ⚠️ The matrix goes out as CSV because it IS a grid: flattening it to prose would lose the direct-vs-inherited distinction, which is the entire reason a grid beats a comma-separated list.
+    const exportToday = new Date().toISOString().slice(0, 10);
+    const exportScopes = [
+        { id: 'access.admins', label: 'Admins', unit: 'admins',
+          count: (data.admins || []).length, url: '/api/access/export?scope=admins',
+          filename: `dioreo-admins-${exportToday}.txt`,
+          note: 'One block each: who, when, who granted it, and the permissions they hold.' },
+        { id: 'access.matrix', label: 'Permission grid', unit: 'admins',
+          count: (data.admins || []).length, url: '/api/access/export?scope=matrix',
+          filename: `dioreo-permissions-${exportToday}.csv`,
+          note: 'A spreadsheet of the grid — every cell says direct or inherited, never just on.' },
+        { id: 'access.sessions', label: 'Open sessions', unit: 'sessions',
+          count: (data.sessions || []).length, url: '/api/access/export?scope=sessions',
+          filename: `dioreo-sessions-${exportToday}.csv`,
+          note: 'Who is signed in right now, when they signed in, and when it expires.' },
+    ];
     const matrix = data.matrix || { admins: [], scopes: [] };
 
     // ⚠️ THE FORM IS AT THE FOOT OF A GRID, so the masthead button has to travel rather than toggle: there is no second copy to reveal, and building one would be two grant forms that can disagree. The focus lands on the field, not merely the scroll position — a page that moves and leaves the caret behind has not actually taken you there.
@@ -397,6 +414,7 @@ export function AccessRealm({ session }) {
 
     return html`
         <${Shell} realm="access" session=${session} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
+                  exports=${exportScopes} exportLabel="Access" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[

@@ -576,6 +576,31 @@ export function AnalyticsRealm({ session }) {
                                                onRetry=${load.reload} skeleton=${{ rows: 8, lines: [18, 30, 14, 22, 10] }} />`;
     const data = load.data;
 
+    // 🔴 CSV, NOT THE BOT'S PROSE. /bot analytics already hands a person a readable .txt in Discord, and this route deliberately stopped serving those three text builds in the page payload -- but the mockup's own strip offers "CSV for a spreadsheet", which is a different artifact for a different act: reading versus pivoting. Five tables, one per panel the dashboard draws. ⚠️ Each scope RE-QUERIES on download rather than serialising what this page loaded, so an export taken later is the data as it is then, not a snapshot of a stale tab. ⚠️ WRITTEN OUT, NOT BUILT BY A HELPER, and the gate is right to insist. A `csvScope(id, label, count, note)` factory filled `unit` and `filename` uniformly for all five -- which is precisely what "each scope states its OWN shape" exists to prevent, and portalExport.test.js reads these as source literals so it can check that every one of them does. A helper is invisible to it.
+    const exportToday = new Date().toISOString().slice(0, 10);
+    const exportScopes = [
+        { id: 'analytics.events', label: 'Event river', unit: 'events',
+          count: (data.river || []).length, url: '/api/analytics/export?scope=events',
+          filename: `dioreo-analytics-events-${exportToday}.csv`,
+          note: 'Changes, alerts and boots on one timeline — most columns are empty for most rows, because three collections share it.' },
+        { id: 'analytics.usage', label: 'Usage by command', unit: 'commands',
+          count: ((data.usageStats || {}).byCommand || []).length, url: '/api/analytics/export?scope=usage',
+          filename: `dioreo-analytics-usage-${exportToday}.csv`,
+          note: 'Uses, successes and background runs per command.' },
+        { id: 'analytics.timing', label: 'Timing by command', unit: 'commands',
+          count: ((data.timingStats || {}).byCommand || []).length, url: '/api/analytics/export?scope=timing',
+          filename: `dioreo-analytics-timing-${exportToday}.csv`,
+          note: 'Calls, median and worst duration per command — the raw sample array is reduced here rather than pasted into a cell.' },
+        { id: 'analytics.reach', label: 'Reach', unit: 'rows',
+          count: (data.reach || []).length, url: '/api/analytics/export?scope=reach',
+          filename: `dioreo-analytics-reach-${exportToday}.csv`,
+          note: 'Where interactions happened and how the app was installed.' },
+        { id: 'analytics.searches', label: 'Search terms', unit: 'terms',
+          count: (data.searches || []).length, url: '/api/analytics/export?scope=searches',
+          filename: `dioreo-analytics-searches-${exportToday}.csv`,
+          note: 'What people searched for, and what returned nothing — the only export here that names a gap rather than a total.' },
+    ];
+
     // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again.
     async function revert(changeId) {
         const res = await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
@@ -629,6 +654,7 @@ export function AnalyticsRealm({ session }) {
 
     return html`
         <${Shell} realm="analytics" session=${session} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
+                  exports=${exportScopes} exportLabel="Analytics" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                actions=${html`

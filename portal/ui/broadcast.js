@@ -260,6 +260,19 @@ export function BroadcastRealm({ session }) {
 
     // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or editable on this Manifest actually worked before this mapping existed. `state` is computed SERVER-SIDE (portal/api/broadcast.js's announcementState) and passed straight through -- see that function's header for why it is not re-derived here.
     const rows = data.all.map((a) => ({ ...a, id: a._id, accentHex: accentOf(a) }));
+
+    // 🔴 THIS REALM HAD NO EXPORT AND IS THE ONE THAT NEEDS ONE MOST. An announcement's TEXT is the whole artifact -- written once, stored nowhere else, and not derivable from any other record. ⚠️ Each scope states its own shape, and neither is re-importable: there is no bulk-add flow for announcements, so a note promising a round trip would be a false claim about the file.
+    const exportToday = new Date().toISOString().slice(0, 10);
+    const exportScopes = [
+        { id: 'broadcast.live', label: 'Now showing', unit: 'announcements',
+          count: data.live.length, url: '/api/broadcast/export?scope=live',
+          filename: `dioreo-announcements-live-${exportToday}.txt`,
+          note: 'Only what a player would see right now, in the order Discord sends it.' },
+        { id: 'broadcast.all', label: 'Every announcement', unit: 'announcements',
+          count: data.all.length, url: '/api/broadcast/export?scope=all',
+          filename: `dioreo-announcements-${exportToday}.txt`,
+          note: 'The whole history with each one\'s state and window — a record, NOT a re-importable format.' },
+    ];
     // 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
     const stagedHere = data.stagedUnknown ? null
         : (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'broadcast').length;
@@ -316,6 +329,7 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
+                  exports=${exportScopes} exportLabel="Broadcast" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',

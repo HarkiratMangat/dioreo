@@ -118,6 +118,50 @@ async function searchTerms({ limit = 40 } = {}) {
         searches: r.searches, zeroResults: r.zeroResults, picked: r.picked }));
 }
 
+
+// 🔴 THE PORTAL'S EXPORT IS A TABLE, NOT THE BOT'S PROSE. /bot analytics already hands a person a readable .txt in Discord, and portal/api/analytics.js deliberately deleted those three text builds from the page payload -- but the mockup's own Analytics strip offers "CSV for a spreadsheet", which is a different artifact for a different act: reading versus pivoting. So this exports the same numbers the dashboard is drawing, as tables, rather than re-serving the Discord text the panel was built to replace.
+//
+// ⚠️ ONE GENERIC ROW WRITER, because five hand-written serialisers is five chances for one of them to quote a comma differently. RFC 4180 quoting: a field containing a quote, comma or newline is wrapped and its quotes doubled.
+function csvCell(v) {
+    if (v === null || v === undefined) return '';
+    const s = v instanceof Date ? v.toISOString() : String(v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function median(arr) {
+    const a = (arr || []).slice().sort((x, y) => x - y);
+    if (!a.length) return '';
+    const m = a.length >> 1;
+    return a.length % 2 ? a[m] : Math.round((a[m - 1] + a[m]) / 2);
+}
+function toCsv(rows, columns) {
+    const head = columns.map((c) => csvCell(c.label)).join(',');
+    const body = rows.map((r) => columns.map((c) => csvCell(c.get(r))).join(',')).join('\n');
+    return rows.length ? head + '\n' + body : head;
+}
+
+// The five tables the dashboard draws, each as its own scope so a person takes the one they want rather than a bundle. Columns are declared, never derived from the first row: a derived header silently changes shape when the first record happens to lack an optional field.
+const CSV_TABLES = {
+    // The river is a UNION of ChangeLog, AlertLog and BootRecord, so most rows leave most columns empty by nature -- that is the shape of the data, and a blank cell is honest where a derived header would silently drop whichever fields the first row happened not to have.
+    events:   { label: 'Event river', columns: [
+        { label: 'When', get: (r) => r.at || r.createdAt }, { label: 'Kind', get: (r) => r.kind },
+        { label: 'Level', get: (r) => r.level }, { label: 'Title', get: (r) => r.title },
+        { label: 'Detail', get: (r) => r.detail }, { label: 'Host', get: (r) => r.host }] },
+    usage:    { label: 'Usage by command', columns: [
+        { label: 'Command', get: (r) => r._id }, { label: 'Uses', get: (r) => r.c },
+        { label: 'Succeeded', get: (r) => r.ok }, { label: 'Background', get: (r) => r.bg }] },
+    // `p` is the raw duration sample array; the median and the worst are what a spreadsheet wants, and shipping the array itself would put a comma-laden blob in one cell.
+    timing:   { label: 'Timing by command', columns: [
+        { label: 'Command', get: (r) => r._id }, { label: 'Calls', get: (r) => r.n },
+        { label: 'Median ms', get: (r) => median(r.p) }, { label: 'Worst ms', get: (r) => (r.p || []).length ? Math.max(...r.p) : '' }] },
+    reach:    { label: 'Reach', columns: [
+        { label: 'Where', get: (r) => r.context }, { label: 'Install', get: (r) => r.installType },
+        { label: 'Interactions', get: (r) => r.n }] },
+    searches: { label: 'Search terms', columns: [
+        { label: 'Term', get: (r) => r.term }, { label: 'Command', get: (r) => r.command },
+        { label: 'Field', get: (r) => r.field }, { label: 'Searches', get: (r) => r.searches },
+        { label: 'Zero results', get: (r) => r.zeroResults }, { label: 'Picked', get: (r) => r.picked }] },
+};
+
 function register(route) {
     const { requireAdmin } = require('../auth');
 
@@ -140,6 +184,23 @@ function register(route) {
         // OUTCOME_KEYS/ENTRY_KEYS ride in the payload because the browser cannot require a Mongoose model and the six outcomes are an ENUM, not a display list: the Outcomes panel's whole reading is which ones have NEVER occurred, so it has to know the ones the data does not contain. models/AnalyticsRollup is their single source (its own header records the bug from when two copies existed), and the UI holds only the prose labels.
         sendJson(res, 200, { river, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
     }));
+
+    // ⚠️ EACH SCOPE RE-QUERIES ITS OWN TABLE rather than reusing a cached page payload: an export taken ten minutes after the page loaded should be the data as it is NOW, not a snapshot of what the tab happened to render. The cost is one query per download, which is the right trade for a button somebody presses occasionally.
+    route('GET', /^\/api\/analytics\/export$/, requireAdmin(async (req, res, url, session) => {
+        if (!(await hasCommandAccess(session.discordId, 'bot'))) return forbidden(res, 'forbidden');
+        const scope = url.searchParams.get('scope');
+        const table = CSV_TABLES[scope];
+        if (!table) return sendJson(res, 400, { error: `export needs one of: ${Object.keys(CSV_TABLES).join(', ')}` });
+        const { computeUsageStats, computeTimingStats } = require('../../commands/bot');
+        const includeAdmin = url.searchParams.get('admin') === '1';
+        let rows = [];
+        if (scope === 'events') rows = await eventRiver({});
+        else if (scope === 'usage') rows = (await computeUsageStats({ limit: 500, includeAdmin })).byCommand || [];
+        else if (scope === 'timing') rows = (await computeTimingStats({ limit: 500, includeAdmin })).byCommand || [];
+        else if (scope === 'reach') rows = await reachStats();
+        else if (scope === 'searches') rows = await searchTerms({ limit: 500 });
+        sendJson(res, 200, { text: toCsv(rows, table.columns), count: rows.length });
+    }));
 }
 
-module.exports = { register, eventRiver, healthStats, bucketByDay, reachStats, searchTerms };
+module.exports = { register, eventRiver, healthStats, bucketByDay, reachStats, searchTerms, CSV_TABLES, toCsv };

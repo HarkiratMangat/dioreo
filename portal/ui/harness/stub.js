@@ -253,6 +253,67 @@ const ROUTES = [
         }
         return { error: 'export needs one of: draws, returning, calendar, patchnotes' };
     }],
+    // ⚠️ REAL TEXT AND REAL CSV, for the reason the two exports above already give: a placeholder demonstrates the layout while disproving the claim the strip makes about what comes out. Each of the three reproduces its route's SHAPE -- blocks for prose, a header row plus quoting for a table -- against the same fixtures the panels beside them are drawing.
+    [/^\/api\/broadcast\/export$/, (params) => {
+        const scope = params.get('scope');
+        if (scope !== 'live' && scope !== 'all') return { error: 'export needs one of: live, all' };
+        const now = Date.now();
+        const day = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '—');
+        const state = (a) => (a.expiresAt && new Date(a.expiresAt) <= now ? 'expired'
+            : a.startsAt && new Date(a.startsAt) > now ? 'scheduled' : 'live');
+        const all = (FIX.announcements || []).map((a) => ({ ...a, state: state(a) }));
+        const list = scope === 'live' ? all.filter((a) => a.state === 'live') : all;
+        const text = list.map((a) => [`[${a.state}] posted ${day(a.createdAt)}`,
+            `starts ${day(a.startsAt)}  ends ${a.expiresAt ? day(a.expiresAt) : 'never'}`, a.text].join('\n')).join('\n\n');
+        return { text: text, count: list.length };
+    }],
+    [/^\/api\/access\/export$/, (params) => {
+        const scope = params.get('scope');
+        const cell = (v) => (v === null || v === undefined ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+        const admins = FIX.accessAdmins || [];
+        if (scope === 'admins') {
+            const text = admins.map((a) => [a.discordId + (a.note ? `  (${a.note})` : ''),
+                `granted ${(a.grantedAt || '').slice(0, 10) || '—'} by ${a.grantedBy || '—'}`,
+                (a.permissions || []).join(', ') || '(none)'].join('\n')).join('\n\n');
+            return { text: text, count: admins.length };
+        }
+        if (scope === 'matrix') {
+            const scopes = [...new Set(admins.flatMap((a) => a.permissions || []))].sort();
+            const head = ['Admin', 'Note', ...scopes].map(cell).join(',');
+            const body = admins.map((a) => [a.discordId, a.note || '',
+                ...scopes.map((k) => ((a.permissions || []).includes(k) ? 'direct' : ''))].map(cell).join(',')).join('\n');
+            return { text: admins.length ? head + '\n' + body : head, count: admins.length };
+        }
+        if (scope === 'sessions') {
+            const rows = FIX.sessions || [];
+            const head = ['Admin', 'Signed in', 'Last seen', 'Expires'].join(',');
+            const body = rows.map((r) => [r.discordId, r.createdAt, r.lastSeenAt, r.expiresAt].map(cell).join(',')).join('\n');
+            return { text: rows.length ? head + '\n' + body : head, count: rows.length };
+        }
+        return { error: 'export needs one of: admins, matrix, sessions' };
+    }],
+    [/^\/api\/analytics\/export$/, (params) => {
+        const scope = params.get('scope');
+        const F_ = FIX;
+        const cell = (v) => (v === null || v === undefined ? '' : /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+        // ⚠️ EVERY BRANCH RETURNS AN EXPLICIT `{ text, count }` LITERAL. portalHarness.test.js reads this file as SOURCE and matches key names against what the real route's sendJson promises, so a helper returning the object is invisible to it -- the same shape of gate that refused a csvScope() factory in analytics.js. `csv` builds the STRING; the keys stay here.
+        const csv = (cols, rows, get) => {
+            const head = cols.map(cell).join(',');
+            const body = rows.map((r) => get(r).map(cell).join(',')).join('\n');
+            return rows.length ? head + '\n' + body : head;
+        };
+        if (scope === 'events') { const rows = F_.river || [];
+            return { text: csv(['When', 'Kind', 'Level', 'Title', 'Detail', 'Host'], rows, (r) => [r.at || r.createdAt, r.kind, r.level, r.title, r.detail, r.host]), count: rows.length }; }
+        if (scope === 'usage') { const rows = F_.usageByCommand || [];
+            return { text: csv(['Command', 'Uses', 'Succeeded', 'Background'], rows, (r) => [r._id, r.c, r.ok, r.bg]), count: rows.length }; }
+        if (scope === 'timing') { const rows = F_.timingByCommand || [];
+            return { text: csv(['Command', 'Calls', 'Median ms', 'Worst ms'], rows, (r) => [r._id, r.n, (r.p || [])[0], Math.max(0, ...(r.p || []))]), count: rows.length }; }
+        if (scope === 'reach') { const rows = F_.reachStats || [];
+            return { text: csv(['Where', 'Install', 'Interactions'], rows, (r) => [r.context, r.installType, r.n]), count: rows.length }; }
+        if (scope === 'searches') { const rows = F_.searchTerms || [];
+            return { text: csv(['Term', 'Command', 'Field', 'Searches', 'Zero results', 'Picked'], rows, (r) => [r.term, r.command, r.field, r.searches, r.zeroResults, r.picked]), count: rows.length }; }
+        return { error: 'export needs one of: events, usage, timing, reach, searches' };
+    }],
     // 🔴 THE PREVIEW HAS TO BE OF THE BUILD THAT WAS ASKED FOR. This returned ONE fixed card for every id, which is invisible on the single-row preview panel — one card, one selection, nothing to compare it against — and became obvious the moment Compare put two of them side by side: two chips reading ".50 GS" above two cards both reading "AK-47". A stub that answers the same thing to every question is a stub that cannot demonstrate the feature it is standing in for.
     [/^\/api\/armory\/preview/, (params) => {
         // 🔴 THE RAW FIXTURES CARRY `id`, NOT `_id` — armoryBuild() is what normalises them, and this route searched the un-normalised array. So `String(b._id)` was the string "undefined" for every build, matched the real ObjectId the component sends for none of them, and every single row fell through to the generic FIXTURE_CARD below. The Live Preview panel showed the same AK-47 card whichever build you opened, which is worse than not rendering: it renders, it looks right, and it is about a different weapon. Found 2026-08-27 by opening the panel and reading the card against the editor beside it.

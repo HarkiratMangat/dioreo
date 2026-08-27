@@ -91,6 +91,47 @@ function register(route) {
         sendJson(res, 200, buildPermissionMatrix(admins));
     })));
 
+    // 🔴 THE PERMISSION MODEL HAD NO WAY OUT OF THE PORTAL, which is the one realm where that matters most: a grant is not derivable from anything else, `AdminUser` is the only record of who can do what, and the page that shows it is owner-only. ⚠️ The matrix goes out as CSV because it IS a grid -- prose would flatten the direct-vs-inherited distinction that is the entire reason the grid beats a comma-separated string.
+    route('GET', /^\/api\/access\/export$/, requireAdmin(ownerOnly(async (req, res, url) => {
+        const { toCsv } = require('./analytics');
+        const scope = url.searchParams.get('scope');
+        const admins = await AdminUser.find({}).lean();
+        const day = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '—');
+        if (scope === 'admins') {
+            const text = admins.map(a => [
+                a.discordId + (a.note ? `  (${a.note})` : ''),
+                `granted ${day(a.grantedAt)} by ${a.grantedBy}`,
+                (a.permissions || []).join(', ') || '(none)',
+            ].join('\n')).join('\n\n');
+            return sendJson(res, 200, { text, count: admins.length });
+        }
+        if (scope === 'matrix') {
+            const m = buildPermissionMatrix(admins);
+            // A cell says what it IS, not merely whether it is on: "direct" and "inherited" are different facts, and a boolean grid would be the string this page exists to replace. ⚠️ THE SHAPE IS `{admins:[{discordId, grants:{key:{direct,inherited}}}], scopes:[{key,label}]}` -- read off buildPermissionMatrix rather than guessed. A first draft here reached for a top-level `m.grants[id]` that does not exist, which would have written a CSV of empty cells: a well-formed file asserting that nobody holds anything.
+            const cols = [
+                { label: 'Admin', get: (r) => r.discordId },
+                { label: 'Note', get: (r) => r.note },
+                ...(m.scopes || []).map((sc) => ({
+                    label: sc.label || sc.key,
+                    get: (r) => { const v = (r.grants || {})[sc.key] || {}; return v.direct ? 'direct' : v.inherited ? 'inherited' : ''; },
+                })),
+            ];
+            const rows = m.admins || [];
+            return sendJson(res, 200, { text: toCsv(rows, cols), count: rows.length });
+        }
+        if (scope === 'sessions') {
+            const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
+            const cols = [
+                { label: 'Admin', get: (r) => r.discordId },
+                { label: 'Signed in', get: (r) => r.createdAt },
+                { label: 'Last seen', get: (r) => r.lastSeenAt },
+                { label: 'Expires', get: (r) => r.expiresAt },
+            ];
+            return sendJson(res, 200, { text: toCsv(sessions, cols), count: sessions.length });
+        }
+        return sendJson(res, 400, { error: 'export needs one of: admins, matrix, sessions' });
+    })));
+
     route('POST', /^\/api\/access\/grant$/, requireAdmin(ownerOnly(async (req, res, url, session) => {
         const body = await readJsonBody(req);
         const permissions = parsePermissionsInput((body.permissions || []).join(','));
