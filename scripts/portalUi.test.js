@@ -443,9 +443,10 @@ check('a TBD deadline is neither a flag nor a pin', () => {
 });
 
 check('a season with no deadlines at all produces an empty rail rather than throwing', () => {
+    // ⚠️ THE SHAPE GAINED A THIRD LIST. The rail carries the season's patch notes now — they are dated season events and the Track drew none of them — so an exact-shape assertion has to name it. Kept exact rather than loosened to a subset check: this test exists to catch a rail that returns something unexpected, and `deepStrictEqual` on a known-empty season is what does that.
     const empty = deadlineRail({}, '2026-08-06', '2026-09-19');
-    assert.deepStrictEqual(empty, { flags: [], pins: [] });
-    assert.deepStrictEqual(deadlineRail(null, '2026-08-06', '2026-09-19'), { flags: [], pins: [] });
+    assert.deepStrictEqual(empty, { flags: [], pins: [], patches: [] });
+    assert.deepStrictEqual(deadlineRail(null, '2026-08-06', '2026-09-19'), { flags: [], pins: [], patches: [] });
 });
 
 check('no flag is ever assigned a row the stylesheet does not define', () => {

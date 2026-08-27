@@ -6,7 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { Icon } from './icons.js';
-import { useState, useEffect } from '../vendor/preact-hooks.mjs';
+import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
 import { ExportStrip } from './exportPanel.js';
@@ -65,7 +65,37 @@ export function Rail({ realm, realms, badges = {} }) {
 
 // The masthead every realm shares: an identity block and a stat cluster. `lead` marks the one stat that is the page's headline; `--c` tints it with whatever that number is about.
 //
-// Deliberately NO "ANSWERS: …" tag and no explanatory paragraph — those appear only in the compiled review sheets and are reviewer annotation, not product copy (Harkirat, 2026-08-23 14:47 EDT).
+// Deliberately NO "ANSWERS: …" tag and no explanatory paragraph — those appear only in the compiled review sheets and are reviewer annotation, not product copy (Harkirat, 2026-08-23 14:47 EDT). 🔴 A NUMBER THAT CHANGED AND A NUMBER THAT DID NOT LOOKED IDENTICAL. Staging a change updates a masthead figure silently, so the one signal that your action landed was a digit you were not looking at. The adopted sheet has drawn this since it was adopted — `.mh-stats .v.rolling` and a `.fdelta` badge that drifts up — and nothing emitted either.
+//
+// ⚠️ IT REPORTS THE DELTA, NOT THE VALUE. "+3" says what just happened; the figure beside it already says where you are. And it fires only on a CHANGE from a real previous number — a first paint is not an event, and animating one would make every page load look like something had happened.
+//
+// ⚠️ REDUCED MOTION IS HONOURED HERE AND NOT ONLY IN CSS. The sheet already stops the animation, but the badge would still appear and vanish; skipping the whole thing is the same answer said once.
+function Figure({ value }) {
+    const prev = useRef(null);
+    const [delta, setDelta] = useState(null);
+    const [rolling, setRolling] = useState(false);
+    useEffect(() => {
+        const n = Number(value), was = prev.current;
+        prev.current = Number.isFinite(n) ? n : null;
+        if (!Number.isFinite(n) || !Number.isFinite(was) || was === n) return undefined;
+        if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+        const d = n - was;
+        setRolling(true);
+        setDelta(d);
+        const a = setTimeout(() => setRolling(false), 420);
+        const b = setTimeout(() => setDelta(null), 1400);
+        return () => { clearTimeout(a); clearTimeout(b); };
+    }, [value]);
+
+    return html`
+        <span class=${'v' + (rolling ? ' rolling' : '')}>${value}</span>
+        ${delta === null ? null : html`
+            <span class=${'fdelta ' + (delta > 0 ? 'up' : 'down')} aria-hidden="true">
+                ${delta > 0 ? '+' : '−'}${Math.abs(delta)}
+            </span>`}
+    `;
+}
+
 export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null }) {
     return html`
         <div class="masthead">
@@ -80,7 +110,7 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                     ${stats.map((s) => html`
                         <span class=${'stat' + (s.tone ? ' ' + s.tone : '') + (s.lead ? ' lead' : '')}
                               style=${s.accent ? `--c:${s.accent}` : null}>
-                            <span class="v">${s.value}</span> <span class="k">${s.label}</span>
+                            <${Figure} value=${s.value} /> <span class="k">${s.label}</span>
                         </span>`)}
                 </div>` : null}
         </div>
@@ -127,7 +157,7 @@ export function MastheadAnchor({ id }) {
 // ⚠️ The OWNER badge is ABSENT for a non-owner rather than reading "ADMIN", the same rule the commit chip follows: a badge every account carries states nothing, and "Dioreo admin" above it already says what the account is.
 const DISCORD_MARK = 'M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.5c1.6.4 2.9 1 4.2 1.8a16.6 16.6 0 0 0-14.7 0A17 17 0 0 1 8.9 3.5L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.9 8.5.2 12.5.5 16.4a19.9 19.9 0 0 0 6 3l1.2-1.9c-.7-.2-1.3-.5-1.9-.9l.4-.3a14.2 14.2 0 0 0 11.6 0l.5.3c-.6.4-1.3.7-2 .9l1.2 1.9a19.8 19.8 0 0 0 6-3c.5-4.6-.6-8.6-3.2-12zM8.5 14.2c-1.2 0-2.1-1.1-2.1-2.4S7.3 9.4 8.5 9.4s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z';
 
-// ⚠️ "SESSION · 12 HOURS" STATES THE POLICY; THIS STATES A FACT ABOUT THE READER. models/PortalSession.js expires a row 12 hours after `createdAt` via a Mongo TTL index, so the deadline is real and knowable — /auth/csrf now sends it. Absent (an older session, or a fetch that predates the field) reads as an em dash rather than a guessed countdown.
+// ⚠️ "SESSION · 12 HOURS" STATES THE POLICY; THIS STATES A FACT ABOUT THE READER. models/PortalSession.js expires a row 12 hours after `createdAt` via a Mongo TTL index, so the deadline is real and knowable — /auth/csrf now sends it. Absent (an older session, or a fetch that predates the field) reads as an em dash rather than a guessed countdown. ⚠️ IT IS A COUNTDOWN, so it reads in the live voice rather than as another grey label. The account panel's other rows are facts that do not move; this one is the only thing on that panel that is running down while you look at it.
 function sessionLeft(expiresAt) {
     if (!expiresAt) return '—';
     const left = new Date(expiresAt).getTime() - Date.now();
@@ -177,7 +207,7 @@ function Account({ session, staged, onSignOut }) {
                     ${session.isOwner ? html`<span class="rolebadge">OWNER</span>` : null}
                 </div>
                 <div class="usec">
-                    <div class="ustat"><span>Session</span><b>${sessionLeft(session.sessionExpiresAt)}</b></div>
+                    <div class="ustat"><span>Session</span><b class="live">${sessionLeft(session.sessionExpiresAt)}</b></div>
                 </div>
                 <div class="usec">
                     <!-- The reach is a NOTE on the row it qualifies rather than a stat of its own: "what you can do"
@@ -359,6 +389,10 @@ export function Door({ forbidden }) {
                         <span><b>That account is not an admin.</b> Signing in worked; you have no permissions here.
                             Ask the owner to grant you access, then sign in again.</span>
                     </div>` : null}
+                <!-- ⚠️ THE ONE FACT A STRANGER IS OWED, and the page did not state it: nothing about their
+                     account exists here yet. It reads in the muted absent-value voice the rest of the console
+                     uses, because it is a fact rather than a warning. -->
+                <p class="doorstate">Signed in as <span class="none">nobody</span></p>
                 <h1>Sign in with Discord</h1>
                 <p>The portal is for Dioreo's admins. It uses your Discord account — there is no separate password to
                    create, and none to lose.</p>

@@ -470,7 +470,21 @@ function Reach({ rows = [] }) {
 
 // ══ SEARCH ══════════════════════════════════════════════════════════════════════════════════════
 //
-// 🔴 THE ONLY FIGURE IN THE SYSTEM THAT DESCRIBES WHAT SOMEBODY WANTED. Everything else on this realm describes what the bot did. A term typed into an autocomplete that matched nothing names something this bot does not have — a missing alias, or a missing feature — and it appears on no other surface, in Discord or here.
+// 🔴 THE ONLY FIGURE IN THE SYSTEM THAT DESCRIBES WHAT SOMEBODY WANTED. Everything else on this realm describes what the bot did. A term typed into an autocomplete that matched nothing names something this bot does not have — a missing alias, or a missing feature — and it appears on no other surface, in Discord or here. 🔴 A SUCCESS RATE IS A COMPARISON AND IT WAS RENDERED AS A PERCENTAGE. "99.0%" hides both numbers that matter — how many ran and how many did not — and the panel already has them. The sheet's diff block is the shape for exactly this: a key, and the two sides of the fact.
+function OutcomeSplit({ stats }) {
+    const rows = (stats || []).filter((s) => s && Number.isFinite(s.total));
+    if (!rows.length) return null;
+    const total = rows.reduce((a, r) => a + r.total, 0);
+    const failed = rows.reduce((a, r) => a + (r.failed || 0), 0);
+    if (!total) return null;
+    return html`
+        <div class="diff">
+            <div class="diff-r"><span class="dk">Succeeded</span><span>${total - failed} of ${total}</span></div>
+            <div class="diff-r"><span class="dk">Failed</span><span>${failed || 'none'}</span></div>
+            <div class="diff-r"><span class="dk">Commands seen</span><span>${rows.length}</span></div>
+        </div>`;
+}
+
 function Search({ rows = [] }) {
     const zero = rows.filter((r) => r.zeroResults > 0);
     const picked = rows.reduce((a, r) => a + r.picked, 0);
@@ -586,7 +600,8 @@ export function AnalyticsRealm({ session }) {
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
     const VIEWS = {
         Health: () => html`<${Health} health=${data.health} />`,
-        Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />`,
+        Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />
+                          <${OutcomeSplit} stats=${data.usageStats} />`,
         Timing: () => html`<${Timing} stats=${data.timingStats} />`,
         Reach: () => html`<${Reach} rows=${data.reach} />`,
         Search: () => html`<${Search} rows=${data.searches} />`,

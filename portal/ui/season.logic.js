@@ -394,7 +394,11 @@ function deadlineRail(season, from, to) {
         lastAt[level] = frac;
         flags.push({ ...d, level, pct: frac * 100 });
     }
-    return { flags, pins };
+    // ⚠️ ONLY THE ONES THAT FALL INSIDE THE VIEW. A patch note outside the window has no x on this axis, and pinning it to an edge — which the DEADLINES do — would be wrong here: a deadline beyond the edge is a fact about the boundary, a patch note beyond it is simply not in this picture.
+    const patches = (((season || {}).patchNotes) || [])
+        .map((n) => ({ id: String(n._id), title: (n.titleOverride || n.title || 'Untitled').trim(), date: dayOf(n.releaseDate) }))
+        .filter((p) => p.date && p.date >= from && p.date <= to);
+    return { flags, pins, patches };
 }
 
 // ── WHAT A MANIFEST ROW IS, BEYOND ITS NAME ───────────────────────────────────────────────────

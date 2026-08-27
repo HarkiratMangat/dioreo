@@ -9,6 +9,7 @@ import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { fetchJson } from './httpClient.js';
+import { DiscordCard } from './v2Render.js';
 
 const DAY = { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' };
 const fmtDay = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString(undefined, DAY);
@@ -37,7 +38,14 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
             <input class="nw-i nw-smart" id=${id} type="text" autocomplete="off" spellcheck="false"
                    placeholder=${placeholder} value=${value}
                    onInput=${(e) => onChange(e.target.value, null)} />
-            <p class="nw-hint">${!raw ? '' : iso ? `${fmtDay(iso)}  ·  ${iso}` : 'not a date yet'}</p>
+            <!-- ⚠️ NOT the generic hint class. The sheet draws this specific line — nw-date-echo, with ok and
+                 bad states — because it is a RESULT, not a hint: it reports what the server resolved
+                 and whether it resolved at all, and it had been rendering in the generic muted grey that
+                 says neither. -->
+            ${!raw ? null : html`
+                <span class=${'nw-date-echo ' + (iso ? 'ok' : 'bad')}>
+                    ${iso ? `${fmtDay(iso)}  ·  ${iso}` : 'not a date yet'}
+                </span>`}
         </div>
     `;
 }
@@ -108,14 +116,12 @@ function ComposePreview({ state, type }) {
     const window = ghost.shape === 'point' || ghost.end === ghost.start
         ? fmtDay(ghost.start)
         : `${fmtDay(ghost.start)} → ${fmtDay(ghost.end)}`;
+    // ⚠️ THE CARD, NOT A SENTENCE. The first version of this read the record back as prose, which is a second way of saying what the fields above already say. What nothing else on the page can say is what it will look like in Discord — the surface every one of these records exists for.
     return html`
         <div class="nw-prev">
-            <p class="nw-hint" style=${`--c:${type.hex}`}>
-                <span class="nw-dot" style=${`--c:${type.hex}`}></span>${' '}
-                <b>${name || type.nameLabel || 'Unnamed'}</b>${' '}
-                ${ghost.shape === 'point' ? 'releases' : 'runs'} ${window}${' '}
-                <em style="font-style:normal;color:var(--ink3)">· ${type.label}</em>
-            </p>
+            <${DiscordCard} accent=${type.hex} title=${name || type.nameLabel || 'Unnamed'}
+                            sub=${type.label}
+                            rows=${[[ghost.shape === 'point' ? 'Releases' : 'Runs', window]]} />
         </div>
     `;
 }

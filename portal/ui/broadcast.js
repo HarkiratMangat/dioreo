@@ -5,6 +5,7 @@ import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead, MastheadNew } from './shell.js';
+import { DiscordCard } from './v2Render.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
@@ -17,6 +18,8 @@ const fmtDay = (v) => new Date(v).toDateString().slice(4);
 const BROADCAST_COLUMNS = [
     { key: 'text', label: 'Announcement', editable: true },
     { key: 'createdAt', label: 'Posted', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
+    // ⚠️ ONE SEVERITY MARK, ON THE ONE CONDITION THIS REALM CALLS A DEFECT. An announcement with no expiry never stops on its own — it is the single thing Home's attention list reports about Broadcast — and the table said so only by printing the word "never" three columns away, in the same ink as every other date.
+    { key: 'sev', label: '', col: 'c-cb', render: (r) => html`<span class=${'sev ' + (r.state === 'live' && !r.expiresAt ? 'warn' : '')}></span>` },
     // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
     { key: 'startsAt', label: 'Starts', col: 'c-type', dataKind: 'date', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
     // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
@@ -47,10 +50,10 @@ function DeliveryPreview({ live, cap }) {
     return html`
         <aside class="nprev" aria-label="What a player receives">
             <h5>What a player receives</h5>
-            ${shown.length ? shown.map((a) => html`
-                <div class="idop" key=${a._id} style=${`border-left:3px solid ${accentOf(a)}`}>
-                    <b>${a.text}</b>
-                </div>`)
+            ${shown.length ? shown.map((a, i) => html`
+                <${DiscordCard} key=${a._id} accent=${accentOf(a)} title=${a.text}
+                                sub=${`embed ${i + 1} of ${shown.length}`}
+                                rows=${[['Ends', a.expiresAt ? fmtDay(a.expiresAt) : 'never']]} />`)
             : html`<div class="idop"><b>nothing attached</b></div>`}
             <p class="pnote">
                 ${shown.length
@@ -195,7 +198,7 @@ function HeadsUp({ all }) {
     `;
 }
 
-// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task -- core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows immediately" -- both sent as null rather than guessed at client-side.
+// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task -- core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows immediately" -- both sent as null rather than guessed at client-side. ⚠️ A BLANK FIELD HERE IS A REAL VALUE, TWICE OVER, and neither said so on screen: a blank expiry takes the server's 60-day default rather than never expiring, and a blank start means the announcement is live the moment it commits. Both facts were in this file's own header comment, which nobody using the form can read.
 function PostForm({ onSubmit, onCancel }) {
     const [text, setText] = useState('');
     const [startsAt, setStartsAt] = useState('');
@@ -213,16 +216,23 @@ function PostForm({ onSubmit, onCancel }) {
     return html`
         <div class="panel" style="margin-bottom:14px">
             <div class="ph"><span class="t">Post an announcement</span></div>
+            <p class="chint" style="margin:12px 14px 0">Every live announcement is attached to the bot's next reply to a
+                player, in the order it was written — so this is not a broadcast to a channel, it is a note added to
+                whatever they were already doing.</p>
+            <!-- 🔴 THREE CONTROLS WITH THEIR LAYOUT WRITTEN INTO THE JSX AND THEIR LABELS HIDDEN. This is
+                 the last form in the portal still doing both — the build editor and the grant form are both
+                 on the sheet own dwfield class now — and the hidden labels carried the two facts that decide
+                 what this form DOES: a blank start means live on commit, a blank expiry means sixty days,
+                 not never. Neither was visible to anyone filling it in. -->
             <div style="padding:12px 14px">
-                <label class="sr" for="post-text">Announcement text</label>
-                <textarea id="post-text" placeholder="Announcement text" value=${text} onInput=${(e) => setText(e.target.value)} rows="3"
-                          style="width:100%;background:var(--sunk);border:1px solid var(--rule);border-radius:5px;color:var(--ink);font-size:13px;padding:7px 10px"></textarea>
+                <label class="dwfield" for="post-text"><span>Announcement text <i>players read this verbatim</i></span>
+                    <textarea id="post-text" value=${text} onInput=${(e) => setText(e.target.value)} rows="3"></textarea></label>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 14px 12px;align-items:center">
-                <label class="sr" for="post-starts">Starts at (blank = immediately)</label>
-                <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} />
-                <label class="sr" for="post-expires">Expires at (blank = 60-day default)</label>
-                <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} />
+            <div style="display:flex;gap:12px;flex-wrap:wrap;padding:0 14px 12px;align-items:flex-end">
+                <label class="dwfield" for="post-starts"><span>Starts <i>blank shows it the moment you commit</i></span>
+                    <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></label>
+                <label class="dwfield" for="post-expires"><span>Ends <i>blank takes the server's 60-day default, not never</i></span>
+                    <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} /></label>
                 <button class="accent-fill" disabled=${!ready} onClick=${submit}>Stage</button>
                 <button onClick=${onCancel}>Cancel</button>
             </div>
@@ -236,7 +246,11 @@ export function BroadcastRealm({ session }) {
     const [view, setView] = useState('Now showing');
     const overlay = useOverlay();
 
-    const load = useAsync(() => fetchJson('/api/broadcast'), []);
+// 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
+//
+// ⚠️ ONE REQUEST, IN THE SAME useAsync, so the realm still has ONE loading phase. A second hook would give the page two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
+    const load = useAsync(() => Promise.all([fetchJson('/api/broadcast'), fetchJson('/api/review')])
+        .then(([broadcast, review]) => ({ ...broadcast, stagedOps: (review && review.ops) || [] })), []);
     const refresh = load.reload;
     const data = load.data;
 
@@ -245,6 +259,7 @@ export function BroadcastRealm({ session }) {
 
     // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or editable on this Manifest actually worked before this mapping existed. `state` is computed SERVER-SIDE (portal/api/broadcast.js's announcementState) and passed straight through -- see that function's header for why it is not re-derived here.
     const rows = data.all.map((a) => ({ ...a, id: a._id, accentHex: accentOf(a) }));
+    const stagedHere = (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'broadcast').length;
     const counts = {
         live: data.all.filter((a) => a.state === 'live').length,
         scheduled: data.all.filter((a) => a.state === 'scheduled').length,
@@ -308,6 +323,7 @@ export function BroadcastRealm({ session }) {
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
                                                    { value: counts.forever, label: 'never expires', tone: counts.forever ? 'bad' : undefined },
+                                                   { value: stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
                                                ]}
                                                actions=${html`<${MastheadNew} label="New announcement" hint="a"
                                                                               tip="Write an announcement"

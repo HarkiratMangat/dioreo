@@ -376,6 +376,19 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
                     <span class="mini" key=${n}
                           style=${`left:${pct(i.start)}%;width:${Math.max(0, pct(i.end) - pct(i.start))}%;top:${8 + i.row * 8}px;background:${i.accent}`}></span>`)}
                 ${seasonEnd ? html`<span class="season-end" style=${`left:${pct(seasonEnd)}%`}></span>` : null}
+                <!-- ⚠️ winbox IS NOT A MISNAMED win, AND RENAMING IT BREAKS THE DRAG. Tried, measured,
+                     reverted: the adopted sheet declares .win FOUR TIMES for four different components,
+                     and one of them sets pointer-events:none — on a control whose entire job is to be
+                     dragged. winbox has its own rules here (cursor:grab, the active state) and its
+                     handles are positioned by the scrub rules rather than by a .win descendant selector. Two names, two
+                     components, and the coverage number that wanted them merged was wrong. -->
+                <!-- 🔴 THE OVERVIEW SHOWED THE WHOLE SEASON AT FULL STRENGTH AND MARKED THE WINDOW WITH A
+                     BORDER. Which half is "in view" was carried by a 1px edge, so on a wide season the
+                     zoomed window read as one more item rather than as the frame. The masks dim what is
+                     OUTSIDE it, which is the same figure/ground move the Track's own out-of-season shade
+                     makes — and it is the mockup's, not an invention here. -->
+                <span class="smask l" style=${`width:${Math.max(0, left)}%`} aria-hidden="true"></span>
+                <span class="smask r" style=${`left:${Math.min(100, right)}%;right:0`} aria-hidden="true"></span>
                 <div class="winbox" style=${`left:${left}%;width:${Math.max(1, right - left)}%`}
                      onPointerDown=${(e) => begin('pan', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}>
                     <span class="wh l" onPointerDown=${(e) => begin('l', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}></span>
@@ -413,6 +426,15 @@ function DeadRail({ rail, view, todayIso }) {
                 <button type="button" class="dspan" style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%`}
                         data-tip=${`${next.title || next.label} is the next deadline.\nThis is the time left before it.`}
                         onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}></button>` : null}
+            <!-- 🔴 A PATCH NOTE IS A DATED SEASON EVENT AND THE TRACK DID NOT DRAW ONE. The record panel
+                 below lists them newest-first, which answers "what shipped"; it cannot answer "what else was
+                 happening that week", which is the only question this axis exists for. Stacked because two
+                 notes in one week is normal and two markers at one x is not readable. -->
+            ${(rail.patches || []).map((p) => html`
+                <button type="button" class=${'ptc mark stack' + (p.staged ? ' staged' : '')} key=${p.id}
+                        style=${`--c:var(--patch);left:${view.pct(p.date)}%`}
+                        data-tip=${`${p.title}\nPublished ${TL.fmt(p.date)}`}
+                        aria-label=${`Patch note: ${p.title}, ${TL.fmt(p.date)}`}></button>`)}
             ${notches.map(([day, list]) => html`
                 <div class="dnotch" key=${day} style=${`left:${view.pct(day)}%`}
                      data-tip=${`${list.length} deadlines land on ${TL.fmt(day)}: ${list.map((d) => d.label).join(', ')}`}>
@@ -568,6 +590,22 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                         ${oosPct === null ? null : html`
                             <div class=${'oos' + (100 - oosPct >= 14 ? ' wide' : '')}
                                  style=${'left:' + oosPct + '%'} aria-hidden="true"></div>`}
+                        <!-- 🔴 A DOUBLE-CP WINDOW CHANGES WHAT EVERY DRAW IN IT COSTS, and the Track drew it as
+                             an ordinary event bar. isDoubleCP is a real stored flag — models/SeasonalData.js
+                             carries it precisely so /draw calculator can quote the right price without anybody
+                             remembering an event is on — and the one screen showing the season's shape gave the
+                             reader no way to see the window that pricing depends on. -->
+                        ${(data.calendar || []).filter((c) => c.isDoubleCP && c.date).map((c) => {
+                            const a = view.pct(String(c.date).slice(0, 10));
+                            const b = view.pct(String(c.endDate || c.date).slice(0, 10));
+                            if (b <= 0 || a >= 100) return null;
+                            return html`
+                                <div class="win" key=${c._id || c.title}
+                                     style=${`left:${Math.max(0, a)}%;width:${Math.min(100, b) - Math.max(0, a)}%`}
+                                     data-tip=${`Double CP — every draw in this window is priced differently\n${c.title}`}>
+                                    <span class="lbl">2X CP</span>
+                                </div>`;
+                        })}
                         <div class="now" style=${'left:' + nowPct + '%'}></div>
                         ${season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null}
                     </div>

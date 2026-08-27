@@ -193,7 +193,7 @@ function LiveNow({ season, broadcast, today }) {
                 ${anns.length ? anns.map((a) => html`
                     <div class="lrow" key=${a._id || a.text} style="--c:var(--patch)">
                         <i class="ld"></i>
-                        <span class="lt">${a.text || a.title || 'untitled announcement'}</span>
+                        <span class="lt">${a.text || a.title || html`<span class="none">untitled announcement</span>`}</span>
                         <!-- 🔴 NO EXPIRY IS THE HOT STATE, not the calm one. An announcement with no expiresAt value never stops on its own, which is the single defect Broadcast's own attention row exists to report — so it reads hot here for the same reason. -->
                         <span class=${'lw' + (a.expiresAt ? '' : ' hot')}>
                             ${a.expiresAt ? endsIn(String(a.expiresAt).slice(0, 10), today) : 'never ends'}

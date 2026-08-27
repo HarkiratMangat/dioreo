@@ -31,11 +31,16 @@ function GrantForm({ onGrant, scopes }) {
     const ready = discordId && confirmText === discordId;
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
     return html`
+        <!-- 🔴 A PLACEHOLDER IS NOT A LABEL, and these two inputs look identical the moment either has
+             text in it — one takes the account to grant, the other takes the SAME id typed back as the
+             tier-3 confirmation. A screen-reader label existed; a visible one did not, so the only thing
+             distinguishing them on screen was a hint that disappears when you start typing. The dwfield class
+             is the sheet's own labelled field, used by every other form in the portal. -->
         <div class="addrow">
-            <label class="sr" for="grant-discordid">Discord ID to grant</label>
-            <input id="grant-discordid" placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
-            <label class="sr" for="grant-confirm">Type the Discord ID to confirm</label>
-            <input id="grant-confirm" placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
+            <label class="dwfield" for="grant-discordid"><span>Discord ID to grant</span>
+                <input id="grant-discordid" placeholder="19 digits" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} /></label>
+            <label class="dwfield" for="grant-confirm"><span>Type it again to confirm <i>the same id, not the word "grant"</i></span>
+                <input id="grant-confirm" placeholder="the same 19 digits" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} /></label>
             <button class="accent-fill" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText)}>
                 ${picked.length ? `Grant ${picked.length}` : 'Grant nothing yet'}</button>
             <div class="tokgrid">
@@ -239,6 +244,12 @@ function ByScope({ matrix, spof, ownerId }) {
                  for an absent mark is noise. -->
             ${spofScopes.size ? html`
                 <span class="klg spofk"><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
+            <!-- ⚠️ THE VOCABULARY IS ELEVEN TOKENS AND FOUR OF THEM ARE COMMANDS. Nothing on this screen
+                 said that the manage token silently covers eight of the others — which is the single fact that makes
+                 a hand-typed grant dangerous, and the reason the chips above exist. -->
+            <p class="racknote">${(matrix.scopes || []).length} permissions in all. A command token grants the
+                whole command; <code>manage</code> covers every page under it, so granting it is not one
+                permission but eight. A scope with no realm is Discord-only and does nothing in this portal.</p>
             <div class="scopes">
                 ${(matrix.scopes || []).map((sc) => {
                     const holders = matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);

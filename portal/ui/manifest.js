@@ -16,7 +16,11 @@ function FilterChips({ groups, filters, onChange }) {
         const next = options[(index + 1) % options.length].value;
         const label = options[index].label;
         return html`
-            <button class="chip" aria-pressed=${current !== 'all'}
+            <!-- ⚠️ A TOPIC FILTER IS NOT A STATE FILTER, and both rendered as the same neutral chip. Lane
+                 and category ARE the topic vocabulary the whole console colours by — the Track's bars, the
+                 row dots, the composer's chips — so a filter over them takes the topic chip and a filter
+                 over state does not. The realm declares which it is; a shared component cannot guess. -->
+            <button class=${'chip' + (g.topic ? ' topic' : '')} aria-pressed=${current !== 'all'}
                     title=${`Filter by ${g.label} — click to cycle`}
                     onClick=${() => onChange({ ...filters, [g.key]: next })}>
                 ${g.label}: ${label}${current !== 'all' ? html`<span class="x" aria-hidden="true">×</span>` : null}
@@ -162,7 +166,7 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                                 if (isEditing) {
                                     return html`<td key=${c.key} onClick=${(e) => e.stopPropagation()}>
                                         <label class="sr" for=${`edit-${row.id}-${c.key}`}>Edit ${c.label}</label>
-                                        <input id=${`edit-${row.id}-${c.key}`} value=${editValue} autoFocus
+                                        <input class="edit" id=${`edit-${row.id}-${c.key}`} value=${editValue} autoFocus
                                                onInput=${(e) => setEditValue(e.target.value)}
                                                onKeyDown=${(e) => { if (e.key === 'Enter') commitEdit(row, c.key); if (e.key === 'Escape') setEditingCell(null); }}
                                                onBlur=${() => setEditingCell(null)} />

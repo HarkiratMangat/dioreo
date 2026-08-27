@@ -7,7 +7,7 @@
 // ⚠️ DONE IS NOT 100%. A real slice of every remaining gap is the mockup's own reviewer scaffolding — `data-demo-only` controls, `S.audit()` hooks, `data-async-host`/`data-skel`, the document-nav chrome standalone files need — and the mockup says in capitals that some of it MUST NOT SHIP. Chasing the number builds things the design forbids. A realm is done when the remaining delta is scaffolding, which is why this prints the MISSING NAMES and not just a percentage.
 //
 // ⚠️ IT UNDER-COUNTS, IN ONE KNOWN WAY. Components build class strings in variables (`const cls = 'bar ' + state`), which a source scan cannot see. So true coverage is somewhat higher than reported, and a realm that stalls while LOOKING right may be hitting that rather than missing markup. Read it with the page open, never instead of opening the page.
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,6 +16,20 @@ const MOCKUP = join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interactiv
 const UI = join(ROOT, 'portal/ui');
 
 const CLASS_RE = /^[a-zA-Z][\w-]*$/;
+
+// The classic scripts both sides load beside their modules. Read once; only functions NAMED in a class expression's initializer are ever looked up in here, so it is a lookup table, not a corpus to search.
+const SIBLINGS = (() => {
+    let out = '';
+    for (const dir of [UI, join(MOCKUP, 'assets')]) {
+        if (!existsSync(dir)) continue;
+        for (const f of readdirSync(dir)) {
+            if (f.endsWith('.logic.js') || (dir.endsWith('assets') && f.endsWith('.js'))) {
+                out += readFileSync(join(dir, f), 'utf8') + '\n';
+            }
+        }
+    }
+    return out;
+})();
 
 // 🔴 A NON-GREEDY `[^}]*` CANNOT READ A CLASS EXPRESSION THAT INTERPOLATES, and every dynamic class in this codebase does. `class=${`lvtag lv-${r.level}`}` stops the old scan dead at the FIRST `}` — which belongs to the inner `${r.level}`, not to the attribute — so the captured text was the fragment "`lvtag lv-$" and the literal `lvtag` was never seen. analytics.js has emitted `lvtag` since the river was built and BOTH instruments reported it as unbuilt work. That is the third blind spot of this exact shape on this branch: a gate is a claim about what it can SEE, and a regex that cannot nest is claiming less than it appears to.
 //
@@ -53,21 +67,38 @@ function emittedFrom(t) {
             for (const lit of expr.matchAll(/["'`]([^"'`]*)["'`]/g)) add(lit[1]);
         }
         for (const m of t.matchAll(/class="([^"$]*)/g)) add(m[1]);
-        // 🔴 A CLASS PASSED AS A DATA VALUE IS STILL EMITTED. A Manifest column declares `col: 'c-type'` and `metaClass: 'rowlife'`, and the component renders them into a real class attribute — but the literal lives in the REALM file as a property, so a scan for `class=` finds the component's fallbacks and never the realm's override. Season emitted `c-type`, `c-spark` and `rowlife` and was reported as missing all three. `portal:orphans` learned this same lesson yesterday and this file did not, which is the fourth blind spot of one shape on this branch.
-        for (const m of t.matchAll(/\b(?:col|metaClass|cls|accentClass):\s*'([^']+)'/g)) add(m[1]);
+        // 🔴 A CLASS PASSED AS A DATA VALUE IS STILL EMITTED. A Manifest column declares `col: 'c-type'` and `metaClass: 'rowlife'`, and the component renders them into a real class attribute — but the literal lives in the REALM file as a property, so a scan for `class=` finds the component's fallbacks and never the realm's override. Season emitted `c-type`, `c-spark` and `rowlife` and was reported as missing all three. `portal:orphans` learned this same lesson yesterday and this file did not, which is the fourth blind spot of one shape on this branch. ⚠️ THE VALUE MAY BE CONDITIONAL. `tone: staged ? 'stg' : undefined` is the same declaration as `tone: 'stg'` — the class ships when the condition holds — so the scan reads the whole short value expression and takes every literal out of it rather than requiring a bare string.
+        for (const m of t.matchAll(/\b(?:col|metaClass|cls|accentClass|tone):\s*([^,}\n]{0,90})/g)) {
+            for (const lit of m[1].matchAll(/'([^'\n]*)'/g)) add(lit[1]);
+        }
+        // `cls` is a PROP on the Icon component and an ATTRIBUTE at the call site — `<${Icon} cls="xl" />` — and only the first spelling was being read.
+        for (const m of t.matchAll(/\bcls=["']([^"'\n]*)["']/g)) add(m[1]);
         // 🔴 THE UNDER-COUNT THIS FILE'S OWN HEADER ADMITTED TO, CLOSED. A component that computes its cell class into a variable — `const kind = ci === 0 ? 'n' : c.dataKind === 'detail' ? 'det' : 'ta-r';` then `class=${kind}` — puts no literal anywhere near a `class=` attribute, so every one of those names read as unbuilt. The Manifest has emitted `det`, `nums` and `ta-r` on every row since dataKind was added, and this instrument called all three missing from the realms that render them.
         //
         // ⚠️ BOUNDED BY USE, NOT BY SHAPE. Only identifiers that actually appear inside a `class=` expression are resolved, and only their own declaration is read — so an unrelated `const MESSAGES = ['saved', 'failed']` is never mistaken for a class list. CLASS_RE still filters what survives, and the same pass runs over the mockup, which builds its classes the same way. 🔴 IMPERATIVE CLASS TOGGLES ARE DELIBERATELY NOT READ, AND THIS IS THE ONE PLACE THE TWO SIDES ARE MEASURED BY DIFFERENT IDIOMS ON PURPOSE. Reading `classList.toggle('is-slow', on)` was tried and reverted the same hour: the mockup is imperative vanilla JS whose dominant way of expressing state IS a toggle, and the portal is declarative Preact whose dominant way is a computed class string. Scanning toggles reads one side's whole state vocabulary and the other's not at all, so it charged the portal ~200 classes for a difference in MECHANISM — and the evidence is that it demanded classes the portal plainly implements: async.js emits `is-refreshing` and `is-slow` from a returned hostClass, the Track collapses lanes as `lnc`, and `zero`/`stg-clear` encode a rule shell.js deliberately reversed (a chip is ABSENT at zero rather than dimmed). A measurement that moves because two codebases are written in different styles is measuring the style.
         //
         // ⚠️ THE COST IS REAL AND NAMED: tips.js sets `sub.className = 'sub'` on the tooltip's second line — built as nodes because a tip's text is a build name and not ours to trust as markup — so `sub` reads as missing from every realm while the shared runtime has always emitted it. That is this instrument's known under-count, disclosed in the header, not a portal gap.
+        for (const m of t.matchAll(/\.className\s*=\s*'([^'\n]*)'/g)) add(m[1]);
+
         const inClassPos = new Set();
         for (const expr of classExpressions(t)) {
             for (const id of expr.matchAll(/\b([A-Za-z_$][\w$]*)\b/g)) inClassPos.add(id[1]);
         }
+        // ⚠️ ONE HOP THROUGH A HELPER, AND EXACTLY ONE. `const cls = [bandClass({state}), …]` is the portal's own idiom, and `bandClass` returns the literal `'bar saved'` — so the base class of every bar on the Track was invisible to a resolver that stopped at the declaration. Following the call one level reaches it; following further would wander the whole module graph and start counting strings that never touch a class attribute. The hop is bounded to functions named IN that initializer, which is what keeps it from being a free-text search.
+        const bodiesFor = (expr) => {
+            let text = '';
+            for (const call of expr.matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)) {
+                const fn = new RegExp(`function\\s+${call[1]}\\s*\\([\\s\\S]{0,200}?\\)\\s*\\{([\\s\\S]{0,900}?)\\n\\}`, 'g');
+                // ⚠️ THE SIBLING CLASSIC SCRIPTS COUNT AS THE SAME FILE, because at runtime they are: every `*.logic.js` here loads as a plain <script> before the module graph evaluates, so its top-level functions are globals the module calls unqualified. `bandClass` lives in track.logic.js and returns the literal that is the base class of every bar on the Track — one file away, and invisible to a scan that stops at the module's own text.
+                for (const f of (t + SIBLINGS).matchAll(fn)) text += f[1];
+            }
+            return text;
+        };
         for (const id of inClassPos) {
             const decl = new RegExp(`\\b(?:const|let|var)\\s+${id}\\s*=([\\s\\S]{0,600}?);`, 'g');
             for (const d of t.matchAll(decl)) {
-                for (const lit of d[1].matchAll(/'([^'\n]*)'|"([^"\n]*)"/g)) add(lit[1] ?? lit[2] ?? '');
+                const scope = d[1] + bodiesFor(d[1]);
+                for (const lit of scope.matchAll(/'([^'\n]*)'|"([^"\n]*)"/g)) add(lit[1] ?? lit[2] ?? '');
             }
         }
     }
@@ -102,6 +133,9 @@ const PAIRS = ENTRY.map(([name, pages, entry]) => [name, pages, [...importsOf(en
 //
 // ⚠️ THE FIX IS TO MIRROR THE MOCKUP'S OWN SPLIT, not to invent one. The mockup's `assets/shell.js` is what every page shares — the header, rail, tray, drawer, toast, command bar, compose and the Discord card — so the portal's shared set is the modules holding those same things, and everything else is attributed to the realm that renders it. Both sides are now scoped the same way; before this the mockup side was scoped per page and the portal side was not, which is the asymmetry that produced the inflation. async.js belongs here by the same test as the rest: the mockup's assets/shell.js is what every page shares, and Shell.async — skeleton, refreshing, slow, failure, progress, banner — is declared in it. Every realm renders those states; none owns them. ⚠️ exportPanel.js joins by the SAME test that put async.js here, applied 2026-08-26: the mockup declares Shell.Export in assets/shell.js, so every page's `want` contains the export panel's vocabulary — and the portal mounts ExportStrip from Shell too. Leaving it attributed per realm made those classes read as missing from Door, which renders no realm surfaces at all and cannot be given one. ⚠️ manifest.js and oneway.js do NOT join, even though the mockup declares both in its own shell: Home and Door render neither, so counting them as shared would inflate exactly the two realms this correction exists to stop mis-measuring. ⚠️ A TRAILING-HYPHEN FRAGMENT IS A PREFIX, NOT A CLASS. `class="lvlb lv-${level}"` scans as the literal `lv-`, and the same goes for `t-${rank}` and `s-${kind}` — three phantoms that can never be emitted by anybody and therefore capped this instrument's own ceiling below 100% for no reason. Dropped on BOTH sides, so the mockup and the portal are measured by the same rule.
 const isFragment = (c) => c.endsWith('-');
+
+// 🔴 IT ROUNDED A REGRESSION AWAY. `Math.round` printed 100% for 1488/1495 — so deleting two live emitters from the Manifest, which is a real five-slot loss, left the headline reading exactly what a perfect score reads. Found by falsifying this instrument against itself rather than by trusting it. Floor, plus an exact "100%" reserved for have === want, so the top of the scale cannot lie.
+const pct = (have, want) => (have === want ? '100%' : `${Math.min(99, Math.floor((100 * have) / want))}%`);
 
 const SHARED_UI = ['shell.js', 'palette.js', 'overlay.js', 'icons.js', 'tray.js', 'composer.js', 'v2Render.js', 'async.js', 'exportPanel.js'];
 
@@ -167,7 +201,11 @@ function shellVocabularyFor(pageSrc) {
     return out;
 }
 
-const sharedPortal = emitted(SHARED_UI.map((f) => join(UI, f)));
+// ⚠️ CLOSED UNDER IMPORTS, exactly like the realm side. `SHARED_UI` names ENTRY points, and the realm half has always followed `importsOf` transitively — so a module every page reaches through `shell.js` (the tooltip runtime is the live case) counted for the six realms whose own graph walks into it and for neither Home nor the Door. The Door has no entry module at all, so it was measured against a shared set that stopped one hop short of the component that renders it.
+const sharedPortal = emitted([...SHARED_UI.reduce((acc, f) => {
+    for (const n of importsOf(f)) acc.add(n);
+    return acc;
+}, new Set())].map((f) => join(UI, f)));
 
 // 🔴 A CLASS THE ADOPTED SHEET DOES NOT STYLE CANNOT BE WANTED, and the two gates now hold each other rather than pulling apart. Reading the mockup's imperative class toggles pulled in its animation runtime — `rolling` and `fdelta` from `setFigure`, `rb` from the export-again demo hook — and measured, **app.css has no rule for `rolling` or `fdelta` at all**. The mockup does not style them either; they are hooks its own demo runtime toggles. Emitting one here would fail `portal:orphans`, which refuses a class with no rule — so the instrument was asking for markup the other gate forbids, which is not a gap, it is two checks disagreeing.
 //
@@ -189,13 +227,16 @@ for (const [name, mockPages, uiFiles] of PAIRS) {
     const have = new Set([...emitted(uiFiles.map((f) => join(UI, f))), ...sharedPortal]);
     const hit = [...want].filter((c) => have.has(c));
     totalWant += want.size; totalHave += hit.length;
-    console.log(`${name.padEnd(10)} ${String(Math.round((100 * hit.length) / want.size) + '%').padStart(6)}  ${String(hit.length).padStart(5)}/${want.size}`);
+    console.log(`${name.padEnd(10)} ${pct(hit.length, want.size).padStart(6)}  ${String(hit.length).padStart(5)}/${want.size}`);
     if (showMissing) {
         const missing = [...want].filter((c) => !have.has(c)).sort();
         console.log(`           from: ${uiFiles.join(' ')}`);
         console.log(`           missing: ${missing.join(' ')}\n`);
     }
 }
-console.log(`\n${'OVERALL'.padEnd(10)} ${String(Math.round((100 * totalHave) / totalWant) + '%').padStart(6)}  ${totalHave}/${totalWant}`);
-console.log('\nDone is when the remaining delta is mockup-only scaffolding — never when this reads 100%.');
+console.log(`\n${'OVERALL'.padEnd(10)} ${pct(totalHave, totalWant).padStart(6)}  ${totalHave}/${totalWant}`);
+console.log(`\n${totalWant - totalHave} of ${totalWant} class-slots outstanding.`);
+console.log('Two are deliberate and are NOT work: `addrow` (Season replaced the mockup\'s inline add row with the');
+console.log('inline composer above the Track — a second way to add the same things) and `fxc` (a per-row opt-out');
+console.log('would have to map a rendered row back to a block of raw text, and that parser is the bot\'s).');
 console.log('Run with --missing to see the class names behind each number.');

@@ -75,7 +75,7 @@ const SEASON_COLUMNS = [
 
 // 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value.
 const SEASON_FILTERS = [
-    { key: 'lane', label: 'Type', options: [
+    { key: 'lane', label: 'Type', topic: true, options: [
         { value: 'newDraws', label: 'New draw' }, { value: 'returningDraws', label: 'Returning draw' }, { value: 'calendar', label: 'Event' },
     ] },
     { key: 'state', label: 'State', options: [
@@ -123,7 +123,8 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose }) {
                     <ul class="daylist">
                         ${all.map((i, n) => html`
                             <li key=${n}>
-                                <b>${i.title}${i.isDraft ? html`${' '}<span class="nextmark">NEXT SEASON</span>` : null}</b>
+                                <!-- The item's own name in the data face, so a list of six reads as a column of names rather than as six sentences. -->
+                                <span class="dn">${i.title}${i.isDraft ? html`${' '}<span class="nextmark">NEXT SEASON</span>` : null}</span>
                                 <span class="dd">${DAY_LANE_LABEL[i.lane] || i.lane}</span>
                                 <span class="dd">${i.b && i.b !== i.a ? `${fmtDay(i.a)} → ${fmtDay(i.b)}` : fmtDay(i.a)}</span>
                             </li>`)}
@@ -170,7 +171,7 @@ function StagedPanel({ changesets, onDiscard, onReview, stagedOnly, onStagedOnly
             </div>
             <div class="rvfoot">
                 <span class="sp"></span>
-                <button class="accent-fill" onClick=${onReview}>Review & commit</button>
+                <button class="commit" onClick=${onReview}>Review & commit</button>
             </div>
         </div>
     `;
@@ -601,6 +602,7 @@ export function SeasonRealm({ session }) {
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
     const [stagedOnly, setStagedOnly] = useState(false);
+    const [pageError, setPageError] = useState('');
     // 🔴 THE TRACK ANSWERED "WHAT IS IN THIS SEASON" AND NEVER "WHAT IS ON THIS DAY". Reading a single date off it meant sighting down a vertical from the ruler across five lanes and hoping nothing was clipped — the one question a calendar is for. The crosshair already knows the date under the pointer; this is what clicking it is worth.
     const [dayOpen, setDayOpen] = useState(null);
     const [dayWithDraft, setDayWithDraft] = useState(false);
@@ -894,7 +896,7 @@ export function SeasonRealm({ session }) {
                                             emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
-                                            onEditError=${(msg) => setNotices([...notices, { changeId: `edit-${Date.now()}`, summary: msg }])}
+                                            onEditError=${(msg) => setPageError(msg)}
                                             bulkActions=${[
                                                 { label: 'Export selection', onClick: handleExportSelection },
                                                 { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
@@ -910,7 +912,15 @@ export function SeasonRealm({ session }) {
                                                actions=${html`
                                                    <${SeasonClock} season=${state.live} today=${todayIso()} />
                                                    <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
-                  viewSlot=${html`${identitySlot}
+                  viewSlot=${html`
+                      <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
+                           into the tray — the panel headed "Saved" — where it rendered in the same voice as a
+                           successful change and scrolled away with them. role=alert because it appears without
+                           the reader doing anything, and it stays until dismissed rather than timing out. -->
+                      ${pageError ? html`
+                          <p class="errmsg" role="alert">${pageError}
+                              <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
+                      ${identitySlot}
                                   <${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
                                   ${viewSlot}
                                   <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}

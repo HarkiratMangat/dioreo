@@ -56,7 +56,7 @@ const ARMORY_COLUMNS = [
 ];
 
 const ARMORY_FILTERS = [
-    { key: 'mode', label: 'Mode', options: [{ value: 'MP', label: 'MP' }, { value: 'DMZ', label: 'DMZ' }] },
+    { key: 'mode', label: 'Mode', topic: true, options: [{ value: 'MP', label: 'MP' }, { value: 'DMZ', label: 'DMZ' }] },
 ];
 
 const COVERAGE_LABEL = {
@@ -221,6 +221,13 @@ function Coverage({ builds, active, onFilter }) {
                             ${faulted === 1 ? 'it' : 'them'}${stale ? html`, and ${stale} more ${stale === 1 ? 'is' : 'are'} merely old` : ''}.</span>
                     </div>`;
             })()}
+            <!-- ⚠️ THE COUNTS ARE PER BUILD AND THE FIX IS PER WEAPON, which is the single most confusing
+                 thing about this panel: clearing "No badges" on one build clears it on every build of that
+                 weapon, so a count of 57 can drop by nine from one edit. -->
+            <div class="callout">
+                <b>Badges are per weapon, not per build.</b> A weapon with five builds contributes five rows to
+                these counts, and fixing one fixes all five — so a number here can fall by more than one.
+            </div>
             <div class="cov"><div class="cols">
                 ${flags.map((f) => {
                     const hits = hitsFor(f);
@@ -691,16 +698,30 @@ function Compare({ builds, picked, onPick }) {
                     <div class="cmpcards">
                         ${chosen.map((b) => html`<${LoadoutCard} key=${String(b._id)} build=${b} siblings=${siblingsOf(b)} />`)}
                     </div>
+                    <!-- ⚠️ THE TABLE ANSWERS "WHAT IS DIFFERENT" ONE FIELD AT A TIME AND NEVER TOTALS IT. Two builds that differ in one field and two that differ in nine look identical until you have read every row. -->
+                    ${(() => {
+                        const differing = COMPARE_FIELDS.filter(([, read]) => {
+                            const vs = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
+                            return !vs.every((v) => v === vs[0]);
+                        }).length;
+                        return html`
+                            <div class="diff">
+                                <div class="diff-r"><span class="dk">Fields compared</span><span>${COMPARE_FIELDS.length}</span></div>
+                                <div class="diff-r"><span class="dk">Differ</span><span>${differing || 'none — these are the same build twice'}</span></div>
+                            </div>`;
+                    })()}
                     <table class="cmptab">
                         <thead><tr><th>Field</th>${chosen.map((b) => html`<th key=${String(b._id)}>${b.weaponName}</th>`)}</tr></thead>
                         <tbody>
                             ${COMPARE_FIELDS.map(([label, read]) => {
                                 const values = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
                                 const same = values.every((v) => v === values[0]);
+                                // ⚠️ A DIFFERING CELL IS MARKED, AN AGREEING ONE IS NOT. The row already carries `diff`, which colours the whole line — but with three builds picked, two can agree and one differ, and a row-level mark cannot say which. `.dnow` is the cell-level version of the same signal.
                                 return html`
                                     <tr class=${same ? 'same' : 'diff'} key=${label}>
                                         <td class="cmpf">${label}</td>
-                                        ${values.map((v, i) => html`<td key=${i}>${v}</td>`)}
+                                        ${values.map((v, i) => html`
+                                            <td key=${i} class=${!same && v !== values[0] ? 'dnow' : ''}>${v}</td>`)}
                                     </tr>`;
                             })}
                         </tbody>
@@ -904,7 +925,11 @@ export function ArmoryRealm({ session }) {
     const overlay = useOverlay();
 
     // ⚠️ `builds` DEFAULTED TO [] AND THE PAGE RENDERED IMMEDIATELY, so the first frame of every visit was a complete, confident, empty Armory — "0 builds · 0 weapons · 0 flagged" over an empty rack, which is a statement about the data rather than about the request. An empty state and an unanswered request must never look the same.
-    const load = useAsync(() => fetchJson('/api/armory'), []);
+// 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
+//
+// ⚠️ ONE REQUEST, IN THE SAME useAsync, so the realm still has ONE loading phase. A second hook would give the page two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
+    const load = useAsync(() => Promise.all([fetchJson('/api/armory'), fetchJson('/api/review')])
+        .then(([armory, review]) => ({ ...armory, stagedOps: (review && review.ops) || [] })), []);
     const refresh = load.reload;
 
     if (!load.data) return html`<${RealmShell} realm="armory" session=${session} error=${load.error} slow=${load.slow}
@@ -916,11 +941,14 @@ export function ArmoryRealm({ session }) {
     const flagged = builds.filter((b) => (b.coverage || []).length).length;
     const modes = [...new Set(builds.map((b) => b.mode))].sort();
     const modeLine = modes.length ? modes.join(' · ') : '';
+    const stagedHere = (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     const armoryStats = [
         { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
         { value: builds.length, label: 'builds' },
         { value: flagged, label: 'flagged', tone: flagged ? 'bad' : undefined },
+        // The realm's own staged count, in the staged voice — every other realm's masthead says how much of what you are looking at is not live yet, and the Armory's did not.
+        { value: stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
     ];
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
@@ -1006,9 +1034,20 @@ export function ArmoryRealm({ session }) {
                   masthead=${html`<${Masthead} title="Armory"
                                                sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
                                                stats=${armoryStats}
-                                               actions=${html`<${MastheadNew} label="New build" hint="b"
-                                                                              tip="Open the build form"
-                                                                              onClick=${() => setShowAdd(true)} />`} />`}
+                                               actions=${html`
+                                                   <!-- ⚠️ TWO CHIPS, NOT ONE BUTTON, BECAUSE THE ARMORY HAS TWO ARMORIES.
+                                                        MP and DMZ are different records with different rules — DMZ has no share
+                                                        code and ranks by combat range — and a single "New build" made the mode a
+                                                        thing you discovered inside the form. Season's masthead already works this
+                                                        way for its five item types; this is the same control. -->
+                                                   <div class="mh-add" role="group" aria-label="Add a build">
+                                                       <span class="mh-add-k">Add</span>
+                                                       ${MODES.map((m) => html`
+                                                           <button type="button" key=${m} class="pill mh-t"
+                                                                   style=${`--c:var(--${m === 'DMZ' ? 'ret' : 'draw'})`}
+                                                                   onClick=${() => { setBulkMode(m); setShowAdd(true); }}>
+                                                               <span class="dot"></span>New ${m} build</button>`)}
+                                                   </div>`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is

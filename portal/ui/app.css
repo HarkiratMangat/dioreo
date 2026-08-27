@@ -4783,3 +4783,12 @@ button .ic,a .ic{pointer-events:none}
  * borrowed onto the drawn box, because a hidden input's own outline is hidden with it. */
 .cbl{display:inline-flex;align-items:center;cursor:pointer}
 .cbl input:focus-visible + .cb{outline:2px solid var(--patch);outline-offset:2px}
+/* The door's one line of state, above the heading. It is deliberately quiet — a stranger is being
+ * told a fact about the session, not warned about anything. */
+.doorstate{margin:0 0 4px;font:500 11px/1 var(--data);letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}
+/* The card's own chips and code block. The mockup wrote both as inline `style=` attributes because it
+ * was a sketch; they are the Discord surface's colours, not the portal's, which is why they are
+ * literals here rather than tokens — this block is a picture OF another product. */
+.dcard .badges span{background:#1E1F22;border-radius:var(--rad-1);padding:2px 7px;font-size:10px;color:#B5BAC1}
+.dcode{margin-top:9px;background:#1E1F22;border-radius:var(--rad-1);padding:6px 8px;
+  font-family:var(--data);font-size:10.5px;color:#A8B0B8;letter-spacing:.04em}

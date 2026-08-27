@@ -28,7 +28,7 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
                     aria-pressed=${selected} onClick=${() => onSelect(op.id)}>
                 <span class="rvt">T${op.tier}</span>
                 <span class="rvn">
-                    <b>${op.name}</b>
+                    <b>${op.name || html`<span class="none">unnamed record</span>`}</b>
                     <span>${op.op} · ${op.realm}</span>
                     ${warn ? html`<span class=${'rvw' + (warn === 'export saved' ? ' done' : '')}>${warn}</span>` : null}
                 </span>
@@ -143,7 +143,7 @@ export function ReviewRealm({ session }) {
     const selected = ops.find((o) => o.id === sel) || ops[0] || null;
 
     const stats = [
-        { value: ops.length, label: ops.length === 1 ? 'change' : 'changes', lead: true, accent: 'var(--r-review)' },
+        { value: ops.length, label: ops.length === 1 ? 'change' : 'changes', lead: true, tone: ops.length ? 'stg' : undefined, accent: 'var(--r-review)' },
         { value: new Set(ops.map((o) => o.realm)).size, label: 'realms' },
         { value: blockers.length, label: blockers.length === 1 ? 'blocker' : 'blockers', tone: blockers.length ? 'bad' : undefined },
     ];
