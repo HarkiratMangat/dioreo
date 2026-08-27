@@ -140,6 +140,42 @@ function assignRows(items) {
     return items.map((item) => ({ ...item, row: rows.get(item) || 0 }));
 }
 
+// 🔴 TWO RELEASES ON ONE DAY DREW TWO DIAMONDS AT ONE COORDINATE, and the second was invisible. Measured live on the fixture season: "Void Implosion Draw" and "Wisterian Visage Draw" are both dated Aug 22 and rendered at exactly the same x, so one draw was unreachable by mouse, by keyboard and by tooltip — a record on the page that the page could not show you. A cluster REPLACES its members; it never sits on them. ⚠️ AND THE SENTENCE BRANCHES ON THE FACT, NOT ON THE PIXEL CONDITION THAT TRIGGERED IT. "zoom in to separate them" is an instruction that cannot succeed for two points at one coordinate, and it leaks a pixel constant into a sentence a person reads. `sameDay` says so instead, and offers the action that actually exists.
+const CLUSTER_PX = 17;
+function clusterPoints(points, plotW, gapPx = CLUSTER_PX) {
+    if (!plotW || !points || points.length < 2) return [];
+    const xs = points.map((p) => ({ ...p, x: (p.pct / 100) * plotW })).sort((a, b) => a.x - b.x);
+    const groups = []; let g = [xs[0]];
+    for (let i = 1; i < xs.length; i++) {
+        if (xs[i].x - g[g.length - 1].x < gapPx) g.push(xs[i]);
+        else { groups.push(g); g = [xs[i]]; }
+    }
+    groups.push(g);
+    return groups.filter((grp) => grp.length > 1).map((grp) => {
+        const a = grp[0], z = grp[grp.length - 1];
+        return {
+            members: grp, ids: grp.map((p) => p.id),
+            sameDay: grp.every((p) => p.date === a.date),
+            gapDays: Math.round(Math.abs(new Date(z.date) - new Date(a.date)) / 86400000),
+            midPct: (((a.x + z.x) / 2) / plotW) * 100,
+        };
+    });
+}
+
+// The rail is a fixed 52px box holding TOP-anchored flags and a BOTTOM-anchored pin, so the moment the flags needed a second row the pin was inside them — which is what was measured. The height is derived from the rows actually used, and the same number gives `--xtop` its first writer: the token has been read by `.xhair::before` and `.xd` since the port and set by nothing, so the crosshair has always used its hard-coded 60px fallback. ⚠️ THE SPAN IS THE ONE IN-FLOW CHILD OF THE RAIL — `.dspan{position:relative}` overrides the `position:absolute` it shares with `.dflag`, so it cannot be placed by the flags' `top` ladder and takes a margin instead. It is also taller than a flag row (32px against 21px), which is why it gets its own constant rather than reusing one.
+const RAIL_ROW_H = 21, RAIL_PAD = 4, RAIL_PIN_H = 20, RAIL_SPAN_H = 34, RAIL_MIN = 52, RULER_H = 44;
+function railBox(rail, hasSpan) {
+    const flags = (rail && rail.flags) || [], pins = (rail && rail.pins) || [];
+    const levels = flags.reduce((m, f) => Math.max(m, f.level || 0), 0);
+    // The DEEPEST side, not the total: a pin on the left and one on the right occupy the same row.
+    const deepest = pins.reduce((m, p) => Math.max(m, (p.level || 0) + 1), 0);
+    // 🔴 A FLIPPED CHIP EXTENDS LEFT ALONG THE VERY BAR IT LABELS. Merging Battle Pass and Ranked made the chip 205px, wide enough to run off the right edge, so it flips — and the time-remaining span ENDS at that same deadline, so the flipped chip landed on its last 200px. Rows below the flags, not on them: the two describe one date and the picture should show one above the other, not one through the other.
+    const spanTop = hasSpan ? RAIL_ROW_H * (levels + 1) : 0;
+    const height = Math.max(RAIL_MIN, RAIL_PAD + RAIL_ROW_H * (levels + 1)
+        + (hasSpan ? RAIL_SPAN_H : 0) + RAIL_PIN_H * deepest);
+    return { height, xtop: height + RULER_H, spanTop };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor };
+    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor, clusterPoints, railBox, CLUSTER_PX };
 }

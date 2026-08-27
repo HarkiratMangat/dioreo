@@ -32,7 +32,7 @@ check('an item ending after the season end is a conflict, computed not flagged b
     assert.strictEqual(tierOf({ endDate: '2026-09-01' }, { bpEnd: '2026-09-04' }), 'ok');
 });
 
-const { dateFromOffset, editOpFor } = require('../portal/ui/track.logic');
+const { dateFromOffset, editOpFor, clusterPoints, railBox } = require('../portal/ui/track.logic');
 
 check('dateFromOffset is the inverse of barGeometry’s left/width math, snapped to a day', () => {
     const window = { start: '2026-08-01', end: '2026-08-08' }; // exactly 7 days wide
@@ -406,23 +406,28 @@ const SEASON = {
     dmzTitle: 'DMZ Season 1', dmzEnd: '2026-11-11T00:00:00.000Z',
 };
 
-check('two deadlines on the same day take different rows', () => {
+// 🔴 THIS USED TO ASSERT THE OPPOSITE — that two deadlines on one date take DIFFERENT ROWS — and it passed for as long as the defect existed. Two labels for one moment is a modelling error, and a test that pins the model in place is the reason a defect survives a green suite. One date is one chip carrying both names, with a key dot each.
+check('two deadlines on the same day are ONE chip, not two', () => {
     const { flags } = deadlineRail(SEASON, '2026-08-06', '2026-09-19');
-    assert.strictEqual(flags.length, 2);
-    assert.strictEqual(flags[0].pct, flags[1].pct, 'the same day is the same position — that is the whole reason they must stack');
-    assert.notStrictEqual(flags[0].level, flags[1].level, 'two chips at one x on one row is one chip hiding another');
+    assert.strictEqual(flags.length, 1, 'Battle Pass and Ranked both end Sep 10 — that is one moment');
+    assert.strictEqual(flags[0].members.length, 2);
+    assert.strictEqual(flags[0].key, 'bp+rank');
+    assert.strictEqual(flags[0].label, 'battle pass + ranked');
+    assert.strictEqual(flags[0].level, 0, 'one chip per date means no second row to fall to');
 });
 
-check('THE STACKING CAN FAIL: same-day flags sharing a row would hide one another', () => {
-    assert.throws(() => {
-        const flags = [{ pct: 79.5, level: 0 }, { pct: 79.5, level: 0 }];
-        assert.notStrictEqual(flags[0].level, flags[1].level, 'two chips at one x on one row');
-    }, /one x on one row/);
+// The falsifier the merge needs: grouping must still SEPARATE dates that differ, or "one chip" is being achieved by collapsing everything rather than by modelling the date.
+check('THE MERGE CAN FAIL: deadlines on different days stay separate chips', () => {
+    const apart = { ...SEASON, rankEnd: '2026-09-14T00:00:00.000Z' };
+    const { flags } = deadlineRail(apart, '2026-08-06', '2026-09-19');
+    assert.strictEqual(flags.length, 2);
+    assert.deepStrictEqual(flags.map((f) => f.key), ['bp', 'rank']);
+    assert.notStrictEqual(flags[0].pct, flags[1].pct);
 });
 
 check('a deadline beyond the window is pinned to the edge it is beyond, with the distance', () => {
     const { flags, pins } = deadlineRail(SEASON, '2026-08-06', '2026-09-19');
-    assert.deepStrictEqual(flags.map((f) => f.key), ['bp', 'rank']);
+    assert.deepStrictEqual(flags.map((f) => f.key), ['bp+rank']);
     assert.strictEqual(pins.length, 1);
     assert.strictEqual(pins[0].key, 'dmz');
     assert.strictEqual(pins[0].side, 'r');
@@ -431,8 +436,59 @@ check('a deadline beyond the window is pinned to the edge it is beyond, with the
 
 check('a deadline before the window pins to the LEFT edge', () => {
     const { pins } = deadlineRail(SEASON, '2026-09-20', '2026-10-20');
-    assert.deepStrictEqual(pins.map((p) => p.side).sort(), ['l', 'l', 'r']);
-    assert.strictEqual(pins.find((p) => p.key === 'bp').away, 10);
+    // Same date, same pin — the merge applies on the way out of the window as much as inside it.
+    assert.deepStrictEqual(pins.map((p) => p.side).sort(), ['l', 'r']);
+    assert.strictEqual(pins.find((p) => p.key === 'bp+rank').away, 10);
+});
+
+// 🔴 A PIN IS BOTTOM-ANCHORED AND A FLAG IS TOP-ANCHORED, so nothing about a shared "level" keeps them apart — only the rail's height does, and it was a constant 52px. Measured on the page, the pinned DMZ chip painted through the Ranked flag.
+check('pins stack among themselves, per side, and never take a flag row', () => {
+    const { pins } = deadlineRail(SEASON, '2026-09-20', '2026-10-20');
+    assert.deepStrictEqual(pins.map((p) => [p.side, p.level]).sort(), [['l', 0], ['r', 0]]);
+});
+
+check('the rail reserves height for the rows it actually has', () => {
+    const one = railBox({ flags: [{ level: 0 }], pins: [] }, false);
+    const withPin = railBox({ flags: [{ level: 0 }], pins: [{ level: 0, side: 'r' }] }, false);
+    const withSpan = railBox({ flags: [{ level: 0 }], pins: [{ level: 0, side: 'r' }] }, true);
+    const twoRows = railBox({ flags: [{ level: 0 }, { level: 1 }], pins: [{ level: 0, side: 'r' }] }, true);
+    assert.strictEqual(one.height, 52, 'the floor is the height the stylesheet already assumed');
+    assert.ok(withSpan.height > withPin.height, 'a span occupies a row of its own below the flags');
+    assert.ok(twoRows.height > withSpan.height, 'a second flag row pushes everything below it down');
+    assert.strictEqual(withSpan.spanTop, 21, 'the span clears exactly the flag rows above it');
+    assert.strictEqual(twoRows.spanTop, 42);
+});
+
+// 🔴 TWO DRAWS DATED Aug 22 RENDERED AT ONE COORDINATE and the second was unreachable — no hover, no focus, no tooltip. Measured on the fixture season before this existed.
+check('points at one coordinate become one cluster that says so', () => {
+    const pts = [
+        { id: 'a', title: 'Void Implosion Draw', date: '2026-08-22', pct: 50 },
+        { id: 'b', title: 'Wisterian Visage Draw', date: '2026-08-22', pct: 50 },
+        { id: 'c', title: 'Far Away Draw', date: '2026-09-10', pct: 90 },
+    ];
+    const [c] = clusterPoints(pts, 1000);
+    assert.strictEqual(clusterPoints(pts, 1000).length, 1, 'only the pair collides; the third is 400px away');
+    assert.deepStrictEqual(c.ids, ['a', 'b']);
+    assert.strictEqual(c.sameDay, true, 'no zoom separates two points on one date — the sentence must not offer one');
+    assert.strictEqual(c.midPct, 50);
+});
+
+check('THE CLUSTER CAN FAIL: points far enough apart are left alone', () => {
+    const pts = [{ id: 'a', date: '2026-08-01', pct: 10 }, { id: 'b', date: '2026-08-20', pct: 60 }];
+    assert.deepStrictEqual(clusterPoints(pts, 1000), [], 'a threshold that groups these is not a threshold');
+});
+
+check('a cluster of NEARBY dates offers the zoom that a same-day cluster cannot', () => {
+    const pts = [{ id: 'a', date: '2026-08-20', pct: 50 }, { id: 'b', date: '2026-08-22', pct: 51 }];
+    const [c] = clusterPoints(pts, 1000);
+    assert.strictEqual(c.sameDay, false);
+    assert.strictEqual(c.gapDays, 2);
+});
+
+// Before the first layout there is no width to cluster by, and inventing one would group points that are nowhere near each other on the screen that is about to exist.
+check('clustering is skipped entirely until the plot has been measured', () => {
+    const pts = [{ id: 'a', date: '2026-08-22', pct: 50 }, { id: 'b', date: '2026-08-22', pct: 50 }];
+    assert.deepStrictEqual(clusterPoints(pts, 0), []);
 });
 
 // ⚠️ TBD IS NOT A DATE, and drawing it at a position would put a deadline on the axis that the season has not set. It is stated in the identity panel, where "TBD" is a value the reader can act on.

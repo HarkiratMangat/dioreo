@@ -381,6 +381,7 @@ function draftDiff(live, draft, fmt) {
 const RAIL_LABEL = { bp: 'battle pass', rank: 'ranked', dmz: 'DMZ' };
 const RAIL_GAP = 0.14;      // of the visible span — two flags nearer than this share a column
 const RAIL_LEVELS = 3;      // the stylesheet defines lvl1 and lvl2 on top of the base row
+// ⚠️ A PIN DOES NOT SHARE THE FLAGS' LADDER, and trying to make it was a wrong turn worth recording: a flag is TOP-anchored and a pin is BOTTOM-anchored, so a "level" moves them toward each other. Giving the pin a flag level lifted it INTO the flag row it was meant to clear — measured, worse than the collision it was fixing. Pins stack among themselves, upward from the floor; the flags' rows are reserved by the rail's own height instead.
 
 function deadlineRail(season, from, to) {
     const dayOf = (v) => (v ? String(v).slice(0, 10) : null);
@@ -391,13 +392,23 @@ function deadlineRail(season, from, to) {
         .filter((d) => d.date && !d.tbd)
         .sort((a, b) => (a.date < b.date ? -1 : 1));
 
+    // 🔴 TWO DEADLINES ON ONE DATE ARE ONE MOMENT, NOT TWO CHIPS. Battle Pass and Ranked both end Sep 10, and drawing a chip each put two boxes over one line with two stems to the same x — then a `.dnotch` underneath asserted, a THIRD time, that the date was shared. Two labels for one moment is a modelling error, and the season clock in the masthead had already modelled it correctly ("UNTIL SEP 10 · BATTLE PASS · RANKED"), so one page disagreed with itself one screen apart. Grouping by date BEFORE the rows are packed also fixes the alignment by construction: one date, one chip, one stem, and a `.dfk` key dot per deadline in the group.
+    const byDate = new Map();
+    for (const d of all) {
+        if (!byDate.has(d.date)) byDate.set(d.date, []);
+        byDate.get(d.date).push(d);
+    }
+    const merge = (members) => ({ ...members[0], members,
+        key: members.map((m) => m.key).join('+'),
+        label: members.map((m) => m.label).join(' + ') });
+
     const flags = []; const pins = [];
     const lastAt = new Array(RAIL_LEVELS).fill(-Infinity);
-    for (const d of all) {
-        const at = (new Date(d.date + 'T00:00:00Z') - new Date(from + 'T00:00:00Z')) / 86400000;
+    for (const [date, members] of byDate) {
+        const at = (new Date(date + 'T00:00:00Z') - new Date(from + 'T00:00:00Z')) / 86400000;
         if (at < 0 || at > span) {
             const side = at < 0 ? 'l' : 'r';
-            pins.push({ ...d, side, away: Math.round(side === 'l' ? -at : at - span) });
+            pins.push({ ...merge(members), side, away: Math.round(side === 'l' ? -at : at - span) });
             continue;
         }
         const frac = at / span;
@@ -405,8 +416,11 @@ function deadlineRail(season, from, to) {
         let level = lastAt.findIndex((prev) => frac - prev > RAIL_GAP);
         if (level === -1) level = RAIL_LEVELS - 1;
         lastAt[level] = frac;
-        flags.push({ ...d, level, pct: frac * 100 });
+        flags.push({ ...merge(members), level, pct: frac * 100 });
     }
+    // 🔴 A PIN TOOK NO ROW ON THE RAIL AT ALL and welded to the edge on top of whatever sat there — measured live, "DMZ NOV 11 · 53d beyond this view" overlapping the Ranked flag. Two pins on one edge would have done the same to each other. They stack by ARRIVAL ORDER on their own side, and the rail reserves the height (see railBox in track.logic.js), which is what actually keeps them clear of the flags.
+    const perSide = { l: 0, r: 0 };
+    for (const p of pins) p.level = perSide[p.side]++;
     // ⚠️ ONLY THE ONES THAT FALL INSIDE THE VIEW. A patch note outside the window has no x on this axis, and pinning it to an edge — which the DEADLINES do — would be wrong here: a deadline beyond the edge is a fact about the boundary, a patch note beyond it is simply not in this picture.
     const patches = (((season || {}).patchNotes) || [])
         .map((n) => ({ id: String(n._id), title: (n.titleOverride || n.title || 'Untitled').trim(), date: dayOf(n.releaseDate) }))

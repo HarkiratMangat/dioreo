@@ -1236,7 +1236,15 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* the span reads as a bracket over a range, not as a chip at a point */
 /* 2X CP is CP Emerald — the colour /draw prices already uses — because it IS a CP-pricing
    condition. It was grey, which reads as disabled. Solid border: it is live, not staged. */
-.dspan{--c:var(--ok);justify-content:center;cursor:grab;
+/* 🔴 IT WAS A 302px OUTLINED RECTANGLE WITH NOTHING IN IT. The label lived only in `aria-label`, so
+   the screen reader was told "Time remaining before battle pass + ranked" and everyone looking at
+   the page got an unexplained box on the rail — the accessibility layer carrying what the visual
+   layer omitted, which is the inversion of how that pair is supposed to work. It says "time left"
+   rather than "14 days left" on purpose: the masthead clock states that figure two blocks above,
+   and what this box adds is WHERE that time sits on the axis, not the number again.
+   `overflow:hidden` because the span shrinks to 3% of the plot when the next deadline is close,
+   and a nowrap label in a 28px box escapes it. */
+.dspan{--c:var(--ok);justify-content:center;cursor:grab;overflow:hidden;
   background:rgba(61,220,151,.09);border-style:solid;position:relative;color:var(--ok)}
 .dspan::before,.dspan::after{content:"";position:absolute;top:3px;bottom:3px;width:1.5px;background:var(--ok)}
 .dspan::before{left:3px} .dspan::after{right:3px}
@@ -2928,8 +2936,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .lane:not([data-rows="1"]) .tk .bar{border-radius:var(--rad-1)}
 .lane:not([data-rows="1"]) .tk .bar .bl{font-size:10.5px}
 
-/* The point cluster. Reads as a count, not as a marker — a diamond would claim to be one item. */
-.pt.hid{display:none}
+/* The point cluster. Reads as a count, not as a marker — a diamond would claim to be one item.
+   ⚠️ `.pt.hid` is NOT redeclared here — it is defined once, in the `.mark` vocabulary block below,
+   beside every other rule that governs these glyphs. A second identical copy 190 lines up is the
+   duplicate-selector pattern that restyled the daily bars on 2026-08-27; two copies agree until
+   one of them is edited. */
 /* ⚠️ THE OLD PILL-SHAPED CLUSTER BADGE IS RETIRED — `.mark.stack` replaced it. `min-width:19px`
    survived long enough to fight the new rule's `width:15px` and render a 19×15 lozenge where a
    square diamond belonged: higher-specificity rules only win the properties they SET. Deleted
@@ -2937,9 +2948,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .ptc{cursor:zoom-in;z-index:4}
 .ptc:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 
-/* Deadline flags: same-date flags stack, and a flag near an edge flips rather than clipping. */
-.dend .dflag.flip{transform:translateX(-100%)}
-.dflag.flip::after{left:auto;right:0}
+/* Deadline flags: same-date flags MERGE, and a flag near an edge flips rather than clipping.
+   🔴 THIS SELECTOR WAS `.dend .dflag.flip` AND MATCHED NOTHING, EVER. The flags live in
+   `.deadrail`; `.dend` is the vertical LINE on the overlay, a different element — the same
+   defect the mockup records against its own fitFlags(), ported here along with the rule. It had
+   a second reason never to fire: no code added the class either. Both are fixed together,
+   because either one alone still leaves a chip running off the right edge. */
+.deadrail .dflag.flip,.deadrail .dspan.flip{transform:translateX(calc(-100% + 1px))}
+.deadrail .dflag.flip::after,.deadrail .dspan.flip::after{left:auto;right:0}
 /* Pinned markers for deadlines outside the window — the answer is the distance, not a missing label. */
 /* Pinned BELOW the flag row, never centred on it — the deadline flags for the same rail live at
  * its top, and a centred pin landed on top of BATTLE PASS/RANKED whenever both were near the
@@ -3146,6 +3162,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* ── deadlines: one chip per DATE, and out-of-view ones weld to the edge they are beyond ── */
 .dflag .dfk{width:6px;height:6px;border-radius:var(--rad-1);background:var(--c);flex:none;transform:rotate(45deg)}
 .dpin.edge{position:absolute}
+/* ⚠️ THE LEVEL CLASSES WERE SCOPED TO `.dflag,.dspan`, SO A PIN NEVER MATCHED THEM — and a pin's
+   level is not a flag's level anyway. A flag is top-anchored and a pin is bottom-anchored, so
+   `lvl1` on a pin lifts it toward the flags rather than away from them; the first version of this
+   rule used the flags' 21px step and put the pin straight through the flag row it was meant to
+   clear. A pin's level only ever separates it from ANOTHER PIN on the same edge. Clearing the
+   flags is the rail's job, and railBox() reserves the height for it. */
+.dpin.edge.lvl1{bottom:20px}
+.dpin.edge.lvl2{bottom:39px}
 .dpin.edge.r{right:0;left:auto}
 .dpin.edge.l{left:0;right:auto}
 
@@ -4416,16 +4440,11 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
  * renderOverlay for the three reasons; the shortest is that it drew the WRONG boundary — the
  * first deadline, while the page's own conflict rule uses the last.
  * ══════════════════════════════════════════════════════════════════════════════ */
-/* The notch marks the deadline's coordinate on the axis and stops. It reaches far enough into
- * the plot to be unmistakably ON it, and not so far that it reads as a claim about the lanes. */
-.dnotch{position:absolute;top:0;height:15px;width:0;z-index:4;pointer-events:none;
-  border-left:1.5px solid var(--c)}
-/* One stop per deadline sharing the date. Two deadlines on one day are ONE moment — the chip
- * has said so since §5.9c.6 and the line did not until now. */
-.dnotch i{position:absolute;left:-2.5px;width:5px;height:5px;border-radius:var(--rad-1);
-  background:var(--c);transform:rotate(45deg)}
-.dnotch i:nth-child(1){top:-3px}
-.dnotch i:nth-child(2){top:13px}
+/* 🔴 `.dnotch` IS GONE, and its removal is the point rather than a tidy-up. It existed to mark that
+ * two deadlines shared a date — a fact the merged chip's own `.dfk` key dots now carry. Drawing it
+ * as well meant the page asserted "Battle Pass and Ranked both end Sep 10" THREE times: two chips,
+ * two dots, and a notch. The fix was to model one date as one moment, after which the notch had
+ * nothing left to say. */
 /* OUT OF SEASON. Past the LAST deadline nothing is inside the season any more, and that is a
  * region rather than an edge. Hatched rather than flat-grey: a plain wash reads as "disabled",
  * and this area is not switched off — it is beyond the boundary. The edge keeps the deadline's
@@ -4826,7 +4845,9 @@ button .ic,a .ic{pointer-events:none}
 .mtable .det{min-width:0}
 .mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtable .det .dsub{display:block}
-.ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+/* ⚠️ `.ptc.same` used to be redeclared here, 1,700 lines from the rest of the `.ptc` family, with a
+   2px ring that painted on top of the `.ptc.mark.stack.same::after` ring already defined up there —
+   two rings on one mark, neither aware of the other. The surviving rule lives beside its family. */
 
 .rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:14px 16px 16px}
 .rec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}

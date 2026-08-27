@@ -942,6 +942,17 @@ export function SeasonRealm({ session }) {
                                               onStageMany=${handleStageMany}
                                               onLive=${setComposeGhost}
                                               onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
+               <!-- 🔴 THE TRACK WAS THE SIXTH BLOCK ON THE TRACK TAB. Measured at 1280: you clicked "Track"
+                    and the ruler began 863px below the tab, behind the identity strip, a 126px draft card
+                    and a 438px staged-changes callout. StagedPanel's own comment says the mockup keeps
+                    pending changes "right beside the Track" — the intent was adjacency and the execution
+                    was obstruction. Below it, they are still beside it, and the instrument is the first
+                    thing on the page that exists to show it. -->
+               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
+                          rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
+                          draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
+                          season=${state.live} onDragCommit=${handleDragCommit}
+                          onFillGap=${() => setShowAdd('event')} />
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
                <!-- The keyboard entrance to the day drawer. It opens on TODAY because that is the day
@@ -952,12 +963,7 @@ export function SeasonRealm({ session }) {
                    <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
                                  withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
                                  onDay=${setDayOpen}
-                                 onClose=${() => setDayOpen(null)} />` : null}
-               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
-                          rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
-                          draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
-                          season=${state.live} onDragCommit=${handleDragCommit}
-                          onFillGap=${() => setShowAdd('event')} />`
+                                 onClose=${() => setDayOpen(null)} />` : null}`
         : view === 'Repairs'
             ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
             : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;

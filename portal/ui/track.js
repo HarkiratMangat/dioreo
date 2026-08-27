@@ -170,18 +170,23 @@ function Bar({ it, lane, view, top, fit, onDragCommit }) {
         </div>`;
 }
 
-function Point({ it, lane, view }) {
+function Point({ it, lane, view, hid }) {
     return html`
-        <span class=${'pt ' + (it.state || 'live')} data-id=${it.id} tabindex="0" role="button"
+        <span class=${'pt ' + (it.state || 'live') + (hid ? ' hid' : '')} data-id=${it.id} tabindex="0" role="button"
               data-tier=${it.tier || ''} data-lanekind=${lane.key}
               style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%`}
               aria-label=${`${it.title}, releases ${TL.fmt(startOf(it))}`}
               data-tip=${`${it.title} · releases ${TL.fmt(startOf(it))}`}></span>`;
 }
 
-function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost }) {
+function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost, plotW }) {
     const spans = list.filter((i) => lane.kind !== 'point');
     const { row, rows } = assignRows(spans);
+    // Points at one coordinate are ONE mark that says "several", never two marks one of which cannot be seen. Needs the measured plot width because the threshold is a distance on screen — at some zoom every pair is far apart, which is the whole reason a cluster is temporary rather than a property of the data.
+    const clusters = lane.kind === 'point'
+        ? clusterPoints(list.map((it) => ({ id: it.id, title: it.title, date: startOf(it), pct: view.pct(startOf(it)) })), plotW)
+        : [];
+    const clustered = new Set(clusters.flatMap((c) => c.ids));
     const kit = LANE_KIT[lane.key] || { sum: 'runs', ask: 'what is scheduled' };
     const off = list.filter((it) => TL.days(endOf(it), view.from) > 0 || TL.days(view.to, startOf(it)) > 0).length;
 
@@ -208,12 +213,25 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
                 ${collapsed ? html`<${LaneSummary} lane=${lane} list=${list} kit=${kit} view=${view} />` : null}
                 ${off ? html`<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : null}
                 ${collapsed ? null : list.map((it) => {
-                    if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} />`;
+                    if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} hid=${clustered.has(it.id)} />`;
                     const r = row.has(it.id) ? row.get(it.id) : 0;
                     const top = rows === 1 ? null : `top:${ROW_PAD / 2 + r * ROW_H}px;transform:none;height:${ROW_H - 5}px`;
                     return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top}
                                         fit=${fits[it.id]} onDragCommit=${onDragCommit} />`;
                 })}
+                ${collapsed ? null : clusters.map((c) => html`
+                    <button type="button" key=${'ptc:' + c.ids.join(',')}
+                            class=${'ptc mark stack' + (c.sameDay ? ' same' : '')}
+                            style=${`--c:var(${lane.topic});left:${c.midPct}%`}
+                            data-tip=${(c.sameDay
+                                ? `${c.members.length} releases on ${TL.fmt(c.members[0].date)} — the same day, so zooming will not separate them:`
+                                : `${c.members.length} releases within ${c.gapDays} day${c.gapDays === 1 ? '' : 's'} of each other — zoom in to separate them:`)
+                                + '\n' + c.members.map((m) => m.title).join('\n')}
+                            aria-label=${c.sameDay
+                                ? `${c.members.length} releases, all on ${TL.fmt(c.members[0].date)}: ${c.members.map((m) => m.title).join(', ')}`
+                                : `${c.members.length} releases within ${c.gapDays} days: ${c.members.map((m) => m.title).join(', ')}`}>
+                        <span class="n">${c.members.length}</span>
+                    </button>`)}
             </div>
         </div>`;
 }
@@ -408,26 +426,21 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
 // ⚠️ THE CHIPS DO NOT DRAG. The adopted sheet gives them an `ew-resize` cursor because the page it was drawn for had no other way to move a deadline; this portal has the identity editor directly above, where the date is typed and read by the bot's own parser. A season deadline must land on an exact day, and a coarse gesture across a 44-day axis is the wrong instrument for that — so the cursor is overridden rather than left promising a gesture that is not there. 🔴 TWO DEADLINES ON ONE DAY READ AS TWO SEPARATE DATES. The rail stacks them so neither label is hidden, which solves the collision and hides the FACT — that Battle Pass and Ranked end together is a thing about the season, and the reader had to compare two date strings to notice it.
 //
 // ⚠️ AND THE RAIL SAID *WHEN* WITHOUT SAYING *HOW LONG*. The span runs from now to the next deadline only: drawing all three turns the rail into three overlapping bars saying the same thing at three lengths.
-function DeadRail({ rail, view, todayIso }) {
+function DeadRail({ rail, view, todayIso, flips = {} }) {
     if (!rail || (!rail.flags.length && !rail.pins.length)) return null;
-    const byDate = new Map();
-    for (const d of rail.flags) {
-        const day = String(d.date).slice(0, 10);
-        if (!byDate.has(day)) byDate.set(day, []);
-        byDate.get(day).push(d);
-    }
-    const notches = [...byDate.entries()].filter(([, list]) => list.length > 1);
     const ahead = rail.flags.filter((d) => String(d.date).slice(0, 10) >= todayIso)
         .sort((a, b) => (String(a.date) < String(b.date) ? -1 : 1));
     const next = ahead[0] || null;
     const nowP = view.pct(todayIso), nextP = next ? view.pct(next.date) : null;
     const spanOk = next && nowP >= 0 && nextP > nowP && nextP <= 100;
+    const box = railBox(rail, Boolean(spanOk));
     return html`
-        <div class="deadrail" aria-label="Season deadlines">
+        <div class="deadrail" aria-label="Season deadlines" style=${`min-height:${box.height}px`}>
             ${spanOk ? html`
-                <button type="button" class="dspan" style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%`}
+                <button type="button" class=${'dspan' + (flips.span ? ' flip' : '')} data-k="span"
+                        style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%;margin-top:${box.spanTop}px`}
                         data-tip=${`${next.title || next.label} is the next deadline.\nThis is the time left before it.`}
-                        onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}></button>` : null}
+                        onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}><span class="dfl">time left</span></button>` : null}
             <!-- 🔴 A PATCH NOTE IS A DATED SEASON EVENT AND THE TRACK DID NOT DRAW ONE. The record panel
                  below lists them newest-first, which answers "what shipped"; it cannot answer "what else was
                  happening that week", which is the only question this axis exists for. Stacked because two
@@ -437,22 +450,21 @@ function DeadRail({ rail, view, todayIso }) {
                         style=${`--c:var(--patch);left:${view.pct(p.date)}%`}
                         data-tip=${`${p.title}\nPublished ${TL.fmt(p.date)}`}
                         aria-label=${`Patch note: ${p.title}, ${TL.fmt(p.date)}`}></button>`)}
-            ${notches.map(([day, list]) => html`
-                <div class="dnotch" key=${day} style=${`left:${view.pct(day)}%`}
-                     data-tip=${`${list.length} deadlines land on ${TL.fmt(day)}: ${list.map((d) => d.label).join(', ')}`}>
-                    ${list.map((d) => html`<i key=${d.key} style=${`--c:${d.hex}`}></i>`)}
-                </div>`)}
+            <!-- 🔴 ONE CHIP PER DATE. Two deadlines landing on one day are one moment; a chip each drew
+                 two boxes over one line with two stems to the same x, and a notch beneath them said
+                 the same thing a third time. The key dots inside the chip ARE the notch. -->
             ${rail.flags.map((d) => html`
-                <span key=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '')}
+                <span key=${d.key} data-k=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '') + (flips[d.key] ? ' flip' : '')}
                       style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
-                      data-tip=${`${d.title || d.label} ends ${TL.fmt(d.date)}\nChange it in the panel above, where the date is typed and read by the same parser the bot uses.`}>
-                    <i class="dfk"></i><b class="dfl">${d.label}</b><span class="dfd">${TL.fmt(d.date)}</span>
+                      data-tip=${`${d.members.map((m) => m.title || m.label).join(' and ')} end${d.members.length > 1 ? '' : 's'} ${TL.fmt(d.date)}\nChange it in the panel above, where the date is typed and read by the same parser the bot uses.`}>
+                    ${d.members.map((m) => html`<i key=${m.key} class="dfk" style=${`--c:${m.hex}`}></i>`)}
+                    <b class="dfl">${d.label}</b><span class="dfd">${TL.fmt(d.date)}</span>
                 </span>`)}
             <!-- A deadline outside the window is WELDED TO THE EDGE it is beyond, not floated at a
                  position it does not have. "Beyond this view" is a statement about the boundary, so
                  it belongs on the boundary. -->
             ${rail.pins.map((d) => html`
-                <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}`} style=${`--c:${d.hex}`}
+                <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}` + (d.level ? ` lvl${d.level}` : '')} style=${`--c:${d.hex}`}
                       data-tip="Outside the current window.\nPress FIT, or drag the scrubber, to bring it back in.">
                     ${d.label} ${TL.fmt(d.date)} <em>${d.away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>
                 </span>`)}
@@ -525,6 +537,34 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
         (root) => root.querySelectorAll('.bar').forEach((b) => b.classList.remove('lbl-out', 'lbl-out-l', 'lbl-cut', 'nolabel')),
     );
 
+    // The lanes' plot width in pixels, and where the lanes actually begin. Clustering needs a DISTANCE ON SCREEN — 17px is the point at which two diamonds stop being two — and a percentage cannot say that. ⚠️ `--xtop` IS MEASURED RATHER THAN SUMMED. Adding up the scrub, the ruler and the rail would be a fourth copy of three measurements that already exist, and the first version of this did exactly that and landed the crosshair's date bubble 44px inside the rail — it had forgotten the overview strip. railBox()'s own xtop stays as the first-paint value, before there is anything to measure.
+    const plot = useMeasured(
+        `plot:${visible.start}|${visible.end}|${JSON.stringify(laneCol)}`,
+        rootRef,
+        (root) => {
+            const tk = root.querySelector('.tk'), inner = root.querySelector('.tk-inner'), lanes = root.querySelector('.lanes');
+            return {
+                w: tk ? tk.getBoundingClientRect().width : 0,
+                xtop: (inner && lanes) ? Math.round(lanes.getBoundingClientRect().top - inner.getBoundingClientRect().top) : 0,
+            };
+        },
+    );
+
+    // fitFlags. A chip whose box would pass the plot's right edge anchors its RIGHT side to the line instead — the flip cannot oscillate because `reset` strips it before every read, so each pass measures the same unflipped geometry the first one did.
+    const flips = useMeasured(
+        `flip:${visible.start}|${visible.end}`,
+        rootRef,
+        (root) => {
+            const box = root.querySelector('.tk-inner'); if (!box) return {};
+            const edge = box.getBoundingClientRect().right - 4; const out = {};
+            root.querySelectorAll('.deadrail .dflag,.deadrail .dspan').forEach((f) => {
+                if (f.dataset.k && f.getBoundingClientRect().right > edge) out[f.dataset.k] = true;
+            });
+            return out;
+        },
+        (root) => root.querySelectorAll('.deadrail .dflag,.deadrail .dspan').forEach((f) => f.classList.remove('flip')),
+    );
+
     const nowPct = view.pct(TL.toISO(Date.now()));
     const [hover, setHover] = useState(null);
     // The inverse of view.pct, from the same window the view was built from — deriving the date any other way would put the readout and the bars on two different axes.
@@ -562,7 +602,7 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                      // Only the empty axis opens a day — a click that started on a bar is that bar's own.
                      if (!onPickDay || !hoverDate || e.target.closest('.bar, .pt, .dflag, .dpin, .dspan, .nm, button')) return;
                      onPickDay(hoverDate);
-                 }}><div class="tk-inner">
+                 }}><div class="tk-inner" style=${`--xtop:${plot.xtop || railBox(rail, Boolean(rail && rail.flags && rail.flags.length)).xtop}px`}>
                 ${onWindow && full ? html`
                     <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
                               onWindow=${onWindow} />` : null}
@@ -573,12 +613,12 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                         <span class="xd"><b>${TL.fmt(hoverDate)}</b></span>
                     </div>`}
                 <${Ruler} view=${view} />
-                <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} />
+                <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} flips=${flips} />
                 <div class="lanes">
                     ${lanes.map((l) => html`
                         <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}
                                  collapsed=${collapsedFor(l, false)} onToggle=${(e) => toggle(l, false, e.altKey)}
-                                 fits=${fits} onDragCommit=${onDragCommit}
+                                 fits=${fits} onDragCommit=${onDragCommit} plotW=${plot.w || 0}
                                  ghost=${ghost && ghost.lane === l.key ? ghost : null} />`)}
                     ${draft && lanes.some((l) => (draft[l.key] || []).length) ? html`
                         <div class="divider">Next season draft — staged, not live</div>
@@ -586,7 +626,7 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                             <${Lane} key=${'d:' + l.key} lane=${l}
                                      list=${(draft[l.key] || []).map((i) => ({ ...i, state: 'staged' }))}
                                      isDraft=${true} view=${view} collapsed=${collapsedFor(l, true)}
-                                     onToggle=${(e) => toggle(l, true, e.altKey)} fits=${fits} />`)}
+                                     onToggle=${(e) => toggle(l, true, e.altKey)} fits=${fits} plotW=${plot.w || 0} />`)}
                     ` : null}
                     <div class="ov">
                         <!-- 🔴 THE TRACK RAN TO ITS RIGHT EDGE WITH NOTHING SAYING THE SEASON HAD STOPPED. Everything past the last real deadline is time no player is playing this season in, and a bar drawn there looks exactly like a bar drawn inside it. Shaded from the LAST deadline, not the battle pass: only a span can outlive the season, and the battle pass is rarely the latest of the three. -->
