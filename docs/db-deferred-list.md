@@ -405,6 +405,20 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Wire the portal harness into `npm test` — a gate that OBSERVES instead of scanning `[P1 · M]`
+*Filed 2026-08-26 22:24 EDT, after an audit found a feature that could never render while every gate stayed green.*
+
+**The gap:** every portal gate is a SOURCE SCANNER. `portal:orphans` asks whether a class has a rule; `portal:coverage` asks whether a class name appears in a file. Neither can know whether the branch containing it ever executes. Measured on this branch: the Track's double-CP window read `data.calendar`, a key that does not exist on that prop, and rendered nothing forever — with `orphans` 0, `refs` 0, coverage counting the class as covered, and `npm test` green.
+
+**Why more scanning will not fix it:** four scanner blind spots were closed in one session and this defect is invisible to all four by construction. The repo has exactly one gate that observes rendered output (`portalContrastRendered.test.js`, puppeteer) and it was added only after "no browser dependency" was disproved as a reason.
+
+**What exists already:** `portal/ui/harness/` builds `portal/public/harness.html`, stubs `fetchJson` through an import map, and carries `?today=` · `?realms=` · `?owner=0` · `?empty=1` · `?fail=` · `?slow=` · `?destroy=1` · `?draft=1`. It is a complete fixture rig that nothing automated ever opens.
+
+**Verify condition:** `npm test` fails when a component's markup is present in source but absent from the rendered tree for a fixture that must produce it. The single check added on 2026-08-26 (`a double-CP calendar item draws its window on the Track`, in `portalRender.test.js`) is the shape — it was proved by reinstating the bug and watching it fail. This item is to make that shape systematic rather than one-off.
+
+⚠️ **Do not close this by adding another source scan.**
+
+
 
 
 

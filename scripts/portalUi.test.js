@@ -524,4 +524,67 @@ check('a draft row can never be mistaken for the live record it was copied from'
     assert.ok(ids.some((i) => String(i).startsWith('draft:')));
 });
 
+// ── THE FIVE FUNCTIONS THIS BRANCH ADDED AND DID NOT TEST ───────────────────────────────────────
+//
+// 🔴 WRITTEN AFTER THE FACT, AND THAT IS THE POINT OF SAYING SO. All five shipped in one green commit with a comment describing each boundary instead of a check enforcing it — and a comment cannot fail. An audit found them; the audit should not have had to.
+const { bulkFieldDiff, findLocalBuild } = require('../portal/ui/armory.logic');
+const { seasonSpanGeometry, spanBarFor, nowPctIn } = require('../portal/ui/season.logic');
+
+const BUILD = { mode: 'MP', weaponName: 'Fennec', buildName: 'Close', category: 'SMG',
+                shareCode: 'ABC', attachments: ['a', 'b'], isMeta: false };
+
+check('a bulk row that changes a field names the field, the old value and the new one', () => {
+    const diff = bulkFieldDiff({ ...BUILD, category: 'AR' }, BUILD);
+    assert.deepStrictEqual(diff, [{ field: 'category', word: 'Category', was: 'SMG', now: 'AR' }]);
+});
+
+check('a field the pasted block never mentioned is not reported as a change', () => {
+    // The upsert leaves an absent field alone, so `undefined` must not read as "cleared" — that would warn about an overwrite the server is not going to perform.
+    const diff = bulkFieldDiff({ weaponName: 'Fennec', buildName: 'Close', category: 'SMG' }, BUILD);
+    assert.deepStrictEqual(diff, [], 'an absent key is not a change');
+});
+
+check('THE OVERWRITE WARNING CAN FAIL: an unknown local build reports null, never an empty diff', () => {
+    // 🔴 THE DISTINCTION THE UI DEPENDS ON. `null` renders "this exists and will be overwritten, and the before values are not loaded here"; `[]` renders nothing at all. Collapse the two and the panel silently stops warning about exactly the overwrites it cannot inspect — inside the component built to prevent a silent overwrite.
+    assert.strictEqual(bulkFieldDiff({ ...BUILD }, null), null);
+    assert.notDeepStrictEqual(bulkFieldDiff({ ...BUILD }, null), []);
+});
+
+check('a local build is matched case- and space-insensitively, and only within its own mode', () => {
+    assert.ok(findLocalBuild([BUILD], { weaponName: ' fennec ', buildName: 'CLOSE' }, 'MP'));
+    assert.strictEqual(findLocalBuild([BUILD], { weaponName: 'Fennec', buildName: 'Close' }, 'DMZ'), null,
+        'a DMZ paste must never match an MP record');
+});
+
+check('a season whose dated things all land on one day yields no span geometry', () => {
+    // 🔴 OTHERWISE EVERY ROW DRAWS A FULL-WIDTH BAR. A zero span divides by zero; returning null makes the column render nothing, which is the honest answer for a season with no extent.
+    assert.strictEqual(seasonSpanGeometry({ newDraws: [{ date: '2026-09-03' }] }), null);
+    assert.strictEqual(seasonSpanGeometry({}), null);
+});
+
+check('THE SPAN FLOOR CAN FAIL: a one-day release keeps a visible width', () => {
+    const geo = seasonSpanGeometry({ calendar: [{ date: '2026-09-01', endDate: '2026-10-01' }] });
+    const point = spanBarFor({ date: '2026-09-15' }, geo);
+    assert.ok(point.width >= 1.5, `a point release rendered at ${point.width}% would be invisible`);
+    // And the floor must not push it past the right edge.
+    const last = spanBarFor({ date: '2026-10-01' }, geo);
+    assert.ok(last.left + last.width <= 100.001, 'a bar may not overflow its own track');
+});
+
+check('now is placed only when it falls inside the season, never clamped to an edge', () => {
+    const geo = seasonSpanGeometry({ calendar: [{ date: '2026-09-01', endDate: '2026-10-01' }] });
+    assert.strictEqual(nowPctIn(geo, Date.parse('2020-01-01T00:00:00Z')), null, 'before the season');
+    assert.strictEqual(nowPctIn(geo, Date.parse('2030-01-01T00:00:00Z')), null, 'after the season');
+    assert.ok(Math.abs(nowPctIn(geo, Date.parse('2026-09-16T00:00:00Z')) - 50) < 2);
+});
+
+check('the rail carries a patch note inside the window and drops one outside it', () => {
+    const season = { patchNotes: [
+        { _id: 'a', title: 'In view', releaseDate: '2026-09-10' },
+        { _id: 'b', title: 'Out of view', releaseDate: '2027-01-01' },
+    ] };
+    const rail = deadlineRail(season, '2026-09-01', '2026-09-30');
+    assert.deepStrictEqual(rail.patches.map((x) => x.title), ['In view']);
+});
+
 process.exit(failures ? 1 : 0);

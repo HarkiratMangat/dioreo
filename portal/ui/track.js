@@ -595,7 +595,13 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                              carries it precisely so /draw calculator can quote the right price without anybody
                              remembering an event is on — and the one screen showing the season's shape gave the
                              reader no way to see the window that pricing depends on. -->
-                        ${(data.calendar || []).filter((c) => c.isDoubleCP && c.date).map((c) => {
+                        <!-- ⚠️ READ FROM season, NOT FROM data. Written first as data.calendar, which is ALWAYS
+                             undefined: data is the lane-keyed structure season.js builds (draw/returning/
+                             event/playlist), and there is no calendar key in it. The filter ran over an empty
+                             array, the window rendered nothing, forever — and every gate stayed green, because
+                             portal:coverage counts a class in the SOURCE and cannot know the branch never runs.
+                             Found by auditing the data path, not by any check. -->
+                        ${((season && season.calendar) || []).filter((c) => c.isDoubleCP && c.date).map((c) => {
                             const a = view.pct(String(c.date).slice(0, 10));
                             const b = view.pct(String(c.endDate || c.date).slice(0, 10));
                             if (b <= 0 || a >= 100) return null;

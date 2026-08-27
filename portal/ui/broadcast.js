@@ -16,10 +16,10 @@ import { useOverlay } from './overlay.js';
 const fmtDay = (v) => new Date(v).toDateString().slice(4);
 
 const BROADCAST_COLUMNS = [
-    { key: 'text', label: 'Announcement', editable: true },
+    // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state.
+    { key: 'text', label: 'Announcement', editable: true,
+      render: (r) => html`<span class=${'sev ' + (r.state === 'live' && !r.expiresAt ? 'warn' : '')}></span>${r.text}` },
     { key: 'createdAt', label: 'Posted', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
-    // ⚠️ ONE SEVERITY MARK, ON THE ONE CONDITION THIS REALM CALLS A DEFECT. An announcement with no expiry never stops on its own — it is the single thing Home's attention list reports about Broadcast — and the table said so only by printing the word "never" three columns away, in the same ink as every other date.
-    { key: 'sev', label: '', col: 'c-cb', render: (r) => html`<span class=${'sev ' + (r.state === 'live' && !r.expiresAt ? 'warn' : '')}></span>` },
     // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
     { key: 'startsAt', label: 'Starts', col: 'c-type', dataKind: 'date', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
     // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.

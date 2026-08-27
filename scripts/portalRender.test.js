@@ -39,7 +39,12 @@ function check(name, fn) {
 function installLogicGlobals() {
     const dir = path.join(__dirname, '..', 'portal', 'ui');
     for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.logic.js'))) {
-        Object.assign(globalThis, require(path.join(dir, f)));
+        const mod = require(path.join(dir, f));
+        Object.assign(globalThis, mod);
+        // 🔴 A NAMESPACE EXPORT LOST ITS NAME HERE, AND IT SILENTLY EXCLUDED A WHOLE COMPONENT FROM THIS SUITE. timeline.logic.js does `module.exports = TL`, so the spread above installed TL's MEMBERS (make, fmt, toISO) and never `TL` itself — and every component reading a bare `TL`, which is the entire Track, threw "TL is not defined" the moment anyone tried to render it. Nobody had tried, so the gap read as "the Track has no render test" rather than as a broken harness. The global name is read out of the file's own browser line rather than hardcoded.
+        for (const m of fs.readFileSync(path.join(dir, f), 'utf8').matchAll(/window\.([A-Za-z_$][\w$]*)\s*=/g)) {
+            if (!(m[1] in globalThis)) globalThis[m[1]] = mod;
+        }
     }
 }
 
@@ -64,9 +69,32 @@ const SEASON_COLUMNS = [
     const { Shell, Masthead, Rail, Door } = await import('../portal/public/.ssr/ui/shell.js');
     const { Manifest, SelectionBar } = await import('../portal/public/.ssr/ui/manifest.js');
     const { Board } = await import('../portal/public/.ssr/ui/board.js');
+    const { Track } = await import('../portal/public/.ssr/ui/track.js');
     const { Confirm } = await import('../portal/public/.ssr/ui/overlay.js');
 
     const session = { discordId: '1139845545754632283', isOwner: true, csrfToken: 'x', visibleRealms: ['season', 'armory', 'broadcast', 'access', 'analytics'] };
+
+    // 🔴 THE ONLY CHECK IN THIS REPO THAT COULD HAVE CAUGHT A DEAD BRANCH, and it exists because one shipped. The double-CP window was written reading `data.calendar` — `data` is the lane-keyed structure (draw/returning/event/playlist) and has no `calendar` key, so the filter ran over an empty array and the window rendered nothing, permanently. Every gate passed: `portal:orphans` saw a class with a rule, `portal:coverage` saw the class in the SOURCE, and neither can know whether the branch executes. **A class in a file is not a class on the page.**
+    //
+    // ⚠️ SO THE ASSERTION IS ON RENDERED OUTPUT, GIVEN DATA THAT MUST PRODUCE IT. A season carrying an isDoubleCP calendar item has to yield a `.win` in the tree; anything less is a check on the author's intentions rather than on the component.
+    const trackWindow = { start: '2026-09-01', end: '2026-09-30' };
+    const emptyLanes = { draw: [], returning: [], event: [], playlist: [] };
+
+    check('a double-CP calendar item draws its window on the Track', () => {
+        const season = { calendar: [{ _id: 'cp1', title: '2X CP Weekend', date: '2026-09-05',
+                                      endDate: '2026-09-08', isDoubleCP: true }] };
+        const out = render(html`<${Track} data=${emptyLanes} window=${trackWindow} full=${trackWindow}
+                                          season=${season} flags=${[]} rail=${{ flags: [], pins: [], patches: [] }} />`);
+        assert.ok(/class="win"/.test(out), 'the double-CP window reached the tree');
+        assert.ok(out.includes('2X CP'), 'and it is labelled, not a bare band');
+    });
+
+    check('THE DEAD-BRANCH CHECK CAN FAIL: no double-CP item means no window', () => {
+        const season = { calendar: [{ _id: 'e1', title: 'Ordinary event', date: '2026-09-05', endDate: '2026-09-08' }] };
+        const out = render(html`<${Track} data=${emptyLanes} window=${trackWindow} full=${trackWindow}
+                                          season=${season} flags=${[]} rail=${{ flags: [], pins: [], patches: [] }} />`);
+        assert.ok(!/class="win"/.test(out), 'an ordinary event must not paint a pricing window');
+    });
 
     check('the nav is a RAIL with one entry per visible realm, and marks the current one', () => {
         const out = render(html`<${Rail} realm="season" realms=${session.visibleRealms} badges=${{ season: 2 }} />`);
