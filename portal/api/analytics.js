@@ -47,7 +47,7 @@ async function healthStats() {
     const [lastBoot, boots7d, alerts7d, events24h, distinct24h] = await Promise.all([
         BootRecord.findOne({}).sort({ createdAt: -1 }).lean(),
         BootRecord.find({ createdAt: { $gte: since7d } }).select('createdAt kind').lean(),
-        AlertLog.find({ createdAt: { $gte: since7d } }).select('createdAt level rssMb').lean(),
+        AlertLog.find({ createdAt: { $gte: since7d } }).select('createdAt level rssMb pinged silent').lean(),
         AnalyticsEvent.countDocuments({ createdAt: { $gte: since24h } }),
         AnalyticsEvent.distinct('userHash', { createdAt: { $gte: since24h }, isAdmin: false }),
     ]);
@@ -56,6 +56,22 @@ async function healthStats() {
     const noise24h = alerts7d.filter(a => new Date(a.createdAt) >= since24h && a.level !== 'warn' && a.level !== 'error');
     // ⚠️ SAMPLED, NOT CONTINUOUS. rssMb is written when an ALERT fires, so this is the highest RSS seen at any alert in the window — not a true peak, and it is absent entirely in a quiet week. The UI says "at last alert" rather than "peak" when the sample count is thin, because a peak computed from two samples is a number that looks more authoritative than it is.
     const rssSamples = alerts7d.map(a => a.rssMb).filter(n => typeof n === 'number' && n > 0);
+
+    // 🔴 THREE TIERS THAT MUST NEVER COLLAPSE INTO ONE NUMBER. The panel had `errors24h` and `noise24h` -- two totals either side of a line -- which answers "is anything on fire?" and not "what is this channel actually full of?". An alert level is a decision about WHO IS INTERRUPTED: info is a record, caution is look-when-convenient, error pings a human. ⚠️ `pinged` is counted separately rather than inferred from the level, because sendAlert can ping on request (opts.ping) and `silent` alerts are stored but never posted at all -- so "how many of these actually reached somebody" is a different question from "what level were they".
+    const levelOrder = ['error', 'warn', 'info'];
+    const byLevel = new Map();
+    for (const a of alerts7d) {
+        const level = a.level || 'info';
+        const row = byLevel.get(level) || { level, n: 0, pinged: 0, silent: 0 };
+        row.n += 1;
+        if (a.pinged) row.pinged += 1;
+        if (a.silent) row.silent += 1;
+        byLevel.set(level, row);
+    }
+    const alertsByLevel = [...byLevel.values()].sort((a, b) => {
+        const ai = levelOrder.indexOf(a.level), bi = levelOrder.indexOf(b.level);
+        return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+    });
 
     return {
         uptimeSince: lastBoot ? lastBoot.createdAt : null,
@@ -70,6 +86,8 @@ async function healthStats() {
             cloudinaryConfigured: Boolean(lastBoot.cloudinaryConfigured),
             restartContext: lastBoot.restartContext || '', at: lastBoot.createdAt || null,
         } : null,
+        alertsByLevel,
+        alerts7d: alerts7d.length,
         restarts24h: boots7d.filter(b => new Date(b.createdAt) >= since24h).length,
         restarts7d: boots7d.length,
         errors24h: errors24h.length,

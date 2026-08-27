@@ -148,6 +148,7 @@ main{overflow:auto;padding-bottom:96px}
 .rkey .bk-live i{background:var(--ink3);box-shadow:none}
 .rkey .bk-sched i{background:none;border:1.5px dashed var(--ink3);box-shadow:none}
 .rkey .bk-over i{background:var(--rule2);opacity:.7;box-shadow:none}
+
 /* The mode group shares the view bar with .seg, so it has to share its height: .seg is 32px of button
    inside 2px of padding inside a 1px border. .modesw has no padding, so its buttons carry the whole 38px. */
 .ph .modesw button{min-height:38px;padding:0 14px}
@@ -2514,6 +2515,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .depb .dc{grid-area:c;font-size:var(--t-micro);color:var(--ink3);letter-spacing:.04em}
 
 /* Alert levels — the three-tier model, never collapsed into one number. */
+/* 🔴 ALERTS-BY-LEVEL REUSES THIS COMPONENT RATHER THAN CLONING IT, and the first attempt cloned it.
+   A second `.lvlbars`/`.lvlb` block was written 2,400 lines above this one for the new panel -- same
+   selectors, different values -- so the daily bars were being styled by whichever definition the
+   cascade reached last. `portal:orphans` passed: it asks whether a class has a RULE, and both had
+   several. Only opening the page showed the alert bars and the daily bars had swapped geometry.
+   ⚠️ A DUPLICATE SELECTOR IS INVISIBLE TO EVERY GATE HERE. Search the stylesheet for the class before
+   writing a rule for it, especially when the name came from a mockup that uses it for one thing only.
+   The level tints below are the ONLY thing the new panel adds. */
 .lvlbars{display:flex;flex-direction:column;gap:9px}
 .lvlb{display:grid;grid-template-columns:76px 1fr 52px;grid-template-areas:"n t v" ". p p";
   gap:3px 11px;align-items:center;width:100%;text-align:left;padding:5px 6px;border-radius:var(--rad-2);
@@ -2522,6 +2531,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .lvlb:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .lvlb .ln{grid-area:n;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
+/* An alert level is a decision about who gets interrupted, so error and caution carry their signal
+   colour and info stays neutral -- the same three tones the river's own level tag uses, so a level
+   reads identically whether you meet it in the distribution or in the log. */
+.lvlb.lv-error .ln,.lvlb.lv-error .lp{color:var(--danger-ink)}
+.lvlb.lv-error .lt i{background:var(--danger-ink)}
+.lvlb.lv-warn .ln,.lvlb.lv-warn .lp{color:var(--warn-ink)}
+.lvlb.lv-warn .lt i{background:var(--warn-ink)}
+.lvlb.lv-info .lt i{background:var(--ink4)}
 .lvlb .lt{grid-area:t;height:16px;background:var(--sunk);border-radius:var(--rad-1);overflow:hidden}
 .lvlb .lt i{display:block;height:100%;border-radius:var(--rad-1);background:var(--info)}
 .lvlb.lv-caution .lt i{background:var(--warn)}

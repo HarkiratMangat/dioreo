@@ -123,7 +123,9 @@ function fmtUptime(since) {
     return d ? `${d}d ${hrs}h` : `${hrs}h ${Math.floor((secs % 3600) / 60)}m`;
 }
 
-// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it.
+// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one.
+const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', info: 'lvlb lv-info' };
+
 function Health({ health }) {
     const h = health || {};
     const errors = h.errors24h ?? 0;
@@ -185,6 +187,30 @@ function Health({ health }) {
                         ? html`<p class="pnote">${h.lastBoot.emojiMissing} emoji did not resolve at boot — those render as raw ids in Discord until the next sync.</p>`
                         : null}
                 </div>` : null}
+            <!-- 🔴 THE LEVELS WERE A FILTER AND A PAIR OF TOTALS, NEVER A DISTRIBUTION. errors 24h
+                 and quiet alerts 24h sit either side of one line, which answers whether anything is on
+                 fire and not what the channel is actually full of. ⚠️ It names only levels PRESENT in the
+                 window, the rule every key and legend here follows -- a week with no errors should not
+                 draw an empty error bar, which reads as a measurement rather than as an absence. -->
+            ${(h.alertsByLevel || []).length ? html`
+                <section class="hpanel">
+                    <h4>Alerts by level</h4>
+                    <p class="hp">Three tiers, and they never collapse into one number:${' '}
+                        <b>info</b> is a record, <b>caution</b> is a look-when-convenient,${' '}
+                        <b>error</b> pings a human. Seven days.</p>
+                    <div class="lvlbars">
+                        ${h.alertsByLevel.map((a) => html`
+                            <div class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}>
+                                <span class="ln">${a.level === 'warn' ? 'caution' : a.level}</span>
+                                <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>
+                                <span class="lv2">${a.n}</span>
+                                <!-- ⚠️ "never pings" is a FACT about this level in this window, not a rule:
+                                     sendAlert can ping on request, so a level that usually stays quiet can
+                                     still have pinged once, and stating the rule would hide that. -->
+                                <span class="lp">${a.pinged ? `${a.pinged} pinged` : 'never pinged'}${a.silent ? ` · ${a.silent} not posted` : ''}</span>
+                            </div>`)}
+                    </div>
+                </section>` : null}
             <div class="hsplit">
                 <section class="hpanel">
                     <h4>Restarts</h4>

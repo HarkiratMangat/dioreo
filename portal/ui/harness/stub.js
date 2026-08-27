@@ -77,6 +77,21 @@ function analyticsPayload() {
             errors24h: (bySeverity.error || 0) + (bySeverity.critical || 0),
             noise24h: bySeverity.info || 0,
             rssPeakMb: (F_.memStats || {}).maxMb, rssSampleCount: alertRows.length,
+            // ⚠️ DERIVED FROM THE SAME ROWS THE RIVER DRAWS, never a hand-written distribution: a fixture whose panel and whose table disagree teaches a defect that is not there. Only levels PRESENT are emitted, which is what the panel itself promises.
+            alerts7d: alertRows.length,
+            alertsByLevel: (() => {
+                const order = ['error', 'warn', 'info'];
+                const by = new Map();
+                for (const a of alertRows) {
+                    const level = a.level || 'info';
+                    const row = by.get(level) || { level, n: 0, pinged: 0, silent: 0 };
+                    row.n += 1;
+                    if (a.pinged) row.pinged += 1;
+                    if (a.silent) row.silent += 1;
+                    by.set(level, row);
+                }
+                return [...by.values()].sort((x, y) => (order.indexOf(x.level) < 0 ? 99 : order.indexOf(x.level)) - (order.indexOf(y.level) < 0 ? 99 : order.indexOf(y.level)));
+            })(),
             commands24h: totals.events || 0,
             distinctUsers24h: new Set((F_.cmdStats || []).map((c) => c.command)).size,
             // 🔴 THE +4 FLOOR MEANT THIS SPARKLINE COULD NEVER READ ZERO. Under ?empty=1 the Health panel showed "Alerts per day: 3 2 4 3 2 4 4" beside "0 errors", "0 commands" and a river saying nothing had been recorded — a chart inventing a week of activity in a portal with no records at all, which is the precise failure that flag exists to expose. Both series now derive from a real row count, so an empty fixture set produces empty bars.
