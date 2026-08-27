@@ -4576,6 +4576,19 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
   background:var(--ink3);border:1px solid var(--ink3)}
 .srec-c.off .d em{background:transparent;border-color:var(--warn-ink)}
 .srec-c.off .t{color:var(--warn-ink);font-style:normal}
+/* The banner cell's value is the PICTURE. A wide box because a calendar banner is wide, and the
+   same height as the text line it replaces so the six cells stay on one baseline grid. */
+/* The open panel's header closes it, so its dead space is a target and says so on hover. The
+   controls inside keep their own cursor — the handler ignores clicks that land on them. */
+.idhead{cursor:pointer}
+.idhead button,.idhead input,.idhead select,.idhead [role="group"]{cursor:auto}
+.idhead:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.srec-thumb{display:block;width:76px;height:22px;object-fit:cover;border-radius:var(--rad-1);
+  border:1px solid var(--rule2);background:var(--sunk)}
+/* Stored but not loading — a third state between "no image set" and a served one. It is warned
+   rather than hidden: an expired CDN link renders as nothing in Discord too. */
+.srec-c.dead .t{color:var(--warn-ink);font-style:normal}
+.srec-c.dead .d em{background:transparent;border-color:var(--warn-ink)}
 /* The banner row is separated by a rule that spans the whole grid rather than by a
    second grid — a second grid was what let the two rows' columns drift apart. */
 .srec-grid::before{content:"";grid-column:1/-1;height:1px;background:var(--rule);

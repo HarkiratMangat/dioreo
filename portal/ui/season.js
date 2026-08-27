@@ -329,6 +329,8 @@ const BANNERS = [
 const IDENTITY_KEY = 'dioreo-identity-open';
 
 function SeasonRecord({ season, editingDraft, draftStaged, today }) {
+    // A banner URL that is STORED but will not load is its own state, and the record could not say so — every set banner read the same regardless. It matters here specifically: two of the three fixture banners are media.discordapp.net links carrying an `ex=` expiry, and an expired Discord CDN link is a real, known failure mode in this project. Tracked per key rather than as one flag so one dead banner does not describe the other two.
+    const [brokenBanner, setBrokenBanner] = useState({});
     const titled = (season?.currentSeasonTitle || '').trim();
     // Silent unless it is genuinely late AND nothing is staged. One line, never repeated, gone the moment a draft exists — "make it smart and suggest things to prep/stage for the next season. but dont make it naggy."
     const near = seasonMoments(season, today)[0];
@@ -358,13 +360,28 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                      "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
                      in the rows above, so a verb here also broke the peerage the shared treatment
                      establishes. The ABSENT state is the one that matters, so it is the one marked. -->
+                <!-- 🔴 THE BANNER ROWS SAID "image cached and serving" AND SHOWED THE IMAGE TO NOBODY.
+                     Three of the six cells in this record are pictures, and they were rendering as a
+                     sentence about a picture — which makes them read as three more deadlines with
+                     unusually wordy values. The thumbnail is what distinguishes a banner from a
+                     deadline BY KIND rather than by reading the label, and it answers the question the
+                     status sentence only asserted: this is the image the bot is serving, look at it.
+                     ⚠️ The picture replaces the SENTENCE, not the row — same grid, same three parts,
+                     same column widths, so the six cells stay peers rather than splitting into two
+                     designs. -->
                 ${BANNERS.map((b) => {
                     const on = (season?.[b.k] || '').trim();
+                    const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
-                            <span class=${'t' + (on ? '' : ' unset')}>${on ? 'image cached and serving' : 'no image set'}</span>
-                            <span class="d" role="img" aria-label=${on ? 'set' : 'not set'}><em></em></span>
+                            <span class=${'t' + (on ? '' : ' unset')}>
+                                ${shows
+                                    ? html`<img class="srec-thumb" src=${on} alt="" loading="lazy" decoding="async"
+                                                onError=${() => setBrokenBanner((m) => ({ ...m, [b.k]: true }))} />`
+                                    : (on ? 'set, but the image will not load' : 'no image set')}
+                            </span>
+                            <span class="d" role="img" aria-label=${on ? (shows ? 'set' : 'set but not loading') : 'not set'}><em></em></span>
                         </div>`;
                 })}
             </div>
@@ -400,7 +417,20 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                 <${SeasonRecord} season=${season} editingDraft=${editingDraft} draftStaged=${draftStaged} today=${today} />
             </div>
             <div class="idbody">
-                <div class="ph idhead">
+                <!-- 🔴 THE TARGET COLLAPSED FROM 147px TO 52px THE MOMENT IT OPENED. Measured 2026-08-27:
+                     the collapsed record is click-anywhere across the whole strip, and the open panel's
+                     only way back was the Done button — same y-position, a fraction of the area. Harkirat
+                     chose the header's empty space as the close affordance: the row keeps its own controls
+                     and everything between them closes the panel.
+                     ⚠️ NOT role="button" ON THE HEADER. It contains the Live/Next switch and Done, and an
+                     interactive element wrapping other interactive elements is invalid ARIA and unusable
+                     from a keyboard. The keyboard path is the Done button, which was always focusable and
+                     still is; this adds a pointer target for the mouse, which is what was missing.
+                     ⚠️ THE HANDLER CHECKS ITS TARGET rather than relying on stopPropagation at each child:
+                     a new control added to this row later would otherwise silently start closing the panel,
+                     and nothing would say so. -->
+                <div class="ph idhead"
+                     onClick=${(e) => { if (!e.target.closest('button, input, select, a, [role="group"]')) toggle(); }}>
                     <span class="t">Season identity</span>
                     ${onScope ? html`
                         <!-- ⚠️ SWITCHING SCOPE DROPS THE UNSAVED EDITS, and that is the honest behaviour rather than a shortcut. The edits are keyed by field name and both seasons carry the same field names, so carrying them across would apply the live season's half-typed title to the draft with nothing on screen saying it had moved. -->

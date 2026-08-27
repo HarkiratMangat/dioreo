@@ -250,6 +250,24 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🔔 Reminders / watch-for
 
+### 🔔 REMINDER — two live calendar banners are dead links and only Harkirat can replace them `[P1 · XS]`
+*Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
+
+`drawsBannerUrl` and `eventsBannerUrl` are `media.discordapp.net` links with an **expired `ex=` signature**. They render as nothing in Discord and nothing in the portal; only `playlistsBannerUrl` (a Cloudinary URL) still resolves. The record says *"set, but the image will not load"* against each.
+
+🔴 **No script can repair these.** The re-hosting mechanism is correct and has been since 2026-08-07 — `utils/calendarBannerCache.js` uses one stable public id per page (`calendar_banners/draws|events|playlists`) with `overwrite:true`, so a new upload replaces the old asset and exactly three ever exist, and BOTH write paths use it (`/manage`'s Calendar handler and the portal's `calendar.setBanners` op). But re-hosting needs a source, and these sources are gone. **The repair is pasting a fresh URL into the record's editor**, three fields below the warning; it re-hosts permanently on save.
+
+⚠️ **This is the fourth item this session that turned out to be already built** — see the caveat memory `portal_tracker_pending_but_shipped`. The mechanism was never the gap; the gap was that nothing reported which rows still needed re-saving.
+
+### ✅ The season record region — thumbnails, one control, and a panel that was finally measured `[P2 · S · Opus5-High]`
+*Items B, C and D of the completion plan's Task 1.2, built 2026-08-27.*
+
+**B — banners are real thumbnails.** Three of the record's six cells are pictures and read *"image cached and serving"*, which scans as three more deadlines with wordy values and asserts the one thing a reader would rather see. The image replaces the sentence in the same grid cell, so the six stay peers. A stored URL that will not load is now its own warned state rather than being indistinguishable from a served one.
+
+**C — the close target went from 52px to the header's full width.** Collapsed, the strip is click-anywhere at 147px tall; open, the only way back was a 52px Done button in the same y-position. Harkirat chose the header's empty space. ⚠️ Deliberately NOT `role="button"` on the header — it contains the Live/Next switch and Done, and interactive nesting is invalid ARIA; Done remains the keyboard path. The handler tests its event target rather than relying on `stopPropagation` per child, so a control added later cannot silently start closing the panel.
+
+**D — measured, and it is fine.** 1,112 × 602, field rows on a consistent label and input axis; the only flagged spread is different row TYPES. compact-I's own confession was *"I called it 'fine' three times and never measured it once"* — this is the same verdict with a reading behind it.
+
 ### ✅ Per-realm composition — Armory, Analytics and Review `[P2 · M · Opus5-High]`
 *Approved 2026-08-27 in the batched pop-up round (*"idk what order you do them in, do all 3"*) and built the same session, each against the mockup rather than against an opinion.*
 
