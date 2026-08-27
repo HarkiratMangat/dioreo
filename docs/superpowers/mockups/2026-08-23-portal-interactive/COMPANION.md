@@ -3480,6 +3480,24 @@ Each tier **subtracts**. A tier that only changed colour would be the same if-st
 
 ⚠️ **A dangling colon, and why `:last-of-type` was the wrong tool.** Hiding the seconds left its separator behind: `23 HRS : 59 MIN :`. The first fix used `.sc-sep:last-of-type`, which matches by **tag**, not class — every child is a `<span>`, so it selected the seconds unit itself and changed nothing. `> :nth-last-child(2)` is the correct expression of "whatever sits before the last child".
 
+#### 16.31a 🔴 ATTEMPT 13 WAS CRITIQUED ONE HOUR AFTER THIS SECTION WAS WRITTEN — and the critique is still outstanding
+
+⚠️ **Added 2026-08-27 11:06 EDT. Everything above this heading was written at 2026-08-25 21:10 EDT (`8e94a2e`) and reads as a settled design. It was not settled.** `local/handoff/2026-08-25-portal-compact-I.md` (gitignored — state the path) was written at **22:11 EDT the same evening**, made rebuilding this clock its **FIRST ACTION**, and pointed at *"Full critique in COMPANION §16.31"* — a critique this section did not contain until now. That gap certified a disowned design for two days: a session on 2026-08-27 read §16.31, read the code, saw them agree, and declared the item CLOSED. **They agree because they ship in the same commit.** Two documents downstream of one commit are not two witnesses.
+
+**compact-I §1's table, transcribed. Its own summary line: *"He said the mockup needed more improvement, and I shipped something BELOW it."***
+
+| | The Burndown (attempt 12, soft-approved) | What attempt 13 actually renders |
+|---|---|---|
+| Hero | one figure at ~**4×** everything else | `17 : 23 : 55 : 50` — four near-equal segments |
+| Ticking | `23:59:50`, one quiet mono line | seconds promoted into the hero row, competing |
+| Lines | real chips | run-on text, `RANKED` orphaned onto its own line |
+| Alignment | left | right — a ragged left edge on every line |
+| Anchor | an accent rule closes the block | nothing; it dissolves into the page |
+
+🔴 **Never addressed, in either codebase — verified 2026-08-27 11:06 EDT.** `git log -S".sclock"` returns exactly one commit for `assets/app.css` (`8e94a2e`) and one for `portal/ui/app.css` (`59a540c`, the whole-stylesheet adoption); the `.sclock` block is byte-identical between them. Design work paused ~40 minutes after the critique was written, for the Preact migration, and never resumed here.
+
+⚠️ **The target is NOT "rebuild the Burndown".** Attempt 12 was superseded deliberately by the four answered questions above, and a later correction that re-aimed this at the Burndown was itself wrong. **Keep attempt 13's content rules; close the five hierarchy gaps.** Tracked in `docs/db-deferred-list.md`.
+
 ### 16.32 The collapsed season record — six peers, not a headline and a footer
 
 Two rounds of correction, and the second one named the real mistake.
