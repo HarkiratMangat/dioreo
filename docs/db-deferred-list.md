@@ -420,6 +420,25 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🎛️ Four of §16's eight liveliness micro-interactions never reached `portal/ui` `[P2 · S]`
+*Filed 2026-08-27 00:04 EDT. Found by reading the COMPANION against the code, not by any gate — `portal:coverage` reads 100% with all four absent.*
+
+The mockup's §16 liveliness layer was built 2026-08-25 and the CSS came across whole with `app.css`. **The markup that triggers half of it did not.** Measured: the rules exist in `portal/ui/app.css`; nothing in `portal/ui/*.js` emits them.
+
+| Class | What it is | Why coverage cannot see it |
+|---|---|---|
+| `.lift` | Hover/focus raise on a card — `transform` + background, `app.css:3912` | It is a class you put on markup, and it is not in any mockup PAGE's own class set, so it never entered `want` |
+| `.tint` | Hover/focus tint in the element's own topic colour — `app.css:3899` | Same |
+| `.count-bump` | The rail badge counting up when something stages — `app.css:1791` | Applied by `Shell.pulseTray()` via `classList.add`, which the scanner deliberately does not read |
+| `.staged-pulse` | The tray acknowledging a stage — `app.css:1790` | Same |
+
+✅ **What DID cross over:** `.landed`, `Shell.arrive()`, `.mh-stats .v.rolling` and `.fdelta` are all live in `portal/ui`.
+
+🔴 **`pulseTray` is the interesting half.** Its whole point is that every staging path funnels through one place, so the acknowledgement is written once rather than remembered at each call site. The portal stages from six realms and has no equivalent — the only acknowledgement is a toast, which is the exact defect §16.1 item 2 was written to fix, one level up.
+
+**Verify condition:** stage something in each realm and see the rail badge bump and the tray pulse; hover a card and see it lift. ⚠️ **Not "the classes appear in source"** — that is what already reads as done.
+
+
 ### Wire the portal harness into `npm test` — a gate that OBSERVES instead of scanning `[P1 · M]`
 *Filed 2026-08-26 22:24 EDT, after an audit found a feature that could never render while every gate stayed green.*
 
