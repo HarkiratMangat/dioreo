@@ -259,6 +259,35 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 **`days left` was missing from the masthead.** The plan names four figures; three shipped. It reads from `seasonMoments`, the same derivation the page's own clock uses, and is absent rather than guessed when no deadline is set.
 
+### 🔎 Re-verify the portal at Harkirat's REAL viewport — ~1700px, not 1280 `[P2 · S · Sonnet5-High]`
+*Filed 2026-08-27 13:54 EDT. He runs **Arc with a persistent left tab bar**, which he showed in a screenshot mid-session.*
+
+Every visual verification on this branch was done at **1280×880**. His actual page viewport is roughly **1700px** — the Arc sidebar takes ~275px off a full-width MacBook window. **Nothing has been checked there.**
+
+⚠️ **This is not a mobile item and must not be bundled with one.** Mobile (375px) is deprioritised by his own direction; this is the PRIMARY layout being verified at the wrong width. The surfaces most likely to differ are the ones that just changed: Armory's now-full-width rack (a `:has(> :only-child)` grid), Analytics' four tiles, the Season clock's `clamp(56px,6.4vw,82px)` hero — **`6.4vw` at 1700px is 109px, above the 82px clamp ceiling, so the hero is capped there and the ratio against the rest of the page changes.**
+
+**Verify by:** `resize_page` to 1700×1000 in chrome-devtools-mcp, walk the six realms, and re-run the geometry fingerprint from the composition item (six distinct signatures) at that width.
+
+### First real boot of the portal against Mongo and OAuth `[P1 · M · Opus5-High]`
+*Task 3.2 of `docs/superpowers/plans/2026-08-27-portal-completion.md`. Approved by the plan, NOT built.*
+
+🔴 **`/api/review` has executed in no environment, ever.** Nothing on this branch has run against a real database or a real Discord session — everything is the fixture harness.
+
+```bash
+node --env-file=.env.dev portal/server.js
+```
+
+🔴 **Never `npm run portal`** — it is a bare `node portal/server.js`, and `portal/server.js:6` calls `dotenv.config()`, which loads **prod's `.env`**. The `--env-file` flag is what makes this safe: Node applies it before dotenv runs, and dotenv does not override what is already set. ⚠️ **Read `.env.dev`'s Mongo URI from the FILE, never `process.env`** — requiring `portal/server.js` loads prod's `.env` first. `scripts/portalRoutes.test.js` does this correctly; copy from it.
+
+**Check, in this order:** `/api/review` returns 200 with `ops` and `changesets` · a staged changeset gets a `baseline` array · the Season identity editor's Done stages `season.setTitlesDeadlines` **and** `calendar.setBanners` as two ops · then `/api/season/export`, `/api/parse-bulk/loadout` and the patch-note ops, which only real data reaches.
+
+### The Analytics payload is 495KB per load `[P2 · S · Sonnet5-High]`
+*Task 3.3 of the completion plan. Approved, NOT built. Not a bug — a cost that grows.*
+
+**Do the route split, not the pagination alternative:** the river feeds the Manifest so it has to arrive whole, while the pre-rendered `usage`/`timing`/`alerts` text exports are only ever read when their own tab is open. Add a route returning one export by name, fetched on tab open.
+
+**Verify by:** a cold Analytics load transfers under 100KB (`curl -s -b "$COOKIE" http://localhost:8787/api/analytics | wc -c`, or the transfer column in DevTools), and the Usage and Timing tabs still render their text.
+
 ### 🔔 REMINDER — two live calendar banners are dead links and only Harkirat can replace them `[P1 · XS]`
 *Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
 

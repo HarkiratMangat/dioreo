@@ -24,7 +24,7 @@ status: frozen
 - **Design forks are HITL.** Thirteen rejected attempts vs four pop-up questions is where that rule came from. Ask as `AskUserQuestion` with measurements attached, never buried in prose. **"Try it" is not "approved"; nothing on localhost is a deliverable.**
 - **Do not push, PR, or ask about either.** Standing instruction, stated repeatedly. The branch's size is a consequence of that decision, not a finding.
 - **`npm test`'s exit code gates every commit** (`&&`, never `;`). A `portal/ui/` module change needs `npm run portal:bust`. A backtick inside an HTML comment inside a template literal kills the page.
-- **Verify at both widths — 1280×880 and 390×844.** Every visual task in this plan is incomplete if checked at only one.
+- 🔴 **DESKTOP IS THE PRIMARY LAYOUT — verify at 1280×880 and do NOT spend the session on mobile.** Harkirat, 2026-08-27 mid-session: *"desktop is the primary layout/device which the portal will be used on. Optimize it for desktop first. Mobile optimization is a future endeavour."* ⚠️ **This line previously read "Verify at both widths — 1280×880 and 390×844", and Phase 0 burned real turns on a 375px pass before he said so.** A mobile defect found in passing still gets FILED; it does not get fixed. ⚠️ **And 1280 is not his real viewport** — he runs Arc with a persistent left tab bar, so the page gets roughly 1700px. Check anything width-sensitive there too.
 - Commit trailers: `Co-Authored-By: Claude <model> <noreply@anthropic.com>` and `Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>`.
 
 ---
@@ -49,7 +49,15 @@ And the tracker itself carried a **wrong** verdict twice in one morning, because
 
 **Branch: `feat/portal-redesign-session-b`.** Nothing on it is pushed and there is no PR; that is deliberate and is not yours to change.
 
-🔴 **Every handoff below is GITIGNORED — no `rg`, no glob and no gate in this repo reaches them. They are cited by nickname throughout this plan; these are the real paths.**
+🟡 **Every handoff below is GITIGNORED — a DEFAULT `rg` and `--hidden` miss them, but `rg -uu` FINDS them.** They are cited by nickname throughout this plan; these are the real paths.
+
+> 🔴 **CORRECTED 2026-08-27 13:5x EDT. This line said "no `rg`, no glob and no gate in this repo reaches them", and that was FALSE — measured both directions.** `rg -l 'THIRTEEN REJECTED DESIGNS'` returns **0**; `rg -uu -l` on the same phrase returns **1**. `local/` is *gitignored*, not *hidden*, so `--hidden` alone genuinely fails and the claim generalised from the flag that does not work.
+>
+> **This false claim is the single biggest reason "what remains for the portal" kept coming back wrong** — including the failure that produced this plan. Told the exhaustive records were unsearchable, sessions did not search them, so every residual list was assembled from the tracked subset and was confidently incomplete. Use this before concluding anything is untracked:
+>
+> ```bash
+> rg -uu -n '<phrase>' local/handoff/
+> ```
 
 | Nickname in this plan | Actual path |
 |---|---|
@@ -80,6 +88,10 @@ And the tracker itself carried a **wrong** verdict twice in one morning, because
 ## §0.1 — THE INVENTORY, AND HOW RELIABLE EACH ROW IS
 
 Assembled 2026-08-27 by cross-referencing the **twenty-three `local/handoff/*portal*.md` files** (the directory holds 78 in total), `COMPANION.md`, `docs/db-deferred-list.md` and `PORTAL-MAP.md` against each other and against source. **Tracked?** answers whether the item existed anywhere a repo search could find it before this plan.
+
+> ✅ **STATUS AS OF 2026-08-27 EOD — read this before the table below, which is frozen at the plan's writing.** Closed this session: **A** (clock, all five gaps) · **B** (banners are thumbnails) · **C** (one control — header empty space closes it) · **D** (panel measured; it is fine) · **E** (per-realm composition, all three realms, blur test 6/6 distinct) · **H** (density plot — was ALREADY BUILT) · **I** (Home) · **K** (`.count-bump`/`.staged-pulse` built; `.lift`/`.tint` were ALREADY APPLIED by selector) · **N** (render gate in `npm test`) · **R** (Armory preview — rendered, and it was showing the same card for every build) · **S** (coverage number). **Still open: F** (glyph Artifact — he has never seen it) · **G** (horizontal systems — he chose KEEP) · **J** (account panel) · **L/M** (mobile — DEPRIORITISED, see §0.06) · **O** (first real boot) · **P** (production) · **Q** (analytics payload).
+>
+> ⚠️ **Four of the items above turned out ALREADY BUILT when checked on the page** (H, K's lift/tint half, S, and most of I). That is the failure mode this plan's own §0 exists to name — **open the page before building anything this table lists as open.**
 
 | # | Item | Source | Tracked? | Status |
 |---|---|---|---|---|
@@ -233,7 +245,7 @@ The five tiers are `data-tier`-driven from CSS. Hero scaling that is *always on*
 
 - [ ] **Step 4: Verify on the rendered page at both widths**
 
-The fixture season's next wall is **`bpEnd`/`rankEnd` = 2026-09-10** (`portal/public/harness/fixtures.js`), so `?today=` travels the clock to a tier by arithmetic against that date. The five literal URLs, on `http://localhost:8901/harness.html`:
+🔴 **`?today=` DOES NOT TRAVEL THIS CLOCK — measured 2026-08-27, and this paragraph asserted otherwise.** `countdownParts(next.iso, Date.now())` reads the real clock, so date-travel changes which *moment* is selected and never the countdown or the tier. **Set `data-tier` on `.sclock` directly and read the computed styles back**, which is how all five tiers were actually verified. The fixture's next wall is `bpEnd`/`rankEnd` = 2026-09-10 (`portal/public/harness/fixtures.js`); the URLs below still select the right MOMENT and are kept for that. The five literal URLs, on `http://localhost:8901/harness.html`:
 
 | Tier | Days out | URL suffix |
 |---|---|---|

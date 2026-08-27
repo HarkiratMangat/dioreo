@@ -42,7 +42,7 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 | Carrier | Reach | Job |
 |---|---|---|
 | **`.remember/remember.md`** — write it with **`/remember`** | 🟢 **Auto-injected at every session start**, including after a compact. Arrives without anyone knowing it exists | ≤20 lines. The **pointer and the first action** — never the record |
-| **`local/handoff/<date>-<topic>.md`** | 🔴 **Gitignored. No `rg` reaches it**, `-uu --hidden` included. Only found if something *tells* the reader the path | The exhaustive record: reasoning, rejected options, traps |
+| **`local/handoff/<date>-<topic>.md`** | 🟡 **Gitignored — so a DEFAULT `rg` and `--hidden` miss it, but `rg -uu` FINDS IT.** ⚠️ This row said "No `rg` reaches it, `-uu --hidden` included" until 2026-08-27 and that was FALSE, measured both ways | The exhaustive record: reasoning, rejected options, traps |
 | **`docs/db-deferred-list.md`** | 🟢 **Tracked.** Survives compaction, a new session, a fresh clone, and being forgotten | Anything **approved but unbuilt**, with a verify condition |
 
 🔴 **The rule that falls out:** the exhaustive file must be *pointed at* from at least one carrier that reaches on its own — `/remember`'s note, or a deferred-list item that cites its path. **A handoff nobody is told about is a handoff nobody reads.**
@@ -110,7 +110,19 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 
 The handoff goes to `local/handoff/<YYYY-MM-DD>-<topic>.md` (see `reference_handoff_file_location`), and **`/remember` writes the short auto-loaded note that points at it** — see the three carriers above. Write the long file first, then `/remember`, so the note can name it.
 
-🔴 **`local/` IS GITIGNORED. No `rg` reaches it, `-uu --hidden` included.** Therefore:
+🔴 **`local/` IS GITIGNORED, so a DEFAULT `rg` misses it — but `rg -uu` DOES find it.** Therefore:
+
+> ⚠️ **CORRECTED 2026-08-27 13:5x EDT, and the old wording did real damage.** This file said *"No `rg` reaches it, `-uu --hidden` included"*, and one handoff spelled it out as *"not `rg`, not `--hidden`, not `-uu`"*. **Measured, both directions:** `rg -l 'THIRTEEN REJECTED DESIGNS'` returns **0** files; `rg -uu -l` on the same phrase returns **1** — `local/handoff/2026-08-25-portal-compact-I.md`. `--hidden` alone genuinely does not work, because `local/` is *gitignored*, not *hidden*; the claim conflated the two flags and generalised from the one that fails.
+>
+> 🔴 **AND THE CORRECT RULE WAS NEVER MISSING, WHICH IS THE REAL LESSON.** `~/.claude/CLAUDE.md` is auto-loaded into every session, states the flag rule with a measurement, and **names `local/` explicitly** as a directory a default search misses; `usage-guard.mjs` fires the same advice as a live hook. **The repo-local claim won anyway, for months.** A false SPECIFIC claim beats a true GENERAL rule because it is camouflaged as an EXCEPTION to it — *"these particular files are unreachable"* reads as domain knowledge from someone who checked, not as a contradiction. 🔴 **When a document says a rule you already hold does not apply here, TEST THE EXCEPTION, NOT THE RULE** — it is the higher-variance claim and usually the cheaper one to check.
+>
+> 🔴 **THE COST WAS THE PORTAL'S "WHAT REMAINS" QUESTION, REPEATEDLY UNANSWERABLE.** Sessions were told the exhaustive records were unsearchable, so they did not search them, so every residual list was assembled from the tracked subset — and came back confidently incomplete. On 2026-08-27 five separate design items were found existing ONLY in these files, after three forced `sequentialthinking` passes. **A false claim about a tool's reach is self-fulfilling: nobody tries, so nobody finds out.** The rule below still stands on its own merits — but it is a rule about REDUNDANCY, not about impossibility.
+>
+> ```bash
+> rg -uu -n '<phrase>' local/handoff/          # this works; use it before concluding anything is untracked
+> ```
+
+
 
 > **Anything Harkirat APPROVED but that is not yet built must ALSO be filed in `docs/db-deferred-list.md`** — with a priority/effort tag, what to do, and **how to verify it is done**. A handoff is a letter to one reader; the deferred list is the project's memory.
 
