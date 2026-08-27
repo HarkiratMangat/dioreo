@@ -593,6 +593,14 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 **The portal gets the toggle the mockup specifies** — *include admin traffic* — and it re-asks the server rather than filtering in the browser, because there is no client-side subset of a p95.
 
+### Two blind spots in the instruments themselves
+
+🔴 **`portal:orphans` reads classes only out of `class="…"` and `class=${…}`, so a class passed as a DATA VALUE is invisible to it** — and one shipped in this very session: `metaClass: 'rowlife'`, a name with no rule in any stylesheet, not even the season page block folded in earlier today. **The gate that exists to stop exactly that could not see it.** It reads class-valued props now, and the unstyled class is gone rather than given a rule nobody designed.
+
+⚠️ **And `portal:coverage` was counting three phantoms nobody can ever emit.** `class="lvlb lv-${level}"` scans as the literal `lv-`; so do `t-${rank}` and `s-${kind}`. **A trailing-hyphen fragment is a prefix, not a class**, and counting it capped the instrument's own ceiling below 100% for no reason. Dropped on both sides, so the mockup and the portal are measured by the same rule.
+
+**Both of these are the session's own subject turned on the tools:** a gate is a claim about what it can see, and neither of these had been asked what it was blind to.
+
 ### Eleven facts are written on every boot and two were read
 
 🔴 **`models/BootRecord.js` stores the commit, the host, the guild count, how many commands registered and how many emoji synced or went MISSING** — and that last one is the known stale-prod-id trap, where a non-zero number means emoji render as raw ids in Discord. All of it was written on every boot and read by nothing. The Health panel showed the version and the kind. **The card says what the missing count MEANS**, not only how many, because a figure nobody can act on is a figure nobody reads. A conservation check ties every field to the model that declares it, so a rename there fails a test instead of rendering em-dashes forever.
@@ -615,7 +623,9 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **`.cmpcards` expected `.dcard` children and got bare divs**, so the column layout and every rule under `.dcard.lc` — twelve classes — styled nothing. The cards render the **record** now, laid out so two of them line up field for field: the attachment list is the thing you actually compare, and reading it out of two Discord renders means reading two pictures. The Discord render did not go away — it lives in the build editor's own side column, beside the fields that produce it, where it costs no request per picked build.
 
-### The instrument needed one more correction `portalCoverage`'s shared set mirrors the mockup's `assets/shell.js` — what every page shares — and `Shell.Export` is declared there, so every realm's *want* carries the export panel's vocabulary. Attributing the portal's `exportPanel.js` per realm made those classes read as missing from **Door**, which renders no realm surfaces at all and cannot be given one. Moving it lifts Door 70% → 78% and changes no markup. `manifest.js` and `oneway.js` deliberately stay per-realm: the mockup declares both in its shell too, but Home and Door render neither, and counting them shared would inflate exactly the realms this correction exists to stop mis-measuring.
+### The instrument needed one more correction
+
+`portalCoverage`'s shared set mirrors the mockup's `assets/shell.js` — what every page shares — and `Shell.Export` is declared there, so every realm's *want* carries the export panel's vocabulary. Attributing the portal's `exportPanel.js` per realm made those classes read as missing from **Door**, which renders no realm surfaces at all and cannot be given one. Moving it lifts Door 70% → 78% and changes no markup. `manifest.js` and `oneway.js` deliberately stay per-realm: the mockup declares both in its shell too, but Home and Door render neither, and counting them shared would inflate exactly the realms this correction exists to stop mis-measuring.
 
 **Coverage 71% → 80% (Season 73% → 84%, Armory 61% → 76%, Broadcast 74% → 80%, Analytics 80% → 85%, Door 70% → 78%), orphans 0, and the round trip is demonstrated rather than asserted**: exporting the fixture armory and pasting the result back reads as *2 update, 0 new*.
 
