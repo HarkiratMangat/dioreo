@@ -9,6 +9,8 @@ import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
+// The clock FACE is Season's, imported rather than transcribed — see its header for the copy this replaced.
+import { ClockFace } from './season.js';
 
 const dayOf = (v) => String(v || '').slice(0, 10);
 const fmtDay = (iso) => new Date(dayOf(iso) + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -108,12 +110,6 @@ function HomeClock({ season, today }) {
     const upcoming = items.filter((i) => i.start > today && i.start <= next.iso).sort((a, b) => (a.start < b.start ? -1 : 1));
     const ending = items.filter((i) => i.end && i.start <= today && i.end >= today && i.end <= next.iso).sort((a, b) => (a.end < b.end ? -1 : 1));
 
-    const units = [];
-    if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
-    if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
-    units.push(['m', p.m, 'min']);
-    units.push(['s', p.s, 'sec']);
-
     const rows = (list, dateOf) => list.slice(0, 4).map((i) => html`
         <div class="hc-r" key=${i.title} style=${`--c:${LANE_ACCENT[i.lane] || 'var(--ink4)'}`}><i></i>
             <span class="n">${i.title}</span>
@@ -123,13 +119,7 @@ function HomeClock({ season, today }) {
     return html`
         <section class="hclock" aria-label="Season countdown">
             <div class="sclock hc-face" data-tier=${seasonTier(p.d)}>
-                <div class="sc-face">
-                    ${units.map((u, i) => html`
-                        ${i ? html`<span class="sc-sep">:</span>` : null}
-                        <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
-                            <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
-                        </span>`)}
-                </div>
+                <${ClockFace} p=${p} />
                 <div class="sc-when">${season?.currentSeasonTitle || 'This season'} · until <b>${fmtDay(next.iso)}</b></div>
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b> ${fmtDay(rest[0].iso)}</div>` : null}
             </div>

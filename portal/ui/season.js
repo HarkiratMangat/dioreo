@@ -197,6 +197,35 @@ async function fetchChangesets(realm) {
     return body.changesets || [];
 }
 
+// 🔴 ONE HERO, THEN A TICK — AND ONE COPY OF IT. The largest meaningful unit is the figure; everything below it is one quiet mono line. Four near-equal segments was attempt 13's first hierarchy gap (COMPANION §16.31a) — a digital readout tells you the time without telling you anything about the time.
+//
+// ⚠️ HOME HAD ITS OWN TRANSCRIBED COPY OF THIS MARKUP. Both clocks emitted `.sc-u`/`.sc-sep` independently, so rebuilding Season's face left Home's rendering against rules that no longer existed — a whole component reduced to unstyled inline text, silently, with every gate green. The face is the part the two clocks genuinely share; what surrounds it is not (Season states the deadline and its chips, Home states the season title and earns two item columns beside it), so only the face is lifted.
+export function ClockFace({ p }) {
+    const units = [];
+    if (p.d > 0) units.push([p.d, p.d === 1 ? 'day' : 'days']);
+    if (p.d > 0 || p.h > 0) units.push([p.h, 'hrs']);
+    units.push([p.m, 'min']);
+    units.push([p.s, 'sec']);
+
+    const [heroN, heroL] = units[0];
+    const tick = units.slice(1);
+
+    return html`
+        <div class="sc-face">
+            <b class="sc-hero">${heroN}</b><i class="sc-heroL">${heroL} left</i>
+        </div>
+        ${tick.length ? html`
+            <div class="sc-tick">
+                ${tick.map((u, i) => {
+                    // ⚠️ THE SEPARATOR CARRIES .sc-s TOO, not just the number. The old markup hid the seconds and left its colon behind — "23 HRS : 59 MIN :" — and needed a :nth-last-child rule to clean up after itself. Marking the pair cannot drift. ⚠️ And .sc-s is the ONLY class the number carries: a `.sc-t-n` alongside it styled nothing (the numbers inherit .sc-tick), and portal:orphans said so.
+                    const sec = i === tick.length - 1;
+                    return html`
+                        ${i ? html`<span class=${'sc-t-sep' + (sec ? ' sc-s' : '')}>:</span>` : null}
+                        <span class=${sec ? 'sc-s' : null}>${String(u[0]).padStart(2, '0')}</span>`;
+                })}
+            </div>` : null}`;
+}
+
 // ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────
 //
 // The subject is THE TIME AND THE SEASON TITLE. Not a to-do list, not a count of pending work — Harkirat, after thirteen rejected designs: "IM NOT THE ONE CREATING THAT CONTENT, the content already exists… the countdown is an informative insight into when the season ends, what's live in the game, what still needs to release."
@@ -224,25 +253,17 @@ function SeasonClock({ season, today }) {
     const p = countdownParts(next.iso, Date.now());
     if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
 
-    const units = [];
-    if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
-    if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
-    units.push(['m', p.m, 'min']);
-    units.push(['s', p.s, 'sec']);
-
     return html`
         <div class="sclock" data-tier=${seasonTier(p.d)}>
-            <div class="sc-face">
-                ${units.map((u, i) => html`
-                    ${i ? html`<span class="sc-sep">:</span>` : null}
-                    <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
-                        <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
-                    </span>`)}
-            </div>
+            <${ClockFace} p=${p} />
             <div class="sc-when">
-                until <b>${fmtDay(next.iso)}</b> · ${next.lines.map((L) => L.label).join(' & ')}
-                ${rest.length ? html`<span class="sc-then"> · then ${rest.map((m) => `${m.lines.map((L) => L.label).join(' & ')} ${fmtDay(m.iso)}`).join(' · ')}</span>` : null}
+                until <b>${fmtDay(next.iso)}</b>
+                ${next.lines.map((L) => html`<span class="sc-chip">${L.label}</span>`)}
             </div>
+            ${rest.length ? html`
+                <div class="sc-then">then
+                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}<b>${fmtDay(m.iso)}</b>`)}
+                </div>` : null}
         </div>`;
 }
 

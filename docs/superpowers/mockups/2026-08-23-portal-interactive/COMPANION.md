@@ -3494,9 +3494,27 @@ Each tier **subtracts**. A tier that only changed colour would be the same if-st
 | Alignment | left | right — a ragged left edge on every line |
 | Anchor | an accent rule closes the block | nothing; it dissolves into the page |
 
-🔴 **Never addressed, in either codebase — verified 2026-08-27 11:06 EDT.** `git log -S".sclock"` returns exactly one commit for `assets/app.css` (`8e94a2e`) and one for `portal/ui/app.css` (`59a540c`, the whole-stylesheet adoption); the `.sclock` block is byte-identical between them. Design work paused ~40 minutes after the critique was written, for the Preact migration, and never resumed here.
+~~🔴 **Never addressed, in either codebase — verified 2026-08-27 11:06 EDT.**~~ **✅ CLOSED 2026-08-27 12:0x EDT. All five gaps are built, in `portal/ui/` only** — the mockup package's `.sclock` is deliberately left at attempt 13, because `portal/ui` is now the more advanced artifact and this section is the record of that divergence (COMPANION is maintained; a divergence it does not carry is a defect in it). Harkirat approved the rebuild as a batched pop-up: *"Build it now, all 5 gaps."*
 
-⚠️ **The target is NOT "rebuild the Burndown".** Attempt 12 was superseded deliberately by the four answered questions above, and a later correction that re-aimed this at the Burndown was itself wrong. **Keep attempt 13's content rules; close the five hierarchy gaps.** Tracked in `docs/db-deferred-list.md`.
+⚠️ **The target was NOT "rebuild the Burndown".** Attempt 12 was superseded deliberately by the four answered questions above, and a later correction that re-aimed this at the Burndown was itself wrong. Attempt 13's content rules were kept; only the five hierarchy gaps closed.
+
+**What shipped, gap by gap:**
+
+| Gap | Was | Now |
+|---|---|---|
+| Hero | `17 : 23 : 55 : 50` — four near-equal segments at 44px | `.sc-hero` alone in `.sc-face` at `clamp(56px,6.4vw,82px)`, with its unit label beside it. The other units are no longer in the face at all |
+| Ticking | seconds promoted into the hero row at 22px | `.sc-tick` — h:m:s as ONE quiet mono line in `--data` at `--t-sm`, dim |
+| Lines | run-on text, `RANKED` orphaned onto its own line | `.sc-chip` per deadline label; `.sc-chip.ghost` for the later wall |
+| Alignment | right — a ragged left edge on every line | left. It renders inside `.mh-id`, the masthead's **left** column, so right-alignment was aligning to nothing |
+| Anchor | nothing; it dissolved into the page | `.sclock::after` — a 58×2px rule in `--sc-c`, which is also the tier colour |
+
+⚠️ **The tiers no longer bump the hero's SIZE.** They used to, up to 1.34×. At ~4× the figure is already the loudest thing on the masthead and growing it further is the shouting the five-tier design exists to avoid, so colour and the anchor rule carry the escalation instead. Verified on the rendered page across all five tiers: `open`/`running` neutral, `closing` `--patch`, `final` `--warn-ink` + `.sc-then` hidden, `today` `--del` + `.sc-then` and the seconds hidden.
+
+🔴 **AND THE REBUILD ALMOST SHIPPED A SILENT REGRESSION IN A FILE IT NEVER TOUCHED. `portal/ui/home.js` carried its own TRANSCRIBED COPY of the clock face markup** — its own `units` builder emitting its own `.sc-u`/`.sc-sep` — so rebuilding Season's face would have left Home's clock rendering against rules that no longer existed: a whole component reduced to unstyled inline text, with `npm test`, `portal:orphans` and `portal:coverage` all green, because every one of them is a source scanner and the classes were still *present*. Fixed at the cause: `ClockFace` is exported from `season.js` and imported by `home.js`. Only the FACE is shared — what surrounds it is genuinely different (Season states the deadline and its chips; Home states the season title and earns two item columns beside it).
+
+⚠️ **`?today=` DOES NOT TRAVEL THIS CLOCK, despite what the completion plan says.** `countdownParts(next.iso, Date.now())` reads the real clock, so the harness's date-travel changes which *moment* is selected but not the countdown or the tier. The five tiers were verified by setting `data-tier` directly and reading the computed styles back. **A tier that cannot be reached from a URL cannot be checked by opening one.**
+
+⚠️ **`portal:orphans` earned its keep during this change**: the first version emitted `.sc-t-n` on every number, and it styled nothing — the numbers inherit `.sc-tick`. That is the `.stat.live` defect again (a class added because it looked like a hook), and the gate named it within one run. The seconds now carry `.sc-s` and nothing else.
 
 ### 16.32 The collapsed season record — six peers, not a headline and a footer
 
