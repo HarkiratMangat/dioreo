@@ -961,9 +961,9 @@ export function ArmoryRealm({ session }) {
     const flagged = builds.filter((b) => (b.coverage || []).length).length;
     const modes = [...new Set(builds.map((b) => b.mode))].sort();
     const modeLine = modes.length ? modes.join(' · ') : '';
-    // 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
-    const stagedHere = data.stagedUnknown ? null
-        : (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
+    // 🔴 THIS BLOCK CRASHED THE WHOLE REALM UNTIL 2026-08-27 — a bare `data` (Broadcast's binding name, not this file's) instead of `load.data`, thrown on every load since the null-check was added. No gate caught it: coverage/orphans/refs all scan source text and never execute it, so it shipped green through two audits that were specifically hunting this class of bug. Only opening the page in a browser found it. See docs/db-deferred-list.md's harness-in-npm-test item. 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
+    const stagedHere = load.data.stagedUnknown ? null
+        : (load.data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     const armoryStats = [
         { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
