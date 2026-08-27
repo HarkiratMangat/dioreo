@@ -736,6 +736,10 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **The expanded editor panel was MEASURED before it was judged, which is the whole point of that item.** compact-I's confession was *"I called it 'fine' three times and never measured it once."* Measured: 1,112 × 602, field rows aligned on a consistent label and input axis, the only flagged spread being different row TYPES rather than a drift. **It is fine — and now that is a reading rather than an impression.**
 
+🔴 **HOME STATED THE STAGED COUNT THREE TIMES INSIDE 500 PIXELS** — the masthead figure, an entry on the attention list, and the staged bar sixteen pixels below that entry saying the same sentence with more in it (the realm breakdown, and the button that acts on it). COMPANION §16.6 warns about this exact shape: *"a third copy of a fact stated above it."* The list entry is gone, and **dropping it corrected the lead figure**: that list is EXCEPTIONS, `needs you` counts its rows, and staged work is not wrong — it is pending — so counting it there inflated the one number the page is named after by conflating a problem with a queue. It reads **3** now, beside a `staged 4` in its own voice.
+
+⚠️ **And Home was missing a masthead figure the plan names.** §5.9z.5 specifies four — *days left · live now · staged · needs you* — and the built version carried three. `days left` is the figure a person opening the console first actually acts on, and Home was the only realm not saying it. It reads from `seasonMoments`, the same derivation Home's own clock uses, so the two cannot disagree, and is absent rather than guessed when no deadline is set. Home now reads `needs you 3 · days left 14 · live now 2 · staged 4`.
+
 ## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel
 
 The old `/draw calculator` was a setup form: pick a draw, pick a goal, open a modal, type two numbers, submit, press Calculate — five interactions before a single figure appeared, and Harkirat called it "terrible, lacks intuitive, lacks design/style, and is not user friendly." It is rebuilt from the ground up.

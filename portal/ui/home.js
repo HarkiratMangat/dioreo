@@ -57,11 +57,9 @@ function attentionRows({ season, armory, broadcast, review, today }) {
         out.push({ kind: 'warn', realm: 'broadcast', href: '#/broadcast', n: forever.length, of: (broadcast?.all || []).length,
             text: `${forever.length} announcement${forever.length === 1 ? '' : 's'} will never stop showing`, act: 'give them an expiry' });
     }
-    const staged = (review?.ops || []).length;
-    if (staged) {
-        out.push({ kind: 'stg', realm: 'review', href: '#/review', n: staged,
-            text: `${staged} change${staged === 1 ? '' : 's'} staged and not committed`, act: 'review and commit' });
-    }
+    // 🔴 STAGED WORK IS NOT ON THIS LIST, AND THAT IS THE FIX RATHER THAN AN OMISSION. Measured 2026-08-27: the staged count appeared THREE times on Home inside 500px — the masthead figure, an entry here, and the staged bar 16px below that entry saying the same sentence with more in it (the realm breakdown, and the button that acts on it). COMPANION §16.6 warns about exactly this shape: "a third copy of a fact stated above it".
+    //
+    // 🔴 AND DROPPING IT CORRECTS THE LEAD FIGURE. This list is EXCEPTIONS — things that are wrong — and `needs you` counts its rows. Staged work is not wrong, it is pending, so counting it here inflated the one number the page is named after by conflating a problem with a queue. The staged figure sits directly beside it in the same masthead, in its own voice.
     return out;
 }
 
@@ -222,9 +220,12 @@ export function HomeRealm({ session }) {
     const live = (data.broadcast?.live || []).length;
     const staged = (data.review?.ops || []).length;
 
-    // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
+    // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR. §5.9z.5's plan names FOUR figures for this row — days left · live now · staged · needs you — and the built version carried three. `days left` is the one a person opening the console first actually acts on, and Home was the only realm not saying it. It reads from seasonMoments, the same derivation Home's own clock below uses, so the two cannot disagree; absent when no deadline is set rather than rendering a guess.
+    const nextMoment = seasonMoments(data.season?.live, today)[0];
+    const daysLeft = nextMoment ? dday(today, nextMoment.iso) : null;
     const stats = [
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
+        ...(daysLeft === null ? [] : [{ value: daysLeft, label: daysLeft === 1 ? 'day left' : 'days left' }]),
         // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour. ⚠️ NO `tone: 'live'` HERE, AND THE ABSENCE IS THE POINT. It was added to clear a coverage entry and there is no `.stat.live` rule anywhere — `.stat.stg .v` and `.stat.warn .v` exist, `.stat.live` does not — so the class styled nothing and existed only to make a number move. The live figure reads in plain ink because that is what the design gives it.
         { value: live, label: 'live now' },
         { value: staged, label: 'staged', tone: staged ? 'stg' : undefined },

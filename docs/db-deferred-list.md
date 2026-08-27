@@ -250,6 +250,15 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🔔 Reminders / watch-for
 
+### ✅ Home — the staged fact was stated three times, and a masthead figure was missing `[P2 · S · Opus5-High]`
+*Item I of the completion plan's Task 1.5, closed 2026-08-27. His complaint was* "its all over the place… i feel like i'd never utilize it."
+
+⚠️ **Most of §5.9z.5's plan was ALREADY BUILT** — the realm cards are gone, the philosophy lede is gone, the attention list leads, the live panels exist. **Two things were not.**
+
+**The staged count appeared three times within 500px** — masthead figure, attention-list entry, and the staged bar 16px under that entry. The entry is gone: the bar says the same thing with the realm breakdown and the action, and the list is meant to rank EXCEPTIONS. **That also corrected the lead figure** — `needs you` counts the list's rows, so counting a queue among the problems inflated the number the page is named after. 4 → 3.
+
+**`days left` was missing from the masthead.** The plan names four figures; three shipped. It reads from `seasonMoments`, the same derivation the page's own clock uses, and is absent rather than guessed when no deadline is set.
+
 ### 🔔 REMINDER — two live calendar banners are dead links and only Harkirat can replace them `[P1 · XS]`
 *Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
 
