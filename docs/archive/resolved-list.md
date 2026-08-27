@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ✍️ A space deleted by a line break in an html template (2026-08-27 15:0x EDT)
+
+*Swept out of `docs/db-deferred-list.md`'s 🐞 Active Bugs on 2026-08-27. An item leaves an active list only by appearing here.*
+
+- `[P3 · XS · Sonnet5-Medium]` ~~**Armory Coverage's flagged-builds summary line is missing a space: "withthem"**~~ — ✅ **FIXED 2026-08-27 15:0x EDT** (`6304122`). **The cause is worth keeping, because it will recur:** htm collapses a whitespace run containing a **newline** to nothing at an expression boundary, so the source read `wrong with` / newline / `${pronoun}` and the space was deleted at render. The space now lives inside the string literal, with the reason beside it. ⚠️ Any soft-wrapped prose in an `html` template that breaks immediately before a `${}` has the same bug.
+
 ## 🧪 No portal route had ever been executed, and two Shell props nothing passed (2026-08-26 12:30 EDT)
 
 *Swept out of `docs/db-deferred-list.md`'s 🗂️ Queued on 2026-08-26. An item leaves an active list only by appearing here.*

@@ -46,7 +46,6 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 - `[P3 · S · Sonnet5-Medium]` **Season's Board sub-view fails to mount at 375px width — silently, no console error.** Clicking the Board tab correctly sets `aria-pressed="true"`, but the `<Board>` component never renders: no "CHANGESET PIPELINE" text and no `[class*="board"]`/`[class*="pipeline"]` element appears anywhere in the DOM. It falls through to showing the Track view's season-record header with nothing below it. Reproduced twice. Repairs renders correctly at the same width, so this is specific to Board. Found 2026-08-27 during the Phase 0 portal visual sweep. **Low priority per Harkirat 2026-08-27: desktop is the primary layout, mobile is a future endeavour** — filed for the record, not urgent. `portal/ui/season.js:897-902`'s conditional render has no width gating itself, so the bug is inside `portal/ui/board.js` or something it depends on (`board.logic.js`, a `useMeasured` hook, etc.) — not yet root-caused.
 
-- `[P3 · XS · Sonnet5-Medium]` **Armory Coverage's flagged-builds summary line is missing a space: "66 builds have something actually wrong withthem, and 106 more are merely old."** `withthem` should be `with them`. Found 2026-08-27 during the Phase 0 portal visual sweep, live at `:8901/harness.html#/armory` → Coverage tab. Fix in `portal/ui/armory.js`'s coverage summary string.
 
 - `[P1 · M · Opus5-High]` ~~**A UX-copy audit of the portal mockups found ~45 findings, five of them blocking**~~ — ✅ **CLOSED 2026-08-25 16:3x EDT.** All five blockers were fixed earlier the same day (`67e7da8`, `a3c12c4`); the remaining ~30 🟡/🟢 findings were closed in the liveliness/magic session — source paths and function names out of user-facing strings, dated history out of the UI, the `(s)` plural forms replaced with real pluralisation, `Twelve permissions` derived from the list that knows its own length in both places that hardcoded it, and the sentences that justify their own existence deleted. **The vocabulary table is settled in COMPANION §5.9x.** The wording below is preserved because a closed entry still has to say WHICH five were the blockers and why. *Run 2026-08-25 13:0x EDT over the eight pages, `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` and the label-bearing parts of `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/fixtures.js`; code comments and `COMPANION.md` were out of scope.*
 
@@ -259,7 +258,9 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 **`days left` was missing from the masthead.** The plan names four figures; three shipped. It reads from `seasonMoments`, the same derivation the page's own clock uses, and is absent rather than guessed when no deadline is set.
 
-### 🔎 Re-verify the portal at Harkirat's REAL viewport — ~1700px, not 1280 `[P2 · S · Sonnet5-High]`
+### ✅ Re-verify the portal at Harkirat's REAL viewport — ~1700px, not 1280 `[P2 · S · Sonnet5-High]`
+
+> ✅ **DONE 2026-08-27 15:0x EDT — all seven routes walked at 1700×980.** **No horizontal overflow anywhere, every realm mounts, no orphaned right gap**, and the clock hero is capped at 82px exactly as predicted below. **One real defect, and it was invisible at 1280:** running text on `.racknote`, `.chint`, `.hint`, `.nodraft p` and `.hbanner p` had **no measure at all** and ran to **180–193 characters per line**, while the same stylesheet caps prose at 44–78ch in six other places. Capped at 78ch (`6304122`). `.callout` is deliberately excluded — it is a tinted, bordered box, and shrinking it leaves a 625px panel inside a 1534px one. The original wording is kept below because it names what to re-check if the layout changes again.
 *Filed 2026-08-27 13:54 EDT. He runs **Arc with a persistent left tab bar**, which he showed in a screenshot mid-session.*
 
 Every visual verification on this branch was done at **1280×880**. His actual page viewport is roughly **1700px** — the Arc sidebar takes ~275px off a full-width MacBook window. **Nothing has been checked there.**
@@ -271,6 +272,8 @@ Every visual verification on this branch was done at **1280×880**. His actual p
 ### First real boot of the portal against Mongo and OAuth `[P1 · M · Opus5-High]`
 *Task 3.2 of `docs/superpowers/plans/2026-08-27-portal-completion.md`. Approved by the plan, NOT built.*
 
+> 🟡 **PARTIALLY DONE 2026-08-27 15:1x EDT.** The server **boots clean against the dev database** (`🍃 Portal connected to MongoDB (localhost/diors-builds-dev)`), serves the door at `/` with a 200, and **correctly refuses `/api/analytics` with `401 {"error":"not signed in"}`** — so boot, Mongo and the auth gate are all exercised for the first time. The analytics payload was then assembled end-to-end against real data through the route's own functions (see the item below). ⛔ **What is still untouched is everything behind a SIGNED-IN session** — `/api/review`, the staging round trip, the two-op identity save — because reaching it means completing a Discord OAuth sign-in, which is an authorisation Harkirat gives, not one to take. ⚠️ A portal process is already listening on **:8787** from an earlier session, so a second boot fails with `EADDRINUSE`; that error means it is already running, not that it is broken.
+
 🔴 **`/api/review` has executed in no environment, ever.** Nothing on this branch has run against a real database or a real Discord session — everything is the fixture harness.
 
 ```bash
@@ -281,8 +284,10 @@ node --env-file=.env.dev portal/server.js
 
 **Check, in this order:** `/api/review` returns 200 with `ops` and `changesets` · a staged changeset gets a `baseline` array · the Season identity editor's Done stages `season.setTitlesDeadlines` **and** `calendar.setBanners` as two ops · then `/api/season/export`, `/api/parse-bulk/loadout` and the patch-note ops, which only real data reaches.
 
-### The Analytics payload is 495KB per load `[P2 · S · Sonnet5-High]`
-*Task 3.3 of the completion plan. Approved, NOT built. Not a bug — a cost that grows.*
+### ✅ The Analytics payload is 495KB per load `[P2 · S · Sonnet5-High]`
+*Task 3.3 of the completion plan.*
+
+> ✅ **CLOSED 2026-08-27 15:1x EDT BY MEASUREMENT: 42.1 KB**, against the 495 KB that put it here and a verify condition of under 100 KB. 🔴 **And the row was stale rather than open, in an instructive way.** The remedy prescribed below was overtaken by a stronger one: `38c7ec6` **deleted** `buildUsageExport`/`buildTimingExport`/`buildAlertExport` from the payload outright rather than moving them behind a route — and it landed **2026-08-26 13:42, two hours twenty minutes AFTER the 495 KB reading was taken at 11:2x**. So the fix already existed and only the *verification* was missing, which is a different row from an open one and needed a real boot to produce. Measured against the dev database through the route's own functions: **river 37.4 KB of the 42.1** (100 items, and `eventRiver` bounds each of ChangeLog/AlertLog/BootRecord at 100), `timingStats` 1.7 KB, `usageStats` 1.6 KB, everything else under 1 KB. The measurement script is `local/measure-analytics.js`. ⚠️ **A row whose fix landed after its measurement reads exactly like an open row** — the only thing that separates them is comparing the two timestamps.
 
 **Do the route split, not the pagination alternative:** the river feeds the Manifest so it has to arrive whole, while the pre-rendered `usage`/`timing`/`alerts` text exports are only ever read when their own tab is open. Add a route returning one export by name, fetched on tab open.
 
@@ -317,7 +322,7 @@ node --env-file=.env.dev portal/server.js
 
 ✅ **Verified by the item's own test, measured rather than eyeballed.** The plan's condition is *"blur the text on any two realms; if they are the same image, it is not done"* — implemented as a geometry fingerprint: every bordered block over 200×40px in the first 1,400px of each realm, quantised to a 40px grid, text ignored entirely. **Six distinct signatures across six realms, zero identical pairs.** ⚠️ And the regression the Armory change could have caused was checked rather than assumed: the editor has its OWN nested bed grid, so with a build open the outer grid is one column at 1,158px and the inner one is `752px 340px` with the preview column still 340px wide and visible.
 
-⚠️ **What this did NOT do:** the mockup's Armory also puts the MP/DMZ toggle inside the view bar, names its views *Tier board · Repairs · Compare · Bulk & export*, and carries a realm-specific legend (*clean · needs repair · stale*) where the portal shows the generic state legend. Those are vocabulary and control-placement decisions rather than composition, and they are a separate pass.
+⚠️ ~~**What this did NOT do:** the mockup's Armory also puts the MP/DMZ toggle inside the view bar, names its views *Tier board · Repairs · Compare · Bulk & export*, and carries a realm-specific legend.~~ ✅ **ALL THREE DONE 2026-08-27 15:0x EDT** (`6304122`), on Harkirat's call — *"the mockups version is better"* — made after seeing the live bar and the mockup's version as **two pixel-aligned renders of the same running page**, flipped between. 🔴 **And the mode turned out to be the real finding:** MP/DMZ was `BulkView`'s **private state**, so one view quietly filtered to one armory while the Rack, Repairs and Compare showed both mixed and the masthead totalled them. It is realm-level now — **MP 125 · 68 · 60 · 106 and DMZ 8 · 7 · 6 · 0, which add to the old totals exactly** — and BulkView's own switch is gone, because two controls over one quantity can disagree. The realm key names **only states present on screen**: switch to DMZ and *stale* disappears, because DMZ has none.
 
 ### 🔎 OPEN QUESTION — four mockup COMPOSITION changes Harkirat has not seen `[P2 · XS]`
 *Filed 2026-08-26 23:08 EDT. He asked to be pointed at them exactly and to keep this open, not to decide now.*
