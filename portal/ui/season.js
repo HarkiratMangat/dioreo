@@ -4,7 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, useCreateKey } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 import { OneWay } from './oneway.js';
@@ -97,7 +97,7 @@ function toTrackItems(live, path, lane) {
 // ⚠️ IT READS THE TRACK'S OWN ITEMS, not a second query. `trackData` is what the Track is drawing at this moment, so a day that lists something the Track is not showing — or omits something it is — is impossible by construction rather than by care.
 //
 // ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see.
-const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', event: 'Event', playlist: 'Playlist' };
+const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', drawwindow: 'Draw window', event: 'Event', playlist: 'Playlist' };
 
 function dayItems(source, day) {
     const out = [];
@@ -270,7 +270,13 @@ function SeasonClock({ season, today }) {
 const fmtDay = (iso) => new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-// 🔴 THE EYEBROW IS GONE, AND IT WAS THE SAME DEFECT HOME HAD. It read `14 LIVE NOW · 4 STAGED · 2 FLAGS` above the title while the stats row 1,100px to its right read `DRAWS LIVE 14 · STAGED 4` -- two of its three figures restated, in the same masthead, in a different voice. `flags` was the only one it alone carried, so it moved into the stats row and the row was deleted. See COMPANION 16.6: a second saying weakens the first, and nothing here was missing.
+// The eyebrow: three counts above the title, each a fact the page can act on. A zero is dimmed rather than hidden -- "no flags" is information, and a row that changes length as numbers reach zero makes the reader re-find every other number.
+//
+// 🔴 THIS WAS DELETED EARLIER ON 2026-08-27 AND RESTORED THE SAME AFTERNOON, and the mistake is worth more than the code. The duplication was real -- `14 LIVE NOW / 4 STAGED` above the title, `DRAWS LIVE 14 / STAGED 4` in the stats row on the far side of the same masthead -- but I resolved it by deleting the EYEBROW and keeping the stats row. COMPANION 16.31 point 3 says the opposite in as many words: the clock *"replaces the masthead's stat block, which he called useless. LIVE NOW / STAGED / FLAGS demote to an eyebrow above the page title."* The stat block is the half that should not exist; the eyebrow is where those counts were sent to live. **A redundancy has two ends, and which one to cut is a design decision somebody already made** -- read it before choosing, or a correct finding produces a confident rollback of approved work.
+function Eyebrow({ live, staged, flags }) {
+    const cell = (n, k, cls) => html`<span><i class=${n === 0 ? 'zero' : (cls || '')}>${n}</i>${k}</span>`;
+    return html`<div class="mh-eyebrow">${cell(live, 'live now')}${cell(staged, 'staged', 'stg')}${cell(flags, 'flags', 'warn')}</div>`;
+}
 
 // Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place.
 const COMPOSE_TYPES = [
@@ -280,6 +286,9 @@ const COMPOSE_TYPES = [
     { key: 'returning', label: 'Returning draw', hex: 'var(--ret)', shape: 'point', nameLabel: 'Draw name',
       placeholder: 'Havoc rerun', dateLabel: 'Returns',
       pointNote: 'A returning draw stores one date, the same as a new one.' },
+    // 🔴 THE SIXTH TYPE. A draw WINDOW is when a draw can be bought, which is a span, and it is a calendar entry with category 'draw' -- `fixtures.js` says so (`source: "calendar category:'draw'"`) and the mockup maps it to `calendar.add`, the same op Event and Playlist use. The portal could always store one; it never offered the control, so the one calendar category of the three that a person could not create from here was the one the Track draws its own lane for.
+    { key: 'drawwindow', label: 'Draw window', hex: 'var(--dw)', shape: 'span', nameLabel: 'Window name',
+      placeholder: 'Judgment Day draw window' },
     { key: 'event', label: 'Event', hex: 'var(--ev)', shape: 'span', nameLabel: 'Event name',
       placeholder: 'Clan Wars' },
     { key: 'playlist', label: 'Playlist', hex: 'var(--play)', shape: 'span', nameLabel: 'Playlist name',
@@ -292,12 +301,15 @@ const COMPOSE_TYPES = [
 const ADD_CHIPS = [
     { key: 'draw', label: 'Draw', accent: 'var(--draw)' },
     { key: 'returning', label: 'Returning draw', accent: 'var(--ret)' },
+    { key: 'drawwindow', label: 'Draw window', accent: 'var(--dw)' },
     { key: 'event', label: 'Event', accent: 'var(--ev)' },
     { key: 'playlist', label: 'Playlist', accent: 'var(--play)' },
     { key: 'patchnote', label: 'Patch note', accent: 'var(--pn)' },
 ];
 
+// ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT MERELY BOUND -- the same rule MastheadNew follows, and the mockup draws the `N` badge for exactly this reason. `n` opens the composer with no type chosen, which is the right default for a group of six: picking the type is the composer's first field, so a shortcut per chip would be six shortcuts for one act. useCreateKey already refuses to fire while somebody is typing, so the letter cannot be swallowed mid-title.
 function AddChips({ onAdd }) {
+    useCreateKey('n', () => onAdd(true));
     return html`
         <div class="mh-add" role="group" aria-label="Add to this season">
             <span class="mh-add-k">Add</span>
@@ -305,6 +317,7 @@ function AddChips({ onAdd }) {
                 <button class="pill mh-t" style=${`--c:${c.accent}`} onClick=${() => onAdd(c.key)}>
                     <span class="dot"></span>${c.label}
                 </button>`)}
+            <kbd class="mh-k" aria-label="Keyboard shortcut: N">N</kbd>
         </div>`;
 }
 
@@ -847,14 +860,18 @@ export function SeasonRealm({ session }) {
     }
 
     // Playlists are split out of `calendar` into their own lane. Track's LANE_LABEL and TOPIC_VAR have carried a `playlist` entry since the first build and nothing ever filled it, so every playlist-category calendar item rendered in the Events lane in the Events colour -- flagged by Session A's own post-hoc pass as pre-existing and left for this phase.
+    //
+    // 🔴 AND THAT FIX STOPPED ONE CATEGORY SHORT. `!isPlaylist` is not "is an event" -- the calendar has THREE categories, and the third is `draw`, a DRAW WINDOW (when a draw can be bought). Every one of them landed in the Events lane, in the Events colour, exactly as playlists had. The split is now driven by `calCategoryOf`, so the lane a row lands in and the label the Manifest prints for it come from one table; adding a fourth category cannot silently mean "event" again.
     const splitCalendar = (src) => {
         const all = (src && src.calendar) || [];
-        return { events: { calendar: all.filter((i) => !isPlaylist(i)) }, playlists: { calendar: all.filter(isPlaylist) } };
+        const of = (lane) => ({ calendar: all.filter((i) => calCategoryOf(i).lane === lane) });
+        return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
     };
     const liveCal = splitCalendar(state.live);
     const trackData = {
         draw: toTrackItems(state.live, 'newDraws', 'draw'),
         returning: toTrackItems(state.live, 'returningDraws', 'returning'),
+        drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow'),
         event: toTrackItems(liveCal.events, 'calendar', 'event'),
         playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist'),
     };
@@ -863,6 +880,7 @@ export function SeasonRealm({ session }) {
     const draftRails = state.draft ? {
         draw: toTrackItems(state.draft, 'newDraws', 'draw'),
         returning: toTrackItems(state.draft, 'returningDraws', 'returning'),
+        drawwindow: toTrackItems(draftCal.drawWindows, 'calendar', 'drawwindow'),
         event: toTrackItems(draftCal.events, 'calendar', 'event'),
         playlist: toTrackItems(draftCal.playlists, 'calendar', 'playlist'),
     } : null;
@@ -878,12 +896,7 @@ export function SeasonRealm({ session }) {
     // The Track derives its own findings; the eyebrow counts the same ones rather than a second rule.
     const flagCount = state.live?.bpEnd
         ? Object.values(trackData).flat().filter((i) => i.endDate && i.endDate > state.live.bpEnd).length : 0;
-    // ⚠️ `days left` IS NOT HERE, AND ITS ABSENCE IS THE POINT. The clock beside this row states it at 82px -- it is the largest thing on the page -- so a 34px copy of the same number three inches away is a second authority over one quantity. Home carries `days left` as a figure precisely because Home has no clock.
-    const seasonStats = [
-        { value: drawsLive, label: 'draws live' },
-        { value: flagCount, label: flagCount === 1 ? 'flag' : 'flags', tone: flagCount ? 'bad' : undefined },
-        { value: stagedCount, label: 'staged', tone: stagedCount ? 'hot' : undefined },
-    ];
+    // 🔴 SEASON HAS NO STAT BLOCK, AND THAT IS THE DESIGN RATHER THAN AN OMISSION. COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, and the three counts demote to the eyebrow above the title. Every other realm keeps its stats row; Season is the one realm whose masthead already carries a 82px figure, so a second figure row would be competing with it. Do not "restore" one here -- an empty `stats` prop on this realm is a decision.
 
     async function handleIdentitySave(edits) {
         // Two ops, because they are two entities: the season document's own titles and dates, and the calendar's banner urls. Splitting them here rather than server-side keeps each op's payload exactly what its own validate() expects.
@@ -970,11 +983,11 @@ export function SeasonRealm({ session }) {
         <${Shell} realm="season" session=${session} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView} stateKey
                   badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Season" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
-                  masthead=${html`<${Masthead} title=${state.live?.currentSeasonTitle || 'Season'}
-                                               sub=${`${visibleWindow.start} → ${visibleWindow.end}`} stats=${seasonStats}
-                                               actions=${html`
-                                                   <${SeasonClock} season=${state.live} today=${todayIso()} />
-                                                   <${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
+                  masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
+                                               title=${state.live?.currentSeasonTitle || 'Season'}
+                                               sub="Everything scheduled this season on one axis — and whether it still fits inside the season's own deadlines." 
+                                               aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
+                                               actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
                   viewSlot=${html`
                       <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
                            into the tray — the panel headed "Saved" — where it rendered in the same voice as a

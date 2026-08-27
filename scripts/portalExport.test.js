@@ -109,6 +109,20 @@ check('the summary counts SCOPES taken, not downloads', () => {
     assert.strictEqual(exportSummary([]), '', 'a realm with no scopes says nothing rather than "0 formats"');
 });
 
+// 🔴 "4 FORMATS" SAYS HOW MANY BUTTONS THERE ARE AND NOTHING ABOUT WHAT YOU WOULD GET, which is the one thing worth knowing before taking a backup. The counts were already on every scope and unused.
+check('the summary leads with how much DATA is behind the export, when the scopes know', () => {
+    clearExports();
+    const counted = [{ id: 'a', count: 14 }, { id: 'b', count: 23 }, { id: 'c', count: 2 }];
+    assert.strictEqual(exportSummary(counted), '39 items · 3 formats');
+    assert.strictEqual(exportSummary([{ id: 'a', count: 1 }]), '1 item · 1 format', 'both nouns singularise');
+    // ⚠️ NOT VACUOUS: a scope set with no counts must still produce the OLD line rather than "0 items".
+    assert.strictEqual(exportSummary([{ id: 'a' }, { id: 'b' }]), '2 formats', 'no count anywhere falls back rather than inventing a zero');
+    assert.strictEqual(exportSummary([{ id: 'a', count: 0 }]), '1 format', 'a real zero is not worth stating either');
+    // Progress replaces inventory once anything has been taken -- the more useful fact at that moment.
+    recordExport('a', { label: 'A', rows: 2, bytes: 10, body: 'xx' });
+    assert.strictEqual(exportSummary(counted), '1 of 3 exported this session');
+});
+
 // 🔴 THE KEPT COPY IS THE BYTES THAT WERE HANDED OVER. A retained export that re-derives itself on "take it again" is a different document wearing the same name, which defeats the only thing retention is for.
 check('a kept copy holds the exact body, and "take it again" has something to give back', () => {
     clearExports();

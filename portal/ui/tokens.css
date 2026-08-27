@@ -66,7 +66,7 @@
    * each was internally consistent, which is why nothing caught it until the two were rendered
    * side by side. The tokens now carry the approved values and the fixture hexes agree with
    * them exactly; production reads these, never a fixture. */
-  --draw:#AE72E0; --ret:#E8639B; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
+  --draw:#AE72E0; --ret:#E8639B; --dw:#B06BA8; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
   /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
    * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
    * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the

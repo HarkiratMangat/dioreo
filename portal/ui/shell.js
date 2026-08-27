@@ -127,7 +127,8 @@ function Figure({ value }) {
     `;
 }
 
-export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null }) {
+// ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null }) {
     return html`
         <div class="masthead">
             <div class="mh-id">
@@ -136,7 +137,8 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                 ${sub ? html`<span class="job">${sub}</span>` : null}
                 ${actions}
             </div>
-            ${stats.length ? html`
+            ${aside ? html`<div class="mh-aside">${aside}</div>` : null}
+            ${!aside && stats.length ? html`
                 <div class="mh-stats">
                     ${stats.map((s) => html`
                         <span class=${'stat' + (s.tone ? ' ' + s.tone : '') + (s.lead ? ' lead' : '')}

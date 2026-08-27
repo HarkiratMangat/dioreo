@@ -9,8 +9,15 @@ const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', ca
 // Playlist gets its own accent here rather than being folded into Event. --play and TOPIC_VAR.playlist have both existed since the first build with nothing ever assigning them: a playlist-category calendar item was indistinguishable from an event on every Season surface.
 const LANE_TOPIC_VAR = { newDraws: '--draw', returningDraws: '--ret', calendar: '--ev' };
 function isPlaylist(item) { return String((item && item.category) || '').toLowerCase() === 'playlist'; }
-function topicVarFor(laneKey, item) { return (laneKey === 'calendar' && isPlaylist(item)) ? '--play' : (LANE_TOPIC_VAR[laneKey] || '--ink3'); }
-function typeLabelFor(laneKey, item) { return (laneKey === 'calendar' && isPlaylist(item)) ? 'Playlist' : (LANE_LABELS[laneKey] || laneKey); }
+// 🔴 THE CALENDAR HOLDS THREE CATEGORIES AND THE CODE KNEW ABOUT TWO. `normalizeCalendarCategory` (utils/adminParser.js) accepts draw, event and playlist; every surface here special-cased `playlist` and let everything else fall through to Event -- so a calendar row with category 'draw', which is a DRAW WINDOW, rendered as an Event, in the Event colour, in the Events lane. That is the same defect the playlist split was written to fix, one category short of done. A table forces the next category to be answered instead of defaulted.
+const CAL_CATEGORY = {
+    playlist: { label: 'Playlist', topic: '--play', lane: 'playlist' },
+    draw:     { label: 'Draw window', topic: '--dw', lane: 'drawwindow' },
+    event:    { label: 'Event', topic: '--ev', lane: 'event' },
+};
+function calCategoryOf(item) { return CAL_CATEGORY[String((item && item.category) || '').toLowerCase()] || CAL_CATEGORY.event; }
+function topicVarFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).topic : (LANE_TOPIC_VAR[laneKey] || '--ink3'); }
+function typeLabelFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).label : (LANE_LABELS[laneKey] || laneKey); }
 
 // The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point.
 function seasonWindow(live, now = Date.now()) {
@@ -131,6 +138,9 @@ function toManifestRows(live, changesets, draft) {
     return rows;
 }
 
+// The three calendar categories utils/adminParser.js's normalizeCalendarCategory accepts, keyed by the composer's own kind. `drawwindow` is the one the portal never offered a control for.
+const KIND_TO_CALENDAR_CATEGORY = { event: 'Event', playlist: 'Playlist', drawwindow: 'Draw' };
+
 function buildSeasonAddOp(kind, fields) {
     // 🔴 THE PATCH-NOTE CHIP STAGED A CALENDAR EVENT. `patchnote` is one of the five chips on Season's masthead and was not in KIND_TO_ENTITY, so it fell past the draw branch into the calendar one and produced `calendar.add` with `category:'Event'` — a patch note quietly filed as an event, under a control labelled "Patch note". Found rebuilding the composer, not by any check: nothing is wrong with the code's shape, only with what it does.
     //
@@ -144,7 +154,10 @@ function buildSeasonAddOp(kind, fields) {
         // core/ops/draws.js validates payload.date (matching the SeasonalData schema's newDraws/ returningDraws[].date field, and utils/adminParser.js's parseBulkDrawList -- draws have no separate start/end, unlike calendar events, whose schema genuinely has both).
         return { type: 'draw.add', target: null, payload: { title: fields.title, category: KIND_TO_DRAW_CATEGORY[kind], date: fields.endDate, items: fields.items || [] } };
     }
-    return { type: 'calendar.add', target: null, payload: { title: fields.title, startDate: fields.startDate, endDate: fields.endDate, category: fields.category || (kind === 'playlist' ? 'Playlist' : 'Event'), isOngoing: !!fields.isOngoing, isDoubleCP: !!fields.isDoubleCP } };
+    // 🔴 THE CATEGORY IS LOOKED UP, NEVER DEFAULTED. The line above used to read `category: fields.category || (kind === 'playlist' ? 'Playlist' : 'Event')`, so ANY kind that reached here and was not `playlist` was filed as an Event -- which is exactly how the patch-note chip staged a calendar event (see the comment at the top of this function). Adding a third calendar kind would have repeated it silently, under a control labelled "Draw window". An unknown kind now throws by name instead.
+    const category = fields.category || KIND_TO_CALENDAR_CATEGORY[kind];
+    if (!category) throw new Error(`buildSeasonAddOp: no calendar category for kind "${kind}"`);
+    return { type: 'calendar.add', target: null, payload: { title: fields.title, startDate: fields.startDate, endDate: fields.endDate, category, isOngoing: !!fields.isOngoing, isDoubleCP: !!fields.isDoubleCP } };
 }
 
 // Edits one field of an existing row, preserving the rest -- draw.edit/calendar.edit's validate() needs the full record, not a partial patch (core/ops/draws.js, core/ops/calendar.js). Dates are passed as bare ISO date strings (YYYY-MM-DD) rather than a full ISO datetime, since validate() re-parses them through chrono-node's parseAdminDate() (an op arriving as JSON over HTTP never satisfies the "already a real Date instance" fast path those functions also support) and a bare date is the form that parser is built for.
@@ -216,7 +229,7 @@ function panWindow(win, days, full) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
+    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, KIND_TO_CALENDAR_CATEGORY, LANE_LABELS, CAL_CATEGORY, calCategoryOf, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
 }
 
 // ── THE SEASON'S DEADLINE LINES ───────────────────────────────────────────────────────────────

@@ -130,6 +130,13 @@ main{overflow:auto;padding-bottom:96px}
 .key .l i{background:var(--ink3)}
 .key .s i{border:1.5px dashed var(--ink3)}
 .key .c i{border:1.5px dashed var(--warn);background-image:repeating-linear-gradient(45deg,transparent 0 3px,var(--warn) 3px 4px)}
+/* The masthead's right column when a realm has no stat block. Season is the only such realm: its
+   clock IS the stat block's replacement, so it takes that grid area instead of stacking under the
+   title. It keeps its own LEFT internal alignment -- COMPANION 16.31a's fifth gap was about the
+   text INSIDE the clock being ragged, not about which column the clock lives in. */
+.masthead .mh-aside{grid-area:stats;justify-self:end;min-width:0}
+@media (max-width:900px){ .masthead .mh-aside{justify-self:start} }
+
 /* A REALM KEY, beside the shared one. `clean` is an EMPTY slot on purpose -- a clean build carries
    no mark at all, so a filled swatch would name a mark the page never draws. See ArmoryKey. */
 .rkey i{box-shadow:inset 0 0 0 1px var(--rule2)}
@@ -3477,11 +3484,13 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* ══════════ THE TYPES ARE THE ACTION ══════════ */
 .mh-add{grid-column:2;grid-row:2;justify-self:end;margin-top:16px;
   display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:flex-end}
-/* ⚠️ SEASON STACKS THE CLOCK ABOVE THIS ROW, IN THE SAME SLOT. Right-aligning the chips is right
-   when they sit alone in .mh-id ("identity left, the action right"), but under a clock that the
-   2026-08-27 rebuild moved to the LEFT edge it reads as two blocks that missed each other rather
-   than one. Scoped to the sibling selector so the realms with no clock keep the shared rule. */
-.sclock ~ .mh-add{justify-self:start;justify-content:flex-start;margin-top:20px}
+/* ⚠️ `.sclock ~ .mh-add` USED TO LIVE HERE and is gone with the arrangement that needed it. While the
+   clock rendered inside `.mh-id`, the ADD row sat beneath it in the left column and had to be left-
+   aligned or it read as two blocks that had missed each other. The clock now occupies the masthead's
+   RIGHT column (see .mh-aside), because COMPANION 16.31 point 3 says it replaces the stat block --
+   which lived there. So ADD returns to the right-aligned placement every other realm uses, and to the
+   one the mockup itself draws. A sibling selector for an arrangement that no longer exists does not
+   error; it silently stops applying, which is why it is deleted rather than left to rot. */
 .mh-add-k{font:600 10px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
   margin-right:3px}
 /* ══ THE CREATE FAMILY — the shape Harkirat kept ══════════════════════════════
@@ -4482,7 +4491,18 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
        `hot = d < 3`, one if-statement on an element whose entire subject is a
        continuously rising pressure.                                          */
 
-/* .mh-eyebrow was deleted with its only emitter -- Season's three-count line, which restated two figures the stats row beside it already carried. See season.js. */
+/* The demoted figures. A thin line above the title - still reachable, no longer pretending to be
+   headline numbers. 🔴 THESE RULES WERE DELETED AND RESTORED ON 2026-08-27: the counts were
+   duplicated between here and Season's stats row, and I cut the wrong end. COMPANION 16.31 point 3
+   is explicit that the clock replaces the STAT BLOCK and that these counts demote to an eyebrow --
+   so the eyebrow is the survivor and Season has no stats row at all. See season.js's Eyebrow. */
+.mh-eyebrow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;margin:0 0 10px;
+  font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.mh-eyebrow i{font-style:normal;color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.mh-eyebrow i.zero{color:var(--ink3)}
+.mh-eyebrow i.warn{color:var(--warn-ink)}
+.mh-eyebrow i.stg{color:var(--staged)}
 .mh-eyebrow span{display:inline-flex;align-items:baseline;gap:6px}
 
 /* 🔴 REBUILT 2026-08-27 — attempt 13's five hierarchy gaps, critiqued the same night it

@@ -12,7 +12,7 @@ function bandClass({ state }) {
 }
 
 // Which Track lane an item belongs to, derived from its kind \u2014 never hand-assigned per item.
-const LANE_ORDER = ['draw', 'returning', 'event', 'playlist', 'patchnote'];
+const LANE_ORDER = ['draw', 'returning', 'drawwindow', 'event', 'playlist', 'patchnote'];
 function laneFor(item) {
     // 🔴 `lane` FIRST, AND THE OMISSION MADE findOverlaps REPORT EVERYTHING. The Track's own items carry an explicit `lane` (season.js's toTrackItems sets it) and no `kind` at all, so this read undefined and fell through to the 'event' default for EVERY item — which meant findOverlaps saw one lane containing the whole season and reported 61 overlaps across 37 items, including a playlist "overlapping" a draw. It went unnoticed because findOverlaps had no caller anywhere until the Repairs view was built; a pure function with no reader cannot be wrong in a way anybody sees.
     const kind = (item && (item.lane || item.kind) || '').toLowerCase();

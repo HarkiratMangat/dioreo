@@ -20,6 +20,8 @@ import { useMeasured } from './useMeasured.js';
 const LANES = [
     { key: 'draw',      label: 'New draws', topic: '--draw', kind: 'point' },
     { key: 'returning', label: 'Returning', topic: '--ret',  kind: 'point' },
+    // A draw WINDOW is when a draw can be bought, so it is a span and it sits beside the draws it belongs to rather than among the events it was being filed as. Not `exclusive`: two draws can be purchasable at once, and they routinely are.
+    { key: 'drawwindow', label: 'Draw windows', topic: '--dw', kind: 'span' },
     { key: 'event',     label: 'Events',    topic: '--ev',   kind: 'span'  },
     { key: 'playlist',  label: 'Playlists', topic: '--play', kind: 'span', exclusive: true },
 ];
