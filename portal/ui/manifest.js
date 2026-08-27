@@ -98,8 +98,11 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
         <div class="panel" id="manifest">
             ${title ? html`<div class="ph"><span class="t">${title}</span>${headerRight ? html`<span class="rt">${headerRight}</span>` : null}</div>` : null}
             <div class="mtools">
+                <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
+                     markup without adding a box that would break the toolbar's own flex row. -->
+                <span class="mlabel">${title || 'Rows'}</span>
                 <span class="srch"><label class="sr-only" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
-                ${filterGroups.length ? html`<${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} />` : null}
+                ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
                 <span class="rt">${visible.length} of ${rows.length} shown${selected.size ? ` · ${selected.size} selected` : ''}</span>
                 ${onAdd ? html`<button class="accent-fill" onClick=${onAdd}>${addLabel}</button>` : null}
             </div>

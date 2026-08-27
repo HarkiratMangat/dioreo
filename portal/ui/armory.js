@@ -919,7 +919,7 @@ export function ArmoryRealm({ session }) {
     }));
 
     return html`
-        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare', 'Bulk']} onSetView=${setView}
+        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${['Rack', 'Coverage', 'Compare', 'Bulk']} onSetView=${setView} stateKey
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Armory" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',

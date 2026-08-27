@@ -567,6 +567,14 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **And that gate flagged three files whose only offence was describing the trap in the comment recording it — the SECOND source-scan gate today to fire on its own documentation.** The `data:` URL scan did it first. Both strip comments before looking now, and the rule generalises: **a source-shape gate that cannot tell code from prose punishes the files that explain the bug best, and teaches the next reader to delete the comment rather than keep the rule.**
 
+### Three marks are drawn on every realm and none was explained
+
+🔴 **Solid is live, dashed is staged, hatched is a conflict.** The Track's bars, the Board's cards, the composer's ghost and the Manifest's state pills all speak it — and a reader met it with no key anywhere in the portal. *"Shape carries state"* only works if somebody is told what the shapes mean once. The legend sits in the view bar, where the eye already goes and it costs no vertical space, and only on realms that actually draw the marks: a key for an absent mark teaches the reader the page is missing something.
+
+🔴 **AND THE ACCOUNT MENU ELIDED THE MIDDLE OF A DISCORD ID.** The bar's chip shows the last four, which is fine as a chip — but the menu's Copy row showed nothing at all, and the mockup's own note says why the elision is wrong: **the middle is the only part that distinguishes a snowflake from any other**, so a preview that hides it cannot confirm the id is the right one, which is the entire reason anybody looks before pasting one into a grant. Nineteen digits fit. *What you can reach* became a note on the row it qualifies rather than a stat beside the session clock, and that row now goes to Access.
+
+**The Manifest gained its own label and a grouped chip set** — the toolbar had a search box and loose chips with nothing naming the table they filter.
+
 ### Access asked somebody to type a permission vocabulary from memory
 
 🔴 **Eleven scope tokens exist, `manage` silently covers eight of them, and the grant control was a comma-separated text box.** A typo produced a grant that looked accepted and covered nothing — while the grid directly beside it renders every one of those tokens as a labelled, coloured cell. The vocabulary was on screen and unusable in the one control that needed it. The chips come from the **same `matrix.scopes`** the grid is built from, so there is no second list to drift, and the owner-only lock on `destructive` is **shown rather than enforced here** — the server decides that, and hiding it would leave an owner unable to grant the one permission only they can.

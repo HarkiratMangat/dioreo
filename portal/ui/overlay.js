@@ -66,7 +66,7 @@ export function Confirm({ op, tier, title, body, confirmLabel, danger, typed, on
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class=${'btn ' + (danger ? 'dang' : 'go')} disabled=${!ready}
                                onClick=${() => ready && onConfirm()}>${confirmLabel}</button>`}>
-            ${body}
+            <div class="dwbody">${body}</div>
             ${typed ? html`
                 <label class="tc-l" for="tc-in">Type <b>${typed}</b> to confirm</label>
                 <input class="tc-in" id="tc-in" autocomplete="off" spellcheck="false" placeholder=${typed}

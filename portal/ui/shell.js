@@ -146,13 +146,22 @@ function Account({ session, staged, onSignOut }) {
                     ${session.isOwner ? html`<span class="rolebadge">OWNER</span>` : null}
                 </div>
                 <div class="usec">
-                    <div class="ustat"><span>What you can reach</span><b>${reach}</b></div>
                     <div class="ustat"><span>Session</span><b>${sessionLeft(session.sessionExpiresAt)}</b></div>
                 </div>
                 <div class="usec">
+                    <!-- The reach is a NOTE on the row it qualifies rather than a stat of its own: "what you can do"
+                         is a property of this account, not a measurement beside the session clock. -->
+                    <button class="mi" role="menuitem" onClick=${() => { setOpen(false); location.hash = '#/access'; }}>
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6 13.4 4v3.8c0 3-2.2 5.4-5.4 6.6-3.2-1.2-5.4-3.6-5.4-6.6V4z" /></svg>
+                        What you can do<span class="mnote">${reach}</span>
+                    </button>
+                    <!-- 🔴 THE ID IS WHOLE. The chip in the bar shows the last four, and eliding the MIDDLE of a
+                         snowflake removes the only part that distinguishes it from any other — so the preview could
+                         not confirm it was the right id, which is the entire reason anybody looks before pasting one
+                         into a grant. Nineteen digits fit, and a preview that cannot be checked is worse than none. -->
                     <button class="mi" role="menuitem" onClick=${() => { setOpen(false); navigator.clipboard?.writeText(id); }}>
                         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z" /><path d="M3 11V3h8" /></svg>
-                        Copy Discord ID
+                        Copy ID<span class="mid">${id}</span>
                     </button>
                 </div>
                 <div class="usec last">
@@ -217,8 +226,20 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
     return out;
 }
 
-// `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content.
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null }) {
+// `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content. 🔴 THREE MARKS ARE DRAWN ON EVERY REALM AND NONE OF THEM IS EXPLAINED ANYWHERE. Solid is live, dashed is staged, hatched is a conflict — the Track's bars, the Board's cards, the composer's ghost and the Manifest's state pills all speak it, and a reader meets it with no key. "Shape carries state" only works if somebody is told what the shapes mean once.
+//
+// ⚠️ IT SITS IN THE VIEW BAR, NOT IN A PANEL OF ITS OWN. A legend is read once and then ignored, so it belongs where the eye already goes and takes no vertical space — and it is rendered only where a realm actually draws the marks, because a key for a mark that is absent teaches the reader that the page is missing something.
+function StateKey() {
+    return html`
+        <span class="key" aria-label="What the marks mean">
+            <span class="l"><i></i>live</span>
+            <span class="s"><i></i>staged</span>
+            <span class="c"><i></i>conflict</span>
+        </span>
+    `;
+}
+
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
     useEffect(() => { installTips(); }, []);
@@ -272,6 +293,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                                 ${viewOptions.map((v) => html`
                                     <button role="tab" aria-pressed=${v === view} onClick=${() => onSetView(v)}>${v}</button>`)}
                             </div>
+                            ${stateKey ? html`<${StateKey} />` : null}
                             ${tools}
                         </div>
                         ${viewSlot}
