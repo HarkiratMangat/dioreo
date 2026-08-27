@@ -182,11 +182,9 @@ Paste-ready, in **one fenced block**, containing:
 
 ## Name the ARTIFACT every measurement came from — and the DOCUMENT every section number is in
 
-⚠️ **A bare `§16.31` does not say which file it lives in.** The 2026-08-27 reader test flagged one as a missing heading in the handoff itself — a false positive that is really this same rule applied to section numbers. Write the path with the section the first time it appears, and say plainly which numbers are local and which belong to another document.
-
-## Name the ARTIFACT every measurement came from
-
 ⚠️ **Harkirat had to ask *"is that screenshot of the mockup or the wired in portal?"*** — a reasonable question, about a screenshot whose filename said `mk-` and whose prose said nothing. **A number or an image without its provenance teaches a fact that cannot be checked**, and on this project the two artifacts look almost identical by design. Prefix the files (`mk-` mockup, `pt-` portal), and say which one in the sentence, not only in the path.
+
+⚠️ **The same rule applies to SECTION NUMBERS: a bare `§16.31` does not say which file it lives in.** The 2026-08-27 reader test flagged one as a missing heading in the handoff itself — a false positive that is really this rule, one level up. Write the path with the section the first time it appears, and say plainly which numbers are local and which belong to another document.
 
 ## Two checks that are worth the thirty seconds
 
