@@ -3383,7 +3383,7 @@ Neither is a defect the harness could ever report, because both are statements a
 
 Harkirat: *"draw a temporary fine grid over each page, and then truly check if you think each element is properly aligned and sized. This is no mechanical check, I want you to genuinely think about it."*
 
-**The instrument** is `.grid.js` — injected, linked from nothing, `__grid()` / `__grid.off()` / `__grid.report()`. Two decisions in it are load-bearing:
+**The instrument** is `.grid.js` — injected, linked from nothing, `__grid()` / `__grid.off()` / `__grid.all()`. Two decisions in it are load-bearing:
 
 - 🔴 **It draws inside `main`, not the viewport.** `main` is this portal's scroll container (`window.scrollY` reads 0 on every page). A viewport-fixed grid holds still while content scrolls beneath it, so every judgement below the fold compares content at scroll 900 against lines drawn for scroll 0 — well-formed, and about nothing.
 - 🔴 **It reports numbers beside the picture.** A 3px misalignment is under one pixel in a downscaled screenshot. The picture answers *does this look wrong*; the numbers answer *is this wrong*. Neither alone can settle it, and the question asked for a judgement, which needs both.
