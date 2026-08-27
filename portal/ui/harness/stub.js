@@ -82,6 +82,15 @@ function analyticsPayload() {
             // 🔴 THE +4 FLOOR MEANT THIS SPARKLINE COULD NEVER READ ZERO. Under ?empty=1 the Health panel showed "Alerts per day: 3 2 4 3 2 4 4" beside "0 errors", "0 commands" and a river saying nothing had been recorded — a chart inventing a week of activity in a portal with no records at all, which is the precise failure that flag exists to expose. Both series now derive from a real row count, so an empty fixture set produces empty bars.
             spark: { alerts: spark(1, Math.ceil(alertRows.length / 7)), commands: spark(3, Math.round((totals.events || 0) / 7)) },
             restarts24h: 0, restarts7d: boot.boots || 0,
+            // The real route sends the whole BootRecord; the fixture's bootStats carries the same fields under the same names, so the card renders what production would.
+            lastBoot: {
+                version: boot.lastVersion || null, commit: boot.lastCommit || null, kind: boot.kind || null,
+                host: boot.host || 'diors-builds-bot', guilds: boot.guilds ?? 0,
+                commandsRegistered: boot.commandsRegistered ?? 0,
+                emojiSynced: boot.emojiSynced ?? 0, emojiMissing: boot.emojiMissing ?? 0,
+                cloudinaryConfigured: boot.cloudinaryConfigured !== false,
+                restartContext: boot.restartContext || '', at: new Date().toISOString(),
+            },
         },
         // 🔴 THESE TWO WERE ARRAYS AND THE REAL ROUTE RETURNS OBJECTS. `usageStats: F_.cmdStats` put the fixture array straight under the API's key name — the exact defect this file's own header describes, committed a second time in the same function, on the two fields nothing was reading yet. The old component only touched `usageStats.current`, which is undefined on an array, so a header silently did not render and every gate stayed green. It surfaced only when a component finally destructured `byCommand` and got nothing on a fixture set carrying 496 events.
         //
@@ -345,7 +354,15 @@ const ROUTES = [
         const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({ ...s, realm: s.realm || REALM[s.key] || null }));
         return { scopes, admins: FIX.accessAdmins || [] };
     }],
-    [/^\/api\/analytics$/, () => analyticsPayload()],
+    // ⚠️ THE FLAG CHANGES THE NUMBERS HERE TOO, or the toggle is a control that visibly does nothing — which is the exact defect class this branch has spent its life finding. The real route re-runs the aggregations with `isAdmin` unfiltered; the harness cannot, so it scales the two counts by a fixed fraction and says so. It demonstrates that the control reaches the server and the page re-reads; it does not claim to be the real ratio.
+    [/^\/api\/analytics$/, (params) => {
+        const payload = analyticsPayload();
+        if (params.get('admin') !== '1') return payload;
+        const bump = (n) => Math.round((n || 0) * 1.34);
+        return { ...payload,
+            health: { ...payload.health, commands24h: bump(payload.health.commands24h) },
+            usageStats: { ...payload.usageStats, current: bump(payload.usageStats.current) } };
+    }],
     // 🔴 THE HARNESS MUST PARSE DATES TOO, or the composer's echo reads "not a date yet" for every value and the one thing that surface exists to demonstrate cannot be seen. The real route calls the bot's chrono parser; this understands only what a fixture needs to show — an ISO day, and the two relative forms the placeholder itself suggests. ⚠️ It is deliberately NARROWER than chrono rather than a second attempt at it: a stub that half-implements a parser teaches the reviewer a grammar the product does not have. ⚠️ NARROWER THAN THE REAL PARSER ON PURPOSE, same as parse-date above: this understands the two shapes the placeholder itself suggests, so a reviewer can see the preview work without the stub teaching a grammar the product does not have. The real route runs utils/adminParser.js.
     [/^\/api\/parse-bulk$/, (params, body) => {
         const kind = (body && body.kind) || 'draw';

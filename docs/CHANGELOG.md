@@ -567,6 +567,22 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **And that gate flagged three files whose only offence was describing the trap in the comment recording it — the SECOND source-scan gate today to fire on its own documentation.** The `data:` URL scan did it first. Both strip comments before looking now, and the rule generalises: **a source-shape gate that cannot tell code from prose punishes the files that explain the bug best, and teaches the next reader to delete the comment rather than keep the rule.**
 
+### Two panels on one screen were counting different rows
+
+🔴 **`computeUsageStats` has always excluded admin traffic. `computeTimingStats` never filtered it at all.** So the Usage panel's counts and the Timing panel's percentiles — side by side, in Discord and in the portal — have been computed over **different populations**, with nothing saying so. `/manage` is the heaviest thing this bot does; a *"usually 40ms"* that silently includes it answers a question nobody asked. Found while threading a toggle through, not by looking for it.
+
+⚠️ **The fix deliberately does not move a shipped number.** Making both exclude admin by default is the correct reading, but flipping it silently would change what `/bot analytics` has always printed — so the default is consistent and the **Discord call sites override it explicitly**. The discrepancy is now visible at the call site instead of hidden in a missing `$match`, and closing it is one argument away. *(Worth a decision: whether `/bot analytics`'s timing should keep counting `/manage`.)*
+
+**The portal gets the toggle the mockup specifies** — *include admin traffic* — and it re-asks the server rather than filtering in the browser, because there is no client-side subset of a p95.
+
+### Eleven facts are written on every boot and two were read
+
+🔴 **`models/BootRecord.js` stores the commit, the host, the guild count, how many commands registered and how many emoji synced or went MISSING** — and that last one is the known stale-prod-id trap, where a non-zero number means emoji render as raw ids in Discord. All of it was written on every boot and read by nothing. The Health panel showed the version and the kind. **The card says what the missing count MEANS**, not only how many, because a figure nobody can act on is a figure nobody reads. A conservation check ties every field to the model that declares it, so a rename there fails a test instead of rendering em-dashes forever.
+
+**And the river's level was a filter and never a mark** — an error and a routine change read identically down the column, so the one thing you scan a log for needed the filter to be touched first.
+
+⚠️ **THIRD source-scan gate on this branch to fire on prose.** The `data:` URL scan, the `.logic.js` import gate, and this one — which read the sentence *"computeTimingStats() already returns the rows"* as an unguarded call site. It is not coincidence: **a file that documents a trap contains the trap's own shape in words**, so a gate written without a comment-stripper fires hardest on the best-documented code and teaches the next reader to delete the comment. Strip first, always.
+
 ### The table said what everything was CALLED and nothing about what is in it
 
 🔴 **A draw's whole point is the items it carries and their rarity. The row showed a title, a type and a date** — so the one question a build or draw list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line under a name and a right-aligned status column; **all four were styled and none was emitted**, and an orphan check could not see it because every one of them had a rule.

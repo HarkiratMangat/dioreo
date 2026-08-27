@@ -54,7 +54,12 @@ const RIVER_COLUMNS = [
     { key: 'kind', label: 'Kind', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
     // ⚠️ The source is PLAIN TEXT in a monospaced column. It used to carry a `.src` chip class with no rule behind it, and a chip here would compete with the kind chip beside it for the same reading — one of the two has to be quieter, and the kind is the one that classifies.
     { key: 'source', label: 'Source', render: (r) => sourceOf(r) },
-    { key: 'summary', label: 'What', render: (r) => summaryOf(r) },
+    // 🔴 THE LEVEL WAS A FILTER AND NEVER A MARK. An error and a routine change read identically down the column, so the one thing you scan a log for — which rows are bad — needed the filter to be touched first. The dot carries severity, the tag names it, and both are absent on rows that have no level rather than defaulting to a reassuring one.
+    { key: 'summary', label: 'What', render: (r) => {
+        const sev = r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : r.level ? 'info' : '';
+        return html`<span class="sev ${sev}"></span>${summaryOf(r)}${r.kind === 'alert' && r.level
+            ? html`<span class=${`lvtag lv-${r.level}`}>${r.level}</span>` : null}`;
+    } },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : 'system') },
 ];
 
@@ -131,6 +136,33 @@ function Health({ health }) {
                 <${Tile} label="Commands 24h" value=${(h.commands24h ?? 0).toLocaleString()}
                          sub=${`${h.distinctUsers24h ?? 0} distinct users`} />
             </div>
+            <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
+                 stores the commit, the guild count, how many commands registered and how many emoji synced
+                 or went MISSING — and that last one is the known stale-prod-id trap, where a non-zero
+                 number means emoji will render as raw ids in Discord. All of it was recorded and read by
+                 nobody. -->
+            ${h.lastBoot ? html`
+                <div class="bootcard">
+                    <h5>Last boot</h5>
+                    <div class="bootgrid">
+                        <span>Version</span><b>${h.lastBoot.version || '—'}</b>
+                        <span>Commit</span><b>${h.lastBoot.commit || 'not recorded'}</b>
+                        <span>Kind</span><b>${h.lastBoot.kind || '—'}</b>
+                        <span>Host</span><b>${h.lastBoot.host || '—'}</b>
+                        <span>Guilds</span><b>${h.lastBoot.guilds ?? '—'}</b>
+                        <span>Commands</span><b>${h.lastBoot.commandsRegistered ?? '—'}</b>
+                        <span>Emoji</span>
+                        <b class=${h.lastBoot.emojiMissing ? 'bad' : 'ok'}>${h.lastBoot.emojiSynced ?? 0} synced${h.lastBoot.emojiMissing ? `, ${h.lastBoot.emojiMissing} missing` : ''}</b>
+                        <span>Cloudinary</span>
+                        <b class=${h.lastBoot.cloudinaryConfigured ? 'ok' : 'bad'}>${h.lastBoot.cloudinaryConfigured ? 'configured' : 'not configured'}</b>
+                        ${h.lastBoot.restartContext ? html`<span>Restarts</span><b>${h.lastBoot.restartContext}</b>` : null}
+                    </div>
+                    <!-- A non-zero missing count is not cosmetic: it is the emoji-capture trap, and the card
+                         says what it means rather than only how many. -->
+                    ${h.lastBoot.emojiMissing
+                        ? html`<p class="pnote">${h.lastBoot.emojiMissing} emoji did not resolve at boot — those render as raw ids in Discord until the next sync.</p>`
+                        : null}
+                </div>` : null}
             <div class="hsplit">
                 <section class="hpanel">
                     <h4>Restarts</h4>
@@ -492,7 +524,9 @@ function Search({ rows = [] }) {
 }
 
 export function AnalyticsRealm({ session }) {
-    const load = useAsync(() => fetchJson('/api/analytics'), []);
+    // 🔴 THE ONE FIGURE AN ADMIN CANNOT GET ANYWHERE ELSE. `/manage`, `/bot` and `/autobuild` are stamped `isAdmin` and excluded from every product count — correctly, because one admin's afternoon would otherwise dominate a small dataset. But that also makes "did my own edit register, and how long did it take" unanswerable from the screen that should answer it. The toggle asks the server again rather than filtering here, because the percentiles and the roll-ups are aggregations: there is no client-side subset of a p95.
+    const [includeAdmin, setIncludeAdmin] = useState(false);
+    const load = useAsync(() => fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), [includeAdmin]);
     const [view, setView] = useState('Health');
     const overlay = useOverlay();
 
@@ -555,6 +589,12 @@ export function AnalyticsRealm({ session }) {
         <${Shell} realm="analytics" session=${session} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
+                                               actions=${html`
+                                                   <label class="adminsw">
+                                                       <input type="checkbox" checked=${includeAdmin}
+                                                              onChange=${(e) => setIncludeAdmin(e.target.checked)} />
+                                                       include admin traffic
+                                                   </label>`}
                                                stats=${[
                                                    { value: fmtUptime(h.uptimeSince), label: 'uptime' },
                                                    { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'bad' : undefined },

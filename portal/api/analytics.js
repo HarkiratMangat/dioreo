@@ -61,6 +61,15 @@ async function healthStats() {
         uptimeSince: lastBoot ? lastBoot.createdAt : null,
         lastBootKind: lastBoot ? lastBoot.kind : null,
         lastBootVersion: lastBoot ? lastBoot.version : null,
+        // 🔴 THE BOOT RECORD CARRIES ELEVEN FACTS AND THE PANEL SHOWED TWO. models/BootRecord.js stores the commit, the guild count, how many commands registered and how many emoji synced or went MISSING — and that last one is the known stale-prod-id trap, where a non-zero number is a real signal that emoji will render as raw ids in Discord. All of it was written on every boot and read by nothing.
+        lastBoot: lastBoot ? {
+            version: lastBoot.version || null, commit: lastBoot.commit || null, kind: lastBoot.kind || null,
+            host: lastBoot.host || null, guilds: lastBoot.guilds ?? null,
+            commandsRegistered: lastBoot.commandsRegistered ?? null,
+            emojiSynced: lastBoot.emojiSynced ?? null, emojiMissing: lastBoot.emojiMissing ?? null,
+            cloudinaryConfigured: Boolean(lastBoot.cloudinaryConfigured),
+            restartContext: lastBoot.restartContext || '', at: lastBoot.createdAt || null,
+        } : null,
         restarts24h: boots7d.filter(b => new Date(b.createdAt) >= since24h).length,
         restarts7d: boots7d.length,
         errors24h: errors24h.length,
@@ -115,11 +124,13 @@ function register(route) {
     route('GET', /^\/api\/analytics$/, requireAdmin(async (req, res, url, session) => {
         if (!(await hasCommandAccess(session.discordId, 'bot'))) return forbidden(res, 'forbidden');
         const { computeUsageStats, computeTimingStats } = require('../../commands/bot');
+        // ⚠️ ADMIN TRAFFIC IS OUT BY DEFAULT AND IN ON REQUEST. `/manage` is the heaviest thing this bot does, so counting it by default would let one admin's afternoon dominate a product-usage reading — and leaving it out permanently makes "did my own edit register" unanswerable from the one screen that should answer it.
+        const includeAdmin = url.searchParams.get('admin') === '1';
         const { OUTCOME_KEYS, ENTRY_KEYS } = require('../../models/AnalyticsRollup');
         // 🔴 THE LIMITS ARE RAISED HERE, NOT IN THE SHARED FUNCTION. 8 and 6 are the numbers that fit a Discord panel; the portal has a scrolling page and the reason it exists is depth. Passing the limit keeps both true at once -- see the options bag on computeUsageStats.
         const [river, health, usageStats, timingStats, reach, searches, events7d] = await Promise.all([
             eventRiver({}), healthStats(),
-            computeUsageStats({ limit: 25 }), computeTimingStats({ limit: 25 }),
+            computeUsageStats({ limit: 25, includeAdmin }), computeTimingStats({ limit: 25, includeAdmin }),
             reachStats(), searchTerms(),
             AnalyticsEvent.find({ createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) } }).select('createdAt').lean(),
         ]);
