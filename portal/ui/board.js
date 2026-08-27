@@ -30,7 +30,8 @@ function Card({ changeset, onExport, onOpen, onDiscard, selected }) {
              onClick=${() => onOpen(changeset)}
              onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(changeset); } }}>
             <span class="bn">${describeOp(ops[0])}</span>
-            <span class="bd">T${changeset.tier} · ${changeset.realm || 'season'}${ops.length > 1 ? ` · +${ops.length - 1} more` : ''}</span>
+            <span class="bd">T${changeset.tier}<span class="dot2">·</span>${changeset.realm || 'season'}${ops.length > 1
+                ? html`<span class="dot2">·</span>+${ops.length - 1} more` : null}</span>
             ${describeInverse(ops[0]) ? html`<span class="bmeta"><b>${describeInverse(ops[0])}</b></span>` : null}
             ${reason ? html`
                 <div class="why">
@@ -42,15 +43,20 @@ function Card({ changeset, onExport, onOpen, onDiscard, selected }) {
                         : null}
                 </div>
             ` : null}
-            ${onDiscard ? html`
-                <!-- 🔴 THIS WAS THE LAST NATIVE confirm() IN THE PORTAL, and it was invisible because it worked.
-                     A browser dialog is the one surface the portal cannot style, cannot make modal on its own
-                     terms, and cannot say a tier in — and it sat on a card in a pipeline whose entire subject is
-                     which changes are safe to take back. The caller supplies a confirming onDiscard now (season.js
-                     opens the shared drawer); this button's job is to ask, not to decide. -->
-                <button class="chip danger" style="margin-top:6px"
-                        onClick=${(e) => { e.stopPropagation(); onDiscard(changeset); }}>Discard</button>
-            ` : null}
+            <!-- 🔴 THIS WAS THE LAST NATIVE confirm() IN THE PORTAL, and it was invisible because it worked.
+                 A browser dialog is the one surface the portal cannot style, cannot make modal on its own
+                 terms, and cannot say a tier in — and it sat on a card in a pipeline whose entire subject is
+                 which changes are safe to take back. The caller supplies a confirming onDiscard now (season.js
+                 opens the shared drawer); this button's job is to ask, not to decide. -->
+            <!-- ⚠️ AND THE WAY IN WAS INVISIBLE. Opening the review was the whole CARD's click handler, which
+                 announces itself to a screen reader and to nobody else — beside a Discard button that looked
+                 like the only thing the card could do. Both verbs are stated now; the card click stays, because
+                 a large target is worth keeping once it is no longer the only one. -->
+            <div class="actions">
+                ${onDiscard ? html`
+                    <button onClick=${(e) => { e.stopPropagation(); onDiscard(changeset); }}>Discard</button>` : null}
+                <button class="go" onClick=${(e) => { e.stopPropagation(); onOpen(changeset); }}>Open</button>
+            </div>
         </div>
     `;
 }

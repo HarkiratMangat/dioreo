@@ -390,11 +390,34 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
 //
 // 🔴 THE TRACK DREW THREE DEADLINE LINES AND NAMED NONE OF THEM. `.dend` is a coloured hairline crossing every lane, and which colour meant which deadline was something you had to remember — while in the live season TWO of the three fall on the same day, so even the count was ambiguous. The rail is the flag row those lines were always missing, in flow above the lanes so it takes its own height rather than sitting over them.
 //
-// ⚠️ THE CHIPS DO NOT DRAG. The adopted sheet gives them an `ew-resize` cursor because the page it was drawn for had no other way to move a deadline; this portal has the identity editor directly above, where the date is typed and read by the bot's own parser. A season deadline must land on an exact day, and a coarse gesture across a 44-day axis is the wrong instrument for that — so the cursor is overridden rather than left promising a gesture that is not there.
-function DeadRail({ rail, view }) {
+// ⚠️ THE CHIPS DO NOT DRAG. The adopted sheet gives them an `ew-resize` cursor because the page it was drawn for had no other way to move a deadline; this portal has the identity editor directly above, where the date is typed and read by the bot's own parser. A season deadline must land on an exact day, and a coarse gesture across a 44-day axis is the wrong instrument for that — so the cursor is overridden rather than left promising a gesture that is not there. 🔴 TWO DEADLINES ON ONE DAY READ AS TWO SEPARATE DATES. The rail stacks them so neither label is hidden, which solves the collision and hides the FACT — that Battle Pass and Ranked end together is a thing about the season, and the reader had to compare two date strings to notice it.
+//
+// ⚠️ AND THE RAIL SAID *WHEN* WITHOUT SAYING *HOW LONG*. The span runs from now to the next deadline only: drawing all three turns the rail into three overlapping bars saying the same thing at three lengths.
+function DeadRail({ rail, view, todayIso }) {
     if (!rail || (!rail.flags.length && !rail.pins.length)) return null;
+    const byDate = new Map();
+    for (const d of rail.flags) {
+        const day = String(d.date).slice(0, 10);
+        if (!byDate.has(day)) byDate.set(day, []);
+        byDate.get(day).push(d);
+    }
+    const notches = [...byDate.entries()].filter(([, list]) => list.length > 1);
+    const ahead = rail.flags.filter((d) => String(d.date).slice(0, 10) >= todayIso)
+        .sort((a, b) => (String(a.date) < String(b.date) ? -1 : 1));
+    const next = ahead[0] || null;
+    const nowP = view.pct(todayIso), nextP = next ? view.pct(next.date) : null;
+    const spanOk = next && nowP >= 0 && nextP > nowP && nextP <= 100;
     return html`
         <div class="deadrail" aria-label="Season deadlines">
+            ${spanOk ? html`
+                <button type="button" class="dspan" style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%`}
+                        data-tip=${`${next.title || next.label} is the next deadline.\nThis is the time left before it.`}
+                        onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}></button>` : null}
+            ${notches.map(([day, list]) => html`
+                <div class="dnotch" key=${day} style=${`left:${view.pct(day)}%`}
+                     data-tip=${`${list.length} deadlines land on ${TL.fmt(day)}: ${list.map((d) => d.label).join(', ')}`}>
+                    ${list.map((d) => html`<i key=${d.key} style=${`--c:${d.hex}`}></i>`)}
+                </div>`)}
             ${rail.flags.map((d) => html`
                 <span key=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '')}
                       style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
@@ -413,7 +436,7 @@ function DeadRail({ rail, view }) {
     `;
 }
 
-export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail }) {
+export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail, onPickDay }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
@@ -479,6 +502,16 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
     );
 
     const nowPct = view.pct(TL.toISO(Date.now()));
+    const [hover, setHover] = useState(null);
+    // The inverse of view.pct, from the same window the view was built from — deriving the date any other way would put the readout and the bars on two different axes.
+    const winA = visible && visible.start ? Date.parse(visible.start + 'T00:00:00Z') : NaN;
+    const winB = visible && visible.end ? Date.parse(visible.end + 'T00:00:00Z') : NaN;
+    const hoverDate = (hover === null || !Number.isFinite(winA) || !Number.isFinite(winB) || winB <= winA)
+        ? null : TL.toISO(winA + (hover / 100) * (winB - winA));
+    // The LAST of the three deadlines, skipping any marked TBD — a TBD date is a placeholder, and shading from a placeholder would grey out a month of real season.
+    const ends = ['bpEnd', 'rankEnd', 'dmzEnd']
+        .filter((k) => season && season[k] && !season[`${k}TBD`]).map((k) => String(season[k]).slice(0, 10)).sort();
+    const oosPct = ends.length ? (() => { const p = view.pct(ends[ends.length - 1]); return p >= 0 && p < 100 ? p : null; })() : null;
 
     return html`
         <div class="panel" id="track">
@@ -494,12 +527,28 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                     <span class="stt conf">CONFLICT</span>
                 </span>
             </div>
-            <div class="tk-wrap" ref=${rootRef}><div class="tk-inner">
+            <div class="tk-wrap" ref=${rootRef}
+                 onMouseMove=${(e) => {
+                     const box = e.currentTarget.getBoundingClientRect();
+                     if (!box.width) return;
+                     setHover(Math.max(0, Math.min(100, ((e.clientX - box.left) / box.width) * 100)));
+                 }}
+                 onMouseLeave=${() => setHover(null)}
+                 onClick=${(e) => {
+                     // Only the empty axis opens a day — a click that started on a bar is that bar's own.
+                     if (!onPickDay || !hoverDate || e.target.closest('.bar, .pt, .dflag, .dpin, .dspan, .nm, button')) return;
+                     onPickDay(hoverDate);
+                 }}><div class="tk-inner">
                 ${onWindow && full ? html`
                     <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
                               onWindow=${onWindow} />` : null}
+                <!-- ⚠️ THE READOUT IS THE POINT, NOT THE LINE. A bare vertical rule tells you where the pointer is, which you already knew; the date under it is the thing the ruler's five tick labels cannot give you between ticks. Pointer-driven and aria-hidden — it says nothing a keyboard user is missing, because the same dates are in the table below. -->
+                ${hover === null || !hoverDate ? null : html`
+                    <div class="xhair on" style=${'left:' + hover + '%'} aria-hidden="true">
+                        <span class="xd"><b>${TL.fmt(hoverDate)}</b></span>
+                    </div>`}
                 <${Ruler} view=${view} />
-                <${DeadRail} rail=${rail} view=${view} />
+                <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} />
                 <div class="lanes">
                     ${lanes.map((l) => html`
                         <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}
@@ -515,6 +564,10 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                                      onToggle=${(e) => toggle(l, true, e.altKey)} fits=${fits} />`)}
                     ` : null}
                     <div class="ov">
+                        <!-- 🔴 THE TRACK RAN TO ITS RIGHT EDGE WITH NOTHING SAYING THE SEASON HAD STOPPED. Everything past the last real deadline is time no player is playing this season in, and a bar drawn there looks exactly like a bar drawn inside it. Shaded from the LAST deadline, not the battle pass: only a span can outlive the season, and the battle pass is rarely the latest of the three. -->
+                        ${oosPct === null ? null : html`
+                            <div class=${'oos' + (100 - oosPct >= 14 ? ' wide' : '')}
+                                 style=${'left:' + oosPct + '%'} aria-hidden="true"></div>`}
                         <div class="now" style=${'left:' + nowPct + '%'}></div>
                         ${season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null}
                     </div>

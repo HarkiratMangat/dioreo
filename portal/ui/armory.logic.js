@@ -91,6 +91,38 @@ function armoryExportQuery({ scope, mode, category, ids }) {
     return `mode=${encodeURIComponent(mode)}`;
 }
 
+// 🔴 "UPDATE" IS NOT A PREVIEW. The bulk paste told you a block would update an existing build and stopped there — so a paste that silently rewrote a category, dropped a share code or changed a rank looked exactly like one that changed nothing, and the only way to find out was to stage it and read the diff on the Review screen. These are the fields the upsert actually writes.
+//
+// ⚠️ THE MATCH IS THE CLIENT'S, THE VERDICT IS THE SERVER'S. /api/parse-bulk/loadout decides update-or-new on `weaponKey` — a normalised form this browser does not compute — so `existing` is taken from the reply and never re-derived here. This only names the CHANGING FIELDS, and when it cannot find the local record it says so rather than reporting "no change", because a silent empty diff over a real update is the exact failure it exists to prevent.
+const BULK_DIFF_FIELDS = ['category', 'shareCode', 'imageKey', 'categoryRank', 'dmzRangeRank', 'isMeta', 'isToxic'];
+const FIELD_WORDS = {
+    category: 'Category', shareCode: 'Share code', imageKey: 'Image reference',
+    categoryRank: 'Category rank', dmzRangeRank: 'DMZ range rank', isMeta: 'Meta badge', isToxic: 'Toxic badge',
+};
+
+const sameish = (a, b) => String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
+
+function findLocalBuild(builds, row, mode) {
+    return (builds || []).find((b) => b.mode === mode
+        && sameish(b.weaponName, row.weaponName) && sameish(b.buildName, row.buildName)) || null;
+}
+
+function bulkFieldDiff(row, before) {
+    if (!before) return null;
+    const out = [];
+    for (const f of BULK_DIFF_FIELDS) {
+        // A field the block did not mention arrives undefined and the upsert leaves it alone; only a value that is actually present can be a change.
+        if (row[f] === undefined) continue;
+        if (!sameish(before[f], row[f])) out.push({ field: f, word: FIELD_WORDS[f] || f, was: before[f], now: row[f] });
+    }
+    // The attachment LIST is what changes; the count is what the preview row carries, and a count that matches can still be a different set. Named honestly rather than claimed as equality.
+    const beforeN = (before.attachments || []).length;
+    if (typeof row.attachments === 'number' && row.attachments !== beforeN) {
+        out.push({ field: 'attachments', word: 'Attachments', was: `${beforeN}`, now: `${row.attachments}` });
+    }
+    return out;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken, bulkPasteSummary, armoryExportQuery, DMZ_RANGE_TOKENS, MP_RANK_TOKENS };
+    module.exports = { bulkFieldDiff, findLocalBuild, buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken, bulkPasteSummary, armoryExportQuery, DMZ_RANGE_TOKENS, MP_RANK_TOKENS };
 }

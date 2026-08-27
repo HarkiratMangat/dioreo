@@ -55,9 +55,46 @@ function stateForElement(elementId, changesets) {
 
 // 🔴 THE TABLE CALLED ITSELF "EVERYTHING IN THE SEASON" AND OMITTED THE DRAFT ENTIRELY. A draft can hold twenty items — the harness fixture's does — and none of them appeared in the one place that claims to list everything, so the only way to see what was staged for next season was to read it off the Track. The draft rows come through marked, because a staged item and a live one are not the same fact and a table that renders them alike is worse than one that omits them.
 //
-// ⚠️ Found because the `.nextmark` branch in SEASON_COLUMNS could never be reached: the condition was `row.isDraft` and nothing ever set it. A branch that cannot be true is the same defect as a button with no handler, one layer down.
+// ⚠️ Found because the `.nextmark` branch in SEASON_COLUMNS could never be reached: the condition was `row.isDraft` and nothing ever set it. A branch that cannot be true is the same defect as a button with no handler, one layer down. 🔴 THE MANIFEST SAID *WHEN* AND NEVER *WHERE IN THE SEASON*. "Sep 3 → Sep 12" is a fact you have to hold three of at once to compare; the Track answers it visually and the table sitting under the Track did not, so scanning for "what is running late in the season" meant reading 39 date pairs. This is the same window the Track draws, so a row's bar and its lane bar cannot disagree.
+//
+// ⚠️ AND IT IS COMPUTED HERE, NOT IN THE COLUMN. A Manifest column receives a row and nothing else — no season, no window — so a column that scaled its own bar would need a second copy of the season bounds passed in beside it. Stamping it on the row keeps one derivation.
+function seasonSpanGeometry(live) {
+    const days = [];
+    for (const key of ['newDraws', 'returningDraws', 'calendar']) {
+        for (const i of live[key] || []) {
+            for (const v of [i.date, i.endDate]) if (v) days.push(String(v).slice(0, 10));
+        }
+    }
+    for (const k of ['bpEnd', 'rankEnd', 'dmzEnd']) if (live[k] && !live[`${k}TBD`]) days.push(String(live[k]).slice(0, 10));
+    if (!days.length) return null;
+    days.sort();
+    const lo = Date.parse(`${days[0]}T00:00:00Z`), hi = Date.parse(`${days[days.length - 1]}T00:00:00Z`);
+    // A season whose every dated thing lands on one day has no span to draw against; returning null makes the column render nothing rather than divide by zero and paint a full-width bar on every row.
+    if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) return null;
+    return { lo, hi, span: hi - lo };
+}
+
+function spanBarFor(item, geo) {
+    if (!geo || !item || !item.date) return null;
+    const a = Date.parse(`${String(item.date).slice(0, 10)}T00:00:00Z`);
+    const b = Date.parse(`${String(item.endDate || item.date).slice(0, 10)}T00:00:00Z`);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+    const left = ((a - geo.lo) / geo.span) * 100;
+    // A point-in-time release has zero width and would draw nothing at all; 1.5% is the floor that keeps a release visible without letting it read as a window.
+    const width = Math.max(1.5, ((b - a) / geo.span) * 100);
+    return { left: Math.max(0, Math.min(100, left)), width: Math.min(100 - Math.max(0, Math.min(100, left)), width) };
+}
+
+function nowPctIn(geo, nowMs) {
+    if (!geo) return null;
+    const p = ((nowMs - geo.lo) / geo.span) * 100;
+    return p >= 0 && p <= 100 ? p : null;
+}
+
 function toManifestRows(live, changesets, draft) {
     if (!live) return [];
+    const geo = seasonSpanGeometry(live);
+    const nowP = nowPctIn(geo, Date.now());
     const rows = [];
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {
         for (const item of live[key] || []) {
@@ -68,6 +105,9 @@ function toManifestRows(live, changesets, draft) {
                 state: stateForElement(item._id, changesets),
                 // Display-only, both stripped again by buildSeasonEditOp before an op is built.
                 topicVar: topicVarFor(key, item), typeLabel: typeLabelFor(key, item),
+                span: spanBarFor(item, geo), nowPct: nowP,
+                // ⚠️ ONLY A SPAN CAN OUTLIVE THE SEASON. A draw carries one date and no end at all, so asking whether it "ends after" a deadline compares a release to a deadline and calls every late release a conflict — the same reading error Home's own predicate had to be corrected for.
+                outlivesSeason: Boolean(item.endDate && live.bpEnd && String(item.endDate).slice(0, 10) > String(live.bpEnd).slice(0, 10)),
                 // A draw's real schema field is `date` (no separate start/end); calendar events have both `date`(start) and `endDate`. This pre-existing display line always fell to '—' for every draw before this fix, since item.endDate is never set on a draw record.
                 window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
             });
@@ -82,6 +122,7 @@ function toManifestRows(live, changesets, draft) {
                     id: `draft:${item._id}`, title: item.title, lane: key, isDraft: true,
                     state: 'staged',
                     topicVar: topicVarFor(key, item), typeLabel: typeLabelFor(key, item),
+                    span: spanBarFor(item, geo), nowPct: nowP,
                     window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
                 });
             }
@@ -175,7 +216,7 @@ function panWindow(win, days, full) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
+    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, LANE_LABELS, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
 }
 
 // ── THE SEASON'S DEADLINE LINES ───────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest } from './manifest.js';
 import { Tray } from './tray.js';
-import { useOverlay } from './overlay.js';
+import { useOverlay, Drawer } from './overlay.js';
 import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 
@@ -23,6 +23,7 @@ const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true },
     // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
     { key: 'lane', label: 'Type', col: 'c-type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane,
+      metaClass: 'rowlife',
       meta: (row) => (row.isDraft
           ? html`<span class="nextmark">NEXT SEASON</span>`
           : (LIFE_LABEL[rowLifecycle(row, todayIso())] || '')) },
@@ -42,6 +43,18 @@ const SEASON_COLUMNS = [
           const days = Math.round((b - a) / 86400000) + 1;
           return `${days} day${days === 1 ? '' : 's'}`;
       } },
+    // ⚠️ NO LABEL TEXT IN THE CELL. The window column two along already prints the dates; this one answers a different question — where in the season — and repeating the dates inside it would make the two columns argue about which is the answer.
+    { key: 'span', label: 'Season', col: 'c-spark', render: (row) => {
+        if (!row.span) return html`<span class="none">—</span>`;
+        return html`
+            <div class="sparkwrap">
+                <span class="spark" style=${`--c:var(${row.topicVar || '--ink4'})`}>
+                    <i class=${row.state === 'staged' ? 'staged' : ''} style=${`left:${row.span.left}%;width:${row.span.width}%`}></i>
+                    ${row.nowPct === null || row.nowPct === undefined ? null
+                        : html`<span class="nowdot" style=${`left:${row.nowPct}%`}></span>`}
+                </span>
+            </div>`;
+    } },
     { key: 'detail', label: 'What it carries', dataKind: 'detail', render: (row) => {
         const tiers = rowTiers(row);
         const detail = rowDetail(row);
@@ -55,7 +68,9 @@ const SEASON_COLUMNS = [
             </div>`;
     } },
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells.
-    { key: 'state', label: 'State', dataKind: 'right' },
+    { key: 'state', label: 'State', dataKind: 'right',
+      render: (row) => html`${row.state}${row.outlivesSeason
+          ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
 ];
 
 // 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value.
@@ -79,13 +94,64 @@ function toTrackItems(live, path, lane) {
 
 // The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome). ⚠️ `AddComposer` LIVED HERE AND IS GONE. It was a select and three bare inputs in a panel — the form the adopted design replaced with the inline composer above the Track (portal/ui/composer.js). Left in place it would have been a second way to add the same things, with a different vocabulary and no natural-language dates.
 
+// ⚠️ IT READS THE TRACK'S OWN ITEMS, not a second query. `trackData` is what the Track is drawing at this moment, so a day that lists something the Track is not showing — or omits something it is — is impossible by construction rather than by care.
+//
+// ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see.
+const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', event: 'Event', playlist: 'Playlist' };
+
+function dayItems(source, day) {
+    const out = [];
+    for (const [lane, list] of Object.entries(source || {})) {
+        for (const i of list || []) {
+            const a = String(i.startDate || i.date || '').slice(0, 10);
+            const b = String(i.endDate || i.startDate || i.date || '').slice(0, 10);
+            if (a && a <= day && (b || a) >= day) out.push({ lane, title: i.title, a, b });
+        }
+    }
+    return out.sort((x, y) => (x.a < y.a ? -1 : 1));
+}
+
+function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose }) {
+    const rows = dayItems(live, day);
+    const draftRows = withDraft && draft ? dayItems(draft, day) : [];
+    const all = [...rows, ...draftRows.map((r) => ({ ...r, isDraft: true }))];
+    return html`
+        <${Drawer} eyebrow=${`season · ${day}`} title=${fmtDay(day)} onClose=${onClose}
+                   actions=${html`<button class="btn" onClick=${onClose}>Close</button>`}>
+            <div class="dwbody">
+                ${all.length ? html`
+                    <ul class="daylist">
+                        ${all.map((i, n) => html`
+                            <li key=${n}>
+                                <b>${i.title}${i.isDraft ? html`${' '}<span class="nextmark">NEXT SEASON</span>` : null}</b>
+                                <span class="dd">${DAY_LANE_LABEL[i.lane] || i.lane}</span>
+                                <span class="dd">${i.b && i.b !== i.a ? `${fmtDay(i.a)} → ${fmtDay(i.b)}` : fmtDay(i.a)}</span>
+                            </li>`)}
+                    </ul>`
+                : html`<p class="dw-p">Nothing runs on this day. The season continues — no draw, event or playlist
+                    opens, runs or closes.</p>`}
+                ${draft ? html`
+                    <label class="dwcheck" style="margin-top:12px">
+                        <input type="checkbox" checked=${withDraft} onChange=${(e) => onWithDraft(e.target.checked)} />
+                        <span>Include the staged next-season draft. Players cannot see these.</span>
+                    </label>` : null}
+            </div>
+        <//>`;
+}
+
 // 01-season-spine.html's Staged panel -- the mockup keeps pending changes visible and actionable right beside the Track instead of buried in the flat Manifest table below. describeOp/blockedReason are board.logic.js globals (every *.logic.js file loads on every page -- see track.js's header), the same functions Board's own cards already use, so the two views can never describe a change differently. Reads changesets Season already fetches; asks for nothing new.
-function StagedPanel({ changesets, onDiscard, onReview }) {
+function StagedPanel({ changesets, onDiscard, onReview, stagedOnly, onStagedOnly }) {
     const pending = (changesets || []).filter((c) => c.state === 'staged' || c.state === 'blocked');
     if (!pending.length) return null;
     // The staged strip in the adopted vocabulary: one row per change, tier first, and the ONE action that matters — review and commit — as the row of controls rather than a footer. A blocked change says why on its own row; a strip that hides the reason behind a click is a receipt.
     return html`
         <div class="callout stg" style="margin:0 22px 14px">
+            <!-- 🔴 THE PANEL NAMED THE CHANGES AND THE TABLE BELOW DID NOT SHOW YOU WHICH ROWS THEY WERE. "3 staged" over 39 rows means finding three dashed borders by eye, and a staged DELETION has no row left to find at all. The chip is dashed for the same reason the staged rows are — the legend in the masthead already teaches that mark, so the control and the thing it selects look alike. -->
+            ${onStagedOnly ? html`
+                <button type="button" class="chip stagedchip" data-state="staged"
+                        aria-pressed=${stagedOnly ? 'true' : 'false'}
+                        data-tip="Show only the rows these changes touch"
+                        onClick=${() => onStagedOnly(!stagedOnly)}>Staged only</button>` : null}
             <div class="rvlist" role="list">
                 ${pending.map((c) => html`
                     <div class="rvopwrap" role="listitem" key=${String(c._id)}>
@@ -337,6 +403,16 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                        value=${String(value(L.endKey) || '').slice(0, 10)} onInput=${(e) => set(L.endKey, e.target.value)} />
                                 <!-- A date and "TBD" are two different ANSWERS to one question, not a
                                      field and a checkbox — so they are one control with two states. -->
+                                <!-- 🔴 A DATE FIELD ANSWERS "WHEN", AND NOBODY OPENS THIS PANEL TO ASK "WHEN". They open it to find out whether there is time — and every reader was subtracting today's date from an ISO string in their head, three times, once per line. TBD says so rather than showing a number it does not have; a date already past says so rather than counting up. -->
+                                ${(() => {
+                                    const raw = String(value(L.endKey) || '').slice(0, 10);
+                                    if (tbd) return html`<span class="dl-left is-tbd">no date yet</span>`;
+                                    if (!raw) return html`<span class="dl-left is-tbd">not set</span>`;
+                                    const d = Math.round((Date.parse(raw + 'T00:00:00Z') - Date.parse(todayIso() + 'T00:00:00Z')) / 86400000);
+                                    if (!Number.isFinite(d)) return html`<span class="dl-left is-tbd">unreadable</span>`;
+                                    if (d < 0) return html`<span class="dl-left is-over">${-d}d ago</span>`;
+                                    return html`<span class="dl-left">${d === 0 ? 'today' : `${d}d left`}</span>`;
+                                })()}
                                 <span class="tbdsw" role="group" aria-label=${`${L.label} end is`}>
                                     <button aria-pressed=${!tbd} onClick=${() => set(L.tbdKey, false)}>DATE</button>
                                     <button aria-pressed=${tbd} onClick=${() => set(L.tbdKey, true)}>TBD</button>
@@ -489,7 +565,7 @@ function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
     const rows = patchRecordRows(live);
     const open = rows.find((r) => r.id === openId) || null;
     return html`
-        <section class="rec" aria-label="Season record">
+        <section class="rec rec-b" aria-label="Season record">
             <header class="rec-h">
                 <span class="rec-t">Season record</span>
                 <span class="rec-n">${rows.length} published · newest first</span>
@@ -524,6 +600,10 @@ export function SeasonRealm({ session }) {
     const overlay = useOverlay();
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
+    const [stagedOnly, setStagedOnly] = useState(false);
+    // 🔴 THE TRACK ANSWERED "WHAT IS IN THIS SEASON" AND NEVER "WHAT IS ON THIS DAY". Reading a single date off it meant sighting down a vertical from the ruler across five lanes and hoping nothing was clipped — the one question a calendar is for. The crosshair already knows the date under the pointer; this is what clicking it is worth.
+    const [dayOpen, setDayOpen] = useState(null);
+    const [dayWithDraft, setDayWithDraft] = useState(false);
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
     const [idScope, setIdScope] = useState('live');
     const [openPatchId, setOpenPatchId] = useState(null);
@@ -788,8 +868,13 @@ export function SeasonRealm({ session }) {
                                               onStageMany=${handleStageMany}
                                               onLive=${setComposeGhost}
                                               onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
-               <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard} />
-               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null}
+               <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
+                               stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
+               ${dayOpen ? html`
+                   <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
+                                 withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
+                                 onClose=${() => setDayOpen(null)} />` : null}
+               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
                           rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
@@ -798,7 +883,9 @@ export function SeasonRealm({ session }) {
             ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
             : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
 
-    const manifestSlot = html`<${Manifest} rows=${allRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
+    // ⚠️ IT FILTERS, IT DOES NOT SEARCH. The Manifest's own search box is text; this is a STATE predicate, and running it through the search field would mean typing a word that matches nothing in any cell.
+    const shownRows = stagedOnly ? allRows.filter((r) => r.state === 'staged' || r.state === 'blocked') : allRows;
+    const manifestSlot = html`<${Manifest} rows=${shownRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
                                             bulkNote="Reversible — a staged deletion is discarded, never undone"

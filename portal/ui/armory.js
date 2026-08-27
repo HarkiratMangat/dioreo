@@ -210,6 +210,17 @@ function Coverage({ builds, active, onFilter }) {
                  Emitting the cards straight into .cov gave five buttons at five different content widths
                  under a rule that reads like a grid and no longer is. Second duplicate declaration found in
                  this stylesheet today; assume there are more. -->
+            <!-- 🔴 FIVE COUNTS AND NO TOTAL. The cards answer "how many builds have THIS problem"; nobody could read off the only number that decides whether to act — how many builds have any fault at all, with age excluded because age is not a fault and the card beside it says so. -->
+            ${(() => {
+                const faulted = builds.filter((b) => (b.coverage || []).some((f) => f !== 'stale-90d')).length;
+                const stale = hitsFor('stale-90d').length;
+                return html`
+                    <div class="repbar">
+                        <b>${faulted}</b>
+                        <span>${faulted === 1 ? 'build has' : 'builds have'} something actually wrong with
+                            ${faulted === 1 ? 'it' : 'them'}${stale ? html`, and ${stale} more ${stale === 1 ? 'is' : 'are'} merely old` : ''}.</span>
+                    </div>`;
+            })()}
             <div class="cov"><div class="cols">
                 ${flags.map((f) => {
                     const hits = hitsFor(f);
@@ -430,6 +441,28 @@ function LivePreview({ buildId }) {
 //
 // ⚠️ NOTHING HERE WRITES. Every field edits a local draft and Save stages one `loadout.edit`; the Review screen is still the only surface that commits.
 
+// 🔴 THE FAULTS WERE A NUMBER IN A TABLE CELL AND A TOOLTIP. Coverage counts them across the catalogue and the Manifest shows a badge with the names on hover — so the one screen where you could actually FIX a fault was the one screen that did not say what it was. The clean case is stated rather than left blank: an editor that says nothing about faults is indistinguishable from one that has not checked.
+function BuildIssues({ build }) {
+    const faults = (build.coverage || []).filter((f) => f !== 'stale-90d');
+    if (!faults.length) {
+        return html`
+            <div class="dwissues">
+                <h6>No issues</h6>
+                <div class="dwissue ok"><b>No issues on this build.</b>
+                    <span>Every check in Repairs passes for this row.</span></div>
+            </div>`;
+    }
+    return html`
+        <div class="dwissues">
+            <h6>${faults.length} issue${faults.length === 1 ? '' : 's'} on this build</h6>
+            ${faults.map((f) => html`
+                <div class="dwissue" key=${f}>
+                    <b>${COVERAGE_LABEL[f] || f}</b>
+                    <span>${COVERAGE_WHY[f] || 'Flagged by the Repairs checks.'}</span>
+                </div>`)}
+        </div>`;
+}
+
 function BuildEditor({ build, csrfToken, onStage, onClose }) {
     const [draft, setDraft] = useState({ ...build, attachments: [...(build.attachments || [])] });
     const [card, setCard] = useState(null);
@@ -455,12 +488,12 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
     return html`
         <div class="panel" id="build-editor">
             <div class="ph">
-                <span class="t">Editing ${build.weaponName}</span>
+                <span class="t">Editing ${build.weaponName}<span class="bc-mode">${build.mode}</span></span>
                 <span class="rt">one operation, staged — nothing here writes</span>
             </div>
             <div class="bed">
-                <!-- The adopted sheet defines .bed as the 1fr/340px grid and styles .bed-sec inside it; the two columns are grid CHILDREN with no rules of their own, so naming them would be emitting classes that do nothing. -->
-                <div>
+                <!-- ⚠️ THE TWO COLUMNS ARE NAMED NOW, and this comment used to say naming them would emit classes that do nothing. That was true of the ADOPTED sheet, which declares neither; it stopped being true when the portal authored rules for both. A zero min-width is what stops a long attachment string from blowing the 1fr column past its track, and the aside sticks so the card stays on screen while a long field list scrolls under it. -->
+                <div class="bed-main">
                     <div class="bed-sec">
                         <h5>Identity</h5>
                         <div class="bed-g2">
@@ -515,6 +548,10 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
 
                     <div class="bed-sec">
                         <h5>Badges</h5>
+                        <!-- 🔴 THE WARNING BELONGS ON THE EDIT, NOT ON THE ADD. The add form carries the same sentence for context; here it describes what the button under it is about to DO — core/ops/loadouts.js propagates a badge across every build sharing this weapon key and mode, so toggling Meta on one build of a five-build weapon stages a change to all five. -->
+                        <p class="bgnote">A badge describes the <b>weapon</b>. Changing one here propagates to every
+                            build sharing this weapon and mode — <code>${draft.weaponName || 'this weapon'}</code> in${' '}
+                            <code>${draft.mode}</code> — not this build alone.</p>
                         <div class="badgerow">
                             <button class=${'bgt' + (draft.isMeta ? ' on' : '')} onClick=${() => set({ isMeta: !draft.isMeta })}>Meta</button>
                             <button class=${'bgt tox' + (draft.isToxic ? ' on' : '')} onClick=${() => set({ isToxic: !draft.isToxic })}>Toxic</button>
@@ -527,7 +564,8 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
                     </div>
                 </div>
 
-                <aside>
+                <aside class="bed-side">
+                    <${BuildIssues} build=${build} />
                     <div class="bed-sec">
                         <h5>Image</h5>
                         <div class=${'imgbox' + (draft.imageKey ? (imgFailed ? ' failed' : '') : ' none')}>
@@ -698,6 +736,39 @@ function FilterBar({ weapon, flag, shown, total, onClear }) {
 const BULK_EXAMPLE = ['AK117 | AR', 'Build: Aggressive Flex', 'Image: AK117-1', 'Code: 1C2B4A8B9A', 'Badges: meta, top3',
     '- Monolithic Suppressor', '- MIP Extended Light Barrel', '- No Stock', '- 48 Round Extended Mag', '- Granulated Grip Tape'].join('\n');
 
+// ⚠️ NO PER-ROW CHECKBOX, AND THAT IS A DECISION RATHER THAN AN OMISSION. The mockup's repairs drawer opts out of individual fixes with a `.fxc` tick; here the source of truth is the textarea two inches away, where deleting a block is exact and editable. A checkbox would need to map a rendered row back to a block of raw text, and the parser that owns that mapping is the BOT'S — utils/adminParser.js — which this codebase deliberately never reimplements in a browser. An opt-out that is 99% right about which block it drops is worse than no opt-out at all.
+function BulkOverwrites({ rows, builds, mode }) {
+    const updates = (rows || []).filter((r) => r.existing);
+    if (!updates.length) return null;
+    const plan = updates.map((r) => ({ row: r, before: findLocalBuild(builds, r, mode) }))
+        .map((p) => ({ ...p, diff: bulkFieldDiff(p.row, p.before) }));
+    const changing = plan.filter((p) => !p.diff || p.diff.length);
+    if (!changing.length) {
+        return html`<p class="bvmsg">Every existing build in this paste already matches — nothing would be overwritten.</p>`;
+    }
+    return html`
+        <div class="fxlist">
+            ${changing.map((p, i) => (p.diff === null ? html`
+                <div class="fxr" key=${'u' + i}>
+                    <span class="fxb">${p.row.weaponName} <em>${p.row.buildName}</em></span>
+                    <span class="fxf">unknown</span>
+                    <span class="fxd"><span class="fxwas">not loaded here</span>
+                        <span class="fxar" aria-label="becomes">→</span>
+                        <span class="fxnow">will be overwritten</span></span>
+                </div>`
+            : p.diff.map((d, j) => html`
+                <div class="fxr" key=${i + '-' + j}>
+                    <span class="fxb">${p.row.weaponName} <em>${p.row.buildName}</em></span>
+                    <span class="fxf">${d.word}</span>
+                    <span class="fxd">
+                        <span class="fxwas">${d.was === '' || d.was == null || d.was === false ? '—' : String(d.was)}</span>
+                        <span class="fxar" aria-label="becomes">→</span>
+                        <span class="fxnow">${d.now === '' || d.now == null || d.now === false ? '—' : String(d.now)}</span>
+                    </span>
+                </div>`)))}
+        </div>`;
+}
+
 function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
     const [text, setText] = useState('');
     const [preview, setPreview] = useState(null);
@@ -773,6 +844,7 @@ function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
                                     <span><b>${r.weaponName}</b> · ${r.buildName}${' '}
                                         <em>${r.category} · ${r.attachments} attachment${r.attachments === 1 ? '' : 's'}</em></span>
                                 </div>`)}
+                            <${BulkOverwrites} rows=${preview.rows} builds=${builds} mode=${mode} />
                             <!-- A block the parser rejected is SHOWN, never dropped. A paste where three of eight
                                  blocks fell out silently is the exact failure a preview exists to prevent, and the
                                  parser's own message names the block by its first line. -->
