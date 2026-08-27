@@ -52,7 +52,8 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
 
 - 🔴 **Could a session that read ONLY this handoff produce the next commit without asking Harkirat a question?** It fails for exactly the right reasons: no stated first action, an unstated approval status, a dangling "we discussed X" with no resolution.
-- 🔴 **Is every OPEN item marked approved-or-not AND built-or-not?** Two booleans per item. Miss either and the next session redoes approved work or builds something unapproved — **both have happened on this branch.**
+- 🔴 **Is every OPEN item marked approved-or-not AND built-or-not AND filed-or-not?** Three booleans per item. Miss the first two and the next session redoes approved work or builds something unapproved — **both have happened on this branch.** Miss the third and it cannot tell which items survive the handoff being lost.
+- 🔴 **Did a reader test actually RUN, against the filesystem?** Not a re-read — a pass that opens every path, resolves every section reference, executes every command, and re-runs the document's own headline measurement. On 2026-08-27 that pass found **two blockers in a handoff written by the session that had just spent the day fixing this exact defect class**, including a measurement that had been silently invalidated by the act of writing it down. See §3b.
 
 ---
 
@@ -97,6 +98,22 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 | **Stale verification** | A green you cannot honestly quote |
 | **Corrections and friction** | A handoff that carries the work and drops the *friction* produces a session that repeats the friction |
 | **Claims of yours that turned out WRONG** | Stated confidently, corrected quietly. Say them once, plainly |
+
+### 3b · The seven ways a handoff misleads a reader who TRUSTS it
+
+*Every one of these was found by a reader test on `2026-08-27-portal-checkpoint-IX.md` — a handoff written carefully, by someone who had just spent a session fixing this exact class of defect. **The reader test is not optional polish; it is the step that catches what care does not.***
+
+| # | The failure | Why it survives review | The convention |
+|---|---|---|---|
+| 1 | 🔴 **A quoted probe CONTAMINATES ITSELF** | The measurement was true when run and false an hour later — **because writing it down put the probe string into tracked files.** A reader who verifies it (as the doc trained them to) sees it refuted and concludes the opposite of the truth | **Never quote a probe string as a permanent fact.** Give the reader a *command* and an *invariant shape*, and say the probe is disposable: *"if this stops returning 0, pick a fresh phrase — and here is why it would"* |
+| 2 | 🔴 **Two counts of the same thing, in one document** | Each was written at a different moment and both looked right in isolation. Reconciliation is the reader's problem, and a wrong count mis-calibrates how much they distrust | **State the structural rule, not the number** — `feedback_no_duplicated_state_in_prose`. *"Many older handoffs say this; any of them saying it is wrong"* needs no maintenance |
+| 3 | 🔴 **`A..B` EXCLUDES `A`** | A range copied from the first row of your own table is off by one, and a later commit silently makes the other suggested command off by one the other way | **Run the range and count the rows before writing it.** `git rev-list --count <range>` must equal the number of rows in the table |
+| 4 | 🔴 **`npm run <script> --flag` silently swallows the flag** | npm reads it as a config option, the underlying script runs with its default, the gate fails again, and the reader loops | **`npm run <script> -- --flag`**, or call the script directly. Any npm invocation with a flag in a handoff needs the `--` |
+| 5 | 🔴 **An open-work table that is not the whole open list** | Other carriers hold open items — the tracked deferred list, and the *previous* handoff's own still-open rows. A reader treating one table as complete drops them silently | Add a **`Filed?` column** so a reader can tell tracked from handoff-only, and **name the previous handoff's still-open sections explicitly** rather than calling it "mostly history" |
+| 6 | 🔴 **A section reference with no path** | `COMPANION §5.9z.6` is unambiguous to the writer and a search problem for the reader — in a document that is often *about* findability | **Every cross-document reference carries its full repo path.** If it is served over HTTP, give the URL that actually works, including which server roots where |
+| 7 | 🔴 **The handoff is right and an AUTO-LOADED file is wrong** | The reader hits two authorities and the always-loaded one looks more official, so the correction loses | **Fix the auto-loaded file in the same change** (`CLAUDE.md`, `MEMORY.md`, a rules file), then note in the handoff that you did |
+
+🔴 **AND THE META-RULE THE LIST ITSELF DEMONSTRATES: run the reader test, and run it against a real filesystem.** Ask *"could a session that read ONLY this produce the next commit without asking a question?"* — never *"is this good?"*. Verify every path, every section reference, every command, and **re-run the document's own headline measurement**. That last one is what caught defect #1, and nothing else would have.
 
 ### 4 · Shape it for the reader, not the writer
 

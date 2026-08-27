@@ -215,7 +215,7 @@ function portalContrastAudit(css) {
 
 const MOCKUP_ASSETS = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-08-23-portal-interactive');
 
-// The FIXTURE HARNESS — portal/public/harness.html. A page the SERVER NEVER SERVES: portal/server.js routes every non-/api non-/auth GET through serveStatic, so this is reachable only through the repo-static config in .claude/launch.json (:8900) or any plain file server. It exists so design work on the real components needs no Mongo, no Discord OAuth and no session — the components are pure (spec §12a) and the only thing standing between them and a browser was the data.
+// The FIXTURE HARNESS — portal/public/harness.html. A page the SERVER NEVER SERVES: portal/server.js routes every non-/api non-/auth GET through serveStatic, so this is reachable only through a plain file server. ⚠️ USE THE `portal-harness` CONFIG (:8901, rooted at portal/public) — this comment said `repo-static` (:8900) until 2026-08-27 14:1x EDT, which is the config for the MOCKUP PACKAGE and roots at the repo, so the harness URL under it is a long path rather than /harness.html. Both configs are in .claude/launch.json and both exist for a reason; naming the wrong one sends a reader to a 404 on the page they were told to open first. It exists so design work on the real components needs no Mongo, no Discord OAuth and no session — the components are pure (spec §12a) and the only thing standing between them and a browser was the data.
 //
 // It does NOT stub by branching inside httpClient.js. The page declares an import map aliasing /ui/httpClient.js to /harness/stub.js, so the alias exists only in a page production never loads.
 //
