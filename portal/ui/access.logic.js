@@ -23,4 +23,23 @@ function describePending(pending, labelOf) {
     return { granted: granted.sort(), revoked: revoked.sort() };
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { permsAfter, describePending };
+// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal string `'live'` on every row, so the panel whose entire job is telling an owner who is signed in right now could not distinguish a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — "signed in now" is DERIVED or it is a guess.
+//
+// ⚠️ FIFTEEN MINUTES IS THE PING WINDOW, not a preference. A session row's `lastSeenAt` is refreshed by the portal's own requests; a tab left open keeps touching it and a closed one stops. Anything much shorter calls a reading tab dead, and anything much longer calls a closed one alive.
+const SESSION_LIVE_MS = 15 * 60 * 1000;
+
+function sessionIsLive(session, now) {
+    if (!session || !session.lastSeenAt) return false;
+    const seen = new Date(session.lastSeenAt).getTime();
+    if (!Number.isFinite(seen)) return false;
+    // A clock skew that puts lastSeenAt in the FUTURE must read as live, not as a large negative age that trips the window.
+    return (now - seen) < SESSION_LIVE_MS;
+}
+
+function sessionSummary(sessions, now) {
+    const list = sessions || [];
+    if (!list.length) return 'none';
+    return `${list.filter((s) => sessionIsLive(s, now)).length} active · ${list.length} total`;
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { permsAfter, describePending, sessionIsLive, sessionSummary, SESSION_LIVE_MS };

@@ -9,11 +9,7 @@ import { useAsync, RealmShell } from './async.js';
 import { useOverlay } from './overlay.js';
 import { Icon } from './icons.js';
 
-const SESSION_COLUMNS = [
-    { key: 'discordId', label: 'Discord ID' },
-    { key: 'lastSeenAt', label: 'Last seen', dataKind: 'date', render: (r) => relTime(r.lastSeenAt) },
-    { key: 'userAgent', label: 'Device' },
-];
+// ⚠️ SESSION_COLUMNS IS GONE WITH THE MANIFEST IT FED. Sessions are a view now — see the Sessions component for why the shared table was the wrong home and how it produced a hardcoded `state: 'live'` on every row.
 
 // "8m ago" rather than a full locale timestamp: the question this column answers is "is this person in here right now", and a wall-clock time makes the reader do the subtraction (06's own column reads "now" / "8m ago" / "3d ago" for the same reason).
 function relTime(value) {
@@ -25,22 +21,68 @@ function relTime(value) {
     return `${Math.round(secs / 86400)}d ago`;
 }
 
-// "By admin is the grid you grant from" (spec §8.2) — a review pass found the API's grant/revoke routes had no caller anywhere: this form is what was missing. Grant/revoke both require the admin to type the exact target Discord ID as the tier-3 confirmation (portal/api/access.js's confirmMatchesTarget) — there is no separate export step for a permission change.
-function GrantForm({ onGrant }) {
+// "By admin is the grid you grant from" (spec §8.2) — a review pass found the API's grant/revoke routes had no caller anywhere: this form is what was missing. Grant/revoke both require the admin to type the exact target Discord ID as the tier-3 confirmation (portal/api/access.js's confirmMatchesTarget) — there is no separate export step for a permission change. 🔴 IT ASKED SOMEBODY TO TYPE A VOCABULARY FROM MEMORY, into a comma-separated box, to hand out permissions. Eleven scope tokens exist, `manage` silently covers eight of them, and a typo produced a grant that looked accepted and covered nothing — the grid beside it renders every one of those tokens as a labelled cell, so the vocabulary was on screen and unusable in the one control that needed it. The chips come from the SAME `matrix.scopes` the grid is built from, which is the enumeration `singlePointsOfFailure` walks, so there is no second list to drift.
+//
+// ⚠️ THE OWNER-ONLY LOCK IS SHOWN, NOT ENFORCED HERE. `destructive` is excluded from `all` and grantable only by the owner — the server decides that, and a chip that hid it would leave an owner unable to grant the one permission only they can grant. The mark says why it is different.
+function GrantForm({ onGrant, scopes }) {
     const [discordId, setDiscordId] = useState('');
-    const [permissions, setPermissions] = useState('');
+    const [picked, setPicked] = useState([]);
     const [confirmText, setConfirmText] = useState('');
     const ready = discordId && confirmText === discordId;
+    const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
     return html`
         <div class="addrow">
             <label class="sr-only" for="grant-discordid">Discord ID to grant</label>
             <input id="grant-discordid" placeholder="Discord ID to grant" value=${discordId} onInput=${(e) => setDiscordId(e.target.value)} />
-            <label class="sr-only" for="grant-permissions">Permissions</label>
-            <input id="grant-permissions" placeholder="permissions (e.g. manage.draws,bot)" value=${permissions} onInput=${(e) => setPermissions(e.target.value)} />
             <label class="sr-only" for="grant-confirm">Type the Discord ID to confirm</label>
             <input id="grant-confirm" placeholder="Type the Discord ID to confirm" value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} />
-            <button class="accent-fill" disabled=${!ready} onClick=${() => onGrant(discordId, permissions.split(',').map(p => p.trim()).filter(Boolean), confirmText)}>Grant</button>
-            <span class="hint">A new admin starts with nothing granted — there is no default. Type the Discord ID twice: once to name them, once to confirm.</span>
+            <button class="accent-fill" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText)}>
+                ${picked.length ? `Grant ${picked.length}` : 'Grant nothing yet'}</button>
+            <div class="tokgrid">
+                ${(scopes || []).map((sc) => html`
+                    <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
+                            style=${sc.hex ? `--c:${sc.hex}` : null} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
+                            title=${sc.key} onClick=${() => toggle(sc.key)}>
+                        <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}
+                    </button>`)}
+            </div>
+            <span class="hint">A new admin starts with nothing granted — there is no default. Type the Discord ID twice: once to
+                name them, once to confirm. <b>manage</b> covers every page at once, which is why the grid marks those cells inherited.</span>
+        </div>
+    `;
+}
+
+// ── LIVE SESSIONS ─────────────────────────────────────────────────────────────────────────────
+//
+// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The row's state was the literal string `'live'` for every session in the table — and a browser session has no logout event unless somebody clicks one, so "signed in now" is DERIVED or it is a guess. Fifteen minutes is the mockup's own window and it is the honest one: a tab left open pings; a closed one stops.
+//
+// ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces.
+function Sessions({ sessions, onEnd }) {
+    const now = Date.now();
+    return html`
+        <div class="panel" id="sessions">
+            <div class="ph">
+                <span class="t">Live portal sessions</span>
+                <span class="rt">${sessionSummary(sessions, now)}</span>
+            </div>
+            ${sessions.length ? html`
+                <div class="sesslist">
+                    ${sessions.map((s) => html`
+                        <div key=${s.sessionHash} class=${'sess' + (sessionIsLive(s, now) ? '' : ' stale')}>
+                            <span class="sdot" aria-hidden="true"></span>
+                            <span class="sessb">
+                                <b>…${String(s.discordId).slice(-6)}</b>
+                                <span>${s.userAgent || 'device not recorded'} · ${relTime(s.lastSeenAt)}</span>
+                            </span>
+                            <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
+                        </div>`)}
+                </div>`
+            : html`
+                <div class="estate">
+                    <span class="eicon" aria-hidden="true">◎</span>
+                    <h4>Nobody is signed in to the portal.</h4>
+                    <p>Revoking an admin in Discord does not end a browser session that is already open — this is where that happens.</p>
+                </div>`}
         </div>
     `;
 }
@@ -177,7 +219,7 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                     <span>The owner has everything and cannot be edited.</span>
                 </div>
             `}
-            <${GrantForm} onGrant=${onGrant} />
+            <${GrantForm} onGrant=${onGrant} scopes=${matrix.scopes} />
         </div>
     `;
 }
@@ -191,6 +233,12 @@ function ByScope({ matrix, spof, ownerId }) {
                 <span class="t">By scope</span>
                 <span class="rt">${spofScopes.size ? `${spofScopes.size} single point${spofScopes.size === 1 ? '' : 's'} of failure` : 'no single points of failure'}</span>
             </div>
+            <!-- ⚠️ THE MARK WAS DRAWN AND NEVER EXPLAINED. The spof class underlines a column in the grid above and
+                 flags a row here, and nothing said what the underline meant — a mark whose legend is missing
+                 is a mark the reader learns to ignore. It appears only when there IS one, because a legend
+                 for an absent mark is noise. -->
+            ${spofScopes.size ? html`
+                <span class="klg spofk"><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
             <div class="scopes">
                 ${(matrix.scopes || []).map((sc) => {
                     const holders = matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);
@@ -316,7 +364,7 @@ export function AccessRealm({ session }) {
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;
 
     return html`
-        <${Shell} realm="access" session=${session} view=${view} viewOptions=${['By admin', 'By scope']} onSetView=${setView}
+        <${Shell} realm="access" session=${session} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
@@ -330,16 +378,9 @@ export function AccessRealm({ session }) {
                           ? html`<${ByAdmin} matrix=${matrix} spof=${data.singlePointsOfFailure}
                                              onGrant=${grant} onRevoke=${confirmRevoke} onSave=${confirmSave}
                                              onExplain=${explainInherited} isOwnerId=${session.discordId} />`
-                          : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
-                  `}
-                  manifestSlot=${html`<${Manifest} rows=${data.sessions.map(s => ({ ...s, id: s.sessionHash, state: 'live' }))} columns=${SESSION_COLUMNS}
-                                                    title="Live portal sessions"
-                                                    headerRight="Revoking an admin in Discord does not end their browser session — this does."
-                                                    emptyText="Nobody is signed in to the portal."
-                                                    searchableFields=${['discordId']}
-                                                    bulkNote="Immediate — Access does not stage, and there is no undo"
-                                                    bulkTier=${3} rowNoun=${['session', 'sessions']}
-                                                    onRemove=${(row) => confirmEndSessions([row.id])} removeLabel="End session"
-                                                    bulkActions=${[{ label: 'End session', danger: true, onClick: confirmEndSessions }]} />`} />
+                          : view === 'Sessions'
+                              ? html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} />`
+                              : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
+                  `} />
     `;
 }

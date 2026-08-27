@@ -338,8 +338,14 @@ const ROUTES = [
         // ⚠️ THREE, NOT TEN, and that is the point of a fixture. Discord's real cap is 10 and the route sends utils/announcement.js's own constant; with four fixture announcements a cap of 10 renders the over-cap state ZERO times, so the harness would show a panel that cannot demonstrate the one fact it was rebuilt to show. A fixture exists to reach the states real data does not happen to be in today.
         maxPerMessage: 1,
     })],
+    // 🔴 THE FIXTURE HAS NO SESSIONS, so the sessions view could only ever show its empty state — and a surface a reviewer cannot see is one nobody reviews. The live/stale distinction is the whole point of this panel (a browser session has no logout event, so "signed in now" is derived from lastSeenAt inside fifteen minutes), and it takes two rows on opposite sides of that line to show it at all. ⚠️ Synthesised relative to NOW rather than pinned to a date: a fixture timestamp from last week would read as stale forever and the live half would never render.
     [/^\/api\/access$/, () => ({
-        admins: FIX.accessAdmins || [], sessions: FIX.sessions || [],
+        admins: FIX.accessAdmins || [], sessions: (FIX.sessions && FIX.sessions.length) ? FIX.sessions : [
+            { sessionHash: 'harness-live', discordId: '1139845545754632283', userAgent: 'Chrome on macOS',
+              lastSeenAt: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+            { sessionHash: 'harness-stale', discordId: '310361322000000000', userAgent: 'Safari on iPhone',
+              lastSeenAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
+        ],
         singlePointsOfFailure: FIX.spof || FIX.SPOF || [],
     })],
     // 🔴 THE FIXTURE PREDATES THE `realm` FIELD, AND THE GRID READS ITS COLOUR FROM IT. Without this the harness rendered twelve identical grey columns while production renders them tinted by the realm each scope governs — the instrument showing a duller page than the product, which is the harder direction to notice. The mapping is the route's own (portal/api/realmAccess.js's realmForScope), reproduced here rather than imported because the stub runs in the browser.

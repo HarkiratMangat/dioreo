@@ -270,4 +270,42 @@ check('buildBroadcastEditOp edits an announcement via announcement.edit, targeti
     assert.strictEqual(op.payload.text, 'New text');
 });
 
+// ── WHO IS ACTUALLY SIGNED IN ─────────────────────────────────────────────────────────────────
+//
+// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal `'live'` on every row, so the panel whose whole job is telling an owner who is signed in RIGHT NOW could not tell a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — this is derived or it is a guess.
+const { sessionIsLive, sessionSummary, SESSION_LIVE_MS } = require('../portal/ui/access.logic');
+const NOW = Date.parse('2026-08-26T20:00:00.000Z');
+const ago = (ms) => ({ lastSeenAt: new Date(NOW - ms).toISOString() });
+
+check('a session seen inside the ping window is live, and one outside it is not', () => {
+    assert.strictEqual(sessionIsLive(ago(2 * 60 * 1000), NOW), true);
+    assert.strictEqual(sessionIsLive(ago(5 * 60 * 60 * 1000), NOW), false);
+    assert.strictEqual(sessionIsLive(ago(SESSION_LIVE_MS - 1), NOW), true, 'the boundary itself must be live');
+    assert.strictEqual(sessionIsLive(ago(SESSION_LIVE_MS + 1), NOW), false);
+});
+
+// ⚠️ A ROW WITH NO TIMESTAMP MUST NOT READ AS LIVE. That is the failure being replaced: a missing fact rendering as the reassuring answer.
+check('a session with no timestamp, or an unreadable one, is not live', () => {
+    assert.strictEqual(sessionIsLive({}, NOW), false);
+    assert.strictEqual(sessionIsLive(null, NOW), false);
+    assert.strictEqual(sessionIsLive({ lastSeenAt: 'not a date' }, NOW), false);
+});
+
+// ⚠️ CLOCK SKEW PUTS lastSeenAt IN THE FUTURE, and a naive age comparison would make that a large negative number — which passes a `< window` test by accident rather than by meaning. It has to be live because it IS live.
+check('a timestamp in the future reads as live rather than by accident', () => {
+    assert.strictEqual(sessionIsLive({ lastSeenAt: new Date(NOW + 60 * 1000).toISOString() }, NOW), true);
+});
+
+check('the summary counts active against total, and says "none" rather than "0 active"', () => {
+    assert.strictEqual(sessionSummary([], NOW), 'none');
+    assert.strictEqual(sessionSummary([ago(60 * 1000), ago(9e6)], NOW), '1 active · 2 total');
+});
+
+check('THE LIVENESS RULE CAN FAIL: a hardcoded state calls every session live', () => {
+    assert.throws(() => {
+        const rows = [ago(60 * 1000), ago(9e6)].map(() => ({ state: 'live' }));
+        assert.strictEqual(rows.filter((r) => r.state === 'live').length, 1, `${rows.length} rows all read live`);
+    }, /2 rows all read live/);
+});
+
 process.exit(failures ? 1 : 0);

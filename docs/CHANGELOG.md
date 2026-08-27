@@ -567,6 +567,16 @@ The eight with no real fork: **Undo** for one staged change · **Discard all** a
 
 ⚠️ **And that gate flagged three files whose only offence was describing the trap in the comment recording it — the SECOND source-scan gate today to fire on its own documentation.** The `data:` URL scan did it first. Both strip comments before looking now, and the rule generalises: **a source-shape gate that cannot tell code from prose punishes the files that explain the bug best, and teaches the next reader to delete the comment rather than keep the rule.**
 
+### Access asked somebody to type a permission vocabulary from memory
+
+🔴 **Eleven scope tokens exist, `manage` silently covers eight of them, and the grant control was a comma-separated text box.** A typo produced a grant that looked accepted and covered nothing — while the grid directly beside it renders every one of those tokens as a labelled, coloured cell. The vocabulary was on screen and unusable in the one control that needed it. The chips come from the **same `matrix.scopes`** the grid is built from, so there is no second list to drift, and the owner-only lock on `destructive` is **shown rather than enforced here** — the server decides that, and hiding it would leave an owner unable to grant the one permission only they can.
+
+🔴 **AND EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY.** The row's state was the literal string `'live'` for every session in the table. A browser session has no logout event unless somebody clicks one, so *signed in now* is derived or it is a guess — fifteen minutes is the ping window, because a tab left open keeps touching `lastSeenAt` and a closed one stops. **A row with no timestamp now reads stale rather than live**, which is the failure being replaced: a missing fact rendering as the reassuring answer.
+
+⚠️ **Sessions became a view and left the shared Manifest, which is where the hardcoded state came from.** The Access mockup has no manifest at all. Two lists of one thing is the defect this branch has spent its life removing, and putting sessions in a generic table is what made "state" a column that had to be filled with *something*.
+
+**The single-point-of-failure mark had no legend.** The underline is drawn on a column in the grid and flagged on a row in the by-scope view, and nothing said what it meant — a mark whose legend is missing is a mark the reader learns to ignore. It appears only when there is one.
+
 ### Two panels on one screen were counting different rows
 
 🔴 **`computeUsageStats` has always excluded admin traffic. `computeTimingStats` never filtered it at all.** So the Usage panel's counts and the Timing panel's percentiles — side by side, in Discord and in the portal — have been computed over **different populations**, with nothing saying so. `/manage` is the heaviest thing this bot does; a *"usually 40ms"* that silently includes it answers a question nobody asked. Found while threading a toggle through, not by looking for it.
