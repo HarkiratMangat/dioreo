@@ -111,13 +111,24 @@ function dayItems(source, day) {
     return out.sort((x, y) => (x.a < y.a ? -1 : 1));
 }
 
-function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose }) {
+const shiftDay = (iso, n) => new Date(Date.parse(iso + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10);
+
+function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay }) {
     const rows = dayItems(live, day);
     const draftRows = withDraft && draft ? dayItems(draft, day) : [];
     const all = [...rows, ...draftRows.map((r) => ({ ...r, isDraft: true }))];
     return html`
         <${Drawer} eyebrow=${`season · ${day}`} title=${fmtDay(day)} onClose=${onClose}
-                   actions=${html`<button class="btn" onClick=${onClose}>Close</button>`}>
+                   actions=${html`
+                       <!-- 🔴 THE WAY IN WAS A CLICK ON A CROSSHAIR, WHICH IS NO WAY IN AT ALL FOR A KEYBOARD.
+                            The drawer lists what runs on a date and nothing else in the portal does, so reaching
+                            it had to stop depending on a pointer. These step the same drawer a day at a time,
+                            which is also faster than re-aiming at a 3px column for anyone using a mouse. -->
+                       <button class="btn" onClick=${() => onDay(shiftDay(day, -1))}
+                               aria-label=${`Previous day, ${fmtDay(shiftDay(day, -1))}`}>← Previous day</button>
+                       <button class="btn" onClick=${() => onDay(shiftDay(day, 1))}
+                               aria-label=${`Next day, ${fmtDay(shiftDay(day, 1))}`}>Next day →</button>
+                       <button class="btn" onClick=${onClose}>Close</button>`}>
             <div class="dwbody">
                 ${all.length ? html`
                     <ul class="daylist">
@@ -872,9 +883,14 @@ export function SeasonRealm({ session }) {
                                               onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
+               <!-- The keyboard entrance to the day drawer. It opens on TODAY because that is the day
+                    somebody checking "what is running" almost always wants, and the drawer steps from there. -->
+               <p class="hint"><button class="chip" onClick=${() => setDayOpen(todayIso())}
+                                       data-tip="See everything running on one day">Open a day…</button></p>
                ${dayOpen ? html`
                    <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
                                  withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
+                                 onDay=${setDayOpen}
                                  onClose=${() => setDayOpen(null)} />` : null}
                <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
                           rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}

@@ -250,7 +250,8 @@ export function BroadcastRealm({ session }) {
 //
 // ⚠️ ONE REQUEST, IN THE SAME useAsync, so the realm still has ONE loading phase. A second hook would give the page two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
     const load = useAsync(() => Promise.all([fetchJson('/api/broadcast'), fetchJson('/api/review')])
-        .then(([broadcast, review]) => ({ ...broadcast, stagedOps: (review && review.ops) || [] })), []);
+        .then(([broadcast, review]) => ({ ...broadcast, stagedOps: (review && review.ops) || [],
+                                          stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), []);
     const refresh = load.reload;
     const data = load.data;
 
@@ -259,7 +260,9 @@ export function BroadcastRealm({ session }) {
 
     // Same missing-id gap as Armory: /api/broadcast never mapped _id -> id, so nothing selectable or editable on this Manifest actually worked before this mapping existed. `state` is computed SERVER-SIDE (portal/api/broadcast.js's announcementState) and passed straight through -- see that function's header for why it is not re-derived here.
     const rows = data.all.map((a) => ({ ...a, id: a._id, accentHex: accentOf(a) }));
-    const stagedHere = (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'broadcast').length;
+    // 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
+    const stagedHere = data.stagedUnknown ? null
+        : (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'broadcast').length;
     const counts = {
         live: data.all.filter((a) => a.state === 'live').length,
         scheduled: data.all.filter((a) => a.state === 'scheduled').length,
@@ -323,7 +326,7 @@ export function BroadcastRealm({ session }) {
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
                                                    { value: counts.forever, label: 'never expires', tone: counts.forever ? 'bad' : undefined },
-                                                   { value: stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
+                                                   { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
                                                ]}
                                                actions=${html`<${MastheadNew} label="New announcement" hint="a"
                                                                               tip="Write an announcement"

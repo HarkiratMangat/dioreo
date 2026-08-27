@@ -4,6 +4,7 @@
 //
 // ⚠️ A RATCHET, NOT A CLEAN BILL. The list below is the debt as measured on 2026-08-26. A class NOT on it fails the run, so no new orphan can be introduced; a class on it that has stopped being emitted ALSO fails, so the list cannot rot into a pile of names nothing renders any more. It only ever shrinks, and it is finished when it is empty.
 import fs from 'fs';
+import { CLASS_PROPS } from './portalClassProps.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -38,8 +39,8 @@ function emittedClasses() {
     for (const f of fs.readdirSync(UI).filter((n) => n.endsWith('.js'))) {
         const src = fs.readFileSync(path.join(UI, f), 'utf8');
         for (const m of src.matchAll(/class="([^"$]*)"/g)) add(m[1], f);
-        // 🔴 A CLASS PASSED AS A DATA VALUE WAS INVISIBLE TO THIS GATE. The Manifest takes `metaClass` on a column and renders it into the row's secondary line, so the name never appears inside a `class=` attribute in the source — and `metaClass: 'rowlife'` shipped with no rule behind it anywhere, which is precisely the state this file exists to prevent. Any future prop that names a class has to be listed here, or it inherits the same blind spot.
-        for (const m of src.matchAll(/\b(?:col|metaClass|cls|accentClass):\s*'([^']+)'/g)) add(m[1], f);
+        // 🔴 A CLASS PASSED AS A DATA VALUE WAS INVISIBLE TO THIS GATE. The Manifest takes `metaClass` on a column and renders it into the row's secondary line, so the name never appears inside a `class=` attribute in the source — and `metaClass: 'rowlife'` shipped with no rule behind it anywhere, which is precisely the state this file exists to prevent. Any future prop that names a class has to be listed here, or it inherits the same blind spot. ⚠️ THIS LIST MUST MATCH portalCoverage's CLASS_PROPS EXACTLY, and a check below enforces it. Measured 2026-08-26: `tone` was added to coverage's list and NOT to this one, so a `tone: 'live'` counted as covered while this gate — the one that fails on a class with no rule — could not see it. A no-op class shipped and the number went up. The two gates only hold each other while they read the same syntax, and the claim that they do was written in coverage's own header while it was false.
+        for (const m of src.matchAll(new RegExp(`\\b(?:${CLASS_PROPS.join('|')}):\\s*'([^']+)'`, 'g'))) add(m[1], f);
         for (const m of src.matchAll(/class=\$\{((?:[^{}]|\{[^{}]*\})*)\}/g)) {
             const expr = m[1];
             for (const lit of expr.matchAll(/(!==|===|==)?\s*['"]([a-zA-Z][\w -]*)['"]/g)) {

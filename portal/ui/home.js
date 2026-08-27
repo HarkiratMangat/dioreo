@@ -235,8 +235,8 @@ export function HomeRealm({ session }) {
     // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
     const stats = [
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
-        // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour.
-        { value: live, label: 'live now', tone: live ? 'live' : undefined },
+        // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour. ⚠️ NO `tone: 'live'` HERE, AND THE ABSENCE IS THE POINT. It was added to clear a coverage entry and there is no `.stat.live` rule anywhere — `.stat.stg .v` and `.stat.warn .v` exist, `.stat.live` does not — so the class styled nothing and existed only to make a number move. The live figure reads in plain ink because that is what the design gives it.
+        { value: live, label: 'live now' },
         { value: staged, label: 'staged', tone: staged ? 'stg' : undefined },
     ];
 

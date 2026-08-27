@@ -32,7 +32,11 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
 :focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-1)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ⚠️ `padding`, `margin` and `border` ARE PART OF THE RECIPE, not padding of the rule. They came from
+   tokens.css's `.sr-only`, which was deleted on 2026-08-26 as "the same rule declared twice" — without
+   diffing the two. Without them a visually-hidden element that carries a border still paints a 1px
+   sliver, which is the exact artefact the clip is there to prevent. */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ═══ FORM CONTROLS — styled as ELEMENTS, never as classes ═══ */
 /* 🔴 This used to be `input[type=text],input[type=search],input[type=date]` — ATTRIBUTE

@@ -119,14 +119,14 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
 
 // 🔴 CREATION WAS BURIED ON EVERY REALM THAT HAD IT. Measured 2026-08-26: Armory's and Broadcast's only "new" affordance was a command-palette entry plus a button inside the Bulk view, and Access's grant form sat at the foot of a grid — so the one thing an admin opens the portal to DO was reachable only by knowing it was there. The masthead is where the page says what it is; it is also where it should offer the verb.
 //
-// ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT JUST BOUND. A shortcut nobody can see is a shortcut nobody uses, which is why the <kbd> is part of the control rather than a tooltip — the mockup makes the same call in season.html. The key is rendered from the same `hint` that is bound, so the two cannot drift.
-export function MastheadNew({ label, hint, onClick, tip }) {
+// ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT JUST BOUND. A shortcut nobody can see is a shortcut nobody uses, which is why the <kbd> is part of the control rather than a tooltip — the mockup makes the same call in season.html. The key is rendered from the same `hint` that is bound, so the two cannot drift. ⚠️ `hint` IS OPTIONAL AND THE KEY BINDING IS EXTRACTED, so a realm that offers SEVERAL create verbs gets the same shortcut behaviour as one that offers a single button. Armory needs two — MP and DMZ are different records with different rules — and the first version of that group was transplanted from the mockup as bare chips, which silently dropped the announced access key and the text-field guard this component had been built with an hour earlier. Two create idioms in one console, one of them worse.
+export function useCreateKey(hint, onClick) {
     useEffect(() => {
         if (!hint || !onClick) return undefined;
         const onKey = (e) => {
             if (e.key.toLowerCase() !== hint.toLowerCase() || e.metaKey || e.ctrlKey || e.altKey) return;
             const t = e.target;
-            // ⚠️ A bare letter is a TEXT CHARACTER first. Firing the shortcut while somebody is typing a build name would swallow the letter and open a second composer over the one they are filling in.
+            // ⚠️ A bare letter is a TEXT CHARACTER first. Firing while somebody is typing a build name would swallow the letter and open a second composer over the one they are filling in.
             if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
             e.preventDefault();
             onClick();
@@ -134,6 +134,10 @@ export function MastheadNew({ label, hint, onClick, tip }) {
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [hint, onClick]);
+}
+
+export function MastheadNew({ label, hint, onClick, tip }) {
+    useCreateKey(hint, onClick);
 
     return html`
         <button type="button" class="pill lead mh-new" onClick=${onClick} data-tip=${tip || null}>

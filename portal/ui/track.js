@@ -564,7 +564,8 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                 ${onWindow && full ? html`
                     <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
                               onWindow=${onWindow} />` : null}
-                <!-- ⚠️ THE READOUT IS THE POINT, NOT THE LINE. A bare vertical rule tells you where the pointer is, which you already knew; the date under it is the thing the ruler's five tick labels cannot give you between ticks. Pointer-driven and aria-hidden — it says nothing a keyboard user is missing, because the same dates are in the table below. -->
+                <!-- ⚠️ THE READOUT IS THE POINT, NOT THE LINE. A bare vertical rule tells you where the pointer is, which you already knew; the date under it is the thing the ruler's five tick labels cannot give you between ticks.
+                     🔴 THE CROSSHAIR ITSELF IS aria-hidden AND THAT IS STILL RIGHT — it is a readout, and the dates are in the table below. What was NOT right is what came next: clicking it opens a day drawer that exists nowhere else, so a comment claiming "no keyboard user is missing anything" became false the moment the click handler was added, and stayed in the file justifying it. The drawer now has its own keyboard path (below the Track, focusable, same handler), because the fix for a mouse-only affordance is a keyboard route, not a better sentence. -->
                 ${hover === null || !hoverDate ? null : html`
                     <div class="xhair on" style=${'left:' + hover + '%'} aria-hidden="true">
                         <span class="xd"><b>${TL.fmt(hoverDate)}</b></span>

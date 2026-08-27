@@ -8,6 +8,8 @@
 //
 // ⚠️ IT UNDER-COUNTS, IN ONE KNOWN WAY. Components build class strings in variables (`const cls = 'bar ' + state`), which a source scan cannot see. So true coverage is somewhat higher than reported, and a realm that stalls while LOOKING right may be hitting that rather than missing markup. Read it with the page open, never instead of opening the page.
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import { CLASS_PROPS } from './portalClassProps.mjs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -68,7 +70,7 @@ function emittedFrom(t) {
         }
         for (const m of t.matchAll(/class="([^"$]*)/g)) add(m[1]);
         // 🔴 A CLASS PASSED AS A DATA VALUE IS STILL EMITTED. A Manifest column declares `col: 'c-type'` and `metaClass: 'rowlife'`, and the component renders them into a real class attribute — but the literal lives in the REALM file as a property, so a scan for `class=` finds the component's fallbacks and never the realm's override. Season emitted `c-type`, `c-spark` and `rowlife` and was reported as missing all three. `portal:orphans` learned this same lesson yesterday and this file did not, which is the fourth blind spot of one shape on this branch. ⚠️ THE VALUE MAY BE CONDITIONAL. `tone: staged ? 'stg' : undefined` is the same declaration as `tone: 'stg'` — the class ships when the condition holds — so the scan reads the whole short value expression and takes every literal out of it rather than requiring a bare string.
-        for (const m of t.matchAll(/\b(?:col|metaClass|cls|accentClass|tone):\s*([^,}\n]{0,90})/g)) {
+        for (const m of t.matchAll(new RegExp(`\\b(?:${CLASS_PROPS.join('|')}):\\s*([^,}\\n]{0,90})`, 'g'))) {
             for (const lit of m[1].matchAll(/'([^'\n]*)'/g)) add(lit[1]);
         }
         // `cls` is a PROP on the Icon component and an ATTRIBUTE at the call site — `<${Icon} cls="xl" />` — and only the first spelling was being read.
@@ -219,6 +221,11 @@ const STYLED = (() => {
     return out;
 })();
 
+// 🔴 THE SCANNER IS EXPORTED AND THE REPORT IS GUARDED, so this file can be TESTED instead of only trusted. It grew on 2026-08-26 from a set comparison into a small static-analysis engine — brace matching, five class-valued props, a 600-char declaration window, a one-hop function-body lookup with a 900-char window over a concatenated sibling corpus, a member call-graph with a keyword blacklist, and a styled-class intersection. Eight heuristics, each a place a future edit produces a slightly WRONG number rather than an error, which is the worst failure mode a gate can have. `docs-audit` has had a self-test proving each of its checks can fail since it was written; this had none.
+export { emittedFrom, shellMembers, closureOf, classExpressions };
+
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) {
 const showMissing = process.argv.includes('--missing');
 let totalWant = 0, totalHave = 0;
 console.log(`${'realm'.padEnd(10)} ${'cover'.padStart(6)}  ${'have'.padStart(5)}/${'want'.padEnd(5)}`);
@@ -238,7 +245,15 @@ for (const [name, mockPages, uiFiles] of PAIRS) {
 }
 console.log(`\n${'OVERALL'.padEnd(10)} ${pct(totalHave, totalWant).padStart(6)}  ${totalHave}/${totalWant}`);
 console.log(`\n${totalWant - totalHave} of ${totalWant} class-slots outstanding.`);
-console.log('Two are deliberate and are NOT work: `addrow` (Season replaced the mockup\'s inline add row with the');
-console.log('inline composer above the Track — a second way to add the same things) and `fxc` (a per-row opt-out');
-console.log('would have to map a rendered row back to a block of raw text, and that parser is the bot\'s).');
+// 🔴 THIS WARNING WAS DELETED BY THE SESSION THAT DROVE THE NUMBER TO 1493/1495, AND PUTTING IT BACK MATTERS MORE THAN THE NUMBER DID. The original read "Done is when the remaining delta is mockup-only scaffolding — never when this reads 100%" — a previous session writing directly at whoever came next. It was rewritten because it "reads oddly at 100%", which is precisely when it was most needed: the effect of the edit was to remove the one piece of friction that tells a reader to stop chasing this. Deleting a guard rail looks exactly like tidying prose, and no gate can tell the difference.
+console.log('\n⚠️  DONE IS NOT 100%. This counts CLASS NAMES IN SOURCE. It cannot see whether the branch');
+console.log('   containing one ever executes (a dead branch shipped on 2026-08-26 and read as covered),');
+console.log('   whether the layout composes, whether a control is reachable, or whether a number is true.');
+console.log('   It is NECESSARY, never SUFFICIENT — and the mockup it measures against was demoted from');
+console.log('   specification on 2026-08-25, so conforming to its COMPOSITION can roll back working design.');
+console.log('   Use it to find places nobody has looked. Never let it choose the answer.');
+console.log('\nThe two outstanding slots are deliberate and are NOT work: `addrow` (Season replaced the');
+console.log("mockup's inline add row with the composer above the Track) and `fxc` (a per-row opt-out would");
+console.log("have to map a rendered row back to a block of raw text, and that parser is the bot's).");
 console.log('Run with --missing to see the class names behind each number.');
+}

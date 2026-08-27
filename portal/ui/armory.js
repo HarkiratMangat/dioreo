@@ -5,7 +5,7 @@ import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Fold, Icon } from './icons.js';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, useCreateKey } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
@@ -790,6 +790,25 @@ function BulkOverwrites({ rows, builds, mode }) {
         </div>`;
 }
 
+// ⚠️ TWO CHIPS, NOT ONE BUTTON, BECAUSE THE ARMORY HAS TWO ARMORIES — and both keep the shortcut the shared MastheadNew binds, which the first version of this group dropped when it was transplanted from the mockup as bare chips. `b` opens MP, `d` opens DMZ, each announced on its own chip rather than bound invisibly, and both guarded so a bare letter typed into a field is a letter.
+const ADD_KEY = { MP: 'b', DMZ: 'd' };
+
+function ArmoryAddChips({ onAdd }) {
+    useCreateKey(ADD_KEY.MP, () => onAdd('MP'));
+    useCreateKey(ADD_KEY.DMZ, () => onAdd('DMZ'));
+    return html`
+        <div class="mh-add" role="group" aria-label="Add a build">
+            <span class="mh-add-k">Add</span>
+            ${MODES.map((m) => html`
+                <button type="button" key=${m} class="pill mh-t"
+                        style=${`--c:var(--${m === 'DMZ' ? 'ret' : 'draw'})`}
+                        onClick=${() => onAdd(m)}>
+                    <span class="dot"></span>New ${m} build${' '}
+                    <kbd class="mh-k" aria-label=${`Keyboard shortcut: ${ADD_KEY[m].toUpperCase()}`}>${ADD_KEY[m].toUpperCase()}</kbd>
+                </button>`)}
+        </div>`;
+}
+
 function BulkView({ builds, mode, onSetMode, csrfToken, overlay, onStaged }) {
     const [text, setText] = useState('');
     const [preview, setPreview] = useState(null);
@@ -929,7 +948,8 @@ export function ArmoryRealm({ session }) {
 //
 // ⚠️ ONE REQUEST, IN THE SAME useAsync, so the realm still has ONE loading phase. A second hook would give the page two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
     const load = useAsync(() => Promise.all([fetchJson('/api/armory'), fetchJson('/api/review')])
-        .then(([armory, review]) => ({ ...armory, stagedOps: (review && review.ops) || [] })), []);
+        .then(([armory, review]) => ({ ...armory, stagedOps: (review && review.ops) || [],
+                                       stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), []);
     const refresh = load.reload;
 
     if (!load.data) return html`<${RealmShell} realm="armory" session=${session} error=${load.error} slow=${load.slow}
@@ -941,14 +961,16 @@ export function ArmoryRealm({ session }) {
     const flagged = builds.filter((b) => (b.coverage || []).length).length;
     const modes = [...new Set(builds.map((b) => b.mode))].sort();
     const modeLine = modes.length ? modes.join(' · ') : '';
-    const stagedHere = (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
+    // 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
+    const stagedHere = data.stagedUnknown ? null
+        : (data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     const armoryStats = [
         { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
         { value: builds.length, label: 'builds' },
         { value: flagged, label: 'flagged', tone: flagged ? 'bad' : undefined },
         // The realm's own staged count, in the staged voice — every other realm's masthead says how much of what you are looking at is not live yet, and the Armory's did not.
-        { value: stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
+        { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
     ];
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
@@ -1040,14 +1062,7 @@ export function ArmoryRealm({ session }) {
                                                         code and ranks by combat range — and a single "New build" made the mode a
                                                         thing you discovered inside the form. Season's masthead already works this
                                                         way for its five item types; this is the same control. -->
-                                                   <div class="mh-add" role="group" aria-label="Add a build">
-                                                       <span class="mh-add-k">Add</span>
-                                                       ${MODES.map((m) => html`
-                                                           <button type="button" key=${m} class="pill mh-t"
-                                                                   style=${`--c:var(--${m === 'DMZ' ? 'ret' : 'draw'})`}
-                                                                   onClick=${() => { setBulkMode(m); setShowAdd(true); }}>
-                                                               <span class="dot"></span>New ${m} build</button>`)}
-                                                   </div>`} />`}
+                                                   <${ArmoryAddChips} onAdd=${(m) => { setBulkMode(m); setShowAdd(true); }} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
