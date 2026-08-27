@@ -958,17 +958,21 @@ export function ArmoryRealm({ session }) {
 
     // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page.
     const weapons = new Set(builds.map((b) => b.weaponName));
-    const flagged = builds.filter((b) => (b.coverage || []).length).length;
+    // 🔴 FAULTS AND AGE ARE COUNTED SEPARATELY HERE FOR THE SAME REASON splitCoverage EXISTS, and the masthead was the one surface still conflating them. A single `flagged` read 117 of 133 — a number so close to the total that it says nothing — because it counted "not touched in 90 days" as a defect. Coverage's own headline has always made the distinction in words ("66 builds have something actually wrong with them, and 106 more are merely old"); the figures above it now make it too, and both read from splitCoverage so they cannot disagree.
+    const split = builds.map(splitCoverage);
+    const needRepair = split.filter((c) => c.faults.length).length;
+    const stale = split.filter((c) => c.aged).length;
     const modes = [...new Set(builds.map((b) => b.mode))].sort();
     const modeLine = modes.length ? modes.join(' · ') : '';
     // 🔴 THIS BLOCK CRASHED THE WHOLE REALM UNTIL 2026-08-27 — a bare `data` (Broadcast's binding name, not this file's) instead of `load.data`, thrown on every load since the null-check was added. No gate caught it: coverage/orphans/refs all scan source text and never execute it, so it shipped green through two audits that were specifically hunting this class of bug. Only opening the page in a browser found it. See docs/db-deferred-list.md's harness-in-npm-test item. 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO. /api/review is forbidden to an admin who does not hold the review realm, and fetchJson answers a 403 with `{forbidden:true}` — so `(ops || [])` yielded `[]` and the masthead told a delegated admin "0 staged" when the honest answer is "you cannot see that". A console whose whole permission model exists to distinguish those two rendered them identically. `null` reaches the Masthead as an em dash, which is the portal's own absent-value voice.
     const stagedHere = load.data.stagedUnknown ? null
         : (load.data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
+    // ⚠️ THE LEAD FIGURE WAS ALSO A STAT — `builds` appeared twice in the same row, as the hero number and again three columns to its right, reading as two different measurements that happened to agree. The mockup's Armory masthead has no repetition in it: a lead, then four figures that each say something the lead does not.
     const armoryStats = [
         { value: builds.length, label: builds.length === 1 ? 'build' : 'builds', lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
-        { value: builds.length, label: 'builds' },
-        { value: flagged, label: 'flagged', tone: flagged ? 'bad' : undefined },
+        { value: needRepair, label: 'need repair', tone: needRepair ? 'bad' : undefined },
+        { value: stale, label: 'stale' },
         // The realm's own staged count, in the staged voice — every other realm's masthead says how much of what you are looking at is not live yet, and the Armory's did not.
         { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
     ];
@@ -1102,14 +1106,17 @@ export function ArmoryRealm({ session }) {
                           <!-- 🔴 THE STANDALONE LIVE PREVIEW PANEL IS GONE. It showed the card for whichever row was
                                last clicked, beside a table you were not editing — a preview with nothing to preview
                                against. The build editor carries it in .bed-side, where the card and the fields that
-                               produce it are one screen. Clicking a row opens the editor. -->
-                          <!-- ⚠️ The aside is the editor's preview column, so its placeholder only means anything
-                               when the main column is showing the rack. Beside an open Add form or the Bulk view it
-                               read "Click a row below to open it" at somebody who was mid-way through typing one. -->
-                          ${editingId || showAdd || view === 'Bulk' ? null : html`<p class="empty" style="padding:18px">Click a row below to open it.</p>`}
+                               produce it are one screen. Clicking a row opens the editor.
+                               🔴 AND THE COLUMN IT LEFT BEHIND WAS STILL BEING RESERVED. The bed grid held a 340px second
+                               cell whose only content was the hint below, measured 7,725px tall on the rack — so the
+                               board ran at 798px of an 1,158px panel to make room for one sentence. The hint is a
+                               caption for the MANIFEST, which is where the clickable rows actually are, so it belongs
+                               in the flow under the board rather than in a column of its own. A :has-only-child rule
+                               on .bed drops the empty cell, and the board gets the width the mockup gives it. -->
                       </div>
                   `}
                   manifestSlot=${html`
+                      ${editingId || showAdd ? null : html`<p class="hint">Click a row to open it.</p>`}
                       <${FilterBar} weapon=${weaponFilter} flag=${coverageFilter && coverageFilter.flag}
                                     shown=${rows.length} total=${builds.length}
                                     onClear=${() => { setWeaponFilter(null); setCoverageFilter(null); }} />

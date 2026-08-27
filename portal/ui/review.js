@@ -230,12 +230,22 @@ export function ReviewRealm({ session }) {
                         </span>`)}
                     <span class="sp"></span>
                     <!-- 🔴 THE GATE NAMED THE PROBLEM AND OFFERED NO WAY THROUGH IT. Review said "1 tier-3 change needs an export before it will commit" and stopped there: the only Export control in the portal was on Season's Board, one realm away, and nothing on this screen said so. A blocker that states a precondition without the control that satisfies it is a dead end with good manners. -->
+                    <!-- 🔴 THE MASTHEAD COUNTED THEM ALL AND THE FOOTER NAMED ONE. blockersFor returns a
+                         LIST — an export gate, a stale record, a failed validation, and one entry per
+                         unconfirmed tier-3 changeset — and this rendered blockers[0] only. Measured on the
+                         fixture: the masthead read BLOCKERS 3 above a single sentence, so a reader who
+                         cleared that one had no way to learn what the other two were except by pressing
+                         Commit and being refused again. Every blocker is listed now, each with its own way
+                         through where one exists — which is what the note above already committed to. -->
                     ${blockers.length
-                        ? html`<span class="rvgate">
-                                   <${Icon} name="triangle-alert" cls="sm" />${blockers[0].msg}
-                                   ${needExport.length ? html`
-                                       <button class="pill sm" disabled=${busy}
-                                               onClick=${() => exportOne(needExport[0])}>Export it now</button>` : null}
+                        ? html`<span class="rvgates">
+                                   ${blockers.map((b) => html`
+                                       <span class="rvgate" key=${b.kind + b.msg}>
+                                           <${Icon} name="triangle-alert" cls="sm" />${b.msg}
+                                           ${b.kind === 'export' && needExport.length ? html`
+                                               <button class="pill sm" disabled=${busy}
+                                                       onClick=${() => exportOne(needExport[0])}>Export it now</button>` : null}
+                                       </span>`)}
                                </span>`
                         : html`<span class="rvgate ok"><${Icon} name="check" cls="sm" />Ready — ${ops.length} change${ops.length > 1 ? 's' : ''} to write</span>`}
                     <button class="btn dang" disabled=${busy} onClick=${() => overlay.confirm({

@@ -133,16 +133,30 @@ function Health({ health }) {
                 <span class="t">Health</span>
                 <span class="rt">read from the bot's own records</span>
             </div>
+            <!-- 🔴 THE TILES SAID WHAT THE MASTHEAD HAD JUST SAID. Measured 2026-08-27: the masthead read
+                 uptime 1h 30m · errors 24h 23 · commands 24h 496, and three of the four tiles beneath it
+                 repeated those three figures verbatim, a few hundred pixels lower. Four tiles above two
+                 panels is the shape the completion plan calls a generic dashboard, and this is why it read
+                 as one — the tiles were not a second layer of information, they were the first one again.
+                 The mockup's Analytics makes them disagree on purpose: its masthead carries the headline
+                 counts and its tiles carry a derived rate, a restart count and a memory range.
+                 🔴 EACH TILE NOW CARRIES SOMETHING THE MASTHEAD CANNOT, and every one of them was already
+                 on this page in a weaker position — restarts were a sentence inside a panel, distinct
+                 users and the quiet-alert count were sub-lines under figures they were not about. ⚠️ The
+                 quiet count is deliberately its OWN figure rather than a footnote to errors: this repo's
+                 three-tier error model must never collapse into one number, and a caution that only exists
+                 as small print under a red count has collapsed. -->
             <div class="tiles">
-                <${Tile} label="Uptime" value=${fmtUptime(h.uptimeSince)} tone=${h.uptimeSince ? 'ok' : ''}
-                         sub=${h.uptimeSince ? `since the last ${h.lastBootKind || 'restart'}${h.lastBootVersion ? ' · ' + h.lastBootVersion : ''}` : 'no boot recorded'} />
-                <${Tile} label="Errors 24h" value=${errors} tone=${errors === 0 ? 'ok' : errors > 5 ? 'err' : 'warn'}
-                         sub=${`${h.noise24h ?? 0} lower-level ${h.noise24h === 1 ? 'alert' : 'alerts'} not counted`} />
+                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0}
+                         tone=${(h.restarts7d ?? 0) > 20 ? 'warn' : ''}
+                         sub=${`${h.restarts24h ?? 0} in the last 24 hours`} />
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
                          tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
-                <${Tile} label="Commands 24h" value=${(h.commands24h ?? 0).toLocaleString()}
-                         sub=${`${h.distinctUsers24h ?? 0} distinct users`} />
+                <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
+                         sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
+                <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
+                         sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
                  stores the commit, the guild count, how many commands registered and how many emoji synced
@@ -174,8 +188,9 @@ function Health({ health }) {
             <div class="hsplit">
                 <section class="hpanel">
                     <h4>Restarts</h4>
-                    <p class="hp">${h.restarts24h ?? 0} in the last 24 hours, ${h.restarts7d ?? 0} in the last 7 days.
-                        A restart is normal after a deploy and is worth a look when it was not one.</p>
+                    <!-- ⚠️ THE COUNTS MOVED UP INTO A TILE AND ARE NOT REPEATED HERE. Restating them would
+                         rebuild the duplication the tiles were just rewritten to remove, one panel lower. -->
+                    <p class="hp">A restart is normal after a deploy and is worth a look when it was not one.</p>
                     <${DailyBars} series=${h.spark?.alerts || []} label="Alerts per day" />
                 </section>
                 <section class="hpanel">

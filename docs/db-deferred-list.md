@@ -250,6 +250,17 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🔔 Reminders / watch-for
 
+### ✅ Per-realm composition — Armory, Analytics and Review `[P2 · M · Opus5-High]`
+*Approved 2026-08-27 in the batched pop-up round (*"idk what order you do them in, do all 3"*) and built the same session, each against the mockup rather than against an opinion.*
+
+**Armory** — the bed grid was `798px 340px` and the second column's entire content was one sentence, down 7,725px of rack. The empty cell is dropped (a `:has(> :only-child)` rule), the board runs the full 1,158px, **+45% width**, and the hint moved into the flow above the Manifest it describes. The masthead also counted `builds` twice, as the lead figure and again as a stat; it now splits faults from age (`66 need repair · 106 stale`) through the same `splitCoverage` that Coverage's headline uses, so the two cannot disagree.
+
+**Analytics** — three of the four tiles repeated the masthead's three figures verbatim. Each tile now carries something the masthead cannot, and all four were already on the page in a weaker position (restarts inside a paragraph; distinct users and the quiet-alert count as sub-lines under figures they were not about). Verified zero overlap.
+
+**Review** — the masthead counted every blocker and the footer named the first one only. All are listed now. ⚠️ **Its composition was otherwise left alone deliberately** — it is ahead of the mockup (typed confirmation, real export gate, per-op transactions), and the mockup's own sample data renders `[object Object]` in four places.
+
+⚠️ **What this did NOT do:** the mockup's Armory also puts the MP/DMZ toggle inside the view bar, names its views *Tier board · Repairs · Compare · Bulk & export*, and carries a realm-specific legend (*clean · needs repair · stale*) where the portal shows the generic state legend. Those are vocabulary and control-placement decisions rather than composition, and they are a separate pass.
+
 ### 🔎 OPEN QUESTION — four mockup COMPOSITION changes Harkirat has not seen `[P2 · XS]`
 *Filed 2026-08-26 23:08 EDT. He asked to be pointed at them exactly and to keep this open, not to decide now.*
 

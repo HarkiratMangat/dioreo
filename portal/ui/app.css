@@ -2075,6 +2075,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvfoot{display:flex;align-items:center;gap:13px;border-top:1px solid var(--rule);
   padding:14px 18px;background:var(--sunk);flex-wrap:wrap}
 .rvfoot .sp{flex:1}
+/* The footer lists EVERY blocker rather than the first one, so the gate needs a column. It stays a
+   flex ITEM of .rvfoot, which keeps the Discard/Commit pair where they were. */
+.rvgates{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
 .rvgate{font-size:var(--t-sm);color:var(--warn);display:flex;align-items:center;gap:7px}
 .rvgate.ok{color:var(--ok)}
 .rvgate svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
@@ -2311,6 +2314,14 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* ── The build editor: two columns, the document on the left, the image and the
  * live Discord render on the right. */
 .bed{display:grid;grid-template-columns:1fr 340px;gap:20px}
+/* 🔴 THE SECOND COLUMN EXISTS ONLY WHEN SOMETHING OCCUPIES IT. Measured 2026-08-27 on the Armory
+   rack: `.bed` was 798px + 340px, and the 340px column held ONE SENTENCE — "Click a row below to
+   open it." — down 7,725px of page. So the realm's primary surface was squeezed to 69% of the
+   panel it sits in, permanently, to reserve room for a hint. The editor carries its own preview
+   column (.bed-side) inside the main cell, so the outer aside was never going to hold anything
+   else. This is what the plan means by Armory's board being "a panel on the page rather than the
+   page"; the mockup's tier board runs the full width. */
+.bed:has(> :only-child){grid-template-columns:1fr}
 @media (max-width:900px){ .bed{grid-template-columns:1fr} }
 .bed-sec{margin-bottom:20px}
 .bed-sec h5{display:flex;align-items:baseline;gap:9px;font:600 var(--t-micro)/1 var(--ui);
