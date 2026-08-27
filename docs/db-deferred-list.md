@@ -260,6 +260,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 **Verify condition:** he has opened each of the four on screen and either kept it or named the change. Until then none of these is settled, and the changelog should not describe them as such.
 
+**Update 2026-08-27 10:15 EDT:** Claude opened all four in the harness this session and confirms each renders as described above — no visual defects (the Armory chips render alongside the `data`-undefined crash fix below, without which Armory could not be seen at all). **This is not the verify condition** — it proves the four are visible and correct, not that Harkirat has looked and chosen. Still open until he does.
+
 
 - **The four portal commits on `feat/portal-redesign-session-b` have no changelog entry, no DEVLOG entry and no version bump** `[P1 · S]` *(filed 2026-08-24 15:4x EDT.)* `79ed566` · `01505d4` · `0e83613` · `e4a9018` are committed and **unpushed**. `package.json` reads `3.68.0-pre`; per the suspended-minor-bumps rule for the pre-release line this is a MODERATE bump to **`3.69.0-pre`**. Per the git workflow the entry, the bump and the previous entry's hash backfill all go **on the branch before the squash merge**, never after — bumping after the merge is the exact bug that produced sixteen two-commit releases. ⚠️ **`docs/CHANGELOG.md:31` still carries an unfilled `(#PR)` placeholder from the v3.68.0 entry** (an earlier session's), and `docs-audit`'s `changelog-pr-cite` fails CI on it — so it must be filled with the real PR number before anything here can merge, independently of this entry. **Verify:** `npm run docs:audit` exits 0, and `git log -1` on the squash commit shows a `package.json` already reading the tagged version.
 
@@ -451,6 +453,8 @@ The mockup's §16 liveliness layer was built 2026-08-25 and the CSS came across 
 **Verify condition:** `npm test` fails when a component's markup is present in source but absent from the rendered tree for a fixture that must produce it. The single check added on 2026-08-26 (`a double-CP calendar item draws its window on the Track`, in `portalRender.test.js`) is the shape — it was proved by reinstating the bug and watching it fail. This item is to make that shape systematic rather than one-off.
 
 ⚠️ **Do not close this by adding another source scan.**
+
+🔴 **A second, worse instance confirmed the premise 2026-08-27 10:15 EDT** — first time the harness was opened in a browser at all, Armory threw `ReferenceError: data is not defined` on every single load and never rendered past the skeleton (`portal/ui/armory.js`, a bare `data` copy-pasted from `broadcast.js`'s `const data = load.data` binding, which `armory.js` never has). This was not a dead branch or an invisible sub-feature like the double-CP window above — it was the **entire realm**, 133 builds, permanently unreachable, since the commit that added the staged-count masthead figure (`7f8ac19`, 2026-08-26), through two subsequent self-audits that were specifically hunting this bug class. `portalCoverage`/`orphans`/`refs` all read it as fine the whole time. Fixed same session (`8a21f32`). **Verify condition unchanged, but now doubly evidenced — do not let a third one happen before this is built.**
 
 
 
