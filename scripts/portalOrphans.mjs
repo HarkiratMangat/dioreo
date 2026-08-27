@@ -38,6 +38,8 @@ function emittedClasses() {
     for (const f of fs.readdirSync(UI).filter((n) => n.endsWith('.js'))) {
         const src = fs.readFileSync(path.join(UI, f), 'utf8');
         for (const m of src.matchAll(/class="([^"$]*)"/g)) add(m[1], f);
+        // 🔴 A CLASS PASSED AS A DATA VALUE WAS INVISIBLE TO THIS GATE. The Manifest takes `metaClass` on a column and renders it into the row's secondary line, so the name never appears inside a `class=` attribute in the source — and `metaClass: 'rowlife'` shipped with no rule behind it anywhere, which is precisely the state this file exists to prevent. Any future prop that names a class has to be listed here, or it inherits the same blind spot.
+        for (const m of src.matchAll(/\b(?:metaClass|cls):\s*'([^']+)'/g)) add(m[1], f);
         for (const m of src.matchAll(/class=\$\{((?:[^{}]|\{[^{}]*\})*)\}/g)) {
             const expr = m[1];
             for (const lit of expr.matchAll(/(!==|===|==)?\s*['"]([a-zA-Z][\w -]*)['"]/g)) {
