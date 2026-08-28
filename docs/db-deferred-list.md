@@ -514,6 +514,23 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### A dev hostname for the portal, so it is reachable from a phone `[P2 · S · Sonnet5-High]`
+
+*Filed 2026-08-28 11:2x EDT, from Harkirat's question while away from his machine — the morning's OAuth sign-in had to go through Discord's QR login because the dev portal only exists on `localhost:8787`, which a phone cannot reach.*
+
+**Not the same hostname as prod.** `portal.dioreo.app` belongs to the VM's tunnel; one hostname routes to one origin. A separate name — `dev.portal.dioreo.app` — pointed at a **second `cloudflared` tunnel running on the Mac** is the shape that works, and it costs nothing while it is not running.
+
+🔴 **Nothing is done at name.com.** Measured 2026-08-28: `dig NS dioreo.app` returns `lola.ns.cloudflare.com` / `patrick.ns.cloudflare.com`, so **Cloudflare is authoritative** and name.com holds only the registration and the delegation. And the DNS record is not hand-made either — `cloudflared tunnel route dns <tunnel> <hostname>` writes the proxied CNAME to `<tunnel-id>.cfargotunnel.com` itself.
+
+The steps, and who does each: **Harkirat** runs `cloudflared tunnel login` (browser auth to Cloudflare) and `cloudflared tunnel create dioreo-dev`; either of us can write the config mapping the hostname to `http://127.0.0.1:8787` and run `cloudflared tunnel route dns`; **Harkirat** adds `https://dev.portal.dioreo.app/auth/callback` as a **second** redirect URI on the `Dioreo (Dev)` application, keeping the localhost one so both ways of running still work; `PORTAL_PUBLIC_URL` in `.env.dev` is then set to whichever origin is in use, since `portal/auth.js` builds the redirect from it.
+
+⚠️ **Two things to decide before it goes up.** It is an admin surface running unreviewed branch code on a laptop, reachable by anyone who guesses the name — the portal's own Discord OAuth plus `isAdmin` is the real gate, but **Cloudflare Access in front of it is cheap defence in depth** and worth taking. And it only answers while the Mac is awake with both processes running; a sleeping laptop is a 502, which should not be mistaken for a portal bug.
+
+**Verify:** `curl -sI https://dev.portal.dioreo.app/` returns 200 from the Mac's portal (not a Cloudflare 525/1033), the door renders, and a sign-in completes end to end from a phone with no QR involved.
+
+⚠️ **Related, and separate:** `portal.dioreo.app` **already resolves and already returns HTTP 525** (an origin SSL handshake that never happens) — the record and the Cloudflare proxy entry exist, and nothing serves them, exactly as `docs/reference/portal-launch-checklist.md` says. That is prod's tunnel step, not this one.
+
+
 ### ~~🎛️ Four of §16's eight liveliness micro-interactions never reached `portal/ui`~~ ✅ **RESOLVED 2026-08-27 12:4x EDT** `[P2 · S]`
 *Filed 2026-08-27 00:04 EDT. Found by reading the COMPANION against the code, not by any gate — `portal:coverage` reads 100% with all four absent.*
 
