@@ -306,8 +306,8 @@ function buildContainer(regionKey, accentColor = PRESET_ACCENT, isEphemeral = fa
     // ⚠️ UPDATED for the 2026-08-27 saved-basket redesign -- there is no `region` field on the calculator's own state any more (it lives on the basket document, not the customId), so this can no longer carry a target region the way the single-draw panel's cross-link did. It lands on the calculator's plain LANDING state instead (verb 'page', no basketId, no author lock -- landing needs none) via encodeState/defaultState, which is still the exact shape drawCalculator.js's own handler already routes -- zero new handler code.
     const globalNavigationRow = buildGlobalNavRow(null, {
         nav_prices: {
+            // NO emoji (2026-08-27, Harkirat): utils/globalNav.js's NAV_ITEMS carries none on any slot, and one decorated button in an otherwise bare five-button row reads as a mistake rather than as emphasis.
             label: 'Draw Calculator',
-            emoji: emojis.parseEmoji(emojis.calculator),
             custom_id: require('./drawCalculator').encodeState('page', require('./drawCalculator').defaultState())
         }
     });

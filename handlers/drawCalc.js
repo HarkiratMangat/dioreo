@@ -46,12 +46,12 @@ function buildAmountModal(state) {
 }
 
 function buildNameModal(state, currentName) {
-    const field = new TextInputBuilder().setCustomId('name').setLabel('Basket name')
+    const field = new TextInputBuilder().setCustomId('name').setLabel('Calculation name')
         .setStyle(TextInputStyle.Short).setPlaceholder('e.g. Season 12 push')
         .setValue(currentName || '').setRequired(false).setMaxLength(80);
     return new ModalBuilder()
         .setCustomId(encodeState('nums_name', state))
-        .setTitle('Name Your Basket')
+        .setTitle('Name This Calculation')
         .addComponents(new ActionRowBuilder().addComponents(field));
 }
 
@@ -68,7 +68,8 @@ async function renderPanel(interaction, state, basket, notice = null) {
         savedBaskets,
         notice
     });
-    return sendV2Payload(interaction, withShareButton([panel], isEphemeral));
+    // `panel` is already the top-level component LIST (Container + the sibling nav row) -- do not wrap it in another array.
+    return sendV2Payload(interaction, withShareButton(panel, isEphemeral), { skipExpiry: true });
 }
 
 // Deferred here, once, so every branch below can just call renderPanel -- 🔴 loadOwned() must be called AFTER this so a not-found/wrong-owner message can still be sent as an edit, not a second reply on top of an unacknowledged interaction.
@@ -147,7 +148,7 @@ async function route(interaction) {
         }
         try {
             await interaction.deferReply({ flags: 64 });
-            await sendV2Payload(interaction, [panel], {});
+            await sendV2Payload(interaction, [panel], { skipExpiry: true });
         } catch (notifyError) { console.error('Failed to send Draw Info/Help panel (interaction likely expired):', notifyError); }
         return true;
     }

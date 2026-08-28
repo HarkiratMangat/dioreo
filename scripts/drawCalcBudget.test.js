@@ -28,9 +28,12 @@ const countComponents = node => Array.isArray(node)
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
 const messageCount = panel => countComponents([panel, SHARE_ROW]);
 
-const texts = panel => panel.components.filter(c => c.type === 10).map(c => c.content);
+// buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildLandingPanel still returns a bare Container. Both shapes go through here.
+const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);
+const siblingRows = p => (Array.isArray(p) ? p.filter(x => x && x.type === 1) : []);
+const texts = panel => container(panel).components.filter(c => c.type === 10).map(c => c.content);
 const allText = panel => texts(panel).join('\n');
-const rows = panel => panel.components.filter(c => c.type === 1);
+const rows = panel => [...container(panel).components.filter(c => c.type === 1), ...siblingRows(panel)];
 const buttons = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 2);
 const selects = panel => rows(panel).flatMap(r => r.components).filter(c => c.type === 3);
 const buttonLabelled = (panel, label) => buttons(panel).find(b => b.label === label);
@@ -176,7 +179,7 @@ t('priority is the ARRAY ORDER, never a cheapest-first sort -- proven with an or
     const { perBanner } = basketCost('region_10', banners, false);
     assert.ok(perBanner[0].cost > perBanner[1].cost, 'fixture invariant broken -- banner 0 must cost MORE than banner 1 for this to be a real falsifier');
     const panel = render(makeBasket({ banners }), { page: 1 });
-    const basketListText = texts(panel).find(c => c.startsWith('## BASKET LIST'));
+    const basketListText = texts(panel).find(c => c.startsWith('## DRAWS IN PROGRESS'));
     const firstLine = basketListText.split('\n')[1];
     assert.ok(firstLine.includes('#1') && firstLine.includes('0/10'), 'banner #1 in the listing must be the array\'s first entry (0 pulls), not the cheaper 9-pulls one a cost-sort would promote');
 });
@@ -228,11 +231,11 @@ t('Reset is two-step: armed state shows Danger style + "click again", unarmed sh
     assert.ok(armed && armed.style === 4, 'armed Reset must be Danger-styled and re-labelled');
 });
 
-t('Delete Basket is two-step the same way', () => {
+t('Delete Calculation is two-step the same way', () => {
     const basket = makeBasket();
     const plain = buttonLabelled(render(basket), 'Save'); // unnamed basket -> button reads "Save"
     assert.ok(plain, 'an unnamed basket\'s manage row must read Save, not Rename');
-    const armedDelete = buttonLabelled(render(basket, { verb: 'delarm' }), 'Delete Basket — click again');
+    const armedDelete = buttonLabelled(render(basket, { verb: 'delarm' }), 'Delete Calculation — click again');
     assert.ok(armedDelete && armedDelete.style === 4);
 });
 
@@ -275,7 +278,8 @@ await ta('sharing a calculator panel strips EVERY interactive component, keeps e
         const { handleShareInteraction } = require('../handlers/share');
         const fakeInteraction = {
             customId: 'share_public',
-            message: { components: [panel], embeds: [], flags: { bitfield: 32768 | 64 } },
+            // `panel` IS the top-level component list now (Container + the sibling nav row), so spread it -- wrapping it in another array would hand share.js a shape Discord never sends, and the nav row would never be seen at top level where the strip has to catch it.
+            message: { components: [...panel], embeds: [], flags: { bitfield: 32768 | 64 } },
             deferReply: async () => {}
         };
         const handled = await handleShareInteraction(fakeInteraction);
@@ -349,6 +353,67 @@ t('a legacy calc~ id from the OLD single-draw codec decodes to a SAFE state rath
     // The old encoding's positional 'r10' lands in the new basketId slot -- an obviously-invalid Mongo id, which utils/drawBasketStore.js's load() rejects via its own try/catch (proven in scripts/drawBasketStore.test.js) rather than throwing here. This test proves decode itself never throws on stale input, which is the property this file owns.
     assert.strictEqual(typeof decoded.basketId, 'string');
     assert.doesNotThrow(() => dc.buildCalculatorPanel({ ...decoded, authorId: null }, null, ACCENT, { savedBaskets: [] }));
+});
+
+// ==========================================
+// THE SIX BUGS HARKIRAT FOUND BY OPENING THE PANEL -- 2026-08-27 Every gate in this repo was green while all six were live, so each one is pinned as a FALSIFIABLE assertion here: revert the fix and the named case must go red.
+// ==========================================
+
+t('the bottom nav row is a SIBLING of the Container, never one of its children', () => {
+    for (const page of [0, 1]) {
+        const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }), { page });
+        assert.ok(Array.isArray(panel), `page ${page} must return the top-level component list, not a bare Container`);
+        const nav = panel.filter(x => x && x.type === 1);
+        assert.strictEqual(nav.length, 1, `page ${page} must carry exactly one top-level action row (the nav)`);
+        assert.ok(nav[0].components.some(b => b.label === 'Draw Info'), 'that sibling row must be the nav row');
+        const inside = container(panel).components.filter(c => c.type === 1);
+        assert.strictEqual(inside.some(r => r.components.some(b => b.label === 'Draw Info')), false,
+            `page ${page} still renders the nav row INSIDE the Container`);
+    }
+});
+
+t('no button on the nav row or the save/delete row carries an emoji', () => {
+    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
+    const named = ['Draw Info', 'Draw Prices', 'Reset', 'Help', 'Save', 'Rename', 'Delete Calculation'];
+    for (const b of buttons(panel)) {
+        if (named.some(n => (b.label || '').startsWith(n))) {
+            assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
+        }
+    }
+});
+
+t('/draw prices\' cross-link to the calculator carries no emoji either', () => {
+    const { buildGlobalNavRow } = require('../utils/globalNav');
+    const row = buildGlobalNavRow(null, { nav_prices: { label: 'Draw Calculator', custom_id: dc.encodeState('page', dc.defaultState()) } });
+    const link = row.components.find(b => b.label === 'Draw Calculator');
+    assert.ok(link, 'the override must still produce the cross-link');
+    assert.strictEqual('emoji' in link, false, 'the shared nav row carries no emoji on any slot');
+});
+
+t('Cheapest and Stock Up are separated, and no heading is preceded by a stacked blank line', () => {
+    const lines = dc.buildCostBlock(
+        state({ detail: true }),
+        makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }, { drawKey: 'mythicCharacter', pullsDone: 0 }] }),
+        'CAD', null, { compact: false }
+    );
+    const stockUp = lines.findIndex(l => l.startsWith('**Stock Up Method**'));
+    if (stockUp !== -1) assert.strictEqual(lines[stockUp - 1], '', 'Stock Up must be separated from Cheapest by a blank line');
+    lines.forEach((l, i) => {
+        if (l.startsWith('## ') && i > 0) {
+            assert.notStrictEqual(lines[i - 1], '', `"${l}" is preceded by an explicit blank line -- headings carry their own top margin, so the two stack`);
+        }
+    });
+});
+
+t('a stored calculation holding a RETIRED draw key still renders instead of throwing', () => {
+    // Saved calculations outlive the draw list. A key that is gone from DRAW_META must degrade to a readable line the owner can delete -- never take the whole panel down with it.
+    const basket = makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 2 }, { drawKey: 'aDrawThatNoLongerExists', pullsDone: 0 }] });
+    for (const page of [0, 1]) {
+        let panel;
+        assert.doesNotThrow(() => { panel = render(basket, { page, detail: true }); }, `page ${page} threw on a retired draw key`);
+        assert.ok(/aDrawThatNoLongerExists/.test(allText(panel)), `page ${page} must NAME the unrecognized entry so it can be found and removed`);
+    }
+    assert.doesNotThrow(() => dc.buildDrawInfoPanel(basket, ACCENT), 'Draw Info must skip the retired key rather than hand it to buildDrawEntries');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

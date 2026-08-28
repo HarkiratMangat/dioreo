@@ -17,6 +17,7 @@ const { DRAW_META, REGION_ORDER, REGION_EMOJI_KEY, PRESET_ACCENT, UPGRADE_LABEL 
 const { pullCount, upgradeCost, remainingToFinish, basketCost } = require('../utils/drawCost');
 const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPackages');
 
+// 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
 const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the component cap (spec §2)
 
@@ -24,6 +25,9 @@ const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the c
 function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
 function regionLabel(region) { return `${(region || 'region_10').split('_')[1]} CP`; }
 function plural(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
+
+// 🔴 NEVER write `DRAW_META[b.drawKey].name` for a drawKey that came out of a STORED calculation. DRAW_KEYS is derived from DRAW_META, so anything rendered from a select is safe by construction -- but a saved calculation holds whatever key it held on the day it was saved, and draws rotate. The day a key is retired from DRAW_META, every stored calculation containing it would throw on render, and the owner could not even open the panel to delete the entry. Degrade to the raw key instead: it is ugly, it is honest, and it leaves the row deletable. (Found 2026-08-27 by a test fixture using a key that does not exist -- the fixture was wrong, the crash it exposed was not.)
+function drawName(drawKey) { return DRAW_META[drawKey]?.name || `Unrecognized draw (${drawKey})`; }
 
 const DRAW_DATA = require('./drawprices').DRAW_DATA;
 function entryFor(region, drawKey) { return (DRAW_DATA[region] && DRAW_DATA[region][drawKey]) || null; }
@@ -153,7 +157,7 @@ function drawSelectRow(state, region) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('draws', state), placeholder: 'Pick a draw to add to your basket...',
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Pick a draw to add to this calculation...',
             options: DRAW_KEYS.map(key => {
                 const total = pullCount(region, key);
                 const upgrade = total !== null ? upgradeCost(region, key) : null;
@@ -176,7 +180,7 @@ function typesSelectRow(state, basket) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are in your basket?',
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are in this calculation?',
             min_values: 0, max_values: DRAW_KEYS.length,
             options: DRAW_KEYS.map(key => ({
                 label: DRAW_META[key].name,
@@ -193,7 +197,7 @@ function typesSelectRow(state, basket) {
 function bannerPullsRow(state, basket, index) {
     const banner = basket.banners[index];
     const total = pullCount(basket.region, banner.drawKey);
-    const meta = DRAW_META[banner.drawKey];
+    const meta = DRAW_META[banner.drawKey] || { name: drawName(banner.drawKey), tier: null };
     const rowState = { ...state, focus: index };
     if (total === null) {
         return { type: 1, components: [{
@@ -215,15 +219,16 @@ function bannerPullsRow(state, basket, index) {
 
 // "+ Add another" -- lists the DISTINCT types already in the basket (spec §2); picking one appends a fresh banner (0 pulls) of that same type as a new, independently-orderable row.
 function addAnotherRow(state, basket) {
-    const types = usedTypes(basket.banners);
+    // Filter to keys drawprices still knows -- buildDrawEntries indexes DRAW_META directly and would throw on a retired key (same hazard drawName() guards for the text paths).
+    const types = usedTypes(basket.banners).filter(k => DRAW_META[k]);
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('addmore', state), placeholder: '+ Add another banner of a draw you already have...',
+            type: 3, custom_id: encodeState('addmore', state), placeholder: '+ Add another line for a draw you already have...',
             options: types.map(key => ({
                 label: DRAW_META[key].name,
                 value: key,
-                description: `Adds one more ${DRAW_META[key].name} banner at 0 pulls`,
+                description: `Adds one more ${DRAW_META[key].name} line at 0 pulls`,
                 emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
             }))
         }]
@@ -235,9 +240,9 @@ function reorderFocusRow(state, basket) {
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('setfocus', state), placeholder: 'Reorder: pick a banner to move...',
+            type: 3, custom_id: encodeState('setfocus', state), placeholder: 'Reorder: pick a line to move...',
             options: basket.banners.map((b, i) => ({
-                label: `#${i + 1} — ${DRAW_META[b.drawKey].name} (${b.pullsDone}/${pullCount(basket.region, b.drawKey) ?? '?'})`,
+                label: `#${i + 1} — ${drawName(b.drawKey)} (${b.pullsDone}/${pullCount(basket.region, b.drawKey) ?? '?'})`,
                 value: String(i),
                 default: state.focus === i
             }))
@@ -308,24 +313,24 @@ function costActionRow(state, basket) {
             { type: 2, style: 2, label: 'Set Balance', custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2) },
             { type: 2, style: basket.includeUpgrades ? 3 : 2, label: basket.includeUpgrades ? 'Upgrade: YES' : 'Upgrade: NO', custom_id: encodeState('upg', state), ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {}) },
             { type: 2, style: 2, label: state.detail ? 'Simplify' : 'Show Breakdown', custom_id: encodeState('detail', state), emoji: emojis.parseEmoji(state.detail ? emojis.simplify : emojis.expand) },
-            { type: 2, style: 2, label: 'Edit Basket', custom_id: encodeState('page', { ...state, page: 1 }) }
+            { type: 2, style: 2, label: 'Edit Draws', custom_id: encodeState('page', { ...state, page: 1 }) }
         ]
     };
 }
 
-// Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
+// NO EMOJI on either button (2026-08-27, Harkirat) -- `mngEdit` was a pencil paired with a button labelled "Save", which never matched, and a destructive action reads clearer without decoration. Rename doubles as "Save" for an unnamed basket -- naming it IS the save, since that is the one thing that exempts a basket from the 30-day TTL (models/DrawBasket.js). Delete is two-step, same pattern as Reset below -- one misclick must never destroy a named basket (plan Task 5's own verify requirement).
 function basketManageRow(state, basket) {
     const deleteArmed = state.verb === 'delarm';
     return {
         type: 1,
         components: [
-            { type: 2, style: 2, label: basket.name ? 'Rename' : 'Save', custom_id: encodeState('modal_name', state), emoji: emojis.parseEmoji(emojis.mngEdit) },
-            { type: 2, style: deleteArmed ? 4 : 2, label: deleteArmed ? 'Delete Basket — click again' : 'Delete Basket', custom_id: encodeState(deleteArmed ? 'del' : 'delarm', state), emoji: emojis.parseEmoji(emojis.mngDelete) }
+            { type: 2, style: 2, label: basket.name ? 'Rename' : 'Save', custom_id: encodeState('modal_name', state) },
+            { type: 2, style: deleteArmed ? 4 : 2, label: deleteArmed ? 'Delete Calculation — click again' : 'Delete Calculation', custom_id: encodeState(deleteArmed ? 'del' : 'delarm', state) }
         ]
     };
 }
 
-// Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself.
+// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself.
 function bottomNavRow(state) {
     const resetArmed = state.verb === 'resetarm';
     return {
@@ -354,19 +359,18 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     lines.push(`${dot} Balance: **\`${basket.balance ? `${fmt(basket.balance)} CP` : 'Not specified'}\`** ${dash} Region: **\`${regionLabel(basket.region)}\`**`);
     lines.push(`${dot} CP Needed: **\`${fmt(needed)} CP\`**`);
     if (unpriced.length) {
-        lines.push(`⚠️ **${plural(unpriced.length, 'banner')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => DRAW_META[b.drawKey].name).join(', ')}.`);
+        lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => drawName(b.drawKey)).join(', ')}.`);
     }
 
     if (!compact) {
-        lines.push('');
+        // NO explicit blank line before a `##` heading (2026-08-27) -- Discord gives a heading its own top margin, and that margin does NOT collapse against a blank line, so the two stacked into the gap Harkirat flagged between COST BREAKDOWN and PRIORITY PLAN. Same reasoning for the missing blank after the loop below.
         lines.push(`## PRIORITY PLAN`);
         let running = 0;
         perBanner.forEach((b, i) => {
             running += b.cost;
             const total = pullCount(basket.region, b.drawKey);
-            lines.push(`${dot} ${i + 1}. ${DRAW_META[b.drawKey].name} — ${b.pullsDone}/${total ?? '?'} ${dash} **${fmt(b.cost)} CP** ${dash} running **${fmt(running)} CP**`);
+            lines.push(`${dot} ${i + 1}. ${drawName(b.drawKey)} — ${b.pullsDone}/${total ?? '?'} ${dash} **${fmt(b.cost)} CP** ${dash} running **${fmt(running)} CP**`);
         });
-        lines.push('');
     }
 
     if (shortfall <= 0) {
@@ -397,6 +401,7 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     lines.push('## RECOMMENDED PACKAGE');
     lines.push(...packageLines('Cheapest', result.cheapest));
     if (!compact && result.stockUp) {
+        lines.push(''); // the two methods ran together as one block without this -- they are alternatives, not a continuation
         lines.push(...packageLines('Stock Up', result.stockUp));
         lines.push(`-# Costs **\`${formatMoney(result.stockUp.extraCents, currency)}\`** more than Cheapest, but banks **\`${fmt(result.stockUp.extraCp)}\`** extra CP at a better rate — worth it only if you plan to keep pulling.`);
     }
@@ -421,15 +426,15 @@ function buildLandingPanel(state, savedBaskets, accentColor, { region, notice = 
         { type: 14, spacing: 2, divider: true }
     ];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
-    components.push({ type: 10, content: '🎯 Pick a draw below to start (or add to) your basket, and see what you still need.' });
+    components.push({ type: 10, content: '🎯 Pick a draw below to start a calculation, and see what you still need to buy.' });
     components.push(drawSelectRow(state, region));
     if (savedBaskets && savedBaskets.length) {
         components.push({ type: 14, spacing: 1, divider: true });
-        components.push({ type: 10, content: `## SAVED BASKETS\n${savedBaskets.map(b => `${emojis.smallDot} **${b.name}** — ${plural(b.banners.length, 'banner')}`).join('\n')}` });
+        components.push({ type: 10, content: `## SAVED CALCULATIONS\n${savedBaskets.map(b => `${emojis.smallDot} **${b.name}** — ${plural(b.banners.length, 'line')}`).join('\n')}` });
         components.push({
             type: 1, components: [{
-                type: 3, custom_id: encodeState('load', state), placeholder: 'Load a saved basket...',
-                options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'banner')} · ${regionLabel(b.region)}` }))
+                type: 3, custom_id: encodeState('load', state), placeholder: 'Load a saved calculation...',
+                options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'line')} · ${regionLabel(b.region)}` }))
             }]
         });
     }
@@ -439,7 +444,7 @@ function buildLandingPanel(state, savedBaskets, accentColor, { region, notice = 
 function buildMissingBasketPanel(state, savedBaskets, accentColor) {
     return buildLandingPanel({ ...state, basketId: null }, savedBaskets, accentColor, {
         region: 'region_10',
-        notice: '⚠️ That saved basket no longer exists — it may have expired, or been deleted.'
+        notice: '⚠️ That saved calculation no longer exists — it may have expired, or been deleted.'
     });
 }
 
@@ -453,7 +458,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
 
     const groups = groupForDisplay(basket.banners);
-    components.push({ type: 10, content: `## YOUR BASKET\n${groups.map(g => `${emojis.smallDot} ${DRAW_META[g.drawKey].name}${g.count > 1 ? ` ×${g.count}` : ` — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'}`}`).join('\n')}` });
+    components.push({ type: 10, content: `## DRAWS IN PROGRESS\n${groups.map(g => `${emojis.smallDot} ${drawName(g.drawKey)}${g.count > 1 ? ` ×${g.count}` : ` — ${g.pullsDone}/${pullCount(basket.region, g.drawKey) ?? '?'}`}`).join('\n')}` });
     components.push(typesSelectRow(state, basket));
     components.push({ type: 14, spacing: 1, divider: true });
 
@@ -469,7 +474,6 @@ function buildCostPage(state, basket, accentColor, options = {}) {
     }
     components.push({ type: 14, spacing: 1, divider: true });
     components.push(regionRow(state, basket));
-    components.push(bottomNavRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 
@@ -477,20 +481,19 @@ function buildBasketPage(state, basket, accentColor) {
     const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
 
     if (!basket.banners.length) {
-        components.push({ type: 10, content: 'Your basket is empty — go back to the Cost page and pick a draw.' });
+        components.push({ type: 10, content: 'This calculation is empty — go back to the Cost page and pick a draw.' });
         components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
-        components.push(bottomNavRow(state));
         return { type: 17, accent_color: accentColor, components };
     }
 
-    components.push({ type: 10, content: '-# Select the **Pulls Done** for each banner below. Reorder with the select + ▲/▼ near the bottom.' });
+    components.push({ type: 10, content: '-# Select the **Pulls Done** for each line below. Reorder with the select + ▲/▼ near the bottom.' });
 
     const totalPages = Math.max(1, Math.ceil(basket.banners.length / MAX_BANNERS_PER_PAGE));
     const bpage = Math.min(state.bpage || 0, totalPages - 1);
     const start = bpage * MAX_BANNERS_PER_PAGE;
     const pageIndices = basket.banners.map((_, i) => i).slice(start, start + MAX_BANNERS_PER_PAGE);
 
-    components.push({ type: 10, content: `## BASKET LIST\n${pageIndices.map(i => `${emojis.smallDot} #${i + 1} — ${DRAW_META[basket.banners[i].drawKey].name} (${basket.banners[i].pullsDone}/${pullCount(basket.region, basket.banners[i].drawKey) ?? '?'})`).join('\n')}` });
+    components.push({ type: 10, content: `## DRAWS IN PROGRESS\n${pageIndices.map(i => `${emojis.smallDot} #${i + 1} — ${drawName(basket.banners[i].drawKey)} (${basket.banners[i].pullsDone}/${pullCount(basket.region, basket.banners[i].drawKey) ?? '?'})`).join('\n')}` });
     for (const i of pageIndices) components.push(bannerPullsRow(state, basket, i));
 
     if (totalPages > 1) components.push(pageNavRow({ ...state, bpage }, basket.banners));
@@ -504,17 +507,17 @@ function buildBasketPage(state, basket, accentColor) {
 
     components.push({ type: 14, spacing: 1, divider: true });
     components.push({ type: 1, components: [{ type: 2, style: 1, label: '◀ Cost Breakdown', custom_id: encodeState('page', { ...state, page: 0 }) }] });
-    components.push(bottomNavRow(state));
     return { type: 17, accent_color: accentColor, components };
 }
 
 // Draw Info -- its OWN ephemeral message, own fresh 40-component budget, full buildDrawEntries fidelity for every DISTINCT draw type in the basket (measured 23/40 at all nine draw types in the single-draw design; a basket of any size still spans at most nine distinct types, so this never needs pagination -- spec §3).
 function buildDrawInfoPanel(basket, accentColor) {
     const { buildDrawEntries } = require('./drawprices');
-    const types = usedTypes(basket.banners);
+    // Filter to keys drawprices still knows -- buildDrawEntries indexes DRAW_META directly and would throw on a retired key (same hazard drawName() guards on the text paths).
+    const types = usedTypes(basket.banners).filter(k => DRAW_META[k]);
     const components = [{ type: 10, content: `## ${emojis.calculator} Draw Info` }, { type: 14, spacing: 2, divider: true }];
     if (!types.length) {
-        components.push({ type: 10, content: 'Your basket is empty — nothing to show yet.' });
+        components.push({ type: 10, content: 'This calculation is empty — nothing to show yet.' });
     } else {
         const blocks = buildDrawEntries(basket.region, types);
         for (const set of blocks) for (const block of set) components.push({ type: 10, content: block });
@@ -527,11 +530,11 @@ function buildHelpPanel(accentColor) {
         { type: 10, content: `## ${emojis.calculator} How the calculator works` },
         { type: 14, spacing: 2, divider: true },
         { type: 10, content: [
-            '**Basket** — a flat list of banners you\'re tracking. There is no "quantity" — three Mythic Weapon banners are three separate rows, each with its own progress.',
-            '**Banner** — one entry in the basket: a draw type plus how many pulls you\'ve done on it.',
-            '**Priority** — the ORDER banners appear in. It is never sorted for you; reorder with the select + ▲/▼ on the Basket page.',
+            '**Calculation** — everything you are pricing out in one go. Name it to keep it; see Save below.',
+            '**Line** — one draw in that calculation, plus how many pulls you have already done on it. There is no "quantity": three Mythic Weapon draws are three separate lines, each with its own progress, because you are rarely equally far along on all three.',
+            '**Priority** — the ORDER your lines appear in. It is never sorted for you; reorder with the select + ▲/▼ on the Edit Draws page.',
             '**Simplify / Show Breakdown** — collapses or expands the full per-package math. Simplify still shows the total CP needed and the cheapest package.',
-            '**Save** — naming your basket (via the Rename button) is what keeps it: an unnamed basket is cleared automatically after 30 days.'
+            '**Save** — naming a calculation is what keeps it. An unnamed one is cleared automatically after 30 days; a named one is kept until you delete it.'
         ].join('\n\n') }
     ];
     return { type: 17, accent_color: accentColor, components };
@@ -540,9 +543,11 @@ function buildHelpPanel(accentColor) {
 // ==========================================
 // DISPATCH
 // ==========================================
+// Returns the message's TOP-LEVEL component list, not a single Container -- the nav row is a sibling of the Container, not a child (see bottomNavRow). Landing/missing states get no nav row: there is nothing yet to reset, and Draw Info has nothing to show.
 function buildCalculatorPanel(state, basket, accentColor, options = {}) {
-    if (!basket) return buildMissingBasketPanel(state, options.savedBaskets, accentColor);
-    return state.page === 1 ? buildBasketPage(state, basket, accentColor) : buildCostPage(state, basket, accentColor, options);
+    if (!basket) return [buildMissingBasketPanel(state, options.savedBaskets, accentColor)];
+    const container = state.page === 1 ? buildBasketPage(state, basket, accentColor) : buildCostPage(state, basket, accentColor, options);
+    return [container, bottomNavRow(state)];
 }
 
 // ==========================================
@@ -573,7 +578,8 @@ async function execute(interaction) {
     const savedBaskets = await basketStore.listForUser(userId);
     const containerPayload = buildLandingPanel(state, savedBaskets, accentColor, { region });
 
-    return sendV2Payload(interaction, withShareButton([containerPayload], isEphemeral));
+    // skipExpiry (spec decision 7, "never expires"): re-derived 2026-08-27 against sendV2Payload's own bar -- "nothing on this panel can go stale". It holds. Every control is author-locked and re-reads the calculation from Mongo on each click, so a panel found hours later rebuilds from live data rather than showing a frozen view; and a component click is its own interaction with its own fresh 15-minute token, so editing this message never runs out of runway the way a single long-lived token would.
+    return sendV2Payload(interaction, withShareButton([containerPayload], isEphemeral), { skipExpiry: true });
 }
 
 module.exports = {
