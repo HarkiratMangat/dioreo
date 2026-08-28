@@ -233,7 +233,11 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
   `2752b4fd` and `2a85d094` (2026-07-30 ~00:08 EDT) returned 404 for *every* path on their own alias URLs, including `/LICENSE`. Production pointed at the newest, so the entire site was down; `/legal/*` only looked healthy because Cloudflare was serving cache (`cf-cache-status: HIT`, `age: 6525`). The bare domain, being an uncacheable redirect, was the only URL that exposed it — which is how Harkirat found it. Redeploying the identical command worked first time and uploaded 9 files + `_redirects`, so **the command is not the bug.** Possible: a transient Cloudflare fault, or a deploy racing a rebuild of `public/`. ⚠️ **If it recurs, capture wrangler's full stdout/stderr** — the only evidence kept was the deployment list, not the failing run's output. Related and already handled: edge propagation presents as 404 for up to ~60s after a deploy (measured 2026-07-30 00:15 EDT), and `dior legal check` now retries on non-200 rather than only on a hash mismatch. **Any "the site is down" report within a minute of a deploy should be re-checked before it is believed.** See `[[feedback_verify_before_claiming]]`.
 
-- `[P2 · S]` **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true 2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is theme-independent so the layout work holds, but colour, contrast and the glow/wash treatments were never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every build, which is real coverage — but it proves ratios, not whether the page looks right.
+- `[P2 · S · 🚫 CLOSED — do not re-raise]` **~~Light mode has never been checked at desktop width.~~ RETIRED 2026-08-27 21:0x EDT: the portal has no light mode, and that is now a DECISION.** Measured that evening: `prefers-color-scheme` and `data-theme` appear **zero times** in `portal/ui/tokens.css` and **zero times** in `portal/ui/app.css` — the portal was dark-only by omission, and nothing had ever checked. Put to Harkirat as an unasked question surfaced by checking a dimension no inventory listed; his answer was **dark-only is deliberate**, so the row below described a surface that does not exist and invited a future session to build one uninvited. ⚠️ The bot's public site is a separate matter and still has both themes — this row was only ever about the admin portal. Recorded in `docs/superpowers/plans/2026-08-27-portal-conformance.md` §0.3.
+  <details><summary>The original row, kept for the conservation rule</summary>
+
+  **Light mode has never been checked at desktop width.** *Filed 2026-07-30, still true 2026-08-02 00:40 EDT.* Every desktop measurement in both sessions was in dark mode. Geometry is theme-independent so the layout work holds, but colour, contrast and the glow/wash treatments were never looked at above 980px. `contrastAudit()` measures declared token pairs in both themes on every build, which is real coverage — but it proves ratios, not whether the page looks right.
+  </details>
 
 *(No open **bot** bugs. The last confirmed one — the `/manage` Edit-loadout timeout — was fixed in v2.20.0, see `docs/archive/resolved-list.md`. The item above is the published legal **site**, not the bot.)*
 
@@ -297,14 +301,20 @@ node --env-file=.env.dev portal/server.js
 
 ✅ **BOTH HALVES MET, 2026-08-27 15:3x EDT.** Size: **42.1 KB**. And the second half, which is the one a size measurement alone would have skipped — every tab was clicked and read back: **Health 1,109 chars · Usage 921 · Timing 1,579 · Reach 889 · Search 642**, each carrying real figures and **zero `<pre>` blocks**, which is the positive proof that the text exports are gone *and* were replaced by panels rather than by nothing. ⚠️ A payload that shrank because a tab went blank would have passed the first half and failed this one.
 
-### 🔔 REMINDER — two live calendar banners are dead links and only Harkirat can replace them `[P1 · XS]`
-*Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
+### ✅ RESOLVED 2026-08-27 21:0x EDT — the two dead calendar banners are re-hosted `[P1 · XS]`
+
+> ✅ **Harkirat supplied two fresh signed Discord URLs and authorised the re-host.** Both were fetched through `utils/calendarBannerCache.js` — the mechanism that was always correct and always waiting on a source — and land at the same two stable public ids: `calendar_banners/events.webp` and `calendar_banners/draws.webp`. **Both databases now point at Cloudinary**: prod (`diors-builds`) and the local dev database (`diors-builds-dev`), which matters because the dev portal and the dev bot read the second one and would otherwise still render the dead links. The old `media.discordapp.net` values were printed before the write and are in that session's transcript, so the change is reversible — though the URLs they held were expired anyway. **All three banners are now Cloudinary and none can expire.** ⚠️ The write was refused once by the permission classifier and re-run only after he gave explicit permission.
+
+<details><summary>The original reminder</summary>
+
+**REMINDER — two live calendar banners are dead links and only Harkirat can replace them** *Surfaced 2026-08-27 by rendering the season record's banners as real thumbnails, which is the first thing that could see it.*
 
 `drawsBannerUrl` and `eventsBannerUrl` are `media.discordapp.net` links with an **expired `ex=` signature**. They render as nothing in Discord and nothing in the portal; only `playlistsBannerUrl` (a Cloudinary URL) still resolves. The record says *"set, but the image will not load"* against each.
 
 🔴 **No script can repair these.** The re-hosting mechanism is correct and has been since 2026-08-07 — `utils/calendarBannerCache.js` uses one stable public id per page (`calendar_banners/draws|events|playlists`) with `overwrite:true`, so a new upload replaces the old asset and exactly three ever exist, and BOTH write paths use it (`/manage`'s Calendar handler and the portal's `calendar.setBanners` op). But re-hosting needs a source, and these sources are gone. **The repair is pasting a fresh URL into the record's editor**, three fields below the warning; it re-hosts permanently on save.
 
 ⚠️ **This was the fourth item that session to turn out already built; the count reached EIGHT on 2026-08-27** — see the memory `feedback_read_the_already_built_layer`. ⚠️ The name `portal_tracker_pending_but_shipped` used to be cited here and **no such memory has ever existed** — a dangling pointer that read like a source. The mechanism was never the gap; the gap was that nothing reported which rows still needed re-saving.
+</details>
 
 ### ✅ The season record region — thumbnails, one control, and a panel that was finally measured `[P2 · S · Opus5-High]`
 *Items B, C and D of the completion plan's Task 1.2, built 2026-08-27.*

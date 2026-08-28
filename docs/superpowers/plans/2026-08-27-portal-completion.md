@@ -1,6 +1,7 @@
 ---
 kind: plan
-status: frozen
+status: superseded
+superseded_by: docs/superpowers/plans/2026-08-27-portal-conformance.md
 ---
 
 # Portal Completion Implementation Plan

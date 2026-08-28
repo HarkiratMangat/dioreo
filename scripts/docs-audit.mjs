@@ -914,7 +914,8 @@ const FM_KINDS = {
   idea: ["live"],
   legal: ["live"],
   spec: ["frozen", "superseded"],
-  plan: ["frozen", "superseded"],
+  // 🔴 `plan` GAINED `live` ON 2026-08-27 21:0x EDT, and the reason is the whole point of the field. Every plan here had been a frozen snapshot, which is right for a plan that is written once and then executed. It is WRONG for a plan that tracks its own execution: Harkirat asked for one that "never accidentally goes out of sync — mark off things that were done, or update the plan if anything changes midway". A frozen plan cannot do that, and forcing the status to `frozen` would have made the document lie about its own tense contract — the exact failure the field exists to prevent, pointing the other way. `spec` deliberately does NOT gain it: a dated design snapshot is superseded by a new one, never edited.
+  plan: ["frozen", "superseded", "live"],
   archive: ["dead"],
 };
 // The location→kind rule. Kept as ordered prefixes so the first match wins, mirroring the taxonomy table in CLAUDE.md. A new docs/ subdirectory MUST be added here, and that is intentional: an unclassifiable doc is a doc whose purpose nobody has decided.
