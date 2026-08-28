@@ -29,6 +29,7 @@ status: live
 | **0** | The states harness (page + driver, catalogue grows per realm) | ☐ open | | |
 | **0** | Per-realm geometry fixtures — the format and the runner | ☐ open | | |
 | **0** | **THE SHELL** — rail · command bar · masthead frame · account panel · tray · toast · overlay · export strip · manifest frame · `async.js`'s six states · tooltip runtime | ☐ open | | includes the doubled search bar |
+| **0** | 🔑 **THE DEV OAUTH SIGN-IN** — the thing every later Part depends on | ☐ open | | moved INTO Part 0 by Harkirat 2026-08-27 21:33 EDT. Credentials already exist in `.env.dev` |
 | **0** | **The door / login page** | ☐ open | | needs the real server; outside the harness entirely |
 | **1** | **SEASON** | ☐ open | | |
 | **2** | **ARMORY** | ☐ open | | |
@@ -115,7 +116,7 @@ status: live
 | **The harness** | `:8901/harness.html`, `fetchJson` stubbed | fast iteration and every state on demand — the real flag list is below |
 | 🔴 **The real portal** | `node --env-file=.env.dev portal/server.js`, real Mongo, real OAuth | real data volumes, the door, genuine empty and error states, the 401/409 paths, and whether any of this actually works |
 
-**Every Part runs all three.** The OAuth sign-in is Harkirat's one-time step and unblocks all of them — until it happens a Part closes at **⧗ owed** with `real-server pass owed` in its §L Note, never at ☑.
+**Every Part runs all three.** 🔑 **The OAuth sign-in is now a PART 0 UNIT (§0.8), not a background dependency** — Harkirat moved it in 2026-08-27 21:33 EDT precisely so Parts 1–6 never have to close at ⧗. **If Part 0 lands it, no later Part may use ⧗ at all**; that state survives only as the honest fallback if the sign-in cannot be completed.
 
 **How to reach each, with no guessing:**
 
@@ -401,7 +402,29 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 
 ### 0.7 The door
 
-`door.html`. **Requires the real server** — it is not in the harness at all.
+`door.html`. **Requires the real server** — it is not in the harness at all. Diff it like any other surface once §0.8 has the server up.
+
+### 0.8 🔑 The dev OAuth sign-in — the unit that unblocks every later Part
+
+🔴 **Nothing behind a signed-in session has ever run in any environment.** `/api/review`, the staging round trip, the two-op identity save, `/api/season/export`, `/api/parse-bulk/loadout` and the patch-note ops are all unexercised ground, and the plan's third artifact (§0.2) is unreachable without this.
+
+**What already exists, checked 2026-08-27 21:33 EDT — this is a sign-in, NOT a credential-creation job.** `.env.dev` already carries `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET`, `PORTAL_PORT` and `PORTAL_PUBLIC_URL`, and `portal/auth.js` reads exactly those. The only unknown is whether the matching **redirect URI is registered on the `Dioreo (Dev)` application** — and that is a Developer Portal click-through nobody can do from code.
+
+**The steps, and who does each — the split is not negotiable:**
+
+| | Step | Who |
+|---|---|---|
+| 1 | `node --env-file=.env.dev portal/server.js`, confirm it connects to `diors-builds-dev` and serves `/` with a 200. ⚠️ `EADDRINUSE` on **:8787** means it is already running, not broken | the session |
+| 2 | Open the door and drive to Discord's consent screen | the session |
+| 3 | 🔑 **Complete the sign-in and press Authorize** | **Harkirat.** ⛔ **The session never types a password and never presses Authorize on its own** — entering credentials is prohibited outright, and granting an OAuth scope is his to give. If Discord asks to log in rather than just to consent, stop and hand it over |
+| 4 | If step 2 fails on `invalid redirect_uri`: register `http://localhost:8787/auth/callback` (match `PORTAL_PUBLIC_URL` exactly) on the `Dioreo (Dev)` app | **Harkirat**, in the Developer Portal |
+| 5 | With the session cookie live: `/api/review` returns 200 with `ops` and `changesets`; a staged changeset gets a `baseline` array; the Season identity editor's Done stages `season.setTitlesDeadlines` **and** `calendar.setBanners` as two ops | the session |
+
+⚠️ **`/api/review` has executed in NO environment, ever.** Expect it to be the first thing that breaks, and treat a failure here as a real finding rather than a setup problem.
+
+🔴 **Never `npm run portal`** — it is a bare `node portal/server.js`, and `portal/server.js:6` calls `dotenv.config()`, which loads **prod's `.env`**. The `--env-file` flag is what makes this safe: Node applies it before dotenv runs, and dotenv does not override what is already set. **Read `.env.dev`'s Mongo URI from the FILE, never `process.env`.**
+
+✅ **The two dead calendar banners were re-hosted 2026-08-27 21:0x EDT and BOTH databases point at Cloudinary**, so the real server now renders the season record's banners correctly — which is what makes item B checkable against real data for the first time.
 
 ---
 
