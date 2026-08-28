@@ -23,14 +23,14 @@ status: live
 
 | # | Unit | Status | Closed by | Note |
 |---|---|---|---|---|
-| **0** | Reverse-orphan sweep, scripted and in `npm test` | ☐ open | | must report `data-bare`, `hcard`, `srec-open` and `--ci` on its first run or it is not trusted. ⚠️ **NOT `t-best`** — it IS emitted (`armory.js:165`), and a concatenation-aware scanner will correctly stay quiet about it |
-| **0** | Mockup-side grid injection, written down once | ☐ open | | `.grid.js` is a file the mockup pages never load |
-| **0** | The viewport contract, 1282×888 | ☐ open | | |
-| **0** | The states harness (page + driver, catalogue grows per realm) | ☐ open | | |
-| **0** | Per-realm geometry fixtures — the format and the runner | ☐ open | | |
-| **0** | **THE SHELL** — rail · command bar · masthead frame · account panel · tray · toast · overlay · export strip · manifest frame · `async.js`'s six states · tooltip runtime | ☐ open | | includes the doubled search bar |
-| **0** | 🔑 **THE DEV OAUTH SIGN-IN** — the thing every later Part depends on | ☐ open | | moved INTO Part 0 by Harkirat 2026-08-27 21:33 EDT. Credentials already exist in `.env.dev` |
-| **0** | **The door / login page** | ☐ open | | needs the real server; outside the harness entirely |
+| **0** | Reverse-orphan sweep, scripted and in `npm test` | ☑ closed | `scripts/portalReverseOrphans.mjs` + `.test.mjs` | must report `data-bare`, `hcard`, `srec-open` and `--ci` on its first run or it is not trusted. ⚠️ **NOT `t-best`** — it IS emitted (`armory.js:165`), and a concatenation-aware scanner will correctly stay quiet about it |
+| **0** | Mockup-side grid injection, written down once | ☑ closed | `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js`'s `__instruments()` | `?grid` at boot or `__instruments()` on demand, in the one file all eight pages already load. Proved: `season.html?grid` returned examined **1361**, near **2**, size **33** |
+| **0** | The viewport contract, 1282×888 | ☑ closed | `.grid.js`'s `__grid.viewport()` | baked into every reading — a page cannot resize its own window, so each measurement states what it was taken at and an off-contract one says so in the reading itself. `portalGeometry` REFUSES to record off-contract |
+| **0** | The states harness (page + driver, catalogue grows per realm) | ☑ closed | `scripts/portalStates.mjs` + `lib/portalStatePasses.cjs` | 13 shell states walked clean at 1282×888, registry `portal/fixtures/states/shell.json`. PASS 1/3/4 are RELATIONAL; **no PASS 2**; PASS 5 deferred to Part 7 with motion |
+| **0** | Per-realm geometry fixtures — the format and the runner | ☑ closed | `scripts/portalGeometry.mjs` + `.test.mjs` | `--realm <r> --write|--check`, `--all --check` in `npm test`. No fixture is recorded yet **on purpose** — a realm records its own when its Part closes |
+| **0** | **THE SHELL** — rail · command bar · masthead frame · account panel · tray · toast · overlay · export strip · manifest frame · `async.js`'s six states · tooltip runtime | ☑ closed | `palette.js` · `shell.js` | **doubled search bar FIXED** — `data-bare` now emitted, measured 44px→16px inside the 34px bar. **And a second defect the shell diff found: the rail, the crumb, the panel title and the command-bar placeholder were all printing the realm ID raw** — a rail reading "season armory broadcast" against the mockup's "Season Armory Broadcast", against COMPANION §2307's explicit rule that `realm` stays in the code and leaves the copy. One `REALM_LABEL` map now serves all four |
+| **0** | 🔑 **THE DEV OAUTH SIGN-IN** — the thing every later Part depends on | ◐ in flight | | **Steps 1–2 done 2026-08-28 09:1x EDT**: the server is up on `:8787` under `--env-file=.env.dev`, `/` serves 200, `/api/review` correctly 401s, and `/auth/login` 302s to Discord with the right `client_id` and `redirect_uri` — **so the redirect URI is already registered and step 4 is not needed.** Discord asked to LOG IN rather than to consent, which is Harkirat's to complete (§0.8 step 3). Step 5 is owed the moment the session cookie is live |
+| **0** | **The door / login page** | ☑ closed | measured on the real server | Diffed against `door.html` at 1282: `main.door`, `.doorcard` (430px), `.doormk`, the h1, and the `.dbtn` (360×46, Discord blurple `rgb(88,101,242)`, 6px radius) are identical. Two **portal-ahead** differences, both cited in `shell.js`: the `.doorstate` line, and the OAuth note saying "user ID **and username**" — which is what the `identify` scope actually returns, so the mockup's shorter wording is the stale one. Both door states are in the states registry via `?fail=expired` / `?fail=forbidden` |
 | **1** | **SEASON** | ☐ open | | |
 | **2** | **ARMORY** | ☐ open | | |
 | **3** | **BROADCAST** | ☐ open | | |
@@ -355,21 +355,31 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 🔴 **THE SCAN SCOPE, STATED LITERALLY, because the tree holds FOUR copies of `app.css` and SIX of `track.logic.js`** — `portal/public/ui/`, `portal/public/.ssr/ui/`, `portal/public/.hrender/ui/`, the mockup's `assets/`, and two `.claude/worktrees/*` checkouts. **An unscoped scan finds phantom emitters in build output; a wrongly-scoped one misses `portal/ui/*.logic.js`. Both fail silently.**
 
 - **Emitters:** `portal/ui/**/*.js`, excluding `portal/ui/harness/`.
-- **Rules:** `portal/ui/app.css` and `portal/ui/tokens.css` only.
+- **Rules:** **every `portal/ui/*.css`, globbed** — ⚠️ **this plan said "`app.css` and `tokens.css` only" and that was WRONG, corrected 2026-08-28 09:2x EDT by running it.** `buildPortal` concatenates every sheet in that directory, and the pair reported all seven `.v2-*` classes as EMITTED WITH NO RULE while `v2card.css` — shipped in the same bundle — defines every one of them. The scope that matters is the DIRECTORY, which is what keeps the four copies of `app.css` in build output and the two worktree checkouts out.
 - **Excluded:** `portal/public/**` (build output) · `.claude/worktrees/**` · `docs/**/assets/**` · `node_modules/`.
 - **Concatenation-aware:** resolve template literals and `+` concatenation, and resolve a lookup table (`RANK_KEY[key]`) to its declared values. A scanner that sees only the literal prefix reports `lv-` and `t-` as orphans and misses the real mismatch — that exact miss has now happened twice.
 
 🔴 **PROVE IT ON THE KNOWN CASE FIRST.** A run on 2026-08-27 returned **`data-bare`, `data-role`, `data-src`** · **`--ci` (6 reads), `--mono` (4), `--focus` (1)** · **48 classes**, of which `t-best`/`t-top4`/`t-top5`/`t-unranked`, `hcard`/`hgrid`/`hmast`/`hseason` and `srec-open` were confirmed by hand. **If a later run does not report `data-bare`, the script is broken, not the portal.**
 
+✅ **BUILT AND PROVED 2026-08-28 09:2x EDT.** First run: ① `data-bare` `data-kind` `data-role` `data-src` · ② `--ci` (4 reads) `--mono` (4) `--focus` (1) · ③ **101** classes including `hcard` (23 rules), `hgrid`, `hmast`, `hseason`, `srec-open`, `t-top4`, `t-top5`, `t-unranked` · ④ **6 name mismatches**: `t-t3` `t-t4` `t-t5` (the RANK_KEY case, resolved through the table exactly as intended), plus `lbl-cut`, `preview-sel`, `sched`. **`t-best` is correctly silent.** ⚠️ **Three numbers differ from the 2026-08-27 run and the differences are the point, not drift:** the class count is ③'s ≥2-rules population rather than that run's 48; `data-kind` is new because a boolean attribute has no `=` and the earlier scan required one; and `--ci`'s read count is 4 rather than 6 because comments are blanked with `acorn` before anything is read. ⚠️ **The instrument's own blind spot is printed rather than hidden:** 24 class expressions resolve to nothing readable (a variable built elsewhere) and 10 dynamic prefixes cannot be resolved, so a ③ finding behind one of those may be a false positive — `--why <class>` names the emitting file and settles it in one command. That is how `.bar` (74 rules) turned out to be emitted by `broadcast.js` after all.
+
 ### 0.2 Mockup-side grid injection
 
 `portal/public/harness.html` loads `/harness/grid.js` and `/harness/peers.js`; **the mockup pages ship `.grid.js` and `.peers.js` and never include them.** All **eight** non-dot mockup pages have a `<main>` — `door.html` included, which this plan treats as a separate artifact — and `<main>` is what `__grid` draws into, so injection is all that is needed.
 
-**The surface is `__grid()` · `.off()` · `.near()` · `.sizes()` · `.all()`, and `__peers()`. 🔴 There is NO `__grid.report()`** — the superseded plan named it in three places and it would have thrown every time.
+**The surface is `__grid()` · `.off()` · `.near()` · `.sizes()` · `.all()` · `.viewport()`, and `__peers()`. 🔴 There is NO `__grid.report()`** — the superseded plan named it in three places and it would have thrown every time.
+
+✅ **DONE 2026-08-28 09:3x EDT, and it is ONE line in `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js`** — the file all eight pages already load, so `door.html` gets it too and there is nothing to remember per page:
+
+- `season.html?grid` loads both instruments at boot.
+- `__instruments()` loads them **on demand** from an `evaluate_script` call, without a reload that would discard the view state being measured. It resolves once `__grid` exists and rejects if the scripts never land, so a caller can await it instead of polling.
+- Proved on the mockup at 1282: **examined 1361 · nearMisses 2 · sizeIssues 33**, and `__peers()` returned 1361. Before this, `__grid.all()` had never once run on the artifact the portal is measured against.
 
 ### 0.3 The viewport contract
 
 Bake 1282×888 into the harness and into every measurement helper, so no Part has to remember it.
+
+✅ **DONE 2026-08-28 09:3x EDT.** A page cannot resize its own window, so the instrument does the next best thing: **every reading carries its own viewport**, and an off-contract one says so *inside the reading* rather than looking like a clean number. `__grid.all()` now returns `viewport: { w, h, contract, onContract, warning }`, and `portalGeometry.mjs` **refuses to record** a fixture measured off-contract. `.grid.js` is the single source — `buildPortal` copies it into the harness — so the mockup and the portal are measured by the same instrument at the same size.
 
 ### 0.4 The geometry fixture — format and runner
 
@@ -385,6 +395,8 @@ Bake 1282×888 into the harness and into every measurement helper, so no Part ha
 ```
 
 **Runner:** `node scripts/portalGeometry.mjs --realm <realm> --write` records; `--check` re-runs and diffs, exiting non-zero on any count that MOVED. Wire `--check` into `npm test` once the first fixture exists.
+
+✅ **BUILT 2026-08-28 09:3x EDT**, and it does three things the format alone did not say: it **builds `portal/public` first** (so it measures what `portal/ui` says now, never a stale build), it **serves `portal/public` from an ephemeral port of its own** (so a forgotten dev server can neither help nor break it), and it **walks the realm's view tabs**, recording one entry per view. `--all --check` is already in `npm test` and prints "no fixtures recorded yet" until a Part closes — correct during Part 0, and never read as verified. The inventory (h1 · tabs · column headers · section headings) travels beside the counts because **`__grid` reports geometry, not identity**. Measured today, for reference rather than as a recorded fixture: Season Track **1381/0/26**, Board **1284/0/15**, Repairs **1301/0/69**.
 
 ⚠️ **A fixture of counts catches MOVEMENT, not WRONGNESS** — two compensating changes keep the count identical. Smoke alarm, not proof. It is still the only thing that would have caught the `.lvlbars` block restyling charts three realms away.
 

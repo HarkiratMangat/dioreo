@@ -1,0 +1,125 @@
+{
+  "surface": "shell",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing).",
+  "states": [
+    {
+      "name": "default · home",
+      "realm": "home",
+      "flags": {},
+      "known": []
+    },
+    {
+      "name": "default · season",
+      "realm": "season",
+      "flags": {},
+      "known": []
+    },
+    {
+      "name": "command bar open",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "key": "k",
+          "meta": true
+        }
+      ],
+      "known": []
+    },
+    {
+      "name": "command bar · typed query",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "key": "k",
+          "meta": true
+        },
+        {
+          "type": {
+            "sel": ".cb-in",
+            "text": "draw"
+          }
+        }
+      ],
+      "known": []
+    },
+    {
+      "name": "account panel open",
+      "realm": "home",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".who button"
+        }
+      ],
+      "known": []
+    },
+    {
+      "name": "request failure (500)",
+      "realm": "season",
+      "flags": {
+        "fail": "500"
+      },
+      "known": []
+    },
+    {
+      "name": "connection never lands",
+      "realm": "season",
+      "flags": {
+        "fail": "offline"
+      },
+      "known": []
+    },
+    {
+      "name": "unreadable 200",
+      "realm": "season",
+      "flags": {
+        "fail": "garbage"
+      },
+      "known": []
+    },
+    {
+      "name": "slow request",
+      "realm": "season",
+      "flags": {
+        "slow": "4000"
+      },
+      "known": [],
+      "settleMs": 900,
+      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state"
+    },
+    {
+      "name": "not the owner",
+      "realm": "season",
+      "flags": {
+        "owner": "0"
+      },
+      "known": []
+    },
+    {
+      "name": "review · staged work",
+      "realm": "review",
+      "flags": {},
+      "known": []
+    },
+    {
+      "name": "the door · signed out",
+      "realm": "home",
+      "flags": {
+        "fail": "expired"
+      },
+      "known": [],
+      "note": "the only surface a signed-out person reaches; it must not imply the app is open behind it"
+    },
+    {
+      "name": "the door · not an admin",
+      "realm": "home",
+      "flags": {
+        "fail": "forbidden"
+      },
+      "known": [],
+      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line"
+    }
+  ]
+}

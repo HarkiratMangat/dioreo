@@ -2818,4 +2818,42 @@
     }
   };
   window.Shell = Shell;
+
+  /* 🔴 THE MEASURING INSTRUMENTS SHIPPED WITH THIS PACKAGE AND NO PAGE HAS EVER LOADED THEM.
+   * `.grid.js` and `.peers.js` sit beside these pages and are referenced by the portal's own
+   * harness (`/harness/grid.js`, `/harness/peers.js`) — but nothing in any of the eight mockup
+   * pages includes them, so `__grid.all()` on the artifact the portal is measured AGAINST has
+   * never once run. Every comparison so far has measured the portal with an instrument and the
+   * mockup by eye.
+   *
+   * It lives HERE, in the one file all eight pages already load, rather than as eight
+   * <script> tags: one loader, one place to fix, and door.html — which is a separate artifact
+   * with its own <main> — gets it for free.
+   *
+   * Two ways in, because a measuring pass needs both: `?grid` on the URL loads them at boot,
+   * and `__instruments()` loads them on demand from a console or an evaluate_script call
+   * without a reload (which would discard whatever view state was being measured). It resolves
+   * only once `window.__grid` actually exists, so a caller can await it instead of polling —
+   * and a load that never lands rejects rather than resolving into a silent absence.
+   *
+   * ⚠️ NOT `document.fonts.ready` and NOT rAF here: this only has to get two classic scripts in.
+   * The pass that CONSUMES it still has to wait for fonts before trusting any geometry.        */
+  window.__instruments = function () {
+    if (window.__instruments._p) return window.__instruments._p;
+    var files = ['.peers.js', '.grid.js'];
+    window.__instruments._p = Promise.all(files.map(function (f) {
+      return new Promise(function (res, rej) {
+        var s = document.createElement('script');
+        s.src = f + '?t=' + Date.now();          /* the page is served no-store; the injected script must not be the exception */
+        s.onload = res;
+        s.onerror = function () { rej(new Error('could not load ' + f + ' — is this page served from its own directory?')); };
+        document.head.appendChild(s);
+      });
+    })).then(function () {
+      if (!window.__grid || !window.__peers) throw new Error('scripts loaded but __grid/__peers are missing');
+      return '__grid() · __grid.near() · __grid.sizes() · __grid.all() · __peers()';
+    });
+    return window.__instruments._p;
+  };
+  if (/[?&]grid(&|=|$)/.test(location.search)) window.__instruments();
 })();

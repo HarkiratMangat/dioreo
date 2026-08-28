@@ -118,10 +118,29 @@
   }
   function off() { var w = document.getElementById('__gridwrap'); if (w) w.remove(); return 'off'; }
 
+  /* 🔴 THE VIEWPORT CONTRACT, BAKED IN RATHER THAN REMEMBERED — 1282x888.
+   * Harkirat's window is 1282x920 with 32px of browser chrome, so 888 is the CONTENT height,
+   * and two measurements taken at different heights are not comparable: a panel below the
+   * fold at 806 is on screen at 888, and "nothing is cut off" is a claim about a height.
+   * A page cannot resize its own window, so the instrument does the next best thing and
+   * REPORTS what it measured at — every reading carries its own viewport, and an off-contract
+   * one says so in the reading itself instead of looking like a clean number.                */
+  var CONTRACT = { w: 1282, h: 888 };
+  function viewport() {
+    var d = document.documentElement;
+    var v = { w: d.clientWidth, h: d.clientHeight, contract: CONTRACT.w + 'x' + CONTRACT.h };
+    v.onContract = v.w === CONTRACT.w && v.h === CONTRACT.h;
+    if (!v.onContract) v.warning = 'measured at ' + v.w + 'x' + v.h + ', not the ' + v.contract + ' contract — resize before recording anything';
+    return v;
+  }
+
   window.__grid = draw; window.__grid.off = off; window.__grid.near = near; window.__grid.sizes = sizes;
+  window.__grid.viewport = viewport;
   window.__grid.all = function () {
     var n = near(), s = sizes();
-    return { examined: all().length, nearMisses: n.length, sizeIssues: s.length,
+    /* ⚠️ near/sizes are TRUNCATED samples and the counts are the measurement. Read nearMisses
+     * and sizeIssues as numbers; the arrays are there to start the triage, never to end it.  */
+    return { viewport: viewport(), examined: all().length, nearMisses: n.length, sizeIssues: s.length,
              near: n.slice(0, 22), sizes: s.slice(0, 18) };
   };
 })();

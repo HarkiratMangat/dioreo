@@ -13,19 +13,8 @@ const { build } = require('./buildPortal');
 const CONTRAST_MIN = 4.5;
 const ROOT = path.join(__dirname, '..');
 
-const CHROME_CANDIDATES = [
-    process.env.PUPPETEER_EXECUTABLE_PATH,
-    process.env.CHROME_PATH,
-    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    '/usr/bin/google-chrome',
-    '/usr/bin/google-chrome-stable',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/chromium',
-].filter(Boolean);
-
-function findChrome() {
-    return CHROME_CANDIDATES.find((p) => { try { return fs.statSync(p).isFile(); } catch { return false; } }) || null;
-}
+// ⚠️ THE CANDIDATE LIST MOVED TO scripts/lib/chromePath.cjs so `portalGeometry.mjs` reads the identical one. Two copies would drift, and the drift is silent: a machine where one resolves Chrome and the other does not shows a green suite beside a "no browser" skip, with nothing saying they disagree.
+const { CHROME_CANDIDATES, findChrome } = require('./lib/chromePath.cjs');
 
 // The fixture is a real portal page: the built stylesheet, plus markup covering the cases the static pass cannot reach — a row whose topic accent IS set beside one where it is not, every state pill, the kind chips, the KPI tiles, the access grid cells and the review gate.
 function fixtureHtml(css) {

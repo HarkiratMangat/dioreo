@@ -15,6 +15,15 @@ import { installTips } from './tips.js';
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
 
+// 🔴 THE ID IS NOT THE LABEL, AND THE MIGRATION RENDERED THE ID. `realm` is a key — lowercase, URL-shaped, the thing `--r-season` and `#/season` are built from — and every reader-facing surface here was printing it raw: a rail reading "season armory broadcast", a breadcrumb reading "season", a panel titled "season", and a command bar offering "Search season, or run a command". The mockup's own REALMS array carries a `label` beside the id for exactly this reason, and COMPANION §2307 is explicit that the word `realm` and its ids stay in the CODE while anything a person reads names the page — "Could not load Season", "Search Access, or run a command".
+//
+// ⚠️ ONE MAP, used by the rail, the crumb, the panel title and the command bar. A second copy is how two surfaces come to disagree about what a place is called, which is the same failure `portalClassProps.mjs` exists to prevent one layer down. Home is "Portal Home" because that is what the mockup's own breadcrumb says on index.html, and because a crumb reading "Home" beside a rail with no home entry says less than it looks like it does.
+const REALM_LABEL = {
+    season: 'Season', armory: 'Armory', broadcast: 'Broadcast', access: 'Access',
+    analytics: 'Analytics', review: 'Review', home: 'Portal Home',
+};
+export const realmLabelOf = (r) => REALM_LABEL[r] || (r ? r[0].toUpperCase() + r.slice(1) : '');
+
 // One 24×24 stroke glyph per realm. Inline rather than an icon font or sprite sheet: six paths is less bytes than either, and the portal serves no external assets (the door is the only page a stranger reaches and it must request nothing). `stroke: currentColor` in shell.css means the active/hover colour transition covers the icon for free.
 const REALM_ICON = {
     season: 'M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z',
@@ -77,7 +86,7 @@ export function Rail({ realm, realms, badges = {} }) {
             ${places.map((r) => html`
                 <a class="realm" href=${'#/' + r} style=${`--c:var(--r-${r})`}
                    aria-current=${r === realm ? 'page' : null}>
-                    <${RealmIcon} realm=${r} />${r}
+                    <${RealmIcon} realm=${r} />${realmLabelOf(r)}
                 </a>`)}
             ${canReview ? html`
                 <!-- 🔴 BELOW A RULE, NOT A SIXTH REALM. Five realms are places to work; Review is the
@@ -280,9 +289,9 @@ function Header({ realm, view, session, staged, commands, onSignOut }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <span class="crumb">${realm}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
+            <span class="crumb">${realmLabelOf(realm)}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
-            <${CommandBar} commands=${commands} realmLabel=${realm} />
+            <${CommandBar} commands=${commands} realmLabel=${realm === 'home' ? null : realmLabelOf(realm)} />
             <span class="sp"></span>
             ${staged ? html`
                 <a class="hdr-commit" href="#/review"><b>${staged}</b><span>staged · review</span></a>` : null}
@@ -379,14 +388,14 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                     : null}
                 <div id="view-layer">
                 ${viewOptions ? html`
-                    <section class="panel" aria-label=${`${realm} view`}>
+                    <section class="panel" aria-label=${`${realmLabelOf(realm)} view`}>
                         <div class="ph">
                             <!-- ⚠️ panelTitle USED TO BE A PROP AND NOTHING EVER PASSED IT. Filed as dead code
                                  alongside tools, which turned out to have a real home (the zoomer). This one
                                  does not: every realm's panel is titled with the realm, the adopted mockups
                                  title them the same way, and a prop that exists so a caller COULD disagree with
                                  that is an invitation rather than a feature. -->
-                            <span class="t">${realm}</span>
+                            <span class="t">${realmLabelOf(realm)}</span>
                             <!-- ⚠️ THE MODE GROUP SITS AHEAD OF THE VIEWS BECAUSE IT IS A LARGER STATEMENT THAN THEY ARE.
                                  A view says which way you are looking at a set; a mode says which set. Reading the bar
                                  left to right then answers "which armory · seen how", which is the order the two
