@@ -300,7 +300,9 @@ const SEASON_COLUMNS = [
             viewSlot=${html`<div id="view-layer"></div>`} manifestSlot=${html`<div id="manifest-layer"></div>`} />`);
         assert.ok(out.indexOf('id="view-layer"') < out.indexOf('id="manifest-layer"'),
             'the Manifest is always BELOW the view layer — spec §8.1, the layer that never switches');
-        assert.ok(out.includes('role="tablist"') && out.includes('aria-pressed="true"'), 'the view switcher is a real tablist');
+        // A tablist whose tabs say `aria-pressed` is not a tablist — the role drops the attribute, so this asserted the shape and missed the one state the shape exists to carry.
+        assert.ok(out.includes('role="tablist"') && out.includes('aria-selected="true"'), 'the view switcher is a real tablist');
+        assert.ok(!/role="tab"[^>]*aria-pressed/.test(out), 'a tab announces selection, never pressed-ness');
         assert.ok(out.indexOf('class="rail"') > -1, 'the rail is part of the shell, not per-realm');
         assert.ok(!/href="#\/season"[^>]*>\s*season\s*<\/a>\s*<a[^>]*>\s*armory/.test(out.replace(/\n/g, '')),
             'realms are rail entries, not a horizontal strip of bare text links');

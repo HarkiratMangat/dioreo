@@ -395,12 +395,12 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                             ${modeOptions ? html`
                                 <div class="modesw" role="tablist" aria-label=${modeLabel}>
                                     ${modeOptions.map((m) => html`
-                                        <button key=${m} role="tab" data-arm=${m} aria-pressed=${m === mode ? 'true' : 'false'}
+                                        <button key=${m} role="tab" data-arm=${m} aria-selected=${m === mode ? 'true' : 'false'}
                                                 onClick=${() => onSetMode(m)}>${m}</button>`)}
                                 </div>` : null}
                             <div class="seg" role="tablist" aria-label="View">
                                 ${viewOptions.map((v) => html`
-                                    <button role="tab" aria-pressed=${v === view} onClick=${() => onSetView(v)}>${v}</button>`)}
+                                    <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
                             </div>
                             ${stateKey ? html`<${StateKey} />` : null}
                             <!-- A realm may add ONE key of its own beside the shared one. The shared key explains SHAPE

@@ -491,7 +491,26 @@ check('clustering is skipped entirely until the plot has been measured', () => {
     assert.deepStrictEqual(clusterPoints(pts, 0), []);
 });
 
-// ⚠️ TBD IS NOT A DATE, and drawing it at a position would put a deadline on the axis that the season has not set. It is stated in the identity panel, where "TBD" is a value the reader can act on.
+// ⚠️ TBD IS NOT A DATE, and drawing it at a position would put a deadline on the axis that the season has not set. It is stated in the identity panel, where "TBD" is a value the reader can act on. 🔴 EVERY VIEW SWITCHER IN THE PORTAL ANNOUNCED NO SELECTED TAB. `role="tab"` takes `aria-selected`; `aria-pressed` is a toggle button's state and a tab drops it silently — so the markup validated, the styling looked right, and the one thing the role exists to convey was never conveyed. Checkable, and nothing checked it.
+check('no element carrying role="tab" uses aria-pressed instead of aria-selected', () => {
+    const fs = require('fs'), path = require('path');
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const bad = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8');
+        // Look inside each opening tag rather than line by line: these attributes routinely wrap.
+        for (const tag of src.match(/<button[^>]*>/g) || []) {
+            if (/role=["']tab["']/.test(tag) && /aria-pressed/.test(tag)) bad.push(f + ': ' + tag.slice(0, 70));
+        }
+    }
+    assert.deepStrictEqual(bad, [], 'a tab announces selection with aria-selected');
+});
+
+check('THE ARIA GATE CAN FAIL: a tab written with aria-pressed is caught', () => {
+    const tag = '<button role="tab" aria-pressed=${on}>';
+    assert.ok(/role=["']tab["']/.test(tag) && /aria-pressed/.test(tag), 'the pattern the gate looks for must match a real offender');
+});
+
 check('a TBD deadline is neither a flag nor a pin', () => {
     const { flags, pins } = deadlineRail({ ...SEASON, bpEndTBD: true }, '2026-08-06', '2026-09-19');
     assert.ok(!flags.some((f) => f.key === 'bp'), 'a TBD deadline must not be drawn at the date it used to hold');

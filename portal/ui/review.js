@@ -25,7 +25,7 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
     return html`
         <div class=${'rvopwrap' + (selected ? ' on' : '')}>
             <button class=${'rvop' + (op.tier === 3 ? ' t3' : '')} role="tab" data-id=${op.id}
-                    aria-pressed=${selected} onClick=${() => onSelect(op.id)}>
+                    aria-selected=${selected ? 'true' : 'false'} onClick=${() => onSelect(op.id)}>
                 <span class="rvt">T${op.tier}</span>
                 <span class="rvn">
                     <b>${op.name || html`<span class="none">unnamed record</span>`}</b>

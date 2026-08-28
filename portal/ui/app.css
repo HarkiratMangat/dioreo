@@ -123,7 +123,14 @@ main{overflow:auto;padding-bottom:96px}
 .ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
 .seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px}
 .seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--rad-1);min-height:32px}
-.seg button[aria-pressed=true]{background:var(--hi);color:var(--ink)}
+/* 🔴 A `role="tab"` CARRIES `aria-selected`, NEVER `aria-pressed` — `aria-pressed` is the pressed
+   state of a toggle BUTTON and a tab simply drops it, so every view switcher and mode switcher in
+   this portal announced no selected tab at all while looking perfectly correct on screen. The
+   selectors accept both because `.modesw` is used twice: as a `role="tablist"` in the shell, and
+   as a `role="group"` of real toggle buttons inside Armory's build form, where `aria-pressed` is
+   the right attribute. One class, two correct answers — so the rule matches the state either
+   role puts on it rather than forcing one role to lie. */
+.seg button[aria-pressed=true],.seg button[aria-selected=true]{background:var(--hi);color:var(--ink)}
 .seg button:hover{color:var(--ink2)}
 .key{display:flex;gap:13px;font-family:var(--data);font-size:10px;color:var(--ink3);flex-wrap:wrap}
 .key i{display:inline-block;width:16px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:var(--rad-1)}
@@ -2081,7 +2088,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   cursor:pointer;transition:all var(--dur-1) var(--ease);width:100%}
 .rvop:hover{background:var(--hi);border-color:var(--rule2)}
 .rvop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
-.rvop[aria-pressed=true]{border-color:var(--staged);background:var(--hi);
+.rvop[aria-pressed=true],.rvop[aria-selected=true]{border-color:var(--staged);background:var(--hi);
   box-shadow:inset 3px 0 0 var(--staged)}
 .rvop .rvt{font:600 var(--t-micro)/1 var(--data);letter-spacing:.04em;color:var(--ink3);
   border:1px solid var(--rule2);border-radius:var(--rad-1);padding:3px 5px}
@@ -2761,7 +2768,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   padding:8px 15px;min-height:34px;transition:all var(--dur-1) var(--ease)}
 .modesw button+button{border-left:1px solid var(--rule2)}
 .modesw button:hover{color:var(--ink);background:var(--hi)}
-.modesw button[aria-pressed=true]{background:var(--draw);color:var(--on-accent)}
+.modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:var(--draw);color:var(--on-accent)}
 .modesw button[data-arm=DMZ][aria-pressed=true]{background:var(--ret)}
 .modesw button:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
 .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);

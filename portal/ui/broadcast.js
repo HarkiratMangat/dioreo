@@ -101,7 +101,7 @@ function NowShowing({ live, counts, cap }) {
                 ${cap && live.length > cap ? (() => {
                     const n = live.length - cap;
                     return html`
-                        <p class="racknote">Discord sends at most <b>${cap}</b> announcements in one message.
+                        <p class="racknote">Discord sends at most <b>${cap}</b> announcement${cap === 1 ? '' : 's'} in one message.
                             The ${n === 1 ? 'one' : n} below that line ${n === 1 ? 'is' : 'are'} live and <b>not being shown</b> —
                             ${n === 1 ? 'it waits' : 'they wait'} until something above ${n === 1 ? 'it' : 'them'} ends.</p>`;
                 })() : null}`}
