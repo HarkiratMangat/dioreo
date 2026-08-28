@@ -28,7 +28,7 @@ const countComponents = node => Array.isArray(node)
 const SHARE_ROW = { type: 1, components: [{ type: 2, style: 2, label: 'Show Everyone', custom_id: 'share_public' }] };
 const messageCount = panel => countComponents([panel, SHARE_ROW]);
 
-// buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildLandingPanel still returns a bare Container. Both shapes go through here.
+// buildCalculatorPanel returns the message's TOP-LEVEL list (Container + sibling nav row); buildSetupPanel still returns a bare Container. Both shapes go through here.
 const container = p => (Array.isArray(p) ? p.find(x => x && x.type === 17) : p);
 const siblingRows = p => (Array.isArray(p) ? p.filter(x => x && x.type === 1) : []);
 const texts = panel => container(panel).components.filter(c => c.type === 10).map(c => c.content);
@@ -43,6 +43,8 @@ function makeBasket(overrides = {}) {
         _id: '000000000000000000000001', name: null,
         banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }],
         region: 'region_10', balance: 0, includeUpgrades: false, entitlementMask: 0,
+        // Every test below asserts on the RESULT panels, which only render once Calculate has been pressed. A fixture defaulting to false would silently retarget the whole file at the setup form.
+        submitted: true,
         ...overrides
     };
 }
@@ -125,7 +127,7 @@ t('no rendered CP figure is ever negative', () => {
 // LANDING / EMPTY / MISSING BASKET
 // ==========================================
 t('a fresh /draw calculator opens on landing -- no basket, draw picker only', () => {
-    const panel = dc.buildLandingPanel(state(), [], ACCENT, { region: 'region_10' });
+    const panel = dc.buildSetupPanel(state(), null, [], ACCENT, { region: 'region_10' });
     assert.ok(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), 'landing must render the draw picker');
     assert.strictEqual(selects(panel).some(s => s.custom_id.split('~')[1] === 'bpulls'), false);
 });
@@ -223,12 +225,12 @@ t('a NEW banner starts at 0 pulls -- no inherited default from a sibling banner 
 // ==========================================
 // TWO-STEP CONFIRMS -- Reset and Delete
 // ==========================================
-t('Reset is two-step: armed state shows Danger style + "click again", unarmed shows the plain button', () => {
+t('New Calculation is two-step: armed shows Danger style + "click again", unarmed shows the plain button', () => {
     const basket = makeBasket();
-    const plain = buttonLabelled(render(basket), 'Reset');
-    assert.ok(plain && plain.style !== 4, 'unarmed Reset must not be Danger-styled');
-    const armed = buttonLabelled(render(basket, { verb: 'resetarm' }), 'Reset — click again');
-    assert.ok(armed && armed.style === 4, 'armed Reset must be Danger-styled and re-labelled');
+    const plain = buttonLabelled(render(basket), 'New Calculation');
+    assert.ok(plain && plain.style !== 4, 'unarmed New Calculation must not be Danger-styled');
+    const armed = buttonLabelled(render(basket, { verb: 'resetarm' }), 'New Calculation — click again');
+    assert.ok(armed && armed.style === 4, 'armed New Calculation must be Danger-styled and re-labelled');
 });
 
 t('Delete Calculation is two-step the same way', () => {
@@ -374,7 +376,7 @@ t('the bottom nav row is a SIBLING of the Container, never one of its children',
 
 t('no button on the nav row or the save/delete row carries an emoji', () => {
     const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }] }));
-    const named = ['Draw Info', 'Draw Prices', 'Reset', 'Help', 'Save', 'Rename', 'Delete Calculation'];
+    const named = ['Draw Info', 'Draw Prices', 'New Calculation', 'Help', 'Save', 'Rename', 'Delete Calculation'];
     for (const b of buttons(panel)) {
         if (named.some(n => (b.label || '').startsWith(n))) {
             assert.strictEqual('emoji' in b, false, `"${b.label}" must carry no emoji`);
@@ -414,6 +416,88 @@ t('a stored calculation holding a RETIRED draw key still renders instead of thro
         assert.ok(/aDrawThatNoLongerExists/.test(allText(panel)), `page ${page} must NAME the unrecognized entry so it can be found and removed`);
     }
     assert.doesNotThrow(() => dc.buildDrawInfoPanel(basket, ACCENT), 'Draw Info must skip the retired key rather than hand it to buildDrawEntries');
+});
+
+// ==========================================
+// THE SETUP FORM -- approved 2026-08-27, and the reversal of this command's own "no setup form" rule
+// ==========================================
+
+t('the setup form fits the component budget at every draft size, with and without saved calculations', () => {
+    // The whole reason SETUP_LINES_PER_PAGE is 4 rather than 5. If this goes red, that number is why.
+    const saved = [{ _id: 'a'.repeat(24), name: 'Season 12', banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], region: 'region_10' }];
+    for (let n = 0; n <= 9; n++) {
+        const banners = Object.keys(DRAW_META).slice(0, n).map(k => ({ drawKey: k, pullsDone: 3 }));
+        for (const savedList of [[], saved]) {
+            for (const bpage of [0, 1, 2]) {
+                const basket = n ? makeBasket({ banners, submitted: false, balance: 3000, includeUpgrades: true }) : null;
+                const panel = dc.buildCalculatorPanel(state({ basketId: basket ? basket._id : null, bpage }), basket, ACCENT, { savedBaskets: savedList });
+                const count = messageCount(panel);
+                assert.ok(count <= 40, `setup form with ${n} line(s), ${savedList.length} saved, bpage ${bpage} rendered ${count}/40`);
+                for (const row of rows(panel)) assert.ok(row.components.length <= 5, `a row of ${row.components.length} on the setup form`);
+            }
+        }
+    }
+});
+
+t('an unsubmitted calculation shows the FORM; pressing Calculate is what produces the breakdown', () => {
+    const banners = [{ drawKey: 'mythicWeapon', pullsDone: 3 }];
+    const draft = render(makeBasket({ banners, submitted: false }));
+    assert.ok(/SET UP YOUR CALCULATION/.test(allText(draft)), 'a draft must render the setup form');
+    assert.strictEqual(/COST BREAKDOWN/.test(allText(draft)), false, 'a draft must NOT show a cost breakdown -- that is what Calculate is for');
+    assert.ok(buttonLabelled(draft, 'Calculate'), 'the form must offer Calculate');
+
+    const done = render(makeBasket({ banners, submitted: true }));
+    assert.ok(/COST BREAKDOWN/.test(allText(done)), 'a submitted calculation must show the breakdown');
+    assert.strictEqual(/SET UP YOUR CALCULATION/.test(allText(done)), false, 'a submitted calculation must not fall back to the form');
+});
+
+t('Calculate is DISABLED with nothing picked, and enabled the moment a line exists', () => {
+    const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
+    assert.strictEqual(buttonLabelled(empty, 'Calculate').disabled, true, 'an empty form must not be submittable');
+    const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Calculate').disabled), false, 'one line is enough to calculate');
+});
+
+t('Set Balance and Upgrade are disabled until a calculation exists to write them to', () => {
+    // Both write to a basket document. Offering them before one exists accepts input and discards it silently.
+    const empty = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
+    assert.strictEqual(buttonLabelled(empty, 'Set Balance').disabled, true);
+    assert.strictEqual(buttonLabelled(empty, 'Upgrade: NO').disabled, true);
+    const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
+    assert.strictEqual(Boolean(buttonLabelled(drafted, 'Set Balance').disabled), false);
+});
+
+t('the saved-calculations list and the form share ONE screen -- both present, no extra hop', () => {
+    const saved = [{ _id: 'b'.repeat(24), name: 'Season 12', banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], region: 'region_10' }];
+    const panel = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: saved });
+    const text = allText(panel);
+    assert.ok(/SAVED CALCULATIONS/.test(text), 'the saved list must be on the first screen');
+    assert.ok(/SET UP YOUR CALCULATION/.test(text), 'the form must be on that SAME screen');
+    assert.ok(selects(panel).some(s => s.custom_id.split('~')[1] === 'load'), 'and the loader must be usable from it');
+    assert.ok(selects(panel).some(s => s.custom_id.split('~')[1] === 'draws'), 'and so must the draw picker');
+});
+
+t('the setup form offers no New Calculation button -- there is no result to clear yet', () => {
+    const drafted = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: false }));
+    assert.strictEqual(buttonLabelled(drafted, 'New Calculation'), undefined, 'a form must not offer to reset itself into a form');
+    const done = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }], submitted: true }));
+    assert.ok(buttonLabelled(done, 'New Calculation'), 'a result must offer the way back to a new one');
+});
+
+t('the draw picker is a MULTI-select, so a first pick can carry several draws at once', () => {
+    const panel = dc.buildCalculatorPanel(state(), null, ACCENT, { savedBaskets: [] });
+    const picker = selects(panel).find(s => s.custom_id.split('~')[1] === 'draws');
+    assert.ok(picker.max_values > 1, 'picking three draws must be one interaction, not three');
+    assert.ok(picker.options.every(o => o.description && o.description.length <= 100), 'every option must describe itself within Discord\'s limit');
+    assert.ok(picker.options.some(o => /CP total/.test(o.description)), 'the picker must quote a real live price, not a bare label');
+});
+
+t('the cost breakdown LEADS with CP Needed -- the number the command exists to produce', () => {
+    const panel = render(makeBasket({ banners: [{ drawKey: 'mythicWeapon', pullsDone: 3 }], balance: 1000 }));
+    const block = texts(panel).find(c => c.startsWith('## COST BREAKDOWN'));
+    const firstBullet = block.split('\n')[1];
+    assert.ok(/CP Needed/.test(firstBullet), `the first line under the heading was "${firstBullet}"`);
+    assert.strictEqual(/Draws in basket/.test(block), false, 'the redundant line count must be gone -- the list above already shows every line');
 });
 
 console.log(`\n${passed} passed, ${failed} failed\n`);

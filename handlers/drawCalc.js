@@ -158,12 +158,15 @@ async function route(interaction) {
 
     if (interaction.isStringSelectMenu() && state.verb === 'draws') {
         if (!state.basketId) {
-            // Landing: single-value select creates a brand-new basket, one banner at 0 pulls.
+            // 🔴 The setup form's picker is a MULTI-select, so a first pick can carry SEVERAL draws -- create one line per selected value. Reading only `values[0]` here (what the retired single-pick landing did) would silently drop every draw after the first: a wrong result that looks like a working one.
             const prefs = await UserPreference.findOne({ discordId: actingUserId });
             let region = 'region_10';
             if (prefs?.defaultRegionMode && prefs.defaultRegionMode !== 'last_viewed') region = prefs.defaultRegionMode;
             else if (prefs?.defaultRegion) region = prefs.defaultRegion;
-            const created = await basketStore.save(actingUserId, { banners: [{ drawKey: interaction.values[0], pullsDone: 0 }], region });
+            const created = await basketStore.save(actingUserId, {
+                banners: interaction.values.map(drawKey => ({ drawKey, pullsDone: 0 })),
+                region
+            });
             await renderPanel(interaction, { ...state, basketId: String(created._id), page: 0 }, created);
             return true;
         }
@@ -261,6 +264,16 @@ async function route(interaction) {
         return true;
     }
 
+    // Calculate: the one transition from draft to result. Deliberately NOT two-step -- it is not destructive, and New Calculation is right there to go back. Refuses an empty calculation rather than submitting one that would immediately bounce back to the form (the button is also rendered disabled in that state).
+    if (interaction.isButton() && state.verb === 'submit') {
+        const basket = await loadOwned(interaction, state, actingUserId);
+        if (!basket) return true;
+        if (!basket.banners.length) { await renderPanel(interaction, state, basket); return true; }
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, submitted: true });
+        await renderPanel(interaction, { ...state, page: 0, bpage: 0, focus: null }, updated);
+        return true;
+    }
+
     if (interaction.isButton() && state.verb === 'detail') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
@@ -281,7 +294,7 @@ async function route(interaction) {
         return true;
     }
 
-    // Reset is also two-step. Clears the basket's contents AND the transient view state (spec §9) -- but never the basket document or its name, which is what makes it recoverable-by-mistake in a way Delete deliberately is not.
+    // New Calculation (verb still `reset`) is also two-step. Clears the contents, the transient view state (spec §9) AND the submitted flag -- but never the basket document or its name, which is what makes it recoverable-by-mistake in a way Delete deliberately is not.
     if (interaction.isButton() && state.verb === 'resetarm') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
@@ -291,7 +304,8 @@ async function route(interaction) {
     if (interaction.isButton() && state.verb === 'reset') {
         const basket = await loadOwned(interaction, state, actingUserId);
         if (!basket) return true;
-        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: [], balance: 0 });
+        // `submitted: false` is what makes this "New Calculation" rather than "empty result" -- it returns the panel to the setup form, which is what the button now says it does.
+        const updated = await basketStore.save(actingUserId, { _id: state.basketId, banners: [], balance: 0, submitted: false });
         await renderPanel(interaction, { ...state, page: 0, focus: null, bpage: 0, detail: false, verb: 'landing' }, updated);
         return true;
     }

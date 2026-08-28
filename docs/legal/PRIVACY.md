@@ -108,18 +108,19 @@ The Bot's owner and any admin granted access can sign into a browser-based manag
 
 **Neither record is linked to your `UserPreference` record and neither is used to personalise anything.** They exist purely to run the portal's own login and staging mechanics for a small number of admins. If you would rather your portal session record were not stored, §9 applies to it in the same way as to everything else described in this policy. You can read both schemas yourself: [`models/PortalSession.js`](../../models/PortalSession.js) and [`models/Changeset.js`](../../models/Changeset.js).
 
-### 2.1d Saved draw calculator baskets
+### 2.1d Saved draw calculations
 
-`/draw calculator` can save a **basket** — a named, ordered list of banners you're tracking progress on, so you can close the panel and come back to it later instead of starting over. **A record is only created once you actually save a basket** (an unsaved session in the calculator stores nothing).
+`/draw calculator` saves a **calculation** — an ordered list of the draws you're pricing out and how far along you are on each, so you can close the panel and come back to it instead of starting over. **A record is created as soon as you pick your first draw**, not only when you name one: the calculator remembers what you were filling in so that your result is still there when you return.
 
 | Data | What it is | Why we have it |
 |---|---|---|
-| **Discord user ID** | The owner of the basket | So only you (or, per §2.1's admin override, the owner) can load, edit or delete it |
-| **Basket name** | An optional label you give it | Lets you tell two saved baskets apart on the calculator's landing page |
-| **Banner list** | Which draws you're tracking, in the order you put them, and how many pulls you've done on each | This IS the basket — the whole point of saving one |
-| **Region, CP balance, upgrade toggle, 2X entitlements** | The same settings the calculator already asks for on a single draw | Recomputes the cost breakdown and purchase recommendation without re-entering them every time |
+| **Discord user ID** | The owner of the calculation | So only you (or, per §2.1's admin override, the owner) can load, edit or delete it |
+| **Calculation name** | An optional label you give it | Lets you tell two saved calculations apart on the calculator's first screen |
+| **Draw list** | Which draws you're pricing, in the order you put them, and how many pulls you've done on each | This IS the calculation — the whole point of saving one |
+| **Region, CP balance, upgrade toggle, 2X entitlements** | The same settings the calculator's setup form asks for | Recomputes the cost breakdown and purchase recommendation without re-entering them every time |
+| **Whether you have pressed Calculate** | A single true/false flag | So reopening the calculator shows your finished breakdown rather than making you fill the form in again |
 
-**An unnamed basket is temporary — it is automatically deleted 30 days after creation.** Naming it exempts it from that expiry, on the theory that giving something a name is the signal you intend to keep coming back to it. Deleting a basket yourself (via the calculator's own delete control) removes it immediately, no 30-day wait required. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
+**An unnamed calculation is temporary — it is automatically deleted 30 days after creation.** Naming it exempts it from that expiry, on the theory that giving something a name is the signal you intend to keep coming back to it. Deleting a calculation yourself (via the calculator's own delete control) removes it immediately, no 30-day wait required. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
 
 ### 2.2 About the colour data specifically
 
@@ -256,7 +257,7 @@ Under **PIPEDA**, our basis is your **implied consent**: you install the Bot and
 | Provider | What it handles | Where |
 |---|---|---|
 | **Discord Inc.** | The platform itself — your ID, your interactions | Per [Discord's Privacy Policy](https://discord.com/privacy) |
-| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, the portal session / staged-change records described in §2.1c, and the saved draw calculator baskets described in §2.1d** | **🇨🇦 Azure Canada Central (Toronto)** |
+| **MongoDB Atlas** (MongoDB, Inc.) | **Stores your preference record, the per-server settings described in §2.1a, the operational alert log described in §2.4, the interaction records described in §2.4b, the admin allowlist / announcement / change log records described in §2.1b, the portal session / staged-change records described in §2.1c, and the saved draw calculations described in §2.1d** | **🇨🇦 Azure Canada Central (Toronto)** |
 | **Google Cloud Platform** (Google LLC) | Hosts the server the Bot runs on | 🇺🇸 `us-east1` (South Carolina) |
 | **Google Cloud Logging** (Google LLC) | Server logs, 30-day retention | 🇺🇸 United States |
 | **Google Cloud Error Reporting** (Google LLC) | Groups repeated errors from those same server logs — no new data, 30-day retention | 🇺🇸 United States |
@@ -544,7 +545,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 **Administrative records, described in §2.1b:** an admin allowlist entry (the Discord user ID of someone the Bot's owner has granted admin access, which pages/commands they can use, an optional note, and who granted it), an announcement record (text, when it was posted, who posted it, when it expires), and a change log entry (which admin performed a data-entry action through `/manage`, what kind of action, which section of data, and a short description of the change — retained 180 days or the newest 5,000 entries, whichever comes first, then automatically deleted, same as the alert log in §2.4). All three are administrative tooling rather than something built from your own use of the Bot — see [`models/AdminUser.js`](../../models/AdminUser.js), [`models/Announcement.js`](../../models/Announcement.js), and [`models/ChangeLog.js`](../../models/ChangeLog.js).
 
-**Saved draw calculator baskets, described in §2.1d:** a discordId, an optional name, the ordered banner list (each entry a `drawKey` and a pull count), region, CP balance, upgrade toggle, and 2X-entitlement selections. Created only when you press Save on the calculator. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
+**Saved draw calculations, described in §2.1d:** a discordId, an optional name, the ordered draw list (each entry a `drawKey` and a pull count), region, CP balance, upgrade toggle, 2X-entitlement selections, and a `submitted` true/false flag recording whether you have pressed Calculate. Created as soon as you pick your first draw. You can read the schema yourself: [`models/DrawBasket.js`](../../models/DrawBasket.js).
 
 **Web admin portal records, described in §2.1c:** a portal session (a hashed session id, your Discord user ID, sign-in/last-active timestamps, and a device/browser string) and, if you have staged an edit and not yet committed or abandoned it, a changeset (your Discord user ID, which part of the portal it belongs to, and the pending edits). Both exist only for the small number of people with admin access, and neither is linked to your `UserPreference` record.
 

@@ -26,7 +26,7 @@ require.cache[modelPath].loaded = true;
 require.cache[modelPath].exports = {
     create: async (data) => {
         const _id = newId();
-        const doc = { banners: [], region: 'region_10', balance: 0, includeUpgrades: false, entitlementMask: 0, createdAt: new Date(), ...data, _id };
+        const doc = { banners: [], region: 'region_10', balance: 0, includeUpgrades: false, entitlementMask: 0, submitted: false, createdAt: new Date(), ...data, _id };
         rows.set(_id, doc);
         return { toObject: () => ({ ...doc }) };
     },
@@ -150,6 +150,24 @@ const OTHER = '999999999999999999';
         const ok = await store.remove(OTHER, created._id);
         assert.strictEqual(ok, false, 'a non-owner must never be able to delete another user\'s basket');
         assert.ok(await store.load(OWNER, created._id), 'the basket must still exist after a refused delete');
+    });
+
+    await t('`submitted` survives a save round-trip, and a partial save never clears it', async () => {
+        // 🔴 The silent-revert bug CLAUDE.md names: a field present in the schema but MISSING from save()'s $set whitelist sets in memory, saves without error, and is gone on the next read. Only a real round-trip catches that -- asserting on the object save() returns would pass either way.
+        const created = await store.save(OWNER, { banners: [{ drawKey: 'mythicWeapon', pullsDone: 0 }] });
+        assert.strictEqual((await store.load(OWNER, created._id)).submitted, false, 'a fresh calculation starts as a draft');
+
+        await store.save(OWNER, { _id: created._id, submitted: true });
+        assert.strictEqual((await store.load(OWNER, created._id)).submitted, true, 'Calculate must persist, not just render');
+
+        // A later edit that says nothing about `submitted` must leave the result submitted -- otherwise adjusting a balance would silently throw the player back onto the setup form.
+        await store.save(OWNER, { _id: created._id, balance: 3000 });
+        const after = await store.load(OWNER, created._id);
+        assert.strictEqual(after.submitted, true, 'an unrelated edit must not un-submit a calculation');
+        assert.strictEqual(after.balance, 3000);
+
+        await store.save(OWNER, { _id: created._id, banners: [], balance: 0, submitted: false });
+        assert.strictEqual((await store.load(OWNER, created._id)).submitted, false, 'New Calculation must return it to a draft');
     });
 
     console.log(`\n${passed} passed, ${failed} failed\n`);

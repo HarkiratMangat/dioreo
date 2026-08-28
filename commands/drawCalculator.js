@@ -20,6 +20,8 @@ const { CP_PACKAGES, formatMoney, optimizePurchase } = require('../utils/cpPacka
 // 📝 PLAYER-FACING VOCABULARY, decided by Harkirat 2026-08-27 after three rounds of rejected candidates. The saved thing is a **calculation** (his own word: "reset/new calculation"); one row in it is a **line** (provisional -- he expects to revisit it). Both replace "basket"/"banner": "banner" collides with Discord profile banners, and every container metaphor (basket/cart/plan/list) read wrong because the player is PURCHASING and budgeting, not collecting. INTERNAL identifiers (DrawBasket, drawBasketStore, `basket`, `banners`) deliberately keep the old names -- renaming the model would churn PRIVACY.md, the store, and every test for something no user can see. Only strings a player reads are in scope here.
 const DRAW_KEYS = Object.keys(DRAW_META);
 const MAX_BANNERS_PER_PAGE = 5; // readability, not budget -- 9 fit inside the component cap (spec §2)
+// The SETUP screen paginates tighter than the Edit page, and the difference is a budget fact, not an inconsistency: setup also carries the saved-calculations list, the draw multi-select, the region row and the Calculate row, all of which the Edit page does without. Measured by the sweep in scripts/drawCalcBudget.test.js -- change this number and that test tells you immediately whether it still fits.
+const SETUP_LINES_PER_PAGE = 4;
 
 
 function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
@@ -152,43 +154,28 @@ function groupForDisplay(banners) {
 // ==========================================
 // SELECT / BUTTON ROWS
 // ==========================================
-// Landing's draw picker -- also reused as the "start a new basket" control when an existing (possibly named) basket has been emptied by Reset (state.basketId still points at it, so picking here ADDS to that same basket rather than creating a second one -- see buildLandingPanel).
-function drawSelectRow(state, region) {
-    return {
-        type: 1,
-        components: [{
-            type: 3, custom_id: encodeState('draws', state), placeholder: 'Pick a draw to add to this calculation...',
-            options: DRAW_KEYS.map(key => {
-                const total = pullCount(region, key);
-                const upgrade = total !== null ? upgradeCost(region, key) : null;
-                return {
-                    label: DRAW_META[key].name,
-                    value: key,
-                    description: total === null
-                        ? `No data at ${regionLabel(region)} yet`
-                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(region, key, 0))} CP total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`,
-                    emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier])
-                };
-            })
-        }]
-    };
-}
-
 // COST page's multi-select -- "which draw TYPES are in this basket". Selecting a type not currently present appends ONE fresh banner (0 pulls, no inherited defaults -- spec §2, decision 11: "calculators don't assume or constrain answers"). Deselecting a present type removes EVERY banner of that type -- a duplicate of a type is added back one at a time via "+ Add another" on Page 2, which this control cannot express (a multi-select's state is a set, not a multiset).
 function typesSelectRow(state, basket) {
     const present = new Set(usedTypes(basket.banners));
     return {
         type: 1,
         components: [{
-            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are in this calculation?',
+            type: 3, custom_id: encodeState('draws', state), placeholder: 'Which draws are you pricing out?',
             min_values: 0, max_values: DRAW_KEYS.length,
-            options: DRAW_KEYS.map(key => ({
-                label: DRAW_META[key].name,
-                value: key,
-                description: `${fmt(remainingToFinish(basket.region, key, 0))} CP fresh`,
-                emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
-                default: present.has(key)
-            }))
+            // Descriptions inherited from the retired single-pick landing select: a player choosing what to price needs the pull count and the full fresh cost at THIS region, not just a bare total.
+            options: DRAW_KEYS.map(key => {
+                const total = pullCount(basket.region, key);
+                const upgrade = total !== null ? upgradeCost(basket.region, key) : null;
+                return {
+                    label: DRAW_META[key].name,
+                    value: key,
+                    description: total === null
+                        ? `No data at ${regionLabel(basket.region)} yet`
+                        : `${plural(total, 'pull')} · ${fmt(remainingToFinish(basket.region, key, 0))} CP total${upgrade !== null ? ` + ${fmt(upgrade)} CP Upgrade` : ''}`,
+                    emoji: emojis.parseEmoji(emojis[DRAW_META[key].tier]),
+                    default: present.has(key)
+                };
+            })
         }]
     };
 }
@@ -261,8 +248,8 @@ function reorderButtonsRow(state, basket) {
     };
 }
 
-function pageNavRow(state, banners) {
-    const totalPages = Math.max(1, Math.ceil(banners.length / MAX_BANNERS_PER_PAGE));
+function pageNavRow(state, banners, perPage = MAX_BANNERS_PER_PAGE) {
+    const totalPages = Math.max(1, Math.ceil(banners.length / perPage));
     const current = Math.min(state.bpage || 0, totalPages - 1);
     return {
         type: 1,
@@ -330,16 +317,31 @@ function basketManageRow(state, basket) {
     };
 }
 
-// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself.
-function bottomNavRow(state) {
+// 🔴 RETURNED AS A TOP-LEVEL SIBLING of the Container, never pushed inside it (fixed 2026-08-27) -- it was rendering as a child, which boxes the nav inside the panel's accent border instead of sitting under it the way every other command in this bot places its nav. buildCalculatorPanel is the ONE place that attaches it; do not push it into a page builder's `components`. Replaces buildGlobalNavRow entirely (Task 9) -- Draw Info and Help are the calculator's own ephemeral panels, Draw Prices is the one cross-link back to the sibling command, Reset is two-step (Danger style once armed) exactly like Delete Basket above, and clears basket, balance, focus and page (spec §9) without deleting the basket document itself. `showReset` is false on the setup form: there is no computed result to clear yet, and a live button that does nothing visible is worse than an absent one. On a submitted calculation it reads "New Calculation" -- Harkirat's own phrase for the action that ends a result's persistence and returns to the form.
+function bottomNavRow(state, { showReset = true } = {}) {
     const resetArmed = state.verb === 'resetarm';
+    const components = [
+        { type: 2, style: 2, label: 'Draw Info', custom_id: encodeState('info', state) },
+        { type: 2, style: 2, label: 'Draw Prices', custom_id: 'nav_prices' }
+    ];
+    if (showReset) components.push({ type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'New Calculation — click again' : 'New Calculation', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) });
+    components.push({ type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) });
+    return { type: 1, components };
+}
+
+// The setup form's own action row. Calculate is the ONLY Primary-styled button anywhere in this command -- the whole screen exists to lead to it. Balance and Upgrade are disabled until a draw exists, because both write to a basket document that has not been created yet and would otherwise accept input and silently discard it.
+function setupActionRow(state, basket) {
+    const hasBasket = Boolean(basket && basket._id);
+    const lines = basket?.banners?.length || 0;
+    const cardEmoji = usedTypes(basket?.banners).map(upgradeCardEmoji).find(Boolean);
     return {
         type: 1,
         components: [
-            { type: 2, style: 2, label: 'Draw Info', custom_id: encodeState('info', state) },
-            { type: 2, style: 2, label: 'Draw Prices', custom_id: 'nav_prices' },
-            { type: 2, style: resetArmed ? 4 : 2, label: resetArmed ? 'Reset — click again' : 'Reset', custom_id: encodeState(resetArmed ? 'reset' : 'resetarm', state) },
-            { type: 2, style: 2, label: 'Help', custom_id: encodeState('help', state) }
+            { type: 2, style: 2, disabled: !hasBasket, custom_id: encodeState('modal', state), emoji: emojis.parseEmoji(emojis.cp2),
+              label: basket?.balance ? `Balance: ${fmt(basket.balance)} CP` : 'Set Balance' },
+            { type: 2, style: basket?.includeUpgrades ? 3 : 2, disabled: !hasBasket, custom_id: encodeState('upg', state),
+              label: basket?.includeUpgrades ? 'Upgrade: YES' : 'Upgrade: NO', ...(cardEmoji ? { emoji: emojis.parseEmoji(cardEmoji) } : {}) },
+            { type: 2, style: 1, label: 'Calculate', custom_id: encodeState('submit', state), disabled: lines === 0 }
         ]
     };
 }
@@ -354,10 +356,10 @@ function buildCostBlock(state, basket, currency, client, { compact }) {
     const unpriced = perBanner.filter(b => !b.priced);
     const shortfall = needed - (basket.balance || 0);
 
+    // 🔴 CP NEEDED LEADS. This block used to open with "Draws in basket: 2" and put the one number the whole command exists to produce THIRD -- the eye landed on a count nobody asked for. The count itself is gone: the DRAWS IN PROGRESS list sits directly above and already shows every line.
     const lines = [`## COST BREAKDOWN`];
-    lines.push(`${dot} Draws in basket: **\`${fmt(basket.banners.length)}\`**`);
-    lines.push(`${dot} Balance: **\`${basket.balance ? `${fmt(basket.balance)} CP` : 'Not specified'}\`** ${dash} Region: **\`${regionLabel(basket.region)}\`**`);
     lines.push(`${dot} CP Needed: **\`${fmt(needed)} CP\`**`);
+    lines.push(`${dot} Balance: **\`${basket.balance ? `${fmt(basket.balance)} CP` : 'Not specified'}\`** ${dash} Region: **\`${regionLabel(basket.region)}\`**`);
     if (unpriced.length) {
         lines.push(`⚠️ **${plural(unpriced.length, 'line')} excluded** — no sourced pricing at ${regionLabel(basket.region)}: ${unpriced.map(b => drawName(b.drawKey)).join(', ')}.`);
     }
@@ -420,16 +422,21 @@ function titleBlock(basket) {
     return { type: 10, content: `## ${emojis.calculator} Lucky Draw Calculator${suffix}` };
 }
 
-function buildLandingPanel(state, savedBaskets, accentColor, { region, notice = null } = {}) {
-    const components = [
-        titleBlock(null),
-        { type: 14, spacing: 2, divider: true }
-    ];
+// ==========================================
+// THE SETUP FORM -- the first screen, and the one the whole command now leads FROM
+// ==========================================
+// 🔴 THIS REVERSES THIS COMMAND'S OWN "never a setup form again" RULE, deliberately (Harkirat, 2026-08-27). That rule came from a single-draw panel where five interactions preceded any figure AT ALL, every single visit. Two things make this different, and both are load-bearing rather than cosmetic:
+//   1. ONE screen. The saved-calculations list and the form share it -- loading an old calculation and starting a new one are both one interaction from opening the command, never a hop apart.
+//   2. IT PERSISTS. Pressing Calculate sets `submitted` on the basket document, so the result is what you come back to -- until you press New Calculation. The form is filled in once, not on every visit.
+// If either of those is ever removed, this is the old failure again and the old rule should come back.
+function buildSetupPanel(state, basket, savedBaskets, accentColor, { region, notice = null } = {}) {
+    // A shim, so every row builder below works identically whether a draft document exists yet or not.
+    const draft = basket || { banners: [], region: region || 'region_10', balance: 0, includeUpgrades: false };
+    const banners = draft.banners || [];
+    const components = [titleBlock(basket), { type: 14, spacing: 2, divider: true }];
     if (notice) components.push({ type: 10, content: `-# ${notice}` });
-    components.push({ type: 10, content: '🎯 Pick a draw below to start a calculation, and see what you still need to buy.' });
-    components.push(drawSelectRow(state, region));
+
     if (savedBaskets && savedBaskets.length) {
-        components.push({ type: 14, spacing: 1, divider: true });
         components.push({ type: 10, content: `## SAVED CALCULATIONS\n${savedBaskets.map(b => `${emojis.smallDot} **${b.name}** — ${plural(b.banners.length, 'line')}`).join('\n')}` });
         components.push({
             type: 1, components: [{
@@ -437,12 +444,31 @@ function buildLandingPanel(state, savedBaskets, accentColor, { region, notice = 
                 options: savedBaskets.slice(0, 25).map(b => ({ label: b.name, value: String(b._id), description: `${plural(b.banners.length, 'line')} · ${regionLabel(b.region)}` }))
             }]
         });
+        components.push({ type: 14, spacing: 1, divider: true });
     }
+
+    components.push({ type: 10, content: banners.length
+        ? `## SET UP YOUR CALCULATION\n-# Set how many pulls you have already done on each draw, then press **Calculate**.`
+        : `## SET UP YOUR CALCULATION\n🎯 Pick every draw you are pricing out. You can set your progress, your CP balance and your region before calculating.` });
+    components.push(typesSelectRow(state, draft));
+
+    const totalPages = Math.max(1, Math.ceil(banners.length / SETUP_LINES_PER_PAGE));
+    const bpage = Math.min(state.bpage || 0, totalPages - 1);
+    const start = bpage * SETUP_LINES_PER_PAGE;
+    for (const i of banners.map((_, i) => i).slice(start, start + SETUP_LINES_PER_PAGE)) components.push(bannerPullsRow(state, draft, i));
+
+    // Pagination and "+ Add another" are never both shown: with five or more lines the form is already at its densest, the multi-select above still adds new TYPES, and a duplicate line can be added from Edit Draws after calculating. Showing both overruns the 40-component cap -- this is a budget decision, measured.
+    if (totalPages > 1) components.push(pageNavRow({ ...state, bpage }, banners, SETUP_LINES_PER_PAGE));
+    else if (usedTypes(banners).length) components.push(addAnotherRow(state, draft));
+
+    components.push({ type: 14, spacing: 1, divider: true });
+    components.push(regionRow(state, draft));
+    components.push(setupActionRow(state, basket));
     return { type: 17, accent_color: accentColor, components };
 }
 
 function buildMissingBasketPanel(state, savedBaskets, accentColor) {
-    return buildLandingPanel({ ...state, basketId: null }, savedBaskets, accentColor, {
+    return buildSetupPanel({ ...state, basketId: null }, null, savedBaskets, accentColor, {
         region: 'region_10',
         notice: '⚠️ That saved calculation no longer exists — it may have expired, or been deleted.'
     });
@@ -454,7 +480,7 @@ function buildCostPage(state, basket, accentColor, options = {}) {
 
     if (!basket.banners.length) {
         // Empty basket returns to the landing look (spec §9), but STAYS bound to this basketId so picking a draw adds to the same (possibly named) basket instead of creating a second one.
-        return buildLandingPanel(state, options.savedBaskets, accentColor, { region: basket.region, notice: basket.name ? `"${basket.name}" is empty — pick a draw to add to it.` : null });
+        return buildSetupPanel(state, basket, options.savedBaskets, accentColor, { region: basket.region, notice: basket.name ? `"${basket.name}" is empty — pick a draw to add to it.` : null });
     }
 
     const groups = groupForDisplay(basket.banners);
@@ -545,7 +571,17 @@ function buildHelpPanel(accentColor) {
 // ==========================================
 // Returns the message's TOP-LEVEL component list, not a single Container -- the nav row is a sibling of the Container, not a child (see bottomNavRow). Landing/missing states get no nav row: there is nothing yet to reset, and Draw Info has nothing to show.
 function buildCalculatorPanel(state, basket, accentColor, options = {}) {
-    if (!basket) return [buildMissingBasketPanel(state, options.savedBaskets, accentColor)];
+    // No basket at all -> the setup form, empty. A basketId that resolved to nothing -> the same form, with a notice.
+    if (!basket) {
+        const container = state.basketId
+            ? buildMissingBasketPanel(state, options.savedBaskets, accentColor)
+            : buildSetupPanel(state, null, options.savedBaskets, accentColor, { region: options.region });
+        return [container, bottomNavRow(state, { showReset: false })];
+    }
+    // 🔴 `submitted` is what separates a draft from a result, and it lives on the DOCUMENT, not the customId -- that is the whole reason a result survives a restart and "persists until reset / new calculation".
+    if (!basket.submitted) {
+        return [buildSetupPanel(state, basket, options.savedBaskets, accentColor, {}), bottomNavRow(state, { showReset: false })];
+    }
     const container = state.page === 1 ? buildBasketPage(state, basket, accentColor) : buildCostPage(state, basket, accentColor, options);
     return [container, bottomNavRow(state)];
 }
@@ -576,15 +612,15 @@ async function execute(interaction) {
 
     const accentColor = await getAccentColorForCommand(interaction, prefs, PRESET_ACCENT);
     const savedBaskets = await basketStore.listForUser(userId);
-    const containerPayload = buildLandingPanel(state, savedBaskets, accentColor, { region });
+    const containerPayload = buildSetupPanel(state, null, savedBaskets, accentColor, { region });
 
     // skipExpiry (spec decision 7, "never expires"): re-derived 2026-08-27 against sendV2Payload's own bar -- "nothing on this panel can go stale". It holds. Every control is author-locked and re-reads the calculation from Mongo on each click, so a panel found hours later rebuilds from live data rather than showing a frozen view; and a component click is its own interaction with its own fresh 15-minute token, so editing this message never runs out of runway the way a single long-lived token would.
-    return sendV2Payload(interaction, withShareButton([containerPayload], isEphemeral), { skipExpiry: true });
+    return sendV2Payload(interaction, withShareButton([containerPayload, bottomNavRow(state, { showReset: false })], isEphemeral), { skipExpiry: true });
 }
 
 module.exports = {
     encodeState, decodeState, defaultState, clampFocus,
-    buildCalculatorPanel, buildLandingPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel,
+    buildCalculatorPanel, buildSetupPanel, buildMissingBasketPanel, buildDrawInfoPanel, buildHelpPanel,
     buildCostBlock, entryFor, regionsWithData, usedTypes, groupForDisplay,
     isDoubleCPEventLive, findLiveDoubleCPEntry, execute
 };

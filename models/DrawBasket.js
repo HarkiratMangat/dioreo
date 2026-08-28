@@ -22,6 +22,8 @@ const DrawBasketSchema = new mongoose.Schema({
     includeUpgrades: { type: Boolean, default: false },
     // The existing 6-bit mask over CP_PACKAGES (cp80...cp8000), snapshotted onto the basket -- there is no live entitlement source to read, only what the player told us they still hold.
     entitlementMask: { type: Number, default: 0 },
+    // FALSE while the player is still filling in the setup form; TRUE once they have pressed Calculate. This is what makes a result "persist until reset / new calculation" (Harkirat, 2026-08-27) across restarts -- a draft has to survive the same way a finished calculation does, so it cannot live in memory or in the customId. Existing docs predate the field and read as false, which correctly reopens them on the form with their draws intact.
+    submitted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 
