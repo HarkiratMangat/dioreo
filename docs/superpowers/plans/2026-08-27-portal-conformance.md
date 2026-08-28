@@ -46,6 +46,27 @@ status: live
 
 ---
 
+## §0.0 — ONE PART PER SESSION, AND EVERY SESSION WRITES THE NEXT ONE'S PROMPT
+
+🔴 **Harkirat starts a NEW SESSION for each Part.** That is the working shape, decided 2026-08-27 21:29 EDT, and it makes the handoff a **deliverable of every Part**, not an optional courtesy at the end.
+
+**The last thing a Part does, after its closing commit, is print the next Part's starting prompt** — in one fenced block he can copy whole, with nothing above it he has to trim.
+
+**It must carry all six of these, because a new session starts with none of them:**
+
+| | |
+|---|---|
+| **1 · The model line** | `Model<Ver>-<Effort>` **plus the derivation, in the shape the session-start gate accepts: `Premise <X> · Delib <Y> -> <Cell>`.** Rows are premise risk, columns are deliberation load; effort buys breadth, the model buys judgement. ⚠️ Naming the cell before the axes does not match, and the nudge correctly keeps firing |
+| **2 · The rename string** | `Model<Ver>-<Effort> · <Title> · <Mon DD>` — the session-start hook demands it as the literal first output |
+| **3 · Read-this-first** | This plan, by full path, and **its §L ledger before anything else** — that is the only place that knows what is actually done |
+| **4 · The branch state** | Branch · version · the last commit · what the gates return · **and what is ⧗ owed** |
+| **5 · The Part's own opening move** | Not "start Part N" — the first concrete command or measurement, so the session does not spend a turn deciding where to begin |
+| **6 · The working contract** | The silent/batched/heredoc/chrome-devtools/no-push block, restated in full. It does not survive a session boundary and a session without it reverts to defaults |
+
+⛔ **The prompt is written AFTER the closing commit, not before** — it has to state the real gate results and the real ledger, and a prompt written in advance states intentions. ⚠️ **And it goes in the reply, not only in a file.** A prompt he has to go and find is one more step between him and starting.
+
+---
+
 ## §0 — THE ONE THING THAT EXPLAINS THE REST
 
 🔴 **THE MIGRATION CARRIED THE STYLESHEET AND DROPPED THE MARKUP THAT ACTIVATES IT.** Harkirat, 2026-08-27: *"idk what you were using as reference during the migration but you did not stay true to the mockup design and somehow broke the same things we had already fixed."* That sentence is literally true, and it has a mechanism — which means it has a systematic remedy rather than a bug list.
@@ -151,7 +172,7 @@ status: live
 
 **⑥ UX-COPY.** Work this realm's rows from `local/handoff/2026-08-25-portal-ux-copy-audit.md` — its sections A–G are realm-shaped, and its **vocabulary table** (one concept, many words) is cross-realm, so a word changed here must be changed everywhere it appears. **Every row is either applied or answered in the difference ledger.** 🔴 This phase exists because an entire audit had never been folded into any plan, and a sentence saying "it splits per realm" would have let it be missed a third time.
 
-**⑤ CLOSE.** Fix · one gate run · the A/B artifact **published, URL in §L** · the changelog paragraph · the geometry fixture · tick §L. All in the closing commit.
+**⑤ CLOSE.** Fix · one gate run · the A/B artifact **published, URL in §L** · the changelog paragraph · the geometry fixture · tick §L. All in the closing commit. **Then print the next Part's starting prompt — §0.0.**
 
 ⛔ **The ordering is load-bearing: ① ② ③ ④ ⑥ then ⑤.** ① before ③ because a diff without adjudication produces rollbacks. ② before ④ because a missing attribute saves the walk from re-finding it as five symptoms. ⑥ before ⑤ because a word change is a visual change and the A/B artifact must photograph the final wording. ⑤ once, because the cadence correction had to be given twice.
 
