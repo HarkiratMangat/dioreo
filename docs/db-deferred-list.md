@@ -255,6 +255,20 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🔔 Reminders / watch-for
 
+### Reroll the two Cloudflare credentials that were exposed in a chat transcript `[P2 · XS · Sonnet5-Medium]`
+
+*Filed 2026-08-28 12:0x EDT. Harkirat's call, in his words: **"we'll reroll it in the future, I'm fine with the security concern for now."** Filed so "in the future" has somewhere to live.*
+
+Two separate credentials went through the transcript on 2026-08-28 and both should be rolled:
+
+1. **The Argo Tunnel token inside `~/.cloudflared/cert.pem`.** The file was uploaded so its contents could be installed, and reading it put the embedded `apiToken`, the zone id and the account id into the transcript. ⚠️ **Revoking it does NOT stop the running dev tunnel** — `cert.pem` authenticates `tunnel create` and `tunnel route dns`, while `tunnel run` uses the per-tunnel `<uuid>.json`. Roll it in the dashboard under **My Profile → API Tokens** (it appears as an Argo Tunnel token); re-run `cloudflared tunnel login` only when a new tunnel or route is next needed.
+2. **Whatever account-level API token ends up in `.env` as `CLOUDFLARE_API_TOKEN`.** ⚠️ **As of filing there is none that works** — the value transcribed from a screenshot answered *"Invalid API Token"* against Cloudflare's own `/user/tokens/verify`, so it is commented out in `.env` with that finding written beside it. `CLOUDFLARE_ACCOUNT_ID` beside it **is** correct, cross-checked against two independent sources (`wrangler whoami` and the account id embedded in `cert.pem`).
+
+**Verify:** `curl -s -H "Authorization: Bearer $TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify` returns `success: true` for the new token, and the old one returns `Invalid API Token`.
+
+⚠️ **Nothing in this repo reads either at runtime** — the bot does not talk to Cloudflare and the site deploy uses its own GitHub Actions secret — so rolling them breaks no running thing. The only cost is that DNS/tunnel work from this machine needs the new value.
+
+
 ### ✅ Home — the staged fact was stated three times, and a masthead figure was missing `[P2 · S · Opus5-High]`
 *Item I of the completion plan's Task 1.5, closed 2026-08-27. His complaint was* "its all over the place… i feel like i'd never utilize it."
 
