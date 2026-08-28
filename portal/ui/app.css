@@ -4628,15 +4628,26 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 /* The figure and its unit are ONE object. `flex-end` on the cross axis puts the label stack against the
    numeral's cap height rather than its baseline, and the tick joins the label instead of starting a
    fourth row — two masses where there were four. */
-.sc-face{display:flex;align-items:flex-start;gap:12px;font-family:var(--display);
+/* The figure and its unit, stacked and right-aligned — one axis with the deadline rows and the export
+   line beneath them, which is the only edge this column has. */
+.sc-face{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-family:var(--display);
   font-variant-numeric:tabular-nums;line-height:.82;color:var(--ink)}
 .sc-hero{display:block;font-weight:700;font-size:clamp(56px,6.4vw,82px);
   letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;color:var(--ink)}
-/* The optical nudge is deliberate: a 700-weight display numeral has more space above its cap than the
-   line box implies, so the label needs pushing down to sit ON the cap rather than above it. */
-.sc-unit{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding-top:.14em}
-.sc-heroL{font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:600;
-  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+/* 🔴 THE TICKING CLOCK RIDES THE RULE. The anchor line and the seconds are the same idea — proof that
+   this figure is moving — so they are one object rather than two stacked rows, and the rule stops being a
+   line with nothing to do. `order:1` puts this where the bare `::after` used to sit, between the figure
+   and the facts that qualify it. The mono sits ON the line with a small negative pull so the line reads
+   as its baseline; `--desk` behind the text is what opens the gap in the rule for it. */
+.sc-unit{order:1;align-self:stretch;display:flex;justify-content:flex-end;margin:5px 0 2px;
+  border-top:1.5px solid var(--sc-c);opacity:1}
+.sc-unit .sc-tick{transform:translateY(-50%);background:var(--desk);padding-left:9px}
+/* Set against the figure rather than beneath it as an afterthought: the tracking is wide enough that
+   the label's own width approaches the numeral's, so the two read as one lockup instead of a heading and
+   a caption. It takes the TIER colour, so the escalation reaches the words and not only the line. */
+.sc-heroL{font-style:normal;font-family:var(--data);font-size:var(--t-xs);font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--sc-c);white-space:nowrap;
+  opacity:.85;margin-right:-.22em}
 /* The proof it is running — one line, one weight, dim. Never a figure to plan against. */
 .sc-tick{display:flex;align-items:baseline;gap:2px;font-family:var(--data);font-size:var(--t-sm);
   font-weight:500;letter-spacing:.14em;color:var(--ink3);font-variant-numeric:tabular-nums;opacity:.75}
@@ -4655,9 +4666,9 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    qualify it, and it carries the tier colour, which is how the five tiers escalate now that they no
    longer bump the figure's size (16.31a). At `open` it is nearly invisible; at `today` it is the loudest
    line in the masthead, and the figure has not moved a pixel. */
-.sclock::after{content:'';display:block;order:1;align-self:stretch;height:1.5px;border-radius:1px;
-  background:var(--sc-c);opacity:.55;margin:3px 0 1px}
-.sclock[data-tier="closing"]::after,.sclock[data-tier="final"]::after,.sclock[data-tier="today"]::after{opacity:1}
+/* The rule lives on `.sc-unit` now — it carries the ticking clock, so a second bare line here would be
+   two horizontals doing one job. Kept as a fallback for the tier that hides the tick entirely. */
+.sclock[data-tier="today"] .sc-unit{min-height:1.5px}
 .sc-face{order:0}
 .sc-when{order:2}
 .sc-then{order:3}

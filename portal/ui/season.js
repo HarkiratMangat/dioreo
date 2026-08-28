@@ -211,13 +211,16 @@ export function ClockFace({ p }) {
     const tick = units.slice(1);
 
     return html`
-        <!-- The unit and the ticking clock stack against the figure's right flank, so the face is ONE
-             object. Before this the label baseline-aligned to an 82px numeral and the tick started a row
-             of its own, which gave the masthead four ragged things instead of two masses. -->
+        <!-- ONE AXIS. The figure owns the column's right edge, the unit sits directly under it and the
+             ticking clock rides the tier rule below that — three right-aligned lines of decreasing weight
+             and nothing set beside anything. The version before this put the unit stack to the figure's
+             RIGHT, which left a 24px stack against a 67px numeral with 43px of nothing under it and put
+             the block's fine print, rather than its figure, on the edge every other row aligns to. -->
         <div class="sc-face">
             <b class="sc-hero">${heroN}</b>
-            <span class="sc-unit">
-                <i class="sc-heroL">${heroL} left</i>
+            <i class="sc-heroL">${heroL} left</i>
+        </div>
+        <span class="sc-unit">
                 ${tick.length ? html`
             <div class="sc-tick">
                 ${tick.map((u, i) => {
@@ -228,8 +231,7 @@ export function ClockFace({ p }) {
                         <span class=${sec ? 'sc-s' : null}>${String(u[0]).padStart(2, '0')}</span>`;
                 })}
             </div>` : null}
-            </span>
-        </div>`;
+        </span>`;
 }
 
 // ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────

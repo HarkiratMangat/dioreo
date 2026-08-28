@@ -532,6 +532,26 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Season's overview scrubber draws 37 marks, every one at its 3px floor `[P1 · S · Opus5-Medium]`
+
+*Filed 2026-08-28 16:3x EDT from `npm run portal:diff -- --realm season`.* The mockup's OVERVIEW strip is dense with wide coloured runs across the whole season; the portal's shows a scatter of dots and one pink line. Measured: **37 `.mini` elements and every single one is exactly 3px wide** — all of them pinned to `.scrub .mini{min-width:3px}`, which means the width computation returns ~0 for every item rather than for a few single-day ones. If it were data, some would be wider. **Not diagnosed.** It is the largest remaining "the portal renders almost nothing where the mockup renders a lot" on the realm.
+
+### Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
+
+`collapsedFor` in `portal/ui/track.js` opens a lane collapsed when it needs more than three rows, *"you should not land on a wall with the lane you came for off-screen."* Against real volumes that is Events (6) and Playlists (14) — **the majority of the season, closed by default**, where `season.html` shows both open and populated. ⚠️ **This is an ADJUDICATION, not a bug report**: the rule has a stated reason and the answer may be that the mockup's fixture is simply smaller. Decide it against COMPANION and record the verdict either way.
+
+### `portal:diff` covers one route, one scroll, one width `[P2 · M · Sonnet5-High]`
+
+Harkirat's original Part 0 instruction was *"every realm AND every sub-view, at 1280×880 and 375×812 (INCLUDING THE GRID OVERLAY CHECK ON EVERY PAGE/SUB-PAGE/ELEMENT)"*. `scripts/portalDiff.mjs` answers one realm at one scroll at 1282×888. It needs a `--view` (click the tab before capturing), a `--width` and an `--all` that walks the matrix — otherwise a clean Track diff gets read as a clean realm, which is the over-trust this tool was built to end.
+
+### ⚠️ `http://127.0.0.1:8787/auth/callback` is probably not registered on the Discord app `[P3 · XS · Sonnet5-Medium]`
+
+*Filed 2026-08-28, and this one is MINE — introduced while fixing a different trap.* The OAuth redirect now derives from the request origin against an allowlist, and that allowlist offers **both** `localhost` and `127.0.0.1`. Only `http://localhost:8787/auth/callback` is registered on the `Dioreo (Dev)` application. Opening the portal on `127.0.0.1` will therefore fail **at Discord** with `invalid redirect_uri` — so the error arrives from outside this repo and the next person debugging it starts in the wrong place. Either register the second URI or drop it from `allowedOrigins()`.
+
+### Season offers 4 export formats against the mockup's 5 `[P3 · XS · Sonnet5-Medium]`
+
+`season.html`'s export line reads *"39 items · 5 formats"*; the portal's reads 4. Its scopes are draws, returning, calendar and patch notes. The fifth is unidentified. ⚠️ The leading label differs too — `SEASON` here against the mockup's `EXPORT` — and the portal's is better (`EXPORT [Export…]` says the word twice), so that half is portal-ahead and only the count is a gap.
+
 ### Cloudflare caches the dev portal's JS for four hours, over the origin's own `no-cache` `[P2 · XS · Sonnet5-Medium]`
 
 *Filed 2026-08-28 during Part 1 of the portal conformance pass. It cost four reloads, a server restart and a wrong conclusion before it was measured.*

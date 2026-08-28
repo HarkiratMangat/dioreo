@@ -258,5 +258,7 @@ function registerAuthRoutes(route) {
 
 module.exports = {
     buildAuthorizeUrl, verifyState, hashSession, buildCookie,
+    // Exported for scripts/portalAuth.test.js. The origin-derivation fix shipped without a falsifier for several hours, in a session whose whole subject was checks that do not check — and the bug it fixes (a login begun on one origin and finished on another) is invisible to every gate here and surfaced only when Harkirat hit it. Three pure functions; there was no excuse.
+    originOf, allowedOrigins, cookieAttrs, isLocalOrigin,
     startOAuth, handleCallback, sessionFor, requireAdmin, csrfToken, verifyCsrf, registerAuthRoutes,
 };
