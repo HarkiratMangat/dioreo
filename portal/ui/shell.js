@@ -136,6 +136,8 @@ function Figure({ value }) {
     `;
 }
 
+// 🔴 `actions` IS A GRID CHILD OF `.masthead`, NOT A CHILD OF `.mh-id`, AND MOVING IT THERE FIXED A VISIBLE DEFECT NO GATE COULD SEE. `.mh-add` has carried `grid-column / grid-row / justify-self:end` since the mockup, and inside `.mh-id` every one of those declarations was inert — the element was not a grid item. So the ADD row right-aligned to `.mh-id`'s edge instead of the masthead's: measured on Season at 1282, the ADD row ended at x=995 while `.mh-take`, the export line directly beneath it, ended at x=1260. Two right-aligned rows, 265px apart, one above the other. `portal:orphans` was quiet because the class exists and has a rule; `portal:coverage` was quiet because the rule has an element. A consumer whose producer is in the wrong parent is this port's signature defect, and it is invisible to every scanner that asks only whether both ends exist.
+//
 // ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
 export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null }) {
     return html`
@@ -144,7 +146,6 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                 ${eyebrow}
                 <h1>${title}</h1>
                 ${sub ? html`<span class="job">${sub}</span>` : null}
-                ${actions}
             </div>
             ${aside ? html`<div class="mh-aside">${aside}</div>` : null}
             ${!aside && stats.length ? html`
@@ -155,6 +156,7 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                             <${Figure} value=${s.value} /> <span class="k">${s.label}</span>
                         </span>`)}
                 </div>` : null}
+            ${actions}
         </div>
     `;
 }

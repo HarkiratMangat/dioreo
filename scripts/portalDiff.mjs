@@ -14,6 +14,8 @@
 // USAGE
 //   node scripts/portalDiff.mjs --realm season                    capture, diff, report, write PNGs
 //   node scripts/portalDiff.mjs --realm season --scroll 900       same, at a scroll offset
+//   node scripts/portalDiff.mjs --realm season --view Board      a sub-view; refuses if either side did not switch
+//   node scripts/portalDiff.mjs --realm season --viewport 375x812 the narrow layout (off-contract, and says so)
 //   node scripts/portalDiff.mjs --realm season --json             machine-readable region list
 //
 // OUTPUT  local/diff-<realm>/mk-<realm>.png · pt-<realm>.png · delta-<realm>.png
@@ -35,8 +37,12 @@ const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal
 const PORTAL_REAL = 'http://localhost:8787';
 const PORTAL_HARNESS = 'http://localhost:8901/harness.html';
 
-// The viewport contract, from the plan's §0.3: his window is 1282x920 with 32px of browser chrome.
-const VW = 1282, VH = 888;
+// The viewport contract, from the plan's §0.3: his window is 1282x920 with 32px of browser chrome. The contract is 1282x888 and every other instrument here is baked to it. --viewport exists for the ONE case that contract cannot express: his original instruction named two widths, "1280x880 and 375x812", and both stylesheets carry real max-width:768px rules, so the narrow layout is designed on both sides and is not a degradation. An off-contract run says so in its own header and writes its own filenames, so it can never be mistaken for the contract reading.
+const [VW, VH] = (() => {
+    const m = /^(\d{3,5})x(\d{3,5})$/.exec(String(process.argv[process.argv.indexOf('--viewport') + 1] || ''));
+    return m ? [Number(m[1]), Number(m[2])] : [1282, 888];
+})();
+const OFF_CONTRACT = VW !== 1282 || VH !== 888;
 
 // A cell is coarse on purpose. Pixel-exact differences are noise — antialiasing, a 1px rounding between two layers, a font hinting difference. What matters is REGIONS: a block that moved, a panel that is the wrong ground, a control that is not there. 16px cells cluster naturally into those and never into dust.
 const CELL = 16;
@@ -55,6 +61,30 @@ const asJson = args.includes('--json');
 const portalMode = flag('--portal', 'real');
 // 🔴 THE FALSIFIER. Every other instrument here ships with a case proving it can fail, and the plan's own §0.10 says to prove a probe can report PRESENCE before trusting its silence. This one shipped with neither. `--selftest` is that rule inverted: identical input must produce an empty result.
 const selfTest = args.includes('--selftest');
+
+// 🔴 --view IS THE MOST DANGEROUS FLAG IN THIS FILE, because its failure mode is FLATTERING. Season's Board and Repairs live behind tabs; if the click misses on one side the tool diffs the default view against the default view and prints a small, tidy region list that reads like Board is nearly conformant. That is the exact shape of every instrument failure this pass has produced: it runs, it emits well-formed output, and it measured something else. So the flag ASSERTS rather than attempts — on each side independently it records what main says before the click and after it, and refuses to report unless BOTH sides actually moved. A tab that is not found is a refusal, never a silent fall-through to the default view.
+const view = flag('--view', null);
+const viewSlug = view ? '-' + String(view).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
+const vpSlug = OFF_CONTRACT ? `-${VW}x${VH}` : '';
+const shotName = (side) => `${side}-${realm}${viewSlug}${vpSlug}.png`;
+
+// Addressed by the word on the control, so it needs no knowledge of either side's class names — the mockup and the portal do not share them. Case- and whitespace-insensitive, and it takes the SHORTEST matching element so a container whose text merely includes the word never wins over the tab itself.
+const CLICK_VIEW = (want) => {
+    const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const target = norm(want);
+    const cands = [...document.querySelectorAll('button,a,[role="tab"],[role="button"]')]
+        .filter((e) => norm(e.textContent) === target && e.offsetParent !== null)
+        .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+    if (!cands.length) return false;
+    cands[0].click();
+    return true;
+};
+// What the page IS, cheaply and without knowing its markup: how much text the content area holds plus how it starts. A view change moves both. Comparing this before and after the click is what turns a missed tab into a refusal instead of a clean-looking report.
+const VIEW_SIG = () => {
+    const m = document.querySelector('main');
+    const t = String((m && m.innerText) || '').replace(/\s+/g, ' ').trim();
+    return t.length + '|' + t.slice(0, 140);
+};
 
 const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 
@@ -85,8 +115,9 @@ async function mintSession(discordId) {
     await mongoose.connect(uri);
     const PortalSession = require(path.join(ROOT, 'models/PortalSession'));
     const AdminUser = require(path.join(ROOT, 'models/AdminUser'));
-    // Whoever the dev database already trusts. Inventing an id would mint a session for a person the permission model does not know, and the page would render the forbidden state instead of the realm.
-    const who = discordId || (await AdminUser.findOne({}).lean())?.discordId;
+    // 🔴 THE OWNER, NOT "WHOEVER THE DATABASE LISTS FIRST". This read AdminUser.findOne({}) and got a scoped test admin holding three realms out of six, so the rail rendered SEASON / BROADCAST / REVIEW against the mockup's six — and the diff duly reported the rail, the realm links and everything they push around as differences. Three of the eleven regions in the first real-server season run were that. A tool whose own session narrows the page is measuring its own setup; the owner id is hardcoded in utils/owner.js and implicitly holds everything, which is the only grant that shows the whole surface. The AdminUser fallback stays for a database that somehow has no owner row.
+    const { ALLOWED_ADMIN_ID } = require(path.join(ROOT, 'utils/owner'));
+    const who = discordId || ALLOWED_ADMIN_ID || (await AdminUser.findOne({}).lean())?.discordId;
     if (!who) { await mongoose.disconnect(); return null; }
     const raw = crypto.randomBytes(32).toString('hex');
     await PortalSession.create({
@@ -96,6 +127,19 @@ async function mintSession(discordId) {
     });
     await mongoose.disconnect();
     return { raw, who };
+}
+
+// Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence.
+async function enterView(page, side) {
+    if (!view) return;
+    const before = await page.evaluate(VIEW_SIG);
+    const hit = await page.evaluate(CLICK_VIEW, view);
+    if (!hit) throw new Error(`portal:diff refuses to report: no control reading "${view}" exists on the ${side} side.\n`
+        + '  Without this refusal the run would have diffed the default view against itself and reported it as this one.');
+    await page.evaluate(() => new Promise((r) => setTimeout(r, 900)));
+    const after = await page.evaluate(VIEW_SIG);
+    if (after === before) throw new Error(`portal:diff refuses to report: clicking "${view}" changed nothing on the ${side} side.\n`
+        + '  The control was found and clicked, and main is identical afterwards, so the view did not switch.');
 }
 
 async function shoot(page, url, label) {
@@ -122,8 +166,9 @@ async function shoot(page, url, label) {
             + '  Either the dev portal is not running with --env-file=.env.dev, or no admin exists in dev Mongo\n'
             + '  for a session to be minted against.');
     }
+    await enterView(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
     const buf = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: VW, height: VH } });
-    fs.writeFileSync(path.join(OUT, `${label}-${realm}.png`), buf);
+    fs.writeFileSync(path.join(OUT, shotName(label)), buf);
     return buf;
 }
 
@@ -204,6 +249,7 @@ async function label(page, url, regions) {
         if (el) el.scrollTop = y; else window.scrollTo(0, y);
         setTimeout(r, 2400);
     }), scrollY);
+    await enterView(page, url.includes('8900') ? 'MOCKUP' : 'PORTAL');
     return page.evaluate((rs) => rs.map((r) => {
         const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
         const els = document.elementsFromPoint(Math.min(cx, innerWidth - 2), Math.min(cy, innerHeight - 2));
@@ -245,14 +291,15 @@ async function label(page, url, regions) {
         const ptAt = await label(page, portalUrl, d.regions);
 
         if (asJson) {
-            console.log(JSON.stringify({ realm, scrollY, portalMode, ...d,
+            console.log(JSON.stringify({ realm, view, viewport: `${VW}x${VH}`, scrollY, portalMode, ...d,
                 regions: d.regions.map((r, i) => ({ ...r, mk: mkAt[i], pt: ptAt[i] })) }, null, 1));
         } else {
             const pct = (d.diffRatio * 100).toFixed(1);
-            console.log(`\nportal:diff — ${realm} @ ${VW}x${VH}${scrollY ? ` scrolled ${scrollY}` : ''}  ·  portal = ${portalMode}`);
+            console.log(`\nportal:diff — ${realm}${view ? ' · ' + view : ''} @ ${VW}x${VH}${scrollY ? ` scrolled ${scrollY}` : ''}  ·  portal = ${portalMode}`);
+            if (OFF_CONTRACT) console.log('  ⚠️  OFF-CONTRACT viewport — the fixtures and every other instrument are baked to 1282x888. This reading is not comparable to theirs.');
             if (portalMode === 'harness') console.log('  ⚠️  harness: both sides are fixture-driven, so they can agree with each other and disagree with production.');
-            console.log(`  mk- ${path.relative(ROOT, path.join(OUT, `mk-${realm}.png`))}`);
-            console.log(`  pt- ${path.relative(ROOT, path.join(OUT, `pt-${realm}.png`))}`);
+            console.log(`  mk- ${path.relative(ROOT, path.join(OUT, shotName('mk')))}`);
+            console.log(`  pt- ${path.relative(ROOT, path.join(OUT, shotName('pt')))}`);
             console.log(`\n  ${pct}% of pixels differ, in ${d.regionCount} region(s). Largest first:\n`);
             d.regions.slice(0, 14).forEach((r, i) => {
                 console.log(`  ${String(i + 1).padStart(2)}. ${String(r.w).padStart(4)}x${String(r.h).padStart(3)} at (${r.x},${r.y})`);

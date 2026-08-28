@@ -696,7 +696,13 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                                     <span class="lbl">2X CP</span>
                                 </div>`;
                         })}
-                        <div class="now" style=${'left:' + nowPct + '%'}></div>
+                        <!-- COMPANION's own row for .now reads "one thin line and a chip"; app.css has carried
+                             .now::after{content:attr(data-now)} since the mockup and NOTHING EVER SET data-now, so
+                             attr() resolved empty and the chip has never once rendered. A consumer with no producer,
+                             the third found on this surface. The pill IS the clock -- an attribute rather than a
+                             second element, so NOW cannot become two objects that drift apart. -->
+                        <div class="now" data-now=${'NOW ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                             style=${'left:' + nowPct + '%'}></div>
                         ${season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null}
                     </div>
                 </div>

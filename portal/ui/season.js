@@ -270,10 +270,14 @@ function SeasonClock({ season, today }) {
             </div>
             ${rest.length ? html`
                 <div class="sc-then">then
-                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}<b>${fmtDay(m.iso)}</b>`)}
+                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}<b>${fmtDay(m.iso)}</b><i class="sc-far">${daysUntil(m.iso)}d</i>`)}
                 </div>` : null}
         </div>`;
 }
+
+// A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset.
+const daysUntil = (iso) => Math.max(0, Math.round(
+    (new Date(String(iso).slice(0, 10) + 'T00:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')) / 86400000));
 
 const fmtDay = (iso) => new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -352,7 +356,6 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
     // Silent unless it is genuinely late AND nothing is staged. One line, never repeated, gone the moment a draft exists — "make it smart and suggest things to prep/stage for the next season. but dont make it naggy."
     const near = seasonMoments(season, today)[0];
     const daysOut = near ? Math.ceil((new Date(near.iso + 'T23:59:59Z').getTime() - new Date(today + 'T00:00:00Z').getTime()) / 86400000) : null;
-    const nudge = !editingDraft && !draftStaged && daysOut !== null && daysOut <= 7;
 
     // 🔴 ONE GRID, NOT SIX. Every cell used to arrange itself from its own content, so six titles began at six different x positions and the dates were not even right-aligned to each other. `.srec-c` is display:contents, which dissolves each cell so all eighteen parts land in ONE grid whose label column is sized by the widest label ACROSS ALL SIX.
     return html`
@@ -402,9 +405,14 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                         </div>`;
                 })}
             </div>
-            ${nudge ? html`
-                <div class="srec-nudge"><b>Next season isn’t staged.</b> A draft lets you build it — titles, dates,
-                    draws and calendar — without any of it going live.</div>` : null}
+            <!-- 🔴 THE LATENESS NUDGE MOVED ONTO THE LINE THAT CARRIES THE CONTROL, and the first attempt at
+                 this got it wrong in a way worth recording: it deleted the nudge as a duplicate of the
+                 nodraft line 60px below. They were NOT the same fact. That line says a draft does not exist; the nudge
+                 said it does not exist AND the season ends within seven days — an urgency the other line
+                 never carried. Deleting it would have removed the only late warning on the page while
+                 looking like tidying. What was actually wrong is that ONE absence was drawn as TWO objects
+                 in one fold, only one of which could be acted on. So the urgency now rides on the nodraft
+                 line, which is where the title field and the Start a draft button already are. -->
         </div>`;
 }
 
@@ -563,6 +571,9 @@ function DraftCompare({ live, draft }) {
 
 function DraftZone({ draft, live, onStart, onDiscard }) {
     const [title, setTitle] = useState('');
+    // Silent unless it is genuinely late: seven days or fewer, and nothing staged. Same threshold the record's own nudge used before it moved here, so the warning did not change — only where it lives.
+    const endsIn = live?.bpEnd ? daysUntil(live.bpEnd) : null;
+    const late = endsIn !== null && endsIn <= 7;
     const [comparing, setComparing] = useState(false);
     if (!draft || !draft.active) {
         return html`
@@ -570,13 +581,14 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
                  button on their own row — announcing that a thing does NOT exist, and it sat between the
                  context strip and the Track. Measured 2026-08-28 at the 806px fold: it was one of three
                  blocks holding the realm's own subject 530px below it. An absence does not earn the page's
-                 most valuable band. The srec-nudge directly above already sets the pattern for this exact
+                 most valuable band. The record above sets the pattern for this exact
                  job in this exact strip — one dashed line that states the fact and offers the way out —
                  so this follows it rather than inventing a second empty-state shape. Nothing is lost: the
                  sentence it dropped explained what a draft IS, and that belongs on the control, which now
                  carries it as a tooltip. -->
-            <div class="nodraft">
+            <div class=${'nodraft' + (late ? ' late' : '')}>
                 <b>No next season staged.</b>
+                ${late ? html`<span class="nd-late">This one ends in ${endsIn} day${endsIn === 1 ? '' : 's'}.</span>` : null}
                 <input class="nw-i" type="text" aria-label="Next season title"
                        placeholder="Season 8 — …" value=${title}
                        onInput=${(e) => setTitle(e.target.value)} />

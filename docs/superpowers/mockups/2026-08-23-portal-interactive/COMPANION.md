@@ -3516,6 +3516,8 @@ Each tier **subtracts**. A tier that only changed colour would be the same if-st
 
 ⚠️ **`portal:orphans` earned its keep during this change**: the first version emitted `.sc-t-n` on every number, and it styled nothing — the numbers inherit `.sc-tick`. That is the `.stat.live` defect again (a class added because it looked like a hook), and the gate named it within one run. The seconds now carry `.sc-s` and nothing else.
 
+⚠️ **THE FOURTH GAP'S "LEFT" IS ABOUT HOME'S CLOCK, NOT SEASON'S — recorded 2026-08-28 because a conformance pass nearly "fixed" a correct page back to a wrong one.** The table above says the alignment gap was closed by moving from right to left, reasoning that the clock *"renders inside `.mh-id`, the masthead's left column, so right-alignment was aligning to nothing"*. That reasoning is sound and it applies to exactly one caller. In the mockup package's own stylesheet, `.sclock` is `align-items:flex-end;text-align:right`, and a **second, later rule** — `.hclock .sclock{align-items:flex-start;text-align:left}` — overrides it only inside Home's clock host. Season's clock takes the masthead's `stats` grid area, which has a real right edge to align to, and both the mockup and `portal/ui` right-align it there. **`portal/ui` carries no `.hclock .sclock` rule at all**, so Home's clock is the one that is actually out of step, and that belongs to Part 6b rather than here. Read this paragraph before acting on the row above.
+
 ### 16.32 The collapsed season record — six peers, not a headline and a footer
 
 Two rounds of correction, and the second one named the real mistake.
