@@ -558,16 +558,6 @@ Harkirat's original Part 0 instruction was *"every realm AND every sub-view, at 
 
 `season.html`'s export line reads *"39 items · 5 formats"*; the portal's reads 4. Its scopes are draws, returning, calendar and patch notes. The fifth is unidentified. ⚠️ The leading label differs too — `SEASON` here against the mockup's `EXPORT` — and the portal's is better (`EXPORT [Export…]` says the word twice), so that half is portal-ahead and only the count is a gap.
 
-### Cloudflare caches the dev portal's JS for four hours, over the origin's own `no-cache` `[P2 · XS · Sonnet5-Medium]`
-
-*Filed 2026-08-28 during Part 1 of the portal conformance pass. It cost four reloads, a server restart and a wrong conclusion before it was measured.*
-
-**Fixed at the origin, not at the edge.** `portal/server.js` served static files with **no `Cache-Control` at all**, which is not neutral: a browser then applies heuristic caching, roughly a tenth of the file's age since `Last-Modified`. It now sends `no-cache, must-revalidate` for `.html`, `.js`, `.mjs` and `.css` — verified against `http://127.0.0.1:8787`.
-
-🔴 **The tunnel still overrides it.** Measured the same day: `https://dev-portal.dioreo.app/ui/track.js` comes back with **`cache-control: max-age=14400`** while the origin, fetched directly, returns `no-cache, must-revalidate`. That is Cloudflare's default caching for a `.js` extension, and it is why a rebuilt portal served a five-hour-old module graph while `curl` against the same origin returned the new bytes — **the page and the terminal disagreed, and the page looked like the code had not changed.**
-
-**The fix is a Cache Rule on `dev-portal.dioreo.app` in Harkirat's Cloudflare dashboard** — bypass cache, or respect origin headers, for that hostname. It cannot be done from here; the browser this session drives is not signed into Cloudflare. ⚠️ **Until it is done, always verify a portal change against `http://localhost:8787`, never the tunnel** — the tunnel is for reaching it from a phone, not for checking whether a change landed.
-
 ### The "a staged thing arrives" motion is styled and emitted nowhere `[P3 · S · Sonnet5-Medium]`
 
 *Filed 2026-08-28, Part 1's reverse-orphan triage. Belongs to **motion-as-a-system (Part 7)**, which COMPANION warns is NOT the liveliness work item K closed — conflating them is how this entry gets wrongly ticked.*

@@ -5,6 +5,14 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ☁️ Cloudflare cached the dev portal's JS for four hours, over the origin's own `no-cache` (2026-08-28 18:2x EDT)
+
+*Swept out of `docs/db-deferred-list.md` on 2026-08-28. An item leaves an active list only by appearing here.*
+
+- `[P2 · XS · Sonnet5-Medium]` ~~**Cloudflare overrides the dev portal's `no-cache` with `max-age=14400`**~~ — ✅ **FIXED 2026-08-28 18:2x EDT.** Two halves, and only the first was done when this was filed. **At the origin:** `portal/server.js` served static files with no `Cache-Control` at all, which is not neutral — a browser then applies heuristic caching, roughly a tenth of the file's age since `Last-Modified`. It now sends `no-cache, must-revalidate` for `.html`, `.js`, `.mjs` and `.css`. **At the edge:** the zone had no `http_request_cache_settings` entrypoint ruleset at all, so `.js`/`.css` fell to Cloudflare's default four-hour cache and a rebuilt portal served a five-hour-old module graph while `curl` against the same origin returned the new bytes — the page and the terminal disagreed, and the page looked like the code had not changed. One `PUT` created the entrypoint with a single rule: `(http.host eq "dev-portal.dioreo.app")` → `set_cache_settings` with `{"cache": false}`.
+- 🔴 **The claim that closed this item for a day was false, and the failure is the reusable part.** It read: *"It cannot be done from here; the browser this session drives is not signed into Cloudflare."* Both clauses were true and the conclusion did not follow — the fix never needed a browser, and `CLOUDFLARE_API_TOKEN` was already in `.env`, in the same repo, being used for other things. **A capability was declared absent because the one route imagined for it was blocked.** Same shape as `platform-constraints.md`'s standing warning that an entry is evidence, not a verdict; see [[feedback_not_checkable_is_usually_unexamined]].
+- ✅ **Verified with a falsifier, not just a green reading.** `dev-portal.dioreo.app` returns `cf-cache-status: DYNAMIC` with the origin's `no-cache, must-revalidate` on `/app.css`, `/ui/season.js` and `/vendor/preact.mjs`, twice each. That alone proves nothing — `DYNAMIC` would also appear if the zone simply never cached anything. So the **same zone** was checked at a host the rule does not match: `https://dioreo.app/app.css` still returns `MISS` then `EXPIRED` with `public, max-age=14400`. The rule is scoped, it is the cause, and production caching is untouched.
+
 ## ✍️ A space deleted by a line break in an html template (2026-08-27 15:0x EDT)
 
 *Swept out of `docs/db-deferred-list.md`'s 🐞 Active Bugs on 2026-08-27. An item leaves an active list only by appearing here.*
