@@ -359,7 +359,7 @@ function StateKey() {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
     useEffect(() => { installTips(); }, []);
@@ -399,6 +399,21 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                 ${exportScopes && exportScopes.length
                     ? html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />`
                     : null}
+                <!-- 🔴 THE CONTEXT STRIP — COMPANION §10.4's SECOND BAND, WHICH THE SHELL DID NOT HAVE.
+                     The composition is masthead, then a context strip that is "a slim bar, never a panel",
+                     then the view layer with the strongest treatment, then a recessive Manifest. Three of
+                     those four existed here. With nowhere to put the second one, Season put its identity
+                     record AND its draft zone INSIDE the view panel, above the Track — so the realm's own
+                     subject started 530px below an 806px fold while a paragraph about a season that does
+                     not exist sat above it. Measured against season.html the same day: the mockup draws the
+                     Track at y=256 and the portal drew the draft block there, which was the single largest
+                     region in the whole page diff.
+                     ⚠️ IT IS A BAND, NOT A PANEL, and the distinction is the rule. It sits BETWEEN the
+                     export strip and the view panel as a sibling of both, so the adjacent-sibling rule (panel plus panel) still pairs
+                     the view layer with the Manifest and the Manifest stays recessive. Anything put here
+                     must earn a permanent place above the realm's subject; if it is only sometimes present,
+                     it belongs inside the view. -->
+                ${contextSlot ? html`<div class="ctxband">${contextSlot}</div>` : null}
                 <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
                      Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
                      composition rule: masthead, context strip, view layer, then the mechanism beneath the picture.

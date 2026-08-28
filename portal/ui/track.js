@@ -363,7 +363,8 @@ export function Zoomer({ win, full, onWindow }) {
     const days = windowDays(win);
     const fitted = days >= windowDays(full);
     return html`
-        <div class="zoomer" role="group" aria-label="Zoom">
+        <div class="zoomer" role="group" aria-label="Zoom"
+             data-tip="⌘/ctrl-wheel zooms at the cursor · drag the ruler to pan · a horizontal wheel pans too">
             <button title="Zoom out" aria-label="Zoom out" disabled=${fitted}
                     onClick=${() => onWindow(zoomWindow(win, 1.6, full))}>−</button>
             <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3}
@@ -371,11 +372,14 @@ export function Zoomer({ win, full, onWindow }) {
             <button class="wide" title="Fit everything" disabled=${fitted}
                     onClick=${() => onWindow(null)}>FIT</button>
             <span class="rd"><b>${days}</b> ${days === 1 ? 'day' : 'days'} shown</span>
-            <!-- COMPANION §5.2 gives the ruler three pointer gestures and the page said none of them out
-                 loud: drag to pan, wheel to pan sideways, and hold to zoom at the cursor. The zhint rule
-                 and its kbd child were styled for exactly this line and nothing had ever emitted them, so the
-                 only way to discover the Track's own zoom was to guess it. -->
-            <span class="zhint"><kbd>⌘</kbd>-wheel to zoom, drag the ruler to pan</span>
+            <!-- The window's actual dates, at the far right of the bar, where season.html puts them. "44 days
+                 shown" is a length and this is a position; the Track is a calendar, so the reader needs both. -->
+            <span class="zrange">${TL.fmt(win.start)} <i>→</i> ${TL.fmt(win.end)}</span>
+            <!-- ⚠️ THE INSTRUCTION IS A TOOLTIP NOW, NOT A SENTENCE IN THE CHROME. COMPANION §5.2 gives the
+                 ruler three pointer gestures and nothing on screen said so, which is why this was added at
+                 all — but a permanent line of prose sitting in a control bar is read once and then becomes
+                 furniture, and it was crowding out the window range that belongs there. The portal has a
+                 tooltip runtime; discoverability lives on the control it describes. -->
         </div>
     `;
 }
@@ -466,7 +470,10 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
                 <button type="button" class=${'dspan' + (flips.span ? ' flip' : '')} data-k="span"
                         style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%;margin-top:${box.spanTop}px`}
                         data-tip=${`${next.title || next.label} is the next deadline.\nThis is the time left before it.`}
-                        onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}><span class="dfl">time left</span></button>` : null}
+                        onClick=${() => {}} aria-label=${`Time remaining before ${next.label}`}><span class="dfl">${(() => {
+                            const n = TL.days(TL.today ? TL.today() : new Date().toISOString().slice(0, 10), next.iso);
+                            return Number.isFinite(n) && n > 0 ? `${n} days left` : 'time left';
+                        })()}</span></button>` : null}
             <!-- 🔴 A PATCH NOTE IS A DATED SEASON EVENT AND THE TRACK DID NOT DRAW ONE. The record panel
                  below lists them newest-first, which answers "what shipped"; it cannot answer "what else was
                  happening that week", which is the only question this axis exists for. Stacked because two
@@ -616,19 +623,15 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
     const oosPct = ends.length ? (() => { const p = view.pct(ends[ends.length - 1]); return p >= 0 && p < 100 ? p : null; })() : null;
 
     return html`
+        <!-- 🔴 THIS PANEL HAD ITS OWN HEADER AND IT SAID NOTHING THE BAR 60px ABOVE IT HAD NOT ALREADY SAID.
+             It rendered "Season track" under a bar already reading SEASON, and a LIVE/STAGED/CONFLICT legend
+             under the shell key that draws the same three marks — one fact, two authorities, which is the
+             defect COMPANION 16.7 names, at a distance where both are in one glance. The mockup has ONE
+             header for this panel and it is the view bar; the panel opens straight onto the overview.
+             Deleting it also lifts the Track 59px, which is the third of three blocks that were pushing the
+             realm's own subject below an 806px fold. The window range that belongs at the far right of a
+             view bar moved into the Zoomer, where the mockup puts it. -->
         <div class="panel" id="track">
-            <div class="ph">
-                <span class="t">Season track</span>
-                <!-- 🔴 A KEY DRAWN IN A LANGUAGE THE THING IT KEYS DOES NOT SPEAK. The leg class had no rule
-                     left after app.css was adopted, so this rendered as three bare words each with an empty i
-                     beside it. The Manifest's own state pills ARE these three shapes, so the legend is made
-                     of the marks it explains rather than of a second set that has to agree with them. -->
-                <span class="rt" style="display:flex;gap:8px;align-items:center">
-                    <span class="stt live">LIVE</span>
-                    <span class="stt stag">STAGED</span>
-                    <span class="stt conf">CONFLICT</span>
-                </span>
-            </div>
             <div class="tk-wrap" ref=${rootRef}
                  onMouseMove=${(e) => {
                      const box = e.currentTarget.getBoundingClientRect();

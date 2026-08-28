@@ -10,7 +10,8 @@
 var TL = (function () {
 
   const DAY = 86400000;
-  const iso = d => new Date(d + 'T00:00:00Z');
+  // 🔴 NORMALISE BEFORE CONCATENATING, because the two data sources disagree about shape and only one of them was ever tested. This read `new Date(d + 'T00:00:00Z')`, which is correct for the bare `YYYY-MM-DD` the fixtures use and produces `2026-09-19T00:00:00.000ZT00:00:00Z` — an Invalid Date — for the full ISO datetime Mongo returns. Every arithmetic result downstream became NaN, and NaN renders: measured on the real server 2026-08-28, Season's Repairs told the reader an item "ends NaN days after the battle pass" beside a button offering to clamp it. The harness could never show this, because the harness is fixture-driven and agrees with the mockup — which is the whole argument for running the real server BEFORE the work rather than as a victory lap after it. A Date instance is accepted too; it arrives from the Track's own drag handler.
+  const iso = (d) => new Date((d instanceof Date ? d.toISOString() : String(d)).slice(0, 10) + 'T00:00:00Z');
   const toISO = d => new Date(d).toISOString().slice(0, 10);
   const days = (a, b) => Math.round((iso(b) - iso(a)) / DAY);
   const addDays = (d, n) => toISO(iso(d).getTime() + n * DAY);

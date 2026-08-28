@@ -82,11 +82,12 @@
       "expect": ".repwrap .repgrp .repnote"
     },
     {
-      "name": "Track · the zoom hint and the overview scrubber",
+      "name": "Track · the window range and the overview scrubber",
       "realm": "season",
       "flags": {},
       "known": [],
-      "expect": ".zoomer .zhint kbd"
+      "expect": ".zoomer .zrange",
+      "note": "The zoom instruction moved onto the zoomer as a tooltip rather than sitting in the chrome as a permanent sentence — it was crowding out the window range, which is what season.html puts at the far right of this bar. This state's `expect` caught that change rather than walking past it, which is the whole reason a state names its own subject."
     },
     {
       "name": "Track · a lane collapsed to its summary",

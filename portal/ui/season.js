@@ -211,10 +211,14 @@ export function ClockFace({ p }) {
     const tick = units.slice(1);
 
     return html`
+        <!-- The unit and the ticking clock stack against the figure's right flank, so the face is ONE
+             object. Before this the label baseline-aligned to an 82px numeral and the tick started a row
+             of its own, which gave the masthead four ragged things instead of two masses. -->
         <div class="sc-face">
-            <b class="sc-hero">${heroN}</b><i class="sc-heroL">${heroL} left</i>
-        </div>
-        ${tick.length ? html`
+            <b class="sc-hero">${heroN}</b>
+            <span class="sc-unit">
+                <i class="sc-heroL">${heroL} left</i>
+                ${tick.length ? html`
             <div class="sc-tick">
                 ${tick.map((u, i) => {
                     // ⚠️ THE SEPARATOR CARRIES .sc-s TOO, not just the number. The old markup hid the seconds and left its colon behind — "23 HRS : 59 MIN :" — and needed a :nth-last-child rule to clean up after itself. Marking the pair cannot drift. ⚠️ And .sc-s is the ONLY class the number carries: a `.sc-t-n` alongside it styled nothing (the numbers inherit .sc-tick), and portal:orphans said so.
@@ -223,7 +227,9 @@ export function ClockFace({ p }) {
                         ${i ? html`<span class=${'sc-t-sep' + (sec ? ' sc-s' : '')}>:</span>` : null}
                         <span class=${sec ? 'sc-s' : null}>${String(u[0]).padStart(2, '0')}</span>`;
                 })}
-            </div>` : null}`;
+            </div>` : null}
+            </span>
+        </div>`;
 }
 
 // ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────
@@ -382,7 +388,7 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                     const on = (season?.[b.k] || '').trim();
                     const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
                             <span class=${'t' + (on ? '' : ' unset')}>
                                 ${shows
@@ -558,15 +564,22 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
     const [comparing, setComparing] = useState(false);
     if (!draft || !draft.active) {
         return html`
+            <!-- 🔴 ONE LINE, NOT A PANEL. This was a 126px centred block — a paragraph, then an input and a
+                 button on their own row — announcing that a thing does NOT exist, and it sat between the
+                 context strip and the Track. Measured 2026-08-28 at the 806px fold: it was one of three
+                 blocks holding the realm's own subject 530px below it. An absence does not earn the page's
+                 most valuable band. The srec-nudge directly above already sets the pattern for this exact
+                 job in this exact strip — one dashed line that states the fact and offers the way out —
+                 so this follows it rather than inventing a second empty-state shape. Nothing is lost: the
+                 sentence it dropped explained what a draft IS, and that belongs on the control, which now
+                 carries it as a tooltip. -->
             <div class="nodraft">
-                <p>No next season staged. A draft lets you build the whole next season — titles, deadlines, draws
-                    and calendar — without any of it going live.</p>
-                <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
-                    <input class="nw-i" style="flex:0 1 240px;width:auto" type="text" aria-label="Next season title"
-                           placeholder="Season 8 — …" value=${title}
-                           onInput=${(e) => setTitle(e.target.value)} />
-                    <button class="chip" disabled=${!title.trim()} onClick=${() => onStart(title.trim())}>Start a draft</button>
-                </div>
+                <b>No next season staged.</b>
+                <input class="nw-i" type="text" aria-label="Next season title"
+                       placeholder="Season 8 — …" value=${title}
+                       onInput=${(e) => setTitle(e.target.value)} />
+                <button class="chip" disabled=${!title.trim()} onClick=${() => onStart(title.trim())}
+                        data-tip="Builds the whole next season — titles, deadlines, draws and calendar — with none of it going live until you promote it">Start a draft</button>
             </div>`;
     }
     const n = (draft.newDraws || []).length + (draft.returningDraws || []).length + (draft.calendar || []).length;
@@ -1004,6 +1017,13 @@ export function SeasonRealm({ session }) {
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season's own deadlines." 
                                                aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
                                                actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
+                  contextSlot=${html`
+                      <!-- The season's identity and its draft live ABOVE the view layer, not inside it —
+                           they are the context the Track is read against, and they do not change when the
+                           view does. Putting them in the view meant Track, Board and Repairs each re-drew
+                           the same record beneath their own header, and pushed the Track off the fold. -->
+                      ${identitySlot}
+                      <${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />`}
                   viewSlot=${html`
                       <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
                            into the tray — the panel headed "Saved" — where it rendered in the same voice as a
@@ -1012,9 +1032,7 @@ export function SeasonRealm({ session }) {
                       ${pageError ? html`
                           <p class="errmsg" role="alert">${pageError}
                               <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
-                      ${identitySlot}
-                                  <${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />
-                                  ${viewSlot}
+                      ${viewSlot}
                                   <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
                                                    onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />
                                   <${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}

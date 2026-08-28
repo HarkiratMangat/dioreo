@@ -3577,3 +3577,35 @@ Nothing errored. The markup was in the DOM. `innerText` read back the full recor
 Five rules — padding, hover, and the type contrast between a finding's name and its reason — were ported as `.rephits li`. `track.js`'s Repairs renders `<div class="rephits"><button>`. **There is no `li`.** Every finding row rendered without its padding, without a hover state, and with its name and reason at the same weight.
 
 ⚠️ **The reverse-orphan sweep cannot see this one**, and that is worth stating plainly next to the sweep's own claims: `.rephits` **is** emitted, so the class is not an orphan. Only the *descendant* in the selector was dead. A sweep that reports classes will never report a compound selector whose left half is alive.
+
+### 16.37 🔴 §10.4's SECOND BAND DID NOT EXIST IN THE SHELL, SO SEASON PUT IT INSIDE THE VIEW
+
+**§10.4 names four bands: masthead · a context strip that is *"a slim bar, never a panel"* · the view layer with the strongest treatment · a recessive Manifest.** The shell had three. There was no slot between the export strip and the view panel, so Season rendered its identity record **and** its draft zone *inside* `viewSlot`, above the Track.
+
+**What that cost, measured on the real server at the 1282×888 contract on 2026-08-28 15:5x EDT:** the view bar at y=303, the identity at 363, a 126px empty-state paragraph about a season that does not exist at 982, the Track's scrubber at 1153 and **its first lane at 1336 — 530px below the fold.** At the same scroll the mockup is showing three populated lanes. `portal:diff`'s largest region was 1168×640 at (96,256): *the mockup has the Track here; the portal has an empty state.*
+
+Three changes, and none of them is a style tweak:
+
+| | |
+|---|---|
+| **The shell grew `contextSlot`** | rendered between the export strip and the view panel, wrapped in `.ctxband` — margin only, no ground, no shadow, no accent border, because §10.4's word is *strip* |
+| **Season moved its identity and draft into it** | they are the context the Track is read against and they do not change when the view does. Inside the view, all three views re-drew the same record beneath their own header |
+| **The Track panel's own header was deleted** | it said "Season track" under a bar already reading SEASON, and drew a LIVE/STAGED/CONFLICT legend under the shell key that draws the same three marks — §16.7's *one fact, two authorities*, at a distance where both are in one glance. Its useful half, the window range, moved to the far right of the view bar where `season.html` puts it |
+
+⚠️ **The band is a SIBLING of both panels, deliberately.** Nest it and the adjacent-sibling rule §16.35 depends on stops pairing the view layer with the Manifest, and the Manifest silently stops being recessive again.
+
+⚠️ **Anything placed here must earn a permanent seat above the realm's subject.** A thing that is only sometimes present belongs inside the view — the empty draft state very nearly did not qualify, and survives only as one line rather than the panel it was.
+
+### 16.38 The season record's banner row — kind is carried by ANATOMY
+
+§16.32 made the six cells identical peers to stop the banners reading as a footnote, and over-corrected. Harkirat, 2026-08-28 15:39 EDT: *"the banner thumbnails are fine but the section still reads the same as the season titles above it and there's no visual difference… (same with the useless circle dot)."*
+
+**Both halves were right, and the dot half was a specification this package already contained.** §16.32 and the conformance plan both say item B *"kills the grey dot"* — and `season.js` was still emitting `<span class="d"><em></em></span>` beside a visible thumbnail, so the cell asserted the same three states twice, the second time as an unlabelled circle. A citation had been read as evidence the intent had landed; it had not.
+
+**Now:** a deadline row is three text parts; a banner row is a picture at 132×34 with room to be recognised, and the status mark survives only where there is nothing to look at (`.srec-c.has-img .d em{display:none}`). Kind is carried by anatomy, state by the marks that already carry it, and the two rows stay peers in weight without being peers in shape.
+
+### 16.39 🔴 `TL.days` RETURNED NaN AGAINST REAL DATA, AND ONLY AGAINST REAL DATA
+
+`iso()` was `new Date(d + 'T00:00:00Z')`. Correct for the bare `YYYY-MM-DD` every fixture uses; for the full ISO datetime Mongo returns it builds `2026-09-19T00:00:00.000ZT00:00:00Z`, an Invalid Date, and **every arithmetic result downstream becomes NaN — which renders.** Measured on the real server 2026-08-28 15:5x EDT: Season's Repairs told the reader an item *"ends NaN days after the battle pass"* beside a button offering to clamp it.
+
+⚠️ **The harness could never have shown this**, because the harness is fixture-driven and agrees with the mockup. That is the argument for running the real server **before** the work rather than as a victory lap after it, and it is now `⓪ DIFF` in the conformance plan.

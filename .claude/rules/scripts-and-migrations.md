@@ -247,6 +247,20 @@ Four scripts and two shared libraries, built as PART 0 of `docs/superpowers/plan
 
 ⚠️ **The mockup package's instruments are loaded by `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` now.** `.grid.js` and `.peers.js` shipped beside the eight mockup pages and **no page had ever included them**, so `__grid.all()` had never once run on the artifact the portal is measured against. `window.__instruments()` loads them on demand and `?grid` loads them at boot; the loader lives in the one file all eight pages already load, so `door.html` gets it too. `__grid.all()` also carries the **1282x888 viewport contract** in its own output now — a page cannot resize its own window, so every reading states what it was taken at and an off-contract one says so in the reading itself. `buildPortal` copies both files into the harness, so the mockup remains the single source.
 
+## `portalDiff.mjs` — the only instrument that answers the acceptance test (added 2026-08-28 16:0x EDT)
+
+`npm run portal:diff -- --realm season` · `--scroll <px>` · `--json` · `--portal harness` · `--as <discordId>`. Renders the mockup and the **real** portal at 1282×888, subtracts them, and reports the differing regions ranked by area with the element under each side. Writes `local/diff-<realm>/mk-<realm>.png` and `pt-<realm>.png`.
+
+🔴 **Every other gate in this repo is an element scanner and this one is not.** `portal:orphans` asks whether a class has a rule; the reverse sweep asks the inverse; `portalStates` walks states; `__grid` measures boxes. All of them answer *"which elements exist, and are they well-formed"* — so **a page with all the right elements in the wrong arrangement passes every one of them**, which is what shipped from Part 1 of the conformance pass and what Harkirat found in about two seconds with two screenshots. This one enumerates nothing: the mockup is a **program that renders**, not a specification to be read, and where the two renderings disagree IS the work list.
+
+⚠️ **It is never scored and never reaches zero** — real data against a fixture, portal-ahead surfaces, and deliberate divergences all land in it. Every region is **closed or cited** in the Part's difference ledger.
+
+- 🔴 **IT REFUSES TO REPORT IF THE PORTAL SIDE IS THE DOOR**, because its own first run diffed a login page and produced 11.9% across twelve confidently-ranked regions of pure noise. Puppeteer launches a clean profile, so it **mints a PortalSession in dev Mongo** for the run — and refuses to do that against any URI that is not localhost, since a diff tool able to write a session into production is not a diff tool.
+- ⚠️ **It scrolls `main`, not the window.** This repo had already written that trap down and the tool walked into it anyway on its first day: `--scroll` was silently inert and reported the top of the page twice.
+- ⚠️ **`Buffer.from(...)` around the screenshot is load-bearing.** Recent puppeteer returns a `Uint8Array`, and `Uint8Array.prototype.toString('base64')` ignores its argument and returns comma-joined decimals — a syntactically valid data URL full of garbage, surfacing as an image `onerror` that prints `Event: Event`.
+- ⚠️ **Animation is stopped before the shutter**, identically on both sides, or the output moves between runs and nobody trusts it twice.
+- The 16px cell size and the 6%/24 tolerances were chosen by running it against the **mockup versus itself** (which must report zero) and widening until that stayed empty — a threshold nobody falsified is a threshold nobody should trust.
+
 ## `scripts/cloudflared-dev-config.yml` — the DEV tunnel, on the Mac (added 2026-08-28 12:0x EDT)
 
 Installed to `~/.cloudflared/dioreo-dev.yml`; run with `cloudflared tunnel --config ~/.cloudflared/dioreo-dev.yml run`. Puts `https://dev-portal.dioreo.app` in front of the local dev portal on `127.0.0.1:8787`, so the branch is reviewable from a phone instead of only from the machine it runs on. Tracked for reproducibility and holds no secret.

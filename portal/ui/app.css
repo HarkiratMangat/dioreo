@@ -910,9 +910,12 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .draftbar .sp{margin-left:auto}
 .draftbar>button{flex:none;white-space:nowrap}
 .draftbar .commit{width:auto;padding:8px 16px}
-.nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
-  border-radius:var(--rad-2);text-align:center}
-.nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
+/* One line, like .srec-nudge directly above it — see the note in season.js. An empty state announcing
+   that something does not exist must not cost more vertical space than the thing would. */
+.nodraft{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;
+  background:var(--sunk);border:1px dashed var(--rule2);border-radius:var(--rad-2);font-size:var(--t-sm)}
+.nodraft b{color:var(--ink);font-weight:500}
+.nodraft .nw-i{flex:0 1 220px;width:auto;margin-left:auto}
 
 /* Live→Next diff. Only CHANGED fields render, so an unchanged draft is visibly empty
    rather than a wall of identical rows. */
@@ -944,6 +947,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .zoomer .rd{font-family:var(--data);font-size:10px;color:var(--ink3);padding:0 9px;
   white-space:nowrap;border-left:1px solid var(--rule);margin-left:2px}
 .zoomer .rd b{color:var(--ink2);font-weight:600}
+/* The window's dates, pushed to the far right of the view bar — a position to go with the length beside
+   it. Mono and tabular so the two dates hold their columns as the window is dragged. */
+.zrange{margin-left:auto;padding-left:12px;font-family:var(--data);font-size:10.5px;color:var(--ink3);
+  white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.03em}
+.zrange i{font-style:normal;color:var(--rule2);padding:0 2px}
 .zhint{font-size:10.5px;color:var(--ink3);margin-left:8px}
 .zhint kbd{font-family:var(--data);font-size:9.5px;background:var(--sunk);border:1px solid var(--rule);
   border-bottom-width:2px;border-radius:var(--rad-1);padding:1px 4px;color:var(--ink3)}
@@ -1258,7 +1266,12 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    and what this box adds is WHERE that time sits on the axis, not the number again.
    `overflow:hidden` because the span shrinks to 3% of the plot when the next deadline is close,
    and a nowrap label in a 28px box escapes it. */
-.dspan{--c:var(--ok);justify-content:center;cursor:grab;overflow:hidden;
+/* 🔴 IT WAS A 280x34 EMPTY BOX LABELLED "time left". A span between two dates is a MEASURE, and a measure
+   that states no quantity is a container — it took the same visual weight as the deadline chip above it
+   while carrying strictly less information. It is slim now, it says the number, and its two end-caps do
+   the work of showing what it spans. ⚠️ The height reduction is what lets the deadline rail sit tighter,
+   which is worth ~20px of the Track's own fold budget. */
+.dspan{--c:var(--ok);justify-content:center;cursor:grab;overflow:hidden;min-height:20px;
   background:rgba(61,220,151,.09);border-style:solid;position:relative;color:var(--ok)}
 .dspan::before,.dspan::after{content:"";position:absolute;top:3px;bottom:3px;width:1.5px;background:var(--ok)}
 .dspan::before{left:3px} .dspan::after{right:3px}
@@ -1637,6 +1650,13 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    ART DIRECTION — see COMPANION.md §10. All of it lives here, in the shared
    layer, so the six unbuilt pages are born with it rather than retrofitted.
    ══════════════════════════════════════════════════════════════════════════ */
+
+/* The context strip band. §10.4: "a slim bar, never a panel. It must not look like it competes with
+   what follows." So it takes the margin the panels take and nothing else — no raised ground, no shadow,
+   no accent border. The identity record inside it draws its own hairline; the band itself is invisible. */
+.ctxband{margin:0 22px}
+.ctxband > * + *{margin-top:9px}
+@media (max-width:820px){ .ctxband{margin:0 12px} }
 
 /* ── 10.4 COMPOSITION: the view layer is the hero ──
    The failure this replaces: three panels of identical weight, where nothing said which
@@ -2856,7 +2876,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    BOX, not bare prose: capping it leaves a 625px tinted box floating in a 1534px panel, which reads
    as a layout fault rather than as a measure. Its text is long at wide widths and that is a known,
    accepted cost — a ragged box would be a worse one. */
-.racknote,.chint,.hint,.nodraft p,.hbanner p,.hp,.ow-i .ow-t{max-width:78ch}
+.racknote,.chint,.hint,.hbanner p,.hp,.ow-i .ow-t{max-width:78ch}
 /* .hp was missed on the first pass and caught by re-measuring at 1700 rather than by re-reading the rule -- it is Analytics' bare note paragraph, same profile as the rest: transparent, unbordered, unpadded, and it was running 706px at 11.5px. */
 
 @media (max-width:860px){
@@ -4304,10 +4324,21 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
 .umenu .mi.danger:hover{background:rgba(255,107,107,.10)}
 /* The header slot the sign-out button used to hold, spent on the most frequent act instead
  * of the rarest — and ABSENT at zero, so it is never a permanent duplicate of the tray. */
-.hdr-commit{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;
+/* 🔴 IT RENDERED AS AN UNDERLINED TEXT LINK. It is an `a`, this rule never said `text-decoration:none`,
+   and the header's anchor styling underlined it — so the one control in the chrome that says work is
+   waiting read as prose someone had linked. The count and the words were also two loose objects on a 9px
+   gap, so "1" looked like a stray pipe beside a sentence. They are one control now: the figure gets its
+   own cell against a divider, the words get the rest, and the whole thing states a quantity rather than
+   inviting a click it cannot describe. */
+.hdr-commit{display:inline-flex;align-items:stretch;gap:0;padding:0;overflow:hidden;
+  text-decoration:none;
   border:1px solid color-mix(in srgb,var(--staged) 45%,var(--rule2));border-radius:var(--rad-pill);
   background:color-mix(in srgb,var(--staged) 12%,transparent);color:var(--ink);font-size:12.5px}
-.hdr-commit b{font-family:var(--display);font-size:15px;color:var(--staged);letter-spacing:var(--tr-fig)}
+.hdr-commit b{display:flex;align-items:center;padding:6px 10px;font-family:var(--display);font-size:15px;
+  line-height:1;color:var(--staged);letter-spacing:var(--tr-fig);font-variant-numeric:tabular-nums;
+  background:color-mix(in srgb,var(--staged) 14%,transparent);
+  border-right:1px solid color-mix(in srgb,var(--staged) 30%,transparent)}
+.hdr-commit span{display:flex;align-items:center;padding:6px 12px;letter-spacing:.02em}
 .hdr-commit:hover{background:color-mix(in srgb,var(--staged) 20%,transparent)}
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -4572,20 +4603,46 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    ⚠️ The tiers no longer bump the hero's SIZE (they used to, up to 1.34×). At ~4× the figure is
    already the loudest thing on the masthead; growing it further is the shouting the five-tier
    design exists to avoid. Colour and the anchor rule carry the escalation now. */
-.sclock{--sc-c:var(--ink3);display:flex;flex-direction:column;align-items:flex-start;gap:9px;
-  text-align:left}
-.sc-face{display:flex;align-items:baseline;gap:11px;font-family:var(--display);
+/* 🔴 REBUILT 2026-08-28. Attempt 13 closed the five HIERARCHY gaps and was then never looked at, and
+   Harkirat's verdict on the result was one word: ugly. He was right, and the faults are all composition
+   rather than model — the model (one hero, a quiet tick, chips, an anchor) is kept.
+
+   What was wrong, measured on the page:
+   · `align-items:flex-start` LEFT-aligned the whole block inside the masthead's RIGHT column, so its
+     ragged right edge sat directly above the export row's hard right edge. The column has an axis and
+     the clock was the only thing in the masthead ignoring it.
+   · `.sc-face` baseline-aligned an 8px uppercase label to an 82px figure, which drops the label at the
+     numeral's feet and leaves ~70px of void above it. That is the "crushed caption" — a label at the
+     bottom of a hero is not a lockup, it is a caption that fell.
+   · FOUR stacked rows (face · tick · when · then), each its own size, colour and tracking, on a flat 9px
+     gap. Nothing grouped, so the eye gets four things instead of two.
+   · `::after` drew a 58px rule under the LAST row, terminating nothing. An anchor rule that closes a
+     block has to be between the parts it separates or at its foot with mass above it — this was neither.
+
+   What it is now: TWO MASSES ON ONE RIGHT-HAND AXIS. The figure and its unit form a single object, with
+   the unit and the ticking clock stacked against the numeral's right flank at cap height instead of at
+   its feet; then a hairline in the tier colour spanning the block; then the deadline facts. The rule
+   went from underlining nothing to dividing the figure from what qualifies it, which is a job. */
+.sclock{--sc-c:var(--ink3);display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+  text-align:right}
+/* The figure and its unit are ONE object. `flex-end` on the cross axis puts the label stack against the
+   numeral's cap height rather than its baseline, and the tick joins the label instead of starting a
+   fourth row — two masses where there were four. */
+.sc-face{display:flex;align-items:flex-start;gap:12px;font-family:var(--display);
   font-variant-numeric:tabular-nums;line-height:.82;color:var(--ink)}
 .sc-hero{display:block;font-weight:700;font-size:clamp(56px,6.4vw,82px);
   letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;color:var(--ink)}
+/* The optical nudge is deliberate: a 700-weight display numeral has more space above its cap than the
+   line box implies, so the label needs pushing down to sit ON the cap rather than above it. */
+.sc-unit{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding-top:.14em}
 .sc-heroL{font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:600;
-  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);white-space:nowrap}
 /* The proof it is running — one line, one weight, dim. Never a figure to plan against. */
 .sc-tick{display:flex;align-items:baseline;gap:2px;font-family:var(--data);font-size:var(--t-sm);
-  font-weight:500;letter-spacing:.14em;color:var(--ink3);font-variant-numeric:tabular-nums}
+  font-weight:500;letter-spacing:.14em;color:var(--ink3);font-variant-numeric:tabular-nums;opacity:.75}
 .sc-t-sep{color:var(--ink3);opacity:.55}
-.sc-when,.sc-then{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-family:var(--data);
-  font-size:var(--t-xs);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.sc-when,.sc-then{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:7px;
+  font-family:var(--data);font-size:var(--t-xs);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
 .sc-when b{color:var(--ink);font-weight:600}
 .sc-then{letter-spacing:.06em}
 .sc-then b{color:var(--ink2);font-weight:500}
@@ -4594,8 +4651,16 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
   background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-1);
   padding:3px 7px;line-height:1;white-space:nowrap}
 .sc-chip.ghost{background:none;color:var(--ink3)}
-.sclock::after{content:'';display:block;width:58px;height:2px;border-radius:1px;
-  background:var(--sc-c);margin-top:2px}
+/* The anchor DIVIDES rather than underlines — it spans the block, between the figure and the facts that
+   qualify it, and it carries the tier colour, which is how the five tiers escalate now that they no
+   longer bump the figure's size (16.31a). At `open` it is nearly invisible; at `today` it is the loudest
+   line in the masthead, and the figure has not moved a pixel. */
+.sclock::after{content:'';display:block;order:1;align-self:stretch;height:1.5px;border-radius:1px;
+  background:var(--sc-c);opacity:.55;margin:3px 0 1px}
+.sclock[data-tier="closing"]::after,.sclock[data-tier="final"]::after,.sclock[data-tier="today"]::after{opacity:1}
+.sc-face{order:0}
+.sc-when{order:2}
+.sc-then{order:3}
 .sc-none{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
 
 /* ── the five tiers. Each REMOVES, it does not shout. ───────────────────── */
@@ -4689,8 +4754,19 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .idhead{cursor:pointer}
 .idhead button,.idhead input,.idhead select,.idhead [role="group"]{cursor:auto}
 .idhead:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
-.srec-thumb{display:block;width:76px;height:22px;object-fit:cover;border-radius:var(--rad-1);
+/* 🔴 THE PICTURE IS THE VALUE, SO IT GETS THE ROOM. 16.32 made all six cells identical peers to stop the
+   banners reading as a footnote, and over-corrected: at 76x22 a calendar banner is a smudge, and nothing
+   said a banner was a DIFFERENT KIND of thing from a deadline — Harkirat, 2026-08-28, on exactly this
+   strip. Kind is carried by ANATOMY now (a deadline row is three text parts; a banner row is a picture),
+   which leaves state to the marks that already carry it, and leaves the two rows peers in weight without
+   being peers in shape. ⚠️ The height increase is the banner row's alone — the deadline row is untouched. */
+.srec-thumb{display:block;width:132px;height:34px;object-fit:cover;border-radius:var(--rad-2);
   border:1px solid var(--rule2);background:var(--sunk)}
+/* 🔴 AND THE STATUS DOT IS GONE ON A ROW THAT IS SHOWING ITS IMAGE. 16.32 and the conformance plan both
+   say item B "kills the grey dot"; it was still shipping beside a visible thumbnail, so the cell asserted
+   the same three states twice and the second time as an unlabelled circle. A picture that is on screen
+   has already answered "is this set". The mark survives only where there is nothing to look at. */
+.srec-c.has-img .d em{display:none}
 /* Stored but not loading — a third state between "no image set" and a served one. It is warned
    rather than hidden: an expired CDN link renders as nothing in Discord too. */
 .srec-c.dead .t{color:var(--warn-ink);font-style:normal}
