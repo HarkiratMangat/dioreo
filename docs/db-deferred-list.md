@@ -987,6 +987,21 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 
 ## 🧹 Someday / tech-debt
 
+### The states harness has no PASS 5, and two of `async.js`'s six request states are unreachable from the shell `[P2 · S · Sonnet5-High]`
+
+*Filed 2026-08-28 09:5x EDT, from Part 0 of the portal conformance pass. Both are honest gaps in an instrument that otherwise walks 18 states clean, and both were left open deliberately rather than papered over.*
+
+- **PASS 5 · reduced motion is not implemented.** `scripts/portalStates.mjs` runs PASS 1 (composite), 3 (space) and 4 (keyboard/modality) and says in its own header that PASS 5 is absent. Emulating `prefers-reduced-motion` is easy; the reason it is not there is that every honest assertion about it is about what the STYLESHEET DECLARES, which a rendered walk is the wrong instrument for. **Do it with the rest of motion-as-a-system (`COMPANION`: *"filed, not built"*), which is Part 7's.** ⚠️ Do not close motion-as-a-system by pointing at the four liveliness interactions — COMPANION warns explicitly that they are different work.
+- **`refreshing` and `progress` are registered nowhere.** `portal/ui/async.js` owns six request states — skeleton · refreshing · slow · failure · progress · page banner — and the shell registry walks four of them (`fail=500`, `fail=offline`, `fail=garbage`, `slow=4000`). The two missing ones cannot be produced from the shell alone: `refreshing` needs a **second** fetch over data already on screen, and `progress` needs a **commit in flight**, which is Review's. **Verify:** `rg -n "is-refreshing|progress" portal/fixtures/states/*.json` returns a state in the realm that can actually produce it — Review for `progress`, whichever realm refetches for `refreshing`.
+
+### The reverse-orphan sweep cannot read 24 class expressions, and says so on every run `[P3 · S · Sonnet5-Medium]`
+
+*Filed 2026-08-28 09:5x EDT.* `scripts/portalReverseOrphans.mjs` resolves string and template literals, `+`, ternaries, `&&`/`||`, arrays, module-level lookup tables and single-assignment local consts — but an expression whose value comes from **another function, an import, or a variable assigned more than once** is unreadable, and there are **24** of them plus **10 unresolvable dynamic prefixes**. It prints both counts rather than dropping them, so the blind spot is visible; the cost is that a shape-③ finding sitting behind one of those may be a false positive, which `--why <class>` settles by hand in one command.
+
+**Worth doing only if triage starts costing real time** — the honest alternative is a full parse (acorn is already a devDependency and already used here for comment blanking), resolving function-scope bindings rather than file-scope ones. **Verify:** the run's own line — *"N class expressions resolved to nothing readable"* — is smaller, and `npm run portal:reverse-orphans:test` still passes every case, including the two that pin the false-positive direction.
+
+
+
 - **🖼️ Publish the redesigned changelog artifact ("Armory Terminal")** `[P3 · S · Sonnet5-Medium]` — the redesign is BUILT (`scripts/lib/chronicle.js` renders `public/changelog/`'s What's New/Changelog/Devlog pages, per [[project_changelog_redesign]]) but deliberately **paused and withdrawn from the live site nav**. What's pending is publishing it, not building it. Can be released any time, not tied to the v3 launch date. ⇄ Also on `docs/ROADMAP.md`'s Post-v3.0.0 afterthought section.
 
 

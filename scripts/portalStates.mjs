@@ -99,11 +99,19 @@ async function walk(page, state, port) {
     for (const step of state.steps || []) {
         if (step.key) await page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, metaKey: !!k.meta, bubbles: true })), step);
         if (step.click) await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, step.click);
+        // ⚠️ A MENU ITEM IS IDENTIFIED BY ITS WORDS, NOT ITS POSITION. `.who [role=menuitem]` matched the FIRST item — "What you can do", which navigates away — so the state named "toast after an account action" walked to a different realm and reported clean. A registry that addresses controls positionally breaks every time a menu gains an entry, silently.
+        if (step.clickText) await page.evaluate((s) => { const el = [...document.querySelectorAll(s.sel)].find((x) => (x.textContent || '').includes(s.text)); if (el) el.click(); }, step.clickText);
+        // ⚠️ A TOOLTIP IS CONTENT AND IS INVISIBLE TO A SCREENSHOT, so the runtime that renders it has to be walked like any other state. tips.js delegates from the document, so a synthetic pointerover on the host is what a real pointer would produce.
+        if (step.hover) await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true })); el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); } }, step.hover);
         if (step.type) await page.evaluate((s) => { const el = document.querySelector(s.sel); if (el) { el.value = s.text; el.dispatchEvent(new Event('input', { bubbles: true })); } }, step);
         await page.evaluate(() => new Promise((r) => setTimeout(r, 160)));
     }
     // A state can declare its own settle time. The slow state is the reason: it exists to be measured WHILE the request is still out, so waiting for the data would destroy the very thing being walked.
     if (state.settleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.settleMs);
+    // 🔴 `expect` IS WHAT MAKES A REGISTERED STATE A STATE RATHER THAN A CLAIM. The export-strip entry clicked `.mh-take` — which is the role="group" WRAPPER, not the toggle inside it — so the walk opened nothing, examined the default view, and reported a clean pass under the name of a state it had never reached. Five states were vacuous the same way for one run. A state that names the element its own steps are supposed to produce cannot lie about having got there.
+    const expected = state.expect ? await page.evaluate((sel) => !!document.querySelector(sel), state.expect) : true;
+    if (!expected) throw new Error(`state "${state.name}" did not reach its own subject — nothing matches ${state.expect} after its steps ran, so a clean result would be a clean result for the DEFAULT view`);
+
     // 🔴 A PROBE MUST BE ABLE TO REPORT PRESENCE BEFORE AN ABSENCE MEANS ANYTHING. A run that walked to a page the SPA had not routed yet returned all-zeroes and read as a clean sweep, so a state that finds nothing to examine is an ERROR here, not a pass.
     const records = await page.evaluate(COLLECT);
     // ⚠️ THE PRESENCE PROOF IS ELEMENTS, NOT FOCUSABLES. A skeleton is a legitimate state with nothing to focus — asserting on focusables made the deliberately-slow state fail as if it were broken, which would have pushed the next session to delete the state rather than the assertion.

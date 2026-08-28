@@ -73,6 +73,15 @@ check('④ resolves a lookup table through a template: .t-best is emitted, t-t4 
     assert.ok(has(r.json.classes, 't-top4'), '.t-top4 is styled twice and nothing emits it');
 });
 
+// 🔴 THE SELF-SUPPRESSION TRAP, PINNED. `palette.js` now carries a long comment explaining `data-bare`, and that comment contains the literal string several times. If the comment blanking ever regresses — or a file fails to parse and the scan falls back to raw source, which it does deliberately so an unreadable file is never read as clean — that comment ALONE would credit the attribute and the gate would report clean with the markup removed. A check whose own documentation suppresses it has happened in this repo before.
+check('· an attribute or class named only in a COMMENT never counts as an emitter', () => {
+    const css = '.q[data-bare]{border:0}\n.q[data-bare]:focus{outline:0}\n.deadclass{a:b}\n.deadclass .k{a:b}\n';
+    const js = "// this component sets data-bare on its input, and .deadclass wraps it\n/* another mention of data-bare and .deadclass */\nhtml`<input class=\"q\">`";
+    const r = scan({ 'app.css': css, 'a.js': js });
+    assert.ok(has(r.json.data, 'bare'), 'a comment mentioning data-bare must NOT certify it as emitted');
+    assert.ok(has(r.json.classes, 'deadclass'), 'a comment mentioning a class must NOT certify it as emitted');
+});
+
 // The blind spot must be COUNTED, never dropped — an unreadable expression is the one thing that can turn a ③ finding into a false positive
 check('· an opaque class expression is reported rather than silently ignored', () => {
     const r = scan({ 'app.css': '.zz{color:#fff}\n.zz .k{color:#eee}\n', 'a.js': 'const cls = pick(x);\nhtml`<div class=${cls}></div>`' });

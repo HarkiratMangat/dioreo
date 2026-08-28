@@ -212,7 +212,19 @@ function sessionLeft(expiresAt) {
     return hrs ? `expires in ${hrs}h ${String(mins).padStart(2, '0')}m` : `expires in ${mins}m`;
 }
 
-function Account({ session, staged, onSignOut }) {
+// 🔴 COPYING SAID NOTHING, AND ON FAILURE IT DID NOTHING AT ALL. Both routes to the id — this menu item and the command bar's "Copy my Discord ID" — were a bare `navigator.clipboard?.writeText(...)`: no acknowledgement on success, and the optional chain swallows the whole action in an insecure context or when permission is refused, so a reader clicks, nothing happens, and there is no way to tell a silent success from a silent failure. Every other completing action in this portal says so. Found by the states harness, which could not reach a toast state that the account menu was supposed to be able to produce.
+function copyIdWithFeedback(chrome, id) {
+    const say = (m) => (chrome && chrome.say ? chrome.say(m) : null);
+    try {
+        const p = navigator.clipboard && navigator.clipboard.writeText(String(id));
+        if (!p) return say('This browser will not let the portal use the clipboard — select the id and copy it by hand.');
+        p.then(() => say('Discord ID copied.')).catch(() => say('The clipboard refused — select the id and copy it by hand.'));
+    } catch {
+        say('The clipboard refused — select the id and copy it by hand.');
+    }
+}
+
+function Account({ session, staged, onSignOut, chrome }) {
     const [open, setOpen] = useState(false);
     // One minute is the right cadence for a twelve-hour clock: faster is a spinning number nobody reads, slower and the last minute of a session is a lie. Only while the panel is open — a closed panel ticking is a timer nobody can see.
     const [, setTick] = useState(0);
@@ -266,7 +278,7 @@ function Account({ session, staged, onSignOut }) {
                          snowflake removes the only part that distinguishes it from any other — so the preview could
                          not confirm it was the right id, which is the entire reason anybody looks before pasting one
                          into a grant. Nineteen digits fit, and a preview that cannot be checked is worse than none. -->
-                    <button class="mi" role="menuitem" onClick=${() => { setOpen(false); navigator.clipboard?.writeText(id); }}>
+                    <button class="mi" role="menuitem" onClick=${() => { setOpen(false); copyIdWithFeedback(chrome, id); }}>
                         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5h8v8H5z" /><path d="M3 11V3h8" /></svg>
                         Copy ID<span class="mid">${id}</span>
                     </button>
@@ -285,7 +297,7 @@ function Account({ session, staged, onSignOut }) {
 // The header bar. The command bar is THE bar rather than a launcher for one: it used to be a 44px ⌘K chip in a header with ~700px of unused space, which is a keyboard shortcut wearing a button's clothes — it advertised a feature instead of being one.
 //
 // ⚠️ The commit chip is ABSENT at zero rather than reading "0 staged". A chip that is always there is a permanent third copy of the tray and the rail badge; one that appears only when there is something to act on is the same fact at the moment it becomes actionable.
-function Header({ realm, view, session, staged, commands, onSignOut }) {
+function Header({ realm, view, session, staged, commands, onSignOut, chrome }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
@@ -295,7 +307,7 @@ function Header({ realm, view, session, staged, commands, onSignOut }) {
             <span class="sp"></span>
             ${staged ? html`
                 <a class="hdr-commit" href="#/review"><b>${staged}</b><span>staged · review</span></a>` : null}
-            <${Account} session=${session} staged=${staged} onSignOut=${onSignOut} />
+            <${Account} session=${session} staged=${staged} onSignOut=${onSignOut} chrome=${chrome} />
         </header>
     `;
 }
@@ -303,7 +315,7 @@ function Header({ realm, view, session, staged, commands, onSignOut }) {
 // Everything the command bar can do that is true on EVERY realm: go somewhere, and end the session. A realm adds its own verbs through `commands`; it never has to re-declare navigation, and it cannot accidentally ship a page whose bar knows less than the page next door.
 //
 // ⚠️ THE VIEW SWITCHES ARE DERIVED, NOT DECLARED. Shell already receives `viewOptions`/`onSetView` to draw the tab strip, so the palette reads the same two values — which means the bar and the tabs can never offer different views, and a realm that adds a view gets it in the palette for free rather than by remembering to.
-function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut }) {
+function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut, chrome }) {
     const out = [];
     if (viewOptions) {
         for (const v of viewOptions) {
@@ -315,7 +327,8 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
     out.push({ label: 'What needs you', group: 'home', accent: 'var(--warn)',
                keywords: ['home', 'start', 'overview', 'dashboard'], run: () => { location.hash = '#/home'; } });
     for (const r of visible.filter((x) => x !== 'review' && x !== realm)) {
-        out.push({ label: r.charAt(0).toUpperCase() + r.slice(1), group: 'realm', accent: `var(--r-${r})`,
+        // ⚠️ A FOURTH COPY OF THE CAPITALISATION RULE LIVED HERE, inline — and it would have said "Review" correctly and "Portal Home" never. One map, `realmLabelOf`, or the palette and the rail eventually disagree about what a place is called.
+        out.push({ label: realmLabelOf(r), group: 'realm', accent: `var(--r-${r})`,
                    keywords: ['go', 'open', 'realm'], run: () => { location.hash = '#/' + r; } });
     }
     if (realm !== 'review') {
@@ -326,7 +339,7 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
     if (session) {
         out.push({ label: 'Copy my Discord ID', group: 'account', accent: 'var(--ink3)',
                    keywords: ['id', 'clipboard', 'snowflake'],
-                   run: () => navigator.clipboard?.writeText(String(session.discordId)) });
+                   run: () => copyIdWithFeedback(chrome, session.discordId) });
         out.push({ label: 'Sign out', group: 'account', accent: 'var(--danger-ink)',
                    keywords: ['logout', 'log out', 'leave', 'end session'], run: () => onSignOut(staged) });
     }
@@ -370,11 +383,11 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
         });
     }
 
-    const allCommands = chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut: signOut }).concat(commands);
+    const allCommands = chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut: signOut, chrome }).concat(commands);
 
     return html`
         <div class="app">
-            <${Header} realm=${realm} view=${view} session=${session} staged=${staged}
+            <${Header} realm=${realm} view=${view} session=${session} staged=${staged} chrome=${chrome}
                        commands=${allCommands} onSignOut=${signOut} />
             <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
             <main class=${busy} data-slow=${busyNote || null}>

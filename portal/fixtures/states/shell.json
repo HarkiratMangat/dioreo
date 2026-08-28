@@ -6,13 +6,15 @@
       "name": "default · home",
       "realm": "home",
       "flags": {},
-      "known": []
+      "known": [],
+      "expect": "main h1"
     },
     {
       "name": "default · season",
       "realm": "season",
       "flags": {},
-      "known": []
+      "known": [],
+      "expect": ".mtable"
     },
     {
       "name": "command bar open",
@@ -24,7 +26,8 @@
           "meta": true
         }
       ],
-      "known": []
+      "known": [],
+      "expect": ".cmdbar.on"
     },
     {
       "name": "command bar · typed query",
@@ -42,7 +45,8 @@
           }
         }
       ],
-      "known": []
+      "known": [],
+      "expect": ".cb-drop .plist"
     },
     {
       "name": "account panel open",
@@ -53,7 +57,8 @@
           "click": ".who button"
         }
       ],
-      "known": []
+      "known": [],
+      "expect": ".who [role=menuitem]"
     },
     {
       "name": "request failure (500)",
@@ -61,7 +66,8 @@
       "flags": {
         "fail": "500"
       },
-      "known": []
+      "known": [],
+      "expect": ".dfail, .fail, [role=alert], .panel"
     },
     {
       "name": "connection never lands",
@@ -69,7 +75,8 @@
       "flags": {
         "fail": "offline"
       },
-      "known": []
+      "known": [],
+      "expect": ".netbar, [role=alert], .panel"
     },
     {
       "name": "unreadable 200",
@@ -77,7 +84,8 @@
       "flags": {
         "fail": "garbage"
       },
-      "known": []
+      "known": [],
+      "expect": ".dfail, .fail, [role=alert], .panel"
     },
     {
       "name": "slow request",
@@ -87,7 +95,8 @@
       },
       "known": [],
       "settleMs": 900,
-      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state"
+      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state",
+      "expect": ".is-slow, .skeleton, [class*=skel], main"
     },
     {
       "name": "not the owner",
@@ -95,13 +104,15 @@
       "flags": {
         "owner": "0"
       },
-      "known": []
+      "known": [],
+      "expect": "main .panel"
     },
     {
       "name": "review · staged work",
       "realm": "review",
       "flags": {},
-      "known": []
+      "known": [],
+      "expect": ".rounds, .board, main .panel"
     },
     {
       "name": "the door · signed out",
@@ -110,7 +121,8 @@
         "fail": "expired"
       },
       "known": [],
-      "note": "the only surface a signed-out person reaches; it must not imply the app is open behind it"
+      "note": "the only surface a signed-out person reaches; it must not imply the app is open behind it",
+      "expect": "main.door .dbtn"
     },
     {
       "name": "the door · not an admin",
@@ -119,7 +131,76 @@
         "fail": "forbidden"
       },
       "known": [],
-      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line"
+      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
+      "expect": "main.door .dfail"
+    },
+    {
+      "name": "export strip open",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "note": "the masthead Export strip — each scope states its OWN shape, because only some of them re-import",
+      "expect": ".exs"
+    },
+    {
+      "name": "tooltip runtime",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "hover": "[data-tip]"
+        }
+      ],
+      "known": [],
+      "note": "32 data-tip hosts on Season and the runtime is delegated from the document; tooltips are content and are invisible to a screenshot",
+      "expect": ".tip"
+    },
+    {
+      "name": "toast after an account action",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".who button"
+        },
+        {
+          "clickText": {
+            "sel": ".who [role=menuitem]",
+            "text": "Copy ID"
+          }
+        }
+      ],
+      "known": [],
+      "note": "the toast layer, reached the way a reader reaches it — and the state that found Copy ID acknowledging nothing at all",
+      "expect": ".toast"
+    },
+    {
+      "name": "manifest selection bar",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mtable tbody input[type=checkbox]"
+        }
+      ],
+      "known": [],
+      "note": "selecting a row mounts .selbar and sets body.has-selbar — a shell surface a realm switches on",
+      "expect": ".selbar.on"
+    },
+    {
+      "name": "one-way panel · tier 3",
+      "realm": "season",
+      "flags": {
+        "destroy": "1"
+      },
+      "known": [],
+      "note": "the seven irreversible ops at the foot of Season, gated on the destructive permission",
+      "expect": ".ow"
     }
   ]
 }
