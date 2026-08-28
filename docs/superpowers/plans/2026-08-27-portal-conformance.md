@@ -44,6 +44,8 @@ status: live
 
 **Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · **⧗ owed** *(everything done except the real-server pass, which is blocked on Harkirat's OAuth sign-in)* · ⊘ dropped *(with the reason, never silently)*.
 
+🔴 **⧗ IS NOW UNREACHABLE, AND THAT IS THE POINT OF PART 0 HAVING LANDED THE SIGN-IN (2026-08-28 10:5x EDT).** §0.2's rule fires: *"If Part 0 lands it, no later Part may use ⧗ at all."* A Part that wants to close owes a real-server pass and must go and run one — the session cookie lives in Mongo with a 12-hour TTL, so a lapsed one is another sign-in, never a reason to owe.
+
 🔴 **⧗ exists because without it the ledger cannot be honest.** §0.2 requires a real-server pass in every Part, and that needs a sign-in only he can give — so with four states every row either stalls at ◐ forever or gets ticked ☑ dishonestly. **A row may reach ⧗ with the owed pass named in its Note (`real-server pass owed`), and becomes ☑ the moment that pass runs.** Nothing else may be owed.
 
 ---
