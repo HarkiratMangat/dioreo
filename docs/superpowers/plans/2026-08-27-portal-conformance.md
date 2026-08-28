@@ -23,7 +23,7 @@ status: live
 
 | # | Unit | Status | Closed by | Note |
 |---|---|---|---|---|
-| **0** | Reverse-orphan sweep, scripted and in `npm test` | ☐ open | | must report `data-bare`, `--ci`, `t-best` on its first run or it is not trusted |
+| **0** | Reverse-orphan sweep, scripted and in `npm test` | ☐ open | | must report `data-bare`, `hcard`, `srec-open` and `--ci` on its first run or it is not trusted. ⚠️ **NOT `t-best`** — it IS emitted (`armory.js:165`), and a concatenation-aware scanner will correctly stay quiet about it |
 | **0** | Mockup-side grid injection, written down once | ☐ open | | `.grid.js` is a file the mockup pages never load |
 | **0** | The viewport contract, 1282×888 | ☐ open | | |
 | **0** | The states harness (page + driver, catalogue grows per realm) | ☐ open | | |
@@ -40,7 +40,9 @@ status: live
 | **7** | The sweep, the misc, and the double-check | ☐ open | | |
 | **—** | Closing DEVLOG narrative entry | ☐ open | | one story, after all the rest |
 
-**Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · ⊘ dropped *(with the reason, never silently)*.
+**Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · **⧗ owed** *(everything done except the real-server pass, which is blocked on Harkirat's OAuth sign-in)* · ⊘ dropped *(with the reason, never silently)*.
+
+🔴 **⧗ exists because without it the ledger cannot be honest.** §0.2 requires a real-server pass in every Part, and that needs a sign-in only he can give — so with four states every row either stalls at ◐ forever or gets ticked ☑ dishonestly. **A row may reach ⧗ with the owed pass named in its Note (`real-server pass owed`), and becomes ☑ the moment that pass runs.** Nothing else may be owed.
 
 ---
 
@@ -48,13 +50,21 @@ status: live
 
 🔴 **THE MIGRATION CARRIED THE STYLESHEET AND DROPPED THE MARKUP THAT ACTIVATES IT.** Harkirat, 2026-08-27: *"idk what you were using as reference during the migration but you did not stay true to the mockup design and somehow broke the same things we had already fixed."* That sentence is literally true, and it has a mechanism — which means it has a systematic remedy rather than a bug list.
 
-| Fix | CSS present? | The markup that triggers it | What the reader saw |
+> 🔴 **THIS TABLE WAS 60% STALE WHEN FIRST WRITTEN, AND A READER TEST CAUGHT IT — inside the plan whose opening argument is that a stale status column is what broke the last one.** Two of its five rows described defects that had been fixed hours earlier in `7cbcd07`, by the same session that wrote the table, while Part 1 below correctly listed them as closed. **The document contradicted itself in its own thesis.** Corrected 2026-08-27 21:2x EDT. The rows below are what is true NOW; the fixed ones moved to the note underneath, because the *mechanism* is the point and they are still the clearest examples of it.
+
+**LIVE, verified against source:**
+
+| Fix | CSS present? | The markup that triggers it | What the reader sees |
 |---|---|---|---|
 | `[data-bare]` — the search-bar opt-out | ✅ `app.css:59` | ❌ **no `portal/ui/*.js` emits it** | **measured: a 44px `.cb-in` inside a 34px `.cmdbar`, each painting its own background and border.** COMPANION §5.9n.4's doubled search bar, verbatim |
-| `--xtop` — the crosshair offset | ✅ read by `.xhair::before` and `.xd` | ❌ set by nothing | the hard-coded `60px` fallback, forever |
-| `.dflag.flip` — the edge flip | ✅ rule exists | ❌ scoped `.dend .dflag.flip` (the overlay LINE, not the rail) **and** no writer | a merged chip running past the plot edge into `overflow-x:clip` |
-| `t-best` `t-top4` `t-top5` `t-unranked` | ✅ rules exist | ❌ nothing in `armory.js` emits them | Armory's tier board may be styling tiers it never applies |
 | `hcard` `hgrid` `hmast` `hseason` | ✅ rules exist | ❌ nothing in `home.js` emits them | Home's card system, styled and unused |
+| `srec-open` | ✅ rules exist | ❌ no emitter | the season record's open state |
+
+🔴 **AND A THIRD SHAPE THE FIRST DRAFT GOT BACKWARDS — A NAME MISMATCH, WHICH IS WORSE THAN A MISSING EMITTER because both halves exist and neither looks wrong on its own.** `armory.js:72` declares `RANK_KEY = { best:'best', top3:'t3', top4:'t4', top5:'t5', null:'none' }` and line 165 emits `` `trow t-${RANK_KEY[key]}` ``. The stylesheet defines `.trow.t-best` · `.t-top3` · `.t-top4` · `.t-top5` · `.t-unranked`. **Only `t-best` matches. Four of Armory's five tier rows emit a class the tier board never styles** — `t-t3`, `t-t4`, `t-t5`, `t-none` against `.t-top3`, `.t-top4`, `.t-top5`, `.t-unranked`. (`.t-none{opacity:.86}` does exist, 1,800 lines from the `.trow.t-*` family, so that row gets *some* styling but not the tier treatment.)
+
+⚠️ **The first draft claimed these four had NO emitter and said it had confirmed that by hand.** It had not: the check was a shell command whose backtick pattern was interpreted by the shell, so it matched nothing and the empty result was read as absence. **That is the plan's own §0.10 trap — prove a probe can report PRESENCE before trusting an absence — committed while writing the section that states it.**
+
+**Already fixed, same mechanism, kept because they are the clearest evidence for it** (all in `7cbcd07`, 2026-08-27): `--xtop` was read by `.xhair::before` and `.xd` and **set by no code**, so the crosshair used its hard-coded `60px` fallback forever — it is now measured at `track.js:548`. `.dflag.flip` had a rule scoped `.dend .dflag.flip` — the overlay LINE, not the rail — **and** no writer; it is now `.deadrail .dflag.flip` at `app.css:2964` and written at `track.js:457`.
 
 **Why no gate sees this class.** CSS is declarative and inert; a rule with no matching element is silent forever. `portal:orphans` asks *"does this class have a rule?"* · `portal:coverage` counts emitted classes · `npm test` renders components and asserts their output. **Not one asks the inverse — does this rule have an element?** That inverse is Part 0's first deliverable.
 
@@ -81,10 +91,20 @@ status: live
 | | What it is | What only it can show |
 |---|---|---|
 | **The mockup** | `:8900`, fixture-driven | the approved composition |
-| **The harness** | `:8901/harness.html`, `fetchJson` stubbed | fast iteration, `?fail=` `?slow=` `?empty=` `?today=` `?owner=0` flags, every state on demand |
+| **The harness** | `:8901/harness.html`, `fetchJson` stubbed | fast iteration and every state on demand — the real flag list is below |
 | 🔴 **The real portal** | `node --env-file=.env.dev portal/server.js`, real Mongo, real OAuth | real data volumes, the door, genuine empty and error states, the 401/409 paths, and whether any of this actually works |
 
-**Every Part runs all three.** The OAuth sign-in is Harkirat's one-time step and it unblocks all of them — until it happens, each Part's real-server pass is recorded as **owed**, never as passed.
+**Every Part runs all three.** The OAuth sign-in is Harkirat's one-time step and unblocks all of them — until it happens a Part closes at **⧗ owed** with `real-server pass owed` in its §L Note, never at ☑.
+
+**How to reach each, with no guessing:**
+
+| | |
+|---|---|
+| **The mockup** | launch config **`repo-static`** — serves the **repo root**, so the URL is `http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive/season.html`, **not** `:8900/season.html` |
+| **The harness** | launch config **`portal-harness`** — `http://localhost:8901/harness.html#/season`. Run `node -e "require('./scripts/buildPortal').build()"` first, and add a fresh `?b=<n>` or the HTML comes from bfcache |
+| **The real portal** | `node --env-file=.env.dev portal/server.js`, then `http://localhost:8787` |
+
+🔴 **THE REAL HARNESS FLAGS — the first draft invented `?empty=` and omitted the three that reach the states §0.5 ④ mandates walking.** `stub.js` reads: `fail` · `slow` · **`offline`** (the network banner) · `today` · `owner` · `realms` · **`admin`** · `category` · **`destroy`** (tier-3) · **`draft`** · `id` · `ids` · `mode` · `q` · **`scope`**. **There is no `?empty=`** — an empty state is reached by narrowing (`?ids=`, `?q=` with no match) or by editing the fixture.
 
 ⚠️ **Never `npm run portal`** — it is a bare `node portal/server.js`, and `portal/server.js:6` calls `dotenv.config()`, loading **prod's `.env`**. The `--env-file` flag is what makes it safe. **Read `.env.dev`'s Mongo URI from the FILE, never `process.env`.** A portal process already listening on **:8787** means it is running, not broken.
 
@@ -94,7 +114,7 @@ status: live
 
 **1282 × 888.** His window is 1282 × 920 with 32px of browser chrome, so **888 is the content height**. Every `__grid` run, screenshot and measurement: `resize_page({width: 1282, height: 888})`.
 
-**Desktop is the priority. Mobile is deferred** — not ignored, but it never wins a conflict and is not required to be tested. Items **L** and **M**'s mobile half stay open and unworked.
+**Desktop is the priority. Mobile is deferred** — not ignored, but it never wins a conflict and is not required to be tested. **Item L** stays open and unworked. ⚠️ **Item M is NOT mobile** — its five defects are desktop measurements, and describing it as having "a mobile half" would have deferred four live desktop defects by mistake.
 
 **Light mode: there is none, and that is now a DECISION rather than an omission.** Measured 2026-08-27: `prefers-color-scheme` and `data-theme` appear zero times in `tokens.css` and `app.css`. Harkirat: **dark-only is deliberate.** The tracker's *"light mode never checked at desktop width"* row is retired in the same change as this plan. **Do not build a light mode; do not re-raise it.**
 
@@ -115,25 +135,35 @@ status: live
 
 ---
 
-## §0.5 — THE FIVE PHASES, IN THIS ORDER, IN EVERY PART
+## §0.5 — THE FIVE PHASES, IN THIS ORDER, IN PARTS 1–6
 
-**① LOCATE.** For every item this surface owns: **does the fix live in the mockup only / the portal only / both / neither?** — with a citation. **Nine instances across two sessions** say this is the most valuable step in the plan. Never skip it because a tracker says "open".
+⚠️ **Part 0 does NOT follow them** — it has no realm to locate against and no mockup page to A/B. **Part 0's exit condition is its own:** each of its seven units is done when the thing exists, runs, and is proved on a known case (the sweep reports `data-bare`; the grid injection returns a real `__grid` on a mockup tab; a fixture round-trips through `--write` then `--check`; the states harness reaches a state that is not the default; the shell's defects are fixed and measured). **Part 7 follows the five phases where it touches a realm surface, and its own exit otherwise.**
+
+**① LOCATE.** For every item this surface owns: **does the fix live in the mockup only / the portal only / both / neither?** — with a citation. **Nine instances across two sessions** say this is the most valuable step.
+
+🔴 **IT PRODUCES A NAMED ARTIFACT, or it did not happen.** The first draft made this "the most valuable step in the plan" and gave it the only phase with no deliverable — so a session could claim it without any way to check. **Write `local/locate-<realm>.md`: one row per item — item · verdict (mockup / portal / both / neither) · the citation · what that implies for the work.** It is the input to ③ and ⑤ and it is what stops a diff becoming a rollback.
 
 **② SWEEP.** Triage this surface's rows from Part 0's reverse-orphan output. A missing attribute usually explains several visual symptoms at once, which is why it comes before the walk.
 
-**③ MEASURE.** `__grid.all()` on the portal and on the mockup at 1282×888, plus the structural inventory diff. Same instrument both sides.
+**③ MEASURE.** `__grid.all()` on the portal and on the mockup at 1282×888, plus **the structural inventory diff — the two-`evaluate_script` method in `local/handoff/2026-08-27-portal-checkpoint-X.md` §0.1**, which walks the SPA by setting `location.hash` and loads the mockup in a same-origin iframe from `:8900`. Same instrument both sides; reason over the two JSON blobs, never over a screenshot. **Item E (per-realm composition) is re-measured HERE**, in whichever Part owns the realm — it is not a separate task.
 
 **④ WALK.** Open **every** action, sub-panel, drawer, composer, overlay, empty state and error state, and every view tab — in the harness *and* against the real server. Register each state in the states harness as you find it.
 
-**⑤ CLOSE.** Fix · one gate run · the A/B artifact · the changelog paragraph · the geometry fixture · tick §L. All in the closing commit.
+**⑥ UX-COPY.** Work this realm's rows from `local/handoff/2026-08-25-portal-ux-copy-audit.md` — its sections A–G are realm-shaped, and its **vocabulary table** (one concept, many words) is cross-realm, so a word changed here must be changed everywhere it appears. **Every row is either applied or answered in the difference ledger.** 🔴 This phase exists because an entire audit had never been folded into any plan, and a sentence saying "it splits per realm" would have let it be missed a third time.
 
-⛔ **The ordering is load-bearing.** ① before ③ because a diff without adjudication produces rollbacks. ② before ④ because a missing attribute saves the walk from re-finding it as five symptoms. ⑤ once, because the cadence correction had to be given twice.
+**⑤ CLOSE.** Fix · one gate run · the A/B artifact **published, URL in §L** · the changelog paragraph · the geometry fixture · tick §L. All in the closing commit.
+
+⛔ **The ordering is load-bearing: ① ② ③ ④ ⑥ then ⑤.** ① before ③ because a diff without adjudication produces rollbacks. ② before ④ because a missing attribute saves the walk from re-finding it as five symptoms. ⑥ before ⑤ because a word change is a visual change and the A/B artifact must photograph the final wording. ⑤ once, because the cadence correction had to be given twice.
 
 ### The exit condition: a DIFFERENCE LEDGER and an A/B ARTIFACT
 
 **"No visible difference" cannot be literally true** — the portal has real data against fixtures, and carries surfaces the mockup lacks. So each Part ends with **every difference either eliminated or written down with a citation for why it stays.**
 
-🔴 **And it ends with something he can LOOK at.** `local/armory-vocab.html` settled a question in one flip that thirteen rounds of text had failed to settle: two pixel-aligned renders of the same running page, a segmented control, ←/→ keys, the differences marked, a verdict per change. **Every Part ships that** — mockup vs portal, one frame per sub-state, the ledger rendered beside it. Standing rule: **nothing on localhost is a deliverable.**
+🔴 **And it ends with something he can LOOK at.** `local/armory-vocab.html` settled a question in one flip that thirteen rounds of text had failed to settle: two pixel-aligned renders of the same running page, a segmented control, ←/→ keys, the differences marked, a verdict per change. **Every Part ships that**, one frame per sub-state, the ledger rendered beside it.
+
+- **The LEFT frame is THIS PART'S TARGET ARTIFACT**, which is the mockup page by default — ⚠️ **but explicitly NOT `index.html` for Home**, whose target is COMPANION §5.9z.5 and §16.6. A mockup-vs-portal A/B for Home would compare against an artifact this plan has declared not the target.
+- **Build it in `local/`, then PUBLISH it with the Artifact tool and put the URL in §L's Note column.** Standing rule: *"nothing on localhost is a deliverable"* — and the exemplar is itself a local file, so publishing is what closes that gap rather than repeating it. Publishing is not pushing; the no-push rule is about git.
+- **Name the frames `mk-` and `pt-`, and say which is which in the sentence**, not only in the filename.
 
 ⚠️ It is also the honest instrument. *"I walked every sub-panel"* is unfalsifiable prose; **fourteen frames is a claim he can check by counting.**
 
@@ -156,7 +186,7 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 | | |
 |---|---|
 | **In scope, always** | Anything that RENDERS on the surface this Part owns — regardless of which file it lives in |
-| **In scope, conditionally** | A server/route change **when the design requires data the UI cannot otherwise have** (the three export routes were exactly this). An improvement merely noticed is filed, not built |
+| **In scope, conditionally** | A server/route change **when the design requires data the UI cannot otherwise have** (the three export routes were exactly this). An improvement merely noticed is **filed in `docs/db-deferred-list.md` with a `[P · Effort · Model]` tag** — 🔴 named explicitly, because "filed" with no destination is how five items came to exist only in gitignored files |
 | **Out of scope** | `core/ops` and the operation algebra — the bot's shared spine, which `/manage` also drives. File anything found |
 | **Out of scope** | Refactors. `season.js` is 83K and it will be tempting. A conformance pass that also restructures the largest realm is two projects wearing one plan |
 
@@ -203,7 +233,7 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 |---|---|
 | **`addrow` unbuilt** | Season replaced the mockup's inline add row with the composer. Restoring it is a second way to add the same things, with no natural-language dates |
 | **`fxc` unbuilt** | A per-row opt-out in Armory's bulk diff would map a rendered row back to raw text, and that parser is the bot's `utils/adminParser.js` |
-| **`findOverlaps` having no caller** | Settled — see §0.8 |
+| **`findOverlaps`'s semantics** | Settled — see §0.8. ⚠️ The old reason given here, *"it has no caller"*, is **stale**: it is called by the Repairs view and by `scripts/portalUi.test.js`. The instruction stands; only the reason was wrong |
 | **`portalCoverage` skipping `classList.toggle`** | Identity is read; transient state is not. Deliberate |
 | **`.winbox` as a misnamed `.win`** | Tried, measured, reverted |
 | **`zero`/`stg-clear` absent** | The portal deliberately reversed that rule: a chip is ABSENT at zero rather than dimmed |
@@ -241,8 +271,8 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 
 | # | Item | Verdict now | Evidence |
 |---|---|---|---|
-| **A** | Season clock hierarchy | ☑ **built, portal-ahead** | 13 `.sclock` rules vs 1 mockup mention. **Remaining work is CONFORMANCE to §16.31's five tiers**, not a rebuild |
-| **B** | Banners as real thumbnails | ◐ **re-measure** | 6 `thumb`/`img` hits in `season.js`; claimed closed the same day as the search bar. **Now verifiable — the two dead banners were re-hosted 2026-08-27 21:0x EDT and both databases point at Cloudinary** |
+| **A** | Season clock hierarchy | ☑ **CLOSED — no work** | 🔴 **Read `COMPANION §16.31a`, NOT §16.31.** All five hierarchy gaps were built 2026-08-27 12:0x in `portal/ui/` only and verified on the rendered page across all five tiers; the mockup's `.sclock` is deliberately left at attempt 13, and §16.31a is the record of that divergence. ⚠️ **§16.31a also RETIRES the tier size-bump** — *"The tiers no longer bump the hero's SIZE. They used to, up to 1.34×… colour and the anchor rule carry the escalation instead."* The first draft of this plan quoted §16.31's superseded table and would have instructed a session to re-introduce it |
+| **B** | Banners as real thumbnails | ◐ **re-measure** | `season.js` renders the record's banner cells as images; claimed closed the same day as the search bar. **Now verifiable — the two dead banners were re-hosted 2026-08-27 21:0x EDT and both databases point at Cloudinary** |
 | **C** | One persistent open/close control | ☐ **OPEN — confirmed** | `#idClose` exists **nowhere**; measured live, `doneBtn: false` |
 | **D** | Expanded editor panel — alignment, spacing, structure | ◐ **re-measure** | His own note: *"I called it 'fine' three times and never measured it once"* |
 | **E** | Per-realm composition | ◐ **re-measure** | Claimed closed with a 6/6 blur test |
@@ -258,7 +288,7 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 | **O** | First real boot | ◐ **partly** | Boot, Mongo and the 401 gate exercised. Everything behind a signed-in session needs **his** OAuth |
 | **P** | Production | ☐ **his** | 4 launch-checklist items |
 | **Q** | Analytics payload | ☑ **42.1 KB** | The row was stale, not open |
-| **R** | Armory live preview | ☑ **built** | 23 references in `armory.js` |
+| **R** | Armory live preview | ☑ **built** | `armory.js` renders a live preview panel and it is fixture-covered. ⚠️ A raw match count was quoted here and was not reproducible; the assertion is what matters, not the number |
 | **S** | Coverage number | ☑ **re-measured** | |
 
 ### Item M in full
@@ -280,13 +310,13 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 
 | | | Where it goes |
 |---|---|---|
-| 🔴 **The UX-copy audit** | Sections **A** contradictions · **B** engineering leaking into the UI · **C** labels that don't name the outcome · **D** confirmations · **E** empty, error and loading states · **F** wordy/writerly · **G** only-makes-sense-if-you-built-it, plus a **vocabulary table** and a **Top 10 by impact**. `.verbs.html` is its instrument | Splits per realm — each Part works its own rows |
+| 🔴 **The UX-copy audit** | Sections **A** contradictions · **B** engineering leaking into the UI · **C** labels that don't name the outcome · **D** confirmations · **E** empty, error and loading states · **F** wordy/writerly · **G** only-makes-sense-if-you-built-it, plus a **vocabulary table** and a **Top 10 by impact**. `.verbs.html` is its instrument | 🔴 **A ⑥ UX-COPY phase in every one of Parts 1–6** — see below. The first draft assigned it with a sentence that created no obligation anywhere, which is how it would have been missed a third time |
 | 🔴 **Loading skeletons** | COMPANION: *"specified, not built… only becomes real at wiring time."* Wiring time is now. Partial: 7 `skeleton`/`is-loading` rules, `async.js` names 14 states. **The rule: a skeleton in the shape of the content, never a spinner** | Part 0 (shared `async.js`), verified per realm |
 | 🔴 **§10.4 Track as hero** | *"the composition hierarchy landed, but the Track panel has not been given full-bleed treatment"* | Season |
 | 🔴 **Motion as a system** | *"Filed, not built."* ⚠️ **COMPANION warns explicitly that this is NOT the liveliness work — conflating them is how the entry gets wrongly closed.** Item K being built does not close this | Part 7, or its own Part if it grows |
 | 🔴 **The door / login page** | `door.html` is a mockup page. First screen any human sees, served at `/`, outside the harness entirely | Part 0 — needs the real server |
 
-**Also unfound until now, and owned by Part 0 unless a realm claims them:** the six `async.js` request states (skeleton · refreshing · slow · failure · progress · page banner) verified in a realm rather than in isolation · the **409 commit-gate path**, where `fetchJson` passes a 4xx body through UNTOUCHED · **keyboard reachability** (54 `:focus-visible` rules, and `.states.html`'s PASS 4 exists because *"nobody had ever tabbed through a realm"*) · **scroll behaviour** (`.scroll-matrix.html` has no portal equivalent) · **the tooltip runtime** (26 `data-tip` attributes once had no reader at all; tooltips are content and are invisible to a screenshot).
+**Also unfound until now, and owned by Part 0 unless a realm claims them:** the six `async.js` request states (skeleton · refreshing · slow · failure · progress · page banner) verified in a realm rather than in isolation · the **409 commit-gate path**, where `fetchJson` passes a 4xx body through UNTOUCHED · **keyboard reachability** (59 `:focus-visible` rules, and `.states.html`'s PASS 4 exists because *"nobody had ever tabbed through a realm"*) · **scroll behaviour** (`.scroll-matrix.html` has no portal equivalent) · **the tooltip runtime** (28 `data-tip` attributes, which once had no reader at all; tooltips are content and are invisible to a screenshot).
 
 ---
 
@@ -298,21 +328,47 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 
 **It answers: does this rule have an element?** — the inverse of `portal:orphans`.
 
-**Three shapes, because all confirmed defects took one of them:** `[data-*]` selectors with no emitter · `var(--x)` reads with no `--x:` setter anywhere · classes with ≥2 rules and no emitter, **with a concatenation-aware second pass** (a scanner sees only `lv-` in `'lvlb lv-' + a.level`, and that exact miss has already happened).
+**Four shapes.** `[data-*]` selectors with no emitter · `var(--x)` reads with no `--x:` setter anywhere · classes with ≥2 rules and no emitter · 🔴 **and NAME MISMATCH — a class that IS emitted but that no rule matches**, which is the shape the first draft missed entirely and which is worse than absence because both halves exist and neither looks wrong alone (`t-t4` emitted against `.t-top4` styled).
+
+🔴 **THE SCAN SCOPE, STATED LITERALLY, because the tree holds FOUR copies of `app.css` and SIX of `track.logic.js`** — `portal/public/ui/`, `portal/public/.ssr/ui/`, `portal/public/.hrender/ui/`, the mockup's `assets/`, and two `.claude/worktrees/*` checkouts. **An unscoped scan finds phantom emitters in build output; a wrongly-scoped one misses `portal/ui/*.logic.js`. Both fail silently.**
+
+- **Emitters:** `portal/ui/**/*.js`, excluding `portal/ui/harness/`.
+- **Rules:** `portal/ui/app.css` and `portal/ui/tokens.css` only.
+- **Excluded:** `portal/public/**` (build output) · `.claude/worktrees/**` · `docs/**/assets/**` · `node_modules/`.
+- **Concatenation-aware:** resolve template literals and `+` concatenation, and resolve a lookup table (`RANK_KEY[key]`) to its declared values. A scanner that sees only the literal prefix reports `lv-` and `t-` as orphans and misses the real mismatch — that exact miss has now happened twice.
 
 🔴 **PROVE IT ON THE KNOWN CASE FIRST.** A run on 2026-08-27 returned **`data-bare`, `data-role`, `data-src`** · **`--ci` (6 reads), `--mono` (4), `--focus` (1)** · **48 classes**, of which `t-best`/`t-top4`/`t-top5`/`t-unranked`, `hcard`/`hgrid`/`hmast`/`hseason` and `srec-open` were confirmed by hand. **If a later run does not report `data-bare`, the script is broken, not the portal.**
 
 ### 0.2 Mockup-side grid injection
 
-`portal/public/harness.html` loads `/harness/grid.js` and `/harness/peers.js`; **the mockup pages ship `.grid.js` and `.peers.js` and never include them.** All seven mockup pages have a `<main>`, which is what `__grid` draws into, so injection is all that is needed.
+`portal/public/harness.html` loads `/harness/grid.js` and `/harness/peers.js`; **the mockup pages ship `.grid.js` and `.peers.js` and never include them.** All **eight** non-dot mockup pages have a `<main>` — `door.html` included, which this plan treats as a separate artifact — and `<main>` is what `__grid` draws into, so injection is all that is needed.
 
 **The surface is `__grid()` · `.off()` · `.near()` · `.sizes()` · `.all()`, and `__peers()`. 🔴 There is NO `__grid.report()`** — the superseded plan named it in three places and it would have thrown every time.
 
-### 0.3 The viewport contract · 0.4 the geometry-fixture format and runner
+### 0.3 The viewport contract
+
+Bake 1282×888 into the harness and into every measurement helper, so no Part has to remember it.
+
+### 0.4 The geometry fixture — format and runner
+
+🔴 **This was an empty heading in the first draft while §0.5 ⑤ made it a mandatory item in every closing commit and the regression rule made re-running it mandatory on any shared-surface change.** A cold session could neither produce one nor re-run one.
+
+**Path:** `portal/fixtures/geometry/<realm>.json` — tracked, one per Part.
+
+```json
+{ "realm": "season", "recordedAt": "2026-08-27T21:20:00-04:00", "commit": "<sha>",
+  "viewport": { "w": 1282, "h": 888 },
+  "views": { "Track": { "grid": { "examined": 0, "nearMisses": 0, "sizeIssues": 0 },
+                        "inventory": { "h1": "", "tabs": [], "cols": [], "sections": [] } } } }
+```
+
+**Runner:** `node scripts/portalGeometry.mjs --realm <realm> --write` records; `--check` re-runs and diffs, exiting non-zero on any count that MOVED. Wire `--check` into `npm test` once the first fixture exists.
+
+⚠️ **A fixture of counts catches MOVEMENT, not WRONGNESS** — two compensating changes keep the count identical. Smoke alarm, not proof. It is still the only thing that would have caught the `.lvlbars` block restyling charts three realms away.
 
 ### 0.5 The states harness
 
-**Ported from `.states.html`'s structure**, not its catalogue: PASS 1–5 including **4b EXPANDED** (*"the sweep had only ever rendered the default state"*), **4c WHO IS LOOKING** (tier-3 is owner-only), **4d ASYNC**, **4e CROSS-PAGE**, **4f REDUCED MOTION**, **4g MODALITY** (*the drawer claimed to be modal and Tab walked out of it*).
+**Ported from `.states.html`'s structure**, not its catalogue: **PASS 1, 3, 4 (with 4b–4g) and 5 — there is no PASS 2**, and a session will hunt for it. Including **4b EXPANDED** (*"the sweep had only ever rendered the default state"*), **4c WHO IS LOOKING** (tier-3 is owner-only), **4d ASYNC**, **4e CROSS-PAGE**, **4f REDUCED MOTION**, **4g MODALITY** (*the drawer claimed to be modal and Tab walked out of it*).
 
 🔴 **The catalogue GROWS per realm.** A states page must enumerate states that Parts 1–6 discover — building the list up front inherits the mockup's blind spots. Part 0 builds the **page, the driver and the settled-pass discipline**; each realm **registers its own states as it walks them**; Part 7 re-runs everything through the finished catalogue. That makes *"did I walk every state?"* answerable by diffing the registry against the walk.
 
@@ -340,7 +396,7 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 | 🔴 **Item M#3** | §16.32: **six peers, three abreast, one line each, 153px.** The banners row uses the SAME cell as the deadlines — the only thing that stops it reading as a footnote |
 | 🔴 **`srec-open`** | Styled, emitted nowhere |
 | 🔴 **§10.4 Track as hero** | Full-bleed treatment, never given |
-| 🟡 **The clock** | Built and ahead. **Conformance only**: the five tiers, each of which SUBTRACTS — `open` 22+ · `running` 8–21 · `closing` 3–7 (lead ×1.18) · `final` 1–2 (**the "then" line goes**) · `today` 0 (**the seconds go**, hours lead) |
+| 🟢 **The clock — NO WORK** | Closed 2026-08-27 12:0x, all five gaps, verified across all five tiers. 🔴 **Read `COMPANION §16.31a` before touching it, never §16.31 alone** — §16.31 reads as settled and was disowned an hour after it was written. The tiers escalate by **colour and the anchor rule**; they do **not** bump the hero's size, and a size bump is a regression, not a fix. ⚠️ `home.js` imports `ClockFace` from `season.js` — only the FACE is shared, and it once carried a transcribed copy that would have silently unstyled Home |
 | 🟡 **Board and Repairs** | Never diffed. Board's columns are `Live now · Upcoming · Staged · Ended`, and **`Staged` is a documented, deliberate, single exception — do not "fix" it.** Repairs is six checks, and **a check reporting zero stays on screen with its reason** |
 
 **Already closed on this branch, do not redo** — the Track's internals (`7cbcd07`): the Track was the 6th block on its own tab (ruler y=1266→761) · two deadlines on one date asserted three times · no point clustering · `--xtop` and `.dflag.flip` had no producer · the pin took no row · the time-remaining span was an unlabelled 302px box.
@@ -402,7 +458,7 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 3. **Motion as a system** — filed, not built, and explicitly not the liveliness work.
 4. **Re-run every Part's geometry fixture and states catalogue** now that both are complete.
 5. **The difference ledgers**, read end to end; anything "stays, because X" re-read against X.
-6. **The four composition changes he has never seen**, put to him together.
+6. **One batched pop-up**: the four composition changes he has never seen · **item H** (playlist concurrency density — his *"Idk"* has never been re-asked) · **Broadcast's `Now showing` vs `Delivery queue`** · anything a Part's difference ledger left as *stays, because X* where X was a judgement rather than a citation.
 7. **The closing DEVLOG narrative entry.**
 
 ---
@@ -430,3 +486,24 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 | **15** | **No scope boundary** on an instruction that reads as "fix everything" | `core/ops` edited, or `season.js` refactored mid-pass | §0.6, with the reverse hazard named |
 | **16** | **The seven-part split assigns shared-shell work by coin-flip** — the worst defect found lives in the shell | Six realms each re-fix the same chrome, or one arbitrarily owns it | Part 0 absorbs the shell; re-confirmed with him |
 | **17** | **Light mode was never decided** — zero theme rules, and a tracker row assuming one exists | A stale row invites a future session to build one uninvited | Settled: dark-only is deliberate; the row is retired |
+
+### Round three — the `anthropic-skills:doc-coauthoring` reader test, 2026-08-27 21:1x EDT
+
+*Run at Harkirat's instruction on the committed document. It verified all 31 paths and every section citation (both clean), checked 32 factual claims, and found **12 wrong**. The three blockers below are the ones that would have cost a session real hours.*
+
+| # | Sev | Where it was wrong | Consequence if unfixed | Fix |
+|---|---|---|---|---|
+| **18** | 🔴 **blocker** | **§0 — the section titled "THE ONE THING THAT EXPLAINS THE REST" — was 60% FALSE**, and Part 1 contradicted it correctly 300 lines below. `--xtop` is set at `track.js:548`; `.dflag.flip` is written at `track.js:457` and rescoped to `.deadrail .dflag.flip` at `app.css:2964`. **Both were fixed hours earlier, in `7cbcd07`, by the session that then wrote the table** | A session trusts the thesis and "fixes" three things already fixed | §0 split into LIVE rows and an already-fixed note. **This is the same class of error the plan opens by criticising in its predecessor, in the same position, three rows down** |
+| **19** | 🔴 **blocker** | **`t-best` IS emitted** — `armory.js:165` writes `` `trow t-${RANK_KEY[key]}` ``. The plan's trust criterion demanded the sweep report it, while the same paragraph demanded a concatenation-aware scanner that correctly will not. **The two requirements could not both be satisfied**, and the claim "confirmed by hand" was false: the hand check was a shell command whose backtick pattern the shell ate, and the empty result was read as absence | The instrument is declared untrusted on its first correct run, and **the real Armory defect is missed** | Known case is now `data-bare` + `hcard` + `srec-open`. The Armory defect restated as what it is: **a NAME MISMATCH** — `t-t3`/`t-t4`/`t-t5`/`t-none` emitted against `.t-top3`/`.t-top4`/`.t-top5`/`.t-unranked` styled. **Four of five tier rows unstyled.** Added as a fourth sweep shape |
+| **20** | 🔴 **blocker** | The clock section cited **§16.31** and quoted its `×1.18` size bump. **§16.31a, added the same day, retires it** — *"The tiers no longer bump the hero's SIZE… colour and the anchor rule carry the escalation instead"* — and marks all five gaps closed and verified across all five tiers | The plan instructs a session to **re-introduce a deliberately removed behaviour** | Item A → ☑ closed, no work. Every clock reference now points at **§16.31a**, with the warning that §16.31 reads as settled and was disowned an hour after it was written |
+| **21** | defect | **The geometry fixture was a heading with no body** while being mandatory in every closing commit and in the regression rule | A cold session can neither produce nor re-run one | Path, JSON schema and runner command specified in §0.4 |
+| **22** | defect | **The sweep's scan scope was never stated**, against a tree holding **four copies of `app.css` and six of `track.logic.js`** in build output and stale worktrees | Phantom emitters, or `*.logic.js` missed — both silent | Scope stated literally, with the exclusions |
+| **23** | defect | **`?empty=` does not exist**, and `?offline=`, `?destroy=`, `?admin=`, `?scope=` — the flags that reach the network banner, tier-3 and permission states — were omitted | ④ mandates walking every empty state via a fictional flag | The fifteen real params, from `stub.js` |
+| **24** | defect | **No launch-config names and a wrong URL** — `repo-static` serves the repo root, so the mockup is not at `:8900/season.html` | A cold session guesses twice | Both configs named, one full URL each |
+| **25** | defect | **The UX-copy audit was assigned by a sentence that bound nothing**, item **E** was in the inventory and no Part, and item **H** was listed as HITL and never scheduled to be asked | The most-missed body of work is missed a third time, undetectably | ⑥ UX-COPY is now a phase in Parts 1–6; E lands in ③; H joins Part 7's batched pop-up |
+| **26** | defect | **No ledger status for "blocked on his OAuth"** while §0.2 requires a real-server pass in every Part | Every row stalls at ◐ forever or is ticked ☑ dishonestly | **⧗ owed** added, with the rule that nothing else may be owed |
+| **27** | defect | The universal A/B exit **mandated the wrong left frame for Home**, whose target the plan had just declared is not `index.html`; and the artifact had **no delivery mechanism**, while its own exemplar is a local file and the standing rule says nothing on localhost is a deliverable | Home is compared against the wrong artifact; the deliverable never reaches him | Left frame = "this Part's target artifact"; build in `local/`, publish via the Artifact tool, URL in §L |
+| **28** | defect | **"The structural inventory diff" was an undefined term** used in a mandatory phase and in the pass/fail floor | Two sessions invent two different methods | Points at `checkpoint-X §0.1` by name |
+| **29** | defect | **"THE FIVE PHASES… IN EVERY PART" was false** — Part 0 has no realm to locate against and no page to A/B, so its seven ledger rows could never satisfy ☑ | Part 0 cannot close, and it gates everything | Phases scoped to Parts 1–6; Part 0 given its own exit condition |
+| **30** | nit ×6 | `findOverlaps` "has no caller" (it has several) · there is no PASS 2 in `.states.html` · 54 vs **59** `:focus-visible` · 26 vs **28** `data-tip` · two unreproducible match counts · item M described as having a mobile half when all four live defects are desktop | Small individually; together they teach a reader that the numbers here are decorative | All corrected or replaced with the assertion they stood for |
+| **31** | 🔴 **structural** | **Seven instructions were unfalsifiable** — most damningly ① LOCATE, called "the most valuable step in the plan" and the only phase with no deliverable; and "an improvement merely noticed is **filed**" with no destination named | The document applies its own standard (*"fourteen frames is a claim he can check by counting"*) to the walk and to nothing else | ① now writes `local/locate-<realm>.md`; "filed" names `docs/db-deferred-list.md`; "owed" is recorded in §L's Note |
