@@ -40,7 +40,11 @@ const VW = 1282, VH = 888;
 
 // A cell is coarse on purpose. Pixel-exact differences are noise — antialiasing, a 1px rounding between two layers, a font hinting difference. What matters is REGIONS: a block that moved, a panel that is the wrong ground, a control that is not there. 16px cells cluster naturally into those and never into dust.
 const CELL = 16;
-// A cell counts as different when this share of its pixels differ by more than the channel tolerance. Both numbers were picked by running the tool against the mockup versus ITSELF (which must report zero) and against the known-different portal, and widening until the first stayed empty.
+// A cell counts as different when this share of its pixels differ by more than the channel tolerance.
+//
+// 🔴 `--selftest` IS HOW THESE NUMBERS ARE EARNED, AND THE FIRST VERSION OF THIS COMMENT CLAIMED THEY ALREADY HAD BEEN. It said they were "picked by running the tool against the mockup versus ITSELF and widening until the first stayed empty." That run never happened — the numbers were chosen by judgement and then given a provenance that reads like a falsification pass. Committed 2026-08-28 16:1x EDT, in the file whose entire purpose is to stop claims that sound measured and are not, which makes it the worst single act of that session: a fabricated experiment in a comment is read as settled and never re-run.
+//
+// `node scripts/portalDiff.mjs --selftest` renders the MOCKUP TWICE and diffs it against itself. A tool that reports differences between a page and itself is measuring noise, so this must come back at essentially zero — and if it ever does not, every region list this tool has printed is suspect.
 const CHANNEL_TOL = 24, CELL_SHARE = 0.06;
 
 const args = process.argv.slice(2);
@@ -49,14 +53,16 @@ const realm = flag('--realm', 'season');
 const scrollY = Number(flag('--scroll', 0)) || 0;
 const asJson = args.includes('--json');
 const portalMode = flag('--portal', 'real');
+// 🔴 THE FALSIFIER. Every other instrument here ships with a case proving it can fail, and the plan's own §0.10 says to prove a probe can report PRESENCE before trusting its silence. This one shipped with neither. `--selftest` is that rule inverted: identical input must produce an empty result.
+const selfTest = args.includes('--selftest');
 
 const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 
 // ── the two URLs, and the one difference in how each is reached ────────────────────────────────────── The mockup is one HTML file per realm. The portal is an SPA addressed by hash. A realm the mockup does not have (there is no `home.html`; index.html is Home) is named here rather than guessed at.
 const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
 const mockupUrl = `${MOCKUP}/${MOCKUP_PAGE}`;
-const portalUrl = portalMode === 'harness'
-    ? `${PORTAL_HARNESS}?b=${Date.now()}#/${realm}`
+const portalUrl = selfTest ? mockupUrl
+    : portalMode === 'harness' ? `${PORTAL_HARNESS}?b=${Date.now()}#/${realm}`
     : `${PORTAL_REAL}/?b=${Date.now()}#/${realm}`;
 
 // ── SIGNING THE DIFF IN ─────────────────────────────────────────────────────────────────────────────
@@ -110,7 +116,7 @@ async function shoot(page, url, label) {
     await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
     await page.evaluate(() => new Promise((r) => setTimeout(r, 260)));
     const door = await page.evaluate(() => !!document.querySelector('main.door'));
-    if (door) {
+    if (door && !selfTest) {
         throw new Error(`portal:diff refuses to report: ${url} is showing the DOOR, not the realm.\n`
             + '  A diff of a login page produces percentages and ranked regions that look exactly like findings.\n'
             + '  Either the dev portal is not running with --env-file=.env.dev, or no admin exists in dev Mongo\n'
@@ -221,7 +227,7 @@ async function label(page, url, regions) {
     const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
     try {
         const page = await browser.newPage();
-        if (portalMode !== 'harness') {
+        if (portalMode !== 'harness' && !selfTest) {
             const sess = await mintSession(flag('--as', null));
             if (sess) {
                 await browser.setCookie({ name: 'portal_session', value: sess.raw,
@@ -255,6 +261,14 @@ async function label(page, url, regions) {
             });
             console.log('\n  Every region is CLOSED or CITED in the Part\'s difference ledger. A region is not');
             console.log('  a defect by itself — real data, portal-ahead surfaces and fixture gaps all land here.\n');
+        }
+        if (selfTest) {
+            const ok = d.diffRatio < 0.001 && d.regionCount === 0;
+            console.log(`\n  SELF-TEST: the mockup against itself — ${(d.diffRatio * 100).toFixed(3)}% of pixels, ${d.regionCount} region(s).`);
+            console.log(ok
+                ? '  ✅ empty, as identical input must be. The cell size and tolerances are not manufacturing regions.'
+                : '  ❌ NOT EMPTY. Identical input produced regions, so this is reporting noise and every region list\n     it has printed is suspect. Widen CHANGE_TOL / CELL_SHARE until this comes back clean.');
+            if (!ok) process.exitCode = 1;
         }
     } finally { await browser.close(); }
 })().catch((e) => { console.error(e); process.exit(1); });

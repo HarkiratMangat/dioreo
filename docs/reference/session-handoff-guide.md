@@ -17,6 +17,29 @@ status: live
 
 Corollary: **the most dangerous thing you can carry across a boundary is a stale green.** A verification you ran an hour and three commits ago reads identically to one you ran just now. Name it stale or re-run it — never quote it.
 
+🔴 **AND THE SECOND COROLLARY, PAID FOR 2026-08-28: A CLAIM THAT SOUNDS MEASURED IS THE MOST DANGEROUS THING YOU CAN WRITE.** Two arrived in one session, both in permanent files, both self-inflicted, neither caught by any gate:
+
+- **A fabricated provenance.** `scripts/portalDiff.mjs` said its thresholds were *"picked by running the tool against the mockup versus ITSELF and widening until the first stayed empty."* That run had never happened. The numbers were judgement, dressed as an experiment, in the file whose purpose is to stop exactly that. *(It is now real: `--selftest` exists and reports 0.000%.)*
+- **A sample generalised to a population.** A probe printed `widths.slice(0, 8)`, all eight came back 3px, and it was written up as *"37 marks, every one at its 3px floor"*, filed `[P1]`, and repeated into a handoff. The full set runs 3→894px. **The component was fine.**
+
+**The rule: a number in a handoff names the population it came from, or it is not a number.** `slice()` in the probe means "of the first N", never "every". And if you did not run it, do not describe having run it — an unverified guess is recoverable, a fabricated verification is read as settled and never re-checked.
+
+---
+
+## 🔴 THE FIVE THINGS 2026-08-28 ADDED, AND WHY THIS FILE'S ORIGINAL SHAPE WAS NOT ENOUGH
+
+*Added 2026-08-28 16:5x EDT, after a Part passed every gate, published its artifact, ticked its ledger, and was falsified by Harkirat in about two seconds of looking at the page. The handoff written for it would have propagated the error faithfully, because this guide's shape assumes the outgoing session's account of its own work is true.*
+
+**1 · A HANDOFF NEEDS A "WHAT I GOT WRONG" SLOT, AT THE TOP.** The shape below is state → threads → next. That is a TRANSFER shape and it presumes the account is correct. When it is not, the handoff launders the error into the next session with a clean tone and a table. **§0 of a handoff is not the state — it is the correction, if there is one**, and it opens with the sentence that survives a bad compact summary: *if anything in your context says X is done, it is stale.* A summariser preserves confident tabular claims and compresses self-critical prose, so the retraction has to be the loudest thing in the file.
+
+**2 · EVERY CLAIM OF A VISUAL OR RUNTIME OUTCOME CARRIES THE TIME OF THE RUN THAT PROVED IT.** Not "the Track is above the fold" — *"measured 16:4x at 1282×806, collapsed state; the expanded state has zero of five lanes visible."* The guide already says a stale green reads identically to a fresh one; the same is true of a stale LOOK, and a look is the thing least likely to be re-run. **Anything you cannot timestamp gets written as unverified.**
+
+**3 · UNILATERAL DESIGN DECISIONS ARE A THIRD CATEGORY, and this guide only had two.** Approved-but-unbuilt goes in the tracked list because `local/` is gitignored — right, and incomplete. **A decision you made yourself, shipped, and nobody has reviewed is neither approved nor unbuilt.** Left only in a gitignored handoff, the next session cannot tell your taste from settled design, and will either re-litigate it or entrench it as though it were specified. **Those go in the tracked record too, named as yours, with the reasoning** — a decision nobody wrote down is a decision that gets re-opened, and after "use your judgement" there is no citation to point at but your own.
+
+**4 · SAY WHAT NOT TO CARRY.** A handoff that carries everything carries nothing. Point at tracked records rather than reproducing them — the same no-duplicated-state rule as everywhere else, and a second copy of a critique will drift from the first. ⚠️ **And do not write the triumphant list.** The list of what landed is what a wrong session writes most convincingly; lead with what is NOT verified.
+
+**5 · THE HANDOFF IS WRITTEN LAST — after the final gate run and the closing commit.** Written before them, it describes intentions, and the intentions are what get read as fact. This is the same rule as the plan's "the next Part's prompt is written AFTER the closing commit, not before."
+
 ---
 
 ## ⏱️ START HERE IF A COMPACT IS ALREADY IMMINENT

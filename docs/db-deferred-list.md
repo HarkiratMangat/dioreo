@@ -532,9 +532,15 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### Season's overview scrubber draws 37 marks, every one at its 3px floor `[P1 · S · Opus5-Medium]`
+### ~~Season's overview scrubber draws 37 marks, every one at its 3px floor~~ — 🔴 RETRACTED, IT WAS A SAMPLING ERROR
 
-*Filed 2026-08-28 16:3x EDT from `npm run portal:diff -- --realm season`.* The mockup's OVERVIEW strip is dense with wide coloured runs across the whole season; the portal's shows a scatter of dots and one pink line. Measured: **37 `.mini` elements and every single one is exactly 3px wide** — all of them pinned to `.scrub .mini{min-width:3px}`, which means the width computation returns ~0 for every item rather than for a few single-day ones. If it were data, some would be wider. **Not diagnosed.** It is the largest remaining "the portal renders almost nothing where the mockup renders a lot" on the realm.
+*Filed 2026-08-28 16:3x EDT and withdrawn at 16:4x the same day, during a falsification pass over the session's own output.*
+
+**The measurement was `miniWidths: [...].slice(0, 8)` and every one of the first eight was 3px, from which I concluded all thirty-seven were.** Re-measured over the full set: the widths are `[3, 894.1, 298, 137.5, 527.3, 779.5, 458.5]`, and the inline styles run `0%`, `88.6%`, `29.5%`, `13.6%`, `52.3%`, `77.3%`, `45.5%`. **The scrubber is working.** The 3px entries are the single-day POINTS — draws and returning draws, which have zero span by definition and correctly clamp to `.scrub .mini{min-width:3px}` so they do not vanish. The first eight happened to all be points.
+
+⚠️ **What remains true is only the visual impression, and it is DATA, not a defect:** the mockup's fixture has more span-shaped items inside the visible window, so its overview reads denser. Nothing to fix.
+
+🔴 **Kept in place rather than deleted, because the error is the lesson.** A slice of eight, generalised to thirty-seven, written up with a confident number, filed as `[P1]`, and repeated into a handoff — inside the very session whose subject was claims that sound measured and are not. **A `.slice()` in a probe is a sample; saying "every one" of a population you measured eight of is the same act as the fabricated threshold provenance, two hours apart.**
 
 ### Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
 
