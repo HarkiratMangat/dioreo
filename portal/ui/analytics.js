@@ -679,7 +679,7 @@ export function AnalyticsRealm({ session }) {
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
     return html`
-        <${Shell} realm="analytics" session=${session} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
+        <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Analytics" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."

@@ -1077,7 +1077,7 @@ export function ArmoryRealm({ session }) {
     }));
 
     return html`
-        <${Shell} realm="armory" session=${session} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView} stateKey
+        <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView} stateKey
                   modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Armory" overlayFor=${overlay}

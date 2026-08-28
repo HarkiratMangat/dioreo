@@ -51,8 +51,21 @@ function pass4Keyboard(records) {
     return out;
 }
 
+// PASS 5 · MOTION — what still moves when the reader has asked for less of it.
+//
+// ⚠️ IT ONLY JUDGES A STATE THAT DECLARED reduceMotion. Reading the animation list in an ordinary state and calling a running animation a defect would flag the design working as intended; the question is only ever "does this stop when asked".
+//
+// 🔴 THIS PASS WAS FILED AS "not implementable in a rendered walk" AND THAT WAS WRONG. The claim was that every honest assertion about reduced motion is about what the STYLESHEET DECLARES. It is not: a media query is emulable, and `document.getAnimations()` answers what is actually RUNNING under it — which is the property that matters and the one a source scan genuinely cannot see. The stylesheet declaring 20 reduced-motion rules says nothing about whether the one animation still on screen is covered by them.
+const MOTION_FLOOR_MS = 120;                                                             // a transition this short is a state change landing, not an animation the reader is being asked to sit through
+function pass5Motion(records) {
+    if (!records.reducedMotion) return [];
+    return (records.animations || [])
+        .filter((a) => (a.duration || 0) > MOTION_FLOOR_MS)
+        .map((a) => ({ pass: 5, id: a.el, detail: `runs "${a.name}" for ${a.duration}ms${a.iterations === null ? ', forever,' : ''} while the reader has asked for reduced motion` }));
+}
+
 function runPasses(records) {
-    return [...pass1Composite(records), ...pass3Space(records), ...pass4Keyboard(records)];
+    return [...pass1Composite(records), ...pass3Space(records), ...pass4Keyboard(records), ...pass5Motion(records)];
 }
 
 // A finding is identified by pass + element id, so a baseline entry names a specific defect on a specific element rather than a count. A count can stay still while the defect moves.
@@ -67,4 +80,4 @@ function diffAgainstKnown(findings, known = []) {
     };
 }
 
-module.exports = { pass1Composite, pass3Space, pass4Keyboard, runPasses, diffAgainstKnown, keyOf };
+module.exports = { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, runPasses, diffAgainstKnown, keyOf };

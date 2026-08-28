@@ -232,7 +232,7 @@ export function HomeRealm({ session }) {
     ];
 
     return html`
-        <${Shell} realm="home" session=${session} badges=${{ review: staged }}
+        <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged }}
                   commands=${rows.map((a) => ({
                       label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm})`,
                       keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },

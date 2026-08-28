@@ -275,7 +275,7 @@ export function ReviewRealm({ session }) {
             </div>`;
 
     return html`
-        <${Shell} realm="review" session=${session}
+        <${Shell} realm="review" session=${session} busy=${load.hostClass}
                   masthead=${html`<${Masthead} title="Review & commit"
                       sub="Exactly what is about to change, and what it will overwrite, before any of it is written."
                       stats=${stats} />`}

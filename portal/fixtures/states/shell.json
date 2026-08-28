@@ -1,6 +1,6 @@
 {
   "surface": "shell",
-  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing).",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing). ⚠️ TWO OF async.js's SIX REQUEST STATES ARE NOT REGISTERED HERE, and the reason is not that nobody tried: `refreshing` and `progress` were registered, walked, and REFUSED to appear — see docs/db-deferred-list.md. An `expect` selector is what turned that from a passing state into a question.",
   "states": [
     {
       "name": "default · home",
@@ -201,6 +201,15 @@
       "known": [],
       "note": "the seven irreversible ops at the foot of Season, gated on the destructive permission",
       "expect": ".ow"
+    },
+    {
+      "name": "reduced motion · season",
+      "realm": "season",
+      "flags": {},
+      "reduceMotion": true,
+      "expect": ".mtable",
+      "known": [],
+      "note": "PASS 5 — the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
     }
   ]
 }

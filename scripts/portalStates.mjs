@@ -76,6 +76,15 @@ const COLLECT = function () {
         .filter((el) => el.getAttribute('tabindex') === '-1' && el.tagName !== 'DIV' && !el.closest('[hidden]'))
         .map((el) => ({ id: idOf(el), tag: el.tagName.toLowerCase(), role: el.getAttribute('role'), why: 'tabindex="-1"' }));
 
+    // What is actually MOVING. Judged only when the state asked for reduced motion — see PASS 5.
+    const animations = document.getAnimations()
+        .filter((a) => a.playState === 'running')
+        .map((a) => {
+            const t = (a.effect && a.effect.getTiming) ? a.effect.getTiming() : {};
+            const el = a.effect && a.effect.target;
+            return { name: a.animationName || 'animation', duration: Number(t.duration) || 0, iterations: t.iterations === Infinity ? null : t.iterations, el: el ? idOf(el) : '(detached)' };
+        });
+
     const dialog = document.querySelector('[role=dialog]:not([hidden]), .drawer.open, .overlay.open, .modal.open');
     const modal = dialog
         ? {
@@ -87,15 +96,19 @@ const COLLECT = function () {
         }
         : { open: false, escapees: [] };
 
-    return { controls, clipped, overflow, unreachable, modal, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
+    return { controls, clipped, overflow, unreachable, modal, animations, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
 };
 
 async function walk(page, state, port) {
+    // ⚠️ SET BEFORE THE NAVIGATION, and cleared for every state that did not ask — an emulated media feature is sticky on the page, so one reduced-motion state would silently put every state after it into reduced motion and their clean results would mean something else entirely.
+    await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: state.reduceMotion ? 'reduce' : 'no-preference' }]);
     const q = new URLSearchParams(state.flags || {});
     q.set('b', String(Date.now()));
     await page.goto(`http://127.0.0.1:${port}/harness.html?${q}#/${state.realm || 'home'}`, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);                                     // never rAF: it does not fire off-screen, and a pass gated on it reports pending forever
     await page.waitForSelector('main', { timeout: 15000 });
+    // ⚠️ `slow` DELAYS THE FIRST LOAD TOO, so a state that injects it and then clicks something immediately clicks into a skeleton. `preSettleMs` waits for the data to arrive BEFORE the steps run — which is the whole point of the refreshing state: it only exists when there is already data on screen to keep.
+    if (state.preSettleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.preSettleMs);
     for (const step of state.steps || []) {
         if (step.key) await page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, metaKey: !!k.meta, bubbles: true })), step);
         if (step.click) await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, step.click);
@@ -114,6 +127,11 @@ async function walk(page, state, port) {
 
     // 🔴 A PROBE MUST BE ABLE TO REPORT PRESENCE BEFORE AN ABSENCE MEANS ANYTHING. A run that walked to a page the SPA had not routed yet returned all-zeroes and read as a clean sweep, so a state that finds nothing to examine is an ERROR here, not a pass.
     const records = await page.evaluate(COLLECT);
+    records.reducedMotion = Boolean(state.reduceMotion);
+    if (state.reduceMotion) {
+        const applied = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (!applied) throw new Error(`state "${state.name}" asked for reduced motion and the page does not report it — the pass would have examined the ordinary state and called it clean`);
+    }
     // ⚠️ THE PRESENCE PROOF IS ELEMENTS, NOT FOCUSABLES. A skeleton is a legitimate state with nothing to focus — asserting on focusables made the deliberately-slow state fail as if it were broken, which would have pushed the next session to delete the state rather than the assertion.
     if (!records.counts.elements) throw new Error(`state "${state.name}" examined 0 elements inside <main> — the page had not rendered, so a clean result would be meaningless`);
     return records;

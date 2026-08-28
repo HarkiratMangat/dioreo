@@ -2,7 +2,7 @@
 //
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
-import { pass1Composite, pass3Space, pass4Keyboard, diffAgainstKnown } from './lib/portalStatePasses.cjs';
+import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, diffAgainstKnown } from './lib/portalStatePasses.cjs';
 
 let passed = 0;
 const check = (label, fn) => { fn(); passed++; console.log(`  ✓ ${label}`); };
@@ -54,6 +54,23 @@ check('PASS 4 names an unreachable control, and a "modal" Tab walks out of', () 
 
 check('PASS 4 is silent when the modal actually contains the tab order', () => {
     assert.deepStrictEqual(pass4Keyboard({ modal: { open: true, kind: 'drawer open', escapees: [] } }), []);
+});
+
+// PASS 5 · the real animation the Track carries — a 2800ms `pulse` on the now-marker, running forever.
+check('PASS 5 names an animation still running under reduced motion', () => {
+    const found = pass5Motion({ reducedMotion: true, animations: [{ name: 'pulse', duration: 2800, iterations: null, el: 'div.now' }] });
+    assert.strictEqual(found.length, 1);
+    assert.strictEqual(found[0].pass, 5);
+    assert.match(found[0].detail, /forever/);
+});
+
+check('PASS 5 says nothing about the same animation when reduced motion was NOT asked for', () => {
+    assert.deepStrictEqual(pass5Motion({ reducedMotion: false, animations: [{ name: 'pulse', duration: 2800, iterations: null, el: 'div.now' }] }), []);
+});
+
+// ⚠️ A state change landing in 90ms is not an animation the reader is being asked to sit through; flagging it would make the pass fire on every well-built transition and get it suppressed.
+check('PASS 5 ignores a short transition even under reduced motion', () => {
+    assert.deepStrictEqual(pass5Motion({ reducedMotion: true, animations: [{ name: 'fade', duration: 90, iterations: 1, el: 'div.x' }] }), []);
 });
 
 // The ratchet has to move in BOTH directions or the registry rots into a list of names nothing renders — the same failure `portal:orphans`' KNOWN_ORPHANS is shaped to prevent.

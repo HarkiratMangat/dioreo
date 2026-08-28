@@ -344,7 +344,7 @@ export function BroadcastRealm({ session }) {
     }
 
     return html`
-        <${Shell} realm="broadcast" session=${session} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
+        <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
                   realmKey=${view === 'Airtime' ? html`<${AirtimeKey} rows=${rows} />` : null}
                   exports=${exportScopes} exportLabel="Broadcast" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}

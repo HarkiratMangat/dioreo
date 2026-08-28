@@ -413,7 +413,7 @@ export function AccessRealm({ session }) {
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;
 
     return html`
-        <${Shell} realm="access" session=${session} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
+        <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Access" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."

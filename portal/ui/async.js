@@ -46,7 +46,7 @@ export function useAsync(loader, deps = []) {
     return {
         ...state, slow,
         reload: () => setNonce((n) => n + 1),
-        // The two host classes the adopted sheet already defines. `data-slow` carries the note the ::before renders, so the string lives with the state rather than in the stylesheet.
+        // The two host classes the adopted sheet already defines. `data-slow` carries the note the ::before renders, so the string lives with the state rather than in the stylesheet. 🔴 PRODUCED HERE AND CONSUMED BY NOTHING, FOR THE WHOLE LIFE OF THE MIGRATION. `hostClass` appeared exactly ONCE in `portal/ui` — on this line — so the refreshing state was computed correctly and rendered nowhere: a re-read over data already on screen looked identical to data sitting still, which is design rule 2 (keep the rows, mark the surface) not existing. Every realm passes it to Shell's `busy` now, and `scripts/portalAsync.test.js` refuses a realm that renders Shell without it. Found by the states harness failing to REACH a state it had registered — the value of an `expect` selector is that a state nobody can produce is a state nobody has built.
         hostClass: (state.phase === 'refreshing' ? ' is-refreshing' : '') + (slow ? ' is-slow' : ''),
     };
 }

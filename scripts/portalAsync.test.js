@@ -150,6 +150,25 @@ async function main() {
         });
     });
 
+// 🔴 A VALUE PRODUCED AND CONSUMED BY NOTHING. `useAsync` returns `hostClass` — ' is-refreshing' when a re-read is in flight over data already on screen — and for the whole life of the migration the string appeared exactly ONCE in portal/ui, on the line that builds it. The refreshing state was computed correctly and rendered nowhere. This is the relational shape again: a check that reads one file cannot see a producer with no consumer, so it reads every realm and asks whether it passes the thing on.
+const fs = require('fs');
+const path = require('path');
+check('every realm that renders Shell hands it the async host class', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+        if (!/<\$\{Shell\}\s+realm="/.test(src)) continue;                     // async.js's RealmShell is the loading/error frame and passes its own busy
+        if (!/busy=\$\{\w+\.hostClass\}/.test(src)) offenders.push(f);
+    }
+    assert.deepStrictEqual(offenders, [], `these realms render Shell without the refreshing marker: ${offenders.join(', ')}`);
+});
+
+check('THE CONSERVATION CHECK CAN FAIL: a realm with the marker stripped is named', () => {
+    const src = 'html`<${Shell} realm="season" session=${session} view=${view}>`';
+    assert.ok(!/busy=\$\{\w+\.hostClass\}/.test(src), 'the pre-fix shape really did lack it — the case above is not vacuous');
+});
+
     say(failures ? `\n✗ ${failures} failed` : '\n✅ portalAsync: every request state is classified, and a refusal survives the client');
     process.exit(failures ? 1 : 0);
 }
