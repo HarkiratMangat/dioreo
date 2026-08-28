@@ -976,16 +976,16 @@ export function SeasonRealm({ session }) {
     const manifestSlot = html`<${Manifest} rows=${shownRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
                                             title="Everything in the season" filterGroups=${SEASON_FILTERS}
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
-                                            bulkNote="Reversible — a staged deletion is discarded, never undone"
+                                            bulkNote="Reversible — a staged removal is discarded, never undone"
                                             bulkTier=${2} rowNoun=${['item', 'items']}
-                                            onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Stage deletion"
+                                            onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Remove"
                                             emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
                                             onEditError=${(msg) => setPageError(msg)}
                                             bulkActions=${[
                                                 { label: 'Export selection', onClick: handleExportSelection },
-                                                { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
+                                                { label: 'Remove', danger: true, onClick: confirmBulkDelete },
                                             ]} />`;
 
     return html`

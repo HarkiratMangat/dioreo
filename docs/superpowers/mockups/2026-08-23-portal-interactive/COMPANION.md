@@ -3553,3 +3553,27 @@ Nothing errored. The markup was in the DOM. `innerText` read back the full recor
 **A two-letter class name in a 4,400-line stylesheet is a collision waiting to happen.** Renamed `.srec`, which cannot collide. Six genuine `class="sr"` screen-reader labels elsewhere in `season.html` were left alone — the rename was scoped to the new block, not run across the file.
 
 ⚠️ **And the page's own audit caught me repeating a bug I had fixed an hour earlier.** `.srec-l .k` painted its label in the line's topic hex; DMZ's `#337BA6` measures **3.63:1 at 9px**. That is the identical defect as `.dpin`, with the identical fix: the colour moves to a 3px bar and the text takes `--ink3`. **A mark may point at content without colouring it** — §16.19's rule, now paid for three times. `--rad-1` also had to replace three off-scale `1px`/`2px` radii the `radius-scale` gate caught.
+
+### 16.34 🔴 THE BOARD IN THIS PACKAGE IS NOT THE BOARD THAT SHIPPED — and this document never said so
+
+**Added 2026-08-28 during Part 1 of the conformance pass.** `season.html`'s Board renders content-state columns and §5.2 above describes them at length: *"Columns are **content state**: `Live now · Upcoming · Staged · Ended`"*, with the `Staged` exception argued in its own block quote. **The wired portal renders something else entirely** — `Draft · Staged · Blocked · Ready`, titled `CHANGESET PIPELINE`, where a card is a *changeset* and its column is derived from that document's own state, tier and `exportedAt`.
+
+**The portal is right, and it has a citation this document was missing.** `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` **§F3**: *"Board was redundant as originally designed, and the fix was to change its job. It was a third view of content organized by state, while state was already carried by shape everywhere else. Re-jobbed into the changeset pipeline (§8.2), which is a job nothing else does."* `portal/ui/board.logic.js` opens by naming that spec section, and the reasoning survives contact with the rest of the design: `Blocked` states *why* rather than hiding the row, and the tier-3 export requirement becomes a visible obstacle instead of a dialog that ambushes you at commit.
+
+⚠️ **The trap is the date order, and it is the wrong way round from the usual one.** The spec is 2026-08-20 and this package is 2026-08-23, so a session applying §0.1's *"the mockup is the default; `portal/ui` wins only where a decision postdates the mockup"* mechanically would conclude the mockup wins and **rebuild a screen that was deliberately retired three days before the mockup was drawn.** The mockup simply never adopted its own project's decision. **A later artifact is not automatically the newer decision.**
+
+**What is still owed to §5.2:** its Board sub-section is now describing a screen that does not exist. It is left standing rather than deleted, because the content-state columns and the `Staged` exception are a real argument about the content axis that Season's Track and Manifest still speak — but **read it as history, not as a target.**
+
+### 16.35 🔴 THE MANIFEST WAS NEVER RECESSIVE, ON ANY REALM — an adjacent-sibling rule and two wrapper divs
+
+**§10.4's composition rule is four bands: masthead · context strip · view layer · a Manifest that is *"visually recessive… the mechanism beneath the picture"*.** The stylesheet implements the last of those in one line — `.panel + .panel` sets a transparent ground and a quieter border, with a companion rule doing the same for that panel's `.ph` and `.mtools`. Both were carried into `portal/ui/app.css` unchanged.
+
+**Neither had ever matched anything.** `shell.js` wrapped each panel in its own `<div>` — ids `view-layer` and `manifest-layer` — so the two panels were not siblings. Measured on Season at 1282 before the fix: the view panel and the Manifest panel both painted `rgb(23,30,36)`, against the mockup's `rgb(23,30,36)` and **transparent**. That is §10.4's own stated failure, verbatim — *"three panels of identical weight where nothing said which mattered"* — live on all seven realms.
+
+**The two ids had no CSS rule anywhere and no reader anywhere.** They were deleted; the panels are DOM siblings again and the Manifest, its header and its toolbar all measure transparent. ⚠️ **Keep them siblings.** A wrapper introduced around either panel for any reason silently switches the whole composition rule off again, on every realm at once, and no gate here can see it: `portal:orphans` asks whether a class has a rule, and `.panel` has many.
+
+### 16.36 `.rephits li` against `<button>` — the same shape, in Season's Repairs
+
+Five rules — padding, hover, and the type contrast between a finding's name and its reason — were ported as `.rephits li`. `track.js`'s Repairs renders `<div class="rephits"><button>`. **There is no `li`.** Every finding row rendered without its padding, without a hover state, and with its name and reason at the same weight.
+
+⚠️ **The reverse-orphan sweep cannot see this one**, and that is worth stating plainly next to the sweep's own claims: `.rephits` **is** emitted, so the class is not an orphan. Only the *descendant* in the selector was dead. A sweep that reports classes will never report a compound selector whose left half is alive.

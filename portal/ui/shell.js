@@ -399,7 +399,14 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                 ${exportScopes && exportScopes.length
                     ? html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />`
                     : null}
-                <div id="view-layer">
+                <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
+                     Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
+                     composition rule: masthead, context strip, view layer, then the mechanism beneath the picture.
+                     Two wrapper divs, id view-layer and id manifest-layer, made the panels non-siblings,
+                     so the adjacent-sibling selector never matched and the Manifest rendered at the SAME weight as
+                     the view layer on every realm — measured rgb(23,30,36) against the mockup's transparent. The
+                     stylesheet was carried over and the markup that activates it was not; the ids had no CSS rule
+                     and no reader anywhere. Keep these two panels DOM siblings. -->
                 ${viewOptions ? html`
                     <section class="panel" aria-label=${`${realmLabelOf(realm)} view`}>
                         <div class="ph">
@@ -435,8 +442,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                         ${viewSlot}
                     </section>`
                 : viewSlot}
-                </div>
-                <div id="manifest-layer">${manifestSlot}</div>
+                ${manifestSlot}
             </main>
             ${traySlot || null}
             ${overlaySlot || null}
