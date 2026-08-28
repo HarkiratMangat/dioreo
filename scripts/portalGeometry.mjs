@@ -58,6 +58,22 @@ function serve() {
     return new Promise((res) => server.listen(0, '127.0.0.1', () => res({ server, port: server.address().port })));
 }
 
+// What one reading is. Kept out of `capture` so the stabiliser can run it repeatedly without re-sending the function each time.
+const READ = function () {
+    const g = window.__grid.all();
+    const txt = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim() : '');
+    return {
+        grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues },
+        viewport: g.viewport,
+        inventory: {
+            h1: txt(document.querySelector('main h1')),
+            tabs: [...document.querySelectorAll('main [role="tab"]')].map((b) => b.textContent.trim()),
+            cols: [...document.querySelectorAll('main th')].map((t) => txt(t)),
+            sections: [...document.querySelectorAll('main h2, main h3')].map((s) => txt(s)),
+        },
+    };
+};
+
 async function capture(realm, browser, port) {
     const page = await browser.newPage();
     await page.setViewport({ width: VIEWPORT.w, height: VIEWPORT.h });
@@ -65,6 +81,22 @@ async function capture(realm, browser, port) {
     // 🔴 NOT rAF: it never fires in a background tab or an off-screen frame, and a pass gated on it reports `pending` forever. `document.fonts.ready` resolves regardless of visibility, and fonts are exactly what the geometry depends on.
     await page.evaluate(() => document.fonts.ready);
     await page.waitForSelector('main h1, main .ph', { timeout: 15000 });
+
+    // 🔴 A FIXTURE THAT CHANGES WHEN NOTHING CHANGED IS A SMOKE ALARM THAT GOES OFF WHEN NOBODY IS COOKING. The first `--write` then `--check` round-trip ever run reported `Track · nearMisses: 8 → 4` with no code in between — because the FIRST view was measured the instant the page settled its fonts, while every later view got a settle after its tab click. Measured five times inside one settled page: 1386/4/27, identically, every time. So the reading is stable; the moment it was taken was not.
+    //
+    // Two changes, and both are needed. Every view gets the same settle, first included. And a reading is only accepted once it REPEATS — read, wait, read again, and require agreement. A surface that never stabilises is reported as such rather than recorded at whatever number the last attempt happened to see, because a number that moves on its own would train the next session to re-record instead of to look.
+    const SETTLE_MS = 260;
+    const stableRead = async (label) => {
+        let previous = null;
+        for (let attempt = 0; attempt < 5; attempt++) {
+            await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), SETTLE_MS);
+            const now = await page.evaluate(READ);
+            const key = JSON.stringify(now.grid);
+            if (previous && previous.key === key) return now;
+            previous = { key, grid: now.grid };
+        }
+        throw new Error(`view "${label}" never gave the same reading twice — last two disagreed (${previous.key}). Something on it is still moving; measure what, rather than recording a number that will not reproduce.`);
+    };
 
     const views = {};
     const tabNames = await page.evaluate(() => [...document.querySelectorAll('main [role="tab"]:not([data-arm])')].map((b) => b.textContent.trim()));
@@ -75,22 +107,8 @@ async function capture(realm, browser, port) {
                 const b = [...document.querySelectorAll('main [role="tab"]:not([data-arm])')].find((x) => x.textContent.trim() === l);
                 if (b) b.click();
             }, label);
-            await page.evaluate(() => new Promise((r) => setTimeout(r, 120)));            // one paint plus the transitions the design actually uses; the measurement is of the settled view, not the animating one
         }
-        views[label] = await page.evaluate(() => {
-            const g = window.__grid.all();
-            const txt = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim() : '');
-            return {
-                grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues },
-                viewport: g.viewport,
-                inventory: {
-                    h1: txt(document.querySelector('main h1')),
-                    tabs: [...document.querySelectorAll('main [role="tab"]')].map((b) => b.textContent.trim()),
-                    cols: [...document.querySelectorAll('main th')].map((t) => txt(t)),
-                    sections: [...document.querySelectorAll('main h2, main h3')].map((s) => txt(s)),
-                },
-            };
-        });
+        views[label] = await stableRead(label);
     }
     await page.close();
 
