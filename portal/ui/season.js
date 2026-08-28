@@ -328,11 +328,11 @@ function AddChips({ onAdd }) {
 //
 // Three complaints, one defect: it was written as a CAPTION for a thing that is a RECORD. So it names every kind of thing it holds — including the banners, which it never admitted to — sets the titles and dates at the scale of their content rather than as 10px chips, and says what opening it does instead of a bare "Live season" label.
 //
-// 🔴 IT DOES NOT SAY "17 DAYS LEFT". That belongs to the clock in the masthead. This shows the dates AS STORED, because this is the record you EDIT — and that split is what stops the two elements repeating each other, which is what made both feel redundant.
+// 🔴 IT DOES NOT SAY "17 DAYS LEFT". That belongs to the clock in the masthead. This shows the dates AS STORED, because this is the record you EDIT — and that split is what stops the two elements repeating each other, which is what made both feel redundant. 🔴 TWO VOCABULARIES FOR ONE THING, AND THE SAVE HAD NEVER ONCE WORKED. `k` is the STORAGE field on the season document, which is what the form reads its value from — but `calendar.setBanners` validates its payload against `core/ops/calendar.js`'s `BANNER_FIELDS`, whose keys are the SHORT names (`draws`, `events`, `playlists`). The editor sent `drawsBannerUrl`, the op answered `Unknown banner page: drawsBannerUrl`, and the changeset was born BLOCKED — so every banner edit ever made through this panel staged something that could never commit. Measured live against the real server 2026-08-28 10:5x EDT, on the first sign-in the portal has ever had; nothing could have caught it earlier, because staging succeeds and only the re-validation on the Review screen reports the block. ⚠️ `op` is carried in this table rather than derived by stripping "BannerUrl" — a derivation is a second implementation of the mapping, and it would keep agreeing with itself while disagreeing with `core`. The test in scripts/portalRealms.test.js compares this list against the op's own accepted keys.
 const BANNERS = [
-    { k: 'drawsBannerUrl', label: 'Draws', hex: 'var(--draw)' },
-    { k: 'eventsBannerUrl', label: 'Events', hex: 'var(--ev)' },
-    { k: 'playlistsBannerUrl', label: 'Playlists', hex: 'var(--play)' },
+    { k: 'drawsBannerUrl', op: 'draws', label: 'Draws', hex: 'var(--draw)' },
+    { k: 'eventsBannerUrl', op: 'events', label: 'Events', hex: 'var(--ev)' },
+    { k: 'playlistsBannerUrl', op: 'playlists', label: 'Playlists', hex: 'var(--play)' },
 ];
 
 const IDENTITY_KEY = 'dioreo-identity-open';
@@ -902,7 +902,10 @@ export function SeasonRealm({ session }) {
         // Two ops, because they are two entities: the season document's own titles and dates, and the calendar's banner urls. Splitting them here rather than server-side keeps each op's payload exactly what its own validate() expects.
         const bannerKeys = BANNERS.map((b) => b.k);
         const seasonEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => !bannerKeys.includes(k)));
-        const bannerEdits = Object.fromEntries(Object.entries(edits).filter(([k]) => bannerKeys.includes(k)));
+        // The payload is keyed the way the OP names these pages, not the way the document stores them — see the note on BANNERS.
+        const bannerEdits = Object.fromEntries(Object.entries(edits)
+            .filter(([k]) => bannerKeys.includes(k))
+            .map(([k, v]) => [BANNERS.find((b) => b.k === k).op, v]));
         const ops = [];
         // ⚠️ A DRAFT HAS NO CALENDAR BANNERS. calendar.setBanners writes the live document's banner urls and there is no draft equivalent, so a banner edit made while the Next scope is selected would silently land on LIVE — the one thing a draft is supposed to make impossible. The banner fields are not rendered in that scope for the same reason.
         if (Object.keys(seasonEdits).length) {

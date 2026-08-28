@@ -75,12 +75,27 @@ function diffRows(before, after) {
     const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => !DIFF_SKIP.has(k));
     const rows = [];
     for (const key of keys.sort()) {
+        // 🔴 COMPARE THE VALUES, DISPLAY THE FORMATTING — this used to compare the FORMATTED strings, and `fmtDiffValue` truncates at 60 characters, so any change beyond character 60 vanished from the diff entirely. Measured live 2026-08-28: a calendar banner URL is ~104 characters of Cloudinary path that differs only in its tail, so editing a banner produced an op with ZERO rows on the one screen that commits — a change the reader is asked to approve while being shown nothing at all about it. The same hole swallows an edit to the end of any long title or note.
+        if (sameValue(a[key], b[key])) continue;
         const from = fmtDiffValue(a[key]);
         const to = fmtDiffValue(b[key]);
-        if (from === to) continue;
         rows.push({ key, from, to, kind: from === '—' ? 'add' : to === '—' ? 'del' : 'change' });
     }
     return rows;
+}
+
+// Equality on the VALUE, before any formatting shortens it. Dates compare by instant, arrays and records by content — the shapes previews actually return.
+function sameValue(x, y) {
+    if (x === y) return true;
+    if (x instanceof Date || y instanceof Date) {
+        const t = (v) => (v instanceof Date ? v.getTime() : new Date(v).getTime());
+        return t(x) === t(y);
+    }
+    if (x && y && typeof x === 'object' && typeof y === 'object') {
+        try { return JSON.stringify(x) === JSON.stringify(y); } catch { return false; }
+    }
+    const norm = (v) => (v === undefined || v === null ? '' : String(v));
+    return norm(x) === norm(y);
 }
 
 function fmtDiffValue(v) {
@@ -96,7 +111,9 @@ function fmtDiffValue(v) {
     }
     const s = String(v);
     // A raw ISO datetime in a diff is unreadable next to its neighbour; a bare date is the unit every other date in this portal is shown in.
-    return /^\d{4}-\d{2}-\d{2}T/.test(s) ? s.slice(0, 10) : s.slice(0, 60);
+    if (/^\d{4}-\d{2}-\d{2}T/.test(s)) return s.slice(0, 10);
+    // ⚠️ A LONG VALUE KEEPS ITS TAIL. A head-only truncation renders two different URLs as the same 60 characters, so the reader is shown a row whose two cells are identical — which reads as a rendering fault rather than as a change. The end is also where a URL, a filename and a version segment actually differ.
+    return s.length > 60 ? s.slice(0, 32) + '…' + s.slice(-26) : s;
 }
 
 // Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.

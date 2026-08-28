@@ -4,6 +4,7 @@
 const assert = require('assert');
 const { blockersFor } = require('../portal/ui/review.logic');
 const { stalenessOf } = require('../portal/api/review');
+const { diffRows } = require('../portal/ui/board.logic');
 
 let failures = 0;
 function check(name, fn) {
@@ -80,6 +81,26 @@ check('an op index past the end of the baseline is unchecked, not clean', () => 
 check('a missing fresh preview compares against null rather than throwing', () => {
     assert.strictEqual(stalenessOf([null], null, 0).stale, false);
     assert.strictEqual(stalenessOf([{ title: 'A' }], null, 0).stale, true);
+});
+
+// 🔴 A CHANGE PAST CHARACTER 60 USED TO VANISH FROM THE DIFF. `fmtDiffValue` truncates for display, and `diffRows` compared the TRUNCATED strings — so a calendar banner URL (~104 characters of Cloudinary path, differing only in its tail) produced an op with zero rows on the one screen that commits. Measured against the real server on the portal's first-ever sign-in, 2026-08-28. Both halves are pinned: the comparison must see the change, and the rendering must show a reader WHERE it is.
+check('a change beyond the 60-character truncation is still reported as a change', () => {
+    const base = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1787878467/calendar_banners/draws.webp';
+    const rows = diffRows({ draws: base }, { draws: base + '?v=2' });
+    assert.strictEqual(rows.length, 1, 'a tail-only change must produce a row');
+    assert.strictEqual(rows[0].key, 'draws');
+    assert.notStrictEqual(rows[0].from, rows[0].to, 'and the two cells must not render identically');
+});
+
+check('an unchanged long value still produces no row — the fix must not report everything', () => {
+    const base = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1787878467/calendar_banners/draws.webp';
+    assert.deepStrictEqual(diffRows({ draws: base }, { draws: base }), []);
+});
+
+check('THE TRUNCATION CAN STILL HIDE A CHANGE if the comparison is done on the formatted value', () => {
+    const base = 'https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1787878467/calendar_banners/draws.webp';
+    const headOnly = (v) => String(v).slice(0, 60);
+    assert.strictEqual(headOnly(base), headOnly(base + '?v=2'), 'the pre-fix comparison really did collapse these two — the case above is not vacuous');
 });
 
 console.log(failures ? `\n✗ ${failures} failed` : '\n✅ portalReview: all cases passed');

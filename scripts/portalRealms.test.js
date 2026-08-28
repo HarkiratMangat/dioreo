@@ -308,4 +308,34 @@ check('THE LIVENESS RULE CAN FAIL: a hardcoded state calls every session live', 
     }, /2 rows all read live/);
 });
 
+// ───────────────────────────────────────────────────────────────────────────── 🔴 TWO AUTHORITIES OVER ONE VOCABULARY — the failure that shipped and could not be seen.
+//
+// The Season identity editor keyed its banner payload on the STORAGE field (`drawsBannerUrl`) while `calendar.setBanners` validates against `core/ops/calendar.js`'s BANNER_FIELDS, whose keys are the SHORT page names (`draws`). Every banner edit therefore staged a changeset that was BLOCKED on arrival and could never commit — and nothing could catch it: staging succeeds, and only the Review screen's re-validation reports the block. Found on the first real sign-in the portal has ever had (2026-08-28), not by any gate.
+//
+// ⚠️ This is the relational shape again: a check of the form `for each key, assert the key is valid` cannot see two lists DISAGREEING. It has to compare the two authorities directly, which is why it reads the UI's own table out of source rather than restating it here — a restated copy would be a third authority, agreeing with neither.
+const fs = require('fs');
+const path = require('path');
+
+check('the Season editor and calendar.setBanners agree on what a banner page is called', () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'season.js'), 'utf8');
+    const table = src.slice(src.indexOf('const BANNERS = ['));
+    const uiKeys = [...table.slice(0, table.indexOf(']')).matchAll(/op:\s*'([^']+)'/g)].map((m) => m[1]);
+    assert.ok(uiKeys.length >= 3, `expected the BANNERS table to carry an op key per page, found ${uiKeys.length}`);
+
+    const calendar = fs.readFileSync(path.join(__dirname, '..', 'core', 'ops', 'calendar.js'), 'utf8');
+    const fields = calendar.slice(calendar.indexOf('const BANNER_FIELDS = ['));
+    const opKeys = [...fields.slice(0, fields.indexOf('];')).matchAll(/key:\s*'([^']+)'/g)].map((m) => m[1]);
+    assert.ok(opKeys.length >= 3, `expected BANNER_FIELDS to declare its pages, found ${opKeys.length}`);
+
+    const unknown = uiKeys.filter((k) => !opKeys.includes(k));
+    assert.deepStrictEqual(unknown, [], `the editor stages banner keys the op rejects: ${unknown.join(', ')} — the op accepts ${opKeys.join(', ')}`);
+});
+
+check('THE VOCABULARY CHECK CAN FAIL: the storage field name is not an accepted page key', () => {
+    const calendar = fs.readFileSync(path.join(__dirname, '..', 'core', 'ops', 'calendar.js'), 'utf8');
+    const fields = calendar.slice(calendar.indexOf('const BANNER_FIELDS = ['));
+    const opKeys = [...fields.slice(0, fields.indexOf('];')).matchAll(/key:\s*'([^']+)'/g)].map((m) => m[1]);
+    assert.ok(!opKeys.includes('drawsBannerUrl'), 'the exact key the editor used to send must still be rejected, or the case above proves nothing');
+});
+
 process.exit(failures ? 1 : 0);

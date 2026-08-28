@@ -70,7 +70,8 @@ function register(route) {
                     exportedAt: doc.exportedAt || null,
                     stale,
                     staleChecked: checked,
-                    blocked: failure ? failure.reason || 'This change no longer validates.' : null,
+                    // ⚠️ THE REASON WAS THROWN AWAY AT THIS SEAM. `validateSet` reports a failure as `{ index, errors: [...] }` and this read `failure.reason`, which no validator sets — so the screen said "This change no longer validates" while the system was holding the exact sentence: "Unknown banner page: drawsBannerUrl". A reader cannot act on the generic form, and the portal's own error rule (async.js) is that a message names WHAT failed, what it MEANS and ONE action.
+                    blocked: failure ? (failure.reason || (Array.isArray(failure.errors) && failure.errors.length ? failure.errors.join('; ') : null) || 'This change no longer validates.') : null,
                     confirmText: String(doc._id).slice(-8).toUpperCase(),
                 });
             });
