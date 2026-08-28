@@ -116,8 +116,13 @@ async function walk(page, state, port) {
         if (step.clickText) await page.evaluate((s) => { const el = [...document.querySelectorAll(s.sel)].find((x) => (x.textContent || '').includes(s.text)); if (el) el.click(); }, step.clickText);
         // ⚠️ A TOOLTIP IS CONTENT AND IS INVISIBLE TO A SCREENSHOT, so the runtime that renders it has to be walked like any other state. tips.js delegates from the document, so a synthetic pointerover on the host is what a real pointer would produce.
         if (step.hover) await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true })); el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); } }, step.hover);
-        if (step.type) await page.evaluate((s) => { const el = document.querySelector(s.sel); if (el) { el.value = s.text; el.dispatchEvent(new Event('input', { bubbles: true })); } }, step);
-        await page.evaluate(() => new Promise((r) => setTimeout(r, 160)));
+        // ⚠️ `type` ACCEPTS BOTH SHAPES, and it did not until 2026-08-28. Every other step that needs two values nests them (`clickText: {sel, text}`), so a registry written by hand naturally writes `type: {sel, text}` — which this read as `step.sel`/`step.text`, found undefined, and typed nothing into nothing. The step then "ran", and only `expect` reported that the state had not been reached. Cost a real debugging loop; a driver that accepts the shape its own siblings teach costs nothing.
+        if (step.type) {
+            const t = (typeof step.type === 'object') ? step.type : step;
+            await page.evaluate((s) => { const el = document.querySelector(s.sel); if (el) { el.value = s.text; el.dispatchEvent(new Event('input', { bubbles: true })); } }, { sel: t.sel, text: t.text });
+        }
+        // ⚠️ 160ms IS A DEFAULT, NOT A CONTRACT. A step whose effect is a re-render that MOUNTS the next step's target needs longer, and when it does not get it the following step clicks nothing — which `expect` then reports as "did not reach its own subject". That is the gate working, but the state is still unwalked, so a step may name its own settle. Season's "closed again from the header's dead space" is the case: the first click mounts `.idbody`, and `.idhead` does not exist until it has.
+        await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), step.waitMs || 160);
     }
     // A state can declare its own settle time. The slow state is the reason: it exists to be measured WHILE the request is still out, so waiting for the data would destroy the very thing being walked.
     if (state.settleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.settleMs);

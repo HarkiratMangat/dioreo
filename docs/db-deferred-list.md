@@ -532,6 +532,33 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Cloudflare caches the dev portal's JS for four hours, over the origin's own `no-cache` `[P2 · XS · Sonnet5-Medium]`
+
+*Filed 2026-08-28 during Part 1 of the portal conformance pass. It cost four reloads, a server restart and a wrong conclusion before it was measured.*
+
+**Fixed at the origin, not at the edge.** `portal/server.js` served static files with **no `Cache-Control` at all**, which is not neutral: a browser then applies heuristic caching, roughly a tenth of the file's age since `Last-Modified`. It now sends `no-cache, must-revalidate` for `.html`, `.js`, `.mjs` and `.css` — verified against `http://127.0.0.1:8787`.
+
+🔴 **The tunnel still overrides it.** Measured the same day: `https://dev-portal.dioreo.app/ui/track.js` comes back with **`cache-control: max-age=14400`** while the origin, fetched directly, returns `no-cache, must-revalidate`. That is Cloudflare's default caching for a `.js` extension, and it is why a rebuilt portal served a five-hour-old module graph while `curl` against the same origin returned the new bytes — **the page and the terminal disagreed, and the page looked like the code had not changed.**
+
+**The fix is a Cache Rule on `dev-portal.dioreo.app` in Harkirat's Cloudflare dashboard** — bypass cache, or respect origin headers, for that hostname. It cannot be done from here; the browser this session drives is not signed into Cloudflare. ⚠️ **Until it is done, always verify a portal change against `http://localhost:8787`, never the tunnel** — the tunnel is for reaching it from a phone, not for checking whether a change landed.
+
+### The "a staged thing arrives" motion is styled and emitted nowhere `[P3 · S · Sonnet5-Medium]`
+
+*Filed 2026-08-28, Part 1's reverse-orphan triage. Belongs to **motion-as-a-system (Part 7)**, which COMPANION warns is NOT the liveliness work item K closed — conflating them is how this entry gets wrongly ticked.*
+
+Three rule sets, one idea, no emitter anywhere in `portal/ui`: **`.bar.arriving` / `.pt.arriving`** (the Track's staged bar and point) and **`tr.rowin`** (the manifest's staged row, whose own comment says *"the same way a staged bar does on the Track"*). **`.rise`** is the fourth — the orchestrated page load-in, applied in the mockup to the masthead with a 55ms-per-item stagger; `.lane`'s `laneIn` half of that sequence does run, so the page arrives in pieces.
+
+⚠️ **Do not fix these one at a time.** They are one behaviour — *a thing you just staged announces itself* — and building the Track's half without the manifest's is what made them disagree in the first place.
+
+### Season's Repairs runs three of COMPANION §5.2's six checks `[P2 · M · Sonnet5-High]`
+
+*Filed 2026-08-28. One of the missing four — the signed-Discord-banner link — **was built in Part 1** and is not part of this item.*
+
+Still missing, and each needs data the Track's items do not carry: **draw window with no draw** (an orphan explicit calendar row — needs the draw list matched against `category:'draw'` rows) · **draw served synthetic** (`getDrawSectionEntries()`'s synthetic entries, tagged `dateOnly: true` server-side) · **looks like 2× CP, not flagged** (needs both a CP token and a doubling indicator, and COMPANION records that the rule was corrected twice live).
+
+⚠️ **Two of the three legitimately report ZERO against the live document**, and COMPANION's rule is that such a check stays on screen with its reason. The portal already does that correctly — `track.js`'s `group()` emits `repgrp clean` and a `.repclean` line — so this is about the checks, never about the empty state. ⚠️ **The portal also adds a check the mockup never had** (`Gaps in a lane`) and re-frames the other two around `DATE`/`RECORD`/`WINDOW` rather than mechanical/judgement; that divergence is uncited and should be settled in the same session.
+
+
 ### A dev hostname for the portal, so it is reachable from a phone `[P2 · S · Sonnet5-High]`
 
 *Filed 2026-08-28 11:2x EDT, from Harkirat's question while away from his machine — the morning's OAuth sign-in had to go through Discord's QR login because the dev portal only exists on `localhost:8787`, which a phone cannot reach.*

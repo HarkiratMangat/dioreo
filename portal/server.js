@@ -28,7 +28,9 @@ function assertEnvironment({ env, mongoUri }) {
 const ROUTES = [];
 const route = (method, pattern, handler) => ROUTES.push({ method, pattern, handler });
 
-// Static file serving for portal/public — the built frontend (scripts/buildPortal.js's output). Deliberately minimal: no directory listing, no range requests, no caching headers beyond the browser default. This is an admin-only, low-traffic surface; a CDN-grade static server is not the problem this file exists to solve.
+// Static file serving for portal/public — the built frontend (scripts/buildPortal.js's output). Deliberately minimal: no directory listing, no range requests. This is an admin-only, low-traffic surface; a CDN-grade static server is not the problem this file exists to solve.
+//
+// 🔴 IT DOES SEND ONE CACHE HEADER, AND "the browser default" WAS NOT A NEUTRAL CHOICE. With no Cache-Control at all a browser applies HEURISTIC caching — roughly a tenth of the file's age since Last-Modified — so an asset that has sat on disk for a day is held for hours. The harness escapes this because buildPortal stamps a content hash into every URL it writes; the real portal's index.html carries no such stamp, so `/ui/track.js` is one URL forever. Measured 2026-08-28: after a rebuild AND a server restart, dev-portal.dioreo.app served a five-hour-old module graph through four reloads while `curl` against the same origin returned the new bytes — the page and the terminal disagreed, and the page looked like the code had not changed. `no-cache` means revalidate, not "do not store": correctness over a few kilobytes on a surface with one user.
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
@@ -42,7 +44,10 @@ function serveStatic(req, res, url) {
     fs.readFile(full, (err, data) => {
         if (err) { res.writeHead(404); return res.end('Not found'); }
         const ext = path.extname(full);
-        res.writeHead(200, { 'content-type': MIME[ext] || 'application/octet-stream' });
+        const headers = { 'content-type': MIME[ext] || 'application/octet-stream' };
+        // The document and everything it executes. A stale one of these is a portal that silently disagrees with its own source.
+        if (ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css') headers['cache-control'] = 'no-cache, must-revalidate';
+        res.writeHead(200, headers);
         res.end(data);
     });
 }

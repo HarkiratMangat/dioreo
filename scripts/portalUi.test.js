@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { bandClass, laneFor, tierOf, findOverlaps, findGaps, findDuplicateTitles } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
+const { bandClass, laneFor, tierOf, findOverlaps, findGaps, findDuplicateTitles, stemLabels, findExpiringBanners } = require('../portal/ui/track.logic');   // CJS sibling — see the Files note
 const { columnFor, groupByColumn, blockedReason, describeOp, describeInverse, diffRows, fmtDiffValue } = require('../portal/ui/board.logic');
 const { seasonWindow, topicVarFor, typeLabelFor } = require('../portal/ui/season.logic');
 const { announcementState } = require('../portal/api/broadcast');
@@ -312,6 +312,64 @@ check('the same title over the same days is a duplicate, whatever the punctuatio
                                       dated('cod point rush — week 2!', '2026-08-12', '2026-08-19')]);
     assert.strictEqual(hits.length, 1);
     assert.strictEqual(hits[0][2], 'same');
+});
+
+check('findExpiringBanners names every banner still on a signed Discord link', () => {
+    const hits = findExpiringBanners({
+        drawsBannerUrl: 'https://media.discordapp.net/attachments/1/2/a.png?ex=deadbeef',
+        eventsBannerUrl: 'https://cdn.discordapp.com/attachments/1/2/b.png',
+        playlistsBannerUrl: 'https://res.cloudinary.com/x/image/upload/f_auto,q_auto/c.png',
+    });
+    assert.deepStrictEqual(hits.map((h) => h.key), ['drawsBannerUrl', 'eventsBannerUrl']);
+});
+
+check('THE BANNER GATE CAN FAIL: a re-hosted season reports zero, and a blank field is not a finding', () => {
+    // Both databases were re-hosted 2026-08-27, so zero is the expected live answer — and a check that cannot return zero would report the fix as a defect forever.
+    assert.strictEqual(findExpiringBanners({
+        drawsBannerUrl: 'https://res.cloudinary.com/x/image/upload/a.png',
+        eventsBannerUrl: '', playlistsBannerUrl: null,
+    }).length, 0);
+    // Blank is a REAL value meaning "show nothing" (see the banner section's own note), never a defect.
+    assert.strictEqual(findExpiringBanners({}).length, 0);
+    assert.strictEqual(findExpiringBanners(null).length, 0);
+});
+
+check('stemLabels strips a shared prefix once three or more bars carry it', () => {
+    const out = stemLabels([{ id: 'a', title: 'COD Point Rush Week 1' },
+                            { id: 'b', title: 'COD Point Rush Week 2' },
+                            { id: 'c', title: 'COD Point Rush Week 3' }]);
+    assert.strictEqual(out.get('a'), 'Week 1');
+    assert.strictEqual(out.get('c'), 'Week 3');
+});
+
+check('stemLabels NEVER cuts to a bare token — at least two words survive', () => {
+    // Cutting the full common prefix would leave "1".."3", which is not a name.
+    const out = stemLabels([{ id: 'a', title: 'Rush Week One 1' },
+                            { id: 'b', title: 'Rush Week One 2' },
+                            { id: 'c', title: 'Rush Week One 3' }]);
+    for (const id of ['a', 'b', 'c']) {
+        assert.ok(out.get(id).trim().split(/\s+/).length >= 2, `${id} kept only "${out.get(id)}"`);
+    }
+});
+
+check('THE STEM GATE CAN FAIL: two bars are left alone, and so is a group that shares nothing', () => {
+    // Two is not a group — the mockup's own correction. Stemming a pair hides a word to save one repeat.
+    assert.strictEqual(stemLabels([{ id: 'a', title: 'COD Point Rush Week 1' },
+                                   { id: 'b', title: 'COD Point Rush Week 2' }]).size, 0);
+    // Three unrelated titles must produce nothing, or the pass is cutting text it cannot justify.
+    assert.strictEqual(stemLabels([{ id: 'a', title: 'Widow\'s Bite Draw' },
+                                   { id: 'b', title: 'Undead Legion Armory' },
+                                   { id: 'c', title: 'Terminator 2 Event' }]).size, 0);
+});
+
+check('stemLabels is IDEMPOTENT on its own output — it reads titles, never rendered width', () => {
+    // This is why it was safe to port when its sibling label pass was not: nothing it changes feeds back into the decision, so a second pass over the shortened names cannot cut them again.
+    const list = [{ id: 'a', title: 'COD Point Rush Week 1' },
+                  { id: 'b', title: 'COD Point Rush Week 2' },
+                  { id: 'c', title: 'COD Point Rush Week 3' }];
+    const once = stemLabels(list);
+    const twice = stemLabels(list.map((it) => ({ id: it.id, title: once.get(it.id) })));
+    assert.strictEqual(twice.size, 0, 'a second pass cut the labels again — this would oscillate');
 });
 
 check('one title inside another is a duplicate when the shorter is substantial', () => {

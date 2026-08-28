@@ -476,6 +476,17 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                 <!-- A date and "TBD" are two different ANSWERS to one question, not a
                                      field and a checkbox — so they are one control with two states. -->
                                 <!-- 🔴 A DATE FIELD ANSWERS "WHEN", AND NOBODY OPENS THIS PANEL TO ASK "WHEN". They open it to find out whether there is time — and every reader was subtracting today's date from an ISO string in their head, three times, once per line. TBD says so rather than showing a number it does not have; a date already past says so rather than counting up. -->
+                                <!-- 🔴 TBD SWITCH FIRST, DAYS-LEFT LAST — the grid was always written that way and
+                                     the markup was not. the dline rule is a five-column grid ending 84px 104px, with
+                                     justify-self:start on .tbdsw for the 84px slot and text-align:right on .dl-left
+                                     for the 104px one; both stylesheets agree, byte for byte. Emitting them in the
+                                     other order squeezed the days-left text into 84px and left the 72px switch
+                                     start-aligned in a 104px column, so every row stopped 45px short of its own right
+                                     edge against the mockup's 13px. Nothing was wrong with the CSS. -->
+                                <span class="tbdsw" role="group" aria-label=${`${L.label} end is`}>
+                                    <button aria-pressed=${!tbd} onClick=${() => set(L.tbdKey, false)}>DATE</button>
+                                    <button aria-pressed=${tbd} onClick=${() => set(L.tbdKey, true)}>TBD</button>
+                                </span>
                                 ${(() => {
                                     const raw = String(value(L.endKey) || '').slice(0, 10);
                                     if (tbd) return html`<span class="dl-left is-tbd">no date yet</span>`;
@@ -485,10 +496,6 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                     if (d < 0) return html`<span class="dl-left is-over">${-d}d ago</span>`;
                                     return html`<span class="dl-left">${d === 0 ? 'today' : `${d}d left`}</span>`;
                                 })()}
-                                <span class="tbdsw" role="group" aria-label=${`${L.label} end is`}>
-                                    <button aria-pressed=${!tbd} onClick=${() => set(L.tbdKey, false)}>DATE</button>
-                                    <button aria-pressed=${tbd} onClick=${() => set(L.tbdKey, true)}>TBD</button>
-                                </span>
                             </div>`;
                     })}
                 </div>

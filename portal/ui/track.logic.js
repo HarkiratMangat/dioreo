@@ -176,6 +176,68 @@ function railBox(rail, hasSpan) {
     return { height, xtop: height + RULER_H, spanTop };
 }
 
+// ── SHARED-PREFIX STEMMING ────────────────────────────────────────────────────────────────────
+//
+// Five bars reading "COD Point Rush Week 1".."Week 5" say the same eleven characters five times and then run out of room for the part that differs. The mockup strips the shared stem and marks the bar with `.bar.stemmed` — a dotted left edge, the "continues from" convention — with the full name on the tooltip. Both the rule and the convention were ported into app.css; the pass that emits the class was not, so `.bar.stemmed` had two rules and no element.
+//
+// 🔴 IT IS COMPUTED FROM THE TITLES, NEVER FROM THE RENDERED WIDTH, and that is the whole reason it is safe to port when its sibling was not. useMeasured.js records why the mockup's label pass had to be dropped: `lbl-cut` truncates a label, which changes the label's width, which flips the branch that added it — a two-cycle no compare-the-previous-result guard can break. Nothing here reads geometry, so nothing it changes can feed back into the decision. Same file, same origin, opposite risk.
+//
+// ⚠️ PER GROUP, NOT PER LANE — the mockup's own recorded correction. The events lane is five "COD Point Rush Week N" plus one "Terminator 2 Themed Event"; requiring every bar in the lane to share a stem meant none did and the five identical fragments survived untouched.
+//
+// ⚠️ AND NEVER STRIP TO A BARE TOKEN. Cutting all the way to "1".."5" trades one unreadable label for another, so the cut backs off until at least two words survive: "Week 1".."Week 5".
+function stemLabels(list) {
+    const out = new Map();
+    if (!Array.isArray(list) || list.length < 3) return out;
+    const groups = new Map();
+    for (const it of list) {
+        const full = String((it && it.title) || '');
+        if (!full) continue;
+        const k = full.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(it);
+    }
+    for (const g of groups.values()) {
+        if (g.length < 3) continue;
+        const names = g.map((it) => String(it.title));
+        let n = 0;
+        while (n < names[0].length && names.every((t) => t[n] === names[0][n])) n++;
+        while (n > 0 && !/\s/.test(names[0][n - 1])) n--;
+        if (n < 4) continue;
+        let cut = n;
+        const tailWords = (t) => t.slice(cut).trim().split(/\s+/).filter(Boolean).length;
+        while (cut > 0 && names.some((t) => tailWords(t) < 2)) {
+            const prev = names[0].lastIndexOf(' ', cut - 2);
+            if (prev < 0) { cut = 0; break; }
+            cut = prev + 1;
+        }
+        if (cut < 4) continue;
+        g.forEach((it, i) => out.set(it.id, names[i].slice(cut).trim()));
+    }
+    return out;
+}
+
+// ── A CALENDAR BANNER ON A LINK THAT WILL STOP RESOLVING ──────────────────────────────────────
+//
+// COMPANION §5.2 lists six Repairs checks and this is the one with the most live findings against the real document: a `media.discordapp.net` URL is SIGNED — it carries an `ex=` parameter and 404s once that timestamp passes. `utils/calendarBannerCache.js` exists to re-host these through Cloudinary, and two of three banners had never been through it. The failure is silent at both ends: the URL is well-formed, the field is set, and the image simply stops arriving.
+//
+// ⚠️ IT IS A HOST TEST, NOT AN `ex=` TEST. A signed link that has already expired and one that expires next week are the same defect — the fix is identical and the deadline is not the point. Testing for the parameter would also miss `cdn.discordapp.com` links, which are the same problem with a different signature scheme.
+//
+// ⚠️ AND IT REPORTS ZERO MOST OF THE TIME, WHICH IS THE POINT. Both databases were re-hosted on 2026-08-27, so against the live season this finds nothing — and COMPANION's rule is that a check reporting zero stays on screen with its reason, because a panel that only shows problems cannot tell you what it is watching.
+const BANNER_FIELDS = [
+    { key: 'drawsBannerUrl', label: 'Draws banner' },
+    { key: 'eventsBannerUrl', label: 'Events banner' },
+    { key: 'playlistsBannerUrl', label: 'Playlists banner' },
+];
+const SIGNED_HOSTS = ['media.discordapp.net', 'cdn.discordapp.com'];
+function findExpiringBanners(season) {
+    if (!season) return [];
+    return BANNER_FIELDS
+        .map((f) => ({ ...f, url: String(season[f.key] || '').trim() }))
+        .filter((f) => f.url && SIGNED_HOSTS.some((h) => f.url.includes(h)))
+        .map((f) => ({ key: f.key, label: f.label, url: f.url,
+            why: 'a signed Discord link — it stops resolving once its own deadline passes' }));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor, clusterPoints, railBox, CLUSTER_PX };
+    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor, clusterPoints, railBox, CLUSTER_PX, stemLabels, findExpiringBanners };
 }

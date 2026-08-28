@@ -1,0 +1,95 @@
+{
+  "realm": "season",
+  "recordedAt": "2026-08-28T18:12:32.522Z",
+  "commit": "222b67a",
+  "viewport": {
+    "w": 1282,
+    "h": 888
+  },
+  "views": {
+    "Track": {
+      "grid": {
+        "examined": 1386,
+        "nearMisses": 4,
+        "sizeIssues": 27
+      },
+      "inventory": {
+        "h1": "Season 7 — Terminated",
+        "tabs": [
+          "Track",
+          "Board",
+          "Repairs"
+        ],
+        "cols": [
+          "",
+          "Item",
+          "Type",
+          "Window",
+          "Season",
+          "What it carries",
+          "State",
+          "Remove"
+        ],
+        "sections": [
+          "Operations that cannot be taken back"
+        ]
+      }
+    },
+    "Board": {
+      "grid": {
+        "examined": 1280,
+        "nearMisses": 0,
+        "sizeIssues": 16
+      },
+      "inventory": {
+        "h1": "Season 7 — Terminated",
+        "tabs": [
+          "Track",
+          "Board",
+          "Repairs"
+        ],
+        "cols": [
+          "",
+          "Item",
+          "Type",
+          "Window",
+          "Season",
+          "What it carries",
+          "State",
+          "Remove"
+        ],
+        "sections": [
+          "Operations that cannot be taken back"
+        ]
+      }
+    },
+    "Repairs": {
+      "grid": {
+        "examined": 1313,
+        "nearMisses": 0,
+        "sizeIssues": 71
+      },
+      "inventory": {
+        "h1": "Season 7 — Terminated",
+        "tabs": [
+          "Track",
+          "Board",
+          "Repairs"
+        ],
+        "cols": [
+          "",
+          "Item",
+          "Type",
+          "Window",
+          "Season",
+          "What it carries",
+          "State",
+          "Remove"
+        ],
+        "sections": [
+          "Operations that cannot be taken back"
+        ]
+      }
+    }
+  }
+}

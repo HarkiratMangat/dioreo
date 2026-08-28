@@ -129,7 +129,7 @@ function LaneSummary({ lane, list, kit, view }) {
            data-tip=${`${r.n} item${r.n === 1 ? '' : 's'} · ${TL.fmt(r.a)} → ${TL.fmt(r.b)}`}></i>`)}</span>`;
 }
 
-function Bar({ it, lane, view, top, fit, onDragCommit }) {
+function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
     const ref = useRef(null);
     const [ghost, setGhost] = useState(null);
 
@@ -157,15 +157,24 @@ function Bar({ it, lane, view, top, fit, onDragCommit }) {
 
     const end = ghost || endOf(it);
     const geo = barGeometry({ startDate: startOf(it), endDate: end }, { start: view.from, end: view.to });
-    const cls = [bandClass({ state: it.state || 'live' }), it.openEnded ? 'forever' : '', fit || '', ghost ? 'dragging' : '']
+    // 🔴 WHETHER THE LABEL EXISTS IS DERIVED, NOT MEASURED, and that is the point. The fit pass classifies where a label GOES — inside, outside left, outside right — and it is a measurement pass, so a bar it has not reached yet, or has reached with a stale map, renders its label anyway. Found by the states walk 2026-08-28: an 18px draw-window bar held 31 characters in a 0x16px span — text in the layout, readable by nobody, which is item M#4's shape. A bar's pixel width is already knowable without measuring anything: `geo.width` is a percentage of the plot and `plotW` is the one width the Track measures for everybody. Below the floor there is no content box at all (`.bar` is padding:0 8px), so the span is not rendered rather than rendered and hidden. The accessible name is unaffected — it lives on the bar, states the full title and the dates, and always did. ⚠️ THE FLOOR IS ONLY FOR THE INSIDE CASE. `lbl-out`/`lbl-out-l` exist precisely so a bar too narrow to hold its own text can still be labelled — beside it, in the clear track. Gating the span on width alone would have deleted that whole affordance and left nine narrow bars anonymous, which is a worse page than the one this fixes. The floor answers "can the text be read INSIDE this bar"; the fit pass answers "is there somewhere else to put it", and both have to say no before a label is dropped.
+    const pxWide = plotW ? (geo.width / 100) * plotW : Infinity;
+    const roomForLabel = pxWide >= LABEL_MIN_PX || fit === 'lbl-out' || fit === 'lbl-out-l';
+    // `stemmed` is a dotted LEFT edge — the "continues from" convention — saying the label is abbreviated rather than mis-entered. It used to be a literal "·", which read as a stray bullet. See stemLabels().
+    const cls = [bandClass({ state: it.state || 'live' }), it.openEnded ? 'forever' : '', fit || '',
+                 stem && stem !== it.title ? 'stemmed' : '', ghost ? 'dragging' : '']
         .filter(Boolean).join(' ');
     return html`
         <div class=${cls} ref=${ref} data-id=${it.id} tabindex="0" role="button"
              style=${`--c:var(${lane.topic});left:${geo.left}%;width:${geo.width}%${top ? ';' + top : ''}`}
              aria-label=${`${it.title}, ${TL.fmt(startOf(it))} ${it.openEnded ? 'onward, with no end date' : 'to ' + TL.fmt(end)}${it.isOngoing ? ', runs all season' : ''}`}
-             data-tip=${ghost ? 'Ends ' + TL.fmt(ghost) : null}>
+             data-tip=${ghost ? 'Ends ' + TL.fmt(ghost)
+                              : (stem && stem !== it.title ? it.title : null)}>
             <span class="gr a" data-edge="start"></span>
-            <span class="bl">${it.title}</span>
+            <!-- aria-hidden because the bar itself is the control and its aria-label already states the
+                 full title, the dates and whether it runs all season. Without this the span is a second,
+                 shorter announcement of the same thing. -->
+            ${roomForLabel ? html`<span class="bl" aria-hidden="true">${stem || it.title}</span>` : null}
             <span class="gr b" data-edge="end" onPointerDown=${startDrag}></span>
         </div>`;
 }
@@ -182,6 +191,8 @@ function Point({ it, lane, view, hid }) {
 function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost, plotW }) {
     const spans = list.filter((i) => lane.kind !== 'point');
     const { row, rows } = assignRows(spans);
+    // Computed from the titles, so it is stable across renders and cannot oscillate. See stemLabels().
+    const stems = stemLabels(list);
     // Points at one coordinate are ONE mark that says "several", never two marks one of which cannot be seen. Needs the measured plot width because the threshold is a distance on screen — at some zoom every pair is far apart, which is the whole reason a cluster is temporary rather than a property of the data.
     const clusters = lane.kind === 'point'
         ? clusterPoints(list.map((it) => ({ id: it.id, title: it.title, date: startOf(it), pct: view.pct(startOf(it)) })), plotW)
@@ -216,8 +227,8 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
                     if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} hid=${clustered.has(it.id)} />`;
                     const r = row.has(it.id) ? row.get(it.id) : 0;
                     const top = rows === 1 ? null : `top:${ROW_PAD / 2 + r * ROW_H}px;transform:none;height:${ROW_H - 5}px`;
-                    return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top}
-                                        fit=${fits[it.id]} onDragCommit=${onDragCommit} />`;
+                    return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top} plotW=${plotW}
+                                        fit=${fits[it.id]} stem=${stems.get(it.id)} onDragCommit=${onDragCommit} />`;
                 })}
                 ${collapsed ? null : clusters.map((c) => html`
                     <button type="button" key=${'ptc:' + c.ids.join(',')}
@@ -265,6 +276,7 @@ const REPAIR_NOTE = {
     dupe: 'The same thing entered twice, over days that overlap. Not a scheduling conflict — two items genuinely running at once is ordinary here, and counting those produced sixty-one findings nobody would read. This is the narrower case: one record, entered by two people or twice by one.',
     overrun: 'The battle pass is what a player calls the end of the season. Anything still running past it is either a deliberate carry-over or a date nobody updated, and the record cannot tell you which — that is why this is a finding rather than a fix.',
     gap: 'A stretch of the visible window with nothing in this lane at all. A gap is only a defect if the lane is meant to be continuous — playlists usually are, draws are not.',
+    banner: 'A calendar page banner pointing at a signed Discord link. Those carry their own deadline and start returning nothing once it passes, so the page renders with no banner and nothing anywhere says why. Re-host it and paste the new URL into the record above.',
 };
 
 export function Repairs({ data, window: visible, season, onClamp }) {
@@ -273,6 +285,8 @@ export function Repairs({ data, window: visible, season, onClamp }) {
     // The same thing entered twice — Harkirat's own definition of the flaggable case, after two measured definitions of "conflict" both turned out to describe ordinary scheduling. See findDuplicateTitles for what those measurements were.
     const dupes = findDuplicateTitles(all);
     const gapLanes = LANES.map((l) => ({ lane: l, gaps: findGaps(data[l.key] || [], visible) })).filter((g) => g.gaps.length);
+    // ⚠️ NOT WINDOWED. Every other check here answers "in the stretch you are looking at"; a banner is a property of the season record, not of a date range, so scoping it to the visible window would hide a broken banner behind a zoom. The head line says "in the window you are looking at", so this one is counted separately rather than folded into that total and quietly making it wrong.
+    const banners = findExpiringBanners(season);
     const total = overruns.length + dupes.length + gapLanes.reduce((n, g) => n + g.gaps.length, 0);
 
     const group = (key, label, count, kind, rows) => html`
@@ -321,6 +335,13 @@ export function Repairs({ data, window: visible, season, onClamp }) {
                         <span>${how === 'same' ? 'appears again as' : 'is also inside'} <b>${b.title}</b>, over the same days</span>
                     </button>`))}
 
+                <p class="reps">Links that expire</p>
+                ${group('banner', 'Banner on a signed Discord link', banners.length, 'record', banners.map((b) => html`
+                    <button key=${b.key} disabled>
+                        <b>${b.label}</b>
+                        <span>${b.why}</span>
+                    </button>`))}
+
                 <p class="reps">Empty stretches</p>
                 ${group('gap', 'Gaps in a lane', gapLanes.reduce((n, g) => n + g.gaps.length, 0), 'window',
                     gapLanes.flatMap((g) => g.gaps.map((gap, n) => html`
@@ -350,6 +371,11 @@ export function Zoomer({ win, full, onWindow }) {
             <button class="wide" title="Fit everything" disabled=${fitted}
                     onClick=${() => onWindow(null)}>FIT</button>
             <span class="rd"><b>${days}</b> ${days === 1 ? 'day' : 'days'} shown</span>
+            <!-- COMPANION §5.2 gives the ruler three pointer gestures and the page said none of them out
+                 loud: drag to pan, wheel to pan sideways, and hold to zoom at the cursor. The zhint rule
+                 and its kbd child were styled for exactly this line and nothing had ever emitted them, so the
+                 only way to discover the Track's own zoom was to guess it. -->
+            <span class="zhint"><kbd>⌘</kbd>-wheel to zoom, drag the ruler to pan</span>
         </div>
     `;
 }
@@ -510,17 +536,28 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
         rootRef,
         (root) => {
             const out = {};
+            // 🔴 THE LABEL'S NATURAL WIDTH IS MEASURED OFF A CANVAS, NOT OFF `scrollWidth`, AND THAT IS THE WHOLE REASON THIS PASS IS STABLE. `nolabel` sets `.bl{display:none}`, and a hidden element reports `scrollWidth: 0` — so the next pass computed `need = 10`, found 68px of clear track, and chose `lbl-out`, which shows the label again, which restores `scrollWidth: 169`, which chooses `nolabel`. A TWO-CYCLE: the class this pass writes changes the measurement the next one reads. Measured live 2026-08-28 on the draw-window lane — before a lane collapse the same 18px bar read scrollWidth 0 / need 10, after it read 169 / 179, from identical geometry. useMeasured.js's header describes exactly this loop as the reason the mockup's version could not be ported; the loop was ported anyway, one indirection further back. Text width from a canvas depends on the string and the font and on nothing this pass can set. ⚠️ THE HEADLESS RENDER GATE HAS NO `getComputedStyle` AND NO CANVAS, and it executes this callback. Falling back to `scrollWidth` there is correct rather than a shim: nothing in that environment has layout, so every branch below resolves the same way whichever number it reads, and the fallback keeps the gate measuring what it is for — that the realm mounts and renders.
+            const ctx = (typeof document.createElement === 'function' && document.createElement('canvas').getContext)
+                ? document.createElement('canvas').getContext('2d') : null;
+            const natural = (el) => {
+                if (!ctx || typeof getComputedStyle !== 'function') return el.scrollWidth || 0;
+                const cs = getComputedStyle(el);
+                ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+                return Math.ceil(ctx.measureText(el.textContent || '').width);
+            };
             root.querySelectorAll('.bar').forEach((b) => {
                 const bl = b.querySelector('.bl');
                 if (!bl) return;
                 const w = b.getBoundingClientRect().width;
-                const ratio = bl.scrollWidth ? w / bl.scrollWidth : 1;
-                const clipped = bl.scrollWidth > bl.clientWidth + 1;
+                const textW = natural(bl);
+                const ratio = textW ? w / textW : 1;
+                // `.bar` is padding:0 8px, so the content box is the bar minus 16.
+                const clipped = textW > w - 16;
                 if (w >= LABEL_MIN_PX && ratio >= 0.55 && !clipped) { out[b.dataset.id] = ''; return; }
                 const tk = b.closest('.tk');
                 if (!tk) { out[b.dataset.id] = 'nolabel'; return; }
                 const br = b.getBoundingClientRect(), tr = tk.getBoundingClientRect();
-                const need = bl.scrollWidth + 10;
+                const need = textW + 10;
                 // 🔴 ROOM MEANS ROOM BEFORE THE NEXT BAR, and "same row" is VERTICAL OVERLAP, never a matching style string — the string test groups every bar whose top came from a class into one pseudo-row and reports "no room" beside 900px of empty track.
                 const sibs = [...tk.querySelectorAll('.bar')].filter((o) => o !== b).map((o) => o.getBoundingClientRect())
                     .filter((r) => r.top < br.bottom - 1 && r.bottom > br.top + 1);
@@ -529,12 +566,13 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                 // OUTSIDE BEFORE TRUNCATED, and truncated before hidden. A bar with no label is not a bar, it is a rectangle.
                 if (rightWall - br.right > need) out[b.dataset.id] = 'lbl-out';
                 else if (br.left - leftWall > need) out[b.dataset.id] = 'lbl-out-l';
-                else if (w >= TRUNC_MIN_PX) out[b.dataset.id] = 'lbl-cut';
+                // 🔴 A BAR TOO NARROW TO SHOW A LABEL MUST SAY SO, and the branch below could not be trusted to. Found by the states walk 2026-08-28: collapse a lane and an 18px draw-window bar rendered `.bl` holding 31 characters at 0x16px — text in the DOM, in the layout, and readable by nobody. `.bar` is `padding:0 8px` with two 8px grips, so anything under LABEL_MIN_PX has no content box left at all; the inside-the-bar branch simply must not be reachable there. Stated as its own guard rather than left to the comparison below, because LABEL_MIN_PX and TRUNC_MIN_PX are the same number today and the next person to tune one of them should not silently re-open this. 🔴 NO CLASS FOR THE TRUNCATE CASE, and it never needed one. This branch used to emit `lbl-cut`, which is matched by NO rule in this stylesheet or in the mockup's — the name was invented here and its rule was never written, so the branch had always been a no-op wearing a class name. It works because `.bar .bl` is ALREADY overflow:hidden + text-overflow:ellipsis: leaving the class off is exactly the rendering the branch was asking for. The branch stays because the ORDER is the decision — outside, then truncated, then hidden — and a bar wide enough to carry a clipped label must not fall through to `nolabel`.
+                else if (w >= Math.max(TRUNC_MIN_PX, LABEL_MIN_PX)) out[b.dataset.id] = '';
                 else out[b.dataset.id] = 'nolabel';
             });
             return out;
         },
-        (root) => root.querySelectorAll('.bar').forEach((b) => b.classList.remove('lbl-out', 'lbl-out-l', 'lbl-cut', 'nolabel')),
+        (root) => root.querySelectorAll('.bar').forEach((b) => b.classList.remove('lbl-out', 'lbl-out-l', 'nolabel')),
     );
 
     // The lanes' plot width in pixels, and where the lanes actually begin. Clustering needs a DISTANCE ON SCREEN — 17px is the point at which two diamonds stop being two — and a percentage cannot say that. ⚠️ `--xtop` IS MEASURED RATHER THAN SUMMED. Adding up the scrub, the ruler and the rail would be a fourth copy of three measurements that already exist, and the first version of this did exactly that and landed the crosshair's date bubble 44px inside the rail — it had forgotten the overview strip. railBox()'s own xtop stays as the first-paint value, before there is anything to measure.

@@ -313,8 +313,6 @@ main{overflow:auto;padding-bottom:96px}
 .card.t3 .tr{color:var(--warn);border-color:var(--warn)}
 .card .cn{font-size:12.5px;color:var(--ink);font-weight:600}
 .card .cd{font-family:var(--data);font-size:10px;color:var(--ink3);display:block}
-.card .inv{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule2);font-size:10.5px;color:var(--ink3)}
-.card .inv b{color:var(--ink2);font-weight:600}
 .card.blocked{border-left:2px solid var(--warn)}
 .card .why{margin-top:6px;font-size:10.5px;color:var(--warn);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .card .why button{background:none;border:1px solid var(--warn);color:var(--warn);font-size:10px;padding:3px 8px;border-radius:var(--rad-1);font-weight:600}
@@ -322,7 +320,10 @@ main{overflow:auto;padding-bottom:96px}
   padding:10px;min-height:var(--tap)}
 .commit:hover:not(:disabled){filter:brightness(1.08)}
 .commit:disabled{background:var(--raised);color:var(--ink3);border:1px solid var(--rule2);cursor:not-allowed}
-.colnote{font-size:10.5px;color:var(--ink3);margin-top:8px;line-height:1.45}
+/* 🗑 `.card .inv` and `.colnote` deleted 2026-08-28. Both belonged to the CONTENT Board — the
+   `Live now / Upcoming / Staged / Ended` screen that spec §F3 retired before the mockup was even drawn
+   (COMPANION §16.34). The Board here is the changeset pipeline; its cards carry `.ch .tr .cn .cd .why`
+   and a `.commit`, and neither of these two has ever had an element in either codebase. */
 
 /* ═══ MANIFEST — always present, never switches ═══ */
 .mtools{display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
@@ -769,7 +770,14 @@ main{position:relative;z-index:1}
   pointer-events:none;white-space:nowrap}
 
 /* a tick sitting under a marker chip is hidden rather than overlapped */
-.ruler span.masked{opacity:0;pointer-events:none;cursor:default}
+/* 🗑 `.ruler span.masked` deleted 2026-08-28 — THE COLLISION IT PREVENTS CANNOT HAPPEN HERE, and
+   emitting it would have resurrected a bug the mockup had already fixed. In the mockup the NOW marker
+   carries a date CAPTION, so a ruler tick label landing under it is unreadable and gets its text hidden.
+   This portal's NOW is a 1px line plus a 7px dot with no text at all — measured on the page: seven ticks,
+   one NOW, zero intersections, and the probe proved it can fire (7/7 on a self-overlap test). Worse, two
+   rules had been carried over: this one hid the WHOLE tick, and the later one hides only the label —
+   which is exactly the correction the mockup records ("a ruler with a missing gradation reads as a
+   rendering fault"). Emitting the class would have taken the older, wrong behaviour. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    THE SPARK — one component, three surfaces.
@@ -788,8 +796,9 @@ main{position:relative;z-index:1}
   box-shadow:0 0 6px var(--patch)}
 .spark .done{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
 
-td .wincell{display:flex;flex-direction:column;gap:5px;min-width:132px}
-td .wincell .txt{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space:nowrap}
+/* 🗑 `td .wincell` deleted 2026-08-28 — a second name for the manifest's WINDOW cell. manifest.js
+   emits `.c-win` for every date-kind column and the mockup's manifest does the same; nothing has ever
+   emitted `.wincell` in either codebase. */
 
 /* ═══ MANIFEST depth ═══ */
 tbody tr{transition:background .12s,box-shadow .12s}
@@ -4467,8 +4476,6 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 /* 🔴 THE LABEL IS THE REDUNDANT HALF, NOT THE TICK. Masking the whole span left the ruler
  * running Aug 18 → [gap] → Sep 1 under the NOW pill, which reads as a rendering fault; a
  * ruler's regularity is its legibility, and NOW's own chip already states that date. */
-.ruler span.masked{pointer-events:none;cursor:default}
-.ruler span.masked b{display:none}
 .ruler span b{font-weight:inherit}
 /* The findings strip: one line per finding, not a wall of cards under the plot. */
 .flags.tight{gap:6px;padding:9px 12px}

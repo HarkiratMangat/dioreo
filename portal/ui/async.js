@@ -2,7 +2,7 @@
 //
 // 🔴 FIVE OF THE SIX DID NOT EXIST IN THIS PORTAL. The adopted design specifies skeleton, refreshing, slow, failure, progress and a page-level banner; what shipped was a paragraph reading "Loading…" in an inline style, and NO error state at all — every realm ran `fetchJson(path).then(setData)` with no catch, so a 500, a dropped connection or an expired session left the page on that paragraph indefinitely. Neither instrument could see it: portal:orphans asks whether a class has a rule, and portal:coverage counts the shared shell's classes against every realm at once, so the whole group read as one diffuse gap spread across eight numbers rather than as one missing subsystem.
 //
-// ⚠️ THE STATES ARE REACHABLE ON PURPOSE — the harness answers `?fail=`, `?slow=` and `?offline=`. The lesson this package keeps re-learning is that a state nothing can put on screen is a state nobody designs and no check can open.
+// ⚠️ THE STATES ARE REACHABLE ON PURPOSE — the harness answers `?fail=` and `?slow=`. ⚠️ AND THE OFFLINE ONE IS `?fail=offline`, NOT a bare `?offline=`: this line named a parameter stub.js has never read, and the conformance plan copied it into its own flag list. `?offline=1` renders the ordinary page, so a state registered under it walks the DEFAULT view and reports clean — the exact failure `expect` exists to catch. The lesson this package keeps re-learning is that a state nothing can put on screen is a state nobody designs and no check can open.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
