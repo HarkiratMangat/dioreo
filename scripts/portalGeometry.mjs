@@ -25,9 +25,7 @@ const FIXTURES = path.join(ROOT, 'portal', 'fixtures', 'geometry');
 const VIEWPORT = { w: 1282, h: 888 };                                                    // §0.3, the same numbers `__grid.viewport()` asserts against
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// The comparison. Pure, exported, and unit-tested without a browser — the half most likely to be quietly wrong is the diff, not the capture.
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────── The comparison. Pure, exported, and unit-tested without a browser — the half most likely to be quietly wrong is the diff, not the capture. ─────────────────────────────────────────────────────────────────────────────
 export function compare(before, after) {
     const moved = [];
     const views = new Set([...Object.keys(before.views || {}), ...Object.keys(after.views || {})]);
@@ -46,9 +44,7 @@ export function compare(before, after) {
     return moved;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// The capture.
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────── The capture. ─────────────────────────────────────────────────────────────────────────────
 function serve() {
     const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
     const server = http.createServer((req, res) => {
