@@ -1,10 +1,6 @@
 // scripts/portalInventory.mjs — walk BOTH pages and compare what they are made of.
 //
-// 🔴 WHY THIS EXISTS, AND WHY portal:diff IS NOT ENOUGH. The pixel diff answers "where do these two pages
-// disagree" and ranks by area, which is the right first question and a poor second one: a 6px control-height
-// difference repeated on forty controls never rises above the noise floor, and a column whose LABEL says
-// something else entirely occupies almost no pixels. This walks the two DOMs, keys every element by its class
-// signature, and reports three kinds of disagreement the pixel diff structurally cannot rank:
+// 🔴 WHY THIS EXISTS, AND WHY portal:diff IS NOT ENOUGH. The pixel diff answers "where do these two pages disagree" and ranks by area, which is the right first question and a poor second one: a 6px control-height difference repeated on forty controls never rises above the noise floor, and a column whose LABEL says something else entirely occupies almost no pixels. This walks the two DOMs, keys every element by its class signature, and reports three kinds of disagreement the pixel diff structurally cannot rank:
 //
 //   ONLY     a class signature that exists on one side and not the other
 //   COUNT    a signature on both sides in different numbers
@@ -12,9 +8,7 @@
 //   TEXT     a labelled element whose words differ — "Live now / Upcoming / Staged / Ended" against
 //            "Draft / Staged / Blocked / Ready" is four words and about nine hundred pixels
 //
-// ⚠️ A DIFFERENCE IS NOT A DEFECT. Several of these are portal-ahead and cited; the point is that the list is
-// COMPLETE and ranked by kind, so an audit is bounded by what is actually there rather than by what somebody
-// happened to notice. Adjudicate every row against COMPANION.md before any of it becomes an edit.
+// ⚠️ A DIFFERENCE IS NOT A DEFECT. Several of these are portal-ahead and cited; the point is that the list is COMPLETE and ranked by kind, so an audit is bounded by what is actually there rather than by what somebody happened to notice. Adjudicate every row against COMPANION.md before any of it becomes an edit.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,8 +25,7 @@ const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal
 const HARNESS = 'http://localhost:8901/harness.html';
 const VW = 1282, VH = 888;
 
-// The properties a design decision actually lands in. Colour is included because a token drifting is invisible
-// to every source scanner; transitions and shadows are not, because they differ legitimately per state.
+// The properties a design decision actually lands in. Colour is included because a token drifting is invisible to every source scanner; transitions and shadows are not, because they differ legitimately per state.
 const PROPS = ['fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textTransform', 'color',
     'backgroundColor', 'borderTopWidth', 'borderTopColor', 'borderRadius', 'paddingTop', 'paddingLeft',
     'minHeight', 'opacity', 'textAlign', 'justifyContent', 'alignItems', 'flexDirection', 'gap'];
@@ -49,12 +42,7 @@ const COLLECT = (props) => {
     for (const e of document.querySelectorAll('*')) {
         const k = sig(e);
         if (!k) continue;
-        // 🔴 VISIBLE ONLY, AND THIS IS THE DIFFERENCE BETWEEN AN AUDIT AND A WALL OF NOISE. The mockup is ONE
-        // page carrying every view's markup at once, hidden with display:none; the portal is an SPA that
-        // renders the active view and nothing else. Comparing raw DOMs therefore reports the Track's ruler,
-        // lanes, deadrail, scrubber and zoomer as "missing from the portal" while looking at the Board — 93
-        // rows on the first run, most of them another view's furniture. getClientRects() is empty for anything
-        // display:none or detached, which is exactly the question being asked: what is ON THIS SCREEN.
+        // 🔴 VISIBLE ONLY, AND THIS IS THE DIFFERENCE BETWEEN AN AUDIT AND A WALL OF NOISE. The mockup is ONE page carrying every view's markup at once, hidden with display:none; the portal is an SPA that renders the active view and nothing else. Comparing raw DOMs therefore reports the Track's ruler, lanes, deadrail, scrubber and zoomer as "missing from the portal" while looking at the Board — 93 rows on the first run, most of them another view's furniture. getClientRects() is empty for anything display:none or detached, which is exactly the question being asked: what is ON THIS SCREEN.
         if (!e.getClientRects().length) continue;
         if (!out[k]) {
             const c = getComputedStyle(e), r = e.getBoundingClientRect();
@@ -113,10 +101,7 @@ const nameOf = (k) => k;
             if (Math.abs(a.h - b.h) > 3) diffs.unshift(`height: ${a.h} → ${b.h}`);
             if (Math.abs(a.w - b.w) > 6) diffs.unshift(`width: ${a.w} → ${b.w}`);
             if (diffs.length) style.push({ k, diffs });
-            // ⚠️ COMPARE WITH THE WHITESPACE REMOVED, NOT MERELY COLLAPSED. The mockup is hand-written HTML with
-            // newlines between inline elements and htm emits none, so textContent differs on almost every
-            // container for a reason that is not a design difference at all — 47 rows on the first run, most of
-            // them noise, which is the fastest way to make an audit unreadable and therefore unread.
+            // ⚠️ COMPARE WITH THE WHITESPACE REMOVED, NOT MERELY COLLAPSED. The mockup is hand-written HTML with newlines between inline elements and htm emits none, so textContent differs on almost every container for a reason that is not a design difference at all — 47 rows on the first run, most of them noise, which is the fastest way to make an audit unreadable and therefore unread.
             const bare = (t) => t.replace(/\s+/g, '').toLowerCase();
             if (a.text && b.text && bare(a.text) !== bare(b.text) && a.text.length < 55 && b.text.length < 55) {
                 text.push(`${nameOf(k)}\n      mk “${a.text}”\n      pt “${b.text}”`);
