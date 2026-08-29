@@ -58,6 +58,47 @@ Nothing else:
 
 ---
 
+## 🧭 SWEEP THE SURFACES A READER WILL MEET — NOT YOUR OWN MEMORY (added 2026-08-28 21:5x EDT)
+
+**This is the root cause of every gap the 2026-08-28 handoff shipped with, and there were ten across two falsification rounds.** The handoff was written by asking *"what do I know that the next session will not?"* — which is a memory dump. It enumerates facts you are holding, and it is structurally blind to four things:
+
+| Blind to | Because | What it cost that day |
+|---|---|---|
+| **Documents that are now WRONG** | You did not edit them, so they never entered your working set. **A method change invalidates descriptions elsewhere without touching a single one of their bytes.** | `CLAUDE.md`'s portal row still described the superseded method in confident detail — in the ONE file re-injected after every compact |
+| **Obligations** | They are states of the world, not facts in your head | A published artifact left stale and misleading; a notes file flagged at session start and never opened |
+| **Couplings** | You remember the VALUE, not the invariant that makes it mandatory | `--at` was "the default I picked" rather than "must equal the mockup's own `F.today` or the two sides silently desynchronise" |
+| **Delivery ORDER** | It is a property of the system, not of your knowledge | The stale auto-injected handoff arrives first and the current one has to be opened |
+
+**The replacement question is a SURFACE enumeration, and it is checkable where a memory dump is not.** Ask: *what will the next session read, in what order, and is each of those still true?*
+
+1. **Auto-loaded, in arrival order** — `CLAUDE.md` (the only file re-injected after `/compact`) · `MEMORY.md` · the `SessionStart` hooks and the `.remember` handoff block · any `.claude/rules/*.md` whose `paths:` glob matches what will be touched.
+2. **Opened on demand** — the live plan, the dated spec, `COMPANION.md`, `docs/db-deferred-list.md`, this guide, the handoff itself.
+3. For each: **does it know, and is it now WRONG?** Wrong beats missing — it is authoritative and it arrives anyway.
+
+🔴 **The document you did NOT touch is the likeliest to be wrong.** That is the same shape as the completeness sweep's downstream-heuristics pass, applied to prose instead of counts: a uniform change leaves every description of the old behaviour intact and reading as though it were current.
+
+## 🔴 A STALE HANDOFF ARRIVES AUTOMATICALLY; THE CURRENT ONE HAS TO BE OPENED (added 2026-08-28 21:5x EDT)
+
+**This is the failure the rest of this file cannot prevent, and it was found by falsifying a handoff that had just been called complete.**
+
+The `SessionStart` hook injects a **LAST HANDOFF** block from `.remember`. It is whatever was written the last time `/remember` ran — which may be twelve hours and one method-pivot ago. Measured 2026-08-28: a block written at 09:15 was re-delivered **fourteen times** through an evening in which the entire working method changed, and it still told the reader that the method was *"inventory-diff then a relational probe"* and that *"Phase 4 is the EXAM"*. Meanwhile the current document sat in `local/handoff/` waiting to be opened.
+
+**A stale carrier beats an absent one, because the reader does not know to distrust it.** Two rules follow:
+
+1. **Write the current handoff so it can be told apart from the stale one, from inside the stale one's own framing.** Put a block at the very top that names the OLD handoff by its landmarks — the file it points at, a distinctive phrase it uses, the commit it calls newest — and says plainly that this file supersedes it. Do not write "read the latest handoff": a reader who has been handed a confident stale document does not know which is latest.
+2. **If the pivot is bigger than the session, it does not belong only in a handoff.** A handoff is gitignored and session-scoped. A method change needs a **tracked** home — a dated spec, the plan's own procedure section, and a line in `CLAUDE.md`'s navigation map, which is the only file re-injected after a compact.
+
+⚠️ **And check the always-loaded surfaces for a description that is now WRONG rather than merely missing.** The same pass found `CLAUDE.md`'s portal row still describing the superseded method in full confident detail — worse than a gap, because it is authoritative and arrives in every session.
+
+## ✅ VERIFY THE CARRIERS; DO NOT ASSERT THEM (added 2026-08-28)
+
+A handoff that says "everything is written down" is a claim like any other. The 2026-08-28 pass made exactly that claim and a falsification run found **six** gaps in it, two of them hazards. What actually settled them was four greps and a `git log`, not recollection:
+
+- `git log --oneline --all -- <new-file>` — **a clean tree proves nothing is UNSTAGED, not that a new file entered a commit.**
+- `rg -c '<the new idea>' <every tracked doc that ought to know>` — and read WHICH line matched; a single incidental hit reads identical to real coverage in a count.
+- Check that a constant the method depends on is where you think it is. One such check turned a vague worry into a hard requirement: the mockup's `today` is a fixture constant, so the frozen clock must match it or the two sides silently desynchronise.
+- Ask what is an **obligation** rather than a fact — a published artifact now stale, a notes file never opened — because those vanish without trace and no diff shows them.
+
 ## The three carriers — and they are not equally reliable
 
 A handoff is not one artifact. It is three, and **the most detailed one is the least reliable**, which is the opposite of the intuition:

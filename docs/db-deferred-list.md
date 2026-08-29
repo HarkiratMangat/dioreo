@@ -532,6 +532,22 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Broadcast's overlay is not finished — Airtime and 375×812 `[P1 · S · Opus5-XHigh]`
+
+*Filed 2026-08-28 21:5x EDT. The continuation document is `local/handoff/2026-08-28-portal-overlay-method.md`, which is **gitignored**, so this is the tracked half.*
+
+Broadcast's **Delivery queue at 1282×888 reaches 0.3% across 28 regions with both pages at exactly 1258px** — the overlay method's proving ground (spec `2026-08-28-portal-overlay-conformance-design.md`, procedure §0.6 of the conformance plan). Two surfaces of that same realm were never measured: **`--view Airtime`** and **`--viewport 375x812`**. **Verify:** `node scripts/portalDiff.mjs --realm broadcast --view Airtime --portal harness` reports zero regions above the noise floor, and the same at 375×812.
+
+⚠️ Its three residual regions at 1282 are the header command bar (shifted 7px by the identity divergence), the avatar, and a 1px button offset from whitespace text nodes in the design's own markup. The first two are the **irreducible** row of COMPANION's conformance register.
+
+### The published A/B artifact is stale and Season-only `[P2 · XS · Sonnet5-Medium]`
+
+*Filed 2026-08-28 21:5x EDT.* `https://claude.ai/code/artifact/c4a40347-447c-45fd-9ca9-d5d1835e40e9` carries four full-page **Season** pairs captured BEFORE the Board rebuild and before any overlay work, and no Broadcast at all — so it now misrepresents the branch to anyone Harkirat shares it with. Source: `local/season-ab.html`. 🔴 **Update it by passing that URL as `url`**; publishing the same file path from a conversation that did not publish it creates a SECOND artifact. **Verify:** the page shows Broadcast and its frames match the current build.
+
+### `docs/ideas/diors-notes.md` has six unmarked items, untouched through 2026-08-28 `[P2 · S · Opus5-Low]`
+
+*Filed 2026-08-28 21:5x EDT.* The `SessionStart` check flagged them at the start of a twelve-hour session and not one was opened. Recorded here because a skipped obligation leaves no trace in git and the next session's hook will report the same count without anyone knowing it has been carried. Workflow: the `project_central_notes_file` memory — review, answer, mark in-file the same session, sweep resolved items to `docs/archive/graveyard.md`.
+
 ### ~~Season's overview scrubber draws 37 marks, every one at its 3px floor~~ — 🔴 RETRACTED, IT WAS A SAMPLING ERROR
 
 *Filed 2026-08-28 16:3x EDT and withdrawn at 16:4x the same day, during a falsification pass over the session's own output.*
