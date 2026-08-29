@@ -412,8 +412,9 @@ export function Zoomer({ win, full, onWindow }) {
             <!-- ⚠️ THE INSTRUCTION IS A TOOLTIP NOW, NOT A SENTENCE IN THE CHROME. COMPANION §5.2 gives the
                  ruler three pointer gestures and nothing on screen said so, which is why this was added at
                  all — but a permanent line of prose sitting in a control bar is read once and then becomes
-                 furniture, and it was crowding out the window range that belongs there. The portal has a
-                 tooltip runtime; discoverability lives on the control it describes. -->
+                 furniture. The portal has a tooltip runtime; discoverability lives on the control it
+                 describes. (An earlier version of this note said the sentence was crowding out the window
+                 range — that range is not in this control at all; it is in the view bar's meta line.) -->
         </div>
     `;
 }
@@ -668,8 +669,11 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
              defect COMPANION 16.7 names, at a distance where both are in one glance. The mockup has ONE
              header for this panel and it is the view bar; the panel opens straight onto the overview.
              Deleting it also lifts the Track 59px, which is the third of three blocks that were pushing the
-             realm's own subject below an 806px fold. The window range that belongs at the far right of a
-             view bar moved into the Zoomer, where the mockup puts it. -->
+             realm's own subject below an 806px fold. ⚠️ THE WINDOW RANGE IS NOT IN THE ZOOMER — an earlier
+             note here said it moved there "where the mockup puts it" and the mockup does not: the design
+             draws it at the far right of the view bar, in that bar's own meta line, which is the Shell's
+             own meta slot. It was in the Zoomer, as a second date range beside a day count, until the
+             overlay put the two bars side by side. -->
         <!-- ⚠️ NO PANEL OF ITS OWN. The Track is one of the view panel's three views, so a second
              panel element around it indented the axis by a second gutter — the plot rendered 46px narrower
              than the design's and the findings strip below it wrapped onto two extra lines to pay for
