@@ -89,7 +89,8 @@ function BCard({ item, col, ctx, onMove, onOpen }) {
     const soon = boardSoon(item, col, ctx);
     // 🔴 A DIV WITH role=button, NOT A <button>. The staged column's cards contain their own controls, and a button inside a button is invalid HTML the browser silently un-nests — the same reason the pipeline's card was a div. tabindex keeps it in the tab order and the arrow handler keeps it operable, which is what COMPANION §3.6 asks of every drag surface.
     return html`
-        <div class=${'bcard' + (col === 'staged' ? ' staged' : '') + (col === 'ended' ? ' ended' : '')}
+        <!-- The staged modifier is the design's only card modifier: which column a card is in already says it ended, and a second encoding of one fact is a second thing that can disagree with it. -->
+        <div class=${'bcard' + (col === 'staged' ? ' staged' : '')}
              data-id=${item.id} draggable="true" tabindex="0" role="button"
              style=${`--c:var(${item.topicVar || '--ink3'})`}
              aria-label=${`${item.title}, ${item.typeLabel || item.lane}, in ${col}. Alt plus left or right arrow moves it.`}
@@ -105,7 +106,22 @@ function BCard({ item, col, ctx, onMove, onOpen }) {
              onClick=${() => onOpen && onOpen(item)}>
             <span class="bn">${item.title}</span>
             <span class="bd">${item.typeLabel || item.lane} <span class="dot2">·</span> ${fmtD(item.startDate)} → ${fmtD(item.endDate)}</span>
-            <div class=${'bmeta' + (soon ? ' soon' : '')}>${boardMeta(item, col, ctx)}</div>
+            <div class=${'bmeta' + (soon ? ' soon' : '')}>${(() => {
+                const m = boardMetaParts(item, col, ctx);
+                return html`${m.pre}${m.fig ? html`<b>${m.fig}</b>` : null}${m.dot ? html` <span class="dot2">·</span> ` : null}${m.post}`;
+            })()}</div>
+            <!-- Only a SPAN gets a spark: a release is a moment, and a progress track under a moment
+                 draws a duration that does not exist. The design gates it on kind for that reason. -->
+            ${item.kind === 'point' || !item.span ? null : html`
+                <div class="sparkwrap">
+                    <span class="spark" style=${`--c:var(${item.topicVar || '--ink4'})`}>
+                        <i class=${item.state === 'staged' ? 'staged' : 'saved'} style=${`left:${item.span.left}%;width:${item.span.width}%`}>
+                            ${(() => { const e = sparkElapsed(item, ctx.today); return e ? html`<span class="done" style=${`width:${e}%`}></span>` : null; })()}
+                        </i>
+                        ${item.nowPct === null || item.nowPct === undefined ? null
+                            : html`<span class="nowdot" style=${`left:${item.nowPct}%`}></span>`}
+                    </span>
+                </div>`}
         </div>`;
 }
 
@@ -135,14 +151,15 @@ export function Board({ items, today, newestPatchId, onMove, onOpen }) {
     };
 
     return html`
-        <div class="panel" id="board">
-            <div class="ph">
-                <span class="t">Board</span>
-                <span class="rt">the columns are dates — moving a card moves its window</span>
-            </div>
+        <!-- ⚠️ NO PANEL AND NO HEADER OF ITS OWN. The Board is one of the view panel's three views, so a
+             second panel around it titles the view twice and indents it by a second gutter — the same
+             mistake Airtime and the Track each shipped. The sentence that was in that header belongs to
+             the board bar below, where the design puts it, and it is the half this copy was missing. -->
+        <div id="board">
             <div class="bbar">
                 <span class="bbar-t">${(items || []).length} items across 4 states — drag a card between columns,
-                    or focus one and press <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.</span>
+                    or focus one and press <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>. The columns are dates, so
+                    moving a card moves its window.</span>
                 <span class="sp"></span>
                 ${collapsed.size ? html`<button class="chip" onClick=${() => persist(new Set())}>Expand all (${collapsed.size} hidden)</button>` : null}
             </div>

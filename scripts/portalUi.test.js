@@ -606,9 +606,9 @@ check('a tier chip is drawn once per rarity, in the order it first appears', () 
 // ⚠️ A `-#` COMMENT LINE IS A NOTE ATTACHED TO THE DRAW, not an item with a rarity — utils/adminParser.js stores it with tier 'comment'. Counting it would put a chip on the row for a sentence.
 check('a comment line is not a rarity', () => {
     assert.deepStrictEqual(rowTiers({ items: [{ tier: 'comment', name: 'Character bundle only' }, { tier: 'mythic', name: 'X' }] }), ['mythic']);
-    // The detail is a COUNT now, not a list of names — the tier chips beside it already say what is in the draw. The comment line is still excluded, which is what this check is about: one real item.
-    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'comment', name: 'a note' }, { tier: 'mythic', name: 'X' }] }), '1 item');
-    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'mythic', name: 'X' }, { tier: 'epic', name: 'Y' }] }), '2 items');
+    // ⚠️ THE TWO ANSWERS ARE DIFFERENT QUESTIONS AND THE SUBJECT HERE IS THE FIRST. A comment line is not a RARITY, so rowTiers excludes it; it IS an item in the draw, so the count includes it — the design's own detail reads "5 items" for a draw whose fifth line is a comment.
+    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'comment', name: 'a note' }, { tier: 'mythic', name: 'X' }] }), '2 items');
+    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'mythic', name: 'X' }] }), '1 item');
 });
 
 // ⚠️ ONLY THE THREE TIERS THE STYLESHEET DEFINES GET A CLASS. resolveTier also returns 'legacy' and a title-cased fallback for anything it does not know; inventing `t-legacy` would emit a class with no rule, which is the one thing portal:orphans exists to stop.
@@ -618,15 +618,19 @@ check('an unknown rarity gets no class rather than an invented one', () => {
     assert.strictEqual(TIER_CLASS['Some New Tier'], undefined);
 });
 
-check('a calendar entry has no items, so its detail is its category', () => {
-    assert.strictEqual(rowDetail({ category: 'playlist' }), 'playlist');
+check('a calendar entry says what it CARRIES, and a category is not that', () => {
+    // The Type column two along already says it is a playlist. Printing it again here made 26 rows answer a question nobody asked and hid the design's own "no detail".
+    assert.strictEqual(rowDetail({ category: 'playlist' }), '');
     assert.strictEqual(rowDetail({}), '', 'nothing to say is empty, and the cell renders "no detail" for it');
+    // The one thing a calendar row does carry that no other column states.
+    assert.strictEqual(rowDetail({ category: 'playlist', isOngoing: true }), 'runs all season');
 });
 
 // 🔴 BOTH ENDS ARE INCLUSIVE. Treating `end < now` as ended retires an entry at midnight of the morning it is still live — which is the entire span of a one-day event.
 check('an entry whose last day is today is still running', () => {
-    assert.strictEqual(rowLifecycle({ date: '2026-08-20', endDate: '2026-08-26' }, '2026-08-26'), 'running');
-    assert.strictEqual(rowLifecycle({ date: '2026-08-26' }, '2026-08-26'), 'running', 'a one-day event is running on its day');
+    // 'live', not 'running': the Manifest and the Board answer this from ONE function now (lifecycleOf), after nine rows read ENDED in the table beside a card in Live now, from the same records.
+    assert.strictEqual(rowLifecycle({ date: '2026-08-20', endDate: '2026-08-26' }, '2026-08-26'), 'live');
+    assert.strictEqual(rowLifecycle({ date: '2026-08-26' }, '2026-08-26'), 'live', 'a one-day event is live on its day');
     assert.strictEqual(rowLifecycle({ date: '2026-08-20', endDate: '2026-08-25' }, '2026-08-26'), 'ended');
     assert.strictEqual(rowLifecycle({ date: '2026-08-27' }, '2026-08-26'), 'upcoming');
     assert.strictEqual(rowLifecycle({}, '2026-08-26'), '', 'an undated row states nothing rather than guessing');

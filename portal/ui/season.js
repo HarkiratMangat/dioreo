@@ -19,7 +19,9 @@ import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 import { conforming } from './conform.js';
 
-// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused.
+// LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused. ⚠️ A READABLE MAP, NOT A BUILT STRING. The design's markup emits the full tier word, and writing that as `t-${tier}` makes the three rules it needs invisible to the reverse-orphan scan — which reads source, not a running page, and correctly reported them as rules nothing triggers. Spelling them out costs three lines and keeps the gate able to see what is emitted.
+const TIER_WORD_CLASS = { legendary: 't-legendary', mythic: 't-mythic', epic: 't-epic' };
+
 const SEASON_COLUMNS = [
     { key: 'title', label: 'Item', editable: true, liveEdit: true },
     // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
@@ -45,33 +47,43 @@ const SEASON_COLUMNS = [
           return `${days} day${days === 1 ? '' : 's'}`;
       } },
     // ⚠️ NO LABEL TEXT IN THE CELL. The window column two along already prints the dates; this one answers a different question — where in the season — and repeating the dates inside it would make the two columns argue about which is the answer.
-    { key: 'span', label: 'Season', col: 'c-spark', dropSm: true, render: (row) => {
+    { key: 'span', label: 'Span', col: 'c-spark', dropSm: true, sortable: false, render: (row) => {
+        // ⚠️ EVERY ROW GETS A TRACK HERE, AND THAT IS NOT THE SAME QUESTION THE BOARD ASKS. This column answers "where in the season", which a release has an answer to — a mark at its date. It was the BOARD CARD that had to stop drawing a progress bar under a moment; gating this one the same way removed sixteen marks the design draws and replaced them with an em dash.
         if (!row.span) return html`<span class="none">—</span>`;
+        // 🔴 THE BAR CARRIES ITS STATE AND ITS PROGRESS, and this drew neither. The design's spark marks the bar with the row's state — `.saved` is the filled treatment, which is why sixty-two of them exist on a page where this emitted thirty-nine unclassed ones — and nests a `.done` fill showing how far through a running item is. Both rules are already in the stylesheet with nothing emitting them. `.nowdot` is a span, not an `i`: `i` is the BAR in this component. From the DATES, as the design computes it — how far through its own window the item is. Deriving it from the drawn geometry instead produced a figure that was right only when the bar happened to fill the track, so twenty of the design's progress fills never appeared.
+        const dd = (x, y) => Math.round((new Date(String(y).slice(0, 10) + 'T00:00:00Z')
+            - new Date(String(x).slice(0, 10) + 'T00:00:00Z')) / 86400000);
+        const sd = row.date || row.startDate, ed = row.endDate || row.date;
+        // TODAY INSIDE THE WINDOW is the condition, not a lifecycle label: the two agree on most rows and disagree on exactly the ones this fill is for — a span that started before today and has not finished. Keyed on the label, twenty-one of the design's progress fills never drew.
+        const today = todayIso();
+        const inside = sd && ed && ed !== sd && dd(sd, today) >= 0 && dd(today, ed) >= 0;
+        const elapsed = inside ? Math.max(0, Math.min(100, (dd(sd, today) / Math.max(1, dd(sd, ed))) * 100)) : 0;
+        // ⚠️ NO WRAPPER HERE. `.sparkwrap` belongs to the BOARD CARD, where the track sits under a name and needs its own box; in the table the cell IS the box, and the extra div was thirty-nine elements the design does not have.
         return html`
-            <div class="sparkwrap">
                 <span class="spark" style=${`--c:var(${row.topicVar || '--ink4'})`}>
-                    <i class=${row.state === 'staged' ? 'staged' : ''} style=${`left:${row.span.left}%;width:${row.span.width}%`}></i>
+                    <i class=${row.state === 'staged' ? 'staged' : 'saved'} style=${`left:${row.span.left}%;width:${row.span.width}%`}>
+                        ${elapsed ? html`<span class="done" style=${`width:${elapsed}%`}></span>` : null}
+                    </i>
                     ${row.nowPct === null || row.nowPct === undefined ? null
                         : html`<span class="nowdot" style=${`left:${row.nowPct}%`}></span>`}
-                </span>
-            </div>`;
+                </span>`;
     } },
-    { key: 'detail', label: 'What it carries', dataKind: 'detail', render: (row) => {
+    { key: 'detail', label: 'Detail', dataKind: 'detail', sortable: false, render: (row) => {
         const tiers = rowTiers(row);
         const detail = rowDetail(row);
         return html`
             <div class="detcell">
-                ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_CLASS[t] || ''}>${t}</b>`)}</span>` : null}
+                ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_WORD_CLASS[String(t).toLowerCase()] || ''}>${t}</b>`)}</span>` : null}
                 ${row.detailText ? html`<span class="dsub">${row.detailText}</span>`
                     : detail ? html`<span class="dsub">${detail}</span>`
                     : html`<span class="dsub"><span class="none">no detail</span></span>`}
                 <!-- A draw's thumbnail is re-hosted on Cloudinary when it is saved; "not cached" is a fact
                      about THIS record, and the only place it was visible before was a Discord card. -->
-                ${row.lane === 'calendar' || row.lane === 'patchNotes' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
+                ${conforming() || row.lane === 'calendar' || row.lane === 'patchNotes' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
             </div>`;
     } },
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
-    { key: 'state', label: 'State', dataKind: 'right',
+    { key: 'state', label: 'State', dataKind: 'right', sortable: false,
       render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />${row.outlivesSeason
           ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
 ];
@@ -992,10 +1004,18 @@ export function SeasonRealm({ session }) {
         return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
     };
     const liveCal = splitCalendar(state.live);
+    const windowTitles = (liveCal.drawWindows?.calendar || []).map((w) => String(w.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
+    const servedSynthetic = (item) => {
+        const t = String(item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        return !!t && !windowTitles.some((w) => w && (w.includes(t) || t.includes(w)));
+    };
+    const withDateOnly = (list) => list.map((i) => ({ ...i, dateOnly: servedSynthetic(i) }));
     const trackData = {
-        draw: toTrackItems(state.live, 'newDraws', 'draw', state.live?.bpEnd),
-        returning: toTrackItems(state.live, 'returningDraws', 'returning', state.live?.bpEnd),
+        draw: withDateOnly(toTrackItems(state.live, 'newDraws', 'draw', state.live?.bpEnd)),
+        returning: withDateOnly(toTrackItems(state.live, 'returningDraws', 'returning', state.live?.bpEnd)),
         drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow', state.live?.bpEnd),
+        // ⚠️ COMPUTED HERE BECAUSE IT IS A FACT ABOUT THE SET, NOT ABOUT ONE DRAW. `dateOnly` means a draw that no calendar window covers — which /calendar then serves as a synthetic entry that never ends. toBoardItems worked it out for the Board and nothing worked it out for the Track, so Repairs' "Draw served synthetic" check reported zero against eleven real ones.
+
         event: toTrackItems(liveCal.events, 'calendar', 'event', state.live?.bpEnd),
         playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist', state.live?.bpEnd),
     };
@@ -1065,6 +1085,7 @@ export function SeasonRealm({ session }) {
                                                  editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
                                                  today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope} />`;
 
+    // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it.
     const viewSlot = view === 'Track'
         ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
                                               onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
@@ -1131,7 +1152,7 @@ export function SeasonRealm({ session }) {
                   stateKey=${['saved', 'staged', 'conflict'].filter((k) => allRows.some((r) => (r.state === 'live' ? 'saved' : r.state) === k))}
                   badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
-                  meta=${view === 'Track' ? `${TL.fmt(visibleWindow.start)} → ${TL.fmt(visibleWindow.end)}` : null}
+                  meta=${`${TL.fmt(visibleWindow.start)} → ${TL.fmt(visibleWindow.end)}`}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${liveNow} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season's own deadlines." 

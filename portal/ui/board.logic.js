@@ -201,17 +201,44 @@ function boardSoon(item, key, ctx) {
     return d >= 0 && d <= SOON_DAYS;
 }
 
-function boardMeta(item, key, ctx) {
+// 🔴 THE FIGURE IS EMPHASISED, AND THE LIVE COLUMN SAYS HOW FAR THROUGH. The design's card meta wraps its number in a <b> — "released **15d** ago" — so the quantity is findable at a glance on a board of thirty-nine cards, and its live branch reads "ends in **2d** · 85% through" where this said only "2d left". Progress is the half a date cannot give you: two days left of three is nearly over, two days left of ninety has barely started.
+//
+// ⚠️ RETURNED AS PARTS, NOT AS HTML. A string carrying <b> would have to be injected, which Preact deliberately makes awkward and which no test can read. `boardMetaParts` is what the card renders; `boardMeta` stays the plain-text join, which is what the aria-label and every existing test want.
+function boardMetaParts(item, key, ctx) {
     const today = String(ctx.today).slice(0, 10);
-    if (key === 'staged') return 'not visible to players yet';
+    if (key === 'staged') return { pre: 'not visible to players yet', fig: '', post: '' };
     if (item.kind === 'point') {
         const d = dayDiff(today, item.startDate || item.date);
-        return d > 0 ? `releases in ${d}d` : d === 0 ? 'releases today' : `released ${-d}d ago`;
+        if (d > 0) return { pre: 'releases in ', fig: `${d}d`, post: '' };
+        if (d === 0) return { pre: 'releases ', fig: 'today', post: '' };
+        return { pre: 'released ', fig: `${-d}d`, post: ' ago' };
     }
-    if (key === 'upcoming') return `starts in ${dayDiff(today, item.startDate)}d`;
-    if (key === 'ended') return `ran ${dayDiff(item.startDate, item.endDate) + 1}d`;
+    if (key === 'upcoming') return { pre: 'starts in ', fig: `${dayDiff(today, item.startDate)}d`, post: '' };
+    if (key === 'ended') return { pre: 'ran ', fig: `${dayDiff(item.startDate, item.endDate) + 1}d`, post: '' };
+    // ⚠️ A SPAN WITH NO END DATE REACHES HERE. An 'all season' calendar row has none, and every figure downstream of it came out NaN — rendered as "NaNd" on the card, which is worse than saying nothing.
+    if (!item.endDate) return { pre: 'running', fig: '', post: '' };
     const left = dayDiff(today, item.endDate);
-    return left >= 0 ? `${left}d left` : 'running';
+    if (left < 0) return { pre: 'ended ', fig: `${-left}d`, post: ' ago' };
+    const span = Math.max(1, dayDiff(item.startDate, item.endDate));
+    const pct = Math.min(100, Math.max(0, Math.round((dayDiff(item.startDate, today) / span) * 100)));
+    // The separator is an ELEMENT in the design (`span.dot2`), not a character in the sentence — same dot the card's type line uses, so the two read as one vocabulary rather than two punctuations.
+    return { pre: 'ends in ', fig: `${left}d`, dot: true, post: `${pct}% through` };
+}
+
+function boardMeta(item, key, ctx) {
+    const p = boardMetaParts(item, key, ctx);
+    return `${p.pre}${p.fig}${p.post}`;
+}
+
+// How far through its own window a running item is, as a percentage — the fill the design nests inside the spark's bar. The Board card draws the SAME spark the Manifest does, and its version had no fill at all, which is twenty of them missing on one view.
+function sparkElapsed(item, todayIso) {
+    const sd = String(item.startDate || item.date || '').slice(0, 10);
+    const ed = String(item.endDate || '').slice(0, 10);
+    const t = String(todayIso).slice(0, 10);
+    if (!sd || !ed || ed === sd) return 0;
+    const d = (x, y) => Math.round((new Date(y + 'T00:00:00Z') - new Date(x + 'T00:00:00Z')) / 86400000);
+    if (d(sd, t) < 0 || d(t, ed) < 0) return 0;
+    return Math.max(0, Math.min(100, (d(sd, t) / Math.max(1, d(sd, ed))) * 100));
 }
 
 const BOARD_EMPTY = {
@@ -223,5 +250,5 @@ const BOARD_EMPTY = {
 
 if (typeof module !== 'undefined' && module.exports) {
     
-module.exports = { columnFor, blockedReason, groupByColumn, gateCommit, describeOp, describeInverse, diffRows, fmtDiffValue, lifecycleOf, groupBoardItems, boardColumnSummary, boardSoon, boardMeta, BOARD_EMPTY, LIFE_ORDER, hasEnded };
+module.exports = { columnFor, blockedReason, groupByColumn, gateCommit, describeOp, describeInverse, diffRows, fmtDiffValue, lifecycleOf, groupBoardItems, boardColumnSummary, boardSoon, boardMeta, boardMetaParts, sparkElapsed, BOARD_EMPTY, LIFE_ORDER, hasEnded };
 }

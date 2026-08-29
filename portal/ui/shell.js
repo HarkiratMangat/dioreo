@@ -379,11 +379,14 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     useEffect(() => { installTips(); }, []);
     // 🔴 THE PAGE ARRIVED ALL AT ONCE AND THE DESIGN STAGGERS IT. One orchestrated entrance — the masthead, then the context strip, then each panel, 55ms apart — is the design's own line ("chrome, then the lanes cascading, then the flags") and the class it needs, `.rise`, was carried over into the stylesheet with nothing to put it on. Skipped entirely under reduced-motion, which is also why it can never affect a settled screenshot.
     useEffect(() => {
+        // ⚠️ SEASON ONLY, BECAUSE THAT IS WHERE THE DESIGN DOES IT. Checked across all eight mockup pages: exactly one adds this class. Adding it everywhere was a redesign wearing a port's clothes — and it changed every realm's class signature, which is what an overlay pairs on.
+        if (realm !== 'season') return;
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        document.querySelectorAll('.masthead, .identity, .panel').forEach((el, i) => {
+        // ⚠️ AFTER A FRAME. The effect fires when the Shell mounts and the context strip is a CHILD slot, so on the first pass the identity section does not exist yet and never received the class — visible in the overlay as a mockup-only element on a page that renders it.
+        requestAnimationFrame(() => document.querySelectorAll('.masthead, .identity, .panel').forEach((el, i) => {
             el.classList.add('rise');
             el.style.animationDelay = `${i * 55}ms`;
-        });
+        }));
     }, []);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
@@ -444,7 +447,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      the view layer with the Manifest and the Manifest stays recessive. Anything put here
                      must earn a permanent place above the realm's subject; if it is only sometimes present,
                      it belongs inside the view. -->
-                ${contextSlot ? html`<div class="ctxband">${contextSlot}</div>` : null}
+                ${contextSlot ? (conforming() ? contextSlot : html`<div class="ctxband">${contextSlot}</div>`) : null}
                 <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
                      Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
                      composition rule: masthead, context strip, view layer, then the mechanism beneath the picture.

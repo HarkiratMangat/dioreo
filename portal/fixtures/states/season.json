@@ -171,7 +171,7 @@
       "flags": {},
       "steps": [
         {
-          "click": ".mtable tbody input[type=checkbox]"
+          "click": ".mtable tbody .cb[role=checkbox]"
         }
       ],
       "known": [],

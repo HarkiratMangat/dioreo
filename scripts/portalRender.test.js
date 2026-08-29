@@ -230,8 +230,9 @@ const SEASON_COLUMNS = [
     check('every Manifest control is labelled for a screen reader', () => {
         // ⚠️ `selectable` IS ASSERTED ON. It used to be unconditional and now defaults to "wherever bulk actions exist" — right for the product, since Broadcast's design draws no checkbox column, but it would leave this check with nothing to check: a Manifest with no checkboxes has no checkbox labels to look for, so it would pass by having no subject.
         const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} selectable=${true} />`);
-        // ⚠️ IT COUNTS THE ASSOCIATION, NOT THE CLASS NAME. This used to count `class="sr-only"` occurrences, which passed for the wrong reason twice over: a visually-hidden SPAN counted as a label, and renaming the utility class to the adopted sheet's own `.sr` broke a test whose subject — every control has a label bound to it — had not changed at all.
-        const labels = (out.match(/<label[^>]*\sfor="/g) || []).length;
+        // ⚠️ IT COUNTS THE ASSOCIATION, NOT THE CLASS NAME. This used to count `class="sr-only"` occurrences, which passed for the wrong reason twice over: a visually-hidden SPAN counted as a label, and renaming the utility class to the adopted sheet's own `.sr` broke a test whose subject — every control has a label bound to it — had not changed at all. ⚠️ IT COUNTS THE ASSOCIATION, AND THERE ARE TWO WAYS TO MAKE ONE. The row control is the design's `span[role=checkbox]` now rather than a hidden input inside a label, so a bound `aria-label` is the association — the subject of this check, "every control has a label bound to it", is unchanged and counting only `<label for=` would fail it for using the other form.
+        const labels = (out.match(/<label[^>]*\sfor="/g) || []).length
+            + (out.match(/role="checkbox"[^>]*aria-label="/g) || []).length;
         assert.ok(labels >= SEASON_ROWS.length + 1, `expected a label bound to the search box and to each row checkbox, found ${labels}`);
     });
 

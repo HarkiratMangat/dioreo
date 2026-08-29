@@ -280,7 +280,10 @@ input, select, textarea, button {
     background: var(--sunk);
     border: 1px solid var(--rule);
     border-radius: 5px;
-    padding: 7px 10px;
+    /* Tokenised for the same reason the height floor is: the design has no control reset at all, and
+       this padding reached every bare button the design sizes itself — the table's remove control among
+       them, 7px against the design's 1px on thirty-nine rows. */
+    padding: var(--ctl-pad, 7px 10px);
     /* ⚠️ TOKENISED SO THE STAND-DOWN CAN TURN IT OFF WITHOUT MOVING ITS SPECIFICITY. This whole
        control reset is the portal's own — the design's stylesheet has no equivalent — and its
        32px floor silently raised every button the design sizes itself, the Track's zoom controls
@@ -307,7 +310,14 @@ input, select, textarea, button {
 /* The stand-down: under ?conform=1 the control reset's own floor goes to zero, so a button is the
    height the design's component rules give it. Every explicit min-height in app.css still applies —
    only the blanket floor stands down. */
-:root[data-conform="1"] { --ctl-min: 0px; }
+/* `auto`, not `0px`: the design has no floor at all, and zeroing it made the masthead type pills
+   report a 0px minimum where the design reports auto — a second wrong answer replacing the first. */
+/* `revert`, not `0`: with no reset the design's bare buttons take the browser's own 1px 6px, and
+   zeroing it replaced one wrong padding with another on thirty-nine remove controls. */
+/* The browser's own button padding, written out. `revert` inside a var() is invalid at computed-value
+   time and silently took the fallback, which is the value being stood down — a stand-down that quietly
+   does nothing is worse than none, because the number moves and the cause looks like something else. */
+:root[data-conform="1"] { --ctl-min: auto; --ctl-pad: 1px 6px; }
 button {
     background: var(--raised);
     font-weight: 600;

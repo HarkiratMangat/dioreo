@@ -616,6 +616,19 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 /* 🔴 A REPAIR FINDING WAS A CLICKABLE <li> WITH tabIndex -1 — mouse-only, and invisible to the
    keyboard pass, which selects [role=button] and finds nothing on a bare li carrying an onclick.
    The element that handles a click is the element that must take focus. */
+/* 🔴 THE FINDINGS LIST HAD NO ROW RULES. `.rephits button` was carried over and the four rules that
+   style the ROW around it were not, so sixteen findings rendered as bare list items — no ground, no
+   severity edge, no type scale — while the button inside each one was styled correctly. Copied from the
+   design's own sheet, which is where they have always been. */
+.rephits li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 9px;
+  background:var(--paper);border-left:2px solid var(--warn);cursor:pointer}
+.rephits li:hover{background:var(--hi)}
+.rephits li b{font:600 12px/1.3 var(--ui);color:var(--ink)}
+.rephits li span{font-size:11px;color:var(--ink3)}
+/* ⚠️ AND THE BUTTON INSIDE IT IS RESET. The row carries the padding, the ground and the severity edge;
+   the button is a full-width click target with none of its own. Without this it took the row's padding a
+   second time — measured 41px against the design's 29, on sixteen findings — which reads as a spacing
+   choice rather than as one rule missing. Copied from the design's sheet, where it has always been. */
 .rephits button{display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
   background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}
 .rephits button:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-2)}
@@ -1340,6 +1353,13 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   border-radius:var(--rad-1);padding:2px 5px;line-height:1.3}
 .t-leg{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
 .t-myth{background:rgba(255,52,48,.15);color:#FF6B67;box-shadow:inset 0 0 0 1px rgba(255,52,48,.35)}
+/* 🔴 THE DESIGN'S MARKUP EMITS THE FULL TIER WORD AND ITS STYLESHEET DEFINES ONLY THE ABBREVIATION,
+   so every tier chip in the mockup renders unstyled — a defect in the package rather than a choice,
+   and one the portal had been quietly working around by emitting a different class. Matching the
+   markup and adding the three missing rules gives the same DOM and a chip that is actually drawn. */
+.t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
+.t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
+.t-epic{background:rgba(150,110,235,.15);color:#B79BF0;box-shadow:inset 0 0 0 1px rgba(150,110,235,.35)}
 .t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
 .mtable .det .dsub{font-size:12px;color:var(--ink3)}
 .mtable .det .none{color:var(--ink3);font-style:italic}
@@ -2940,11 +2960,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    reverse-orphan sweep could not see it because `.rephits` IS emitted; only the descendant was
    dead. Both halves existed and neither looked wrong alone. */
 .rephits{list-style:none;margin:9px 0 0;padding:0;display:flex;flex-direction:column;gap:1px}
-.rephits button{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 9px;
-  background:var(--paper);border-left:2px solid var(--warn);cursor:pointer}
-.rephits button:hover{background:var(--hi)}
-.rephits button b{font:600 12px/1.3 var(--ui);color:var(--ink)}
-.rephits button span{font-size:11px;color:var(--ink3)}
+/* 🔴 THESE FOUR WERE THE DESIGN'S ROW RULES, TRANSCRIBED ONTO THE BUTTON. In the design `.rephits li`
+   carries the padding, the ground and the severity edge and `.rephits button` is reset to nothing; the
+   migration put all of it on the button and defined no row rule at all. The row then had no ground and
+   the button had two paddings — 41px against the design's 29, on every finding — and it read as a
+   spacing choice rather than as four rules pointing at the wrong element. The row rules are above. */
 .repclean{margin:8px 0 0;font-size:11.5px;color:var(--ink3)}
 
 
@@ -5085,7 +5105,11 @@ button .ic,a .ic{pointer-events:none}
  * ("running", "over", "upcoming"), and reading a lifecycle in the same voice as a count made the
  * Type column look like it was reporting two measurements. Uppercased and tracked out so the two
  * kinds of meta are told apart before either is read. */
-.rowmeta.rowlife{font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+/* ⚠️ PORTAL-ONLY, AND IT STANDS DOWN. The design's second row line is plain `.rowmeta` — same size,
+   same weight, same case as the day count beside it — and giving it its own uppercase treatment made
+   thirty-nine rows differ in five computed properties at once. Whether the state line deserves its own
+   voice is a design question for the re-apply phase, not something to settle inside a conformance pass. */
+:root:not([data-conform="1"]) .rowmeta.rowlife{font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 /* The day drawer's list. The adopted sheet names both and styles neither — it renders them with the
  * drawer's own inherited body type, which puts the title and the window in one undifferentiated run
  * of text. The date is the SECOND thing read on each line, so it is set in the data face and pushed
@@ -5101,8 +5125,10 @@ button .ic,a .ic{pointer-events:none}
 /* The label that carries the drawn checkbox. The input inside it is visually hidden rather than
  * removed, so the box keeps a real control's keyboard behaviour — and the focus ring has to be
  * borrowed onto the drawn box, because a hidden input's own outline is hidden with it. */
-.cbl{display:inline-flex;align-items:center;cursor:pointer}
-.cbl input:focus-visible + .cb{outline:2px solid var(--patch);outline-offset:2px}
+/* 🗑 `.cbl` deleted 2026-08-29 00:5x EDT — it styled a label wrapping a visually-hidden checkbox, and
+   the row control is the design's own `span[role=checkbox]` now, which needs neither. Its focus ring
+   moved onto that element's own rule. */
+.cb:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 /* The door's one line of state, above the heading. It is deliberately quiet — a stranger is being
  * told a fact about the session, not warned about anything. */
 .doorstate{margin:0 0 4px;font:500 11px/1 var(--data);letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}

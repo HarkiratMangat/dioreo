@@ -125,7 +125,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
             <div class="mtools">
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
-                <span class="mlabel">${label || title || 'Rows'}</span>
+                <span class="mlabel"><span>${label || title || 'Rows'}</span></span>
                 <span class="srch">
                     <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
                     <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
@@ -162,20 +162,30 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                     ${onRemove ? html`<col class="c-ra" />` : null}
                 </colgroup>
                 <thead><tr>
-                    ${selectable ? html`<th class="c-cb"></th>` : null}
+                    ${selectable ? html`<th><!-- The design's header carries a select-all in the same control the rows use, so
+                        the column has a purpose at its top rather than an empty cell. -->
+                        <span class=${'cb' + (visible.length && visible.every((r) => selected.has(r.id)) ? ' on' : '')}
+                              role="checkbox" tabindex="0" aria-label="Select every row shown"
+                              aria-checked=${visible.length && visible.every((r) => selected.has(r.id)) ? 'true' : 'false'}
+                              onClick=${() => setSelected(visible.length && visible.every((r) => selected.has(r.id))
+                                  ? new Set() : new Set(visible.map((r) => r.id)))}></span></th>` : null}
                     <!-- 🔴 A <th> WITH AN onClick IS NOT A CONTROL. Sorting was bound to the header cell
                          itself, which no keyboard can reach and no screen reader announces as actionable
                          — the whole table could be sorted with a mouse and not at all without one. The
                          button carries the handler and aria-sort states the current direction, which
                          is the part a caret alone cannot say. -->
                     ${columns.map((c, i) => html`
-                        <th key=${c.key} class=${'sortable' + (sort.column === c.key ? (sort.direction === 'asc' ? ' sorted-asc' : ' sorted-desc') : '')
+                        <!-- Three of the design's headers are plain: a spark, a free-text detail and a
+                             state pill have no order a reader would ask for, and a button that sorts
+                             nothing useful is a control that has to be tried before it can be dismissed. -->
+                        <th key=${c.key} class=${(c.sortable === false ? '' : 'sortable') + (c.dataKind === 'right' ? ' ta-r' : '') + (sort.column === c.key ? (sort.direction === 'asc' ? ' sorted-asc' : ' sorted-desc') : '')
                                 + (i > 0 && (c.dropSm || c.dataKind === 'date') ? ' drop-sm' : '')}
                             aria-sort=${sort.column === c.key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                            ${c.sortable === false ? html`${c.label}` : html`
                             <button type="button" class="sortbtn"
                                     onClick=${() => setSort({ column: c.key, direction: sort.column === c.key && sort.direction === 'asc' ? 'desc' : 'asc' })}>
                                 ${c.label}
-                            </button>
+                            </button>`}
                         </th>`)}
                     ${onRemove ? html`<th class="ra"><span class="sr">${removeLabel}</span></th>` : null}
                 </tr></thead>
@@ -190,12 +200,22 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                  native blue tick on 39 rows. The input is still the input: it is visually hidden
                                  rather than replaced, so it keeps its focus, its keyboard behaviour and its label. -->
                             ${selectable ? html`<td onClick=${(e) => e.stopPropagation()}>
-                                <label class="cbl" for=${`sel-${row.id}`}>
-                                    <span class="sr">Select ${row[columns[0].key]}</span>
-                                    <input class="sr" id=${`sel-${row.id}`} type="checkbox" checked=${selected.has(row.id)}
-                                           onChange=${() => setSelected(toggleSelection(selected, row.id))} />
-                                    <span class=${'cb' + (selected.has(row.id) ? ' on' : '')} aria-hidden="true"></span>
-                                </label>
+                                <!-- ⚠️ THE DESIGN'S CONTROL IS A span[role=checkbox], NOT A HIDDEN INPUT.
+                                     A visually-hidden real input inside a label is a legitimate pattern and it
+                                     is not this one: the cb and cb-on rules are what the adopted stylesheet draws,
+                                     the label's own text lands in the row's textContent, and the two markups
+                                     measure differently on every one of thirty-nine rows. Keyboard parity is
+                                     kept explicitly — Space and Enter both toggle, which is what a real
+                                     checkbox gives for free and what this has to earn. -->
+                                <span class=${'cb' + (selected.has(row.id) ? ' on' : '')} role="checkbox"
+                                      aria-checked=${selected.has(row.id) ? 'true' : 'false'} tabindex="0"
+                                      aria-label=${`Select ${row[columns[0].key]}`}
+                                      onClick=${(e) => { e.stopPropagation(); setSelected(toggleSelection(selected, row.id)); }}
+                                      onKeyDown=${(e) => {
+                                          if (e.key !== ' ' && e.key !== 'Enter') return;
+                                          e.preventDefault(); e.stopPropagation();
+                                          setSelected(toggleSelection(selected, row.id));
+                                      }}></span>
                             </td>` : null}
                             ${columns.map((c, ci) => {
                                 const isEditing = editingCell && editingCell.rowId === row.id && editingCell.columnKey === c.key;
@@ -226,7 +246,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                         onClick=${c.editable ? (e) => { e.stopPropagation(); setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(String(row[c.key] ?? '')); } : null}
                                         style=${c.editable ? 'cursor:text' : ''}>
                                         ${ci === 0
-                                            ? html`<span class="ncell">
+                                            ? html`<div class="ncell">
                                                 <!-- The swatch is a FLEX SIBLING of the text, never inside it. A realm may
                                                      replace the topic dot with its own mark (Broadcast draws a severity mark), and the first attempt let the column render that mark inside
                                                      the text span — which took it out of the flex row, gave the title 17px
@@ -252,7 +272,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                                         ? html`<input class="edit" value=${String(row[c.key] ?? '')} aria-label=${`Rename ${row[c.key] ?? ''}`}
                                                                       onClick=${(e) => e.stopPropagation()}
                                                                       onChange=${(e) => { setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(e.target.value); }} />`
-                                                        : body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span>`}</span>`
+                                                        : body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span>`}</div>`
                                             : html`${body}${c.meta ? html`<div class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</div>` : null}`}
                                     </td>
                                 `;
@@ -264,7 +284,12 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                             ${onRemove ? html`
                                 <td class="ra" onClick=${(e) => e.stopPropagation()}>
                                     <button class="rmv" title=${removeLabel} aria-label=${`${removeLabel} ${row[columns[0].key]}`}
-                                            onClick=${() => onRemove(row)}><${Icon} name="trash-2" cls="sm" /></button>
+                                            onClick=${() => onRemove(row)}>
+                                        <!-- The design draws this one inline rather than through the sprite, and the
+                                             shapes are not the same glyph: its lid-and-body path is 15px wide against
+                                             the sprite's 11.5, on thirty-nine rows. The icon set is right everywhere
+                                             else; this control is the design's own. -->
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg></button>
                                 </td>` : null}
                         </tr>
                     `)}

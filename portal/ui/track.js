@@ -315,74 +315,90 @@ const REPAIR_NOTE = {
 
 export function Repairs({ data, window: visible, season, onClamp }) {
     const all = Object.values(data).flat();
-    const overruns = season?.bpEnd ? all.filter((i) => i.endDate && i.endDate > season.bpEnd) : [];
-    // The same thing entered twice — Harkirat's own definition of the flaggable case, after two measured definitions of "conflict" both turned out to describe ordinary scheduling. See findDuplicateTitles for what those measurements were.
-    const dupes = findDuplicateTitles(all);
-    const gapLanes = LANES.map((l) => ({ lane: l, gaps: findGaps(data[l.key] || [], visible) })).filter((g) => g.gaps.length);
-    // ⚠️ NOT WINDOWED. Every other check here answers "in the stretch you are looking at"; a banner is a property of the season record, not of a date range, so scoping it to the visible window would hide a broken banner behind a zoom. The head line says "in the window you are looking at", so this one is counted separately rather than folded into that total and quietly making it wrong.
-    const banners = findExpiringBanners(season);
-    const total = overruns.length + dupes.length + gapLanes.reduce((n, g) => n + g.gaps.length, 0);
+    const spans = all.filter((i) => i.kind !== 'point');
+    const draws = [...(data.draw || []), ...(data.returning || [])];
+    const bpEnd = season?.bpEnd ? String(season.bpEnd).slice(0, 10) : '';
+    const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
-    const group = (key, label, count, kind, rows) => html`
-        <div class=${'repgrp' + (count ? '' : ' clean')} key=${key}>
+    // 🔴 SIX CHECKS, IN TWO KINDS, AND THE PORTAL HAD FOUR IN ONE. The design splits them by whether a MACHINE CAN BE SURE — a duplicate row, an expiring link, a date past the battle pass, a window with no draw — from what only the person can decide: a draw served without a window never ends, and a title that looks like a 2x CP event but is not flagged. Presenting them as one list asks a reader to work out, per finding, whether they are being told a fact or asked a question.
+    //
+    // ⚠️ THE TWO ZERO-FINDING CHECKS ARE THE POINT OF THE SPLIT, not filler: both CAN fire — rename any draw and its window orphans immediately — and a check that reports nothing is a different statement from a check nobody wrote.
+    const dupeRows = (() => {
+        const seen = new Map(); const out = [];
+        for (const e of (data.event || []).concat(data.playlist || [], data.drawwindow || [])) {
+            const k = norm(e.title) + '|' + String(e.startDate || e.date || '').slice(0, 10);
+            if (seen.has(k)) out.push({ id: e.id, label: e.title, why: `identical to ${seen.get(k)} — same title, same start` });
+            else seen.set(k, e.title);
+        }
+        return out;
+    })();
+    const bannerRows = findExpiringBanners(season).map((b) => ({ id: b.key, label: b.label, why: b.why }));
+    const pastBp = (bpEnd ? all.filter((i) => i.endDate && String(i.endDate).slice(0, 10) > bpEnd) : [])
+        .map((i) => ({ id: i.id, label: i.title, item: i,
+            why: (n => `ends ${String(i.endDate).slice(0, 10)}, ${n} day${n === 1 ? '' : 's'} past`)(TL.days(bpEnd, String(i.endDate).slice(0, 10))) }));
+    const orphanWindows = (data.drawwindow || [])
+        .filter((w) => !draws.some((d) => { const a = norm(d.title), b = norm(w.title); return a && b && (a.includes(b) || b.includes(a)); }))
+        .map((w) => ({ id: w.id, label: w.title, why: 'matches no draw by title' }));
+    const noWindow = draws.filter((d) => d.dateOnly)
+        .map((d) => ({ id: d.id, label: d.title, why: `releases ${String(d.startDate || d.date || '').slice(0, 10)}, no window, never ends` }));
+    // BOTH a CP token AND a doubling word: "CP Rebate Offer" is not a 2x event and neither is "2x Weapon XP".
+    const untagged2x = spans.filter((i) => !i.isDoubleCP
+            && /\b(cp|cod points?)\b/i.test(i.title || '') && /(^|\W)(2\s*[x×]|double)\b/i.test(i.title || ''))
+        .map((i) => ({ id: i.id, label: i.title, why: 'title matches the 2x CP pattern' }));
+
+    const CHECKS = [
+        { id: 'dupe-calendar', kind: 'mechanical', label: 'Duplicate calendar rows', hits: dupeRows,
+          note: 'Same title, same start date. /calendar renders both, so a player sees the entry twice.' },
+        { id: 'expiring-banner', kind: 'mechanical', label: 'Banner on an expiring Discord link', hits: bannerRows,
+          note: 'A media.discordapp.net URL is SIGNED — it carries an ex= parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.' },
+        { id: 'past-bp', kind: 'mechanical', label: 'Runs past the battle pass', hits: pastBp,
+          note: `Ends after ${bpEnd || 'the battle-pass end, which is not set'}. Not automatically wrong — a DMZ or ranked-tail event legitimately can — but it is the one thing a season calendar cannot show you.` },
+        { id: 'orphan-window', kind: 'mechanical', label: 'Draw window with no draw', hits: orphanWindows,
+          note: "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Rename any draw and its window orphans immediately." },
+        { id: 'no-window', kind: 'judgement', label: 'Draw served synthetic', hits: noWindow,
+          note: 'No explicit calendar row, so commands/calendar.js synthesises a dateOnly entry that renders as "Releases <date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it. That is by design; whether you want it is the judgement.' },
+        { id: 'untagged-2xcp', kind: 'judgement', label: 'Looks like a 2× CP event, not flagged', hits: untagged2x,
+          note: 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP".' },
+    ];
+    const mech = CHECKS.filter((c) => c.kind === 'mechanical');
+    const judg = CHECKS.filter((c) => c.kind === 'judgement');
+    const count = (list) => list.reduce((n, c) => n + c.hits.length, 0);
+    const total = count(CHECKS);
+
+    const block = (c) => html`
+        <div class=${'repgrp' + (c.hits.length ? '' : ' clean')} key=${c.id}>
             <div class="reph">
-                <span class="rt-n">${count}</span>
-                <span class="rt-l">${label}</span>
-                <span class="rt-k">${kind}</span>
+                <span class="rt-n">${c.hits.length}</span>
+                <span class="rt-l">${c.label}</span>
+                <span class="rt-k">${c.kind}</span>
             </div>
-            <p class="repnote">${REPAIR_NOTE[key]}</p>
-            ${count ? html`<div class="rephits">${rows}</div>` : html`<p class="repclean">Nothing to look at here.</p>`}
+            <p class="repnote">${c.note}</p>
+            ${c.hits.length ? html`
+                <ul class="rephits">
+                    ${c.hits.map((h) => html`
+                        <li key=${h.id}>
+                            <button type="button" aria-label=${`Open ${h.label} — ${h.why}`}
+                                    onClick=${() => { if (c.id === 'past-bp' && onClamp && h.item && bpEnd) onClamp(h.item, new Date(bpEnd + 'T00:00:00Z')); }}>
+                                <b>${h.label}</b><span>${h.why}</span>
+                            </button>
+                        </li>`)}
+                </ul>`
+            : html`<p class="repclean">Nothing to fix. The check still runs; it has nothing to report against this season.</p>`}
         </div>`;
 
+    // ⚠️ NO PANEL OF ITS OWN — the third view of the same panel, same as the Track and the Board.
     return html`
-        <div class="panel" id="repairs">
-            <div class="ph">
-                <span class="t">Repairs</span>
-                <span class="rt">${TL.fmt(visible.start)} → ${TL.fmt(visible.end)}</span>
-            </div>
+        <div id="repairs">
             <div class="repwrap">
                 <div class="rephead">
-                    <b>${total} ${total === 1 ? 'finding' : 'findings'}</b> in the window you are looking at.
-                    None of these is an error the bot would refuse — they are the shapes a season takes when a date
-                    moved and something else did not.
+                    <b>${total}</b> finding${total === 1 ? '' : 's'} across ${CHECKS.length} checks —
+                    ${count(mech)} mechanical, ${count(judg)} for you to judge.
+                    Every one is read off the live season document.
                 </div>
-
-                <p class="reps">Outliving the season</p>
-                ${group('overrun', 'End after the battle pass', overruns.length, 'date', overruns.map((it) => html`
-                    <button key=${it.id} onClick=${() => onClamp && onClamp(it, new Date(season.bpEnd + 'T00:00:00Z'))}>
-                        <b>${it.title}</b>
-                        <span>ends ${TL.days(season.bpEnd, it.endDate)} days late — clamp it to the battle pass</span>
-                    </button>`))}
-
-                <!-- 🔴 THIS GROUP REPORTED "OVERLAP" TWICE AND WAS WRONG BOTH TIMES. Any two items sharing
-                     days: 61 findings across 37 items, nearly all events meant to run together. Only within
-                     a lane where concurrency should be impossible: 47, every one a pair of playlists, and
-                     CODM plainly runs many playlists at once. Both premises sounded right and neither
-                     survived being run. Harkirat settled the real case on 2026-08-26 — the same thing
-                     entered TWICE — which is a mistake rather than a schedule, and is what this reports
-                     now. findOverlaps stays in track.logic.js, now correct and tested, with no caller and
-                     a comment saying why. -->
-                <p class="reps">Entered twice</p>
-                ${group('dupe', 'The same item, twice', dupes.length, 'record', dupes.map(([a, b, how], n) => html`
-                    <button key=${n} disabled>
-                        <b>${a.title}</b>
-                        <span>${how === 'same' ? 'appears again as' : 'is also inside'} <b>${b.title}</b>, over the same days</span>
-                    </button>`))}
-
-                <p class="reps">Links that expire</p>
-                ${group('banner', 'Banner on a signed Discord link', banners.length, 'record', banners.map((b) => html`
-                    <button key=${b.key} disabled>
-                        <b>${b.label}</b>
-                        <span>${b.why}</span>
-                    </button>`))}
-
-                <p class="reps">Empty stretches</p>
-                ${group('gap', 'Gaps in a lane', gapLanes.reduce((n, g) => n + g.gaps.length, 0), 'window',
-                    gapLanes.flatMap((g) => g.gaps.map((gap, n) => html`
-                        <button key=${g.lane.key + n} disabled>
-                            <b>${g.lane.label}</b>
-                            <span>nothing from ${TL.fmt(gap.start.toISOString().slice(0, 10))} to ${TL.fmt(gap.end.toISOString().slice(0, 10))}</span>
-                        </button>`)))}
+                <h6 class="reps">Mechanical — a machine is sure</h6>
+                ${mech.map(block)}
+                <h6 class="reps">Judgement — defensible, and only you know if it is meant</h6>
+                ${judg.map(block)}
             </div>
         </div>
     `;

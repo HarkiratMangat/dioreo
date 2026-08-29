@@ -19,7 +19,13 @@ function calCategoryOf(item) { return CAL_CATEGORY[String((item && item.category
 function topicVarFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).topic : (LANE_TOPIC_VAR[laneKey] || '--ink3'); }
 function typeLabelFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).label : (LANE_LABELS[laneKey] || laneKey); }
 
-// The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point. ⚠️ TL IS A BROWSER GLOBAL AND THIS FILE ALSO RUNS UNDER NODE — AND IT IS RESOLVED LAZILY ON PURPOSE. Every *.logic.js loads as a classic script in the page, in readdir order, and `season.logic.js` sorts BEFORE `timeline.logic.js` — so a top-level `const TLib = TL` captured `undefined`, fell through to a require() that does not exist in a browser, and pinned null for the life of the page. Season then threw "Cannot read properties of null (reading 'days')" on first render and the realm was blank, in ordinary mode, while the conformance overlay looked fine. Resolve at CALL time.
+// The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point. ⚠️ TL IS A BROWSER GLOBAL AND THIS FILE ALSO RUNS UNDER NODE — AND IT IS RESOLVED LAZILY ON PURPOSE. Every *.logic.js loads as a classic script in the page, in readdir order, and `season.logic.js` sorts BEFORE `timeline.logic.js` — so a top-level `const TLib = TL` captured `undefined`, fell through to a require() that does not exist in a browser, and pinned null for the life of the page. Season then threw "Cannot read properties of null (reading 'days')" on first render and the realm was blank, in ordinary mode, while the conformance overlay looked fine. Resolve at CALL time. Same shape as TLib and for the same reason: `lifecycleOf` is board.logic.js's global in the browser and nothing at all under Node, where the tests require this file on its own. Resolved at CALL time — a top-level capture would read undefined, since board.logic.js sorts AFTER this file.
+function lifecycleFn() {
+    if (typeof lifecycleOf !== 'undefined') return lifecycleOf;
+    if (typeof require !== 'undefined') return require('./board.logic.js').lifecycleOf;
+    throw new Error('season.logic.js needs board.logic.js and neither runtime provided it');
+}
+
 function TLib() {
     if (typeof TL !== 'undefined') return TL;
     if (typeof require !== 'undefined') return require('./timeline.logic.js');
@@ -122,22 +128,28 @@ function nowPctIn(geo, nowMs) {
 //              because a window is named after its draw and never with the same punctuation.
 // ⚠️ PATCH NOTES ARE HERE AND NOT IN THE MANIFEST, and that asymmetry is deliberate rather than an oversight: the Manifest's home for a patch note is the Season Record panel, and the Board's own lifecycle rule has a dedicated patch-note branch precisely because they belong on this axis.
 function toBoardItems(live, changesets, draft) {
-    const rows = toManifestRows(live, changesets, draft);
+    // ⚠️ WITHOUT PATCH NOTES: this function appends them itself, just below. Once toManifestRows started adding them too (under the conformance flag) the Board counted 41 items against the design's 39 and every column pill was one too high — a duplicate that reads as a data error rather than a wiring one.
+    const rows = toManifestRows(live, changesets, draft, { patchNotes: false });
     const windows = (live?.calendar || [])
         .filter((c) => String(c.category || '').toLowerCase().startsWith('draw'))
         .map((c) => normalizeTitle(c.title));
+    // An 'all season' row ends when the season does — the same rule the Track needed, and the Board is the other reader of it. Without it a draw window's card printed "Aug 7 → —" and its meta went NaN.
+    const ongoingEnd = live && live.bpEnd ? String(live.bpEnd).slice(0, 10) : null;
     const out = rows.map((r) => {
         const point = r.lane === 'newDraws' || r.lane === 'returningDraws';
         const start = r.startDate || r.date || null;
         return { ...r, kind: point ? 'point' : 'span',
-            startDate: start, endDate: r.endDate || (point ? start : null),
+            startDate: start,
+            endDate: r.endDate || (r.isOngoing && ongoingEnd ? ongoingEnd : (point ? start : null)),
             dateOnly: point && !windows.some((w) => w && normalizeTitle(r.title) && (w.includes(normalizeTitle(r.title)) || normalizeTitle(r.title).includes(w))) };
     });
     for (const n of (live?.patchNotes || [])) {
         out.push({ ...n, id: String(n._id), title: n.title || 'Patch note', lane: 'patchNotes',
-            kind: 'point', dateOnly: true, typeLabel: 'Patch note',
+            kind: 'point', dateOnly: true, typeLabel: 'Patch notes',
             topicVar: '--patch', state: stateForElement(n._id, changesets),
-            startDate: n.date || n.publishedAt || null, endDate: n.date || n.publishedAt || null });
+            // `releaseDate` is the schema's own field; reading only `date`/`publishedAt` left every publication card on the Board reading "— → —" and sorting as though it had no date at all.
+            startDate: n.releaseDate || n.date || n.publishedAt || null,
+            endDate: n.releaseDate || n.date || n.publishedAt || null });
     }
     return out;
 }
@@ -152,7 +164,7 @@ function newestPatchNoteId(items) {
     return best ? best.id : null;
 }
 
-function toManifestRows(live, changesets, draft) {
+function toManifestRows(live, changesets, draft, opts) {
     if (!live) return [];
     const geo = seasonSpanGeometry(live);
     const nowP = nowPctIn(geo, Date.now());
@@ -163,6 +175,8 @@ function toManifestRows(live, changesets, draft) {
                 // The full item ships on the row (not just the display fields below) so buildSeasonEditOp has every field draw.edit/calendar.edit's validate() needs -- an edit op built from a display-only row would silently drop items/startDate/category on every commit.
                 ...item,
                 id: item._id, title: item.title, lane: key,
+                // 🔴 THE ONGOING END DATE BELONGS ON THE ROW, NOT ONLY ON THE TRACK AND THE BOARD. All three read the same records and only two knew that an "all season" calendar row ends when the season does — so the table's Window column printed one date, its Span column drew a point, and its progress fill never appeared, on the same row the Board showed running.
+                endDate: item.endDate || (item.isOngoing && live.bpEnd ? String(live.bpEnd).slice(0, 10) : item.endDate),
                 state: stateForElement(item._id, changesets),
                 // Display-only, both stripped again by buildSeasonEditOp before an op is built.
                 topicVar: topicVarFor(key, item), typeLabel: typeLabelFor(key, item),
@@ -175,7 +189,7 @@ function toManifestRows(live, changesets, draft) {
         }
     }
     // ⚠️ THE DESIGN'S MANIFEST LISTS PATCH NOTES AND THIS ONE DOES NOT — 37 rows against 39, and a count reading "37 of 37" beside an export strip saying 39. Keeping them out is the portal's own call (the Season Record is their home), so it stands down under the conformance flag rather than being argued about mid-pass. `window` is the release date, which is the only date a publication has.
-    if (typeof document !== 'undefined' && document.documentElement.dataset.conform === '1') {
+    if ((!opts || opts.patchNotes !== false) && typeof document !== 'undefined' && document.documentElement.dataset.conform === '1') {
         for (const n of live.patchNotes || []) {
             rows.push({
                 ...n, id: n._id, title: n.titleOverride || n.title, lane: 'patchNotes',
@@ -528,11 +542,13 @@ function rowTiers(row) {
 
 function rowDetail(row) {
     if (!row) return '';
-    const items = ((row.items) || []).filter((i) => String(i.tier || '').toLowerCase() !== 'comment');
+    // ⚠️ EVERY LINE COUNTS. A comment line is not a RARITY — which is why rowTiers excludes it — but it is still an item in the draw, and the design's own detail says "5 items" where filtering it says 4.
+    const items = (row.items) || [];
     // ⚠️ A COUNT, NOT A LIST. Spelling out every item name filled the widest column with a comma string that wraps to three lines and still truncates — the tier chips beside it already say WHAT is in the draw, and the number says how much. The design's own detail is "5 items", and the names live one click away where there is room for them.
     if (items.length) return `${items.length} item${items.length === 1 ? '' : 's'}`;
-    // A calendar entry has no items; what it has instead is a category, and "playlist" is a real answer where "—" is not.
-    return row.category ? String(row.category) : '';
+    // ⚠️ NOT THE CATEGORY. The column asks what a row CARRIES, and the Type column two along already says it is a playlist — printing it again here made 26 rows answer a question nobody asked and hid the design's own "no detail", which is the honest answer for a calendar entry. The one thing a calendar row does carry is the fact that it never ends, which no other column states.
+    if (row.isOngoing) return 'runs all season';
+    return '';
 }
 
 // ⚠️ COMPARED ON THE DAY, and both ends are INCLUSIVE. An entry whose last day is today is still running — treating `end < now` as ended retires it at midnight of the morning it is still live, which is the whole span of a one-day event. ⚠️ A PUBLICATION'S LIFECYCLE IS NOT A DATE COMPARISON. The newest patch note is the current one and every older one is history — the Board already derives it that way (newestPatchNoteId) and the Manifest did not, so every note including the newest read ENDED.
@@ -545,15 +561,16 @@ function rowLifecycle(row, today) {
     return rowLifecycleByDate(row, today);
 }
 
+// 🔴 ONE LIFECYCLE, NOT TWO. This file had its own date comparison and board.logic.js has `lifecycleOf`, ported from the design — and they disagreed on nine of thirty-nine rows, so the Manifest said ENDED beside a Board card in Live now. The rule that matters is the one this copy did not have: a draw with no calendar window of its own (`dateOnly`) never ends, which is the exact bug that shipped in the bot and was fixed on 2026-08-07. Delegating means they cannot drift apart again.
 function rowLifecycleByDate(row, today) {
-    const day = (v) => (v ? String(v).slice(0, 10) : '');
-    const t = day(today);
-    const start = day(row && (row.date || row.startDate));
-    const end = day(row && (row.endDate || row.date));
+    if (!row) return '';
+    const start = String(row.date || row.startDate || '').slice(0, 10);
     if (!start) return '';
-    if (start > t) return 'upcoming';
-    if (end && end < t) return 'ended';
-    return 'running';
+    // 🔴 `dateOnly` IS WHAT MAKES A WINDOWLESS DRAW PERMANENT, and this row never carried it — so nine rows the Board calls LIVE NOW the table called ENDED, from the same data, one tab apart. It is computed in toBoardItems from the calendar's draw windows; a manifest row has to be told.
+    const point = row.lane === 'newDraws' || row.lane === 'returningDraws';
+    return lifecycleFn()({ ...row, kind: row.kind || (point ? 'point' : 'span'),
+        dateOnly: row.dateOnly !== undefined ? row.dateOnly : point,
+        startDate: start, endDate: row.endDate || null, state: 'live' }, { today });
 }
 
 // The design's own words. "finished" and "not yet" were this file's invention; the row's second line is a STATE label in the same register as SAVED and NOT LIVE beside it, not a sentence fragment.

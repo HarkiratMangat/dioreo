@@ -13,6 +13,26 @@ status: live
 
 ---
 
+## §0.7 THE AUDIT LOOP — the instrument, and the batching rule it enforces (2026-08-29 00:5x EDT)
+
+🔴 **`npm run portal:audit -- --realm <r> [--view <tab>] [--all]` IS THE FIRST CALL OF EVERY REALM, AND ITS SECTIONS ARE THE BATCHING CONTRACT.** `portal:converge` asks the same question and answers it too shallowly — four levels deep, thirteen style properties, no stylesheet — so every finding below the fourth level needed its own hand-written probe and every CSS difference its own grep. Measured 2026-08-29 00:2x EDT: that loop cost well over a hundred turns on one realm's one view, at roughly one fix per turn. The findings were real; **the loop was the waste**.
+
+| Section | What it holds | How to work it |
+|---|---|---|
+| **① CASCADE** | the FIRST vertical offset, alone | **Fix it and re-run.** An offset near the top moves everything under it, so the count beside it is mostly the same defect seen again |
+| **② SHAPE** | elements one side has and the other does not, grouped by component piece | **ONE BATCH** |
+| **③ WORDS** | same element, different text | **ONE BATCH** |
+| **④ STYLE** | same element, different computed box or type, grouped by the property | **ONE BATCH** |
+| **⑤ RULES** | the two stylesheets, selector by selector, at-rule aware | **ONE BATCH** — one differing declaration usually explains a whole block of ④ |
+
+🔴 **ONLY ① IS ONE-AT-A-TIME, AND ONLY WHILE IT IS NON-EMPTY.** Sections ②–⑤ do not cascade into one another; treating them as though they did is what produced the measure-one-fix-measure loop. The rule inherited from §0.6 — *fix the FIRST rhythm mismatch and re-run* — is correct for a cascading offset and **wrong for everything else**, and converge could not tell them apart because it could not see far enough down to know.
+
+⚠️ **Pairing is sequence alignment, and the two simpler rules were tried and measured first.** Pairing globally by class signature in document order mispaired 622 of 1608 nodes on Season's Board; pairing strictly by ancestor path plus ordinal was worse at 1610, because one extra wrapper desynchronises every path beneath it. The pages are two renderings of one tree with insertions and deletions between them, which is what an LCS solves.
+
+⚠️ **A repeated pattern is ONE finding.** A seven-element card sub-structure missing from thirty cards is one edit, and listing it thirty times is what made the earlier output unreadable enough to send a reader back to ad-hoc probes.
+
+**Measured on Season's Board:** 664 reported differences → 10, in five batched passes rather than sixty single ones. Broadcast holds at 0.3% in both views throughout, which is the shared-surface regression check.
+
 ## §L — THE LIVE LEDGER
 
 🔴 **THE ONE RULE THAT KEEPS THIS DOCUMENT TRUE: update this table in the SAME COMMIT that closes a unit.** Not afterwards, not in a handoff. A row whose status is wrong is worse than no row, because the next session trusts it — which is exactly how the doubled search bar came to be recorded as fixed while it was on screen.
