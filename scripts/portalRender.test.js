@@ -173,7 +173,8 @@ const SEASON_COLUMNS = [
         assert.ok(out.includes('--topic-accent:var(--draw)'), 'the dot carries the row’s own topic token');
         assert.ok(out.includes('--topic-accent:var(--play)'), 'and Playlist is not folded into Event');
         assert.ok(!out.includes('--topic-accent:var(--ink3)'), 'no row falls through to the grey fallback');
-        assert.ok(out.includes('stt live') && out.includes('stt stag') && out.includes('stt conf'),
+        // `live` now takes the `saved` shape, because the stylesheet fills `.stt.saved` and has no rule for `.stt.live` — the pill rendered as plain text on every live row until the map said so. The subject of this check is unchanged: three states, three distinguishable shapes.
+        assert.ok(out.includes('stt saved') && out.includes('stt stag') && out.includes('stt conf'),
             'three states, three SHAPES — colour alone would not survive greyscale');
         assert.ok(out.includes('class="mscroll"') && out.includes('class="mtable"'), 'the table sits in its own scroll container');
         assert.ok(out.includes('<colgroup>') && out.includes('class="c-item"'),
@@ -227,7 +228,8 @@ const SEASON_COLUMNS = [
     });
 
     check('every Manifest control is labelled for a screen reader', () => {
-        const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} />`);
+        // ⚠️ `selectable` IS ASSERTED ON. It used to be unconditional and now defaults to "wherever bulk actions exist" — right for the product, since Broadcast's design draws no checkbox column, but it would leave this check with nothing to check: a Manifest with no checkboxes has no checkbox labels to look for, so it would pass by having no subject.
+        const out = render(html`<${Manifest} rows=${SEASON_ROWS} columns=${SEASON_COLUMNS} searchableFields=${['title']} selectable=${true} />`);
         // ⚠️ IT COUNTS THE ASSOCIATION, NOT THE CLASS NAME. This used to count `class="sr-only"` occurrences, which passed for the wrong reason twice over: a visually-hidden SPAN counted as a label, and renaming the utility class to the adopted sheet's own `.sr` broke a test whose subject — every control has a label bound to it — had not changed at all.
         const labels = (out.match(/<label[^>]*\sfor="/g) || []).length;
         assert.ok(labels >= SEASON_ROWS.length + 1, `expected a label bound to the search box and to each row checkbox, found ${labels}`);

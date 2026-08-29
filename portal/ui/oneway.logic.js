@@ -16,6 +16,29 @@ function oneWayItems(live, draft) {
     const d = draft && draft.active ? draft : null;
     const draftCount = d ? (d.newDraws || []).length + (d.returningDraws || []).length + (d.calendar || []).length : 0;
 
+    // 🔴 THE DESIGN'S STRIP IS FIVE OPERATIONS AND THIS IS SEVEN, WITH DIFFERENT WORDS ON THE FIVE THEY SHARE. `draws-all` and `promote` are portal additions, and the notes were rewritten. Both may well be improvements — promote in particular has nowhere else to live — but they are a redesign, and the redesigns come back after every realm matches. Under the conformance flag the strip is the design's, verbatim: same order, same titles, same units, same sentences.
+    if (typeof document !== 'undefined' && document.documentElement.dataset.conform === '1') {
+        const items = newDraws + returning + calendar + patchNotes;
+        return [
+            { id: 'draws-new', title: 'Purge new draws', unit: 'draws', count: newDraws,
+                note: 'Empties the New Draws list. Returning draws are untouched.',
+                op: { type: 'draw.purge', target: { scope: 'new' }, payload: {} }, word: 'PURGE' },
+            { id: 'draws-returning', title: 'Purge returning draws', unit: 'draws', count: returning,
+                note: 'Empties the Returning Draws list. New draws are untouched.',
+                op: { type: 'draw.purge', target: { scope: 'returning' }, payload: {} }, word: 'PURGE' },
+            { id: 'calendar', title: 'Purge calendar', unit: 'events', count: calendar,
+                note: 'Removes every event, playlist and calendar draw row for this season.',
+                op: { type: 'calendar.purge', target: {}, payload: {} }, word: 'PURGE' },
+            { id: 'patchnotes', title: 'Purge patch notes', unit: 'entries', count: patchNotes,
+                note: 'Clears the whole patch-note history, published entries included.',
+                op: { type: 'patchnote.purge', target: {}, payload: {} }, word: 'PURGE' },
+            { id: 'startnew', title: 'Start a new season', unit: 'items', count: items,
+                note: 'Clears draws, calendar and titles together and opens an empty season.',
+                field: { key: 'newTitle', label: 'New season title', placeholder: 'Season 8 — …' },
+                op: { type: 'season.startNew', target: {}, payload: {} }, word: 'NEW SEASON' },
+        ];
+    }
+
     return [
         { id: 'draws-all', title: 'Purge every draw', unit: 'draws', count: newDraws + returning,
             note: 'New and returning together. The season keeps its title, dates and calendar.',

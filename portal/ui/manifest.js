@@ -6,11 +6,16 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useMemo, useEffect } from '../vendor/preact-hooks.mjs';
 import { stageAndCommit } from './composeClient.js';
 import { Icon } from './icons.js';
+import { conforming } from './conform.js';
 
-// `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to. The state pill's own class comes from the state VALUE, so a realm reporting 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. 🔴 EXPORTED, because a realm that needs to add something BESIDE the state (Season's outlives-the-season warning) used to supply its own `render` and lose the pill entirely — the column whose whole job is state, drawn as a bare word, on every row.
-const PILL = { live: 'live', staged: 'stag', scheduled: 'sched', expired: 'exp', conflict: 'conf' };
-export function StatePill({ state }) {
-    return html`<span class=${'stt ' + (PILL[state] || 'conf')}>${String(state == null ? '' : state).toUpperCase()}</span>`;
+// `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to. The state pill's own class comes from the state VALUE, so a realm reporting 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. 🔴 EXPORTED, because a realm that needs to add something BESIDE the state (Season's outlives-the-season warning) used to supply its own `render` and lose the pill entirely — the column whose whole job is state, drawn as a bare word, on every row. ⚠️ `live` MAPS TO `saved`. The stylesheet fills `.stt.saved`; `.stt.live` has no rule, so the one column whose job is to carry state as a filled chip rendered as plain text on every live row. The stored value and the class are different vocabularies and this is where they meet.
+const PILL = { live: 'saved', saved: 'saved', staged: 'stag', scheduled: 'sched', expired: 'exp', conflict: 'conf' };
+// ⚠️ THE PILL AND THE KEY MUST SAY THE SAME WORD. The key above the table reads saved / staged / conflict — the design's vocabulary — and the pill printed the row's raw stored state, so a live row said LIVE beside a legend that never uses that word. The stored value stays `live`; only the label is the design's.
+const STATE_LABEL = { live: 'SAVED', saved: 'SAVED', staged: 'STAGED', conflict: 'CONFLICT' };
+export function StatePill({ state, accent }) {
+    const key = String(state == null ? '' : state);
+    // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic.
+    return html`<span class=${'stt ' + (PILL[state] || 'conf')} style=${accent ? `--c:${accent}` : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;
 }
 
 function FilterChips({ groups, filters, onChange }) {
@@ -28,8 +33,9 @@ function FilterChips({ groups, filters, onChange }) {
             <button key=${g.key + ':' + o.value}
                     class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.value === current ? ' on' : '')}
                     aria-pressed=${o.value === current}
+                    style=${o.hex ? `--c:${o.hex}` : null}
                     title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
-                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${o.label}</button>`);
+                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}><!-- The design's topic chip carries the topic's own swatch; without it the chip is a word in a box and the colour vocabulary the whole console is built on stops at the table's edge. -->${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.label}</button>`);
     });
 }
 
@@ -69,18 +75,20 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
 }
 
 // 🔴 THE CONFORMANCE REGISTER, AND EVERY ENTRY IS A DELIBERATE ADVANCE PAST THE DESIGN. Broadcast's mockup draws no checkbox column at all; the portal grew one because Broadcast gained bulk actions the design never specified. That is a real capability and it is NOT reverted — but in an overlay run it shifts every column of a four-column table by 40px, which reads as a page of differences rather than as one decision. Reading a dataset flag rather than a build define, so nothing about this can ship enabled: only a page that asks for conformance in its URL ever sets it, and the server never serves that page.
-const conforming = () => typeof document !== 'undefined' && document.documentElement.dataset.conform === '1';
 
-export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' }) {
+
+export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' , searchLabel = '', searchPlaceholder = '', countSuffix = '', extraChips = null, defaultSort = null, footRow = null, selectable: selectableProp = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
-    const [sort, setSort] = useState({ column: null, direction: 'asc' });
+    // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
+    const [sort, setSort] = useState({ column: defaultSort || null, direction: 'asc' });
     const [selected, setSelected] = useState(new Set());
     const [editingCell, setEditingCell] = useState(null); // {rowId, columnKey} | null
     const [editValue, setEditValue] = useState('');
 
     const visible = useMemo(
-        () => sortRows(filterRows(rows, { query, searchableFields, filters }), sort),
+        () => sortRows(filterRows(rows, { query, searchableFields, filters }), sort,
+            (columns.find((c) => c.key === sort.column) || {}).sortValue),
         [rows, query, filters, sort]
     );
 
@@ -101,8 +109,8 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
 
     // The state pill's own class comes from the row's state VALUE, so a realm that reports 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. The map moved out to module scope so StatePill (exported, below) and the default cell renderer share ONE copy.
 
-    // Two ways a row can carry a colour, and both are legitimate. Season names a CSS TOKEN (row.topicVar -> '--draw'), because its four topic accents are design tokens the mockup fixes. Armory carries a raw HEX (row.accentHex), because its per-category hues are the BOT's own values arriving in the payload from getMpCategoryAccent -- reading them from data is what stops the portal's palette drifting from what Discord actually renders. Selection exists when the realm has something to do with it — and never in a conformance run for a realm whose design draws no checkbox. ⚠️ NOT gated on bulkActions: selection also drives export-of-selection and the row-preview, so a realm that declares no bulk verb still has a use for it. The ONLY thing that removes it is a conformance run against a design that draws no checkbox — narrowing it further silently dropped the row checkboxes from every realm and the a11y assertion caught it in one run.
-    const selectable = !conforming();
+    // Two ways a row can carry a colour, and both are legitimate. Season names a CSS TOKEN (row.topicVar -> '--draw'), because its four topic accents are design tokens the mockup fixes. Armory carries a raw HEX (row.accentHex), because its per-category hues are the BOT's own values arriving in the payload from getMpCategoryAccent -- reading them from data is what stops the portal's palette drifting from what Discord actually renders. Selection exists when the realm has something to do with it — and never in a conformance run for a realm whose design draws no checkbox. ⚠️ NOT gated on bulkActions: selection also drives export-of-selection and the row-preview, so a realm that declares no bulk verb still has a use for it. The ONLY thing that removes it is a conformance run against a design that draws no checkbox — narrowing it further silently dropped the row checkboxes from every realm and the a11y assertion caught it in one run. ⚠️ SELECTION IS A REALM'S OWN, NOT THE COMPONENT'S. Season's design draws a checkbox column and forty checkboxes; Broadcast's draws none — and forcing it on every realm cost Broadcast 38px of table width, which narrowed its widest column and wrapped a row, 18px on the page. Both earlier answers were the same mistake in opposite directions: one component deciding a thing that differs per design. Defaults to "selectable where bulk actions exist", which is what every realm but Broadcast wants, and Broadcast says otherwise.
+    const selectable = selectableProp === null ? bulkActions.length > 0 : Boolean(selectableProp);
 
     const dotAccent = (row) => (row.accentHex ? `--topic-accent:${row.accentHex}` : `--topic-accent:var(${row.topicVar || '--ink3'})`);
 
@@ -119,18 +127,24 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                      markup without adding a box that would break the toolbar's own flex row. -->
                 <span class="mlabel">${label || title || 'Rows'}</span>
                 <span class="srch">
-                    <label class="sr" for="manifest-search">Search ${(rowNoun[1] || 'rows').toLowerCase()}</label>
+                    <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
                     <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
                          sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding
                          reserving space for an icon that did not exist. -->
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-                    <input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
+                    <input id="manifest-search" value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} /></span>
                 ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
+                <!-- 🔴 A REALM'S OWN FILTER CHIP, AND SEASON'S LIVED SOMEWHERE ELSE. The design draws
+                     "Staged only" here, beside the type chips, because it IS a filter over these rows;
+                     the portal put it inside the staged-changes panel, which meant it disappeared with
+                     that panel — so with nothing staged there was no way to learn the filter exists, and
+                     with something staged the control sat 700px from the table it filters. -->
+                ${extraChips || null}
                 <!-- The add control sits BEFORE the count, which is the design's order and the useful one: the
                      count is a readout at the end of the row and the verb is a control among the other controls.
                      Measured 256px apart when they were the other way round. -->
                 ${onAdd ? html`<button class="chip go" onClick=${onAdd}>${addLabel}</button>` : null}
-                <span class="rt">${visible.length} of ${rows.length}${selected.size ? ` · ${selected.size} selected` : ''}</span>
+                <span class="rt">${visible.length} of ${rows.length}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
             <div class="mscroll">
             <table class="mtable">
@@ -156,7 +170,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                          is the part a caret alone cannot say. -->
                     ${columns.map((c, i) => html`
                         <th key=${c.key} class=${'sortable' + (sort.column === c.key ? (sort.direction === 'asc' ? ' sorted-asc' : ' sorted-desc') : '')
-                                + (i > 0 && c.dataKind === 'date' ? ' drop-sm' : '')}
+                                + (i > 0 && (c.dropSm || c.dataKind === 'date') ? ' drop-sm' : '')}
                             aria-sort=${sort.column === c.key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                             <button type="button" class="sortbtn"
                                     onClick=${() => setSort({ column: c.key, direction: sort.column === c.key && sort.direction === 'asc' ? 'desc' : 'asc' })}>
@@ -202,6 +216,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                 // ⚠️ `detail` MUST stay a table-cell. The mockup's own comment records the fix: `display:block` on the td broke row layout thirty-nine times, once per row, and only the inner box needs the ellipsis. That is why `.det` carries `min-width:0` and the truncation lives on `.detcell`/`.dsub`.
                                 const kind = ci === 0 ? 'n'
                                     : c.dataKind === 'date' ? 'd drop-sm'
+                                    : c.dropSm ? 'drop-sm'
                                     : c.dataKind === 'detail' ? 'det'
                                     : c.dataKind === 'right' ? 'ta-r'
                                     : c.dataKind === 'nums' ? 'nums'
@@ -219,7 +234,25 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                                      wraps them. Where the swatch SITS is part of the column's width. -->
                                                 <span class=${c.dotClass ? c.dotClass(row) : 'dot'}
                                                       style=${c.dotClass ? (c.dotStyle ? c.dotStyle(row) : null) : dotAccent(row)}></span>
-                                                <span>${body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span></span>`
+                                                <!-- 🔴 THE DESIGN'S NAME COLUMN IS A LIVE INPUT ON EVERY ROW, and this rendered
+                                                     text you had to click first. Renaming is the single most common edit in this
+                                                     table, and a click-to-reveal field cannot be tabbed to, cannot be scanned as
+                                                     editable, and gives no hint it exists — measured, it also made every row 17px
+                                                     shorter than the design's, which is 39 rows of accumulated difference. The
+                                                     click handler on the cell stays: it still selects the cell for the keyboard path. -->
+                                                <!-- ⚠️ THE INPUT IS A DIRECT CHILD OF .ncell, not wrapped. the ncell's own edit rule
+                                                     sizes a FLEX CHILD, and wrapping it in a span made the span the flex child and left the input
+                                                     at its own intrinsic width — 175px against the design's 310, on every row of the table. A
+                                                     column that carries a meta line still needs the wrapper, so both shapes exist. -->
+                                                ${c.liveEdit && !isEditing && !c.meta
+                                                    ? html`<input class="edit" value=${String(row[c.key] ?? '')} aria-label=${`Rename ${row[c.key] ?? ''}`}
+                                                                  onClick=${(e) => e.stopPropagation()}
+                                                                  onChange=${(e) => { setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(e.target.value); }} />`
+                                                    : html`<span>${c.liveEdit && !isEditing
+                                                        ? html`<input class="edit" value=${String(row[c.key] ?? '')} aria-label=${`Rename ${row[c.key] ?? ''}`}
+                                                                      onClick=${(e) => e.stopPropagation()}
+                                                                      onChange=${(e) => { setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(e.target.value); }} />`
+                                                        : body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span>`}</span>`
                                             : html`${body}${c.meta ? html`<div class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</div>` : null}`}
                                     </td>
                                 `;
@@ -239,6 +272,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
             </table>
             </div>
             ${visible.length === 0 ? html`<p class="empty">${rows.length ? 'No rows match this search or filter.' : emptyText}</p>` : null}
+            <!-- The foot row: a realm's own quick-add strip, under the table it adds to. The design puts
+                 one here on Season — a name, a type, two dates and a button — as the fast path beside the
+                 composer above, and the portal had only the composer. -->
+            ${footRow || null}
             ${selected.size && bulkActions.length ? html`
                 <${SelectionBar} count=${selected.size} noun=${rowNoun} tier=${bulkTier}
                                  badge=${bulkNote} summary=${selectionSummary()}

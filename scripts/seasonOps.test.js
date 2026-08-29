@@ -110,9 +110,10 @@ check('restoreSnapshot is self-symmetric -- reverting a revert stays revertible'
 
 check('LANE_LABELS humanizes every internal lane key toManifestRows produces', () => {
     const { LANE_LABELS } = require('../portal/ui/season.logic');
-    assert.strictEqual(LANE_LABELS.newDraws, 'New draw');
-    assert.strictEqual(LANE_LABELS.returningDraws, 'Returning draw');
-    assert.strictEqual(LANE_LABELS.calendar, 'Event');
+    // PLURAL: these name a LANE, not one row, and the design's table, filter chips and Track lane headers all read them that way. Changed with the labels themselves, not around them.
+    assert.strictEqual(LANE_LABELS.newDraws, 'New draws');
+    assert.strictEqual(LANE_LABELS.returningDraws, 'Returning');
+    assert.strictEqual(LANE_LABELS.calendar, 'Events');
 });
 
 check('toManifestRows derives real state instead of hardcoding live (gap audit §3.4 finding 2)', () => {

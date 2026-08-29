@@ -281,7 +281,13 @@ input, select, textarea, button {
     border: 1px solid var(--rule);
     border-radius: 5px;
     padding: 7px 10px;
-    min-height: 32px;              /* dense on desktop, per spec §7; 44px on phone, below */
+    /* ⚠️ TOKENISED SO THE STAND-DOWN CAN TURN IT OFF WITHOUT MOVING ITS SPECIFICITY. This whole
+       control reset is the portal's own — the design's stylesheet has no equivalent — and its
+       32px floor silently raised every button the design sizes itself, the Track's zoom controls
+       from 26px to 32px among them. Wrapping the block in a :not() selector would fix the height
+       and break something else, because the reset deliberately sits BELOW every component rule and
+       a :root guard would lift it above them. A variable changes the value and nothing else. */
+    min-height: var(--ctl-min, 32px);   /* dense on desktop, per spec §7; 44px on phone, below */
     box-sizing: border-box;
 }
 
@@ -297,6 +303,11 @@ input, select, textarea, button {
    produced a 16x26 cell: a third authority over a size that already had two. Zero defers to
    whichever of them wins, which is the only answer that stays correct if that ever changes. */
 .mxcell { min-height: 0; }
+
+/* The stand-down: under ?conform=1 the control reset's own floor goes to zero, so a button is the
+   height the design's component rules give it. Every explicit min-height in app.css still applies —
+   only the blanket floor stands down. */
+:root[data-conform="1"] { --ctl-min: 0px; }
 button {
     background: var(--raised);
     font-weight: 600;

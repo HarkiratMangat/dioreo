@@ -59,7 +59,7 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]),
 select:not([data-bare]),textarea:not([data-bare]){
   background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:8px 10px;min-height:var(--tap)}
-input:hover,select:hover,textarea:hover{border-color:var(--ink3)}
+input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
 input:focus,select:focus,textarea:focus{border-color:var(--patch);outline:none}
 input::placeholder{color:var(--ink3)}
 input:disabled,select:disabled{opacity:.45;cursor:not-allowed}
@@ -122,7 +122,7 @@ main{overflow:auto;padding-bottom:96px}
 .ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
 /* flex:1 so an EMPTY spacer still occupies the row, which is what the design's own does: measured 246x16
    there against 0x0 here, and a zero-width spacer lets whatever follows it drift 8px. */
-.ph .sp{margin-left:auto;flex:1 1 auto;text-align:right;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
+.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
 .seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px}
 .seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--rad-1);min-height:32px}
 /* 🔴 A `role="tab"` CARRIES `aria-selected`, NEVER `aria-pressed` — `aria-pressed` is the pressed
@@ -291,7 +291,7 @@ main{overflow:auto;padding-bottom:96px}
 .flags{display:flex;gap:9px;flex-wrap:wrap;padding:12px;border-top:1px solid var(--rule)}
 .flag{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--rule);border-left:2px solid var(--warn);
   border-radius:var(--rad-2);font-size:12.5px;color:var(--ink2);background:var(--sunk)}
-.flag.info{border-left-color:var(--ink3)}
+.flag.info{border-left-color:var(--ink4)}
 .flag b{color:var(--ink);font-weight:600}
 .flag button{background:none;border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;padding:5px 10px;
   border-radius:var(--rad-2);font-weight:600;min-height:32px;white-space:nowrap}
@@ -340,7 +340,7 @@ main{overflow:auto;padding-bottom:96px}
    same hover lift, same focus ring — one language, and every existing call site inherits it. */
 .chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:11.5px;font-weight:600;
   padding:6px 11px;border-radius:var(--rad-pill);min-height:32px}
-.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink3)}
+.chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
 .chip:hover{color:var(--ink)}
 .mtools .rt{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--ink3)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -456,7 +456,7 @@ td.d{font-family:var(--data);font-size:11.5px;color:var(--ink3);white-space:nowr
 .dw-h h2{margin:0;font:600 19px/1.25 var(--ui);color:var(--ink);letter-spacing:-.015em}
 .dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);
   color:var(--ink3);border-radius:var(--rad-2);width:30px;height:30px;cursor:pointer;font-size:12px}
-.dw-h .x:hover{color:var(--ink);border-color:var(--ink3);background:var(--hi)}
+.dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .dw-b{padding:18px 20px;overflow:auto;flex:1 1 auto}
 /* `.btn{flex:1}` above was written for a 420px drawer. On a `wide` one it produced two
    400px-wide buttons — a button's width should follow its label, not the dialog. Scoped to
@@ -960,9 +960,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .zoomer .rd b{color:var(--ink2);font-weight:600}
 /* The window's dates, pushed to the far right of the view bar — a position to go with the length beside
    it. Mono and tabular so the two dates hold their columns as the window is dragged. */
-.zrange{margin-left:auto;padding-left:12px;font-family:var(--data);font-size:10.5px;color:var(--ink3);
-  white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.03em}
-.zrange i{font-style:normal;color:var(--rule2);padding:0 2px}
 .zhint{font-size:10.5px;color:var(--ink3);margin-left:8px}
 .zhint kbd{font-family:var(--data);font-size:9.5px;background:var(--sunk);border:1px solid var(--rule);
   border-bottom-width:2px;border-radius:var(--rad-1);padding:1px 4px;color:var(--ink3)}
@@ -992,7 +989,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   cursor:pointer;text-align:left;color:inherit;transition:border-color .14s,background .14s}
 .bcol-h:hover{border-color:var(--rule2);background:var(--hi)}
 .bcol-h:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
-.chev{width:0;height:0;flex:none;border:4px solid transparent;border-left-color:var(--ink3);
+.chev{width:0;height:0;flex:none;border:4px solid transparent;border-left-color:var(--ink4);
   margin-left:1px;transition:transform .2s}
 .bcol-h[aria-expanded=true] .chev{transform:rotate(90deg) translateX(-1px)}
 .bcol-h:hover .chev{border-left-color:var(--ink2)}
@@ -1128,7 +1125,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .idclose{display:flex;align-items:center;gap:6px;background:var(--sunk);border:1px solid var(--rule2);
   border-radius:var(--rad-2);color:var(--ink3);cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.09em;
   padding:7px 11px;transition:color .13s,border-color .13s,background .13s}
-.idclose:hover{color:var(--ink);border-color:var(--ink3);background:var(--hi)}
+.idclose:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .identity.collapsed .idclose{display:none}
 
 /* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
@@ -1533,7 +1530,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .afn{font-family:var(--data);font-size:10px;color:var(--ink3);margin-left:auto;font-variant-numeric:tabular-nums}
 .afclear{background:transparent;border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink3);
   cursor:pointer;font:600 10px/1 var(--data);letter-spacing:.08em;padding:5px 9px}
-.afclear:hover{color:var(--ink);border-color:var(--ink3)}
+.afclear:hover{color:var(--ink);border-color:var(--ink4)}
 
 .wname{font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtable .code{font-size:11px;color:var(--ink3);letter-spacing:.03em}
@@ -1566,7 +1563,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .bulkbar b{color:var(--staged);font-family:var(--data)}
 .bulkbar button{background:transparent;border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink2);
   cursor:pointer;font:500 11.5px/1 var(--ui);padding:6px 11px}
-.bulkbar button:hover{color:var(--ink);border-color:var(--ink3)}
+.bulkbar button:hover{color:var(--ink);border-color:var(--ink4)}
 .bulkbar .x{margin-left:auto;border:none;color:var(--ink3)}
 .srch{position:relative;display:flex;align-items:center}
 .srch svg{position:absolute;left:11px;width:14px;height:14px;fill:none;stroke:var(--ink4);stroke-width:1.6;
@@ -1643,7 +1640,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* ══════════ COMPARE ══════════ */
 .cmpbar{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px 0}
 .cmpbar .chip b{font-family:var(--data);font-size:10px;color:var(--ink3);margin-left:7px}
-.cmpbar .chip.on{background:var(--hi);color:var(--ink);border-color:var(--ink3)}
+.cmpbar .chip.on{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
 .cmp{padding:13px 16px}
 .cmpcards{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;margin-bottom:14px}
 /* The row gap already spaces these. The stacked-card margin belongs to a COLUMN of cards,
@@ -1857,6 +1854,13 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* The view layer earns the strongest frame; the Manifest deliberately gives it up. */
 .panel{border:1px solid var(--rule2)}
+/* 🔴 THE MANIFEST HAD NO TOP MARGIN ON ANY REALM. Every mockup gives it one inline
+   (style="margin-top:16px") and the migrated component dropped it, so the only gap it ever had was
+   whatever the element above happened to contribute — on Broadcast a spacer div that had been added
+   for the purpose, and on a realm with nothing between the view panel and the Manifest, none at all.
+   A margin that belongs to a component does not belong to its neighbours. */
+#manifest{margin-top:16px}
+
 .panel + .panel{border-color:var(--rule);background:transparent}
 .panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}
 
@@ -2161,7 +2165,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvr:first-of-type{border-top:0}
 .rvr>span{padding:11px 12px;font-size:var(--t-md);color:var(--ink2);min-width:0;word-break:break-word}
 .rvr .rvk{color:var(--ink3)}
-.rvr .rvwas{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--ink3)}
+.rvr .rvwas{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--ink4)}
 .rvr .rvnow{color:var(--ok);font-weight:600}
 .rvr.del .rvnow{color:var(--danger-ink)}
 .rvexp{display:flex;align-items:center;gap:12px;background:rgba(255,107,107,.07);
@@ -2898,7 +2902,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    BOX, not bare prose: capping it leaves a 625px tinted box floating in a 1534px panel, which reads
    as a layout fault rather than as a measure. Its text is long at wide widths and that is a known,
    accepted cost — a ragged box would be a worse one. */
-.racknote,.chint,.hint,.hbanner p,.hp,.ow-i .ow-t{max-width:78ch}
+/* ⚠️ REGISTERED AS A CONFORMANCE DIVERGENCE (portal/ui/conform.js). The measure cap is the portal's
+   own, not the mockup's, so it stands down while the overlay is grading — otherwise a paragraph the
+   design draws on two lines and the portal draws on three reads as a defect on every page that has
+   one, and the 18px it adds cascades into every element below it. */
+:root:not([data-conform="1"]) :is(.racknote,.chint,.hint,.hbanner p,.hp,.ow-i .ow-t){max-width:78ch}
 /* .hp was missed on the first pass and caught by re-measuring at 1700 rather than by re-reading the rule -- it is Analytics' bare note paragraph, same profile as the rest: transparent, unbordered, unpadded, and it was running 706px at 11.5px. */
 
 @media (max-width:860px){
@@ -3583,7 +3591,11 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 
 /* ══════════ THE TYPES ARE THE ACTION ══════════ */
-.mh-add{grid-column:1/-1;justify-self:end;margin-top:16px;
+/* ⚠️ COLUMN 2, ROW 2 — the design's placement, restored. Spanning the whole grid was an
+   undocumented portal change, and it moved more than the composer: column 2 stopped being sized by
+   the type row, so the masthead's right column collapsed from 793px to 297px, the title column grew
+   by 496px and the sub-line lost a whole line of height. One grid-column value, four visible effects. */
+.mh-add{grid-column:2;grid-row:2;justify-self:end;margin-top:16px;
   display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:flex-end}
 /* ⚠️ `.sclock ~ .mh-add` USED TO LIVE HERE and is gone with the arrangement that needed it. While the
    clock rendered inside `.mh-id`, the ADD row sat beneath it in the left column and had to be left-
@@ -3635,7 +3647,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    alignment. A hint about a button must not change the size of the button. */
 #mhAdd .pill.mh-t{height:35px}
 #mhAdd .pill.mh-t .mh-k{height:15px;line-height:13px;flex:none}
-@media (max-width:820px){.mh-add{grid-column:1/-1;justify-self:start;justify-content:flex-start}}
+@media (max-width:820px){.mh-add{grid-column:1;grid-row:auto;justify-self:start;justify-content:flex-start}}
 
 /* 🔴 A MARKER AT `left:206%` STILL COUNTS TOWARD scrollWidth. `.season-end` is 1px wide and sits
    twice the width of the track away when the season ends beyond the visible window — invisible,
@@ -3875,7 +3887,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 .mxcell.pend.off{background:transparent;border-color:var(--danger-edge)}
 .mxcell.pend.off::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
   background:var(--danger-ink);transform:translate(-50%,-50%)}
-.mx tbody tr:hover .mxcell:not(.locked){border-color:var(--ink3)}
+.mx tbody tr:hover .mxcell:not(.locked){border-color:var(--ink4)}
 /* 🔴 THE FLEX GOES ON AN INNER SPAN, NOT ON THE <td>. `display:flex` on a table cell takes
    it out of the table's own layout — it stops participating in column sizing, which is the
    one job a cell has. Caught by the audit's own rule the first time this rendered; the same
@@ -4991,21 +5003,16 @@ button .ic,a .ic{pointer-events:none}
  * row), and the ellipsis belongs on `.dsub`, the box that actually overflows, not on the cell that
  * merely declares text-overflow.
  */
-.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:7px;min-height:0;padding:10px 15px;border-radius:var(--rad-3);
-  border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
-  font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
-.mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
-/* No font-size: the design's plus INHERITS the button's, and setting 16px here made the ornament taller than
-   the label it sits beside and pushed the whole create button 3px past the design's height — which then moved
-   every element on the page and rendered as one page-sized region in the overlay. */
-/* The design's plus is the button's own ink, not the accent: the accent is already carrying the border and
-   the ground, and a third use of it on a 13px glyph is the loudest thing in a control that is not the page's
-   subject. */
+/* The ornament inherits the button's own size and ink: the accent already carries the border and the
+   ground, and a third use of it on a 13px glyph is the loudest thing in a control that is not the
+   page's subject. It survived the removal of the duplicate `.mh-new` block around it because the span
+   that carries it is still emitted, and a class with no rule renders into nothing. */
 .mh-plus{line-height:1;color:inherit}
-/* The shorthand LATER in the rule was overriding the longhand before it — padding-left:6px then padding:3px 5px
-   resolves to 5px, and the create button measured 200px against the design's 202 for the whole of this pass. */
-.mh-new kbd{font:500 10.5px/1 var(--data);letter-spacing:.04em;color:var(--ink3);border:1px solid var(--rule2);
-  border-radius:var(--rad-2);padding:3px 6px}
+
+/* The create button is `.pill.lead` and nothing more. A portal-only `.mh-new` block used to restate
+   padding, radius, border, font and a kbd face here — a second, disagreeing copy of a component the
+   design already defines, sitting 1,900 lines away from it. `.masthead .mh-new` keeps its GRID
+   placement above, which is the only thing this class legitimately owns. */
 .mtable .det{min-width:0}
 .mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtable .det .dsub{display:block}
@@ -5105,3 +5112,71 @@ button .ic,a .ic{pointer-events:none}
 .dcard .badges span{background:#1E1F22;border-radius:var(--rad-1);padding:2px 7px;font-size:10px;color:#B5BAC1}
 .dcode{margin-top:9px;background:#1E1F22;border-radius:var(--rad-1);padding:6px 8px;
   font-family:var(--data);font-size:10.5px;color:#A8B0B8;letter-spacing:.04em}
+
+
+/* ════ REGISTERED CONFORMANCE DIVERGENCE · the fourth ink tone cannot carry text ════
+ * COMPANION.md's own contract (its "--ink4 could not carry text anywhere" row, and rule 5f's run)
+ * settles this: on these surfaces the ink scale has room for THREE text tones, --ink3 was lifted to
+ * #85939F to sit exactly on the 4.5:1 floor, and --ink4 stays dark as a NON-TEXT token for borders,
+ * strokes, fills and underlines. The mockup migrated 112 text uses and left the ones below behind —
+ * 5f names four of them by measurement (⌘K at 3.46:1, the lane count at 3.02:1). The portal finished
+ * the migration, which is why these read as differences against the design that specifies them.
+ * Under ?conform=1 they return to the design's colour so the overlay grades composition rather than
+ * re-litigating a contrast decision the design already made and did not finish applying. */
+:root[data-conform="1"] .round-u.none,
+:root[data-conform="1"] .mh-stats .stat .v.zero,
+:root[data-conform="1"] .pill .sub,
+:root[data-conform="1"] .lnh-n,
+:root[data-conform="1"] .lane.lnc .lnh,
+:root[data-conform="1"] .cmdbar kbd,
+:root[data-conform="1"] .att-i,
+:root[data-conform="1"] .atx{color:var(--ink4)}
+:root[data-conform="1"] .cb-in::placeholder{color:var(--ink4)}
+
+
+/* ════ STAND-DOWN · the design's own season clock ════
+ * Only ever applied under ?conform=1, where SeasonClock renders the mockup's D:H:M:S readout instead
+ * of the hero figure. Copied from the package's app.css verbatim, in its own order — the seconds unit
+ * and the separator before it are hidden by the design itself, so the face reads "17 DAYS : 23 HRS :
+ * 59 MIN" and keeps a ticking element the reader never has to watch. */
+/* The context band is a portal wrapper carrying the SAME 22px side margin the identity inside it
+   already has, so the record rendered 44px narrower than the design's. Under the stand-down the
+   wrapper contributes nothing and the identity keeps its own margin, as the design draws it. */
+:root[data-conform="1"] .ctxband{margin:0}
+/* `.rec-b` adds a 14px bottom margin the design's record does not have — the mockup emits the class
+   and defines no rule for it. Inside the Track's wrapper that margin is contained rather than
+   collapsed, so it landed as 14px of trailing space inside the view panel and every element below
+   the panel inherited the offset. */
+:root[data-conform="1"] .rec-b{margin-bottom:0}
+/* The draw-window accent: the design's #6B4E7D against the portal's brighter #B06BA8. Every row dot,
+   bar and chip in that lane carries it, so it is one token and a lot of pixels. */
+:root[data-conform="1"]{--dw:#6B4E7D}
+:root[data-conform="1"] .sc-u{display:flex;flex-direction:column;align-items:center;gap:6px}
+:root[data-conform="1"] .sc-u b{font-weight:700;font-size:var(--t-display);letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;display:block}
+:root[data-conform="1"] .sc-u i{font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:500;letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
+:root[data-conform="1"] .sc-u.sec b{font-size:var(--t-h1);letter-spacing:var(--tr-h1);color:var(--ink2)}
+:root[data-conform="1"] .sc-sep{font-family:var(--display);font-weight:400;font-size:var(--t-figure);color:var(--ink3);line-height:1;margin-top:-1px}
+:root[data-conform="1"] .sclock{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+:root[data-conform="1"] .sc-face{display:flex;flex-direction:row;align-items:flex-start;gap:9px;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:.8;color:var(--ink)}
+:root[data-conform="1"] .sc-when{font-family:var(--data);font-size:var(--t-sm);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);max-width:34ch;display:block}
+:root[data-conform="1"] .sc-when b{color:var(--ink);font-weight:500}
+:root[data-conform="1"] .sc-then{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
+:root[data-conform="1"] .sc-then b{color:var(--ink2);font-weight:500}
+:root[data-conform="1"] .sclock[data-tier="closing"] .sc-u:first-child b{color:var(--patch);font-size:calc(var(--t-display) * 1.18)}
+:root[data-conform="1"] .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
+:root[data-conform="1"] .sclock[data-tier="final"] .sc-then{display:none}
+:root[data-conform="1"] .sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
+:root[data-conform="1"] .sclock[data-tier="today"] .sc-then{display:none}
+/* ⚠️ THESE TWO ARE A MOTION ACCOMMODATION AND NOTHING ELSE — they stop the seconds ticking, they
+   are not the resting state. Lifting them out of their at-rule (and lifting a 820px type size out
+   of its breakpoint at the same time) is how the first copy of this block rendered a smaller face
+   with no seconds at a desktop width: a rule copied without its at-rule is a different rule.
+   Any extraction from another stylesheet carries the @media it was written inside. */
+@media (prefers-reduced-motion:reduce){
+  :root[data-conform="1"] .sclock .sc-u.sec{display:none}
+  :root[data-conform="1"] .sclock .sc-face > :nth-last-child(2){display:none}
+}
+@media (max-width:820px){
+  :root[data-conform="1"] .sclock{align-items:flex-start;text-align:left}
+  :root[data-conform="1"] .sc-u b{font-size:var(--t-figure)}
+}

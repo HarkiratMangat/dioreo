@@ -11,6 +11,7 @@ import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
 import { ExportStrip } from './exportPanel.js';
 import { installTips } from './tips.js';
+import { conforming } from './conform.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -147,7 +148,11 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                 <h1>${title}</h1>
                 ${sub ? html`<span class="job">${sub}</span>` : null}
             </div>
-            ${aside ? html`<div class="mh-aside">${aside}</div>` : null}
+            <!-- ⚠️ THE WRAPPER IS A PORTAL ADDITION AND IT IS A GRID CHILD. The design puts the clock
+                 in the masthead grid itself, carrying the mh-stats and sclock classes on one element; wrapping it added a
+                 box between the grid and the thing the grid was placing. Under the conformance flag the
+                 aside renders bare so the two mastheads have the same skeleton. -->
+            ${aside ? (conforming() ? aside : html`<div class="mh-aside">${aside}</div>`) : null}
             ${!aside && stats.length ? html`
                 <div class="mh-stats">
                     ${stats.map((s) => html`
@@ -351,21 +356,35 @@ function chromeCommands({ realm, session, viewOptions, onSetView, staged, onSign
 
 // `busy`/`busyNote` are the two host hooks the adopted sheet's async rules need: .is-refreshing paints a hairline along the top edge WITHOUT blanking the data underneath, and .is-slow renders its note from data-slow. Both belong on <main>, which is the only element that already carries position:relative and spans every realm's content. 🔴 THREE MARKS ARE DRAWN ON EVERY REALM AND NONE OF THEM IS EXPLAINED ANYWHERE. Solid is live, dashed is staged, hatched is a conflict — the Track's bars, the Board's cards, the composer's ghost and the Manifest's state pills all speak it, and a reader meets it with no key. "Shape carries state" only works if somebody is told what the shapes mean once.
 //
-// ⚠️ IT SITS IN THE VIEW BAR, NOT IN A PANEL OF ITS OWN. A legend is read once and then ignored, so it belongs where the eye already goes and takes no vertical space — and it is rendered only where a realm actually draws the marks, because a key for a mark that is absent teaches the reader that the page is missing something.
-function StateKey() {
+// ⚠️ IT SITS IN THE VIEW BAR, NOT IN A PANEL OF ITS OWN. A legend is read once and then ignored, so it belongs where the eye already goes and takes no vertical space — and it is rendered only where a realm actually draws the marks, because a key for a mark that is absent teaches the reader that the page is missing something. 🔴 IT SAID "LIVE" AND THE DESIGN SAYS "SAVED", AND IT NAMED ALL THREE STATES ALWAYS. Two rules this portal states about its own keys were both broken here: the vocabulary (Broadcast's own key already renders "saved / staged" and the design's key emitter uses the same three words) and "name only what is on screen" — a season with nothing staged sent a reader hunting for a dashed mark that is not drawn. `states` is the set actually present; the boolean form still works and means all three.
+const KEY_STATES = [['saved', 'l'], ['staged', 's'], ['conflict', 'c']];
+function StateKey({ states }) {
+    const on = Array.isArray(states) ? states : KEY_STATES.map(([k]) => k);
+    const shown = KEY_STATES.filter(([k]) => on.includes(k));
+    if (!shown.length) return null;
+    // ⚠️ THE CLASS IS WRITTEN OUT, NOT COMPUTED. `class=${cls}` renders identically and is invisible to the orphan scanner, which reads source rather than a running page — so `.c` became a rule with no emitter the moment the key started naming only the states present. Three literals cost nothing.
+    const has = (k) => shown.some(([label]) => label === k);
     return html`
         <span class="key" aria-label="What the marks mean">
-            <span class="l"><i></i>live</span>
-            <span class="s"><i></i>staged</span>
-            <span class="c"><i></i>conflict</span>
+            ${has('saved') ? html`<span class="l"><i></i>saved</span>` : null}
+            ${has('staged') ? html`<span class="s"><i></i>staged</span>` : null}
+            ${has('conflict') ? html`<span class="c"><i></i>conflict</span>` : null}
         </span>
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
     useEffect(() => { installTips(); }, []);
+    // 🔴 THE PAGE ARRIVED ALL AT ONCE AND THE DESIGN STAGGERS IT. One orchestrated entrance — the masthead, then the context strip, then each panel, 55ms apart — is the design's own line ("chrome, then the lanes cascading, then the flags") and the class it needs, `.rise`, was carried over into the stylesheet with nothing to put it on. Skipped entirely under reduced-motion, which is also why it can never affect a settled screenshot.
+    useEffect(() => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        document.querySelectorAll('.masthead, .identity, .panel').forEach((el, i) => {
+            el.classList.add('rise');
+            el.style.animationDelay = `${i * 55}ms`;
+        });
+    }, []);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
 
@@ -458,13 +477,21 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                                 ${viewOptions.map((v) => html`
                                     <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
                             </div>
-                            ${stateKey ? html`<${StateKey} />` : null}
+                            <!-- ⚠️ ORDER IS THE DESIGN'S, AND IT WAS WRONG. The bar reads title · views · the
+                                 view's own controls · what the marks mean · where you are — so the Track's zoom
+                                 group sits with the views it changes, and the two explanatory pieces close the
+                                 row. the tools slot used to render LAST, which put the zoom group after the key. -->
+                            ${tools}
+                            ${stateKey ? html`<${StateKey} states=${Array.isArray(stateKey) ? stateKey : null} />` : null}
                             <!-- A realm may add ONE key of its own beside the shared one. The shared key explains SHAPE
-                                 (live/staged/conflict), which every realm draws; a realm key explains marks only that
+                                 (saved/staged/conflict), which every realm draws; a realm key explains marks only that
                                  realm draws. It is a slot rather than a prop of named states, because the only rule that
                                  matters is the one the realm has to enforce itself: name a state only while it is on screen. -->
                             ${realmKey}
-                            ${tools}
+                            <!-- The meta line closes the bar: one short right-aligned sentence saying where in the
+                                 data you are. Every design draws one and the Shell had no slot for it, so Broadcast
+                                 hand-rolled a span inside the tools slot and Season simply had none. -->
+                            ${meta ? html`<span class="sp">${meta}</span>` : null}
                         </div>
                         ${viewSlot}
                     </section>`

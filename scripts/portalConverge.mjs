@@ -1,7 +1,6 @@
 // scripts/portalConverge.mjs — ONE call that answers "how far apart are these two pages, and where".
 //
-// The overlay method needs a tight loop: measure, fix a batch, measure again. Three separate tools meant three
-// round trips per iteration, so this runs them together against the SAME pair of loads and prints, in order:
+// The overlay method needs a tight loop: measure, fix a batch, measure again. Three separate tools meant three round trips per iteration, so this runs them together against the SAME pair of loads and prints, in order:
 //   RHYTHM   the vertical stack of both pages, element by element, with every mismatch marked. A small offset
 //            near the top cascades into one page-sized pixel region, so this is what has to reach zero FIRST.
 //   WORDS    same element, different text.

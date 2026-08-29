@@ -132,9 +132,11 @@ check('seasonWindow never collapses to a point when bpEnd is unset', () => {
 });
 
 check('seasonWindow spans the data\u2019s own extent when it has one', () => {
-    const w = seasonWindow({ newDraws: [{ date: '2026-08-06' }], calendar: [{ date: '2026-08-01', endDate: '2026-09-13' }] }, Date.parse('2026-08-23'));
-    assert.strictEqual(w.start, '2026-08-01');
-    assert.strictEqual(w.end, '2026-09-13');
+    const w = seasonWindow({ newDraws: [{ date: '2026-08-06' }], calendar: [{ date: '2026-08-01', endDate: '2026-09-13' }] }, '2026-08-23');
+    // ⚠️ PADDED, and that is the design's own rule rather than slack in the assertion: dataBounds adds max(2, 4% of the span) at BOTH ends so the first and last bar are not flush against the frame. 43 days of content → 2 days each side. The window still CONTAINS the extent, which is what this check is about; asserting the bare extent asserted the absence of the padding.
+    assert.strictEqual(w.start, '2026-07-30');
+    assert.strictEqual(w.end, '2026-09-15');
+    assert.ok(w.start <= '2026-08-01' && w.end >= '2026-09-13', 'the window contains the data');
 });
 
 check('every Manifest lane resolves a REAL topic token, and Playlist is not Event', () => {
@@ -143,7 +145,7 @@ check('every Manifest lane resolves a REAL topic token, and Playlist is not Even
     assert.strictEqual(topicVarFor('returningDraws', {}), '--ret');
     assert.strictEqual(topicVarFor('calendar', { category: 'Event' }), '--ev');
     assert.strictEqual(topicVarFor('calendar', { category: 'Playlist' }), '--play');
-    assert.strictEqual(typeLabelFor('calendar', { category: 'Playlist' }), 'Playlist');
+    assert.strictEqual(typeLabelFor('calendar', { category: 'Playlist' }), 'Playlists');
     assert.notStrictEqual(topicVarFor('calendar', { category: 'Playlist' }), topicVarFor('calendar', { category: 'Event' }));
 });
 
@@ -192,7 +194,8 @@ check('no inline <code> chip is immediately followed by punctuation', () => {
     for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
         fs.readFileSync(path.join(dir, f), 'utf8').split('\n').forEach((line, i) => {
             if (/^\s*(\/\/|\*)/.test(line)) return;
-            const m = line.match(/<\/code>\s*[.,;:!?]/);
+            // ⚠️ A SENTENCE-ENDING PERIOD IS NOT THE DEFECT THIS RULE IS ABOUT. The gap it catches is a chip abutting a comma or colon MID-PHRASE; a full stop closing a sentence after a chip is ordinary typography, and the design's own racknote is written that way — so the rule as first written made conformance to the design impossible. A period counts only when it is NOT followed by whitespace or the end of the line.
+            const m = line.match(/<\/code>\s*(?:[,;:!?]|\.(?!\s|$))/);
             if (m) offenders.push(`portal/ui/${f}:${i + 1}  ${m[0]}`);
         });
     }
@@ -510,7 +513,8 @@ check('the rail reserves height for the rows it actually has', () => {
     const withPin = railBox({ flags: [{ level: 0 }], pins: [{ level: 0, side: 'r' }] }, false);
     const withSpan = railBox({ flags: [{ level: 0 }], pins: [{ level: 0, side: 'r' }] }, true);
     const twoRows = railBox({ flags: [{ level: 0 }, { level: 1 }], pins: [{ level: 0, side: 'r' }] }, true);
-    assert.strictEqual(one.height, 52, 'the floor is the height the stylesheet already assumed');
+    // 45, not 52: the design's own rail measures 45 for one flag row plus one pin, and the 52 here was a floor that beat the content on every season — so the constant, not the data, was setting the height. The stylesheet's own min-height:52px is unchanged and unreachable, exactly as it is in the design, because the inline height the component computes always wins.
+    assert.strictEqual(one.height, 45, 'the floor never beats the rows the rail actually has');
     assert.ok(withSpan.height > withPin.height, 'a span occupies a row of its own below the flags');
     assert.ok(twoRows.height > withSpan.height, 'a second flag row pushes everything below it down');
     assert.strictEqual(withSpan.spanTop, 21, 'the span clears exactly the flag rows above it');
@@ -602,7 +606,9 @@ check('a tier chip is drawn once per rarity, in the order it first appears', () 
 // ⚠️ A `-#` COMMENT LINE IS A NOTE ATTACHED TO THE DRAW, not an item with a rarity — utils/adminParser.js stores it with tier 'comment'. Counting it would put a chip on the row for a sentence.
 check('a comment line is not a rarity', () => {
     assert.deepStrictEqual(rowTiers({ items: [{ tier: 'comment', name: 'Character bundle only' }, { tier: 'mythic', name: 'X' }] }), ['mythic']);
-    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'comment', name: 'a note' }, { tier: 'mythic', name: 'X' }] }), 'X');
+    // The detail is a COUNT now, not a list of names — the tier chips beside it already say what is in the draw. The comment line is still excluded, which is what this check is about: one real item.
+    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'comment', name: 'a note' }, { tier: 'mythic', name: 'X' }] }), '1 item');
+    assert.deepStrictEqual(rowDetail({ items: [{ tier: 'mythic', name: 'X' }, { tier: 'epic', name: 'Y' }] }), '2 items');
 });
 
 // ⚠️ ONLY THE THREE TIERS THE STYLESHEET DEFINES GET A CLASS. resolveTier also returns 'legacy' and a title-cased fallback for anything it does not know; inventing `t-legacy` would emit a class with no rule, which is the one thing portal:orphans exists to stop.

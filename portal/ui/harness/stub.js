@@ -39,6 +39,8 @@ const ALL_REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analyt
 const params = new URLSearchParams(location.search);
 const realms = params.get('realms') ? params.get('realms').split(',') : ALL_REALMS;
 const owner = params.get('owner') !== '0';
+// ⚠️ THE OVERLAY COMPARES DATA BEFORE IT COMPARES DESIGN. The mockup's staging store is browser-local and empty on a fresh load, so it draws "0 staged" and no staged strip; the harness synthesises four changesets so every staged surface is reachable. Both are right for their own job and they cannot be subtracted from each other -- 425px of staged panel on one side reads as a layout defect when it is really a fixture difference. Under ?conform=1 the harness matches the mockup's fresh state.
+const conformMode = document.documentElement.dataset.conform === '1' || params.get('conform') === '1';
 
 // portal/api/armory.js stamps two fields onto every build that are NOT in the stored document: `coverage` (from coverageFlags) and `accent` (from getMpCategoryAccent). The fixtures hold raw documents, so without this the Rack renders with no accents and the Coverage matrix is all zeros — a page that looks finished and is measuring nothing.
 //
@@ -239,6 +241,9 @@ function harnessChangesets() {
 const ROUTES = [
     [/^\/auth\/csrf$/, () => ({
         csrfToken: 'harness-csrf', discordId: FIX.OWNER_ID || '1139845545754632283',
+        // The design's own viewer, so a conformance overlay compares composition rather than the difference between a fixture person and a real session. Same shape the live server would send if it carried a profile; it does not yet, and the chip falls back to the id when this is absent.
+        displayName: 'dior',
+        avatarUrl: 'https://cdn.discordapp.com/avatars/1139845545754632283/de36d1994e834cd75ac0b7bc3b66a6db.png?size=160',
         // ⚠️ SEPARATE FROM `owner`, and reachable on its own. ?destroy=1 lets the strip be seen by a NON-owner who holds the permission, which is the state that actually needed designing — the mockup's viewer is always the owner, so "present, legible and disabled with the reason stated" was undesignable until this existed.
         isOwner: owner, canDestroy: owner || params.get('destroy') === '1', visibleRealms: realms,
         // The account panel counts down to this. Fixed at seven and a bit hours out rather than derived from the clock, so the harness reads the same on every load and a screenshot of it is comparable to the last one — the whole point of a fixture.
@@ -271,7 +276,19 @@ const ROUTES = [
                 `Release Date: ${day(p.releaseDate)}`, `Description: ${p.description || '(none)'}`, 'URLs:',
                 ...(p.images || []).map((u) => `  ${u}`)].join('\n')).join('\n\n') };
         }
-        return { error: 'export needs one of: draws, returning, calendar, patchnotes' };
+        if (scope === 'all') {
+            const rows = [];
+            for (const d of FIX.newDraws || []) rows.push([d.title, 'New draw', day(d.date), day(d.date)]);
+            for (const d of FIX.returningDraws || []) rows.push([d.title, 'Returning draw', day(d.date), day(d.date)]);
+            for (const c of FIX.calendar || []) {
+                const k = String(c.category || 'event').toLowerCase();
+                rows.push([c.title, k === 'playlist' ? 'Playlist' : k === 'draw' ? 'Draw window' : 'Event',
+                    day(c.date || c.startDate), c.isOngoing ? 'all season' : day(c.endDate || c.date)]);
+            }
+            for (const p of FIX.patchNotes || []) rows.push([p.titleOverride || p.title, 'Patch note', day(p.releaseDate), day(p.releaseDate)]);
+            return { count: rows.length, text: [['Item', 'Type', 'Starts', 'Ends'].join('\t')].concat(rows.map((r) => r.join('\t'))).join('\n') };
+        }
+        return { error: 'export needs one of: draws, returning, calendar, patchnotes, all' };
     }],
     // ⚠️ REAL TEXT AND REAL CSV, for the reason the two exports above already give: a placeholder demonstrates the layout while disproving the claim the strip makes about what comes out. Each of the three reproduces its route's SHAPE -- blocks for prose, a header row plus quoting for a table -- against the same fixtures the panels beside them are drawing.
     [/^\/api\/broadcast\/export$/, (params) => {
@@ -495,7 +512,7 @@ const ROUTES = [
     // 🔴 BOTH FORMS, AND THE BARE ONE WAS MISSING. season.js fetches `/api/changeset?realm=season` and board.js fetches `/api/changeset/:id/preview`, but the route the API actually registers is `/^\/api\/changeset$/` — and with no stub for it the Board's own fetch fell through to the unrouted {ok:true} fallback, so `body.changesets` was undefined and the Board rendered empty all session while looking perfectly fine. Caught by scripts/portalHarness.test.js, which is the only thing that compares what the stub returns against what the route promises. 🔴 THE SAME PATH IS TWO ROUTES, AND THE STUB WAS ONLY EVER THE GET. `/api/changeset` is a GET that LISTS and a POST that STAGES, and this returned the list body for both — so every POST through composeClient.js's stageOps came back with no `changesetId`. Nothing rendered wrong, which is why it survived: stageOps ignored the body, so staging LOOKED fine. But `stageAndCommit` reads `staged.changesetId` and takes the "Could not stage the change." branch without it, so the Manifest's inline edit reported failure on every save in the harness, and the staged acknowledgement — which fires only on a real stage — could never fire either. Caught 2026-08-27 by wiring that acknowledgement and watching it not happen. ⚠️ portalHarness.test.js could not see it: it compares the keys a stub returns against the keys the route promises, and a route registered once for two methods has one set of keys to compare against. The `sent` argument is the only thing that distinguishes them here.
     [/^\/api\/changeset(\?|$)/, (params, sent) => (sent
         ? { changesetId: 'cs-new', state: 'staged', tier: (sent.ops && sent.ops[0] && sent.ops[0].tier) || 1, failures: [], preview: [] }
-        : { changesets: harnessChangesets() })],
+        : { changesets: conformMode ? [] : harnessChangesets() })],
     [/^\/api\/changeset\/[^/]+\/preview$/, () => ({ preview: null })],
 ];
 

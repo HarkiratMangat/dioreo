@@ -22,7 +22,8 @@ const realm = flag('--realm', 'season');
 const view = flag('--view', null);
 const asJson = args.includes('--json');
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
-const HARNESS = 'http://localhost:8901/harness.html';
+// 🔴 THE THIRD INSTRUMENT WAS READING A DIFFERENT PAGE FROM THE OTHER TWO. portalDiff and portalConverge both load the harness with ?conform=1, which stands pending redesigns down so the comparison is against the design; this loaded it WITHOUT, so every stood-down surface came back as a divergence and every fix already made still showed as unfixed. Two instruments agreeing and a third disagreeing is worse than one instrument, because the disagreement looks like a finding. The cache-buster is here for the same reason it is there: the module map survives a reload.
+const HARNESS = `http://localhost:8901/harness.html?conform=1&b=${Date.now()}`;
 const VW = 1282, VH = 888;
 
 // The properties a design decision actually lands in. Colour is included because a token drifting is invisible to every source scanner; transitions and shadows are not, because they differ legitimately per state.

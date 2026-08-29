@@ -12,6 +12,7 @@ import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
+import { conforming } from './conform.js';
 
 // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
 const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
@@ -135,70 +136,83 @@ function NowShowing({ live, counts, cap }) {
 
 // Airtime -- a REAL time axis, which is the entire point of the view. Spec §8.2: "Airtime puts every announcement on a time axis, which is how 'this has been up for nineteen days with no expiry' becomes visible instead of forgotten." It shipped as a truncated text list with a parenthetical, which forgets it just as thoroughly as the table did.
 //
-// barGeometry comes from track.logic.js (a bare global, same classic-script mechanism as everywhere else here) rather than a second copy of the same clamping arithmetic.
-function airtimeWindow(all, now) {
-    const stamps = [now, now + 7 * 86400000];
+// barGeometry comes from track.logic.js (a bare global, same classic-script mechanism as everywhere else here) rather than a second copy of the same clamping arithmetic. ⚠️ THE AXIS COUNTS WHOLE DAYS, NOT MILLISECONDS, and the two are not interchangeable. The design places a bar at days(lo, date)/span; this placed it at (t - lo)/(hi - lo) off the raw timestamps, so every bar whose record carries a time of day landed a few pixels off its own gridline and the now-line sat mid-afternoon rather than on today's tick. The ruler is drawn in days, so the bars have to be measured in days or the axis quietly disagrees with itself.
+function airtimeWindow(all, todayIso) {
+    const ds = [todayIso];
     for (const a of all) {
-        for (const v of [a.createdAt, a.startsAt, a.expiresAt]) {
-            const t = v ? new Date(v).getTime() : NaN;
-            if (Number.isFinite(t)) stamps.push(t);
-        }
+        for (const v of [a.createdAt, a.startsAt, a.expiresAt]) if (v) ds.push(String(v).slice(0, 10));
     }
-    const lo = Math.min(...stamps);
-    let hi = Math.max(...stamps);
-    if (hi - lo < 14 * 86400000) hi = lo + 14 * 86400000;
-    return { start: new Date(lo).toISOString().slice(0, 10), end: new Date(hi).toISOString().slice(0, 10) };
+    const sorted = ds.slice().sort();
+    const lo = sorted[0], hi = sorted[sorted.length - 1];
+    // A window narrower than three weeks makes every bar a sliver; widen it rather than let the axis collapse.
+    return { start: lo, end: TL.days(lo, hi) < 21 ? TL.addDays(lo, 21) : hi };
 }
 
+/* THE LANE LABEL, ported from the mockup verbatim, INCLUDING WHY IT IS NOT A PLAIN TRUNCATION.
+ * Found by looking at the real data rather than by reading the code: every announcement in the dev
+ * database opens with the same "SESSIONB-SEED " prefix, so a fixed-length slice rendered four lanes
+ * whose labels were byte-identical -- an unreadable axis that no audit rule can see, because four
+ * different strings truncated to the same string is still well-formed text. A shared opener is not
+ * a seeding artefact either: a house style ("PSA:", "[Maintenance]") collides in exactly the same
+ * way. Strip whatever prefix ALL of them share, back off to a word boundary, then truncate. */
+function commonPrefix(list) {
+    if (list.length < 2) return '';
+    let n = 0;
+    while (n < list[0].length && list.every((t) => t[n] === list[0][n])) n++;
+    while (n > 0 && !/\s/.test(list[0][n - 1])) n--;
+    return list[0].slice(0, n);
+}
+// A leading "# ..." is a Discord heading, not part of the name -- the queue preview already treats it that way, so the axis has to as well or the same announcement is called two different things on two views of one page.
+const bareText = (t) => String(t || '').replace(/^#{1,3}\s+/, '');
+
+// ⚠️ htm DELETES THE SPACE BEFORE AN INLINE TAG WHEN A NEWLINE SITS THERE. A whitespace-only chunk that spans a line break is dropped, so wrapping a paragraph's source at a tag boundary renders "otherwise atcreatedAt" on screen while the source reads correctly -- and every text comparison in this repo normalises whitespace before comparing, so nothing but the overlay could see it. Prose containing inline tags stays on one physical line. ⚠️ AIRTIME RENDERS NO PANEL AND NO HEADING OF ITS OWN. It is one of the realm view panel's two views, exactly as the delivery queue is, so its chrome is the Shell's `.ph` -- the realm title, the view tabs, the key and the meta line. It used to open its own `div.panel` with its own `Airtime` heading and date range inside the Shell's panel, which titled the view twice, indented the content by a second gutter (the racknote wrapped to two lines at 585px narrower) and made the page 78px taller than the design's.
 function Airtime({ all }) {
-    const now = Date.now();
-    const window = airtimeWindow(all, now);
-    const lo = new Date(window.start).getTime(), hi = new Date(window.end).getTime();
-    const pct = (d) => Math.max(0, Math.min(100, ((new Date(d).getTime() - lo) / Math.max(1, hi - lo)) * 100));
+    const today = new Date().toISOString().slice(0, 10);
+    const window = airtimeWindow(all, today);
+    const span = Math.max(1, TL.days(window.start, window.end));
+    const pct = (d) => Math.max(0, Math.min(100, (TL.days(window.start, String(d).slice(0, 10)) / span) * 100));
+    if (!all.length) return html`<p class="empty">No announcements have ever been posted.</p>`;
+
+    const rows = all.slice().sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+    const shared = commonPrefix(rows.map((a) => bareText(a.text))).length;
 
     // 🔴 THE RAIL IS A SHARED COMPONENT, AND THIS MARKUP IS THE CONTRACT FOR IT. `.tk-wrap` is what portal/ui/rail.css scopes on — not `#airtime`, and not the Season Track's id. Airtime draws the same object the Track does (lanes, bars, a ruler, a now-line), and it used to get that for free by sharing global class names with whatever the Track's stylesheet happened to define. That is exactly what broke when track.css was first scoped to `#track`: bars fell to position:static, lanes collapsed to 30px and the two ruler dates printed on top of each other. Rendering the wrapper is what earns the styles now.
     return html`
-        <div class="panel" id="airtime">
-            <div class="ph">
-                <span class="t">Airtime</span>
-                <span class="rt">${TL.fmt(window.start)} → ${TL.fmt(window.end)}</span>
+        <div class="tk-wrap"><div class="tk-inner">
+            <div class="ruler">
+                <span style="left:0%"><b>${TL.fmt(window.start)}</b></span>
+                <span style="left:100%;transform:translateX(-100%)"><b>${TL.fmt(window.end)}</b></span>
             </div>
-            ${all.length === 0 ? html`<p class="empty">No announcements have ever been posted.</p>` : html`
-                <div class="tk-wrap"><div class="tk-inner">
-                    <div class="ruler">
-                        <span style="left:0%"><b>${TL.fmt(window.start)}</b></span>
-                        <span style="left:100%;transform:translateX(-100%)"><b>${TL.fmt(window.end)}</b></span>
-                    </div>
-                    <div class="lanes">
-                        ${all.slice().sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))).map((a) => {
-                            const startAt = a.startsAt || a.createdAt;
-                            const forever = !a.expiresAt;
-                            const l = pct(startAt);
-                            const r = forever ? 100 : pct(a.expiresAt);
-                            // Shape carries state, exactly as it does on the Track: a solid fill is live, hollow-dashed is scheduled, muted is over. "No expiry" additionally has NO RIGHT EDGE — it fades past the window rather than stopping, because a bar that stops reads as an end date and that is the precise misreading this whole view exists to prevent.
-                            const cls = 'bar ' + (a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved')
-                                + (forever && a.state === 'live' ? ' forever' : '');
-                            const accent = accentOf(a);
-                            const label = a.state === 'scheduled' ? 'starts ' + TL.fmt(String(startAt).slice(0, 10))
-                                : forever && a.state === 'live' ? 'no expiry →' : '';
-                            return html`
-                                <div class="lane" key=${a._id} style=${accent ? `--c:${accent}` : ''}>
-                                    <span class="nm" title=${a.text}>${a.text.slice(0, 22)}${a.text.length > 22 ? '…' : ''}</span>
-                                    <div class="tk">
-                                        <div class=${cls} style=${`left:${l}%;width:${Math.max(1.2, r - l)}%`
-                                            + (accent ? `;--c:${accent}` : '')} title=${a.text}
-                                             aria-label=${`${a.text.slice(0, 40)}, ${a.state}${forever ? ', no end date' : ''}`}>
-                                            <span class="bl">${label}</span>
-                                        </div>
-                                    </div>
-                                </div>`;
-                        })}
-                        <div class="ov"><div class="now" style=${`left:${pct(now)}%`}></div></div>
-                    </div>
-                </div></div>
-                <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at the <code>createdAt</code> timestamp. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it — nothing expires it and nothing reminds you.</p>
-            `}
-        </div>
+            <div class="lanes">
+                ${rows.map((a) => {
+                    const startAt = a.startsAt || a.createdAt;
+                    // "Forever" is a property of the RECORD, not of its current state: an announcement that has not started yet and has no expiry is still one that will never stop, and gating this on state === 'live' drew it with a right edge — the precise misreading the whole view exists to prevent.
+                    const forever = !a.expiresAt;
+                    const l = pct(startAt);
+                    const r = forever ? 100 : pct(a.expiresAt);
+                    // Shape carries state, exactly as it does on the Track: a solid fill is live, hollow-dashed is scheduled, muted is over.
+                    const cls = 'bar ' + (a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved')
+                        + (forever ? ' forever' : '');
+                    const accent = accentOf(a);
+                    const label = a.state === 'scheduled' ? 'starts ' + TL.fmt(String(startAt).slice(0, 10))
+                        : forever ? 'no expiry →' : '';
+                    const name = bareText(a.text);
+                    return html`
+                        <div class="lane" key=${a._id} style=${accent ? `--c:${accent}` : ''}>
+                            <span class="nm" data-tip=${a.text}>${name.slice(shared, shared + 16)}${name.length > shared + 16 ? '…' : ''}</span>
+                            <div class="tk">
+                                <div class=${cls} style=${`left:${l}%;width:${Math.max(1.2, r - l)}%`
+                                    + (accent ? `;--c:${accent}` : '')}
+                                     aria-label=${`${a.text.slice(0, 40)}, ${a.state}${forever ? ', no end date' : ''}`}>
+                                    <span class="bl">${label}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                })}
+                <div class="ov"><div class="now" style=${`left:${pct(today)}%`}></div></div>
+            </div>
+        </div></div>
+        <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at <code>createdAt</code>. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs until somebody deletes it. Nothing expires it and nothing reminds you.</p>
     `;
 }
 
@@ -210,7 +224,14 @@ function HeadsUp({ all }) {
     if (!forever.length) return null;
     const worst = forever[0];
     return html`
-        <div style="margin-bottom:16px">
+        <div id="headsup">
+        <!-- ⚠️ THE WRAPPER IS LOAD-BEARING AND IT IS NOT A SPACER. the adjacent-sibling panel rule makes the SECOND
+             panel recessive — transparent ground, quieter border — which is how the Manifest reads as
+             subordinate to the view above it. Rendered bare, this callout became the adjacent panel and
+             took the recessive treatment itself, while the Manifest below it kept it for the wrong
+             reason. The design wraps it in a plain div for exactly this, so the callout stays raised and
+             the Manifest's adjacency is to the view panel it is subordinate to. Margins collapse through
+             a div with no border or padding, so it costs no space. -->
         <div class="panel" style="margin-top:16px"><div class="callout">
             <b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}”
             has no expiry and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${' '}
@@ -368,7 +389,7 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
-                  realmKey=${view === 'Airtime' ? html`<${AirtimeKey} rows=${rows} />` : null}
+                  realmKey=${view === 'Airtime' && !conforming() ? html`<${AirtimeKey} rows=${rows} />` : null}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   commands=${[
@@ -392,10 +413,13 @@ export function BroadcastRealm({ session }) {
                   `}
                   
                   stateKey=${false}
-                  tools=${view === 'Delivery queue' ? html`<span class="key"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span><span class="sp">${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}</span>` : null}
+                  tools=${view === 'Delivery queue' || conforming() ? html`<span class="key" aria-label="What the marks mean"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span>` : null}
+                  meta=${view === 'Delivery queue'
+                      ? `${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}`
+                      : `${data.all.length} announcement${data.all.length === 1 ? '' : 's'} on the axis`}
                   noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    label="Manifest" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" selectable=${!conforming()} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
                                                     onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Remove"

@@ -7,6 +7,27 @@ const { grantedPagesFor } = require('./realmAccess');
 
 const SEASON_PAGES = ['draws', 'calendar', 'patchnotes', 'seasondraft', 'season'];
 
+// The manifest the portal's Season table shows, flattened for the whole-season export. Kept beside the route rather than in adminParser.js because it is a portal view of the document, not one of the bot's paste-back formats — utils/adminParser.js owns those and every one of them round-trips.
+function seasonManifest(doc) {
+    const rows = [];
+    const push = (type, title, start, end) => rows.push({ type, title: String(title || '').replace(/\s+/g, ' ').trim(), start, end });
+    const day = (v) => (v ? new Date(v).toISOString().slice(0, 10) : '');
+    for (const d of doc.newDraws || []) push('New draw', d.title, day(d.date), day(d.date));
+    for (const d of doc.returningDraws || []) push('Returning draw', d.title, day(d.date), day(d.date));
+    for (const c of doc.calendar || []) {
+        const kind = String(c.category || 'event').toLowerCase();
+        push(kind === 'playlist' ? 'Playlist' : kind === 'draw' ? 'Draw window' : 'Event',
+            c.title, day(c.date || c.startDate), c.isOngoing ? 'all season' : day(c.endDate || c.date));
+    }
+    for (const p of doc.patchNotes || []) push('Patch note', p.titleOverride || p.title, day(p.releaseDate), day(p.releaseDate));
+    return rows;
+}
+
+function formatSeasonManifest(rows) {
+    return [['Item', 'Type', 'Starts', 'Ends'].join('\t')]
+        .concat(rows.map((r) => [r.title, r.type, r.start, r.end].join('\t'))).join('\n');
+}
+
 function register(route) {
     const { requireAdmin } = require('../auth');
 
@@ -37,8 +58,10 @@ function register(route) {
             returning: () => [(doc.returningDraws || []), formatDrawsAsBulkText],
             calendar: () => [(doc.calendar || []), formatCalendarAsBulkText],
             patchnotes: () => [(doc.patchNotes || []), formatPatchNotesAsText],
+            // 🔴 THE ONE SCOPE THAT TAKES THE WHOLE SEASON WAS MISSING, and it is the one a backup means. The other four each hand back a single list in the bot's own paste-back format; none of them is the Track. This is the manifest as columns — every type in one file, tab-separated so a spreadsheet opens it — and it is deliberately a READ format, like the patch notes: no bulk-add flow reads a mixed list back, and saying otherwise would promise a restore that does not exist.
+            all: () => [seasonManifest(doc), formatSeasonManifest],
         };
-        if (!SHAPES[scope]) return sendJson(res, 400, { error: 'export needs one of: draws, returning, calendar, patchnotes' });
+        if (!SHAPES[scope]) return sendJson(res, 400, { error: 'export needs one of: draws, returning, calendar, patchnotes, all' });
         const [list, format] = SHAPES[scope]();
         sendJson(res, 200, { text: format(list), count: list.length });
     }));

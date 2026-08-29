@@ -13,6 +13,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useCallback, useRef } from '../vendor/preact-hooks.mjs';
 import { Fold } from './icons.js';
 import { useMeasured } from './useMeasured.js';
+import { conforming } from './conform.js';
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
 //
@@ -247,10 +248,43 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
         </div>`;
 }
 
-// Kept from the previous implementation, unchanged: the flags a Track exists to surface. Only their PRESENTATION moves to the mockup's one-line-per-finding strip.
+// Kept from the previous implementation, unchanged: the flags a Track exists to surface. Only their PRESENTATION moves to the mockup's one-line-per-finding strip. ⚠️ THE STRIP REPORTED ONE KIND OF FINDING AND THE DESIGN REPORTS TWO, and the one it did report measured against the wrong edge. The design asks whether an item outlives THE SEASON — the last of its deadlines — not whether it outlives the battle pass, which is only the first of them; and it carries drawwindow overlaps here, because two windows open at once is the one lane where sharing days is a mistake rather than ordinary scheduling. The portal moved overlaps to Repairs, which is a redesign and comes back in the re-apply phase; under the conformance flag the strip is the design's. `overlapMatters` is drawwindow ALONE — playlists running concurrently is how the game works, and counting those produced sixty-one findings nobody would read.
+function seasonLastDeadline(season) {
+    const ds = ['bpEnd', 'rankEnd', 'dmzEnd'].map((k) => (season && season[k] ? String(season[k]).slice(0, 10) : '')).filter(Boolean);
+    return ds.length ? ds.sort()[ds.length - 1] : '';
+}
+
 function deriveFlags(data, window, season, actions) {
     const all = Object.values(data).flat();
     const out = [];
+    if (conforming()) {
+        const end = seasonLastDeadline(season);
+        if (end) {
+            for (const it of all) {
+                if (!it.endDate || String(it.endDate).slice(0, 10) <= end) continue;
+                const over = TL.days(end, String(it.endDate).slice(0, 10));
+                out.push({ id: 'past-' + it.id, sev: 'warn', fix: 'Clamp to season end',
+                    text: html`<b>${it.title}</b> ends ${over} day${over === 1 ? '' : 's'} after the season does.`,
+                    onFix: actions?.onClamp ? () => actions.onClamp(it, new Date(end + 'T00:00:00Z')) : null });
+            }
+        }
+        const wins = (data.drawwindow || []).slice()
+            .sort((x, y) => String(x.startDate || x.date).localeCompare(String(y.startDate || y.date)));
+        for (let i = 1; i < wins.length; i++) {
+            const prevEnd = String(wins[i - 1].endDate || wins[i - 1].startDate || '').slice(0, 10);
+            const thisStart = String(wins[i].startDate || wins[i].date || '').slice(0, 10);
+            if (!prevEnd || !thisStart || TL.days(thisStart, prevEnd) < 0) continue;
+            // The action the design offers: both bars are already outlined by markFlagged, so this puts the first of the pair in view and gives it focus — the finding and its subject in one move.
+            const first = wins[i - 1];
+            out.push({ id: 'ovl-' + wins[i].id, sev: 'warn', fix: 'Show both',
+                onFix: () => {
+                    const el = document.querySelector(`[data-id="${first.id}"]`);
+                    if (el) { el.scrollIntoView({ block: 'nearest', inline: 'center' }); el.focus?.(); }
+                },
+                text: html`<b>${wins[i - 1].title}</b> and <b>${wins[i].title}</b> overlap.` });
+        }
+        return out;
+    }
     if (season?.bpEnd) {
         for (const it of all) {
             if (!it.endDate || it.endDate <= season.bpEnd) continue;
@@ -374,7 +408,7 @@ export function Zoomer({ win, full, onWindow }) {
             <span class="rd"><b>${days}</b> ${days === 1 ? 'day' : 'days'} shown</span>
             <!-- The window's actual dates, at the far right of the bar, where season.html puts them. "44 days
                  shown" is a length and this is a position; the Track is a calendar, so the reader needs both. -->
-            <span class="zrange">${TL.fmt(win.start)} <i>→</i> ${TL.fmt(win.end)}</span>
+
             <!-- ⚠️ THE INSTRUCTION IS A TOOLTIP NOW, NOT A SENTENCE IN THE CHROME. COMPANION §5.2 gives the
                  ruler three pointer gestures and nothing on screen said so, which is why this was added at
                  all — but a permanent line of prose sitting in a control bar is read once and then becomes
@@ -463,10 +497,15 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
     const next = ahead[0] || null;
     const nowP = view.pct(todayIso), nextP = next ? view.pct(next.date) : null;
     const spanOk = next && nowP >= 0 && nextP > nowP && nextP <= 100;
-    const box = railBox(rail, Boolean(spanOk));
+    // ⚠️ THE RESERVATION HAS TO STAND DOWN WITH THE THING IT RESERVES FOR. railBox sizes the rail for a second row; suppressing only the bar left the 34px it needs, so the lanes stayed where they were and the page looked unchanged. A stand-down that hides an element and keeps its space is not one.
+    const showSpan = Boolean(spanOk) && !conforming();
+    const box = railBox(rail, showSpan);
     return html`
         <div class="deadrail" aria-label="Season deadlines" style=${`min-height:${box.height}px`}>
-            ${spanOk ? html`
+            <!-- The time-remaining bar is the portal's own: the design's rail carries the deadline flag
+                 and the off-window pin and nothing else, and this second row makes the rail 34px taller
+                 than the design's, which pushes every lane below it. It comes back with the rest. -->
+            ${showSpan ? html`
                 <button type="button" class=${'dspan' + (flips.span ? ' flip' : '')} data-k="span"
                         style=${`--c:${next.hex};left:${nowP}%;width:${Math.max(3, nextP - nowP)}%;margin-top:${box.spanTop}px`}
                         data-tip=${`${next.title || next.label} is the next deadline.\nThis is the time left before it.`}
@@ -505,7 +544,7 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
     `;
 }
 
-export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail, onPickDay }) {
+export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail, onPickDay, foot = null }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
@@ -631,7 +670,11 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
              Deleting it also lifts the Track 59px, which is the third of three blocks that were pushing the
              realm's own subject below an 806px fold. The window range that belongs at the far right of a
              view bar moved into the Zoomer, where the mockup puts it. -->
-        <div class="panel" id="track">
+        <!-- ⚠️ NO PANEL OF ITS OWN. The Track is one of the view panel's three views, so a second
+             panel element around it indented the axis by a second gutter — the plot rendered 46px narrower
+             than the design's and the findings strip below it wrapped onto two extra lines to pay for
+             it. Same shape of mistake as Airtime's, one realm over. -->
+        <div id="track">
             <div class="tk-wrap" ref=${rootRef}
                  onMouseMove=${(e) => {
                      const box = e.currentTarget.getBoundingClientRect();
@@ -715,5 +758,9 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                 ${shown.length > MAX_FLAGS ? html`
                     <span class="flag info">and ${shown.length - MAX_FLAGS} more — concurrent events are normal, so these rank last.</span>` : null}
             </div>
+            <!-- The Track view's foot: the design nests the Season Record inside this same wrapper, a
+                 sibling of the plot and the findings strip. Rendered outside it, its own top margin
+                 stopped collapsing here and the view panel measured 14px taller than the design's. -->
+            ${foot || null}
         </div>`;
 }

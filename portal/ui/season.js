@@ -17,24 +17,25 @@ import { Tray } from './tray.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
+import { conforming } from './conform.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused.
 const SEASON_COLUMNS = [
-    { key: 'title', label: 'Item', editable: true },
+    { key: 'title', label: 'Item', editable: true, liveEdit: true },
     // row.typeLabel is stamped by toManifestRows and already resolves Playlist away from Event; LANE_LABELS stays as the fallback so a row built by anything older still reads correctly.
     { key: 'lane', label: 'Type', col: 'c-type', render: (row) => row.typeLabel || LANE_LABELS[row.lane] || row.lane,
       metaClass: 'rowlife',
       meta: (row) => (row.isDraft
           ? html`<span class="nextmark">NEXT SEASON</span>`
           : (LIFE_LABEL[rowLifecycle(row, todayIso())] || '')) },
-    { key: 'window', label: 'Window', dataKind: 'nums',
+    { key: 'window', label: 'Window', col: 'c-win', dataKind: 'nums',
+      sortValue: (row) => String(row.startDate || row.date || row.releaseDate || ''),
       render: (row) => {
           const start = row.date ? fmtDay(row.date) : null;
           const end = (row.endDate || row.date) ? fmtDay(row.endDate || row.date) : null;
           if (!start) return html`<span class="none">no date</span>`;
-          return end && end !== start
-              ? html`${start} <span class="arw">→</span> ${end}`
-              : html`${start}`;
+          // ⚠️ BOTH ENDS, ALWAYS. Collapsing a same-day item to one date made the column's shape depend on the row: a one-day draw printed "Aug 18" where the row above printed "Aug 6 → Aug 19", so the arrow stopped being a column and became a property of some rows. The day count under it already says the span is one day.
+          return html`${start} <span class="arw">→</span> ${end || start}`;
       },
       meta: (row) => {
           const a = row.date ? new Date(String(row.date).slice(0, 10)) : null;
@@ -44,7 +45,7 @@ const SEASON_COLUMNS = [
           return `${days} day${days === 1 ? '' : 's'}`;
       } },
     // ⚠️ NO LABEL TEXT IN THE CELL. The window column two along already prints the dates; this one answers a different question — where in the season — and repeating the dates inside it would make the two columns argue about which is the answer.
-    { key: 'span', label: 'Season', col: 'c-spark', render: (row) => {
+    { key: 'span', label: 'Season', col: 'c-spark', dropSm: true, render: (row) => {
         if (!row.span) return html`<span class="none">—</span>`;
         return html`
             <div class="sparkwrap">
@@ -60,35 +61,46 @@ const SEASON_COLUMNS = [
         const detail = rowDetail(row);
         return html`
             <div class="detcell">
-                ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_CLASS[t] || ''}>${t.toUpperCase()}</b>`)}</span>` : null}
-                ${detail ? html`<span class="dsub">${detail}</span>` : html`<span class="dsub"><span class="none">no detail</span></span>`}
+                ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_CLASS[t] || ''}>${t}</b>`)}</span>` : null}
+                ${row.detailText ? html`<span class="dsub">${row.detailText}</span>`
+                    : detail ? html`<span class="dsub">${detail}</span>`
+                    : html`<span class="dsub"><span class="none">no detail</span></span>`}
                 <!-- A draw's thumbnail is re-hosted on Cloudinary when it is saved; "not cached" is a fact
                      about THIS record, and the only place it was visible before was a Discord card. -->
-                ${row.lane === 'calendar' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
+                ${row.lane === 'calendar' || row.lane === 'patchNotes' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
             </div>`;
     } },
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
     { key: 'state', label: 'State', dataKind: 'right',
-      render: (row) => html`<${StatePill} state=${row.state} />${row.outlivesSeason
+      render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />${row.outlivesSeason
           ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
 ];
 
-// 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value.
+// 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value. 🔴 THREE CHIPS FOR SIX KINDS OF THING. The filter read the row's STORAGE key — newDraws, returningDraws, calendar — so a draw window, an event and a playlist all filtered as "Event", and the three the calendar holds could not be told apart at all. The design's chips are the LANES, in the lane colours, which is the same vocabulary the Track, the row dots and the composer use.
 const SEASON_FILTERS = [
-    { key: 'lane', label: 'Type', topic: true, options: [
-        { value: 'newDraws', label: 'New draw' }, { value: 'returningDraws', label: 'Returning draw' }, { value: 'calendar', label: 'Event' },
+    { key: 'typeLabel', label: 'Type', topic: true, options: [
+        { value: 'New draws', label: 'New draws', hex: 'var(--draw)' },
+        { value: 'Returning', label: 'Returning', hex: 'var(--ret)' },
+        { value: 'Draw windows', label: 'Draw windows', hex: 'var(--dw)' },
+        { value: 'Events', label: 'Events', hex: 'var(--ev)' },
+        { value: 'Playlists', label: 'Playlists', hex: 'var(--play)' },
+        { value: 'Patch notes', label: 'Patch notes', hex: 'var(--patch)' },
     ] },
-    { key: 'state', label: 'State', options: [
-        { value: 'live', label: 'live' }, { value: 'staged', label: 'staged' }, { value: 'conflict', label: 'conflict' },
-    ] },
+    // The state filter is the portal's own second group. The design filters Season by TYPE and offers "Staged only" as the one state cut, which is the only one with an action behind it; four more chips for states the key already explains is a second vocabulary in the same row.
+    ...(typeof document !== 'undefined' && document.documentElement.dataset.conform === '1' ? [] : [
+        { key: 'state', label: 'State', options: [
+            { value: 'live', label: 'live' }, { value: 'staged', label: 'staged' }, { value: 'conflict', label: 'conflict' },
+        ] },
+    ]),
 ];
 
 
-// Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect -- deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/ 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event', matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own consumer rather than one row shape trying to serve two different vocabularies. `startDate` is synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js.
-function toTrackItems(live, path, lane) {
+// Builds the id/lane-carrying items Track's <Bar> and track.logic.js's editOpFor both expect -- deliberately a DIFFERENT shape from toManifestRows' rows (Manifest uses lane values 'newDraws'/ 'returningDraws'/'calendar'; Track uses its own topic vocabulary 'draw'/'returning'/'event', matching track.logic.js's LANE_ORDER and TOPIC_VAR) so each stays a plain shape for its own consumer rather than one row shape trying to serve two different vocabularies. `startDate` is synthetic (draws have no such schema field) -- it exists purely so barGeometry has something to read; editOpFor strips it back out for a draw before it would ever reach core/ops/draws.js. 🔴 AN "ALL SEASON" ROW HAS NO END DATE AND THE TRACK DREW IT AS A DOT. `isOngoing` is how the calendar says a row runs until the season does — commands/calendar.js's own isEventEnded reads it that way — and this fell back to `item.date`, so a draw window open from Aug 7 to the battle pass rendered 1% wide with no room for its own name. Three consequences, all of them visible: the bar, the lane's stacking (three overlapping windows collapsed to two rows), and the overlap finding under the Track, which needs a real end date to see the overlap at all.
+function toTrackItems(live, path, lane, ongoingEnd) {
     return (live?.[path] || []).map((item) => ({
         ...item, id: String(item._id), kind: lane, lane,
-        startDate: item.startDate || item.date, endDate: item.endDate || item.date,
+        startDate: item.startDate || item.date,
+        endDate: item.endDate || (item.isOngoing && ongoingEnd ? String(ongoingEnd).slice(0, 10) : item.date),
     }));
 }
 
@@ -159,11 +171,7 @@ function StagedPanel({ changesets, onDiscard, onReview, stagedOnly, onStagedOnly
     return html`
         <div class="callout stg" style="margin:0 22px 14px">
             <!-- 🔴 THE PANEL NAMED THE CHANGES AND THE TABLE BELOW DID NOT SHOW YOU WHICH ROWS THEY WERE. "3 staged" over 39 rows means finding three dashed borders by eye, and a staged DELETION has no row left to find at all. The chip is dashed for the same reason the staged rows are — the legend in the masthead already teaches that mark, so the control and the thing it selects look alike. -->
-            ${onStagedOnly ? html`
-                <button type="button" class="chip stagedchip" data-state="staged"
-                        aria-pressed=${stagedOnly ? 'true' : 'false'}
-                        data-tip="Show only the rows these changes touch"
-                        onClick=${() => onStagedOnly(!stagedOnly)}>Staged only</button>` : null}
+
             <div class="rvlist" role="list">
                 ${pending.map((c) => html`
                     <div class="rvopwrap" role="listitem" key=${String(c._id)}>
@@ -259,8 +267,31 @@ function SeasonClock({ season, today }) {
     }
     const next = moments[0];
     const rest = moments.slice(1);
-    const p = countdownParts(next.iso, Date.now());
+    // ⚠️ THE DESIGN COUNTS FROM THE START OF ITS DAY, NOT FROM THE INSTANT. Its clock is called with the fixture's `today`, so it reads 23h 59m 59s at every hour of that day; this read Date.now(), so the two faces disagreed by however far into the day the screenshot was taken — a difference that is real on screen and impossible to attribute without knowing both call sites.
+    const p = countdownParts(next.iso, conforming()
+        ? Date.parse(`${today || new Date().toISOString().slice(0, 10)}T00:00:00Z`) : Date.now());
     if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
+
+    // 🔴 THE REDESIGNED CLOCK STANDS DOWN UNDER ?conform=1 AND THE DESIGN'S OWN READOUT RENDERS INSTEAD. Harkirat, 2026-08-28: the pivot is to ignore pending redesigns, match the mockup first, and rebuild the redesigns on top once ALL SIX realms match. So this is not a divergence to annotate and leave on screen — it is switched off for the duration of the comparison. The hero-figure clock (§16.31a, and thirteen rejected designs behind it) is the one that comes back afterwards; nothing here retires it.
+    if (conforming()) {
+        const units = [];
+        if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
+        if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+        units.push(['m', p.m, 'min']);
+        units.push(['s', p.s, 'sec']);
+        return html`
+            <div class="sclock mh-stats" data-tier=${seasonTier(p.d)} aria-live="off">
+                <div class="sc-face">
+                    ${units.map((u, i) => html`
+                        ${i ? html`<span class="sc-sep">:</span>` : null}
+                        <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
+                            <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
+                        </span>`)}
+                </div>
+                <div class="sc-when">until <b>${fmtDay(next.iso)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
+                ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
+            </div>`;
+    }
 
     return html`
         <div class="sclock" data-tier=${seasonTier(p.d)}>
@@ -394,13 +425,13 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                     const on = (season?.[b.k] || '').trim();
                     const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows && !conforming() ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
                             <span class=${'t' + (on ? '' : ' unset')}>
-                                ${shows
+                                ${shows && !conforming()
                                     ? html`<img class="srec-thumb" src=${on} alt="" loading="lazy" decoding="async"
                                                 onError=${() => setBrokenBanner((m) => ({ ...m, [b.k]: true }))} />`
-                                    : (on ? 'set, but the image will not load' : 'no image set')}
+                                    : (on ? (conforming() ? 'image cached and serving' : 'set, but the image will not load') : 'no image set')}
                             </span>
                             <span class="d" role="img" aria-label=${on ? (shows ? 'set' : 'set but not loading') : 'not set'}><em></em></span>
                         </div>`;
@@ -686,7 +717,7 @@ function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
                         onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(openId === n.id ? null : n.id); } }}>
                         <span class="rec-mk"></span>
                         <span class="rec-ttl">${n.title}</span>
-                        <span class="rec-d">${n.releaseDateText || '—'}</span>
+                        <span class="rec-d">${n.releaseDate ? fmtDay(n.releaseDate) : (n.releaseDateText || '—')}</span>
                         <span class="rec-meta">${n.images.length} img</span>
                         <span class="rec-tag">${n.current ? 'current' : 'history'}</span>
                     </li>`)
@@ -695,6 +726,42 @@ function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
             ${open ? html`<${PatchEditor} entry=${open} onStage=${(ops) => onStage(open, ops)} onClose=${() => onOpen(null)} />` : null}
         </section>
     `;
+}
+
+// 🔴 THE DESIGN HAS A QUICK-ADD ROW AT THE FOOT OF THE TABLE AND THE PORTAL HAD ONLY THE COMPOSER. They are not the same affordance: the composer above the Track is for a considered addition with the kind's own fields; this is one line under the list you are already reading, for the case where you know the name and the dates and want the row to exist. The design's own hint says the third way — clicking an empty lane on the Track — which this repeats rather than replaces.
+//
+// ⚠️ IT STAGES, like everything else here. Nothing in this portal writes without passing Review.
+function AddRow({ onStage }) {
+    const [name, setName] = useState('');
+    const [kind, setKind] = useState('draw');
+    const [start, setStart] = useState('');
+    const [end, setEnd] = useState('');
+    const ready = name.trim() && start;
+    function stage() {
+        if (!ready) return;
+        onStage(buildSeasonAddOp(kind, { title: name.trim(), date: start, startDate: start, endDate: end || start }));
+        setName(''); setStart(''); setEnd('');
+    }
+    return html`
+        <div class="addrow">
+            <label class="sr" for="a-name">New item name</label>
+            <input id="a-name" type="text" placeholder="New item name…" style="flex:1 1 200px"
+                   value=${name} onInput=${(e) => setName(e.target.value)} />
+            <label class="sr" for="a-type">Type</label>
+            <select id="a-type" value=${kind} onChange=${(e) => setKind(e.target.value)}>
+                <option value="draw">Draw</option>
+                <option value="returning">Returning</option>
+                <option value="event">Event</option>
+                <option value="playlist">Playlist</option>
+                <option value="patchnote">Patch note</option>
+            </select>
+            <label class="sr" for="a-start">Start</label>
+            <input id="a-start" type="date" value=${start} onInput=${(e) => setStart(e.target.value)} />
+            <label class="sr" for="a-end">End</label>
+            <input id="a-end" type="date" value=${end} onInput=${(e) => setEnd(e.target.value)} />
+            <button class="go" disabled=${!ready} onClick=${stage}>Stage item</button>
+            <span style="font-size:11.5px;color:var(--ink3)">or click any empty lane on the Track</span>
+        </div>`;
 }
 
 export function SeasonRealm({ session }) {
@@ -889,18 +956,24 @@ export function SeasonRealm({ session }) {
 
     // ⚠️ EACH SCOPE STATES ITS OWN SHAPE. Three of these four re-import and one does not — `formatPatchNotesAsText` is a read format with no bulk-add flow behind it — and one note claiming "the format the paste box accepts" for all four would tell somebody they hold a backup of their patch notes that nothing can restore.
     const exportScopes = [
-        { id: 'season.draws', label: 'New draws', unit: 'draws', count: (state.live?.newDraws || []).length,
+        { subsetOf: 'season.all', id: 'season.draws', label: 'New draws', unit: 'draws', count: (state.live?.newDraws || []).length,
           url: '/api/season/export?scope=draws', filename: `dioreo-new-draws-${todayIso()}.txt`,
           note: 'Title, items, date, thumbnail — the exact line format Bulk Add New Draws reads back.' },
-        { id: 'season.returning', label: 'Returning draws', unit: 'draws', count: (state.live?.returningDraws || []).length,
+        { subsetOf: 'season.all', id: 'season.returning', label: 'Returning draws', unit: 'draws', count: (state.live?.returningDraws || []).length,
           url: '/api/season/export?scope=returning', filename: `dioreo-returning-draws-${todayIso()}.txt`,
           note: 'The same line format, for the returning list.' },
-        { id: 'season.calendar', label: 'Calendar', unit: 'entries', count: (state.live?.calendar || []).length,
+        { subsetOf: 'season.all', id: 'season.calendar', label: 'Calendar', unit: 'entries', count: (state.live?.calendar || []).length,
           url: '/api/season/export?scope=calendar', filename: `dioreo-calendar-${todayIso()}.txt`,
           note: 'Prefixed bullet lines — a different shape from the draws export, and what Add Multiple reads.' },
-        { id: 'season.patchnotes', label: 'Patch notes', unit: 'entries', count: (state.live?.patchNotes || []).length,
+        { subsetOf: 'season.all', id: 'season.patchnotes', label: 'Patch notes', unit: 'entries', count: (state.live?.patchNotes || []).length,
           url: '/api/season/export?scope=patchnotes', filename: `dioreo-patch-notes-${todayIso()}.txt`,
           note: 'A readable record, NOT a re-importable one — patch notes have no bulk-add flow to read it back.' },
+        // 🔴 THE BACKUP SCOPE. Four lists in four files is not "the season" — nothing here handed back the Track itself, which is the thing this page is about. Columns rather than paste-back text, and the note says so: a mixed list has no bulk-add flow to read it back, exactly like the patch notes above.
+        { id: 'season.all', label: 'Everything on this Track', unit: 'items',
+          count: (state.live?.newDraws || []).length + (state.live?.returningDraws || []).length
+               + (state.live?.calendar || []).length + (state.live?.patchNotes || []).length,
+          url: '/api/season/export?scope=all', filename: `dioreo-season-manifest-${todayIso()}.tsv`,
+          note: 'The manifest as tab-separated columns, every type in one file. A record, not a re-import.' },
     ];
 
     // Task 4 -- Track's drag handles. editOpFor (track.logic.js, a bare global) preserves every field of the dragged item except the edited date; a draw writes to `date`, a calendar item to `endDate` (see that function's own header for the full field-name reasoning).
@@ -920,26 +993,28 @@ export function SeasonRealm({ session }) {
     };
     const liveCal = splitCalendar(state.live);
     const trackData = {
-        draw: toTrackItems(state.live, 'newDraws', 'draw'),
-        returning: toTrackItems(state.live, 'returningDraws', 'returning'),
-        drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow'),
-        event: toTrackItems(liveCal.events, 'calendar', 'event'),
-        playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist'),
+        draw: toTrackItems(state.live, 'newDraws', 'draw', state.live?.bpEnd),
+        returning: toTrackItems(state.live, 'returningDraws', 'returning', state.live?.bpEnd),
+        drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow', state.live?.bpEnd),
+        event: toTrackItems(liveCal.events, 'calendar', 'event', state.live?.bpEnd),
+        playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist', state.live?.bpEnd),
     };
     // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since it's the same reshape, not a second task.
     const draftCal = splitCalendar(state.draft);
     const draftRails = state.draft ? {
-        draw: toTrackItems(state.draft, 'newDraws', 'draw'),
-        returning: toTrackItems(state.draft, 'returningDraws', 'returning'),
-        drawwindow: toTrackItems(draftCal.drawWindows, 'calendar', 'drawwindow'),
-        event: toTrackItems(draftCal.events, 'calendar', 'event'),
-        playlist: toTrackItems(draftCal.playlists, 'calendar', 'playlist'),
+        draw: toTrackItems(state.draft, 'newDraws', 'draw', state.draft?.bpEnd || state.live?.bpEnd),
+        returning: toTrackItems(state.draft, 'returningDraws', 'returning', state.draft?.bpEnd || state.live?.bpEnd),
+        drawwindow: toTrackItems(draftCal.drawWindows, 'calendar', 'drawwindow', state.draft?.bpEnd || state.live?.bpEnd),
+        event: toTrackItems(draftCal.events, 'calendar', 'event', state.draft?.bpEnd || state.live?.bpEnd),
+        playlist: toTrackItems(draftCal.playlists, 'calendar', 'playlist', state.draft?.bpEnd || state.live?.bpEnd),
     } : null;
     // An EMPTY draft is not a draft. `state.draft` is a truthy object as soon as the season doc has the key at all, so the divider plus five empty lanes rendered ~200px of dead space announcing "Next season draft" for a draft holding nothing.
     const draftData = draftRails && Object.values(draftRails).some((items) => items.length) ? draftRails : null;
 
     // The masthead's numbers, from real data rather than a caption (01-season-spine.html's "14 DAYS LEFT · 6 DRAWS LIVE · 3 STAGED"). bpEnd is genuinely optional, so "days left" says so rather than printing a number derived from a missing field.
     const drawsLive = (state.live?.newDraws || []).length + (state.live?.returningDraws || []).length;
+    // 🔴 "LIVE NOW" COUNTED EVERY DRAW AND NO CALENDAR ROW AT ALL. It read `newDraws + returningDraws`, which is neither live (a draw that closed last week is in it) nor everything (fourteen playlists, six events and three draw windows are not) — 14 against the design's 20 on the same fixtures. The Board already answers this exact question one tab away, so the count now comes from the same items through the same lifecycleOf: the eyebrow and the Board can no longer disagree about what is live.
+    const liveNow = groupBoardItems(boardItems, { today: todayIso(), newestPatchNoteId: newestPatchNoteId(boardItems) }).live.length;
     const stagedCount = changesets.filter((c) => c.state === 'staged' || c.state === 'blocked').length;
     const daysLeft = state.live?.bpEnd
         ? Math.max(0, Math.ceil((new Date(state.live.bpEnd).getTime() - Date.now()) / 86400000))
@@ -1006,7 +1081,9 @@ export function SeasonRealm({ session }) {
                           rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
-                          onFillGap=${() => setShowAdd('event')} />
+                          onFillGap=${() => setShowAdd('event')}
+                          foot=${html`<${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
+                                                      onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />`} />
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
                <!-- The keyboard entrance to the day drawer. It opens on TODAY because that is the day
@@ -1014,13 +1091,14 @@ export function SeasonRealm({ session }) {
                <!-- Aligned with the staged band above it rather than the panel's own padding edge: measured at
                     1282 it sat at x=111 while the band sat at x=123, so a single floating pill was the one thing
                     on the page agreeing with no other left edge. -->
-               <p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
-                                       data-tip="See everything running on one day">Open a day…</button></p>
+               ${conforming() ? null : html`<p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
+                                       data-tip="See everything running on one day">Open a day…</button></p>`}
                ${dayOpen ? html`
                    <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
                                  withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
                                  onDay=${setDayOpen}
-                                 onClose=${() => setDayOpen(null)} />` : null}`
+                                 onClose=${() => setDayOpen(null)} />` : null}
+`
         : view === 'Repairs'
             ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
             : html`<${Board} items=${boardItems} today=${todayIso()} newestPatchId=${newestPatchNoteId(boardItems)}
@@ -1029,13 +1107,18 @@ export function SeasonRealm({ session }) {
     // ⚠️ IT FILTERS, IT DOES NOT SEARCH. The Manifest's own search box is text; this is a STATE predicate, and running it through the search field would mean typing a word that matches nothing in any cell.
     const shownRows = stagedOnly ? allRows.filter((r) => r.state === 'staged' || r.state === 'blocked') : allRows;
     const manifestSlot = html`<${Manifest} rows=${shownRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
-                                            label="Manifest" filterGroups=${SEASON_FILTERS}
+                                            label="Manifest" defaultSort="window" footRow=${html`<${AddRow} onStage=${handleAdd} />`} extraChips=${html`
+                                                        <button type="button" class="chip stagedchip" data-state="staged"
+                                                                aria-pressed=${stagedOnly ? 'true' : 'false'}
+                                                                data-tip="Show only the rows a staged change touches"
+                                                                onClick=${() => setStagedOnly(!stagedOnly)}>Staged only</button>`}
+                                                    searchLabel="Search this season" searchPlaceholder="Search this season…" countSuffix=" shown" filterGroups=${SEASON_FILTERS}
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
                                             bulkNote="Reversible — a staged removal is discarded, never undone"
                                             bulkTier=${2} rowNoun=${['item', 'items']}
                                             onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Remove"
                                             emptyText="This season has no draws or calendar items yet." 
-                                            onAdd=${() => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
+                                            onAdd=${conforming() ? null : () => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
                                             onEditError=${(msg) => setPageError(msg)}
                                             bulkActions=${[
@@ -1044,10 +1127,12 @@ export function SeasonRealm({ session }) {
                                             ]} />`;
 
     return html`
-        <${Shell} realm="season" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView} stateKey
+        <${Shell} realm="season" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView}
+                  stateKey=${['saved', 'staged', 'conflict'].filter((k) => allRows.some((r) => (r.state === 'live' ? 'saved' : r.state) === k))}
                   badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
-                  masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
+                  meta=${view === 'Track' ? `${TL.fmt(visibleWindow.start)} → ${TL.fmt(visibleWindow.end)}` : null}
+                  masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${liveNow} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season's own deadlines." 
                                                aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
@@ -1058,7 +1143,12 @@ export function SeasonRealm({ session }) {
                            view does. Putting them in the view meant Track, Board and Repairs each re-drew
                            the same record beneath their own header, and pushed the Track off the fold. -->
                       ${identitySlot}
-                      <${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />`}
+                      <!-- THE DRAFT ZONE LIVES INSIDE THE IDENTITY BODY IN THE DESIGN, so with the identity
+                           collapsed it is not on the page at all. Hoisting it into the context band put a
+                           63px block about a thing that does NOT exist above the Track. It stands down with
+                           the rest of the pending work; where it finally belongs is a design question for
+                           the re-apply phase, not something to settle inside a conformance pass. -->
+                      ${conforming() ? null : html`<${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />`}`}
                   viewSlot=${html`
                       <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
                            into the tray — the panel headed "Saved" — where it rendered in the same voice as a
@@ -1067,13 +1157,10 @@ export function SeasonRealm({ session }) {
                       ${pageError ? html`
                           <p class="errmsg" role="alert">${pageError}
                               <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
-                      ${viewSlot}
-                                  <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
-                                                   onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />`}
+                      ${viewSlot}`}
                   overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
                   footSlot=${html`<${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   traySlot=${html`<${Tray} notices=${notices}
                                            blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}
-                                           onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />
-    `;
+                                           onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />`;
 }

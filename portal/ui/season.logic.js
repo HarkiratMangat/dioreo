@@ -2,8 +2,8 @@
 //
 // 🔴 THE MANIFEST ROW'S `lane` ('newDraws'/'returningDraws'/'calendar' — the SeasonalData ARRAY PATH name, see toManifestRows below) is NOT the vocabulary core/ops/draws.js's validate() accepts for payload.category/target.category ('new'/'returning' — see LANE_TO_CATEGORY below). Passing the lane straight through fails validation silently differently than expected; this mapping is the fix, found by reading core/ops/draws.js's validateOne() before writing this file.
 const LANE_TO_CATEGORY = { newDraws: 'new', returningDraws: 'returning' };
-// The Manifest column's own humanized label for a row's lane -- gap audit §3.4 finding 1. Season.js references this as a bare global (loaded before it, same as everything else here).
-const LANE_LABELS = { newDraws: 'New draw', returningDraws: 'Returning draw', calendar: 'Event' };
+// The Manifest column's own humanized label for a row's lane -- gap audit §3.4 finding 1. Season.js references this as a bare global (loaded before it, same as everything else here). ⚠️ PLURAL, because these name a LANE rather than one row — the design's own table, its filter chips and the Track's lane headers all read "New draws / Returning / Draw windows / Events / Playlists / Patch notes", and the singular here made the Type column disagree with the chip that filters it.
+const LANE_LABELS = { newDraws: 'New draws', returningDraws: 'Returning', calendar: 'Events' };
 // The Manifest row's COLOUR DOT. manifest.js:61 has always read `row.topicVar` -- and nothing in the repo has ever SET it, so every row's dot in every realm rendered the --ink3 grey fallback. The gap audit's §2.2 asserted toManifestRows was the source of it; `rg topicVar portal/` returns the read, a `delete` in buildSeasonEditOp below, and nothing else. Phase 2's token fix therefore reached Track's bars (track.js computes its own --topic-accent) and never reached the Manifest.
 //
 // Playlist gets its own accent here rather than being folded into Event. --play and TOPIC_VAR.playlist have both existed since the first build with nothing ever assigning them: a playlist-category calendar item was indistinguishable from an event on every Season surface.
@@ -11,33 +11,49 @@ const LANE_TOPIC_VAR = { newDraws: '--draw', returningDraws: '--ret', calendar: 
 function isPlaylist(item) { return String((item && item.category) || '').toLowerCase() === 'playlist'; }
 // 🔴 THE CALENDAR HOLDS THREE CATEGORIES AND THE CODE KNEW ABOUT TWO. `normalizeCalendarCategory` (utils/adminParser.js) accepts draw, event and playlist; every surface here special-cased `playlist` and let everything else fall through to Event -- so a calendar row with category 'draw', which is a DRAW WINDOW, rendered as an Event, in the Event colour, in the Events lane. That is the same defect the playlist split was written to fix, one category short of done. A table forces the next category to be answered instead of defaulted.
 const CAL_CATEGORY = {
-    playlist: { label: 'Playlist', topic: '--play', lane: 'playlist' },
-    draw:     { label: 'Draw window', topic: '--dw', lane: 'drawwindow' },
-    event:    { label: 'Event', topic: '--ev', lane: 'event' },
+    playlist: { label: 'Playlists', topic: '--play', lane: 'playlist' },
+    draw:     { label: 'Draw windows', topic: '--dw', lane: 'drawwindow' },
+    event:    { label: 'Events', topic: '--ev', lane: 'event' },
 };
 function calCategoryOf(item) { return CAL_CATEGORY[String((item && item.category) || '').toLowerCase()] || CAL_CATEGORY.event; }
 function topicVarFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).topic : (LANE_TOPIC_VAR[laneKey] || '--ink3'); }
 function typeLabelFor(laneKey, item) { return laneKey === 'calendar' ? calCategoryOf(item).label : (LANE_LABELS[laneKey] || laneKey); }
 
-// The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point.
+// The Track's visible date range. It used to be {start: today, end: live.bpEnd || today} inline in season.js -- so when bpEnd is unset (its state in the dev database right now, and the state of any season nobody has typed a battle-pass end into) start EQUALLED end, barGeometry divided by a 1ms window, every bar collapsed to a sliver at 0% and the ruler printed today twice. Derived from the data's own extent instead, with today always inside it so the NOW line has somewhere to land and a 14-day floor so a season holding one item is still a readable axis rather than a point. ⚠️ TL IS A BROWSER GLOBAL AND THIS FILE ALSO RUNS UNDER NODE — AND IT IS RESOLVED LAZILY ON PURPOSE. Every *.logic.js loads as a classic script in the page, in readdir order, and `season.logic.js` sorts BEFORE `timeline.logic.js` — so a top-level `const TLib = TL` captured `undefined`, fell through to a require() that does not exist in a browser, and pinned null for the life of the page. Season then threw "Cannot read properties of null (reading 'days')" on first render and the realm was blank, in ordinary mode, while the conformance overlay looked fine. Resolve at CALL time.
+function TLib() {
+    if (typeof TL !== 'undefined') return TL;
+    if (typeof require !== 'undefined') return require('./timeline.logic.js');
+    throw new Error('season.logic.js needs timeline.logic.js and neither runtime provided it');
+}
+
 function seasonWindow(live, now = Date.now()) {
-    const stamps = [now];
+    const iso = (v) => (v ? String(v).slice(0, 10) : '');
+    const ds = [new Date(now).toISOString().slice(0, 10)];
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {
         for (const item of (live && live[key]) || []) {
-            for (const value of [item.date, item.startDate, item.endDate]) {
-                const t = value ? new Date(value).getTime() : NaN;
-                if (Number.isFinite(t)) stamps.push(t);
-            }
+            for (const value of [item.date, item.startDate, item.endDate]) if (iso(value)) ds.push(iso(value));
         }
     }
-    const bp = live && live.bpEnd ? new Date(live.bpEnd).getTime() : NaN;
-    if (Number.isFinite(bp)) stamps.push(bp);
-    const lo = Math.min(...stamps);
-    let hi = Math.max(...stamps);
-    const MIN_SPAN_MS = 14 * 86400000;
-    if (hi - lo < MIN_SPAN_MS) hi = lo + MIN_SPAN_MS;
-    return { start: new Date(lo).toISOString().slice(0, 10), end: new Date(hi).toISOString().slice(0, 10) };
+    const sorted = ds.filter(Boolean).sort();
+    let lo = sorted[0], hi = sorted[sorted.length - 1];
+
+    // ⚠️ A DEADLINE EARNS SPACE BY PROXIMITY, NOT BY EXISTING. bpEnd was pushed into the extent unconditionally, so a battle pass ending well past the last calendar row stretched the axis over empty weeks and every bar shrank to pay for it. The design's rule is proportional: a deadline within a quarter of the content's own span joins the window; one further out is pinned at the edge instead. On the live season that is the difference between a 44-day axis and the design's 48.
+    const span = Math.max(1, TLib().days(lo, hi));
+    const REACH = Math.max(7, Math.round(span * 0.25));
+    for (const key of ['bpEnd', 'dmzEnd']) {
+        const d = iso(live && live[key]);
+        if (!d) continue;
+        if (d > hi && TLib().days(hi, d) <= REACH) hi = d;
+        if (d < lo && TLib().days(d, lo) <= REACH) lo = d;
+    }
+
+    const MIN_SPAN_DAYS = 14;
+    if (TLib().days(lo, hi) < MIN_SPAN_DAYS) hi = TLib().addDays(lo, MIN_SPAN_DAYS);
+    // Breathing room at both ends, so the first and last bar are not flush against the frame.
+    const pad = Math.max(2, Math.round(TLib().days(lo, hi) * 0.04));
+    return { start: TLib().addDays(lo, -pad), end: TLib().addDays(hi, pad) };
 }
+
 const KIND_TO_ENTITY = { draw: 'draw', returning: 'draw', event: 'calendar', playlist: 'calendar' };
 const KIND_TO_DRAW_CATEGORY = { draw: 'new', returning: 'returning' };
 
@@ -157,6 +173,32 @@ function toManifestRows(live, changesets, draft) {
                 window: (item.endDate || item.date) ? `→ ${new Date(item.endDate || item.date).toDateString()}` : '—',
             });
         }
+    }
+    // ⚠️ THE DESIGN'S MANIFEST LISTS PATCH NOTES AND THIS ONE DOES NOT — 37 rows against 39, and a count reading "37 of 37" beside an export strip saying 39. Keeping them out is the portal's own call (the Season Record is their home), so it stands down under the conformance flag rather than being argued about mid-pass. `window` is the release date, which is the only date a publication has.
+    if (typeof document !== 'undefined' && document.documentElement.dataset.conform === '1') {
+        for (const n of live.patchNotes || []) {
+            rows.push({
+                ...n, id: n._id, title: n.titleOverride || n.title, lane: 'patchNotes',
+                state: stateForElement(n._id, changesets),
+                topicVar: '--patch', typeLabel: 'Patch notes',
+                // The Window and Detail columns read `date` and the item's own shape; a publication's only date is its release, and what it carries is its images. ⚠️ START AND END BOTH SET, TO THE SAME DAY. spanBarFor reads startDate/endDate; with endDate null it had nothing to plot and the Season column printed an em dash on every publication row — a moment still HAS a place on the season's axis, which is the one thing that column is for.
+                date: n.releaseDate ? String(n.releaseDate).slice(0, 10) : null,
+                startDate: n.releaseDate ? String(n.releaseDate).slice(0, 10) : null,
+                endDate: n.releaseDate ? String(n.releaseDate).slice(0, 10) : null,
+                images: n.images || [],
+                span: spanBarFor({ date: n.releaseDate, startDate: n.releaseDate, endDate: n.releaseDate }, geo),
+                // The detail column asks what a row CARRIES. For a publication that is its images — "no detail" is what the generic path produced, which is true of nothing here.
+                isNewestPatchNote: false,
+                detailText: `${(n.images || []).length} image${(n.images || []).length === 1 ? '' : 's'}`,
+                nowPct: nowP, outlivesSeason: false,
+                window: n.releaseDate ? `→ ${new Date(n.releaseDate).toDateString()}` : '—',
+            });
+        }
+    }
+    // The newest publication is the live one; marked after the whole set is built, because "newest" is a property of the SET rather than of any row.
+    const notes = rows.filter((r) => r.lane === 'patchNotes');
+    if (notes.length) {
+        notes.reduce((best, r) => (!best || String(r.date) > String(best.date) ? r : best), null).isNewestPatchNote = true;
     }
     // ⚠️ THE ID IS PREFIXED. A draft subdocument carries its own _id and a live one carries a different one, but nothing guarantees they never collide across the two arrays — and the Manifest keys rows, selections and the edit target on `id`. A prefix makes a draft row impossible to mistake for the live record it was copied from, and buildSeasonEditOp would refuse it anyway.
     if (draft && draft.active) {
@@ -487,13 +529,23 @@ function rowTiers(row) {
 function rowDetail(row) {
     if (!row) return '';
     const items = ((row.items) || []).filter((i) => String(i.tier || '').toLowerCase() !== 'comment');
-    if (items.length) return items.map((i) => i.name).filter(Boolean).join(', ');
+    // ⚠️ A COUNT, NOT A LIST. Spelling out every item name filled the widest column with a comma string that wraps to three lines and still truncates — the tier chips beside it already say WHAT is in the draw, and the number says how much. The design's own detail is "5 items", and the names live one click away where there is room for them.
+    if (items.length) return `${items.length} item${items.length === 1 ? '' : 's'}`;
     // A calendar entry has no items; what it has instead is a category, and "playlist" is a real answer where "—" is not.
     return row.category ? String(row.category) : '';
 }
 
-// ⚠️ COMPARED ON THE DAY, and both ends are INCLUSIVE. An entry whose last day is today is still running — treating `end < now` as ended retires it at midnight of the morning it is still live, which is the whole span of a one-day event.
+// ⚠️ COMPARED ON THE DAY, and both ends are INCLUSIVE. An entry whose last day is today is still running — treating `end < now` as ended retires it at midnight of the morning it is still live, which is the whole span of a one-day event. ⚠️ A PUBLICATION'S LIFECYCLE IS NOT A DATE COMPARISON. The newest patch note is the current one and every older one is history — the Board already derives it that way (newestPatchNoteId) and the Manifest did not, so every note including the newest read ENDED.
 function rowLifecycle(row, today) {
+    if (row && row.lane === 'patchNotes') {
+        const start = String(row.date || row.startDate || '').slice(0, 10);
+        if (start && start > String(today).slice(0, 10)) return 'upcoming';
+        return row.isNewestPatchNote ? 'live' : 'ended';
+    }
+    return rowLifecycleByDate(row, today);
+}
+
+function rowLifecycleByDate(row, today) {
     const day = (v) => (v ? String(v).slice(0, 10) : '');
     const t = day(today);
     const start = day(row && (row.date || row.startDate));
@@ -504,7 +556,8 @@ function rowLifecycle(row, today) {
     return 'running';
 }
 
-const LIFE_LABEL = { upcoming: 'not yet', running: 'running now', ended: 'finished' };
+// The design's own words. "finished" and "not yet" were this file's invention; the row's second line is a STATE label in the same register as SAVED and NOT LIVE beside it, not a sentence fragment.
+const LIFE_LABEL = { live: 'LIVE NOW', running: 'LIVE NOW', upcoming: 'UPCOMING', staged: 'NOT LIVE', ended: 'ENDED' };
 
 if (typeof module !== 'undefined' && module.exports) {
     Object.assign(module.exports, { patchRecordRows, patchEditOps, MAX_PATCH_IMAGES, draftDiff, deadlineRail, RAIL_LABEL,
