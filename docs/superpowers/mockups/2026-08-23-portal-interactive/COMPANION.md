@@ -577,6 +577,18 @@ Columns are **content state**: `Live now · Upcoming · Staged · Ended`.
 
 ⚠️ **THE WIRED PORTAL SHIPS FOUR GROUPS, AND ONLY THREE OF THEM ARE IN THE TABLE ABOVE — recorded 2026-08-28.** Present: *Runs past the battle pass* (rendered as **Outliving the season**), *Duplicate calendar rows* (**Entered twice**) and *Banner on an expiring Discord link* (**Links that expire**). Absent: *Draw window with no draw*, *Draw served synthetic* and *Looks like 2× CP, not flagged*. And a fourth group exists that this section never listed — **Gaps in a lane**, empty stretches in a lane's schedule, which is a real finding class the table should grow rather than the portal should drop. ⚠️ **A conformance pass wrote down the wrong three before rendering the view** — it recorded *Runs past the battle pass* as missing when it is the largest group on screen. Open Repairs and read the group headings; the answer takes one command.
 
+#### 🔬 THE CONFORMANCE REGISTER — every place `portal/ui` deliberately differs from this package (added 2026-08-28)
+
+The portal is now built to OVERLAY this package pixel-for-pixel: `npm run portal:diff -- --realm <r> --portal harness` renders both and subtracts them, and the two must reach zero regions above the noise floor. That only works if every deliberate divergence is declared, so `?conform=1` renders the design-faithful variant and this is the list of what it switches off. **A divergence that is not here is a defect, in one direction or the other.**
+
+| Divergence | Why it exists | Conformance |
+|---|---|---|
+| **Manifest row checkboxes on Broadcast** | Broadcast gained bulk actions after this package was drawn; the design has no checkbox column | hidden — a checkbox column shifts a four-column table by 40px |
+| **The harness's `maxPerMessage: 1`** | A fixture exists to reach states real data is not in; with four announcements a cap of 10 renders the over-cap state zero times | the real cap of 10, so the preview draws the two cards the design draws |
+| **The masthead identity** | Nothing in this codebase stores a Discord username or avatar hash, and rendering the design's markup anyway produces `url(undefined)` from a page whose premise is that it asks for nothing it did not say it would (`shell.js`) | **irreducible.** The design shows a face and a name; the portal shows the id. It also shifts the centred command bar by 7px, which is the last region in Broadcast's overlay |
+
+⚠️ **This table is load-bearing and it is new.** The absence of one is what let Board's changeset pipeline be adjudicated against a spec that had been superseded three days before this package was drawn — a divergence that lived only as prose, in three documents, none of which was checked for currency.
+
 #### Manifest
 `.mtable` with a `colgroup` — checkbox · Item · Type · Window · Span · Detail · State. Live search · topic chips **coloured by lane** · staged-only · sortable · select-all · bulk bar · inline rename. Hovering a row lights its bar and vice versa (`link()`), because the two are one instrument.
 

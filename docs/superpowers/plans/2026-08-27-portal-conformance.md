@@ -42,13 +42,41 @@ status: live
 | **7** | The sweep, the misc, and the double-check | ☐ open | | |
 | **—** | Closing DEVLOG narrative entry | ☐ open | | one story, after all the rest |
 
-🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST, AND IT IS HARKIRAT'S TO MAKE.** The four conditions below are activities; a realm can satisfy all four and not match its design, which is what Part 1 did three times. **A row may not reach ☑ until, in this order:** ⓪ `npm run portal:diff -- --realm <r>` has run **full page** on every view AND at 375×812, with every region closed or written into the difference ledger with a **dated** citation; ① `npm run portal:inventory -- --realm <r>` reports its four lists with every row closed or adjudicated; ② the machine floor is green; ③ Harkirat has looked at the A/B artifact and said so. **Never write done — see §0.5 R5.**
+🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST, AND IT IS HARKIRAT'S TO MAKE.** The old four conditions were activities; a realm satisfied all four three times without matching its design. **A row closes when, in this order:** ① `portalConverge` reports a flat rhythm — no mismatch above a few px; ② `portalDiff --portal harness` reports **zero regions above the noise floor**, on every view and at both widths, with the two pages the same height; ③ `portalInventory`'s four lists are empty or adjudicated with a **dated** citation; ④ the machine floor is green; ⑤ a real-server pass has run, because the overlay is fixture-driven and cannot see correctness; ⑥ **Harkirat has looked and said so.** Never write done — §0.5 R5.
 
 **Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · **⧗ owed** *(everything done except the real-server pass, which is blocked on Harkirat's OAuth sign-in)* · ⊘ dropped *(with the reason, never silently)*.
 
 🔴 **⧗ IS NOW UNREACHABLE, AND THAT IS THE POINT OF PART 0 HAVING LANDED THE SIGN-IN (2026-08-28 10:5x EDT).** §0.2's rule fires: *"If Part 0 lands it, no later Part may use ⧗ at all."* A Part that wants to close owes a real-server pass and must go and run one — the session cookie lives in Mongo with a 12-hour TTL, so a lapsed one is another sign-in, never a reason to owe.
 
 🔴 **⧗ exists because without it the ledger cannot be honest.** §0.2 requires a real-server pass in every Part, and that needs a sign-in only he can give — so with four states every row either stalls at ◐ forever or gets ticked ☑ dishonestly. **A row may reach ⧗ with the owed pass named in its Note (`real-server pass owed`), and becomes ☑ the moment that pass runs.** Nothing else may be owed.
+
+---
+
+## §0.6 — 🔴 THE OVERLAY METHOD. THIS IS HOW A REALM IS BUILT AND CLOSED NOW (Harkirat, 2026-08-28 20:1x EDT)
+
+**His proposal, and it is the right one:** stop adjudicating a 220-row difference list by judgement, and make the two pages produce the same pixels. Closure stops being my opinion and becomes a number. **Proved on Broadcast the same evening: 8.4% across 16 regions and a 274px height gap → 0.3% across 28 regions with the two pages at EXACTLY 1258px.**
+
+### The four pieces
+| | |
+|---|---|
+| **Same data** | Nothing to build — `scripts/buildPortal.js` already copies the mockup's `assets/fixtures.js` into the harness. **Byte-identical, verified by `shasum`.** The two sides have never disagreed about data; every apparent data difference was the LIVE SERVER being compared against a fixture |
+| **Same clock** | `portalDiff` freezes `Date` on both sides at one instant before any page script runs. COMPANION §16.31a: `?today=` does NOT travel the countdown, so two captures seconds apart can never overlay. Without it the residual has a floor nobody can explain, and an unexplained floor is how a threshold gets quietly raised until it means nothing |
+| **`?conform=1`** | The harness's deliberate demo overrides go OFF and `data-conform` is published on the root element so components can read it. **It is the register of every deliberate divergence** — the thing whose absence caused this pass's worst error, when a divergence living as prose in three documents got adjudicated against the retired half |
+| **Zero regions, not a percentage** | `--selftest` returns **0.000%** on identical input, so there is no inherent noise to budget for. A percentage lets many small wrongs average into a pass, and the small ones are what this exists to catch |
+
+### The loop, one call per iteration
+```
+node scripts/portalConverge.mjs --realm <r> [--view <tab>]     # RHYTHM, then WORDS, then STYLE
+```
+🔴 **FIX THE FIRST RHYTHM MISMATCH AND RE-RUN.** A small vertical offset near the top cascades: everything below it lands at a different y, and the pixel diff reports that as ONE page-sized region. Chasing regions before the rhythm is flat is chasing a shadow. Broadcast went 8.4% → 5.5% purely by matching the masthead, before a single visual fix.
+
+Then `node scripts/portalDiff.mjs --realm <r> --portal harness` for the pixels, and `node scripts/portalInventory.mjs --realm <r>` for what exists on one side and not the other.
+
+### What it cannot see, said here so it does not become the next over-trusted number
+Pixel equality is **necessary and not sufficient**. It cannot see keyboard reachability — Board's column headers were `div`s rendering exactly like buttons, and an overlay would pass them forever. It cannot see copy that is wrong in a way that matches the mockup's own wrong copy. And it cannot see behaviour: the mockup fakes its operations and the portal commits them, so the entire correctness surface sits behind pixels that already match. **It replaces the ADJUDICATION burden — not the states walk, and not the real-server pass.**
+
+### The eleven defects the first overlay found, as a list of what this catches
+Three were instruments: the harness has **two nested `main` elements** and the height probe took the outer one (every harness capture clipped to 888px, by a different route than the morning's); the export summary **summed nested scopes** — "6 records" over four announcements beside a manifest reading "4 of 4"; and `.mh-take` spanning `1/-1` took the strip out of column 2's max-content, so the two masthead columns sat **80px apart while every stat measured identical**. The rest were the page: a `padding-left` longhand eaten by a later `padding` shorthand (the create button 200px against 202); a swatch rendered INSIDE the text span instead of beside it, which gave titles 17px more room and stopped two of four wrapping where the design wraps them; `Math.round` on hours where the design floors from midnight, putting **every age on the realm one day out**; and five pieces of copy.
 
 ---
 

@@ -13,19 +13,28 @@ import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
 
-// 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design.
-const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim();
+// 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
+const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
 
 const BROADCAST_COLUMNS = [
-    // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state.
+    // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state. ownDot: this column draws `.sev` itself — the design's ONE swatch, which is a severity mark rather than a topic dot. Without the flag the row carried both, and the extra 17px wrapped a 46-character title onto a second line on every long row.
     { key: 'text', label: 'Announcement', editable: true,
-      render: (r) => html`<span class=${'sev ' + (r.state === 'live' && !r.expiresAt ? 'warn' : '')}></span>${r.text}` },
-    { key: 'createdAt', label: 'Posted', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
+      dotClass: (r) => 'sev' + (r.state === 'live' && !r.expiresAt ? ' warn' : ''),
+      dotStyle: (r) => `background:${accentOf(r)}`,
+      // The design truncates at 46 and puts the age under the title as row meta. Left whole, a long announcement wrapped to three lines and made its row 23px taller than the design's — four rows of that is the last of the height difference between the two pages.
+      render: (r) => html`<b>${String(r.text || '').replace(/^#{1,3}\s+/, '').slice(0, 46)}</b>`,
+      meta: (r) => `up ${daysBetween(r.createdAt, Date.now())}d` },
+    // ⚠️ `col` AND `dataKind` ARE TWO DIFFERENT DECISIONS and the colgroup only reads the first. dataKind names
+// the CELL (tabular figures here); col names the COLUMN WIDTH. Switching these to nums for the cell silently dropped them out of the c-win width class, and Posted went from the design's 100px to 284 — every date in the table then sat under a different heading than the design's.
+{ key: 'createdAt', label: 'Posted', col: 'c-type', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
     // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
-    { key: 'startsAt', label: 'Starts', col: 'c-type', dataKind: 'date', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
+    { key: 'startsAt', label: 'Starts', col: 'c-win', dataKind: 'nums', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
     // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
-    { key: 'expiresAt', label: 'Ends', dataKind: 'date', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<span style="color:var(--warn)">never</span>`) },
-    { key: 'state', label: 'State' },
+    { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<span style="color:var(--warn)">never</span>`) },
+    // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
+    { key: 'state', label: 'State', dataKind: 'right',
+      render: (r) => html`<span class=${'stt ' + (r.state === 'staged' ? 'staged' : 'saved')}>${r.state === 'staged' ? 'STAGED' : 'SAVED'}</span>
+          <span class="rowmeta" style="margin-left:6px">${({ live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' })[r.state] || String(r.state || '').toUpperCase()}</span>` },
 ];
 
 const BROADCAST_FILTERS = [
@@ -45,29 +54,37 @@ const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16
 //
 // 🔴 AND THE CAP IS THE FACT THIS PANEL EXISTS TO SHOW. Discord sends at most MAX_EMBEDS_PER_MESSAGE embeds in one message and utils/announcement.js slices the unseen list by exactly that, so a live announcement past the cap is not showing — it is WAITING, and nothing anywhere told anyone. The number is sent by the route rather than written here, because a second copy of a limit is a copy only one of the two would notice changing. 🔴 THE PANEL SAID WHAT IS LIVE AND NEVER WHAT IT LOOKS LIKE. Broadcast is the one realm whose output a player reads verbatim, and the only way to see the delivered result was to run the bot — so the accent colour, the order and the cap were three separate facts on screen and the thing they add up to was nowhere.
 //
-// ⚠️ IT PREVIEWS THE MESSAGE, NOT THE RECORDS. Anything past the cap is absent here rather than greyed out, because a player does not see a faded row — they see nothing, and that is the whole point the racknote beside it is making. The preview's second line is WHEN IT WENT OUT, not which embed you are looking at. "embed 1 of 2" is a fact about the list you can already see; "19 days ago" is the one thing the card cannot tell you and the reason a reader is looking at it. The design's own rows are Posted and Ends.
+// ⚠️ IT PREVIEWS THE MESSAGE, NOT THE RECORDS. Anything past the cap is absent here rather than greyed out, because a player does not see a faded row — they see nothing, and that is the whole point the racknote beside it is making. The preview's second line is WHEN IT WENT OUT, not which embed you are looking at. "embed 1 of 2" is a fact about the list you can already see; "19 days ago" is the one thing the card cannot tell you and the reason a reader is looking at it. The design's own rows are Posted and Ends. 🔴 THE BOT RENDERS THE RAW TEXT, AND A LEADING "# …" LINE IS THE ONLY HEADING THERE IS. The preview passed the whole announcement as the card's title, so a card that Discord draws as a heading plus a body drew as one long heading — and it ran to four lines against the design's three, 16px per card, which is the entire remaining height difference on this page. `buildAnnouncementEmbed` sets description and color and nothing else, so a card with no typed heading has NO title, not a placeholder: rendering "Announcement" there would put a line on screen the player never sees.
+const firstHeading = (t) => (String(t || '').match(/^#{1,3}\s+(.+)$/m) || [])[1] || null;
+const bodyOf = (t) => String(t || '').replace(/^#{1,3}\s+.+$/m, '').trim().slice(0, 110) || String(t || '').slice(0, 110);
+
+// 🔴 WHOLE DAYS BETWEEN TWO DATES, not hours divided by 24. The design counts from midnight to midnight, so an announcement posted at 18:41 twenty days ago is "19d" there and was "20d" here — every age on the page off by one, in a direction that depends on the time of day the fixture happens to carry. 🔴 FLOOR FROM TODAY'S MIDNIGHT TO THE ACTUAL TIMESTAMP, which is what the design's own days() does and what makes "up 19d" 19 rather than 20. Rounding date-to-date gives 20 for a post made at 18:41 twenty calendar days ago; the design counts ELAPSED days from the moment it was posted to the start of today, so a post nineteen-and-a-quarter days old is nineteen. Every age on this realm was one out until this was measured against the design rather than reasoned about.
+const daysBetween = (a, b) => Math.max(0, Math.floor(
+    (new Date(new Date(b).toISOString().slice(0, 10) + 'T00:00:00Z') - new Date(a)) / 86400000));
+
 const relDay = (iso) => {
-    const d = Math.round((Date.now() - new Date(iso).getTime()) / 86400000);
+    const d = daysBetween(iso, Date.now());
     return d <= 0 ? 'today' : `${d} day${d === 1 ? '' : 's'} ago`;
 };
 
 function DeliveryPreview({ live, cap }) {
     const shown = cap ? live.slice(0, cap) : live;
     return html`
-        <aside class="nprev" aria-label="What one player gets">
+        <div class="nprev" aria-label="What one player gets" role="group">
             <h5>What one player gets</h5>
+            <!-- The cards live in ONE slot, as the design has them: two siblings of the note rather than two
+                 siblings of each other, so the column is a heading, a stack, and a caption about the stack. -->
+            <div>
             ${shown.length ? shown.map((a, i) => html`
-                <${DiscordCard} key=${a._id} accent=${accentOf(a)} title=${a.text}
-                                sub=${relDay(a.createdAt)}
-                                rows=${[['Ends', a.expiresAt ? fmtDay(a.expiresAt) : 'never']]} />`)
+                <${DiscordCard} key=${a._id} accent=${accentOf(a)} title=${firstHeading(a.text) || bodyOf(a.text)}
+                                sub=${firstHeading(a.text) ? bodyOf(a.text) : ''}
+                                rows=${[['Posted', relDay(a.createdAt)], ['Ends', a.expiresAt ? fmtDay(a.expiresAt) : 'never']]} />`)
             : html`<div class="idop"><b>nothing attached</b></div>`}
-            <p class="pnote">
-                ${shown.length
-                    ? html`${shown.length} embed${shown.length === 1 ? '' : 's'}, in this order, on the player's next
-                        reply. The stripe is each announcement's own accent colour.`
-                    : html`Replies go out with no announcement attached at all.`}
-            </p>
-        </aside>`;
+            </div>
+            <p class="pnote">Delivered as an <b>ephemeral follow-up</b> after any top-level slash command,
+                every unseen announcement as its own embed in ONE message. Each carries its own stored
+                accent — that colour is the only thing telling two of them apart.</p>
+        </div>`;
 }
 
 // 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there.
@@ -80,7 +97,7 @@ function NowShowing({ live, counts, cap }) {
                     message at all. Anything scheduled for later is in Airtime.</div></div>`
                 : html`<div class="nstack" role="list" aria-label="Announcements in delivery order">
                     ${live.map((a, i) => {
-                        const days = Math.round((Date.now() - new Date(a.createdAt).getTime()) / 86400000);
+                        const days = daysBetween(a.createdAt, Date.now());
                         const waiting = cap ? i >= cap : false;
                         return html`
                             <div class=${'nscard' + (i === 0 ? ' p0' : '') + (waiting ? ' over' : '')}
@@ -89,7 +106,7 @@ function NowShowing({ live, counts, cap }) {
                                 <span class="np">${i + 1}</span>
                                 <span class="nsb">
                                     <span class="nt">${a.text}</span>
-                                    <span class="nd">up ${days} ${days === 1 ? 'day' : 'days'}</span>
+                                    <span class="nd">up ${days}d</span>
                                 </span>
                                 <span class="nsmeta">
                                     ${a.expiresAt
@@ -100,13 +117,15 @@ function NowShowing({ live, counts, cap }) {
                             </div>`;
                     })}
                 </div>
-                ${cap && live.length > cap ? (() => {
-                    const n = live.length - cap;
-                    return html`
-                        <p class="racknote">Discord sends at most <b>${cap}</b> announcement${cap === 1 ? '' : 's'} in one message.
-                            The ${n === 1 ? 'one' : n} below that line ${n === 1 ? 'is' : 'are'} live and <b>not being shown</b> —
-                            ${n === 1 ? 'it waits' : 'they wait'} until something above ${n === 1 ? 'it' : 'them'} ends.</p>`;
-                })() : null}`}
+                <!-- The design states the ORDERING RULE unconditionally and appends the over-cap warning only
+                     when there is one. The portal printed nothing at all under the cap, so the one fact a
+                     reader most needs here — that position is delivery order and cannot be changed — appeared
+                     only in the failure case. -->
+                <p class="chint" style="margin-top:12px">
+                    Position is <b>delivery order</b> — oldest first, and nothing else. There is no way
+                    to reorder announcements.${cap && live.length > cap ? html`${' '}<b style="color:var(--warn)">${live.length - cap} of these will not
+                    be shown</b> until something above ${live.length - cap === 1 ? 'it' : 'them'} ends.` : null}
+                </p>`}
             </div>
             <${DeliveryPreview} live=${live} cap=${cap} />
             
@@ -186,17 +205,19 @@ function Airtime({ all }) {
 // The proactive data-quality callout from 05-door-broadcast-ops.html. It names the specific announcement and the specific number rather than warning in the abstract -- an "announcements can stay up forever" notice teaches nothing, "this one has been up 19 days" is actionable.
 function HeadsUp({ all }) {
     const forever = all.filter((a) => a.state === 'live' && !a.expiresAt)
-        .map((a) => ({ ...a, days: Math.round((Date.now() - new Date(a.createdAt).getTime()) / 86400000) }))
+        .map((a) => ({ ...a, days: daysBetween(a.createdAt, Date.now()) }))
         .sort((a, b) => b.days - a.days);
     if (!forever.length) return null;
     const worst = forever[0];
     return html`
-        <div class="panel"><div class="callout">
-            <b>Heads up:</b>
-            “${worst.text.slice(0, 60)}${worst.text.length > 60 ? '…' : ''}” has no expiry and has been showing for ${worst.days} days.
-            ${forever.length > 1 ? ` ${forever.length - 1} other announcement${forever.length === 2 ? '' : 's'} also never ends.` : ''}
-            ${' '}Announcements without an end date stay up forever.
+        <div style="margin-bottom:16px">
+        <div class="panel" style="margin-top:16px"><div class="callout">
+            <b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}”
+            has no expiry and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${' '}
+            ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}${' '}
+            A blank expiry field means the 60-day default; <code>never</code> means this.
         </div></div>
+        </div>
     `;
 }
 
@@ -348,7 +369,7 @@ export function BroadcastRealm({ session }) {
     return html`
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
                   realmKey=${view === 'Airtime' ? html`<${AirtimeKey} rows=${rows} />` : null}
-                  exports=${exportScopes} exportLabel="Broadcast" overlayFor=${overlay}
+                  exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
@@ -358,8 +379,8 @@ export function BroadcastRealm({ session }) {
                                                stats=${[
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
-                                                   { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
-                                                   { value: counts.forever, label: 'never ends', tone: counts.forever ? 'bad' : undefined },
+                                                   { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: 'stg' },
+                                                   { value: counts.forever, label: 'never ends', tone: 'warn' },
                                                ]}
                                                actions=${html`<${MastheadNew} label="Post announcement" hint="n"
                                                                               tip="Write an announcement"
@@ -369,14 +390,15 @@ export function BroadcastRealm({ session }) {
                       ${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                       ${view === 'Delivery queue' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
                   `}
-                  stateKey=${true}
-                  tools=${view === 'Delivery queue' ? html`<span class="sp"></span><span class="rt">${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}</span>` : null}
+                  
+                  stateKey=${false}
+                  tools=${view === 'Delivery queue' ? html`<span class="key"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span><span class="sp">${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}</span>` : null}
                   noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    label="Manifest" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
-                                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
+                                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Remove"
                                                     emptyText="Nothing has been announced yet." 
                                                     onAdd=${() => setShowAdd(true)} realm="broadcast" csrfToken=${session.csrfToken}
                                                     buildEditOp=${buildBroadcastEditOp}

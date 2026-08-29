@@ -109,8 +109,8 @@ export function Rail({ realm, realms, badges = {} }) {
 //
 // ⚠️ IT REPORTS THE DELTA, NOT THE VALUE. "+3" says what just happened; the figure beside it already says where you are. And it fires only on a CHANGE from a real previous number — a first paint is not an event, and animating one would make every page load look like something had happened.
 //
-// ⚠️ REDUCED MOTION IS HONOURED HERE AND NOT ONLY IN CSS. The sheet already stops the animation, but the badge would still appear and vanish; skipping the whole thing is the same answer said once.
-function Figure({ value }) {
+// ⚠️ REDUCED MOTION IS HONOURED HERE AND NOT ONLY IN CSS. The sheet already stops the animation, but the badge would still appear and vanish; skipping the whole thing is the same answer said once. `zero` is not "the value is 0" — it is "this figure is a STAGED count that is currently zero", which the design dims with .stg-clear because a staged column at rest is good news rather than an absent number. The caller knows which stat it is; this component would have to guess.
+function Figure({ value, zero = false }) {
     const prev = useRef(null);
     const [delta, setDelta] = useState(null);
     const [rolling, setRolling] = useState(false);
@@ -128,7 +128,7 @@ function Figure({ value }) {
     }, [value]);
 
     return html`
-        <span class=${'v' + (rolling ? ' rolling' : '')}>${value}</span>
+        <span class=${'v' + (rolling ? ' rolling' : '') + (zero ? ' stg-clear' : '')}>${value}</span>
         ${delta === null ? null : html`
             <span class=${'fdelta ' + (delta > 0 ? 'up' : 'down')} aria-hidden="true">
                 ${delta > 0 ? '+' : '−'}${Math.abs(delta)}
@@ -153,7 +153,7 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                     ${stats.map((s) => html`
                         <span class=${'stat' + (s.tone ? ' ' + s.tone : '') + (s.lead ? ' lead' : '')}
                               style=${s.accent ? `--c:${s.accent}` : null}>
-                            <${Figure} value=${s.value} /> <span class="k">${s.label}</span>
+                            <${Figure} value=${s.value} zero=${s.tone === 'stg' && !s.value} /> <span class="k">${s.label}</span>
                         </span>`)}
                 </div>` : null}
             ${actions}
@@ -186,7 +186,7 @@ export function MastheadNew({ label, hint, onClick, tip }) {
 
     return html`
         <button type="button" class="pill lead mh-new" onClick=${onClick} data-tip=${tip || null}>
-            <span class="mh-plus" aria-hidden="true">+</span>${' '}${label}
+            <span class="mh-plus" aria-hidden="true">+</span>${' '}${label}${' '}
             ${hint ? html`<kbd aria-label=${`Keyboard shortcut: ${hint.toUpperCase()}`}>${hint.toUpperCase()}</kbd>` : null}
         </button>
     `;
@@ -403,7 +403,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      through seven call sites to hand it in again would be a worse seam than this one. -->
                 ${masthead
                     ? (exportScopes && exportScopes.length
-                        ? cloneElement(masthead, { take: html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />` })
+                        ? cloneElement(masthead, { take: html`<${ExportStrip} label=${exportLabel || 'Export'} scopes=${exportScopes} overlay=${overlayFor || chrome} />` })
                         : masthead)
                     : null}
                 <!-- 🔴 THE EXPORT STRIP SITS UNDER THE MASTHEAD ON EVERY REALM THAT HAS ONE, not inside a realm's own

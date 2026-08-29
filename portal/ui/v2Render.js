@@ -48,7 +48,12 @@ export function DiscordCard({ accent, title, sub, rows = [], badges = [], code }
     return html`
         <div class="dcard" style=${accent ? `--c:${accent}` : null}>
             <h6>${title}</h6>
-            ${sub ? html`<div class="sub">${sub}</div>` : null}
+            <!-- ALWAYS RENDERED, even empty. The design's card carries the sub slot unconditionally and its
+                 margin is part of the card's rhythm: omitting it when an announcement has no typed heading made
+                 every such card 5px shorter than the design's, which on a two-card preview is 10px and on the
+                 page is every element below the fold sitting at the wrong y. An empty box that reserves space
+                 is not decoration here — it is the reason two cards line up with two cards. -->
+            <div class="sub">${sub || ''}</div>
             ${rows.filter((r) => r && r[1]).map((r) => html`
                 <div class="row" key=${r[0]}><b>${r[0]}</b><span>${r[1]}</span></div>`)}
             ${badges.length ? html`

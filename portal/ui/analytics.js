@@ -680,7 +680,7 @@ export function AnalyticsRealm({ session }) {
 
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
-                  exports=${exportScopes} exportLabel="Analytics" overlayFor=${overlay}
+                  exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                actions=${html`

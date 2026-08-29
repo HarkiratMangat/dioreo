@@ -120,7 +120,9 @@ main{overflow:auto;padding-bottom:96px}
 .panel{margin:0 22px;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);overflow:hidden}
 .ph{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--raised);border-bottom:1px solid var(--rule);flex-wrap:wrap}
 .ph .t{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
-.ph .sp{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
+/* flex:1 so an EMPTY spacer still occupies the row, which is what the design's own does: measured 246x16
+   there against 0x0 here, and a zero-width spacer lets whatever follows it drift 8px. */
+.ph .sp{margin-left:auto;flex:1 1 auto;text-align:right;font-family:var(--data);font-size:10.5px;color:var(--ink3)}
 .seg{display:flex;gap:2px;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px}
 .seg button{background:none;border:0;color:var(--ink3);font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:var(--rad-1);min-height:32px}
 /* 🔴 A `role="tab"` CARRIES `aria-selected`, NEVER `aria-pressed` — `aria-pressed` is the pressed
@@ -3847,9 +3849,13 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    a control the design draws at 26. Adopted the design's size. Anything genuinely needing a larger target says
    so at its own call site. */
 .mh-take .pill.sm{min-height:0}
-.mh-take{grid-column:1/-1;justify-self:end}
-.mh-take{display:flex;align-items:center;gap:10px;margin:10px 0 0 auto;
-  width:max-content;max-width:calc(100% - var(--edge) * 2);flex-wrap:wrap}
+/* 🔴 COLUMN 2, NOT 1/-1 — and the difference is 80px of masthead. Spanning both columns takes the strip OUT of
+   column 2's max-content contribution, so the stats column shrank to the width of the stat row alone and the
+   title column grew by exactly what the strip would have added. Every stat measured identical on both sides
+   while the two columns were 80px apart, which is why this took a column-width probe rather than a look. */
+.mh-take{grid-column:2;justify-self:end}
+.mh-take{display:flex;align-items:center;gap:10px;margin:10px 0 0 auto;flex-wrap:nowrap;
+  width:max-content;max-width:none}
 @media (max-width:820px){.mh-take{margin-left:var(--edge);margin-right:auto}}
 .mh-take .mh-i{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round}
@@ -4985,16 +4991,21 @@ button .ic,a .ic{pointer-events:none}
  * row), and the ellipsis belongs on `.dsub`, the box that actually overflows, not on the cell that
  * merely declares text-overflow.
  */
-.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
+.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:7px;min-height:0;padding:10px 15px;border-radius:var(--rad-3);
   border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
   font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
 .mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
 /* No font-size: the design's plus INHERITS the button's, and setting 16px here made the ornament taller than
    the label it sits beside and pushed the whole create button 3px past the design's height — which then moved
    every element on the page and rendered as one page-sized region in the overlay. */
-.mh-plus{line-height:1;color:var(--patch)}
-.mh-new kbd{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
-  border-radius:var(--rad-2);padding:3px 5px}
+/* The design's plus is the button's own ink, not the accent: the accent is already carrying the border and
+   the ground, and a third use of it on a 13px glyph is the loudest thing in a control that is not the page's
+   subject. */
+.mh-plus{line-height:1;color:inherit}
+/* The shorthand LATER in the rule was overriding the longhand before it — padding-left:6px then padding:3px 5px
+   resolves to 5px, and the create button measured 200px against the design's 202 for the whole of this pass. */
+.mh-new kbd{font:500 10.5px/1 var(--data);letter-spacing:.04em;color:var(--ink3);border:1px solid var(--rule2);
+  border-radius:var(--rad-2);padding:3px 6px}
 .mtable .det{min-width:0}
 .mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtable .det .dsub{display:block}

@@ -414,7 +414,7 @@ export function AccessRealm({ session }) {
 
     return html`
         <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
-                  exports=${exportScopes} exportLabel="Access" overlayFor=${overlay}
+                  exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[

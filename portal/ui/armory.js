@@ -1080,7 +1080,7 @@ export function ArmoryRealm({ session }) {
         <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView} stateKey
                   modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
-                  overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Armory" overlayFor=${overlay}
+                  overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },

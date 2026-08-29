@@ -64,7 +64,7 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
                 </div>
                 <button class="selbar-x" onClick=${onClear}>Clear</button>
             </div>
-        </div>
+        </section>
     `;
 }
 
@@ -107,7 +107,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     const dotAccent = (row) => (row.accentHex ? `--topic-accent:${row.accentHex}` : `--topic-accent:var(${row.topicVar || '--ink3'})`);
 
     return html`
-        <div class="panel" id="manifest">
+        <section class="panel" id="manifest">
             <!-- 🔴 THE label PROP NAMES THE TOOLBAR AND title ADDS A HEADER BAND ABOVE IT. They were one prop, so a realm
                  that wanted the toolbar named got a 33px band the design does not draw — the Manifest carried its
                  own name twice, once in a header strip and again in the toolbar directly beneath it. The design
@@ -118,10 +118,19 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
                 <span class="mlabel">${label || title || 'Rows'}</span>
-                <span class="srch"><label class="sr" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
+                <span class="srch">
+                    <label class="sr" for="manifest-search">Search ${(rowNoun[1] || 'rows').toLowerCase()}</label>
+                    <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
+                         sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding
+                         reserving space for an icon that did not exist. -->
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    <input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
                 ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
-                <span class="rt">${visible.length} of ${rows.length} shown${selected.size ? ` · ${selected.size} selected` : ''}</span>
-                ${onAdd ? html`<button class="accent-fill" onClick=${onAdd}>${addLabel}</button>` : null}
+                <!-- The add control sits BEFORE the count, which is the design's order and the useful one: the
+                     count is a readout at the end of the row and the verb is a control among the other controls.
+                     Measured 256px apart when they were the other way round. -->
+                ${onAdd ? html`<button class="chip go" onClick=${onAdd}>${addLabel}</button>` : null}
+                <span class="rt">${visible.length} of ${rows.length}${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
             <div class="mscroll">
             <table class="mtable">
@@ -202,7 +211,14 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                         onClick=${c.editable ? (e) => { e.stopPropagation(); setEditingCell({ rowId: row.id, columnKey: c.key }); setEditValue(String(row[c.key] ?? '')); } : null}
                                         style=${c.editable ? 'cursor:text' : ''}>
                                         ${ci === 0
-                                            ? html`<span class="ncell"><span class="dot" style=${dotAccent(row)}></span>
+                                            ? html`<span class="ncell">
+                                                <!-- The swatch is a FLEX SIBLING of the text, never inside it. A realm may
+                                                     replace the topic dot with its own mark (Broadcast draws a severity mark), and the first attempt let the column render that mark inside
+                                                     the text span — which took it out of the flex row, gave the title 17px
+                                                     more room, and stopped two of four titles wrapping where the design
+                                                     wraps them. Where the swatch SITS is part of the column's width. -->
+                                                <span class=${c.dotClass ? c.dotClass(row) : 'dot'}
+                                                      style=${c.dotClass ? (c.dotStyle ? c.dotStyle(row) : null) : dotAccent(row)}></span>
                                                 <span>${body}${c.meta ? html`<span class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</span>` : null}</span></span>`
                                             : html`${body}${c.meta ? html`<div class=${'rowmeta' + (c.metaClass ? ' ' + c.metaClass : '')}>${c.meta(row)}</div>` : null}`}
                                     </td>

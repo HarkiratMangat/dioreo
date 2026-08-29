@@ -1045,7 +1045,7 @@ export function SeasonRealm({ session }) {
 
     return html`
         <${Shell} realm="season" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView} stateKey
-                  badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Season" overlayFor=${overlay}
+                  badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow} />` : null}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${drawsLive} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}

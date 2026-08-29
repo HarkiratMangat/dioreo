@@ -31,8 +31,10 @@ function exportSummary(scopes) {
     // 🔴 A NESTED SCOPE MUST NOT BE COUNTED TWICE. Broadcast offers "Delivery queue" (the live subset) and "Every announcement" (all of them), so summing every scope reported SIX records over four announcements — a page stating more records than it holds, beside a manifest correctly reading "4 of 4". Season's four scopes are disjoint and were never affected, which is exactly why this went unseen. A scope that is a subset says so, and says WHICH, rather than the summary guessing from counts.
     const items = list.filter((x) => !x.subsetOf).reduce((n, s) => n + (Number(s.count) || 0), 0);
     const formats = `${total} format${total === 1 ? '' : 's'}`;
-    // 🔴 "ITEMS" COLLIDED WITH THE MANIFEST'S OWN COUNT, 2,200px apart on the same page. This line summed the four export scopes to 39 while the Manifest read "37 of 37 shown" — both correct, because the Manifest does not list patch notes (the Season Record is their home; see track.js on why a publication is not a duration) and the export does. Two subjects sharing one noun reads as a bug whichever number you trust. `records` is the word this file's own success toast already uses, so nothing new was invented to fix it.
-    return items ? `${items} record${items === 1 ? '' : 's'} · ${formats}` : formats;
+    // 🔴 "ITEMS" COLLIDED WITH THE MANIFEST'S OWN COUNT, 2,200px apart on the same page. This line summed the four export scopes to 39 while the Manifest read "37 of 37 shown" — both correct, because the Manifest does not list patch notes (the Season Record is their home; see track.js on why a publication is not a duration) and the export does. Two subjects sharing one noun reads as a bug whichever number you trust. `records` is the word this file's own success toast already uses, so nothing new was invented to fix it. The scopes' own noun when they all share one — Broadcast's are both "announcements" and the design says so; only a mixed set falls back to the generic word. `records` remains the fallback rather than `items` because the Manifest owns that word and the two counts sit 2,200px apart on the same page.
+    const units = [...new Set(list.map((x) => x.unit).filter(Boolean))];
+    const noun = units.length === 1 ? units[0].replace(/s$/, '') : 'record';
+    return items ? `${items} ${noun}${items === 1 ? '' : 's'} · ${formats}` : formats;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

@@ -263,6 +263,14 @@ Four scripts and two shared libraries, built as PART 0 of `docs/superpowers/plan
 - 🔴 **STATE ITS COVERAGE WHENEVER YOU STATE ITS RESULT.** It answers **one route, one scroll offset, one width**. It cannot see anything behind an interaction (a drawer, a composer, a hover), anything below the captured 888px, a colour difference under the channel tolerance, or the mobile layout — and Harkirat's original instruction named *every sub-view* at *both* widths. **A clean diff on Track says nothing about Board.** This tool is new and the failure it exists to prevent was over-trusting a green instrument; do not repeat it one level up.
 - The 16px cell size and the 6%/24 tolerances were chosen by running it against the **mockup versus itself** (which must report zero) and widening until that stayed empty — a threshold nobody falsified is a threshold nobody should trust.
 
+## `scripts/portalConverge.mjs` — the overlay loop, one call per iteration (added 2026-08-28)
+
+`npm run portal:converge -- --realm <r> [--view <tab>]`. Loads both pages ONCE and prints three reports against the same pair of loads: **RHYTHM** (the vertical stack of both, element by element, every mismatch marked), **WORDS**, **STYLE**. Three separate tools meant three round trips per iteration; this is one.
+
+🔴 **FIX THE FIRST RHYTHM MISMATCH AND RE-RUN — do not read past it.** A small vertical offset near the top cascades: everything below lands at a different y and the pixel diff reports the whole page as one region. Broadcast went 8.4% → 5.5% by matching the masthead alone, before any visual fix.
+
+⚠️ **It pairs nodes by class signature in document order**, so a bare `div` can pair with the wrong bare `div` and report an alarming delta that is an artifact. Trust a mismatch on a CLASSED element; sanity-check one on a bare tag before acting.
+
 ## `scripts/portalInventory.mjs` — walk BOTH DOMs and compare what the pages are MADE OF (added 2026-08-28)
 
 `npm run portal:inventory -- --realm <r> [--view <tab>]`. Keys every VISIBLE element by its class signature and reports four lists: **ONLY IN THE MOCKUP · ONLY IN THE PORTAL · DIFFERENT WORDS · DIFFERENT STYLE**. It exists because `portal:diff` ranks by AREA, which is the right first question and a poor second one — a 6px control-height difference repeated on forty controls never rises above the noise floor, and a column whose LABEL says something else entirely occupies almost no pixels. The Board's headings read `Live now / Upcoming / Staged / Ended` in the design and `Draft / Staged / Blocked / Ready` in the code for weeks, through every green gate.
@@ -276,6 +284,10 @@ Four scripts and two shared libraries, built as PART 0 of `docs/superpowers/plan
 ## `scripts/portalDiff.mjs` — render both pages and subtract them (added 2026-08-28)
 
 Renders the mockup and the real portal at the same viewport and reports the differing regions, ranked by area, with the element under each side. Every other portal gate here is an element scanner — does this class have a rule, does this rule have an element, do these states walk — and **a page with all the right elements in the wrong arrangement passes all of them**, which is exactly what shipped from Part 1's first attempt. Run it FIRST on any portal surface work. `--selftest` renders the mockup twice and must come back at essentially zero; `--view <tab>` and `--viewport WxH` reach the sub-views and the narrow layout.
+
+🔴 **CONFORMANCE MODE IS HOW THE OVERLAY IS POSSIBLE AT ALL.** A harness run passes `?conform=1`, which turns off the fixture's deliberate demo overrides (its `maxPerMessage: 1` against Discord's real 10 drew ONE preview card where the design draws two — 800 vertical pixels) and publishes `data-conform` on the root element so components can read it too. **That flag is the register of every deliberate divergence from the design**, and it is the artifact whose absence let a divergence living as prose in three documents get adjudicated against the retired half. Anything added to it must answer for itself there.
+
+🔴 **THE CLOCK IS FROZEN ON BOTH SIDES** at `--at` (default `2026-08-24T18:41:00Z`), before any page script runs. `?today=` does not travel the countdown, so without this the residual has a floor nobody can explain.
 
 🔴 **IT CAPTURED ONE SCREENFUL FOR ITS ENTIRE FIRST DAY.** `page.screenshot` clipped to `{0,0,1282,888}` while Season is **4,378px**, so every reading it produced described the top fifth of the page and a `--scroll` flag nobody used made the ceiling look like a framing choice. Full page is the default now; `--fold` is the opt-in for the old behaviour, and the report prints both sides' heights and the delta. **The falsifier was free: no region in any report ever had `y + h` greater than 888.**
 

@@ -1,6 +1,6 @@
 {
   "name": "dioreo",
-  "version": "3.70.0-pre",
+  "version": "3.71.0-pre",
   "description": "Discord bot for Call of Duty: Mobile \u2014 loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
@@ -31,7 +31,8 @@
     "docs:reflow-comments": "node scripts/reflow-comments.mjs --check",
     "docs:reflow-comments:test": "node scripts/reflow-comments.test.mjs",
     "portal:diff": "node scripts/portalDiff.mjs",
-    "portal:inventory": "node scripts/portalInventory.mjs"
+    "portal:inventory": "node scripts/portalInventory.mjs",
+    "portal:converge": "node scripts/portalConverge.mjs"
   },
   "engines": {
     "node": ">=24"
