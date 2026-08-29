@@ -110,11 +110,11 @@ check('the summary counts SCOPES taken, not downloads', () => {
 });
 
 // 🔴 "4 FORMATS" SAYS HOW MANY BUTTONS THERE ARE AND NOTHING ABOUT WHAT YOU WOULD GET, which is the one thing worth knowing before taking a backup. The counts were already on every scope and unused.
-check('the summary leads with how much DATA is behind the export, when the scopes know', () => {
+check('the summary leads with how much DATA is behind the export, in RECORDS — the Manifest owns the word items', () => {
     clearExports();
     const counted = [{ id: 'a', count: 14 }, { id: 'b', count: 23 }, { id: 'c', count: 2 }];
-    assert.strictEqual(exportSummary(counted), '39 items · 3 formats');
-    assert.strictEqual(exportSummary([{ id: 'a', count: 1 }]), '1 item · 1 format', 'both nouns singularise');
+    assert.strictEqual(exportSummary(counted), '39 records · 3 formats');
+    assert.strictEqual(exportSummary([{ id: 'a', count: 1 }]), '1 record · 1 format', 'both nouns singularise');
     // ⚠️ NOT VACUOUS: a scope set with no counts must still produce the OLD line rather than "0 items".
     assert.strictEqual(exportSummary([{ id: 'a' }, { id: 'b' }]), '2 formats', 'no count anywhere falls back rather than inventing a zero');
     assert.strictEqual(exportSummary([{ id: 'a', count: 0 }]), '1 format', 'a real zero is not worth stating either');

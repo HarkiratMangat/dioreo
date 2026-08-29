@@ -6,6 +6,11 @@
 
 const FIX = window.FIX;
 
+// Conformance mode: the harness renders exactly what the design renders, with every fixture flourish that exists to demonstrate a state switched off. Set by scripts/portalDiff.mjs on every harness capture.
+const CONFORM = new URLSearchParams(location.search).get('conform') === '1';
+// Published on the root element so COMPONENTS can read it too, not only this stub: the register of deliberate divergences has to reach the render layer or half of them stay invisible to the overlay.
+if (CONFORM) document.documentElement.dataset.conform = '1';
+
 // The season document as models/SeasonalData.js actually stores it — the six arrays live ON the document, which is why `state.live` is spread from FIX.season and the arrays together rather than nested under a `data` key. ⚠️ `releaseDateText` IS STAMPED BY THE REAL ROUTE and has to be stamped here too, or the record panel's editor refuses to stage in the harness — the empty-date guard would fire on every entry and the surface would demonstrate a refusal rather than the feature. It reproduces utils/adminParser.js's formatReleaseDateTime for the two shapes that function emits: a bare day for an exact UTC midnight, day plus a local clock time otherwise. ⚠️ The timezone is hardcoded to the one the bot defaults to; the real formatter takes it as an argument. That is the deliberate narrowing here, and it means a harness reading is right for Harkirat's clock and nobody else's.
 const PATCH_TZ = 'America/Toronto';
 function harnessReleaseText(value) {
@@ -413,8 +418,8 @@ const ROUTES = [
         // 🔴 `state`, NOT `active`. The route's own announcementState() is the one place an announcement's state is decided, and the counts in the masthead already read it — filtering on a different field here put FOUR cards under a "Now showing" heading beside a masthead reading LIVE 2. One quantity, two authorities, on the same screen: the exact defect this project keeps paying for, reproduced in the instrument rather than the product.
         live: (FIX.announcements || []).filter((a) => a.state === 'live'),
         all: FIX.announcements || [],
-        // ⚠️ ONE, NOT TEN, and that is the point of a fixture. Discord's real cap is 10 and the route sends utils/announcement.js's own constant; with four fixture announcements a cap of 10 renders the over-cap state ZERO times, so the harness would show a panel that cannot demonstrate the one fact it was rebuilt to show. A fixture exists to reach the states real data does not happen to be in today.
-        maxPerMessage: 1,
+        // ⚠️ ONE, NOT TEN, and that is the point of a fixture. Discord's real cap is 10 and the route sends utils/announcement.js's own constant; with four fixture announcements a cap of 10 renders the over-cap state ZERO times, so the harness would show a panel that cannot demonstrate the one fact it was rebuilt to show. A fixture exists to reach the states real data does not happen to be in today. 🔴 THE DEMO OVERRIDE IS OFF IN CONFORMANCE MODE. A fixture exists to reach states real data is not in today, which is why this is 1 rather than Discord's real 10 — with four announcements a cap of 10 renders the over-cap state zero times. But an OVERLAY run compares this page against the mockup, and the mockup uses the real cap, so the deliberate demo divergence becomes a false difference worth 800 vertical pixels: the portal drew one preview card where the design draws two. `?conform=1` turns every such override off, and this is the register of them — anything added here must answer to it.
+        maxPerMessage: CONFORM ? 10 : 1,
     })],
     // 🔴 THE FIXTURE HAS NO SESSIONS, so the sessions view could only ever show its empty state — and a surface a reviewer cannot see is one nobody reviews. The live/stale distinction is the whole point of this panel (a browser session has no logout event, so "signed in now" is derived from lastSeenAt inside fifteen minutes), and it takes two rows on opposite sides of that line to show it at all. ⚠️ Synthesised relative to NOW rather than pinned to a date: a fixture timestamp from last week would read as stale forever and the live half would never render.
     [/^\/api\/access$/, () => ({

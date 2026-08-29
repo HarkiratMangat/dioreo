@@ -43,6 +43,12 @@ const [VW, VH] = (() => {
     return m ? [Number(m[1]), Number(m[2])] : [1282, 888];
 })();
 const OFF_CONTRACT = VW !== 1282 || VH !== 888;
+const VH0 = VH;
+// The old one-screenful behaviour, kept as an opt-in rather than deleted: "what lands above the fold" is a real question, it is just not the same question as "do these two pages match".
+const foldOnly = process.argv.includes('--fold');
+// Escape hatch for the one case where the wall clock IS the subject; never for an overlay run.
+const noFreeze = process.argv.includes('--live-clock');
+const SHOT_H = {};
 
 // A cell is coarse on purpose. Pixel-exact differences are noise — antialiasing, a 1px rounding between two layers, a font hinting difference. What matters is REGIONS: a block that moved, a panel that is the wrong ground, a control that is not there. 16px cells cluster naturally into those and never into dust.
 const CELL = 16;
@@ -92,7 +98,7 @@ const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
 const mockupUrl = `${MOCKUP}/${MOCKUP_PAGE}`;
 const portalUrl = selfTest ? mockupUrl
-    : portalMode === 'harness' ? `${PORTAL_HARNESS}?b=${Date.now()}#/${realm}`
+    : portalMode === 'harness' ? `${PORTAL_HARNESS}?conform=1&b=${Date.now()}#/${realm}`
     : `${PORTAL_REAL}/?b=${Date.now()}#/${realm}`;
 
 // ── SIGNING THE DIFF IN ─────────────────────────────────────────────────────────────────────────────
@@ -142,16 +148,34 @@ async function enterView(page, side) {
         + '  The control was found and clicked, and main is identical afterwards, so the view did not switch.');
 }
 
+// 🔴 WITHOUT THIS THE RESIDUAL HAS A FLOOR NOBODY CAN EXPLAIN, and an unexplained floor is how a threshold gets quietly raised until it stops meaning anything. COMPANION 16.31a records that ?today= does NOT travel the clock: countdownParts reads Date.now(), so the hero figure, the seconds, the tier colour and the session expiry line all move between two captures taken seconds apart. Both sides are pinned to ONE instant, before any script on the page runs, so nothing can observe the real wall clock.
+const FROZEN = Date.parse(String(flag('--at', '2026-08-24T18:41:00Z')));
+async function freezeClock(page) {
+    if (noFreeze) return;
+    await page.evaluateOnNewDocument((t) => {
+        const RealDate = Date;
+        const Frozen = function (...a) { return a.length ? new RealDate(...a) : new RealDate(t); };
+        Frozen.prototype = RealDate.prototype;
+        Frozen.now = () => t;
+        Frozen.parse = RealDate.parse;
+        Frozen.UTC = RealDate.UTC;
+        window.Date = Frozen;
+        try { performance.now = () => 0; } catch { /* read-only in some builds */ }
+    }, FROZEN);
+}
+
 async function shoot(page, url, label) {
     await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 1 });
+    await freezeClock(page);
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
     // 🔴 NEVER rAF — it does not fire in a background tab and a pass gated on it waits forever. This is the same trap portalStates.mjs records; `document.fonts.ready` resolves regardless of visibility.
     await page.evaluate(() => document.fonts.ready);
     await page.waitForSelector('main', { timeout: 20000 });
     // The SPA has to route, fetch and settle. The mockup only has to lay out. One wait covers both. 🔴 SCROLL THE CONTAINER, NOT THE WINDOW — a trap this repo had already written down and this tool walked into anyway on its first day: "main is the portal's scroll container, so window.scrollY can never show a portal scroll bug." The mockup scrolls its document; the portal scrolls `main`. Scroll whichever actually overflows, on both sides, or `--scroll` silently reports the top of the page twice and every region below the fold stays invisible.
     await page.evaluate((y) => new Promise((r) => {
-        const el = [document.querySelector('main'), document.scrollingElement, document.documentElement]
-            .find((e) => e && e.scrollHeight > e.clientHeight + 4);
+        const cands = [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement];
+        const el = cands.filter(Boolean).sort((a, b) => (b.scrollHeight || 0) - (a.scrollHeight || 0))
+            .find((e) => e.scrollHeight > e.clientHeight + 4);
         if (el) el.scrollTop = y; else window.scrollTo(0, y);
         setTimeout(r, 2600);
     }), scrollY);
@@ -167,8 +191,26 @@ async function shoot(page, url, label) {
             + '  for a session to be minted against.');
     }
     await enterView(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
-    const buf = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: VW, height: VH } });
+    // 🔴 THIS CLIPPED TO ONE SCREENFUL FOR ITS ENTIRE FIRST DAY, and the gap is the same shape as the one the tool was written to close. It captured { x:0, y:0, width:VW, height:VH } — 888px — so EVERYTHING BELOW THE FOLD had never been compared once, on any realm, at any width, while the report said "17.1% of pixels differ" as though it had read the page. A `--scroll` flag existed to reach further and nothing ever used it. Harkirat spotted broken differences in two seconds in the frames this produced; they were below 888px. Full-page is the DEFAULT now, and `--fold` is the opt-in for the old behaviour when the question is genuinely about what lands above the fold.
+    //
+    // ⚠️ THE TWO SIDES ARE DIFFERENT HEIGHTS, and that is a finding rather than an obstacle. The canvas subtraction needs one geometry, so both are compared over the SHORTER page and the leftover is reported as its own line — a portal 600px taller than its mockup is a composition difference that a percentage can never express. 🔴 `VH0` HAS TO BE PASSED IN. The first version of these four lines closed over it, and a page.evaluate callback is serialised and run in the BROWSER, where no such binding exists — ReferenceError, swallowed by a .catch I had written myself, falling back to 888. The run then printed "captured mk- 888px · pt- 888px" under a comment claiming full-page capture. A silent fallback on the one line whose failure most needed to be seen. It throws now.
+    const full = await page.evaluate((min) => {
+        // 🔴 THE HARNESS HAS TWO NESTED `main` ELEMENTS — its own page wrapper and the one the app's Shell renders inside it — so `querySelector('main')` returns the OUTER one, whose scrollHeight is the viewport. Every harness capture was therefore clipped to 888px again, by a different route than the one already fixed today. Take the LARGEST content height of every candidate rather than the first that happens to overflow: a max cannot be fooled by a wrapper, and a wrapper cannot be fooled into reporting more than its content.
+        const cands = [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement,
+            document.body].filter(Boolean);
+        const h = Math.max(min, document.documentElement.scrollHeight,
+            ...cands.map((e) => Math.max(e.scrollHeight || 0, e.getBoundingClientRect().bottom || 0)));
+        return Math.ceil(h);
+    }, VH0);
+    const h = foldOnly ? VH : Math.min(Math.max(full, VH), 12000);
+    if (!foldOnly) {
+        // A page whose scroll container is `main` does not grow the window, so `fullPage` alone captures VH. Growing the viewport to the content makes the whole column paint, which is what has to be compared.
+        await page.setViewport({ width: VW, height: h, deviceScaleFactor: 1 });
+        await page.evaluate(() => new Promise((r) => setTimeout(r, 700)));
+    }
+    const buf = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: VW, height: h } });
     fs.writeFileSync(path.join(OUT, shotName(label)), buf);
+    SHOT_H[label] = h;
     return buf;
 }
 
@@ -241,15 +283,23 @@ async function diff(page, mkBuf, ptBuf) {
 // What is actually AT a region, on each side — because "a 320x180 block differs at (960,140)" is a coordinate and "the mockup has a stat row there, the portal has a countdown" is a finding.
 async function label(page, url, regions) {
     await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 1 });
+    await freezeClock(page);
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate((y) => new Promise((r) => {
-        const el = [document.querySelector('main'), document.scrollingElement, document.documentElement]
-            .find((e) => e && e.scrollHeight > e.clientHeight + 4);
+        const cands = [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement];
+        const el = cands.filter(Boolean).sort((a, b) => (b.scrollHeight || 0) - (a.scrollHeight || 0))
+            .find((e) => e.scrollHeight > e.clientHeight + 4);
         if (el) el.scrollTop = y; else window.scrollTo(0, y);
         setTimeout(r, 2400);
     }), scrollY);
     await enterView(page, url.includes('8900') ? 'MOCKUP' : 'PORTAL');
+    // The same growth shoot() applied. Without it elementsFromPoint is asked about y=2400 on a page that ends at 888 and answers with whatever is nearest — a confident name for the wrong element.
+    if (!foldOnly) {
+        const h = SHOT_H[url.includes('8900') ? 'mk' : 'pt'] || VH;
+        await page.setViewport({ width: VW, height: h, deviceScaleFactor: 1 });
+        await page.evaluate(() => new Promise((r) => setTimeout(r, 700)));
+    }
     return page.evaluate((rs) => rs.map((r) => {
         const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
         const els = document.elementsFromPoint(Math.min(cx, innerWidth - 2), Math.min(cy, innerHeight - 2));
@@ -298,6 +348,8 @@ async function label(page, url, regions) {
             console.log(`\nportal:diff — ${realm}${view ? ' · ' + view : ''} @ ${VW}x${VH}${scrollY ? ` scrolled ${scrollY}` : ''}  ·  portal = ${portalMode}`);
             if (OFF_CONTRACT) console.log('  ⚠️  OFF-CONTRACT viewport — the fixtures and every other instrument are baked to 1282x888. This reading is not comparable to theirs.');
             if (portalMode === 'harness') console.log('  ⚠️  harness: both sides are fixture-driven, so they can agree with each other and disagree with production.');
+            console.log(`  captured mk- ${SHOT_H.mk}px · pt- ${SHOT_H.pt}px${foldOnly ? '  (--fold: ONE SCREENFUL, everything below is uncompared)' : ''}`
+                + (SHOT_H.mk !== SHOT_H.pt ? `  ·  🔴 the portal is ${SHOT_H.pt - SHOT_H.mk > 0 ? SHOT_H.pt - SHOT_H.mk + 'px TALLER' : SHOT_H.mk - SHOT_H.pt + 'px SHORTER'} — compared over the shorter of the two` : ''));
             console.log(`  mk- ${path.relative(ROOT, path.join(OUT, shotName('mk')))}`);
             console.log(`  pt- ${path.relative(ROOT, path.join(OUT, shotName('pt')))}`);
             console.log(`\n  ${pct}% of pixels differ, in ${d.regionCount} region(s). Largest first:\n`);

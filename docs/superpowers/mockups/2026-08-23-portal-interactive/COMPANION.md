@@ -3562,7 +3562,19 @@ Nothing errored. The markup was in the DOM. `innerText` read back the full recor
 
 **Added 2026-08-28 during Part 1 of the conformance pass.** `season.html`'s Board renders content-state columns and §5.2 above describes them at length: *"Columns are **content state**: `Live now · Upcoming · Staged · Ended`"*, with the `Staged` exception argued in its own block quote. **The wired portal renders something else entirely** — `Draft · Staged · Blocked · Ready`, titled `CHANGESET PIPELINE`, where a card is a *changeset* and its column is derived from that document's own state, tier and `exportedAt`.
 
-**The portal is right, and it has a citation this document was missing.** `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` **§F3**: *"Board was redundant as originally designed, and the fix was to change its job. It was a third view of content organized by state, while state was already carried by shape everywhere else. Re-jobbed into the changeset pipeline (§8.2), which is a job nothing else does."* `portal/ui/board.logic.js` opens by naming that spec section, and the reasoning survives contact with the rest of the design: `Blocked` states *why* rather than hiding the row, and the tier-3 export requirement becomes a visible obstacle instead of a dialog that ambushes you at commit.
+🔴 **THAT PARAGRAPH WAS WRONG, AND IT WAS MINE — RETRACTED 2026-08-28 19:5x EDT.** It read: *"The portal is right, and it has a citation this document was missing"*, pointing at `docs/superpowers/specs/2026-08-20-web-admin-portal-design.md` §F3. §F3 exists and says exactly that, which is why it survived three readings. **What was never asked is whether it still governs.**
+
+| date | artifact | what it says Board is |
+|---|---|---|
+| 2026-08-20 | the design spec §F3, and `03-three-surfaces.html` | the changeset pipeline |
+| **2026-08-23** | **`season.html` in this package, and §5.2 above** | **content state — and §5.2 argues `Staged` as a deliberate single exception among those columns, which is not the writing of somebody who thinks the screen was re-jobbed** |
+| 2026-08-27 | Harkirat, in CLAUDE.md | *"the old design is essentially retired at this point. the design is the mockup"* |
+
+**The stylesheet had been agreeing with the later design the whole time and nobody read it.** `.bcard.ended`, `.bmeta.soon` and `.bcard.staged` are rules that mean nothing for a pipeline — it has no "ended" and nothing is "soon". Three consumers with no producer, describing the screen the code refused to build.
+
+⚠️ **And the retracted paragraph was written INTO this document by the same session that concluded it**, then read back as though the document were a second witness. §16.31a's own words, one file away: *"Two documents downstream of one commit are not two witnesses."* One author is not two either.
+
+**The portal's Board is content-state as of 2026-08-28.** The pipeline is not lost — Review owns it, and it is the only screen that commits, so a fourth view of changesets by state was the exact redundancy §F3 objected to with the noun changed.
 
 ⚠️ **The trap is the date order, and it is the wrong way round from the usual one.** The spec is 2026-08-20 and this package is 2026-08-23, so a session applying §0.1's *"the mockup is the default; `portal/ui` wins only where a decision postdates the mockup"* mechanically would conclude the mockup wins and **rebuild a screen that was deliberately retired three days before the mockup was drawn.** The mockup simply never adopted its own project's decision. **A later artifact is not automatically the newer decision.**
 

@@ -3,7 +3,7 @@
 // 🔴 THE MANIFEST LAYER NEVER SWITCHES (spec §8.1/§8.2) — only `view` (the top half) does. This is enforced structurally here, not just by convention: Shell always renders `manifestSlot` in the SAME place regardless of `view`, and the tab switcher below only ever changes `view`.
 //
 // 🔴 THE NAV IS A RAIL, NOT A BAR, and that is a correction rather than a preference. `01-season-spine.html` is the FULL-STYLE mockup — one page, designed completely — and its chrome is a 76px left icon rail plus a thin top bar carrying only the wordmark, a breadcrumb and identity. Mockups 02–06 are COMPILED-STYLE sheets: several pages stacked into one file for review, wrapped in a document-navigation bar. The horizontal five-realm bar that shipped here is almost exactly 06's *document* nav — review scaffolding built as product. Measured before removing it: 863px of content in a 359px viewport. See the redesign spec §0.
-import { h } from '../vendor/preact.mjs';
+import { h, cloneElement } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { Icon } from './icons.js';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
@@ -139,7 +139,7 @@ function Figure({ value }) {
 // 🔴 `actions` IS A GRID CHILD OF `.masthead`, NOT A CHILD OF `.mh-id`, AND MOVING IT THERE FIXED A VISIBLE DEFECT NO GATE COULD SEE. `.mh-add` has carried `grid-column / grid-row / justify-self:end` since the mockup, and inside `.mh-id` every one of those declarations was inert — the element was not a grid item. So the ADD row right-aligned to `.mh-id`'s edge instead of the masthead's: measured on Season at 1282, the ADD row ended at x=995 while `.mh-take`, the export line directly beneath it, ended at x=1260. Two right-aligned rows, 265px apart, one above the other. `portal:orphans` was quiet because the class exists and has a rule; `portal:coverage` was quiet because the rule has an element. A consumer whose producer is in the wrong parent is this port's signature defect, and it is invisible to every scanner that asks only whether both ends exist.
 //
 // ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
-export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null }) {
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null }) {
     return html`
         <div class="masthead">
             <div class="mh-id">
@@ -157,6 +157,7 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                         </span>`)}
                 </div>` : null}
             ${actions}
+            ${take}
         </div>
     `;
 }
@@ -186,7 +187,7 @@ export function MastheadNew({ label, hint, onClick, tip }) {
     return html`
         <button type="button" class="pill lead mh-new" onClick=${onClick} data-tip=${tip || null}>
             <span class="mh-plus" aria-hidden="true">+</span>${' '}${label}
-            ${hint ? html`<kbd class="mh-k" aria-label=${`Keyboard shortcut: ${hint.toUpperCase()}`}>${hint.toUpperCase()}</kbd>` : null}
+            ${hint ? html`<kbd aria-label=${`Keyboard shortcut: ${hint.toUpperCase()}`}>${hint.toUpperCase()}</kbd>` : null}
         </button>
     `;
 }
@@ -361,7 +362,7 @@ function StateKey() {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
     useEffect(() => { installTips(); }, []);
@@ -393,14 +394,23 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                        commands=${allCommands} onSignOut=${signOut} />
             <${Rail} realm=${realm} realms=${session?.visibleRealms} badges=${badges} />
             <main class=${busy} data-slow=${busyNote || null}>
-                ${masthead || null}
+                <!-- 🔴 THE EXPORT STRIP IS A CHILD OF THE MASTHEAD, NOT A BAND UNDER IT. The design puts
+                     .mh-take at grid-row 3 INSIDE .masthead; here it was a sibling, so the masthead measured
+                     188px against the design's 246 and every element on the page below it sat at a different
+                     y — which a pixel diff reports as ONE region covering the whole page rather than as the
+                     8px it actually is. cloneElement rather than a prop the realm passes, because the realm
+                     does not have the strip: the Shell builds it from its own exports prop, and threading it back out
+                     through seven call sites to hand it in again would be a worse seam than this one. -->
+                ${masthead
+                    ? (exportScopes && exportScopes.length
+                        ? cloneElement(masthead, { take: html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />` })
+                        : masthead)
+                    : null}
                 <!-- 🔴 THE EXPORT STRIP SITS UNDER THE MASTHEAD ON EVERY REALM THAT HAS ONE, not inside a realm's own
                      view. Export was reachable only through the Manifest's selection bar, so taking a backup of a whole
                      season meant ticking every row of it — and retention rendered nowhere at all, which made "a copy is
                      kept" a sentence in a dialog rather than something anybody could look at. -->
-                ${exportScopes && exportScopes.length
-                    ? html`<${ExportStrip} label=${exportLabel || 'This page'} scopes=${exportScopes} overlay=${overlayFor || chrome} />`
-                    : null}
+
                 <!-- 🔴 THE CONTEXT STRIP — COMPANION §10.4's SECOND BAND, WHICH THE SHELL DID NOT HAVE.
                      The composition is masthead, then a context strip that is "a slim bar, never a panel",
                      then the view layer with the strongest treatment, then a recessive Manifest. Three of
@@ -459,7 +469,20 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                         ${viewSlot}
                     </section>`
                 : viewSlot}
+                <!-- A notice sits BETWEEN the view layer and the Manifest, which is where the design draws it:
+                     it is a consequence of what the view just showed, and putting it INSIDE the view panel made
+                     the panel 45px taller than the design's and pushed the Manifest down by the same amount. -->
+                ${noticeSlot || null}
                 ${manifestSlot}
+                <!-- 🔴 THE FOOT IS AFTER THE MANIFEST, AND ON SEASON THAT IS WHERE TIER 3 BELONGS. The one-way
+                     strip was rendered inside viewSlot, which put seven irreversible operations at y=1694 on a
+                     4,395px page — ABOVE the inventory they destroy, and 1,300px before the page ends. The mockup
+                     puts it last (y=3535 of 4038) and CLAUDE.md's own description says tier 3 lives "at the foot
+                     of Season"; the code disagreed with both. Nothing above the fold could show it: the whole
+                     ordering lives below 888px, which is exactly as far as the page diff could see until now.
+                     ⚠️ Deliberately NOT a .panel — OneWay's root is section.ow, so it does not enter the
+                     adjacent-sibling chain that makes the Manifest recessive. -->
+                ${footSlot || null}
             </main>
             ${traySlot || null}
             ${overlaySlot || null}

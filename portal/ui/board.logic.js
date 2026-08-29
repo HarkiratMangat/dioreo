@@ -1,6 +1,19 @@
 // portal/ui/board.logic.js — CommonJS, imports nothing. Pure functions <Board> renders from.
 //
-// Board is the CHANGESET PIPELINE (spec F3 / §8.2), not a third content view -- its columns are pipeline stages (Draft -> Staged -> Blocked -> Ready), derived from a Changeset document's own state/tier/exportedAt, never assigned by hand.
+// 🔴 BOARD IS THE CONTENT BOARD AGAIN -- Live now / Upcoming / Staged / Ended -- AND THE CITATION THAT SAID OTHERWISE WAS THE RETIRED DESIGN. This file used to open: "Board is the CHANGESET PIPELINE (spec F3 / §8.2), not a third content view". §F3 exists and says exactly that, which is why it survived three readings. What nobody checked is whether it still GOVERNS:
+//
+//   2026-08-20  the spec re-jobs Board into the pipeline, and 03-three-surfaces.html draws it that way
+//   2026-08-23  the interactive package's season.html draws CONTENT-STATE columns instead, and COMPANION
+//               §5.2 argues them at length -- including a block quote on why `Staged` is a deliberate single
+//               exception among them, which is not the writing of somebody who thinks the screen was re-jobbed
+//   2026-08-27  Harkirat, in CLAUDE.md: "the old design is essentially retired at this point. the design is
+//               the mockup"
+//
+// The stylesheet had been agreeing with the newer design the whole time and nobody read it: `.bcard.ended`, `.bmeta.soon` and `.bcard.staged` are rules that only mean something for content-state columns -- a pipeline has no "ended" and nothing is "soon". Three consumers with no producer, sitting in app.css, describing the screen this file refused to build.
+//
+// ⚠️ THE LESSON IS NOT "READ MORE CAREFULLY". A citation has two tests and only the first was ever run: does it EXIST, and is it CURRENT. Checking existence feels like verification and is worth almost nothing against a document that has been superseded -- so date every source, and prefer the later artifact unless something later still says otherwise.
+//
+// The changeset pipeline is not lost: Review owns it, and CLAUDE.md already calls Review "the only screen that commits, and the only place staged work from any realm becomes real". A fourth view of changesets by state is the very redundancy §F3 complained about, with the noun changed.
 //
 // 🔴 Task 5's Files note says these three .logic.js files "import nothing" -- so gateCommit's logic is inlined here rather than required from portal/api/policy.js (this file must also load as a plain classic <script> in the browser, where require() does not exist). This is a deliberate, tiny duplication of a 4-line pure function, not the drift utils/manageActions.js's header warns against -- scripts/portalApi.test.js and scripts/portalUi.test.js both assert the identical tier-3 behaviour, so the two copies disagreeing would fail a test immediately, not silently.
 function gateCommit({ tier, exportedAt, confirmText, expectText }) {
@@ -117,6 +130,98 @@ function fmtDiffValue(v) {
 }
 
 // Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
+
+// 🔴 THIS BLOCK MUST STAY ABOVE THE `typeof module` GUARD, and it was written INSIDE it once. Everything below that line runs only in Node, so `npm test` imported these functions and passed while the browser had none of them: the Board rendered as an empty panel and the page threw "groupBoardItems is not a function". The guard is two lines from where the insert landed and its own comment warns about this exact runtime split. A test suite that exercises the Node half of a dual-runtime file can be fully green about code the page cannot see.
+
+// ── the CONTENT axis ──────────────────────────────────────────────────────────────────────────────────── Ported from season.html's own lifecycle(), NOT re-derived, because that function carries four fixes that each cost a real bug and would be re-earned by anybody starting from the dates alone:
+//   1. A release is a MOMENT. A draw whose window has passed is history the day after it fires -- reading it as "started and not ended" labelled every past release LIVE NOW forever.
+//   2. UNLESS it is dateOnly. A draw with no calendar window genuinely never ends; that is deliberate bot behaviour and 11 of the 14 real draws are like that, so it is the single most useful thing this screen says.
+//   3. Patch notes are not calendar entries. isEventEnded never sees one, so applying it made a note from July read LIVE NOW permanently -- that alone put 23 of 39 items in one column. The newest note is current; the rest are history.
+//   4. `end <= today` reported a draw ENDED the instant its UTC midnight passed, which for any US viewer is almost immediately. That exact bug shipped in the bot on 2026-08-07.
+const LIFE_ORDER = ['live', 'upcoming', 'staged', 'ended'];
+
+function hasEnded(item, todayIso) {
+    // 🔴 A POINT NEVER "ENDS" HERE, and dropping this broke the port on its first test. The bot's own isEventEnded short-circuits `kind === 'point'` to false because it never sees one; a draw's endDate is a COPY of its release date, so testing `end < today` reported every past release as ended — including the dateOnly ones, which is the exact opposite of the rule this function exists to carry. Whether a past release is history is decided one level up, by whether it HAS a calendar window; it is never decided here. Caught by the assertion, not by reading.
+    if (item.kind === 'point') return false;
+    // isOngoing rows end when the season's own wall does, never on a date of their own.
+    if (item.isOngoing) return false;
+    const end = item.endDate || item.date;
+    if (!end) return false;
+    return String(end).slice(0, 10) < String(todayIso).slice(0, 10);
+}
+
+function lifecycleOf(item, ctx) {
+    const today = String(ctx.today).slice(0, 10);
+    const start = String(item.startDate || item.date || '').slice(0, 10);
+    if (item.state === 'staged' || item.state === 'blocked') return 'staged';
+    if (item.lane === 'patchNotes') {
+        if (start > today) return 'upcoming';
+        return ctx.newestPatchNoteId && ctx.newestPatchNoteId === item.id ? 'live' : 'ended';
+    }
+    if (item.kind === 'point' && !item.dateOnly && start < today) return 'ended';
+    if (!hasEnded(item, today)) return start <= today ? 'live' : 'upcoming';
+    return 'ended';
+}
+
+function groupBoardItems(items, ctx) {
+    const g = { live: [], upcoming: [], staged: [], ended: [] };
+    for (const it of items || []) g[lifecycleOf(it, ctx)].push(it);
+    return g;
+}
+
+const dayDiff = (a, b) => Math.round(
+    (new Date(String(b).slice(0, 10) + 'T00:00:00Z') - new Date(String(a).slice(0, 10) + 'T00:00:00Z')) / 86400000);
+
+// 🔴 EVERY COLUMN'S SECOND LINE ANSWERS THE SAME QUESTION: what is at the EDGE of this column? An earlier version had Ended reading "10 archived", which is the count already in the pill beside it -- one column in four spending its only line of explanation repeating its neighbour. ⚠️ ONLY A SPAN ENDS. Reading `.end` across the whole column pulls in points, whose end IS their release, so "Live now" reported the release date of a patch note that does not end at all. The summary line states a DATE, and it has to state it the way every other date on this page is stated — the first version printed the raw ISO string, so one line in four read "next ends 2026-08-30" beside "Aug 27 → Sep 2" in the card directly below it.
+const fmtShort = (iso) => (iso ? new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : '');
+
+function boardColumnSummary(key, col, ctx) {
+    if (!col.length) return '';
+    const spans = col.filter((i) => i.kind !== 'point');
+    const ends = spans.map((i) => String(i.endDate || '').slice(0, 10)).filter(Boolean).sort();
+    const starts = col.map((i) => String(i.startDate || i.date || '').slice(0, 10)).filter(Boolean).sort();
+    if (key === 'live') {
+        if (ends.length) return 'next ends ' + fmtShort(ends[0]);
+        const pts = col.filter((i) => i.kind === 'point').length;
+        return pts ? pts + ' with no end date' : '';
+    }
+    if (key === 'upcoming') return starts.length ? 'next ' + fmtShort(starts[0]) : '';
+    if (key === 'staged') return 'uncommitted';
+    return ends.length ? 'last ended ' + fmtShort(ends[ends.length - 1]) : '';
+}
+
+const SOON_DAYS = 2;
+function boardSoon(item, key, ctx) {
+    if (key === 'staged' || key === 'ended') return false;
+    const today = String(ctx.today).slice(0, 10);
+    const d = item.kind === 'point' || key === 'upcoming'
+        ? dayDiff(today, item.startDate || item.date)
+        : dayDiff(today, item.endDate || item.date);
+    return d >= 0 && d <= SOON_DAYS;
+}
+
+function boardMeta(item, key, ctx) {
+    const today = String(ctx.today).slice(0, 10);
+    if (key === 'staged') return 'not visible to players yet';
+    if (item.kind === 'point') {
+        const d = dayDiff(today, item.startDate || item.date);
+        return d > 0 ? `releases in ${d}d` : d === 0 ? 'releases today' : `released ${-d}d ago`;
+    }
+    if (key === 'upcoming') return `starts in ${dayDiff(today, item.startDate)}d`;
+    if (key === 'ended') return `ran ${dayDiff(item.startDate, item.endDate) + 1}d`;
+    const left = dayDiff(today, item.endDate);
+    return left >= 0 ? `${left}d left` : 'running';
+}
+
+const BOARD_EMPTY = {
+    live: 'Nothing is running right now.',
+    upcoming: 'Nothing is scheduled ahead of today.',
+    staged: 'Nothing staged. Edits collect here until you commit them — the bot sees none of it yet.',
+    ended: 'Nothing has ended yet this season.',
+};
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { columnFor, blockedReason, groupByColumn, gateCommit, describeOp, describeInverse, diffRows, fmtDiffValue };
+    
+module.exports = { columnFor, blockedReason, groupByColumn, gateCommit, describeOp, describeInverse, diffRows, fmtDiffValue, lifecycleOf, groupBoardItems, boardColumnSummary, boardSoon, boardMeta, BOARD_EMPTY, LIFE_ORDER, hasEnded };
 }

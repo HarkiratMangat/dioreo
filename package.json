@@ -30,7 +30,8 @@
     "docs:reflow:test": "node scripts/reflow-prose.test.mjs",
     "docs:reflow-comments": "node scripts/reflow-comments.mjs --check",
     "docs:reflow-comments:test": "node scripts/reflow-comments.test.mjs",
-    "portal:diff": "node scripts/portalDiff.mjs"
+    "portal:diff": "node scripts/portalDiff.mjs",
+    "portal:inventory": "node scripts/portalInventory.mjs"
   },
   "engines": {
     "node": ">=24"

@@ -28,9 +28,11 @@ function exportSummary(scopes) {
     if (!total) return '';
     const done = list.filter((s) => EXPORTS.has(s.id)).length;
     if (done) return `${done} of ${total} exported this session`;
-    const items = list.reduce((n, s) => n + (Number(s.count) || 0), 0);
+    // 🔴 A NESTED SCOPE MUST NOT BE COUNTED TWICE. Broadcast offers "Delivery queue" (the live subset) and "Every announcement" (all of them), so summing every scope reported SIX records over four announcements — a page stating more records than it holds, beside a manifest correctly reading "4 of 4". Season's four scopes are disjoint and were never affected, which is exactly why this went unseen. A scope that is a subset says so, and says WHICH, rather than the summary guessing from counts.
+    const items = list.filter((x) => !x.subsetOf).reduce((n, s) => n + (Number(s.count) || 0), 0);
     const formats = `${total} format${total === 1 ? '' : 's'}`;
-    return items ? `${items} item${items === 1 ? '' : 's'} · ${formats}` : formats;
+    // 🔴 "ITEMS" COLLIDED WITH THE MANIFEST'S OWN COUNT, 2,200px apart on the same page. This line summed the four export scopes to 39 while the Manifest read "37 of 37 shown" — both correct, because the Manifest does not list patch notes (the Season Record is their home; see track.js on why a publication is not a duration) and the export does. Two subjects sharing one noun reads as a bug whichever number you trust. `records` is the word this file's own success toast already uses, so nothing new was invented to fix it.
+    return items ? `${items} record${items === 1 ? '' : 's'} · ${formats}` : formats;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

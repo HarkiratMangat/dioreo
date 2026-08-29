@@ -233,12 +233,52 @@ const SEASON_COLUMNS = [
         assert.ok(labels >= SEASON_ROWS.length + 1, `expected a label bound to the search box and to each row checkbox, found ${labels}`);
     });
 
-    check('the Board renders four pipeline columns and each one says what it means', () => {
-        // ⚠️ WITH A NON-EMPTY SET. An EMPTY board deliberately renders its explanation INSTEAD of four empty columns — same judgement as hiding a Track lane with nothing in it: structure that announces absent content is worse than a sentence saying so. The first version of this check asserted both at once and failed, which is the component being right and the test being wrong about it.
-        const one = [{ _id: 'c1', tier: 1, state: 'staged', realm: 'season', ops: [{ type: 'draw.add', payload: { title: 'Wraith' } }] }];
-        const out = render(html`<${Board} changesets=${one} onCommit=${() => {}} onExport=${() => {}} />`);
-        for (const label of ['Draft', 'Staged', 'Blocked', 'Ready']) assert.ok(out.includes(`>${label}<`), `${label} column heading`);
-        assert.ok(/all of it lands, or none of it does/.test(out), 'Ready states the all-or-nothing contract');
+    check('the Board renders the four CONTENT states, and its headers are real buttons', () => {
+        // 🔴 THIS ASSERTED Draft / Staged / Blocked / Ready — the RETIRED design — and passed for weeks while the screen said something else entirely from what season.html and COMPANION §5.2 draw. See board.logic.js's header for the three dates that settle it. A test written from the same wrong premise as the code is not a second witness; it is one claim asserted twice.
+        const boardItems = [
+            { id: 'i1', title: 'Molten Fusion Draw', lane: 'returningDraws', typeLabel: 'Returning draw', kind: 'point',
+              dateOnly: true, startDate: '2026-08-09', endDate: '2026-08-09', state: 'live', topicVar: '--ret' },
+            { id: 'i2', title: 'Widow Bite Draw', lane: 'newDraws', typeLabel: 'New draw', kind: 'point',
+              dateOnly: true, startDate: '2026-09-01', endDate: '2026-09-01', state: 'live', topicVar: '--draw' },
+            { id: 'i3', title: 'Terminator 2 Themed Event', lane: 'calendar', typeLabel: 'Event', kind: 'span',
+              startDate: '2026-07-01', endDate: '2026-07-30', state: 'live', topicVar: '--ev' },
+            { id: 'i4', title: 'Staged thing', lane: 'calendar', typeLabel: 'Event', kind: 'span',
+              startDate: '2026-08-20', endDate: '2026-08-25', state: 'staged', topicVar: '--ev' },
+        ];
+        const out = render(html`<${Board} items=${boardItems} today=${'2026-08-24'} newestPatchId=${null}
+                                          onMove=${() => {}} onOpen=${() => {}} />`);
+        for (const label of ['Live now', 'Upcoming', 'Staged', 'Ended']) assert.ok(out.includes(`>${label}<`), `${label} column heading`);
+        // COMPANION §5.2: "The whole header is the collapse control." A div cannot be collapsed by keyboard and announces nothing — the pipeline's header was a div for the whole life of that component.
+        assert.ok(/<button class="bcol-h"/.test(out), 'the column header is a button, not a div');
+        assert.ok(/aria-expanded="true"/.test(out), 'and it says whether it is open');
+        assert.ok(/moving a card moves its window/.test(out), 'the bar states what dragging DOES');
+    });
+
+    check('lifecycle sorts by the CONTENT axis, including the rule that cost a real bug', () => {
+        const boardItems = [
+            { id: 'i1', title: 'Molten Fusion Draw', lane: 'returningDraws', typeLabel: 'Returning draw', kind: 'point',
+              dateOnly: true, startDate: '2026-08-09', endDate: '2026-08-09', state: 'live', topicVar: '--ret' },
+            { id: 'i2', title: 'Widow Bite Draw', lane: 'newDraws', typeLabel: 'New draw', kind: 'point',
+              dateOnly: true, startDate: '2026-09-01', endDate: '2026-09-01', state: 'live', topicVar: '--draw' },
+            { id: 'i3', title: 'Terminator 2 Themed Event', lane: 'calendar', typeLabel: 'Event', kind: 'span',
+              startDate: '2026-07-01', endDate: '2026-07-30', state: 'live', topicVar: '--ev' },
+            { id: 'i4', title: 'Staged thing', lane: 'calendar', typeLabel: 'Event', kind: 'span',
+              startDate: '2026-08-20', endDate: '2026-08-25', state: 'staged', topicVar: '--ev' },
+        ];
+        const g = groupBoardItems(boardItems, { today: '2026-08-24', newestPatchNoteId: null });
+        // A dateOnly draw released in the past is still LIVE: a draw with no calendar window genuinely never ends, which is true of 11 of the 14 real draws and is the most useful thing this screen says.
+        assert.deepStrictEqual(g.live.map((x) => x.id), ['i1'], 'a past dateOnly release stays live');
+        assert.deepStrictEqual(g.upcoming.map((x) => x.id), ['i2'], 'a future release is upcoming');
+        assert.deepStrictEqual(g.ended.map((x) => x.id), ['i3'], 'a span whose end has passed is ended');
+        assert.deepStrictEqual(g.staged.map((x) => x.id), ['i4'], 'the staging axis wins over the content axis');
+    });
+
+    check('THE LIFECYCLE GATE CAN FAIL: a released draw WITH a window is history, not live', () => {
+        const withWindow = { id: 'w', title: 'Judgment Day', lane: 'newDraws', kind: 'point', dateOnly: false,
+            startDate: '2026-08-07', endDate: '2026-08-07', state: 'live' };
+        const g = groupBoardItems([withWindow], { today: '2026-08-24', newestPatchNoteId: null });
+        assert.deepStrictEqual(g.ended.map((x) => x.id), ['w'],
+            'reading a past release as "started and not ended" labelled every past draw LIVE NOW forever');
     });
 
     // 🔴 A BUTTON INSIDE A BUTTON IS INVALID HTML and the browser does not error — it closes the outer one early and reparents what follows, so the card's own click target silently stops covering its own content. The pipeline card carried a Discard button inside a card button for the whole life of this component.
@@ -259,32 +299,15 @@ const SEASON_COLUMNS = [
         assert.ok(!re.test(good), 'a div wrapper must not be a false positive');
     });
 
-    check('an empty Board explains itself instead of showing four empty columns', () => {
-        const out = render(html`<${Board} changesets=${[]} onCommit=${() => {}} onExport=${() => {}} />`);
-        assert.ok(/Nothing is staged/.test(out), 'it says what would put something here');
-        assert.ok(!out.includes('class="cols"'), 'and does not render the empty pipeline');
+    check('an empty column says what would put something in it', () => {
+        const out = render(html`<${Board} items=${[]} today=${'2026-08-24'} newestPatchId=${null}
+                                          onMove=${() => {}} onOpen=${() => {}} />`);
+        // Four columns still render when empty — unlike the pipeline, these ARE the season's states, and a Board that hides "Upcoming" because nothing is scheduled has answered the question by deleting it.
+        assert.ok(/Nothing is running right now/.test(out), 'live says what it would hold');
+        assert.ok(/Nothing is scheduled ahead of today/.test(out), 'upcoming says what it would hold');
+        assert.ok(/the bot sees none of it yet/.test(out), 'staged names its own consequence');
     });
-
-    check('a blocked tier-3 card states its reason and offers the export that clears it', () => {
-        const sets = [
-            { _id: 'c1', tier: 1, state: 'staged', realm: 'season', ops: [{ type: 'calendar.edit', target: { elementId: 'e1' }, payload: { title: 'Clan wars' } }] },
-            { _id: 'c2', tier: 3, state: 'staged', exportedAt: null, realm: 'season', ops: [{ type: 'draw.delete', target: { elementId: 'd1' }, payload: {} }] },
-        ];
-        const out = render(html`<${Board} changesets=${sets} onCommit=${() => {}} onExport=${() => {}} />`);
-        assert.ok(out.includes('card t3'), 'the tier-3 card is marked');
-        assert.ok(/must be exported before it can commit/.test(out), 'Blocked states WHY, never just "blocked"');
-        assert.ok(out.includes('Download'), 'and the control that resolves it');
-        assert.ok(/Undo would restore the draw/.test(out), 'each card states its own inverse before you commit it');
-        assert.ok(/Edit calendar item/.test(out), 'and describes the op in words, not as "1 op(s)"');
-    });
-
-    check('the Ready column OPENS the review — it never commits blind', () => {
-        const ready = [{ _id: 'c1', tier: 1, state: 'staged', realm: 'season', ops: [{ type: 'draw.add', target: null, payload: { title: 'Wraith' } }] }];
-        const out = render(html`<${Board} changesets=${ready} onCommit=${() => {}} onExport=${() => {}} />`);
-        assert.ok(/Review 1 ready/.test(out), 'the control reviews rather than applies');
-        assert.ok(!/Commit 1 of 1/.test(out), 'the old blind-commit button is gone');
-    });
-
+    // ⊘ RETIRED 2026-08-28, with the reason rather than silently: this asserted the CHANGESET PIPELINE, which Board is no longer (see board.logic.js's header). The behaviour it covered — a blocked tier-3 set naming its reason, and Ready opening the review instead of committing — belongs to the Review realm and is asserted there. Deleting a test whose SUBJECT MOVED is correct; deleting one whose subject still exists is how coverage evaporates without anything reporting it. ⊘ RETIRED 2026-08-28, with the reason rather than silently: this asserted the CHANGESET PIPELINE, which Board is no longer (see board.logic.js's header). The behaviour it covered — a blocked tier-3 set naming its reason, and Ready opening the review instead of committing — belongs to the Review realm and is asserted there. Deleting a test whose SUBJECT MOVED is correct; deleting one whose subject still exists is how coverage evaporates without anything reporting it.
     check('one blocker holds every staged set out of Ready, in the RENDER not only the logic', () => {
         const mixed = [
             { _id: 'a', tier: 1, state: 'staged', realm: 'season', ops: [{ type: 'draw.add', payload: { title: 'A' } }] },

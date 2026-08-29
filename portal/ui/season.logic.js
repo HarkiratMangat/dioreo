@@ -98,6 +98,44 @@ function nowPctIn(geo, nowMs) {
     return p >= 0 && p <= 100 ? p : null;
 }
 
+// The Board's own item list. It is the MANIFEST'S rows plus patch notes plus two derived fields, rather than a second walk of the same document -- one source, so a row cannot appear on one surface and not the other for a reason nobody can find.
+//   `kind`     a draw is a POINT (one date, no duration); a calendar row is a SPAN. lifecycleOf reads this.
+//   `dateOnly` a draw with NO calendar draw-window carrying its name. Such a draw genuinely never ends -- that
+//              is deliberate bot behaviour, it is true of 11 of the 14 real draws, and it is the difference
+//              between a release that is still live and one that is history. Matched on the NORMALIZED title
+//              because a window is named after its draw and never with the same punctuation.
+// ⚠️ PATCH NOTES ARE HERE AND NOT IN THE MANIFEST, and that asymmetry is deliberate rather than an oversight: the Manifest's home for a patch note is the Season Record panel, and the Board's own lifecycle rule has a dedicated patch-note branch precisely because they belong on this axis.
+function toBoardItems(live, changesets, draft) {
+    const rows = toManifestRows(live, changesets, draft);
+    const windows = (live?.calendar || [])
+        .filter((c) => String(c.category || '').toLowerCase().startsWith('draw'))
+        .map((c) => normalizeTitle(c.title));
+    const out = rows.map((r) => {
+        const point = r.lane === 'newDraws' || r.lane === 'returningDraws';
+        const start = r.startDate || r.date || null;
+        return { ...r, kind: point ? 'point' : 'span',
+            startDate: start, endDate: r.endDate || (point ? start : null),
+            dateOnly: point && !windows.some((w) => w && normalizeTitle(r.title) && (w.includes(normalizeTitle(r.title)) || normalizeTitle(r.title).includes(w))) };
+    });
+    for (const n of (live?.patchNotes || [])) {
+        out.push({ ...n, id: String(n._id), title: n.title || 'Patch note', lane: 'patchNotes',
+            kind: 'point', dateOnly: true, typeLabel: 'Patch note',
+            topicVar: '--patch', state: stateForElement(n._id, changesets),
+            startDate: n.date || n.publishedAt || null, endDate: n.date || n.publishedAt || null });
+    }
+    return out;
+}
+
+// Which patch note is the current one. The newest by date is live and every other is history — a rule the Board needs and nothing else does, so it travels with the items rather than being recomputed per render.
+function newestPatchNoteId(items) {
+    let best = null;
+    for (const i of items || []) {
+        if (i.lane !== 'patchNotes') continue;
+        if (!best || String(i.startDate) > String(best.startDate)) best = i;
+    }
+    return best ? best.id : null;
+}
+
 function toManifestRows(live, changesets, draft) {
     if (!live) return [];
     const geo = seasonSpanGeometry(live);
@@ -229,7 +267,7 @@ function panWindow(win, days, full) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, KIND_TO_CALENDAR_CATEGORY, LANE_LABELS, CAL_CATEGORY, calCategoryOf, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist };
+    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, KIND_TO_CALENDAR_CATEGORY, LANE_LABELS, CAL_CATEGORY, calCategoryOf, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist, toBoardItems, newestPatchNoteId };
 }
 
 // ── THE SEASON'S DEADLINE LINES ───────────────────────────────────────────────────────────────

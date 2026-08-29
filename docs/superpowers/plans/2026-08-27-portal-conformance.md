@@ -42,13 +42,46 @@ status: live
 | **7** | The sweep, the misc, and the double-check | ☐ open | | |
 | **—** | Closing DEVLOG narrative entry | ☐ open | | one story, after all the rest |
 
-🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST.** The four conditions below are activities; a realm can satisfy all four and not match its design, which is exactly what Part 1 did. **A row may not reach ☑ until `portal:diff` has been re-run and every region it reports is either closed or written into the difference ledger with a citation.**
+🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST, AND IT IS HARKIRAT'S TO MAKE.** The four conditions below are activities; a realm can satisfy all four and not match its design, which is what Part 1 did three times. **A row may not reach ☑ until, in this order:** ⓪ `npm run portal:diff -- --realm <r>` has run **full page** on every view AND at 375×812, with every region closed or written into the difference ledger with a **dated** citation; ① `npm run portal:inventory -- --realm <r>` reports its four lists with every row closed or adjudicated; ② the machine floor is green; ③ Harkirat has looked at the A/B artifact and said so. **Never write done — see §0.5 R5.**
 
 **Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · **⧗ owed** *(everything done except the real-server pass, which is blocked on Harkirat's OAuth sign-in)* · ⊘ dropped *(with the reason, never silently)*.
 
 🔴 **⧗ IS NOW UNREACHABLE, AND THAT IS THE POINT OF PART 0 HAVING LANDED THE SIGN-IN (2026-08-28 10:5x EDT).** §0.2's rule fires: *"If Part 0 lands it, no later Part may use ⧗ at all."* A Part that wants to close owes a real-server pass and must go and run one — the session cookie lives in Mongo with a 12-hour TTL, so a lapsed one is another sign-in, never a reason to owe.
 
 🔴 **⧗ exists because without it the ledger cannot be honest.** §0.2 requires a real-server pass in every Part, and that needs a sign-in only he can give — so with four states every row either stalls at ◐ forever or gets ticked ☑ dishonestly. **A row may reach ⧗ with the owed pass named in its Note (`real-server pass owed`), and becomes ☑ the moment that pass runs.** Nothing else may be owed.
+
+---
+
+## §0.5 — HOW A PART IS ACTUALLY CHECKED (written 2026-08-28 after Part 1 was declared finished THREE times and was not)
+
+🔴 **Read this before §0.1. Every rule below is a generalisation of a real failure from 2026-08-28, and each one names it, because a rule whose cost is invisible gets optimised away by the next session.**
+
+### R1 · An instrument states its COVERAGE, in the subject's own units, or its reading is not a reading
+`portalDiff.mjs` clipped every capture to `{x:0, y:0, width:1282, height:888}`. Season is **4,378px**. So *"17.1% of pixels differ, in 17 regions"* described the top fifth of the page, was quoted in a ledger, a changelog, a §L row and a published artifact, and was wrong in all four. **The falsifier was free and sitting in every run: not one region in any report ever had `y + h` greater than 888.** If a spatial tool never finds anything outside its frame, the frame is the finding. Every instrument now prints what it examined — `captured mk- 4038px · pt- 4378px` — and says so when it did not cover the whole subject.
+
+### R2 · A citation has TWO tests: does it EXIST, and does it still GOVERN
+Board was closed as portal-correct on spec §F3, which exists and says exactly what was quoted. It is dated **2026-08-20**; the mockup package that supersedes it is **2026-08-23**; Harkirat wrote *"the design is the mockup"* on **2026-08-27**. Checking existence feels like verification and is worth almost nothing. **Date every source in the adjudication line. When two conflict, the later artifact wins unless something later still says otherwise.**
+
+### R3 · Never cite your own writing back as corroboration
+The §F3 adjudication was written into `COMPANION.md` by the session that reached it, and then read back as though COMPANION were a second witness. §16.31a records this in its own words — *"Two documents downstream of one commit are not two witnesses"* — and one AUTHOR is not two either. **If you wrote it this session, it is your claim. Mark it as yours.**
+
+### R4 · The close condition is an ENUMERATION, not a checklist
+A Part closes when `npm run portal:inventory -- --realm <r>` reports its four lists — **ONLY IN THE MOCKUP · ONLY IN THE PORTAL · DIFFERENT WORDS · DIFFERENT STYLE** — and every row in each is either closed or adjudicated with a **dated** citation. Gates green, a ledger written and a fixture recorded are ACTIVITIES; they were all true when Part 1 was closed the first time.
+
+### R5 · Never write "done", "complete" or "fixed, all N"
+Harkirat decides when a Part is finished. *"Part 1 doesn't end until I'm satisfied."* Report what changed and what was measured; do not report completion. Two of this Part's three false closes were a sentence, not a mistake in the work.
+
+### R6 · A dual-runtime file needs a BROWSER assertion, never a Node one
+`board.logic.js` guards its exports with `if (typeof module !== 'undefined')`. Code inserted below that line is defined in Node and absent in the browser: `npm test` imported the new functions and passed while the page threw `groupBoardItems is not a function` and the Board rendered as an empty panel. **A green suite over the Node half of a dual-runtime file proves nothing about the page.**
+
+### R7 · A guard must not swallow the failure it was written for
+The first full-page capture printed `captured mk- 888px · pt- 888px` — the old behaviour wearing the new label — because a `page.evaluate` closure referenced a Node-side constant, threw `ReferenceError` in the browser, and a `.catch(() => VH)` written moments earlier fell back to the old value. **No fallback on a measurement.** If it cannot be measured, it must fail loudly.
+
+### R8 · When Harkirat names an example, fix the CLASS
+*"Don't narrow your fixes to my mentioned items. There were merely examples. Awwwards worthy websites are not narrow scoped in their audits."* Two named items produced a two-item fix list; the enumeration that should have preceded it found **29 absent · 60 extra · 25 different words · 38 counts · 68 styles**. Enumerate the class before touching the instance.
+
+### R9 · A refusal guards a flag's EFFECT, not its ARRIVAL
+`--view` refuses a missing tab and a click that changed nothing — and cannot refuse a flag that never reached the process. In zsh an unquoted `$v` does not word-split, so a loop passing `"--view Board"` sent one argument and three default-view runs printed plausible percentages. **Read the tool's own statement of what it did — the header line and the output filenames — never the result alone.**
 
 ---
 

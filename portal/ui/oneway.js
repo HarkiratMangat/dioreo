@@ -52,9 +52,9 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
                     return html`
                         <li class=${'ow-i' + (canDestroy ? '' : ' ow-locked')} key=${item.id}>
                             <div class="ow-t"><b>${item.title}</b><span>${item.note}</span></div>
-                            <!-- .nw-i is width:100% because every other place it appears is a stacked form field. Here it is a cell in a flex row, so it needs a basis of its own or it claims the whole line and pushes the count and the button onto a second one — the row then reads as two rows and stops lining up with its six siblings. -->
+                            <!-- .nw-i is width:100% because every other place it appears is a stacked form field. Here it is a cell in a flex row, so it needs a basis of its own or it claims the whole line and pushes the count and the button onto a second one — the row then reads as two rows and stops lining up with its six siblings. It is 0 1 rather than 1 1 for the same reason one step further: GROWING pushed this row's count to x=1114 while the other six sat at 954, and took the row to 88px against their 65. -->
                             ${item.field && canDestroy ? html`
-                                <input class="nw-i" type="text" aria-label=${item.field.label} style="flex:1 1 210px;width:auto;min-width:150px"
+                                <input class="nw-i" type="text" aria-label=${item.field.label} style="flex:0 1 240px;width:auto;min-width:150px"
                                        placeholder=${item.field.placeholder} value=${fields[item.id] || ''}
                                        onInput=${(e) => setFields({ ...fields, [item.id]: e.target.value })} />` : null}
                             <div class="ow-c">${item.count} <em>${plural(item.count, item.unit)}</em></div>

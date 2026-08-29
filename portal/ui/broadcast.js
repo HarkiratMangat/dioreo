@@ -13,7 +13,8 @@ import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
 
-const fmtDay = (v) => new Date(v).toDateString().slice(4);
+// 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design.
+const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim();
 
 const BROADCAST_COLUMNS = [
     // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state.
@@ -44,15 +45,20 @@ const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16
 //
 // 🔴 AND THE CAP IS THE FACT THIS PANEL EXISTS TO SHOW. Discord sends at most MAX_EMBEDS_PER_MESSAGE embeds in one message and utils/announcement.js slices the unseen list by exactly that, so a live announcement past the cap is not showing — it is WAITING, and nothing anywhere told anyone. The number is sent by the route rather than written here, because a second copy of a limit is a copy only one of the two would notice changing. 🔴 THE PANEL SAID WHAT IS LIVE AND NEVER WHAT IT LOOKS LIKE. Broadcast is the one realm whose output a player reads verbatim, and the only way to see the delivered result was to run the bot — so the accent colour, the order and the cap were three separate facts on screen and the thing they add up to was nowhere.
 //
-// ⚠️ IT PREVIEWS THE MESSAGE, NOT THE RECORDS. Anything past the cap is absent here rather than greyed out, because a player does not see a faded row — they see nothing, and that is the whole point the racknote beside it is making.
+// ⚠️ IT PREVIEWS THE MESSAGE, NOT THE RECORDS. Anything past the cap is absent here rather than greyed out, because a player does not see a faded row — they see nothing, and that is the whole point the racknote beside it is making. The preview's second line is WHEN IT WENT OUT, not which embed you are looking at. "embed 1 of 2" is a fact about the list you can already see; "19 days ago" is the one thing the card cannot tell you and the reason a reader is looking at it. The design's own rows are Posted and Ends.
+const relDay = (iso) => {
+    const d = Math.round((Date.now() - new Date(iso).getTime()) / 86400000);
+    return d <= 0 ? 'today' : `${d} day${d === 1 ? '' : 's'} ago`;
+};
+
 function DeliveryPreview({ live, cap }) {
     const shown = cap ? live.slice(0, cap) : live;
     return html`
-        <aside class="nprev" aria-label="What a player receives">
-            <h5>What a player receives</h5>
+        <aside class="nprev" aria-label="What one player gets">
+            <h5>What one player gets</h5>
             ${shown.length ? shown.map((a, i) => html`
                 <${DiscordCard} key=${a._id} accent=${accentOf(a)} title=${a.text}
-                                sub=${`embed ${i + 1} of ${shown.length}`}
+                                sub=${relDay(a.createdAt)}
                                 rows=${[['Ends', a.expiresAt ? fmtDay(a.expiresAt) : 'never']]} />`)
             : html`<div class="idop"><b>nothing attached</b></div>`}
             <p class="pnote">
@@ -64,13 +70,9 @@ function DeliveryPreview({ live, cap }) {
         </aside>`;
 }
 
+// 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there.
 function NowShowing({ live, counts, cap }) {
     return html`
-        <div class="panel" id="now-showing">
-            <div class="ph">
-                <span class="t">Now showing</span>
-                <span class="rt">${Math.min(counts.live, cap)} in one message, oldest first · cap ${cap}${counts.live > cap ? ` · ${counts.live - cap} wait for the next` : ''}</span>
-            </div>
             <div class="nowwrap">
             <div>
             ${live.length === 0
@@ -107,7 +109,7 @@ function NowShowing({ live, counts, cap }) {
                 })() : null}`}
             </div>
             <${DeliveryPreview} live=${live} cap=${cap} />
-            </div>
+            
         </div>
     `;
 }
@@ -259,7 +261,7 @@ function AirtimeKey({ rows }) {
 export function BroadcastRealm({ session }) {
     const [showAdd, setShowAdd] = useState(false);
     const [notice, setNotice] = useState('');
-    const [view, setView] = useState('Now showing');
+    const [view, setView] = useState('Delivery queue');
     const overlay = useOverlay();
 
 // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
@@ -280,7 +282,7 @@ export function BroadcastRealm({ session }) {
     // 🔴 THIS REALM HAD NO EXPORT AND IS THE ONE THAT NEEDS ONE MOST. An announcement's TEXT is the whole artifact -- written once, stored nowhere else, and not derivable from any other record. ⚠️ Each scope states its own shape, and neither is re-importable: there is no bulk-add flow for announcements, so a note promising a round trip would be a false claim about the file.
     const exportToday = new Date().toISOString().slice(0, 10);
     const exportScopes = [
-        { id: 'broadcast.live', label: 'Now showing', unit: 'announcements',
+        { id: 'broadcast.live', label: 'Delivery queue', unit: 'announcements', subsetOf: 'broadcast.all',
           count: data.live.length, url: '/api/broadcast/export?scope=live',
           filename: `dioreo-announcements-live-${exportToday}.txt`,
           note: 'Only what a player would see right now, in the order Discord sends it.' },
@@ -344,7 +346,7 @@ export function BroadcastRealm({ session }) {
     }
 
     return html`
-        <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Now showing', 'Airtime']} onSetView=${setView}
+        <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
                   realmKey=${view === 'Airtime' ? html`<${AirtimeKey} rows=${rows} />` : null}
                   exports=${exportScopes} exportLabel="Broadcast" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
@@ -356,20 +358,22 @@ export function BroadcastRealm({ session }) {
                                                stats=${[
                                                    { value: counts.live, label: 'live', lead: true, accent: 'var(--r-broadcast)' },
                                                    { value: counts.scheduled, label: 'scheduled' },
-                                                   { value: counts.forever, label: 'never expires', tone: counts.forever ? 'bad' : undefined },
                                                    { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
+                                                   { value: counts.forever, label: 'never ends', tone: counts.forever ? 'bad' : undefined },
                                                ]}
-                                               actions=${html`<${MastheadNew} label="New announcement" hint="a"
+                                               actions=${html`<${MastheadNew} label="Post announcement" hint="n"
                                                                               tip="Write an announcement"
                                                                               onClick=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
-                      ${view === 'Now showing' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
-                      <${HeadsUp} all=${data.all} />
+                      ${view === 'Delivery queue' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
                   `}
+                  stateKey=${true}
+                  tools=${view === 'Delivery queue' ? html`<span class="sp"></span><span class="rt">${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}</span>` : null}
+                  noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    title="Every announcement" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" filterGroups=${BROADCAST_FILTERS}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
                                                     onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"

@@ -1,10 +1,11 @@
-// portal/ui/board.js — ESM. The changeset pipeline (Draft -> Staged -> Blocked -> Ready) and the REVIEW CHANGESET screen it opens into.
+// portal/ui/board.js — ESM. Season's CONTENT board: Live now / Upcoming / Staged / Ended, whose columns ARE dates, so moving a card moves the item's window.
 //
 // columnFor/blockedReason/groupByColumn/describeOp/describeInverse come from board.logic.js, loaded as a classic script before this module — see track.js's header for why that is the real cross-runtime split. ⚠️ `gateCommit` and `diffRows` still live there and are still tested; they are read by portal/api/review.js and the Review realm, which is where the commit gate and the field diff belong now.
 //
 // 🔴 THE REVIEW SCREEN IS 04-armory-and-commit.html's third section, and it did not exist. The whole tier-3 gate was a bare "type the confirm code" input in the Ready column plus a Download link on a blocked card, which is exactly the "dialog that ambushes you at commit" the design spec §8.2 says this realm exists to replace. Built at Harkirat's call, 2026-08-23 15:00 EDT: the operations get listed, each one shows a real before/after field diff against LIVE state, the destructive summary names what is being removed rather than counting it, and the gate is three visible steps.
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
+import { useState } from '../vendor/preact-hooks.mjs';
 
 const COLUMN_LABEL = { draft: 'Draft', staged: 'Staged', blocked: 'Blocked', ready: 'Ready' };
 const COLUMN_NOTE = {
@@ -67,47 +68,110 @@ function Card({ changeset, onExport, onOpen, onDiscard, selected }) {
 //
 // 🔴 AND THE DUPLICATE WAS INVISIBLE TO EVERY GATE. Its eleven classes — `.review`, `.oplist`, `.revhead`, `.revbody`, `.revfoot`, `.tally`, `.step`, `.tierbadge`, `.ttl`, `.diffs`, `.rows` — had no rule anywhere in the adopted stylesheet, so the whole panel rendered as unstyled text, and the suite was green throughout. `npm run portal:orphans` is what found it; opening the card is what confirmed it.
 //
-// The pipeline stays: it is the only view that shows WHERE a changeset is, which the Review screen deliberately does not. Opening a card now goes to the one place that commits. The Ready column's button used to commit the whole ready set directly — a control that applied changes you had not looked at, sitting beside a review screen built precisely so that you would. It now OPENS the review. Committing stays per-changeset, which is the scope 04-armory-and-commit.html's own header states ("3 operations · Season 7 · dior" — the "all 3" in its footer is three OPERATIONS of one changeset, not three changesets), and the footer reports how many remain so a set is still visibly a set.
-export function Board({ changesets, onExport, onDiscard }) {
-    const cols = groupByColumn(changesets);
-    const readyCount = cols.ready.length;
-    const toReview = () => { location.hash = '#/review'; };
+// The pipeline stays: it is the only view that shows WHERE a changeset is, which the Review screen deliberately does not. Opening a card now goes to the one place that commits. The Ready column's button used to commit the whole ready set directly — a control that applied changes you had not looked at, sitting beside a review screen built precisely so that you would. It now OPENS the review. Committing stays per-changeset, which is the scope 04-armory-and-commit.html's own header states ("3 operations · Season 7 · dior" — the "all 3" in its footer is three OPERATIONS of one changeset, not three changesets), and the footer reports how many remain so a set is still visibly a set. ── the CONTENT board ─────────────────────────────────────────────────────────────────────────────────── Live now / Upcoming / Staged / Ended, per COMPANION §5.2. See board.logic.js's header for why the changeset pipeline that used to be here was the RETIRED design and how a real citation to a superseded document survived three readings.
+const BCOLS = [
+    { k: 'live', t: 'Live now' }, { k: 'upcoming', t: 'Upcoming' },
+    { k: 'staged', t: 'Staged' }, { k: 'ended', t: 'Ended' },
+];
+// 'ended' is DERIVED, never a target: you cannot decide something has finished, only give it dates that mean it has. Dragging onto it would offer a control that lies about what it does.
+const MOVE_TARGETS = ['live', 'upcoming', 'staged'];
+
+const dstr = (d) => String(d || '').slice(0, 10);
+const addDays = (iso, n) => {
+    const d = new Date(dstr(iso) + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+};
+const fmtD = (iso) => (iso ? new Date(dstr(iso) + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : '—');
+
+function BCard({ item, col, ctx, onMove, onOpen }) {
+    const soon = boardSoon(item, col, ctx);
+    // 🔴 A DIV WITH role=button, NOT A <button>. The staged column's cards contain their own controls, and a button inside a button is invalid HTML the browser silently un-nests — the same reason the pipeline's card was a div. tabindex keeps it in the tab order and the arrow handler keeps it operable, which is what COMPANION §3.6 asks of every drag surface.
+    return html`
+        <div class=${'bcard' + (col === 'staged' ? ' staged' : '') + (col === 'ended' ? ' ended' : '')}
+             data-id=${item.id} draggable="true" tabindex="0" role="button"
+             style=${`--c:var(${item.topicVar || '--ink3'})`}
+             aria-label=${`${item.title}, ${item.typeLabel || item.lane}, in ${col}. Alt plus left or right arrow moves it.`}
+             onDragStart=${(e) => { e.dataTransfer.setData('text/plain', item.id); e.dataTransfer.effectAllowed = 'move'; }}
+             onKeyDown=${(e) => {
+                 if (!e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+                 e.preventDefault();
+                 const order = MOVE_TARGETS;
+                 const at = order.indexOf(col);
+                 const next = order[Math.max(0, Math.min(order.length - 1, (at < 0 ? 0 : at) + (e.key === 'ArrowRight' ? 1 : -1)))];
+                 if (next && next !== col) onMove(item, next);
+             }}
+             onClick=${() => onOpen && onOpen(item)}>
+            <span class="bn">${item.title}</span>
+            <span class="bd">${item.typeLabel || item.lane} <span class="dot2">·</span> ${fmtD(item.startDate)} → ${fmtD(item.endDate)}</span>
+            <div class=${'bmeta' + (soon ? ' soon' : '')}>${boardMeta(item, col, ctx)}</div>
+        </div>`;
+}
+
+export function Board({ items, today, newestPatchId, onMove, onOpen }) {
+    const ctx = { today, newestPatchNoteId: newestPatchId };
+    const cols = groupBoardItems(items, ctx);
+    const [collapsed, setCollapsed] = useState(() => {
+        try { return new Set(JSON.parse(sessionStorage.getItem('dioreo-board-collapsed') || '[]')); }
+        catch { return new Set(); }
+    });
+    const persist = (next) => {
+        setCollapsed(next);
+        try { sessionStorage.setItem('dioreo-board-collapsed', JSON.stringify([...next])); } catch { /* private window */ }
+    };
+    // COMPANION: "All four collapsing is refused, and Expand all guarantees a way back." A board with every column shut is a screen that answers nothing, reached by four ordinary clicks.
+    const toggle = (k) => {
+        const next = new Set(collapsed);
+        if (next.has(k)) next.delete(k);
+        else if (next.size < BCOLS.length - 1) next.add(k);
+        persist(next);
+    };
+    const drop = (k) => (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const it = (items || []).find((x) => x.id === id);
+        if (it && MOVE_TARGETS.includes(k)) onMove(it, k);
+    };
 
     return html`
         <div class="panel" id="board">
             <div class="ph">
-                <span class="t">Changeset pipeline</span>
-                <span class="rt">edits move left → right · commit is the last boundary</span>
+                <span class="t">Board</span>
+                <span class="rt">the columns are dates — moving a card moves its window</span>
             </div>
-            ${changesets.length === 0 ? html`<p class="empty">Nothing is staged. Changes you compose in the Track or the manifest land here before they go live.</p>` : html`
-                <div class="bbar">
-                    <span class="bbar-t">${changesets.length} in flight</span>
-                    <span class="sp"></span>
-                    ${readyCount ? html`<button class="pill lead" onClick=${toReview}>Review ${readyCount} ready</button>` : null}
-                </div>
-                <!-- 🔴 THE COLUMN NOTE MOVED INTO THE HEADER, WHICH IS THE WHOLE DIFFERENCE. It used to sit under
-                     the cards as a paragraph — so a column with six cards put its own explanation a screenful
-                     below the thing it explains, which is the affordance-distance shape this branch keeps
-                     removing. .bcol-sum is the adopted sheet's slot for it: one line, beside the count, on
-                     the header you are already reading. -->
-                <div class="bcols">
-                    ${['draft', 'staged', 'blocked', 'ready'].map(key => html`
-                        <div class=${'bcol' + (key === 'ready' ? ' gate' : '')} key=${key}>
-                            <div class="bcol-h">
+            <div class="bbar">
+                <span class="bbar-t">${(items || []).length} items across 4 states — drag a card between columns,
+                    or focus one and press <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>.</span>
+                <span class="sp"></span>
+                ${collapsed.size ? html`<button class="chip" onClick=${() => persist(new Set())}>Expand all (${collapsed.size} hidden)</button>` : null}
+            </div>
+            <div class="bcols">
+                ${BCOLS.map((c) => {
+                    const col = cols[c.k], off = collapsed.has(c.k);
+                    return html`
+                        <section class=${'bcol' + (off ? ' collapsed' : '')} data-col=${c.k} key=${c.k}
+                                 onDragOver=${MOVE_TARGETS.includes(c.k) ? (e) => e.preventDefault() : null}
+                                 onDrop=${MOVE_TARGETS.includes(c.k) ? drop(c.k) : null}>
+                            <!-- THE WHOLE HEADER IS THE COLLAPSE CONTROL (COMPANION §5.2), which is also why it
+                                 is a real button: the pipeline's header was a div, so four columns could not be
+                                 collapsed, reached by keyboard, or announced as expandable at all. -->
+                            <button class="bcol-h" aria-expanded=${off ? 'false' : 'true'}
+                                    aria-label=${`${off ? 'Expand' : 'Collapse'} ${c.t}, ${col.length} items`}
+                                    onClick=${() => toggle(c.k)}>
                                 <span class="chev" aria-hidden="true"></span>
-                                <span class="bcol-t">${COLUMN_LABEL[key]}</span>
-                                <span class=${'bcol-n' + (key === 'blocked' && cols[key].length ? ' bad' : '')}>${cols[key].length}</span>
-                                <span class="bcol-sum">${COLUMN_NOTE[key]}</span>
-                            </div>
+                                <span class="bcol-t">${c.t}</span>
+                                <span class="bcol-n">${col.length}</span>
+                                <span class="bcol-sum">${boardColumnSummary(c.k, col, ctx)}</span>
+                            </button>
                             <div class="bcol-body">
-                                ${cols[key].length
-                                    ? cols[key].map(c => html`<${Card} key=${String(c._id)} changeset=${c} onExport=${onExport} onOpen=${toReview} onDiscard=${key !== 'ready' ? onDiscard : null} selected=${false} />`)
-                                    : html`<p class="bempty">nothing here</p>`}
+                                ${col.length
+                                    ? col.map((it) => html`<${BCard} key=${it.id} item=${it} col=${c.k} ctx=${ctx} onMove=${onMove} onOpen=${onOpen} />`)
+                                    : html`<p class="bempty">${BOARD_EMPTY[c.k]}</p>`}
                             </div>
-                        </div>
-                    `)}
-                </div>
-            `}
+                        </section>`;
+                })}
+            </div>
         </div>
     `;
 }

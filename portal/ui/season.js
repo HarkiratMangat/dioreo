@@ -12,7 +12,7 @@ import { stageOps, exportChangeset } from './composeClient.js';
 import { downloadText } from './download.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
-import { Manifest } from './manifest.js';
+import { Manifest, StatePill } from './manifest.js';
 import { Tray } from './tray.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { Composer } from './composer.js';
@@ -67,9 +67,9 @@ const SEASON_COLUMNS = [
                 ${row.lane === 'calendar' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
             </div>`;
     } },
-    // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells.
+    // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
     { key: 'state', label: 'State', dataKind: 'right',
-      render: (row) => html`${row.state}${row.outlivesSeason
+      render: (row) => html`<${StatePill} state=${row.state} />${row.outlivesSeason
           ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
 ];
 
@@ -181,6 +181,7 @@ function StagedPanel({ changesets, onDiscard, onReview, stagedOnly, onStagedOnly
                     </div>`)}
             </div>
             <div class="rvfoot">
+                <span class="rvn-sum"><b>${pending.length}</b> staged change${pending.length === 1 ? '' : 's'} · nothing is live until you commit</span>
                 <span class="sp"></span>
                 <button class="commit" onClick=${onReview}>Review & commit</button>
             </div>
@@ -832,6 +833,22 @@ export function SeasonRealm({ session }) {
 
     // "Change type…" and "Shift dates…" from the approved mockup's bulk bar need an inline amount/type input Manifest's bulkActions shape doesn't carry (onClick(ids) takes no extra argument) -- deliberately scoped out of this pass rather than reaching for a native prompt(), which this session already removed from Access's Revoke for the same UX reason. Stage deletion and Export selection need no such input and are built here. toManifestRows/stateForElement now live in season.logic.js (bare global, same pattern as LANE_LABELS above) -- real state derivation needs `changesets` (already fetched for Board), so it moved out of a browser-only local function to become properly testable.
     const allRows = toManifestRows(state.live, changesets, state.draft);
+    const boardItems = toBoardItems(state.live, changesets, state.draft);
+
+    // 🔴 THE COLUMNS ARE DATES, SO MOVING A CARD MOVES THE WINDOW — the rule is season.html's, ported rather than re-derived. The item's LENGTH is preserved; only where it sits moves. 'live' pulls the start to yesterday so the row is unambiguously running rather than starting at this instant; 'upcoming' pushes it three days out, far enough that it does not immediately read as live again. 'ended' is not a target: finishing is something dates cause, never something you assert.
+    async function handleBoardMove(item, column) {
+        if (column === 'ended') return;
+        const start = String(item.startDate || item.date || '').slice(0, 10);
+        const end = String(item.endDate || start).slice(0, 10);
+        const len = Math.max(0, Math.round((new Date(end + 'T00:00:00Z') - new Date(start + 'T00:00:00Z')) / 86400000));
+        const shift = (from) => { const d = new Date(todayIso() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + from); return d.toISOString().slice(0, 10); };
+        if (column === 'staged') return;               // staging is what the composer does; a drag cannot invent one
+        const nextStart = column === 'live' ? shift(-1) : shift(3);
+        const nextEnd = (() => { const d = new Date(nextStart + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + len); return d.toISOString().slice(0, 10); })();
+        const op = editOpFor({ ...item, startDate: nextStart, endDate: nextEnd }, nextEnd);
+        await stageOps('season', [op], session.csrfToken);
+        fetchChangesets('season').then(setChangesets);
+    }
     function rowsById(ids) { return allRows.filter((r) => ids.includes(r.id)); }
 
     async function handleBulkDelete(ids) {
@@ -994,7 +1011,10 @@ export function SeasonRealm({ session }) {
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
                <!-- The keyboard entrance to the day drawer. It opens on TODAY because that is the day
                     somebody checking "what is running" almost always wants, and the drawer steps from there. -->
-               <p class="hint"><button class="chip" onClick=${() => setDayOpen(todayIso())}
+               <!-- Aligned with the staged band above it rather than the panel's own padding edge: measured at
+                    1282 it sat at x=111 while the band sat at x=123, so a single floating pill was the one thing
+                    on the page agreeing with no other left edge. -->
+               <p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
                                        data-tip="See everything running on one day">Open a day…</button></p>
                ${dayOpen ? html`
                    <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
@@ -1003,12 +1023,13 @@ export function SeasonRealm({ session }) {
                                  onClose=${() => setDayOpen(null)} />` : null}`
         : view === 'Repairs'
             ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
-            : html`<${Board} changesets=${changesets} onExport=${handleExport} onDiscard=${confirmDiscard} />`;
+            : html`<${Board} items=${boardItems} today=${todayIso()} newestPatchId=${newestPatchNoteId(boardItems)}
+                             onMove=${handleBoardMove} onOpen=${(it) => setDayOpen(String(it.startDate || '').slice(0, 10) || todayIso())} />`;
 
     // ⚠️ IT FILTERS, IT DOES NOT SEARCH. The Manifest's own search box is text; this is a STATE predicate, and running it through the search field would mean typing a word that matches nothing in any cell.
     const shownRows = stagedOnly ? allRows.filter((r) => r.state === 'staged' || r.state === 'blocked') : allRows;
     const manifestSlot = html`<${Manifest} rows=${shownRows} columns=${SEASON_COLUMNS} searchableFields=${['title']}
-                                            title="Everything in the season" filterGroups=${SEASON_FILTERS}
+                                            label="Manifest" filterGroups=${SEASON_FILTERS}
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
                                             bulkNote="Reversible — a staged removal is discarded, never undone"
                                             bulkTier=${2} rowNoun=${['item', 'items']}
@@ -1048,9 +1069,9 @@ export function SeasonRealm({ session }) {
                               <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
                       ${viewSlot}
                                   <${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
-                                                   onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />
-                                  <${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
+                                                   onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />`}
                   overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
+                  footSlot=${html`<${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   traySlot=${html`<${Tray} notices=${notices}
                                            blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}
                                            onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />

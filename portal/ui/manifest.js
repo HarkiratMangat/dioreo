@@ -7,25 +7,29 @@ import { useState, useMemo, useEffect } from '../vendor/preact-hooks.mjs';
 import { stageAndCommit } from './composeClient.js';
 import { Icon } from './icons.js';
 
-// `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to.
+// `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to. The state pill's own class comes from the state VALUE, so a realm reporting 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. 🔴 EXPORTED, because a realm that needs to add something BESIDE the state (Season's outlives-the-season warning) used to supply its own `render` and lose the pill entirely — the column whose whole job is state, drawn as a bare word, on every row.
+const PILL = { live: 'live', staged: 'stag', scheduled: 'sched', expired: 'exp', conflict: 'conf' };
+export function StatePill({ state }) {
+    return html`<span class=${'stt ' + (PILL[state] || 'conf')}>${String(state == null ? '' : state).toUpperCase()}</span>`;
+}
+
 function FilterChips({ groups, filters, onChange }) {
+    // 🔴 ONE CHIP PER VALUE, NOT ONE CHIP PER GROUP THAT CYCLES. This rendered a single chip reading "Type: all" which advanced through its options on each click, cited to 03-three-surfaces.html. That citation is the 2026-08-20 package; the 2026-08-23 package supersedes it and draws every value as its own chip — `All · New draws · Returning · Draw windows · Events · Playlists · Patch notes` on Season, `All · live · scheduled · expired` on Broadcast — and on 2026-08-27 Harkirat wrote that the mockup IS the design. Same failure as the Board: a real quotation from a retired document, checked for existence and never for currency.
+    //
+    // It is also the better control on its own merits, which is worth saying so nobody re-litigates it from taste: a cycling chip hides the vocabulary until you click it, gives no way to reach the third option except by passing through the second, and cannot show which values EXIST. A row of chips is the filter and the legend at once.
     return groups.map((g) => {
-        const options = [{ value: 'all', label: 'all' }, ...g.options];
+        const options = [{ value: 'all', label: 'All' }, ...g.options];
         const current = filters[g.key] || 'all';
-        const index = Math.max(0, options.findIndex((o) => o.value === current));
-        const next = options[(index + 1) % options.length].value;
-        const label = options[index].label;
-        return html`
-            <!-- ⚠️ A TOPIC FILTER IS NOT A STATE FILTER, and both rendered as the same neutral chip. Lane
-                 and category ARE the topic vocabulary the whole console colours by — the Track's bars, the
-                 row dots, the composer's chips — so a filter over them takes the topic chip and a filter
+        return options.map((o) => html`
+            <!-- ⚠️ A TOPIC FILTER IS NOT A STATE FILTER, and both used to render as the same neutral chip.
+                 Lane and category ARE the topic vocabulary the whole console colours by — the Track's bars,
+                 the row dots, the composer's chips — so a filter over them takes the topic chip and a filter
                  over state does not. The realm declares which it is; a shared component cannot guess. -->
-            <button class=${'chip' + (g.topic ? ' topic' : '')} aria-pressed=${current !== 'all'}
-                    title=${`Filter by ${g.label} — click to cycle`}
-                    onClick=${() => onChange({ ...filters, [g.key]: next })}>
-                ${g.label}: ${label}${current !== 'all' ? html`<span class="x" aria-hidden="true">×</span>` : null}
-            </button>
-        `;
+            <button key=${g.key + ':' + o.value}
+                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.value === current ? ' on' : '')}
+                    aria-pressed=${o.value === current}
+                    title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
+                    onClick=${() => onChange({ ...filters, [g.key]: o.value })}>${o.label}</button>`);
     });
 }
 
@@ -64,7 +68,10 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
     `;
 }
 
-export function Manifest({ rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' }) {
+// 🔴 THE CONFORMANCE REGISTER, AND EVERY ENTRY IS A DELIBERATE ADVANCE PAST THE DESIGN. Broadcast's mockup draws no checkbox column at all; the portal grew one because Broadcast gained bulk actions the design never specified. That is a real capability and it is NOT reverted — but in an overlay run it shifts every column of a four-column table by 40px, which reads as a page of differences rather than as one decision. Reading a dataset flag rather than a build define, so nothing about this can ship enabled: only a page that asks for conformance in its URL ever sets it, and the server never serves that page.
+const conforming = () => typeof document !== 'undefined' && document.documentElement.dataset.conform === '1';
+
+export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' }) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
     const [sort, setSort] = useState({ column: null, direction: 'asc' });
@@ -92,19 +99,29 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
         return named.join(' · ') + (chosen.length > named.length ? ` · and ${chosen.length - named.length} more` : '');
     };
 
-    // The state pill's own class comes from the row's state VALUE, so a realm that reports 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row.
-    const PILL = { live: 'live', staged: 'stag', scheduled: 'sched', expired: 'exp', conflict: 'conf' };
+    // The state pill's own class comes from the row's state VALUE, so a realm that reports 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. The map moved out to module scope so StatePill (exported, below) and the default cell renderer share ONE copy.
 
-    // Two ways a row can carry a colour, and both are legitimate. Season names a CSS TOKEN (row.topicVar -> '--draw'), because its four topic accents are design tokens the mockup fixes. Armory carries a raw HEX (row.accentHex), because its per-category hues are the BOT's own values arriving in the payload from getMpCategoryAccent -- reading them from data is what stops the portal's palette drifting from what Discord actually renders.
+    // Two ways a row can carry a colour, and both are legitimate. Season names a CSS TOKEN (row.topicVar -> '--draw'), because its four topic accents are design tokens the mockup fixes. Armory carries a raw HEX (row.accentHex), because its per-category hues are the BOT's own values arriving in the payload from getMpCategoryAccent -- reading them from data is what stops the portal's palette drifting from what Discord actually renders. Selection exists when the realm has something to do with it — and never in a conformance run for a realm whose design draws no checkbox.
+    // ⚠️ NOT gated on bulkActions: selection also drives export-of-selection and the row-preview, so a realm
+    // that declares no bulk verb still has a use for it. The ONLY thing that removes it is a conformance run
+    // against a design that draws no checkbox — narrowing it further silently dropped the row checkboxes from
+    // every realm and the a11y assertion caught it in one run.
+    const selectable = !conforming();
+
     const dotAccent = (row) => (row.accentHex ? `--topic-accent:${row.accentHex}` : `--topic-accent:var(${row.topicVar || '--ink3'})`);
 
     return html`
         <div class="panel" id="manifest">
+            <!-- 🔴 THE label PROP NAMES THE TOOLBAR AND title ADDS A HEADER BAND ABOVE IT. They were one prop, so a realm
+                 that wanted the toolbar named got a 33px band the design does not draw — the Manifest carried its
+                 own name twice, once in a header strip and again in the toolbar directly beneath it. The design
+                 has one: the word sits in the toolbar beside the search field. title is now opt-in for the
+                 realms that genuinely need a header row above the tools. -->
             ${title ? html`<div class="ph"><span class="t">${title}</span>${headerRight ? html`<span class="rt">${headerRight}</span>` : null}</div>` : null}
             <div class="mtools">
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
-                <span class="mlabel">${title || 'Rows'}</span>
+                <span class="mlabel">${label || title || 'Rows'}</span>
                 <span class="srch"><label class="sr" for="manifest-search">Search</label><input id="manifest-search" value=${query} placeholder="Search…" onInput=${(e) => setQuery(e.target.value)} /></span>
                 ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
                 <span class="rt">${visible.length} of ${rows.length} shown${selected.size ? ` · ${selected.size} selected` : ''}</span>
@@ -119,14 +136,14 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                      detail. The alternative — one width list per realm — is five copies of a decision
                      that would drift the first time a realm added a column. -->
                 <colgroup>
-                    <col class="c-cb" />
+                    ${selectable ? html`<col class="c-cb" />` : null}
                     ${columns.map((c, i) => html`<col key=${c.key}
                         class=${c.col || (i === 0 ? 'c-item' : c.key === 'state' ? 'c-state' : c.dataKind === 'date' ? 'c-win' : 'c-detail')} />`)}
                     <!-- The remove column takes its width from the .mtable th.ra rule, which the adopted sheet already sets; a col class of its own would be a second authority over one number. (No backticks in this comment: it lives inside a template literal, and the build's parse gate caught the sixth occurrence of that within seconds of writing it.) -->
                     ${onRemove ? html`<col class="c-ra" />` : null}
                 </colgroup>
                 <thead><tr>
-                    <th class="c-cb"></th>
+                    ${selectable ? html`<th class="c-cb"></th>` : null}
                     <!-- 🔴 A <th> WITH AN onClick IS NOT A CONTROL. Sorting was bound to the header cell
                          itself, which no keyboard can reach and no screen reader announces as actionable
                          — the whole table could be sorted with a mouse and not at all without one. The
@@ -153,14 +170,14 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                                  beside it, so a design that reset every other control to its own vocabulary had a
                                  native blue tick on 39 rows. The input is still the input: it is visually hidden
                                  rather than replaced, so it keeps its focus, its keyboard behaviour and its label. -->
-                            <td onClick=${(e) => e.stopPropagation()}>
+                            ${selectable ? html`<td onClick=${(e) => e.stopPropagation()}>
                                 <label class="cbl" for=${`sel-${row.id}`}>
                                     <span class="sr">Select ${row[columns[0].key]}</span>
                                     <input class="sr" id=${`sel-${row.id}`} type="checkbox" checked=${selected.has(row.id)}
                                            onChange=${() => setSelected(toggleSelection(selected, row.id))} />
                                     <span class=${'cb' + (selected.has(row.id) ? ' on' : '')} aria-hidden="true"></span>
                                 </label>
-                            </td>
+                            </td>` : null}
                             ${columns.map((c, ci) => {
                                 const isEditing = editingCell && editingCell.rowId === row.id && editingCell.columnKey === c.key;
                                 if (isEditing) {
@@ -173,7 +190,7 @@ export function Manifest({ rows, columns, searchableFields, bulkActions = [], fi
                                     </td>`;
                                 }
                                 const body = c.render ? c.render(row) : (c.key === 'state'
-                                    ? html`<span class=${'stt ' + (PILL[stateOf(row)] || 'conf')}>${String(stateOf(row)).toUpperCase()}</span>`
+                                    ? html`<${StatePill} state=${stateOf(row)} />`
                                     : row[c.key]);
                                 // 🔴 THE TABLE HAD ONE CELL KIND AND THE STYLESHEET STYLES FIVE. Every column rendered as plain text or a date, so a row could say WHAT a thing is and never what is IN it — the detail column, the tier chips, the right-aligned status column and the secondary line under a name were all styled, all unused, and invisible to an orphan check because a rule existed for each. `dataKind` names the cell; the realm supplies what goes in it.
                                 //
