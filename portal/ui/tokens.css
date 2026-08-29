@@ -279,7 +279,10 @@ input, select, textarea, button {
     color: var(--ink);
     background: var(--sunk);
     border: 1px solid var(--rule);
-    border-radius: 5px;
+    /* Tokenised for the third time and for the same reason: the design's whole button rule is
+       `cursor;background:none;border:0;color:inherit;font:inherit` — no radius at all — so this
+       reached every bare button the design leaves square, sixteen of them on Repairs alone. */
+    border-radius: var(--ctl-rad, 5px);
     /* Tokenised for the same reason the height floor is: the design has no control reset at all, and
        this padding reached every bare button the design sizes itself — the table's remove control among
        them, 7px against the design's 1px on thirty-nine rows. */
@@ -317,7 +320,7 @@ input, select, textarea, button {
 /* The browser's own button padding, written out. `revert` inside a var() is invalid at computed-value
    time and silently took the fallback, which is the value being stood down — a stand-down that quietly
    does nothing is worse than none, because the number moves and the cause looks like something else. */
-:root[data-conform="1"] { --ctl-min: auto; --ctl-pad: 1px 6px; }
+:root[data-conform="1"] { --ctl-min: auto; --ctl-pad: 1px 6px; --ctl-rad: 0; }
 button {
     background: var(--raised);
     font-weight: 600;

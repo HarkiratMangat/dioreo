@@ -36,7 +36,11 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
    tokens.css's `.sr-only`, which was deleted on 2026-08-26 as "the same rule declared twice" — without
    diffing the two. Without them a visually-hidden element that carries a border still paints a 1px
    sliver, which is the exact artefact the clip is there to prevent. */
-.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* The classic visually-hidden trio is the PORTAL's addition — the design's .sr stops at clip.
+   margin:-1px reached label.sr, whose design margin-bottom is 5px, on every search field. Kept for
+   real mode (it is what stops a 1px box contributing a scrollbar) and stood down under conformance. */
+:root:not([data-conform="1"]) .sr{padding:0;margin:-1px;border:0}
 
 /* ═══ FORM CONTROLS — styled as ELEMENTS, never as classes ═══ */
 /* 🔴 This used to be `input[type=text],input[type=search],input[type=date]` — ATTRIBUTE
@@ -1357,9 +1361,13 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    so every tier chip in the mockup renders unstyled — a defect in the package rather than a choice,
    and one the portal had been quietly working around by emitting a different class. Matching the
    markup and adding the three missing rules gives the same DOM and a chip that is actually drawn. */
-.t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
-.t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
-.t-epic{background:rgba(150,110,235,.15);color:#B79BF0;box-shadow:inset 0 0 0 1px rgba(150,110,235,.35)}
+/* 🔴 THE DESIGN LEAVES THESE UNSTYLED, and that is a fact about the design rather than a gap in it:
+   season.html emits class "t-legendary" while assets/app.css defines only .t-leg, so all forty-five
+   tier words render as plain --ink3. Adding the colour here was the portal getting AHEAD of the
+   mockup, which the conformance pass stands down; the re-apply phase after all six realms match is
+   where it comes back. A duplicate .t-epic block also lived here — invisible to every gate we run. */
+:root:not([data-conform="1"]) .t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
+:root:not([data-conform="1"]) .t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
 .t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
 .mtable .det .dsub{font-size:12px;color:var(--ink3)}
 .mtable .det .none{color:var(--ink3);font-style:italic}
@@ -3056,6 +3064,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* ═══════════════ BOARD — the columns were touching the panel edge ═══════════════ */
 .bcols{padding:0 var(--gut,16px) 16px}
+/* --gut is 24px in the portal and UNDEFINED in the design, whose .bcols therefore takes its own
+   16px fallback. 8px of padding a side is 4px off every column, which is 220 reported differences
+   on the Board — one number, and the largest single cause on that view. */
+:root[data-conform="1"] .bcols{padding:0 16px 16px}
 
 /* A stemmed label dropped the words every sibling shares — the full name is on the tooltip and in
  * the Manifest. The leading mark says the name is abbreviated rather than mis-entered. */
@@ -3589,7 +3601,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .klg.spofk b{color:var(--warn);font-weight:600}
 
 /* the bar carries its own text colour; the global fallback stays for anything not yet converted */
-.bar.saved,.bar.saved .bl{color:var(--ci,var(--on-accent));background:var(--c)}
+.bar.saved,.bar.saved .bl{color:var(--ci,var(--on-accent));background:var(--ci-bg,var(--c))}
 /* 🔴 A STAGED BAR'S LABEL IS NOT ON A FILL. `.bar.staged` is dashed and hollow — the label
    renders on the LANE, so painting it `var(--c)` puts a topic accent on --paper/--sunk, and a
    topic accent is designed to fill a shape, not to carry 10.5px text. Measured by the states
@@ -3607,7 +3619,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* Any filled surface that declares `--ci` uses it; the old single global stays as the fallback
    for surfaces not yet converted, so nothing regresses to unstyled while the sweep finishes. */
-.bar.saved,.bar.saved .bl,.stt.saved,.pt .lbl,.bdg.filled{color:var(--ci,var(--on-accent));background:var(--c)}
+.bar.saved,.bar.saved .bl,.stt.saved,.pt .lbl,.bdg.filled{color:var(--ci,var(--on-accent));background:var(--ci-bg,var(--c))}
 
 
 /* ══════════ THE TYPES ARE THE ACTION ══════════ */
@@ -3817,8 +3829,12 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    irreversible operation. The mockup's rows all read "Export first →", so they aligned by accident of
    having one label; the portal names each operation, so the alignment has to be asked for. The count pins
    the pair to the right and the button reserves the widest label's width, which makes the column a column. */
-.ow-i .ow-c{margin-left:auto;min-width:104px;text-align:right}
-.ow-i .pill{min-width:172px;justify-content:center}
+.ow-i .ow-c{margin-left:auto;min-width:var(--ow-c-min,104px);text-align:right}
+.ow-i .pill{min-width:var(--ow-pill-min,172px);justify-content:center}
+/* The design sizes these at 126/none. The portal widened both so the longest verb ("Purge every
+   returning draw…") does not wrap; under conformance the button reads "Export first →" instead and
+   the extra room is exactly the 62px the one-way text column was losing. */
+:root[data-conform="1"]{--ow-c-min:88px;--ow-pill-min:126px}
 .pill.dang{border-color:var(--danger-edge);color:var(--danger-ink);
   background:color-mix(in srgb,var(--del) 12%,transparent)}
 .pill.dang:hover{border-color:var(--del);background:color-mix(in srgb,var(--del) 20%,transparent);color:var(--ink)}
@@ -5184,9 +5200,9 @@ button .ic,a .ic{pointer-events:none}
 :root[data-conform="1"] .sc-sep{font-family:var(--display);font-weight:400;font-size:var(--t-figure);color:var(--ink3);line-height:1;margin-top:-1px}
 :root[data-conform="1"] .sclock{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
 :root[data-conform="1"] .sc-face{display:flex;flex-direction:row;align-items:flex-start;gap:9px;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:.8;color:var(--ink)}
-:root[data-conform="1"] .sc-when{font-family:var(--data);font-size:var(--t-sm);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);max-width:34ch;display:block}
+:root[data-conform="1"] .sc-when{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-sm);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);max-width:34ch;display:block}
 :root[data-conform="1"] .sc-when b{color:var(--ink);font-weight:500}
-:root[data-conform="1"] .sc-then{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
+:root[data-conform="1"] .sc-then{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
 :root[data-conform="1"] .sc-then b{color:var(--ink2);font-weight:500}
 :root[data-conform="1"] .sclock[data-tier="closing"] .sc-u:first-child b{color:var(--patch);font-size:calc(var(--t-display) * 1.18)}
 :root[data-conform="1"] .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
@@ -5206,3 +5222,23 @@ button .ic,a .ic{pointer-events:none}
   :root[data-conform="1"] .sclock{align-items:flex-start;text-align:left}
   :root[data-conform="1"] .sc-u b{font-size:var(--t-figure)}
 }
+
+
+/* ── STOOD DOWN FROM THE MOCKUP: two marks this branch deliberately DELETED ─────────────────
+   Both removals are argued in place above (`.dnotch` at the out-of-season boundary, `.ruler
+   span.masked` at the ruler) and both stand in real mode. The conformance overlay renders the
+   design's version, so they are restored here and nowhere else — the re-apply phase after all six
+   realms match is where the deletions are re-argued, not silently kept by leaving them out. */
+:root[data-conform="1"] .dnotch{position:absolute;top:0;height:15px;width:0;z-index:4;pointer-events:none;
+  border-left:1.5px solid var(--c)}
+:root[data-conform="1"] .dnotch i{position:absolute;left:-2.5px;width:5px;height:5px;border-radius:var(--rad-1);
+  background:var(--c);transform:rotate(45deg)}
+:root[data-conform="1"] .dnotch i:nth-child(1){top:-3px}
+:root[data-conform="1"] .dnotch i:nth-child(2){top:13px}
+:root[data-conform="1"] .ruler span.masked{pointer-events:none;cursor:default}
+:root[data-conform="1"] .ruler span.masked b{display:none}
+
+/* The design fills the BAR and leaves the label inside it transparent; the portal painted the label
+   too, which reads as a second chip inside the first on every saved bar. --ci-bg is the same
+   tokenising trick as --ctl-rad: the value changes, the specificity does not. */
+:root[data-conform="1"] .bar.saved .bl{--ci-bg:transparent}

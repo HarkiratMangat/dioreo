@@ -85,6 +85,7 @@ const SEASON_COLUMNS = [
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
     { key: 'state', label: 'State', dataKind: 'right', sortable: false,
       render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />${row.outlivesSeason
+          && !conforming()
           ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
 ];
 
@@ -771,7 +772,7 @@ function AddRow({ onStage }) {
             <input id="a-start" type="date" value=${start} onInput=${(e) => setStart(e.target.value)} />
             <label class="sr" for="a-end">End</label>
             <input id="a-end" type="date" value=${end} onInput=${(e) => setEnd(e.target.value)} />
-            <button class="go" disabled=${!ready} onClick=${stage}>Stage item</button>
+            <button class="go" disabled=${!ready && !conforming()} onClick=${stage}>Stage item</button>
             <span style="font-size:11.5px;color:var(--ink3)">or click any empty lane on the Track</span>
         </div>`;
 }
@@ -1155,7 +1156,7 @@ export function SeasonRealm({ session }) {
                   meta=${`${TL.fmt(visibleWindow.start)} → ${TL.fmt(visibleWindow.end)}`}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${liveNow} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}
-                                               sub="Everything scheduled this season on one axis — and whether it still fits inside the season's own deadlines." 
+                                               sub="Everything scheduled this season on one axis — and whether it still fits inside the season’s own deadlines." 
                                                aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
                                                actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
                   contextSlot=${html`

@@ -33,6 +33,7 @@
 //
 // Usage: node scripts/portalAudit.mjs --realm season [--view Board] [--all] [--json]
 //        --all lifts the per-section caps (default 25 rows each), for a first pass on a cold realm.
+const KEY_SEP = ' \u00b7\u00b7 ';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -308,13 +309,17 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
         for (const [a, b] of pairs) {
             for (const p of PROPS) {
                 if (a.style[p] === b.style[p]) continue;
-                const key = `${a.sig} ${p} ${a.style[p]} ${b.style[p]}`;
+                // A NUL here made this whole file BINARY to ripgrep, which reports no matches in it rather than
+                // an error — so the one instrument the conformance pass runs on was unsearchable by the tool
+                // everything else here is searched with. A printable sentinel that cannot occur in a selector
+                // or a computed value does the same job and stays visible.
+                const key = [a.sig, p, a.style[p], b.style[p]].join(KEY_SEP);
                 styleGroups.set(key, (styleGroups.get(key) || 0) + 1);
             }
         }
         console.log(`④ STYLE (${styleGroups.size} difference(s)) — ONE BATCH.`);
         [...styleGroups].sort((x, y) => y[1] - x[1]).slice(0, CAP).forEach(([k, n]) => {
-            const [sig, prop, mv, pv] = k.split(' ');
+            const [sig, prop, mv, pv] = k.split(KEY_SEP);
             console.log(`   ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
         });
         if (styleGroups.size > CAP) console.log(`   … ${styleGroups.size - CAP} more — re-run with --all`);

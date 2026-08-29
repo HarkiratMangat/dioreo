@@ -13,6 +13,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useCallback, useRef } from '../vendor/preact-hooks.mjs';
 import { Fold } from './icons.js';
 import { useMeasured } from './useMeasured.js';
+/* global inkOnTopic */
 import { conforming } from './conform.js';
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
@@ -97,6 +98,20 @@ function Ruler({ view }) {
         if (px !== w) setW(px);
         return {};
     });
+    // 🔴 A TICK UNDER THE NOW CAPTION IS TWO DATES IN ONE PLACE. The design measures the caption boxes
+    // and marks any tick overlapping one, hiding the label while keeping the tick — the mark IS the axis,
+    // so removing the whole span would leave a gap where a day is. Deleted here on the reasoning that the
+    // collision could not happen; it does, at today's position, on the default window.
+    useMeasured('rulermask:' + view.from + view.to, ref, (root) => {
+        const plot = root.parentElement;
+        if (!plot) return {};
+        const boxes = [...plot.querySelectorAll('.now')].map((n) => n.getBoundingClientRect());
+        for (const sp of root.querySelectorAll('span')) {
+            const r = sp.getBoundingClientRect();
+            sp.classList.toggle('masked', boxes.some((b) => r.right > b.left - 4 && r.left < b.right + 4));
+        }
+        return {};
+    });
     return html`
         <div class="ruler" ref=${ref}>
             ${TL.ticks(view, tickStep(view.span(), w)).map((t) => html`
@@ -108,7 +123,7 @@ function LaneSummary({ lane, list, kit, view }) {
     if (kit.sum === 'pips') {
         return html`<span class="lsum">${list.map((it) => html`
             <i key=${it.id} class=${'lpip' + (it.tier === 'mythic' ? ' myth' : '')}
-               style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%`}
+               style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%;--ci:${inkOnTopic(lane.topic)}`}
                data-tip=${`${it.title} · ${TL.fmt(startOf(it))}`}></i>`)}</span>`;
     }
     if (kit.sum === 'load') {
@@ -167,7 +182,7 @@ function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
         .filter(Boolean).join(' ');
     return html`
         <div class=${cls} ref=${ref} data-id=${it.id} tabindex="0" role="button"
-             style=${`--c:var(${lane.topic});left:${geo.left}%;width:${geo.width}%${top ? ';' + top : ''}`}
+             style=${`--c:var(${lane.topic});left:${geo.left}%;width:${geo.width}%${top ? ';' + top : ''};--ci:${inkOnTopic(lane.topic)}`}
              aria-label=${`${it.title}, ${TL.fmt(startOf(it))} ${it.openEnded ? 'onward, with no end date' : 'to ' + TL.fmt(end)}${it.isOngoing ? ', runs all season' : ''}`}
              data-tip=${ghost ? 'Ends ' + TL.fmt(ghost)
                               : (stem && stem !== it.title ? it.title : null)}>
@@ -182,9 +197,11 @@ function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
 
 function Point({ it, lane, view, hid }) {
     return html`
-        <span class=${'pt ' + (it.state || 'live') + (hid ? ' hid' : '')} data-id=${it.id} tabindex="0" role="button"
+        <!-- The staging axis calls a written row SAVED, not LIVE — stateOf() in the design, and the
+             stylesheet is written against .saved throughout. LIVE belongs to the CONTENT axis. -->
+        <span class=${'pt ' + (it.state === 'live' || !it.state ? 'saved' : it.state) + (hid ? ' hid' : '')} data-id=${it.id} tabindex="0" role="button"
               data-tier=${it.tier || ''} data-lanekind=${lane.key}
-              style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%`}
+              style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%;--ci:${inkOnTopic(lane.topic)}`}
               aria-label=${`${it.title}, releases ${TL.fmt(startOf(it))}`}
               data-tip=${`${it.title} · releases ${TL.fmt(startOf(it))}`}></span>`;
 }
@@ -204,7 +221,7 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
 
     return html`
         <div class=${'lane' + (collapsed ? ' lnc' : '') + (ghost ? ' aim' : '')} data-lane=${lane.key} data-draft=${isDraft ? 1 : 0}
-             data-rows=${rows} style=${`--c:var(${lane.topic});height:${collapsed ? 30 : Math.max(38, rows * ROW_H + ROW_PAD)}px`}>
+             data-rows=${rows} style=${`--c:var(${lane.topic});height:${collapsed ? 30 : Math.max(38, rows * ROW_H + ROW_PAD)}px;--ci:${inkOnTopic(lane.topic)}`}>
             <button class="lnh" data-lanebtn=${lane.key} data-draft=${isDraft ? 1 : 0}
                     aria-expanded=${!collapsed} onClick=${onToggle}
                     data-tip=${`${collapsed ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.`}>
@@ -327,8 +344,10 @@ export function Repairs({ data, window: visible, season, onClamp }) {
         const seen = new Map(); const out = [];
         for (const e of (data.event || []).concat(data.playlist || [], data.drawwindow || [])) {
             const k = norm(e.title) + '|' + String(e.startDate || e.date || '').slice(0, 10);
+            // The design names the ALREADY-SEEN row by the last six of its id, not by its title — the
+            // titles are identical by definition here, so repeating one says nothing the label has not.
             if (seen.has(k)) out.push({ id: e.id, label: e.title, why: `identical to ${seen.get(k)} — same title, same start` });
-            else seen.set(k, e.title);
+            else seen.set(k, conforming() ? String(e.id || '').slice(-6) : e.title);
         }
         return out;
     })();
@@ -350,15 +369,26 @@ export function Repairs({ data, window: visible, season, onClamp }) {
         { id: 'dupe-calendar', kind: 'mechanical', label: 'Duplicate calendar rows', hits: dupeRows,
           note: 'Same title, same start date. /calendar renders both, so a player sees the entry twice.' },
         { id: 'expiring-banner', kind: 'mechanical', label: 'Banner on an expiring Discord link', hits: bannerRows,
-          note: 'A media.discordapp.net URL is SIGNED — it carries an ex= parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.' },
+          note: conforming()
+            ? 'A media.discordapp.net URL is SIGNED — it carries an `ex=` parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.'
+            : 'A media.discordapp.net URL is SIGNED — it carries an ex= parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.' },
         { id: 'past-bp', kind: 'mechanical', label: 'Runs past the battle pass', hits: pastBp,
           note: `Ends after ${bpEnd || 'the battle-pass end, which is not set'}. Not automatically wrong — a DMZ or ranked-tail event legitimately can — but it is the one thing a season calendar cannot show you.` },
         { id: 'orphan-window', kind: 'mechanical', label: 'Draw window with no draw', hits: orphanWindows,
-          note: "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Rename any draw and its window orphans immediately." },
+          note: conforming()
+            ? "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Reports zero here, and CAN fire: rename any draw and its window orphans immediately."
+            : "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Rename any draw and its window orphans immediately." },
         { id: 'no-window', kind: 'judgement', label: 'Draw served synthetic', hits: noWindow,
-          note: 'No explicit calendar row, so commands/calendar.js synthesises a dateOnly entry that renders as "Releases <date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it. That is by design; whether you want it is the judgement.' },
+          note: conforming()
+            // The design builds this with innerHTML, so its "Releases <date>" is PARSED — the browser
+            // makes an empty <date> element of it and nothing shows between the quotes. Escaped as text
+            // the six characters are visible, which is a different sentence on the page.
+            ? html`No explicit calendar row, so commands/calendar.js synthesises a \`dateOnly\` entry that renders as "Releases <date></date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it from the array. That is by design; whether you want it is the judgement.`
+            : 'No explicit calendar row, so commands/calendar.js synthesises a dateOnly entry that renders as "Releases <date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it. That is by design; whether you want it is the judgement.' },
         { id: 'untagged-2xcp', kind: 'judgement', label: 'Looks like a 2× CP event, not flagged', hits: untagged2x,
-          note: 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP".' },
+          note: conforming()
+            ? 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — corrected twice live on 2026-08-22 because "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP". Reports zero here, and that is the corrected rule WORKING: five "COD Point Rush" rows carry a CP token and no doubling word.'
+            : 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP".' },
     ];
     const mech = CHECKS.filter((c) => c.kind === 'mechanical');
     const judg = CHECKS.filter((c) => c.kind === 'judgement');
@@ -415,13 +445,13 @@ export function Zoomer({ win, full, onWindow }) {
     return html`
         <div class="zoomer" role="group" aria-label="Zoom"
              data-tip="⌘/ctrl-wheel zooms at the cursor · drag the ruler to pan · a horizontal wheel pans too">
-            <button title="Zoom out" aria-label="Zoom out" disabled=${fitted}
+            <button title="Zoom out" aria-label="Zoom out" disabled=${fitted && !conforming()}
                     onClick=${() => onWindow(zoomWindow(win, 1.6, full))}>−</button>
-            <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3}
+            <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3 && !conforming()}
                     onClick=${() => onWindow(zoomWindow(win, 0.625, full))}>+</button>
-            <button class="wide" title="Fit everything" disabled=${fitted}
+            <button class="wide" title="Fit everything" disabled=${fitted && !conforming()}
                     onClick=${() => onWindow(null)}>FIT</button>
-            <span class="rd"><b>${days}</b> ${days === 1 ? 'day' : 'days'} shown</span>
+            <span class="rd"><b>${days} ${days === 1 ? 'day' : 'days'}</b> shown</span>
             <!-- The window's actual dates, at the far right of the bar, where season.html puts them. "44 days
                  shown" is a length and this is a position; the Track is a calendar, so the reader needs both. -->
 
@@ -440,7 +470,18 @@ export function Zoomer({ win, full, onWindow }) {
 // Every item in the season at once, with the visible window drawn over it: drag the middle to pan, drag either end to resize. It is the only control that shows what is OUTSIDE the current view, which is the question zooming immediately creates.
 //
 // 🔴 A MINIMUM WIDTH ON EVERY MINI BAR, because a single-day draw at season scale computes to under a pixel and simply vanishes — and eleven of this season's fourteen draws are single-day. An overview that silently omits most of what it is overviewing is worse than no overview. The adopted stylesheet sets that floor (`.scrub .mini{min-width:3px}`); this only has to not fight it.
-function Scrub({ items, win, full, seasonEnd, onWindow }) {
+// The three deadline lines, as overview markers: key, date and the line's own colour. A TBD or
+// unset deadline contributes nothing rather than a marker at the epoch.
+const SEASON_END_LINES = [
+    { key: 'bp', endKey: 'bpEnd', tbdKey: 'bpEndTBD', hex: '#F2994A' },
+    { key: 'rank', endKey: 'rankEnd', tbdKey: 'rankEndTBD', hex: '#FF3430' },
+    { key: 'dmz', endKey: 'dmzEnd', tbdKey: 'dmzEndTBD', hex: '#337BA6' },
+];
+const SEASON_END_MARKS = (season) => (season ? SEASON_END_LINES
+    .filter((L) => season[L.endKey] && !season[L.tbdKey])
+    .map((L) => ({ key: L.key, iso: String(season[L.endKey]).slice(0, 10), hex: L.hex })) : []);
+
+function Scrub({ items, win, full, seasonEnds, onWindow }) {
     const ref = useRef(null);
     const drag = useRef(null);
     const fullLo = Date.parse(full.start), fullHi = Date.parse(full.end);
@@ -475,8 +516,10 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
             <div class="scrub-track" ref=${ref} title="Drag the ends to zoom, the middle to pan">
                 ${items.map((i, n) => html`
                     <span class="mini" key=${n}
-                          style=${`left:${pct(i.start)}%;width:${Math.max(0, pct(i.end) - pct(i.start))}%;top:${8 + i.row * 8}px;background:${i.accent}`}></span>`)}
-                ${seasonEnd ? html`<span class="season-end" style=${`left:${pct(seasonEnd)}%`}></span>` : null}
+                          style=${`left:${pct(i.start)}%;width:${Math.max(0.9, pct(i.end) - pct(i.start))}%;top:${5 + i.row * 6}px;background:${i.accent}`}></span>`)}
+                <!-- One marker per deadline the season actually has. Drawing bpEnd alone left Ranked and
+                     DMZ unmarked on the one strip whose job is to show what is OUTSIDE the window. -->
+                ${(seasonEnds || []).map((d) => html`<span class="season-end" key=${d.key} style=${`left:${pct(d.iso)}%;--c:${d.hex}`}></span>`)}
                 <!-- ⚠️ winbox IS NOT A MISNAMED win, AND RENAMING IT BREAKS THE DRAG. Tried, measured,
                      reverted: the adopted sheet declares .win FOUR TIMES for four different components,
                      and one of them sets pointer-events:none — on a control whose entire job is to be
@@ -488,8 +531,8 @@ function Scrub({ items, win, full, seasonEnd, onWindow }) {
                      zoomed window read as one more item rather than as the frame. The masks dim what is
                      OUTSIDE it, which is the same figure/ground move the Track's own out-of-season shade
                      makes — and it is the mockup's, not an invention here. -->
-                <span class="smask l" style=${`width:${Math.max(0, left)}%`} aria-hidden="true"></span>
-                <span class="smask r" style=${`left:${Math.min(100, right)}%;right:0`} aria-hidden="true"></span>
+                <div class="smask l" style=${`width:${Math.max(0, left)}%`} aria-hidden="true"></div>
+                <div class="smask r" style=${`left:${Math.min(100, right)}%;right:0`} aria-hidden="true"></div>
                 <div class="winbox" style=${`left:${left}%;width:${Math.max(1, right - left)}%`}
                      onPointerDown=${(e) => begin('pan', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}>
                     <span class="wh l" onPointerDown=${(e) => begin('l', e)} onPointerMove=${move} onPointerUp=${end} onPointerCancel=${end}></span>
@@ -543,17 +586,17 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
                  two boxes over one line with two stems to the same x, and a notch beneath them said
                  the same thing a third time. The key dots inside the chip ARE the notch. -->
             ${rail.flags.map((d) => html`
-                <span key=${d.key} data-k=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '') + (flips[d.key] ? ' flip' : '')}
+                <button type="button" key=${d.key} data-k=${d.key} class=${'dflag' + (d.level ? ` lvl${d.level}` : '') + (flips[d.key] ? ' flip' : '')}
                       style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
                       data-tip=${`${d.members.map((m) => m.title || m.label).join(' and ')} end${d.members.length > 1 ? '' : 's'} ${TL.fmt(d.date)}\nChange it in the panel above, where the date is typed and read by the same parser the bot uses.`}>
                     ${d.members.map((m) => html`<i key=${m.key} class="dfk" style=${`--c:${m.hex}`}></i>`)}
-                    <b class="dfl">${d.label}</b><span class="dfd">${TL.fmt(d.date)}</span>
-                </span>`)}
+                    <span class="dfl">${String(d.label).toUpperCase()}</span><span class="dfd">${TL.fmt(d.date)}</span>
+                </button>`)}
             <!-- A deadline outside the window is WELDED TO THE EDGE it is beyond, not floated at a
                  position it does not have. "Beyond this view" is a statement about the boundary, so
                  it belongs on the boundary. -->
             ${rail.pins.map((d) => html`
-                <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}` + (d.level ? ` lvl${d.level}` : '')} style=${`--c:${d.hex}`}
+                <span key=${'pin:' + d.key} class=${`dpin edge ${d.side}` + (d.level ? ` lvl${d.level}` : ' lvl2')} style=${`--c:${d.hex}`}
                       data-tip="Outside the current window.\nPress FIT, or drag the scrubber, to bring it back in.">
                     ${d.label} ${TL.fmt(d.date)} <em>${d.away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>
                 </span>`)}
@@ -708,14 +751,17 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                      onPickDay(hoverDate);
                  }}><div class="tk-inner" style=${`--xtop:${plot.xtop || railBox(rail, Boolean(rail && rail.flags && rail.flags.length)).xtop}px`}>
                 ${onWindow && full ? html`
-                    <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnd=${season?.bpEnd || null}
+                    <${Scrub} items=${scrubItems} win=${visible} full=${full} seasonEnds=${SEASON_END_MARKS(season)}
                               onWindow=${onWindow} />` : null}
                 <!-- ⚠️ THE READOUT IS THE POINT, NOT THE LINE. A bare vertical rule tells you where the pointer is, which you already knew; the date under it is the thing the ruler's five tick labels cannot give you between ticks.
                      🔴 THE CROSSHAIR ITSELF IS aria-hidden AND THAT IS STILL RIGHT — it is a readout, and the dates are in the table below. What was NOT right is what came next: clicking it opens a day drawer that exists nowhere else, so a comment claiming "no keyboard user is missing anything" became false the moment the click handler was added, and stayed in the file justifying it. The drawer now has its own keyboard path (below the Track, focusable, same handler), because the fix for a mouse-only affordance is a keyboard route, not a better sentence. -->
-                ${hover === null || !hoverDate ? null : html`
-                    <div class="xhair on" style=${'left:' + hover + '%'} aria-hidden="true">
-                        <span class="xd"><b>${TL.fmt(hoverDate)}</b></span>
-                    </div>`}
+                <!-- The design keeps the crosshair in the DOM and toggles the on class; rendering it only on
+                     hover meant an idle Track had no readout element at all, which is one div and one
+                     span the overlay finds on one side. -->
+                <div class=${'xhair' + (hover !== null && hoverDate ? ' on' : '')}
+                     style=${hover === null ? undefined : 'left:' + hover + '%'} aria-hidden="true">
+                    <span class="xd">${hoverDate ? html`<b>${TL.fmt(hoverDate)}</b>` : null}</span>
+                </div>
                 <${Ruler} view=${view} />
                 <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} flips=${flips} />
                 <div class="lanes">
@@ -766,7 +812,16 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                              second element, so NOW cannot become two objects that drift apart. -->
                         <div class="now" data-now=${'NOW ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                              style=${'left:' + nowPct + '%'}></div>
-                        ${season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null}
+                        <!-- 🔴 ONE NOTCH PER DATE, WITH A STOP PER DEADLINE. This drew a single dend
+                             hairline for bpEnd alone, so Ranked — which ends the same day — was invisible
+                             and DMZ was never drawn at all. The design's dnotch carries one i element per
+                             line sharing that date, which is how a shared deadline reads as one moment
+                             holding two facts instead of one unexplained line. -->
+                        ${(rail?.flags || []).map((d) => html`
+                            <div class="dnotch" key=${'notch:' + d.key} data-date=${String(d.date).slice(0, 10)} data-line=${d.key}
+                                 style=${`--c:${d.hex};left:${view.pct(d.date)}%`}>
+                                ${d.members.map((m) => html`<i key=${m.key} style=${`--c:${m.hex}`}></i>`)}
+                            </div>`)}
                     </div>
                 </div>
             </div></div>

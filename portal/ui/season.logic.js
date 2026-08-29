@@ -46,7 +46,7 @@ function seasonWindow(live, now = Date.now()) {
     // ⚠️ A DEADLINE EARNS SPACE BY PROXIMITY, NOT BY EXISTING. bpEnd was pushed into the extent unconditionally, so a battle pass ending well past the last calendar row stretched the axis over empty weeks and every bar shrank to pay for it. The design's rule is proportional: a deadline within a quarter of the content's own span joins the window; one further out is pinned at the edge instead. On the live season that is the difference between a 44-day axis and the design's 48.
     const span = Math.max(1, TLib().days(lo, hi));
     const REACH = Math.max(7, Math.round(span * 0.25));
-    for (const key of ['bpEnd', 'dmzEnd']) {
+    for (const key of ['bpEnd', 'rankEnd', 'dmzEnd']) {
         const d = iso(live && live[key]);
         if (!d) continue;
         if (d > hi && TLib().days(hi, d) <= REACH) hi = d;
@@ -88,16 +88,19 @@ function stateForElement(elementId, changesets) {
 //
 // ⚠️ AND IT IS COMPUTED HERE, NOT IN THE COLUMN. A Manifest column receives a row and nothing else — no season, no window — so a column that scaled its own bar would need a second copy of the season bounds passed in beside it. Stamping it on the row keeps one derivation.
 function seasonSpanGeometry(live) {
-    const days = [];
-    for (const key of ['newDraws', 'returningDraws', 'calendar']) {
-        for (const i of live[key] || []) {
-            for (const v of [i.date, i.endDate]) if (v) days.push(String(v).slice(0, 10));
-        }
-    }
-    for (const k of ['bpEnd', 'rankEnd', 'dmzEnd']) if (live[k] && !live[`${k}TBD`]) days.push(String(live[k]).slice(0, 10));
-    if (!days.length) return null;
-    days.sort();
-    const lo = Date.parse(`${days[0]}T00:00:00Z`), hi = Date.parse(`${days[days.length - 1]}T00:00:00Z`);
+    // 🔴 THIS IS THE DESIGN'S *PAN* BOUNDS, NOT THE DATA'S EXTENT, and the difference was a factor of
+    // 1.8 on every bar the Manifest and the Board draw. This used to push bpEnd/rankEnd/dmzEnd into the
+    // extent unconditionally, so a DMZ season ending 2026-11-11 stretched a 54-day axis to 97 and every
+    // span shrank to 56% of the width the design gives it — thirty findings a view, on three views.
+    // The design's spark() measures against `BOUND` = panBounds() = the windowed bounds plus 6% room,
+    // deliberately wider than the data so the bar reads as a position on a map rather than a bar that
+    // always fills its track. seasonWindow() is already that window (it applies the proportional REACH
+    // rule, so a far-off deadline earns a pin rather than an axis), so the room is all that is left.
+    const w = seasonWindow(live);
+    if (!w) return null;
+    const room = Math.max(3, Math.round(TLib().days(w.start, w.end) * 0.06));
+    const lo = Date.parse(`${TLib().addDays(w.start, -room)}T00:00:00Z`);
+    const hi = Date.parse(`${TLib().addDays(w.end, room)}T00:00:00Z`);
     // A season whose every dated thing lands on one day has no span to draw against; returning null makes the column render nothing rather than divide by zero and paint a full-width bar on every row.
     if (!Number.isFinite(lo) || !Number.isFinite(hi) || hi <= lo) return null;
     return { lo, hi, span: hi - lo };
@@ -110,7 +113,8 @@ function spanBarFor(item, geo) {
     if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
     const left = ((a - geo.lo) / geo.span) * 100;
     // A point-in-time release has zero width and would draw nothing at all; 1.5% is the floor that keeps a release visible without letting it read as a window.
-    const width = Math.max(1.5, ((b - a) / geo.span) * 100);
+    // The design's floor is 2%, not 1.5 — a quarter of the width on all sixteen single-day bars.
+    const width = Math.max(2, ((b - a) / geo.span) * 100);
     return { left: Math.max(0, Math.min(100, left)), width: Math.min(100 - Math.max(0, Math.min(100, left)), width) };
 }
 
@@ -323,7 +327,7 @@ function panWindow(win, days, full) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, KIND_TO_CALENDAR_CATEGORY, LANE_LABELS, CAL_CATEGORY, calCategoryOf, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist, toBoardItems, newestPatchNoteId };
+    module.exports = { inkOn, inkOnTopic, TOPIC_HEX, seasonSpanGeometry, spanBarFor, nowPctIn, buildSeasonAddOp, buildSeasonEditOp, LANE_TO_CATEGORY, KIND_TO_ENTITY, KIND_TO_CALENDAR_CATEGORY, LANE_LABELS, CAL_CATEGORY, calCategoryOf, toManifestRows, stateForElement, seasonWindow, topicVarFor, typeLabelFor, isPlaylist, toBoardItems, newestPatchNoteId };
 }
 
 // ── THE SEASON'S DEADLINE LINES ───────────────────────────────────────────────────────────────
@@ -331,6 +335,22 @@ if (typeof module !== 'undefined' && module.exports) {
 // Three lines end a season and they do not end together: the battle pass, the ranked series and DMZ. models/SeasonalData.js stores each as a title/end/TBD triple, and every surface that counts down to "the end of the season" has to say WHICH end it means — a single number is a lie whenever two of the three differ, which is most seasons.
 //
 // 🔴 THE LINES ARE READ FROM THE SEASON DOCUMENT, NEVER FROM A FIELD SOMEBODY INVENTED. The mockup's first version of this read `Shell._LINES`, which nothing anywhere set — so it returned an empty array and the clock rendered "No deadline set for this season" on a season with three of them. It did not throw and it did not look broken; it looked like a season with no dates. A well-formed answer to a question nobody asked is the failure mode this whole file guards against.
+// 🔴 THE INK ON A FILLED SURFACE IS A PROPERTY OF THAT SURFACE, not one global value. --on-accent is
+// near-black, which is right on Playlists' bright teal and 2.86:1 on a draw window's plum — so every
+// filled bar, label and state pill on a dark topic rendered unreadable ink the design does not use.
+// The design derives it from the accent's own luminance once and hands it over as --ci; this is that
+// function, and the hexes are the lane accents the tokens resolve to.
+const TOPIC_HEX = { '--draw': '#AE72E0', '--ret': '#E8639B', '--dw': '#6B4E7D', '--ev': '#4A90D9', '--play': '#2CC4C4', '--patch': '#F2C230' };
+function inkOn(hex) {
+    if (!hex || hex[0] !== '#') return '#07090A';
+    const full = hex.length === 4 ? '#' + hex.slice(1).replace(/./g, (c) => c + c) : hex;
+    const chan = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
+        .map((x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)));
+    const L = 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
+    return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? '#07090A' : '#FFFFFF';
+}
+const inkOnTopic = (topicVar) => inkOn(TOPIC_HEX[topicVar] || '');
+
 const SEASON_LINES = [
     { key: 'bp', label: 'BATTLE PASS', titleKey: 'bpTitle', endKey: 'bpEnd', tbdKey: 'bpEndTBD', hex: '#F2994A' },
     { key: 'rank', label: 'RANKED', titleKey: 'rankTitle', endKey: 'rankEnd', tbdKey: 'rankEndTBD', hex: '#FF3430' },

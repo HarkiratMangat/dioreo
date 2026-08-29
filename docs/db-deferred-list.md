@@ -44,8 +44,6 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs — broken behaviour, not yet fixed
 
-- `[P2 · S · Sonnet5-High]` **Season's Repairs view sits at 7.3% against its design while Track and Board are at 1.8% and 2.7%.** Measured 2026-08-29 01:0x EDT with `node scripts/portalAudit.mjs --realm season --view Repairs --all` and `node scripts/portalDiff.mjs --realm season --view Repairs --portal harness`. **Its STRUCTURE is done** — the audit reports 11 shape pieces and every one is a registered divergence (`Export first →`, the `span.done` progress fill, the label/chip pairing artifacts) — so the residual is style-level and the page is 12px SHORT rather than tall, which is the opposite sign from every other view and is the clue worth starting on. One cause was found and fixed on the way (the design's `.rephits li` row rules had been transcribed onto `.rephits button`, giving every row no ground and every button two paddings, 9.1% → 7.3%); a second is not isolated. ⚠️ **Do NOT start from the pixel percentage** — start from §0.7's ④ STYLE section, which groups a difference by the property so one CSS rule reads as one row rather than as sixteen. **Verify:** `portalDiff --realm season --view Repairs --portal harness` reports both pages the same height and under 3%, matching what Track and Board already do.
-
 - `[P2 · S · Opus5-Medium]` **The conformance stand-downs are a RE-APPLY LIST and nothing enumerates it.** Every `conforming()` branch in `portal/ui/**` and every `:root[data-conform="1"]` / `:root:not([data-conform="1"])` block in `portal/ui/app.css` and `tokens.css` is a portal advance switched OFF so the overlay grades composition — the season clock's hero figure, the banner thumbnails, the draft zone, the staged panel, the day-opener hint, the one-way strip's two extra operations, the state filter group, the measure cap, the text-tone migration, the control reset, the row state line's own voice, the context band. 🔴 **Harkirat's rule, 2026-08-28: they come back only after ALL SIX realms match**, not per realm — so between now and then the list can only grow, and it lives in the code rather than in any document. **Do this at the START of the re-apply phase, not from memory:** `rg -n 'conforming\(\)' portal/ui/*.js` and `rg -n 'data-conform' portal/ui/*.css` produce it exactly, and each site already carries a comment saying what it stands down and why. **Verify:** every site is either re-applied deliberately or deleted deliberately, and `rg -c 'conforming\(\)|data-conform' portal/ui/` returns 0 when the phase is finished.
 
 - `[P2 · S · Sonnet5-High]` 🔴 **Analytics' "include admin traffic" toggle does NOTHING.** Measured 2026-08-28 11:4x EDT in the harness with a `MutationObserver` on `<main>`: clicking it flips the checkbox's own `checked` state and produces **zero DOM mutations in three seconds** — no refetch, no re-render, no change to a single number on the page. `portal/ui/analytics.js:597` declares `useAsync(() => fetchJson(\`/api/analytics${includeAdmin ? '?admin=1' : ''}\`), [includeAdmin])`, so the dependency is declared and the request would differ; something between the `onChange` and that effect is not connecting. ⚠️ **It is not the harness stub**: the stub gates admin data on the URL param and would return a different payload, and in any case a re-run would have re-rendered. **This is Part 5's (Analytics) to fix** — filed here so it is not discovered a third time. **Verify:** with a `MutationObserver` on `main`, toggling the control produces mutations and the KPI figures change between the two states.
@@ -536,13 +534,33 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### Broadcast's overlay is not finished — Airtime and 375×812 `[P1 · S · Opus5-XHigh]`
+### 🔬 The conformance overlay has never opened anything — a whole tier of the UI is unmeasured `P1 · L · Sonnet5-XHigh`
+**Found by Harkirat 2026-08-29 10:59 EDT**, looking at the harness himself while the three Season views measured 0.1–0.2%.
+
+`scripts/portalDiff.mjs` screenshots the page **as it loads** and `scripts/portalAudit.mjs` walks the DOM **as it loads**. Neither clicks a control. So the composer modal, the export panel, the day drawer, the typed-confirm overlay, the row preview, and every empty/error state behind a button have **never been compared on any realm — Broadcast included**. Every conformance number filed so far describes the page at rest.
+
+⚠️ **This was already written down as a caveat and that is precisely why it went unnoticed**: `CLAUDE.md`'s portal row and both handoffs say the overlay "cannot see … anything behind an interaction", which reads as a limit on confidence rather than as *an entire tier nobody has looked at*. A caveat that does not say what it EXCLUDES gets read as a hedge.
+
+**What to do.** Add `--open "<trigger text>"` to both instruments: click the same control on the mockup and the harness, settle, then capture. Both pages carry the same triggers, so this is one step, not a per-realm fixture. Then run the ordinary five-section loop per overlay. 🔴 **The overlays are SHARED components** — one composer, one export panel, one confirm — so each one converged is converged for all six realms at once.
+
+**Verify condition:** `node scripts/portalDiff.mjs --realm season --open "Add" --portal harness` produces two frames showing the composer, and its region count can be driven the same way the page's was.
+
+
+### Broadcast's overlay — ✅ both views at 1282, ⏳ 375×812 never run `[P2 · S · Opus5-High]`
 
 *Filed 2026-08-28 21:5x EDT. The continuation document is `local/handoff/2026-08-28-portal-overlay-method.md`, which is **gitignored**, so this is the tracked half.*
 
-Broadcast's **Delivery queue at 1282×888 reaches 0.3% across 28 regions with both pages at exactly 1258px** — the overlay method's proving ground (spec `2026-08-28-portal-overlay-conformance-design.md`, procedure §0.6 of the conformance plan). Two surfaces of that same realm were never measured: **`--view Airtime`** and **`--viewport 375x812`**. **Verify:** `node scripts/portalDiff.mjs --realm broadcast --view Airtime --portal harness` reports zero regions above the noise floor, and the same at 375×812.
+✅ **UPDATED 2026-08-29 10:0x EDT — Airtime is done.** Both views now sit at **0.2–0.3% with both pages byte-identical in height** (Delivery queue 1258 = 1258, Airtime 1098 = 1098), 21 regions each, all of them the shared chrome. Airtime got there by losing the panel and heading it was drawing INSIDE the view panel — it titled the view twice and ran 78px tall — and by measuring its axis in whole days as the ruler does. **What is left is `--viewport 375x812`, which has never been run on ANY realm.** Historic reading: Broadcast's **Delivery queue at 1282×888 reached 0.3% across 28 regions with both pages at exactly 1258px** — the overlay method's proving ground (spec `2026-08-28-portal-overlay-conformance-design.md`, procedure §0.6 of the conformance plan). **Verify:** `node scripts/portalDiff.mjs --realm broadcast --viewport 375x812 --portal harness` reports both pages at the same height and nothing above the shared-chrome floor.
 
 ⚠️ Its three residual regions at 1282 are the header command bar (shifted 7px by the identity divergence), the avatar, and a 1px button offset from whitespace text nodes in the design's own markup. The first two are the **irreducible** row of COMPANION's conformance register.
+
+### The four untouched realms, and 375×812 on all six `[P1 · L · Opus5-High]`
+
+*Filed 2026-08-29 10:0x EDT.* **Armory, Review, Access and Analytics have never been through the overlay at all**, and neither has Home. Nor has any realm been measured at the narrow width, which Harkirat's original instruction named alongside 1282 and which both stylesheets carry real `max-width:768px` rules for — so the narrow layout is DESIGNED on both sides and is not a degradation.
+
+Each realm is `npm run portal:audit -- --realm <r> --all`, then ① alone, then ②–⑤ as one batch each. **Verify:** `node scripts/portalDiff.mjs --realm <r> --portal harness` reports both pages at the same height, and the same at `--viewport 375x812`.
+
+🔴 **A shared-surface edit re-runs the CLOSED realms in the same commit.** Six realms share one stylesheet and one Shell; three separate regressions this session were caught only because Broadcast was re-measured after a Season change (selection column, `.mh-new`, the control reset).
 
 ### The published A/B artifact is stale and Season-only `[P2 · XS · Sonnet5-Medium]`
 

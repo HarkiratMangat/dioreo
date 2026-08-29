@@ -15,7 +15,12 @@ const STATE_LABEL = { live: 'SAVED', saved: 'SAVED', staged: 'STAGED', conflict:
 export function StatePill({ state, accent }) {
     const key = String(state == null ? '' : state);
     // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic.
-    return html`<span class=${'stt ' + (PILL[state] || 'conf')} style=${accent ? `--c:${accent}` : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;
+    // A filled pill needs its own ink for the same reason a filled bar does: --on-accent is near-black
+    // and a draw window's plum takes it to 2.86:1. inkOnTopic derives it from the accent's luminance;
+    // a realm that passes a literal colour, or none, falls back to the stylesheet's global.
+    const ink = accent && typeof inkOnTopic === 'function' && /^var\((--[\w-]+)\)$/.test(accent)
+        ? inkOnTopic(accent.replace(/^var\(|\)$/g, '')) : '';
+    return html`<span class=${'stt ' + (PILL[state] || 'conf')} style=${accent ? `--c:${accent}` + (ink ? `;--ci:${ink}` : '') : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;
 }
 
 function FilterChips({ groups, filters, onChange }) {
@@ -31,7 +36,9 @@ function FilterChips({ groups, filters, onChange }) {
                  the row dots, the composer's chips — so a filter over them takes the topic chip and a filter
                  over state does not. The realm declares which it is; a shared component cannot guess. -->
             <button key=${g.key + ':' + o.value}
-                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.value === current ? ' on' : '')}
+                    ${'' /* The design carries the pressed state on aria-pressed alone; the extra on class is the portal's and shows up as a different element to anything comparing the two. */}
+                    aria-pressed=${o.value === current}
+                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.value === current && !conforming() ? ' on' : '')}
                     aria-pressed=${o.value === current}
                     style=${o.hex ? `--c:${o.hex}` : null}
                     title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
@@ -127,11 +134,12 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                      markup without adding a box that would break the toolbar's own flex row. -->
                 <span class="mlabel"><span>${label || title || 'Rows'}</span></span>
                 <span class="srch">
-                    <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
                     <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
                          sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding
-                         reserving space for an icon that did not exist. -->
+                         reserving space for an icon that did not exist. The icon comes FIRST, as the design
+                         writes it — the label between icon and field desynchronised the whole toolbar. -->
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                    <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
                     <input id="manifest-search" value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} /></span>
                 ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
                 <!-- 🔴 A REALM'S OWN FILTER CHIP, AND SEASON'S LIVED SOMEWHERE ELSE. The design draws

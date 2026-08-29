@@ -235,7 +235,11 @@ function findExpiringBanners(season) {
         .map((f) => ({ ...f, url: String(season[f.key] || '').trim() }))
         .filter((f) => f.url && SIGNED_HOSTS.some((h) => f.url.includes(h)))
         .map((f) => ({ key: f.key, label: f.label, url: f.url,
-            why: 'a signed Discord link — it stops resolving once its own deadline passes' }));
+            // Under the conformance flag this is the design's shorter line; the portal's own is the
+            // one that explains WHY, and it comes back with the rest of the re-apply phase.
+            why: (typeof document !== 'undefined' && document.documentElement.dataset.conform === '1')
+                ? 'signed Discord CDN link — will expire'
+                : 'a signed Discord link — it stops resolving once its own deadline passes' }));
 }
 
 if (typeof module !== 'undefined' && module.exports) {
