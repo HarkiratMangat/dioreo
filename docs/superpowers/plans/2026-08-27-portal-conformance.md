@@ -72,21 +72,28 @@ status: live
 
 ---
 
-## §0.1 ⟷ §0.6 — HOW THE TWO COMPOSE, because they read as contradictory and a session acted on one without the other (added 2026-08-30 15:1x EDT)
+## §0.1 ⟷ §0.6 — HOW THE TWO COMPOSE: §0.6 CLOSES, §0.1 CAPTURES (added 2026-08-30 15:2x EDT)
 
-🔴 **§0.1 says a diff region is never evidence the mockup is right, so adjudicate. §0.6 says stop adjudicating and close on a number. Both are true, they are not competitors, and nothing said how they compose — so a session ran §0.6's closure rule with §0.1's direction rule missing.**
+🔴 **§0.1 says a diff region is never evidence the mockup is right. §0.6 says close on a number, not on judgement. Both are true and they do not compete — they answer different questions.**
 
-**The resolution: §0.6 governs CLOSURE — *when is this realm done* — and §0.1 governs DIRECTION — *which side moves to meet the other*.** A realm still closes on zero regions rather than on anybody's opinion of a list; that decision stands and must not be reverted. But a region's DIRECTION is not implied by its existence. Three verdicts, and the default is not one of them:
-
-| verdict | meaning | what happens |
+| | governs | during the pass |
 |---|---|---|
-| **DRIFT** | the portal wandered | fix the portal — the ordinary case, and the one the overlay was built for |
-| **MOCKUP-DEFECT** | the design is weak or unfinished here | **fix the MOCKUP**, then converge on the corrected reference. Standing it down under the flag is the fallback, not the answer |
-| **DELIBERATE** | the portal is ahead | cite a COMPANION section or a dated decision, register it in the stand-down list, re-apply after all six realms match |
+| **§0.6** | **CLOSURE** — when is this realm done | a number, mechanical, unchanged. **Not reopenable** |
+| **§0.1** | **CAPTURE** — what gets written down while closing | when a region is closed onto something weak, RECORD it. It does not change what you do to the portal |
 
-⚠️ **WHAT WENT WRONG WITHOUT THIS, MEASURED 2026-08-30.** Every difference was closed toward the mockup by default, because "close the region" and "move the portal" had silently become the same instruction. Three of the design's own defects were faithfully reproduced into the portal and counted as progress: the day drawer's list rendering **browser-default disc bullets at a 40px indent** (`season.html` styles `.daylist` nowhere), the ruler's **3px-wide focusable buttons**, and a **doubled ring** on a same-day patch cluster. Each made the number better and the product worse.
+**There is no direction question during conformance: the portal always moves.** That is what makes closure mechanical. Inventing a per-region verdict would smuggle judgement-over-a-list back into the method that retired it.
 
-🔴 **AND A SESSION THAT READS ONLY §0.1 WILL TRY TO REVERT §0.6.** That nearly happened on 2026-08-30: having found §0.1 and felt clever, the next move drafted was "restore the adjudication step" — which is precisely the judgement-over-a-list method §0.6 retired after it produced false closure three times. **Adjudication-by-judgement is not coming back. The verdict above is a direction label on a mechanically-detected region, not a return to arguing over a 220-row list.**
+🔴 **THE MOCKUP IS NEVER EDITED — Harkirat, 2026-08-30 15:2x EDT.** *"The mockup correction/edits happen after the conformation. That's so we stop having 2 systems/files and instead make the correction or any redesigns directly into the portal once the underlying conformation work is done."* Correcting the design mid-pass creates exactly the two-authority problem the pivot exists to end: a mockup that no longer matches its own package, and a portal converging on a moving target. **After conformance the portal IS the design and the mockup stops mattering.**
+
+**So converging onto a weak design is CORRECT and TEMPORARY, not a failure of the method.** On 2026-08-30 three of the design's weaknesses were reproduced into the portal — the day drawer's list rendering browser-default disc bullets at a 40px indent (`season.html` styles `.daylist` nowhere), the ruler's 3px focusable tick targets, and a doubled ring on a same-day patch cluster. **All three were the method working.** Recorded, kept until the pass ends, fixed in the portal afterwards. ⚠️ **A session reading only §0.1 will mistake this for a defect and try to "fix the mockup". Do not.**
+
+**ONE post-conformance queue, two kinds of entry, already in the same place:**
+- **stood-down portal advances** — something the portal did better, switched off so the overlay grades composition. `rg -n 'conforming\(\)' portal/ui/*.js` · `rg -n 'data-conform' portal/ui/*.css`
+- **converged-onto weaknesses** — something the design did poorly that the portal now reproduces. Filed in `docs/db-deferred-list.md`.
+
+Both resolve the same way: **change the portal, after all six realms match.** Neither ever edits the mockup.
+
+⛔ **AND A SESSION READING §0.1 ALONE WILL TRY TO REVERT §0.6.** That nearly happened on 2026-08-30: the drafted move was *"restore the adjudication step"* — the judgement-over-a-list method §0.6 retired after three false closures. **Adjudication is not coming back. §0.1's job here is a notebook, not a tribunal.**
 
 ---
 

@@ -34,7 +34,8 @@
     "portal:diff": "node scripts/portalDiff.mjs",
     "portal:inventory": "node scripts/portalInventory.mjs",
     "portal:converge": "node scripts/portalConverge.mjs",
-    "portal:probe": "node scripts/portalProbe.mjs"
+    "portal:probe": "node scripts/portalProbe.mjs",
+    "portal:status": "node scripts/portalStatus.mjs"
   },
   "engines": {
     "node": ">=24"

@@ -549,7 +549,9 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 | Ruler ticks | 3px-wide `role="button"` targets across the Track | Below any touch-target floor. The design binds click and Enter on them, so the affordance is intended — the SIZE is the defect |
 | Same-day patch cluster | `.ptc.same` gets a 2px element ring **over** the 1.5px `::after` ring already in the shared sheet | Two rings on one mark, neither aware of the other. The portal had already deduped it; conformance put it back |
 
-**The fix is to correct `docs/superpowers/mockups/2026-08-23-portal-interactive/`, then re-converge** — not to keep reproducing them behind `?conform=1`. ⚠️ **Editing the design authority is Harkirat's call, not mine**; this entry exists so the verdict is recorded rather than lost in a stand-down comment. **Verify:** each stand-down (`rg -n 'daylist|ptc.same' portal/ui/app.css`) is deleted, not re-applied, once the mockup carries the fix.
+🔴 **CORRECTED 2026-08-30 15:2x EDT — THE MOCKUP IS NEVER EDITED.** Harkirat: *"the mockup correction/edits happen after the conformation… so we stop having 2 systems/files and instead make the correction or any redesigns directly into the portal."* An earlier version of this entry said to fix the mockup and re-converge; that would create the two-authority problem the pivot exists to end.
+
+**All three stay reproduced until the pass ends, then are fixed IN THE PORTAL** — the same queue as the stood-down portal advances, which resolve identically. **This entry is a CAPTURE, not a work item for now.** **Verify at the re-apply phase:** each is corrected in `portal/ui/` and its `?conform=1` stand-down deleted rather than re-applied.
 
 
 ### 🔴 The handoff compresses the LOOP and drops the PRECEDENCE, and that is what makes Part 1 keep reopening `P1 · S · Opus5-Medium`
