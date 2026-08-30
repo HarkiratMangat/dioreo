@@ -41,11 +41,11 @@
       "steps": [
         {
           "click": ".idsum",
-          "waitMs": 700
+          "until": ".idhead"
         },
         {
           "click": ".idhead",
-          "waitMs": 700
+          "until": ".identity.collapsed .srec-grid"
         }
       ],
       "known": [],

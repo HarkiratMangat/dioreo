@@ -80,4 +80,22 @@ function diffAgainstKnown(findings, known = []) {
     };
 }
 
-module.exports = { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, runPasses, diffAgainstKnown, keyOf };
+
+// 🔴 A FIXED SLEEP IS LOAD-DEPENDENT, WHICH MAKES THE GATE ITSELF NON-DETERMINISTIC — and that is
+// worse than a slow gate, because a red run sends the next session hunting a defect that is not
+// there. Measured 2026-08-30 17:5x EDT: `portalStates.mjs --ci` failed inside a full `npm test` on
+// "identity closed again from the header's dead space", then passed four times run alone and once
+// more under `--ci`. The state already carried the longest `waitMs` in the whole registry (700,
+// against a 160 default) because an earlier session hit the same thing and raised the number —
+// which is the instance fix, and it does not survive a loaded machine.
+//
+// `until` is the class fix: name the element the NEXT step needs and POLL for it, so a slow machine
+// waits as long as it must and a fast one does not wait at all. `waitMs` stays for the steps whose
+// effect is not an element appearing (a value settling, an animation starting), and for the `slow`
+// state, which exists to be measured mid-flight and must NEVER wait for its subject to arrive.
+function stepSettle(step = {}) {
+    if (step.until) return { until: step.until, timeoutMs: step.untilMs || 5000, sleepMs: step.waitMs || 0 };
+    return { until: null, timeoutMs: 0, sleepMs: step.waitMs === undefined ? 160 : step.waitMs };
+}
+
+module.exports = { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, runPasses, diffAgainstKnown, keyOf, stepSettle };

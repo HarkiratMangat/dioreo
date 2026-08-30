@@ -639,6 +639,30 @@ node scripts/portalDiff.mjs --realm season --hover "Export…" --portal harness
 Three blind spots in this tool were found by a person noticing a defect the number could not have contained — below the fold, behind a click, and under the pointer. Each time it had reported a confident percentage about a page it had only partly looked at. Every run now prints its uncovered axes. What is still uncovered, verbatim from that list: **viewport 1282×888 only (375×812 never run on any realm)**; **data states — empty, error, loading — are walked by `portal:states` but never PIXEL-compared**, which is two instruments that have never been pointed at each other; **transitions are zeroed**, so only the settled frame is compared; **light mode is out of scope by decision.**
 
 
+### 🔤 The htm-whitespace class has THREE shapes and the gates cover TWO — the accessible name runs two words together `P2 · M · Sonnet5-High`
+*Found 2026-08-30 18:19 EDT while adjudicating an uncommitted edit a sibling session had left in `portal/ui/season.js`.*
+
+`portalUi.test.js` carries two gates for htm dropping the whitespace around a line break: a line ending in a **word** before an **inline text tag** (`b|code|em|i|strong|abbr|kbd|sup|sub`), and a line ending in a closing **`}`** before a word. **Neither sees the third shape: a line ending in `</span>` before a line opening `<span>`.** That is the shape the sibling session had hit by hand — `PatchRecord`'s row read *"Season 7 — TerminatedJul 226 imgcurrent"* to a screen reader, and the lane header (`lnh-n`) had already been fixed for the same thing weeks earlier.
+
+**Measured: 137 close-tag→open-tag adjacencies across 14 files in `portal/ui`.** They are NOT 137 defects, and a gate that says so would be suppressed rather than obeyed — which is exactly why the existing gate's own comment excludes `span`. **The discriminator is the ANCESTOR, not the line:** whitespace between two inline children only reaches a reader when some ancestor's accessible name is computed *from contents* (`role="button"`, `<button>`, `role="link"`, a heading, an `aria-labelledby` target). `.rec-row` is `tabindex="0" role="button"`, which is why that one was audible. Inside an ordinary `div` nobody ever hears it.
+
+⚠️ **And it is free where it matters most.** `.rec-row` is `display:grid`, and a whitespace-only text node generates no anonymous grid item — so the fix is invisible to the pixel diff. **Verified rather than reasoned:** Season measured **0.2% / 71 regions / 4038px on both sides, byte-identical with and without the three separators.** A grid or flex parent is the case where `${' '}` costs nothing and buys the whole accessible name.
+
+🔴 **This is the axis the conformance pass structurally cannot see** (plan §0.6a: *"It cannot see keyboard reachability"*), and the handoff's own Goodhart note — the pixel diff is the only instrument emitting a score, so it took ~200 turns while the unscored axes took none. A detector here is a score for one of them.
+
+**Fix:** a third check that walks the RENDERED harness rather than the source — for every element whose role computes a name from contents, compare its accessible name against its own `textContent` joined with spaces, and report the ones where two words have fused. Source-level pattern matching cannot do this, which is why the existing two gates correctly stopped where they did.
+**Verify:** the new check must NAME `PatchRecord`'s row when the three `${' '}` separators are removed, and stay silent with them in place — the same fire-then-silence discipline every other check in that file already follows.
+
+### 🧭 `portal:status` prints a realm's DATA ROWS as its views, run together into one word `P3 · XS · Sonnet5-Medium`
+*Found 2026-08-30 18:19 EDT by reading the tool's own output while establishing this session's floor.*
+
+The `views` column for **review** reads `T1Season identityseason.setTitlesDeadlines · season · T1The Widow's Bite Drawdraw.edit · seasonneeds attention · …` — two defects in one cell. Review's mockup has **zero view tabs** (its own row in the plan says so), so the scraper is picking up changeset rows and calling them views; and the labels it scrapes are fused exactly like the item above, which is the same htm-whitespace class seen from the outside.
+
+⚠️ **The row is also the widest in the table and pushes the `portal/ui commits since` column off the end**, so that column's sentence renders truncated as *"✅ fresh — portal/ui unchanged since"* with no commit after it — a status line that cannot state its own subject. ⚠️ **And `fresh` is computed from COMMITS only**: it read `✅ fresh — portal/ui unchanged since 5311b54` while `portal/ui/season.js` was modified in the working tree. A freshness claim that cannot see an uncommitted edit is the kind that goes quietly wrong.
+
+**Fix:** scrape view labels from the mockup's view-tab control specifically rather than from whatever matches, join scraped text with a space, truncate the column, and let the freshness check consider `git status` as well as the commit range.
+**Verify:** review's `views` cell reads `(single view)` or names its real tabs, no cell truncates the column beside it, and a dirty `portal/ui` reports as dirty rather than fresh.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 

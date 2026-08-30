@@ -17,7 +17,7 @@ import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
-const { runPasses, diffAgainstKnown, keyOf } = require('./lib/portalStatePasses.cjs');
+const { runPasses, diffAgainstKnown, keyOf, stepSettle } = require('./lib/portalStatePasses.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'portal', 'public');
 const REGISTRY = path.join(ROOT, 'portal', 'fixtures', 'states');
@@ -122,7 +122,16 @@ async function walk(page, state, port) {
             await page.evaluate((s) => { const el = document.querySelector(s.sel); if (el) { el.value = s.text; el.dispatchEvent(new Event('input', { bubbles: true })); } }, { sel: t.sel, text: t.text });
         }
         // ⚠️ 160ms IS A DEFAULT, NOT A CONTRACT. A step whose effect is a re-render that MOUNTS the next step's target needs longer, and when it does not get it the following step clicks nothing — which `expect` then reports as "did not reach its own subject". That is the gate working, but the state is still unwalked, so a step may name its own settle. Season's "closed again from the header's dead space" is the case: the first click mounts `.idbody`, and `.idhead` does not exist until it has.
-        await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), step.waitMs || 160);
+        const settle = stepSettle(step);
+        if (settle.until) {
+            // A puppeteer TimeoutError says only "waiting for selector failed", which names neither the state nor which of its steps stalled - so it is caught and re-thrown in the same voice as the `expect` failure below, which is the message a reader already knows how to act on.
+            try {
+                await page.waitForSelector(settle.until, { timeout: settle.timeoutMs });
+            } catch {
+                throw new Error(`state "${state.name}" stalled: nothing matched ${settle.until} within ${settle.timeoutMs}ms after its step ran, so the next step would have clicked nothing`);
+            }
+        }
+        if (settle.sleepMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), settle.sleepMs);
     }
     // A state can declare its own settle time. The slow state is the reason: it exists to be measured WHILE the request is still out, so waiting for the data would destroy the very thing being walked.
     if (state.settleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.settleMs);

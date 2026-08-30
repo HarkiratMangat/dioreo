@@ -331,7 +331,7 @@ function SeasonClock({ season, today }) {
             </div>
             ${rest.length ? html`
                 <div class="sc-then">then
-                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}<b>${fmtDay(m.iso)}</b><i class="sc-far">${daysUntil(m.iso)}d</i>`)}
+                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}${' '}<b>${fmtDay(m.iso)}</b>${' '}<i class="sc-far">${daysUntil(m.iso)}d</i>`)}
                 </div>` : null}
         </div>`;
 }
@@ -759,9 +759,12 @@ function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
                         onClick=${() => onOpen(openId === n.id ? null : n.id)}
                         onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(openId === n.id ? null : n.id); } }}>
                         <span class="rec-mk"></span>
-                        <span class="rec-ttl">${n.title}</span>
-                        <span class="rec-d">${n.releaseDate ? fmtDay(n.releaseDate) : (n.releaseDateText || '—')}</span>
-                        <span class="rec-meta">${n.images.length} img</span>
+                        <!-- htm collapses the whitespace between adjacent inline spans, which ran the
+                             accessible name together as "Season 7 — TerminatedJul 226 imgcurrent" — the
+                             same class of bug the lane header (lnh-n) was already fixed for. -->
+                        <span class="rec-ttl">${n.title}</span>${' '}
+                        <span class="rec-d">${n.releaseDate ? fmtDay(n.releaseDate) : (n.releaseDateText || '—')}</span>${' '}
+                        <span class="rec-meta">${n.images.length} img</span>${' '}
                         <span class="rec-tag">${n.current ? 'current' : 'history'}</span>
                     </li>`)
                 : html`<li class="rec-empty">Nothing published this season yet.</li>`}

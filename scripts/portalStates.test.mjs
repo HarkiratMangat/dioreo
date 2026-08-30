@@ -2,7 +2,7 @@
 //
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
-import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, diffAgainstKnown } from './lib/portalStatePasses.cjs';
+import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, diffAgainstKnown, stepSettle } from './lib/portalStatePasses.cjs';
 
 let passed = 0;
 const check = (label, fn) => { fn(); passed++; console.log(`  ✓ ${label}`); };
@@ -73,7 +73,19 @@ check('PASS 5 ignores a short transition even under reduced motion', () => {
     assert.deepStrictEqual(pass5Motion({ reducedMotion: true, animations: [{ name: 'fade', duration: 90, iterations: 1, el: 'div.x' }] }), []);
 });
 
-// The ratchet has to move in BOTH directions or the registry rots into a list of names nothing renders — the same failure `portal:orphans`' KNOWN_ORPHANS is shaped to prevent.
+// The ratchet has to move in BOTH directions or the registry rots into a list of names nothing renders — the same failure `portal:orphans`' KNOWN_ORPHANS is shaped to prevent. 🔴 THE SETTLE POLICY IS TESTED BECAUSE THE GATE ITSELF WENT NON-DETERMINISTIC ON IT. A fixed sleep is load-dependent, so `npm test` failed on Season's "closed again from the header's dead space" inside the full suite and passed five times when the same walk was run alone — the most expensive shape a gate can have, because a red run with no defect behind it sends the next session hunting. The earlier remedy was to raise that state's `waitMs` to 700, the highest in the registry; the class fix is to stop guessing at a duration and wait for the element the next step needs.
+check('a step with no settle of its own keeps the 160ms default, and an explicit 0 means 0', () => {
+    assert.deepStrictEqual(stepSettle({ click: '.x' }), { until: null, timeoutMs: 0, sleepMs: 160 });
+    assert.deepStrictEqual(stepSettle({ click: '.x', waitMs: 700 }), { until: null, timeoutMs: 0, sleepMs: 700 });
+    // ⚠️ `waitMs: 0` must NOT fall through to the default — the `slow` state is measured mid-flight and any wait at all would let its data arrive and destroy the thing being walked.
+    assert.deepStrictEqual(stepSettle({ click: '.x', waitMs: 0 }), { until: null, timeoutMs: 0, sleepMs: 0 });
+});
+
+check('`until` replaces the sleep with a poll, and the two still compose when a step needs both', () => {
+    assert.deepStrictEqual(stepSettle({ click: '.x', until: '.y' }), { until: '.y', timeoutMs: 5000, sleepMs: 0 });
+    assert.deepStrictEqual(stepSettle({ click: '.x', until: '.y', untilMs: 900, waitMs: 50 }), { until: '.y', timeoutMs: 900, sleepMs: 50 });
+});
+
 check('the registry diff reports a new finding AND a recorded one that has been fixed', () => {
     const findings = [{ pass: 1, id: 'input.a', detail: '' }];
     const { fresh, fixed } = diffAgainstKnown(findings, ['1:input.b']);
