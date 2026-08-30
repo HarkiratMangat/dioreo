@@ -111,6 +111,16 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 
 🔴 **The rule that falls out:** the exhaustive file must be *pointed at* from at least one carrier that reaches on its own — `/remember`'s note, or a deferred-list item that cites its path. **A handoff nobody is told about is a handoff nobody reads.**
 
+## 🔴 JUDGEMENT DOES NOT COMPRESS — CARRY A POINTER, NEVER A PARAPHRASE (added 2026-08-30 15:1x EDT)
+
+**The mechanism, paid for over three sessions:** every handoff keeps the LOOP — commands, thresholds, traps — because mechanics compress cleanly. Every handoff drops the PRECEDENCE — which artifact is the design, which way a difference gets closed, what a number does and does not mean — because judgement does not survive compression. The next session inherits a procedure with no arbitration, runs it faithfully, and produces the failure the authoritative document already warned about. **Part 1 of the portal conformance pass was declared finished three times by exactly this route.**
+
+- 🔴 **A handoff may carry a POINTER to a precedence rule. It may never carry a paraphrase of one.** The paraphrase is what gets trusted; the pointer is what gets followed. On 2026-08-30 a session rediscovered the plan's §0.1 the hard way — after reproducing three of the design's own defects — because its inherited handoff carried the five-section loop and not the one sentence saying *a diff region is never evidence the mockup is right*.
+- 🔴 **A handoff is NOT where a contradiction between two authoritative sections gets resolved.** That resolution belongs in the document that holds them. The same session found §0.1 and §0.6 in genuine tension and nearly reverted the newer of the two — from a handoff, without knowing the other existed.
+- 🔴 **If a rule is checkable, it does not belong in the handoff at all — it belongs in a tool or a gate.** This repo's own record is unambiguous: every rule that became mechanical stuck (`--selftest`, the coverage line, the backtick gate, the orphan gates); every rule that stayed prose was re-violated. **Writing "remember to X" into a handoff is putting the reminder inside the artifact that drops reminders.**
+
+---
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:

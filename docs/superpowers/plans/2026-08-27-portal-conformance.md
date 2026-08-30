@@ -53,12 +53,12 @@ status: live
 | **0** | **The door / login page** | ☑ closed | measured on the real server | Diffed against `door.html` at 1282: `main.door`, `.doorcard` (430px), `.doormk`, the h1, and the `.dbtn` (360×46, Discord blurple `rgb(88,101,242)`, 6px radius) are identical. Two **portal-ahead** differences, both cited in `shell.js`: the `.doorstate` line, and the OAuth note saying "user ID **and username**" — which is what the `identify` scope actually returns, so the mockup's shorter wording is the stale one. Both door states are in the states registry via `?fail=expired` / `?fail=forbidden` |
 | **—** | 🔴 **THE FIRST REAL-SERVER PASS — three defects no fixture could show** | ☑ closed | `season.js` · `review.js` · `board.logic.js` | ⓵ **Every banner edit had always been born BLOCKED.** The editor keyed its payload on the STORAGE field (`drawsBannerUrl`) while `calendar.setBanners` accepts the page name (`draws`), so the op answered *Unknown banner page* and the changeset could never commit. ⓶ **The Review screen threw that sentence away** — it read `failure.reason`, which no validator sets, and printed the generic *"This change no longer validates"* over an error that named the field. ⓷ **A change past character 60 vanished from the diff**: `diffRows` compared FORMATTED values and `fmtDiffValue` truncates at 60, so a ~104-character Cloudinary URL differing only in its tail produced **zero rows** on the one screen that commits. All three are fixed, each with a falsifier; a conservation test now compares the editor's banner vocabulary against the op's own |
 | **1** | **SEASON** | ◐ in flight | `222b67a` `99bd908` `26e4af0` `9602615` `31f7c33` | 🔴 **READ §0.44, §0.45 AND §0.46 BEFORE TOUCHING THIS.** ⓪ **`npm run portal:diff -- --realm season` first**, then `--view Board`, `--view Repairs`, `--viewport 375x812`. 🔴 **THE DIFFERENCE LEDGER IS WRITTEN: `local/difference-ledger-season.md`** (gitignored — state the path). **A/B artifact: https://claude.ai/code/artifact/c4a40347-447c-45fd-9ca9-d5d1835e40e9** — four pairs, `mk-` and `pt-` labelled on every frame, with a flip control that swaps one frame in place. It carries every row below with its evidence, so do not re-derive them. ✅ **Second pass closed eight**: the ADD row right-aligning to `.mh-id`'s edge at x=995 while the export line beneath it ended at x=1260 — `.mh-add`'s grid declarations were inert because `Masthead` rendered it inside `.mh-id`, and **Armory had the identical defect** · the NOW chip, whose `attr(data-now)` producer never existed · the rail casing disagreeing with the clock's on the same screen · the THEN line's missing distance · one absence drawn as two objects in one fold · **Board and Repairs diffed at last** (`--view`, which REFUSES rather than falling through) · **375×812 diffed at last** (`--viewport`; 7.3% in 12 regions) · and the tool's own session, which held three realms of six and was reporting the rail as a difference. 🔵 **Adjudicated, do NOT re-open**: Board's changeset pipeline (spec §F3, recorded at COMPANION's foot) · the one-figure clock and its RIGHT alignment (§16.31a — the `left` rule is `.hclock`, Home's) · the subtitle measure (both sides declare `max-width:62ch`; only the column differs) · the raw id (a data-collection decision needing a PRIVACY amendment, not a conformance fix). ✅ **CLOSED 2026-08-29 01:0x EDT, by the audit loop (§0.7)**: Repairs now runs the design's SIX checks in its two kinds — the three that were absent (draw window with no draw, draw served synthetic, looks like 2× CP) are built, and `gaps in a lane`, which §5.2 does not list, stands down under the flag · the fifth export format (`season.all`, the whole Track as columns) · the window range, which is the view bar's meta line on every view and was in the Zoomer · **and the four other Manifest/Track defects the audit found and this row never knew about**: one lifecycle answer instead of two disagreeing on nine rows, `dateOnly` reaching the Track so "served synthetic" can see its eleven, the spark's state and progress, and the design's checkbox in place of a hidden input. 🔴 **STILL OPEN**: Events and Playlists auto-collapsing 20 of 39 Track items · the overview scrubber's mark weight · **Repairs' residual 7.3% — see `docs/db-deferred-list.md`**. ⚠️ **The clock, the context band, the one-line draft state and the picture-led banner row are MY design calls**, made after he refused a pop-up — *"USE YOUR DESIGN KNOWLEDGE"* |
-| **2** | **ARMORY** | ☐ open | | |
-| **3** | **BROADCAST** | ☐ open | | |
-| **4** | **ACCESS** | ☐ open | | |
-| **5** | **ANALYTICS** | ☐ open | | |
-| **6a** | **REVIEW** | ☐ open | | failure mode: correctness |
-| **6b** | **HOME** | ☐ open | | failure mode: composition. Target is COMPANION, **not** the mockup |
+| **2** | **ARMORY** | ☐ open | | **99.6KB · 13 handlers · 48 data-attrs** — second-densest reference. Earns the full overlay treatment incl. the interaction tier |
+| **3** | **BROADCAST** | ◐ resting pass closed | | 40.6KB · 5 handlers. **0.2% / 0.3%** at 1282, both views height-identical. Overlays not yet opened |
+| **4** | **ACCESS** | ☐ open | | 47.7KB · 7 handlers · 15 data-attrs — medium fidelity |
+| **5** | **ANALYTICS** | ☐ open | | 46.1KB · **1 handler** — near-static reference. Composition, not an interaction tier |
+| **6a** | **REVIEW** | ☐ open | | failure mode: correctness. **18.9KB · ZERO handlers** — one tenth of Season's reference and nothing to open. A percentage chase here manufactures precision the source does not contain |
+| **6b** | **HOME** | ☐ open | | failure mode: composition. Target is COMPANION, **not** the mockup — and the measurement now supports that row: **22.4KB · ZERO handlers · 1 data-attr** |
 | **7** | The sweep, the misc, and the double-check | ☐ open | | |
 | **—** | Closing DEVLOG narrative entry | ☐ open | | one story, after all the rest |
 
@@ -72,9 +72,29 @@ status: live
 
 ---
 
+## §0.1 ⟷ §0.6 — HOW THE TWO COMPOSE, because they read as contradictory and a session acted on one without the other (added 2026-08-30 15:1x EDT)
+
+🔴 **§0.1 says a diff region is never evidence the mockup is right, so adjudicate. §0.6 says stop adjudicating and close on a number. Both are true, they are not competitors, and nothing said how they compose — so a session ran §0.6's closure rule with §0.1's direction rule missing.**
+
+**The resolution: §0.6 governs CLOSURE — *when is this realm done* — and §0.1 governs DIRECTION — *which side moves to meet the other*.** A realm still closes on zero regions rather than on anybody's opinion of a list; that decision stands and must not be reverted. But a region's DIRECTION is not implied by its existence. Three verdicts, and the default is not one of them:
+
+| verdict | meaning | what happens |
+|---|---|---|
+| **DRIFT** | the portal wandered | fix the portal — the ordinary case, and the one the overlay was built for |
+| **MOCKUP-DEFECT** | the design is weak or unfinished here | **fix the MOCKUP**, then converge on the corrected reference. Standing it down under the flag is the fallback, not the answer |
+| **DELIBERATE** | the portal is ahead | cite a COMPANION section or a dated decision, register it in the stand-down list, re-apply after all six realms match |
+
+⚠️ **WHAT WENT WRONG WITHOUT THIS, MEASURED 2026-08-30.** Every difference was closed toward the mockup by default, because "close the region" and "move the portal" had silently become the same instruction. Three of the design's own defects were faithfully reproduced into the portal and counted as progress: the day drawer's list rendering **browser-default disc bullets at a 40px indent** (`season.html` styles `.daylist` nowhere), the ruler's **3px-wide focusable buttons**, and a **doubled ring** on a same-day patch cluster. Each made the number better and the product worse.
+
+🔴 **AND A SESSION THAT READS ONLY §0.1 WILL TRY TO REVERT §0.6.** That nearly happened on 2026-08-30: having found §0.1 and felt clever, the next move drafted was "restore the adjudication step" — which is precisely the judgement-over-a-list method §0.6 retired after it produced false closure three times. **Adjudication-by-judgement is not coming back. The verdict above is a direction label on a mechanically-detected region, not a return to arguing over a 220-row list.**
+
+---
+
 ## §0.6 — 🔴 THE OVERLAY METHOD. THIS IS HOW A REALM IS BUILT AND CLOSED NOW (Harkirat, 2026-08-28 20:1x EDT)
 
 **His proposal, and it is the right one:** stop adjudicating a 220-row difference list by judgement, and make the two pages produce the same pixels. Closure stops being my opinion and becomes a number. **Proved on Broadcast the same evening: 8.4% across 16 regions and a 274px height gap → 0.3% across 28 regions with the two pages at EXACTLY 1258px.**
+
+🔴 **THE REFERENCE IS NOT AT UNIFORM FIDELITY ACROSS THE SEVEN PAGES, AND THE TARGET MUST FOLLOW IT.** Measured 2026-08-30 15:1x EDT: season **192KB / 44 handlers**, armory 99.6KB / 13, access 47.7KB / 7, analytics 46.1KB / **1**, broadcast 40.6KB / 5, review 18.9KB / **0**, index 22.4KB / **0**. Season's mockup is a realised interactive prototype; Review's and Home's are static compositions a tenth its size. **Driving a near-static sketch to 0.1% reproduces its arbitrary choices with the fidelity owed to considered ones** — and the interaction tier (`--open`, `--triggers`) has nothing to find on a page with zero handlers. Armory earns the full treatment; Analytics, Review and Home are composition-and-correctness surfaces where COMPANION and his eye are the authority.
 
 ### The four pieces
 | | |

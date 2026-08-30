@@ -540,6 +540,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🎨 Three MOCKUP defects the portal now reproduces — the design is what needs fixing, not the portal `P2 · S · Opus5-Medium`
+*Verdicted 2026-08-30 15:1x EDT under the plan's new §0.1⟷§0.6 resolution. All three were closed toward the mockup on 2026-08-30 because the method had no other destination; each made the number better and the product worse.*
+
+| Surface | What the design does | Why it is a defect, not a decision |
+|---|---|---|
+| Day drawer's list | `season.html` styles `.daylist` **nowhere**, so it renders browser-default **disc bullets at a 40px indent** | Nothing else in the console uses a bullet or an indent; every other list is styled. This is an unfinished page, not a choice |
+| Ruler ticks | 3px-wide `role="button"` targets across the Track | Below any touch-target floor. The design binds click and Enter on them, so the affordance is intended — the SIZE is the defect |
+| Same-day patch cluster | `.ptc.same` gets a 2px element ring **over** the 1.5px `::after` ring already in the shared sheet | Two rings on one mark, neither aware of the other. The portal had already deduped it; conformance put it back |
+
+**The fix is to correct `docs/superpowers/mockups/2026-08-23-portal-interactive/`, then re-converge** — not to keep reproducing them behind `?conform=1`. ⚠️ **Editing the design authority is Harkirat's call, not mine**; this entry exists so the verdict is recorded rather than lost in a stand-down comment. **Verify:** each stand-down (`rg -n 'daylist|ptc.same' portal/ui/app.css`) is deleted, not re-applied, once the mockup carries the fix.
+
+
 ### 🔴 The handoff compresses the LOOP and drops the PRECEDENCE, and that is what makes Part 1 keep reopening `P1 · S · Opus5-Medium`
 *Diagnosed 2026-08-30 15:0x EDT, after a session rediscovered §0.1 the hard way and reproduced three of the mockup's own defects on the way.*
 
