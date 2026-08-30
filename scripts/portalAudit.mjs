@@ -66,7 +66,9 @@ const PROPS = ['display', 'position', 'width', 'height', 'minHeight', 'maxWidth'
     'color', 'backgroundColor', 'backgroundImage', 'opacity', 'boxShadow', 'transform', 'visibility',
     'borderRadius', 'borderTopWidth', 'borderBottomWidth', 'borderTopStyle', 'borderLeftStyle',
     'borderTopColor', 'borderLeftColor', 'borderBottomColor',
-    'outlineStyle', 'outlineWidth', 'outlineColor'];
+    'outlineStyle', 'outlineWidth', 'outlineColor',
+    // 🔴 A DECLARED TRANSITION PRODUCES NO PIXELS AT A SETTLED FRAME, so the pixel diff can never see one — it zeroes transitions on purpose, to be deterministic. THIS tool does not zero them, so the declaration itself is comparable here even though its motion is not. Added 2026-08-30 after a review branch filed a missing-transition defect that nothing automated could have found.
+    'transitionProperty', 'transitionDuration'];
 
 // ── the in-page walk ───────────────────────────────────────────────────────────────────────────── No depth cap. The whole point is that a table cell, a lane bar and a grid cell are where the differences actually live, and every one of them sits below converge's fourth level.
 const COLLECT = (props, wholeBody) => {
