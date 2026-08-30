@@ -121,6 +121,20 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 
 ---
 
+## 🔴 FOUR RULES A READ-ONLY AUDIT PROVED, 2026-08-30 15:4x EDT
+
+*A Sonnet subagent was given only what a post-compact session auto-loads — CLAUDE.md, SESSION-START.md, MEMORY.md, `.remember` — told to continue the work, and told to report every place it could not. It scored the package **6/10** and found four defects that every human check that day had missed.*
+
+- 🔴 **NEVER CARRY A NUMBER A TOOL CAN PRINT.** The handoff carried reference sizes (192KB, 99.6KB…) that **already disagreed with the tool** (186KB, 96KB) because they were measured by a different method at a different moment. Neither carrier said which was authoritative, so a third measurement would have produced a third set. **A number in a handoff is a claim about a tree that no longer exists.** Carry the COMMAND; let the reader re-derive.
+- 🔴 **A GREEN SUITE IS A CLAIM ABOUT A COMMIT, AND YOU MUST RE-RUN IT IN THE COMMIT THAT ADDS A SCRIPT.** `.remember` said *"Floor green at `02c7df5`"*. True — and eight commits stale: a script added in HEAD had unreflowed comments and `npm test` was **RED** while the handoff advertised it green. **The suite must be re-run and re-anchored in the same commit that adds or edits any script**, or the handoff ships a false green — the single most dangerous thing a compact can carry.
+- 🔴 **FIXING A THING AND CLOSING ITS FILING ARE TWO SEPARATE ACTS, AND THE SECOND IS THE ONE THAT GETS SKIPPED.** A test fix landed at 13:21; a handoff written at **13:47** still listed it as a live failure, and the tracked entry sat open for three hours. **Before writing a handoff, re-read every OPEN item you touched this session and ask whether it is still open** — not whether you remember closing it.
+- 🔴 **ONE NEXT ACTION, DERIVED — NOT TWO CARRIERS POINTING DIFFERENT WAYS.** The plan's rule said *finish the realm you are in*; the handoff's ordering put the next realm first. A fresh session cannot derive which, so it guesses or asks — and the audit's answer to *"could you produce the next commit without asking?"* was **no, for that reason alone.** If the plan states a rule that settles the order, the handoff must follow it or say why it does not.
+- ⚠️ **AND SECTION NUMBERS MUST BE UNIQUE IN THE DOCUMENT THEY POINT INTO.** Three numbers were used twice each in the governing plan, so "read §0.5" resolved to two unrelated sections — a session could read the wrong one and believe it had complied.
+
+🔴 **THE GENERAL RULE BEHIND ALL FIVE: A HANDOFF IS A SET OF POINTERS AND STANDING ORDERS, NOT A SNAPSHOT.** Everything that can go stale — numbers, suite status, item status, ordering — either gets re-derived by a command the handoff names, or it is a lie waiting for a reader. **The cheapest test of a handoff is to hand it to a read-only agent with no transcript and ask it to continue the work, then fix everything it cannot do.** That test costs one subagent call and found in twelve minutes what a day of self-review did not.
+
+---
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:

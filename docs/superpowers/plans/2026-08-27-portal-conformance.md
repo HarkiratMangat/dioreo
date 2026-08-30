@@ -13,6 +13,9 @@ status: live
 
 ---
 
+
+> 🔴 **SECTION NUMBERS ARE DISAMBIGUATED BY LETTER — added 2026-08-30 15:5x EDT.** Three numbers were used twice each (`§0.1`, `§0.5`, `§0.6`), so a pointer saying "read §0.5" resolved to two unrelated sections and a session could read the wrong one and believe it had complied. Found by a read-only audit simulating a fresh session. **`§0.5a` is how a Part is CHECKED · `§0.5b` is the five PHASES · `§0.6a` is the OVERLAY METHOD · `§0.6b` is SCOPE · `§0.1a⟷§0.6a` is how closure and capture compose · `§0.1b` is PRECEDENCE.** Any older reference to a bare `§0.1`/`§0.5`/`§0.6` predates this and means whichever of the pair fits its sentence.
+
 ## §0.7 THE AUDIT LOOP — the instrument, and the batching rule it enforces (2026-08-29 00:5x EDT)
 
 🔴 **`npm run portal:audit -- --realm <r> [--view <tab>] [--all]` IS THE FIRST CALL OF EVERY REALM, AND ITS SECTIONS ARE THE BATCHING CONTRACT.** `portal:converge` asks the same question and answers it too shallowly — four levels deep, thirteen style properties, no stylesheet — so every finding below the fourth level needed its own hand-written probe and every CSS difference its own grep. Measured 2026-08-29 00:2x EDT: that loop cost well over a hundred turns on one realm's one view, at roughly one fix per turn. The findings were real; **the loop was the waste**.
@@ -72,7 +75,7 @@ status: live
 
 ---
 
-## §0.1 ⟷ §0.6 — HOW THE TWO COMPOSE: §0.6 CLOSES, §0.1 CAPTURES (added 2026-08-30 15:2x EDT)
+## §0.1a ⟷ §0.6a — HOW THE TWO COMPOSE: §0.6 CLOSES, §0.1 CAPTURES (added 2026-08-30 15:2x EDT)
 
 🔴 **§0.1 says a diff region is never evidence the mockup is right. §0.6 says close on a number, not on judgement. Both are true and they do not compete — they answer different questions.**
 
@@ -97,7 +100,7 @@ Both resolve the same way: **change the portal, after all six realms match.** Ne
 
 ---
 
-## §0.6 — 🔴 THE OVERLAY METHOD. THIS IS HOW A REALM IS BUILT AND CLOSED NOW (Harkirat, 2026-08-28 20:1x EDT)
+## §0.6a — 🔴 THE OVERLAY METHOD. THIS IS HOW A REALM IS BUILT AND CLOSED NOW (Harkirat, 2026-08-28 20:1x EDT)
 
 **His proposal, and it is the right one:** stop adjudicating a 220-row difference list by judgement, and make the two pages produce the same pixels. Closure stops being my opinion and becomes a number. **Proved on Broadcast the same evening: 8.4% across 16 regions and a 274px height gap → 0.3% across 28 regions with the two pages at EXACTLY 1258px.**
 
@@ -127,7 +130,17 @@ Three were instruments: the harness has **two nested `main` elements** and the h
 
 ---
 
-## §0.5 — HOW A PART IS ACTUALLY CHECKED (written 2026-08-28 after Part 1 was declared finished THREE times and was not)
+## §0.5c — THE HANDOFF IS PART OF THE PART, AND IT GETS AUDITED THE SAME WAY (added 2026-08-30 15:5x EDT)
+
+**A Part is not closed when the code is right. It is closed when the NEXT session can continue from what was written.** On 2026-08-30 a read-only Sonnet agent was given only the auto-loaded carriers and asked to continue: it scored **6/10**, could not derive a single next action, and found `npm test` RED while the handoff advertised it green.
+
+🔴 **So the exit condition gains one line: hand the carriers to a read-only agent with no transcript, ask it to continue the work and to report every place it cannot, then fix all of it.** One subagent call, twelve minutes. It found four defects a full day of self-review had missed, and every one of them was the kind that reads as fine from the inside — a stale green, an item fixed but not closed, two numbers from different measurements, an ordering that contradicted this plan's own rule.
+
+⚠️ **The reason self-review cannot substitute:** the author knows what the words meant. The auditor only has the words. **Every defect it found was a place where my intent was clear to me and unrecoverable from the text.**
+
+---
+
+## §0.5a — HOW A PART IS ACTUALLY CHECKED (written 2026-08-28 after Part 1 was declared finished THREE times and was not)
 
 🔴 **Read this before §0.1. Every rule below is a generalisation of a real failure from 2026-08-28, and each one names it, because a rule whose cost is invisible gets optimised away by the next session.**
 
@@ -207,7 +220,7 @@ The first full-page capture printed `captured mk- 888px · pt- 888px` — the ol
 
 ---
 
-## §0.1 — PRECEDENCE: which artifact is "the design"
+## §0.1b — PRECEDENCE: which artifact is "the design"
 
 **COMPANION arbitrates · the mockup HTML is the default · `portal/ui` wins only where a COMPANION section or a dated decision postdates the mockup.**
 
@@ -342,7 +355,7 @@ The incentive is legible and backwards: **a screenshot is one visibly expensive 
 
 ---
 
-## §0.5 — THE FIVE PHASES, IN THIS ORDER, IN PARTS 1–6
+## §0.5b — THE FIVE PHASES, IN THIS ORDER, IN PARTS 1–6
 
 ⚠️ **Part 0 does NOT follow them** — it has no realm to locate against and no mockup page to A/B. **Part 0's exit condition is its own:** each of its seven units is done when the thing exists, runs, and is proved on a known case (the sweep reports `data-bare`; the grid injection returns a real `__grid` on a mockup tab; a fixture round-trips through `--write` then `--check`; the states harness reaches a state that is not the default; the shell's defects are fixed and measured). **Part 7 follows the five phases where it touches a realm surface, and its own exit otherwise.**
 
@@ -398,7 +411,7 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 
 ---
 
-## §0.6 — SCOPE: what this pass may change, and what it may not
+## §0.6b — SCOPE: what this pass may change, and what it may not
 
 | | |
 |---|---|

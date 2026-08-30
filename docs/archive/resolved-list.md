@@ -832,3 +832,14 @@ They compared 27 computed properties, so styling yes — but **`boxShadow`, `bac
 
 ### 📄 ⑤ RULES read `assets/app.css` and called it the design's stylesheet `P1 · S · Sonnet5-High` — CLOSED 2026-08-30
 `season.html` carries **31 rules in its own `<style>` block**, including the `.ptc.same` ring above. The section now appends the realm page's style block: 2011 → 2038 design selectors. ⚠️ **Only season.html has any** — the other six pages have zero — so this changed one realm's reading and will change no other, but the assumption it removes ("one file is the design's CSS") is the same one that had the audit walking only `main`.
+
+## ✅ The nameplate catalog snapshot — closed 2026-08-30 13:2x EDT in `02c7df5`, and it stayed on the active list for three hours after
+
+The catalog was refreshed to 941 SKUs; the test's collision assertion — the property it actually protects — passed at 941, so the count was updated with uniqueness re-verified rather than edited blind. `scripts/collectibleCacheKey.test.js` now asserts 941 and passes.
+
+🔴 **It was left on the ACTIVE list, and a handoff written 26 minutes AFTER the fix landed repeated it as a live failure.** Caught 2026-08-30 15:4x EDT by a read-only audit simulating a fresh session. **This is §0.5 R2 — a citation has two tests, does it EXIST and does it still GOVERN — violated inside the same document that states the rule.** The lesson is not "close your items": it is that **fixing a thing and closing its filing are two separate acts, and the second is the one that gets skipped.**
+
+*Verbatim, as filed:*
+
+### 🧪 `npm test` fails on the nameplate catalog snapshot — 941 ids against an expected 925 `P2 · S · Sonnet5-Medium`
+Pre-existing and unrelated to the portal: `docs/reference/nameplate-decoration-catalog.json` was modified in the working tree before this session began. The test's own message says what to do — **re-verify uniqueness rather than editing the number** — because the count is the assertion.

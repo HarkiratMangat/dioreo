@@ -310,3 +310,14 @@ Installed to `~/.cloudflared/dioreo-dev.yml`; run with `cloudflared tunnel --con
 ## `scripts/cloudflared-config.yml` — hardcode the port, never a template placeholder (fixed 2026-08-22 10:00 EDT)
 
 Installed to `/etc/cloudflared/config.yml` on the VM (see `docs/reference/deployment-and-ops.md`'s "Web admin portal" section for the install path). Shipped with `service: http://127.0.0.1:${PORTAL_PORT}` — a template placeholder nobody ever expanded. **`cloudflared`'s config.yml does no env-var substitution of its own, and nothing in this repo runs `envsubst` on install**, so as written the tunnel would have dialed a literal host named `${PORTAL_PORT}` and 502'd every request the first time it was ever installed. Caught before the systemd unit was ever installed for real (see `docs/reference/portal-launch-checklist.md`). Fixed to a literal `8787`, matching `portal/server.js`'s own default — kept in sync BY HAND with `PORTAL_PORT` in `.env`; if that env var's value ever changes, this file's literal port must change with it, and nothing will warn you if they drift.
+
+## The portal conformance instruments (added 2026-08-30)
+
+| script | answers |
+|---|---|
+| `scripts/portalDiff.mjs` — `npm run portal:diff` | **HOW MUCH** differs, as pixels and ranked regions. `--open`/`--hover`/`--focus` reach states behind an interaction; those frames are FOLD height and comparable only to `--fold`. `--selftest` proves it can report zero |
+| `scripts/portalAudit.mjs` — `npm run portal:audit` | **WHAT** differs, in five sections that are the batching contract. `--triggers` lists both sides' openable controls |
+| `scripts/portalProbe.mjs` — `npm run portal:probe` | **WHY** a box differs — `--chain` names the ancestor that first changes an inherited property. Has its own `--selftest` |
+| `scripts/portalStatus.mjs` — `npm run portal:status` | **WHAT IS KNOWN** and whether it is stale: per realm, the recorded fixture, the commit it was stamped at, whether `portal/ui` moved since, and the mockup's measured fidelity. It does NOT measure |
+
+🔴 **Governed by `docs/superpowers/plans/2026-08-27-portal-conformance.md` — §0.1a⟷§0.6a, §0.1b, §0.5a, §0.5b, §0.6a, §0.10.** The diff is a FLOOR, never the definition of done.

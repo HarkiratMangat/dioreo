@@ -1,14 +1,8 @@
 // scripts/portalStatus.mjs — what is KNOWN about every realm, and whether it is still true.
 //
-// 🔴 WHY. A handoff that carries numbers carries them stale: the moment anyone commits, "Season Track
-// 0.2%" is a claim about a tree that no longer exists, and the next session either trusts it (wrong) or
-// re-measures everything (slow). Both happened across 2026-08-28..30. This prints the recorded state,
-// the commit it was recorded at, and whether HEAD has moved since — so a session knows in one instant
-// call what is known and what needs re-measuring, instead of reading a number and guessing.
+// 🔴 WHY. A handoff that carries numbers carries them stale: the moment anyone commits, "Season Track 0.2%" is a claim about a tree that no longer exists, and the next session either trusts it (wrong) or re-measures everything (slow). Both happened across 2026-08-28..30. This prints the recorded state, the commit it was recorded at, and whether HEAD has moved since — so a session knows in one instant call what is known and what needs re-measuring, instead of reading a number and guessing.
 //
-// ⚠️ IT DOES NOT MEASURE. Re-measuring seven realms is ~4 minutes and cannot be a first command. This
-// reads the geometry fixtures, which portalGeometry writes with a commit stamp, and tells you whether
-// to trust them. `npm run portal:diff` remains the only thing that produces a number.
+// ⚠️ IT DOES NOT MEASURE. Re-measuring seven realms is ~4 minutes and cannot be a first command. This reads the geometry fixtures, which portalGeometry writes with a commit stamp, and tells you whether to trust them. `npm run portal:diff` remains the only thing that produces a number.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
@@ -21,8 +15,7 @@ const PKG = path.join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interact
 const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return ''; } };
 const head = sh('git rev-parse --short HEAD');
 
-// The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype
-// and Review's is a static composition a tenth its size, so one target across seven pages was never right.
+// The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype and Review's is a static composition a tenth its size, so one target across seven pages was never right.
 const fidelity = (realm) => {
     const f = path.join(PKG, `${realm === 'home' ? 'index' : realm}.html`);
     if (!fs.existsSync(f)) return null;
@@ -35,11 +28,7 @@ for (const file of fs.readdirSync(FIX).filter((f) => f.endsWith('.json')).sort()
     const j = JSON.parse(fs.readFileSync(path.join(FIX, file), 'utf8'));
     const realm = j.realm || file.replace(/\.json$/, '');
     const at = j.commit || '?';
-    // 🔴 COMPARE THE TWO FILES' LAST COMMITS, NOT THE STAMPED SHA AGAINST HEAD. A fixture cannot record
-    // the commit it is about to be committed in, so `stamp..HEAD` counts the recording commit itself and
-    // reports "1 — RE-MEASURE" immediately after every legitimate re-record. Found by running this on the
-    // tree it was written for: all seven realms cried stale at once, which is the shape of a false positive
-    // rather than a finding. A gate that cries wolf gets filtered, and then it is not guarding anything.
+    // 🔴 COMPARE THE TWO FILES' LAST COMMITS, NOT THE STAMPED SHA AGAINST HEAD. A fixture cannot record the commit it is about to be committed in, so `stamp..HEAD` counts the recording commit itself and reports "1 — RE-MEASURE" immediately after every legitimate re-record. Found by running this on the tree it was written for: all seven realms cried stale at once, which is the shape of a false positive rather than a finding. A gate that cries wolf gets filtered, and then it is not guarding anything.
     const lastUi = sh('git log -1 --format=%ct -- portal/ui portal/vendor');
     const lastFix = sh(`git log -1 --format=%ct -- ${path.relative(ROOT, path.join(FIX, file))}`);
     const stale = lastUi && lastFix && Number(lastUi) > Number(lastFix);

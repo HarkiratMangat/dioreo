@@ -608,9 +608,6 @@ Three blind spots in this tool were found by a person noticing a defect the numb
 ### 🎨 The mockup's day list is an unstyled browser default, and the portal now matches it `P3 · S · Sonnet5-Medium`
 `season.html` styles `.daylist` **nowhere**, so its day drawer renders UA defaults: 15px margins, a 40px indent and real disc bullets. The portal had proper rows; under the conformance flag it now reproduces the default, because the pass's rule is to match first and re-apply afterwards rather than decide mid-diff which side is better. **This one is almost certainly a gap in the design rather than a decision** — it is the clearest re-apply candidate found so far.
 
-### 🧪 `npm test` fails on the nameplate catalog snapshot — 941 ids against an expected 925 `P2 · S · Sonnet5-Medium`
-Pre-existing and unrelated to the portal: `docs/reference/nameplate-decoration-catalog.json` was modified in the working tree before this session began. The test's own message says what to do — **re-verify uniqueness rather than editing the number** — because the count is the assertion.
-
 
 ### Broadcast's overlay — ✅ both views at 1282, ⏳ 375×812 never run `[P2 · S · Opus5-High]`
 
