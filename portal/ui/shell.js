@@ -9,7 +9,7 @@ import { Icon } from './icons.js';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
-import { ExportStrip } from './exportPanel.js';
+import { ExportStrip, ExportDrawer } from './exportPanel.js';
 import { installTips } from './tips.js';
 import { conforming } from './conform.js';
 
@@ -140,7 +140,7 @@ function Figure({ value, zero = false }) {
 // 🔴 `actions` IS A GRID CHILD OF `.masthead`, NOT A CHILD OF `.mh-id`, AND MOVING IT THERE FIXED A VISIBLE DEFECT NO GATE COULD SEE. `.mh-add` has carried `grid-column / grid-row / justify-self:end` since the mockup, and inside `.mh-id` every one of those declarations was inert — the element was not a grid item. So the ADD row right-aligned to `.mh-id`'s edge instead of the masthead's: measured on Season at 1282, the ADD row ended at x=995 while `.mh-take`, the export line directly beneath it, ended at x=1260. Two right-aligned rows, 265px apart, one above the other. `portal:orphans` was quiet because the class exists and has a rule; `portal:coverage` was quiet because the rule has an element. A consumer whose producer is in the wrong parent is this port's signature defect, and it is invisible to every scanner that asks only whether both ends exist.
 //
 // ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
-export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null }) {
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null, below = null }) {
     return html`
         <div class="masthead">
             <div class="mh-id">
@@ -163,6 +163,11 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                 </div>` : null}
             ${actions}
             ${take}
+            <!-- season.html's nwHost section is the LAST CHILD OF THE MASTHEAD, which is where its width
+                 comes from: 1206 minus the masthead's own 23px gutters is the 1160 the composer measures.
+                 Rendered anywhere else it inherits a different box — in the context band it came out at
+                 920, and every chip, input and note inside it was 240px short of the design's. -->
+            ${below}
         </div>
     `;
 }
@@ -410,6 +415,13 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
 
     const allCommands = chromeCommands({ realm, session, viewOptions, onSetView, staged, onSignOut: signOut, chrome }).concat(commands);
 
+    // Lifted out of ExportStrip so the drawer can render outside `main` while the button that opens it
+
+    // stays in the masthead — see ExportDrawer's own comment for the two things nesting it cost.
+
+    const [exportOpen, setExportOpen] = useState(false);
+
+
     return html`
         <div class="app">
             <${Header} realm=${realm} view=${view} session=${session} staged=${staged} chrome=${chrome}
@@ -425,7 +437,8 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      through seven call sites to hand it in again would be a worse seam than this one. -->
                 ${masthead
                     ? (exportScopes && exportScopes.length
-                        ? cloneElement(masthead, { take: html`<${ExportStrip} label=${exportLabel || 'Export'} scopes=${exportScopes} overlay=${overlayFor || chrome} />` })
+                        ? cloneElement(masthead, { take: html`<${ExportStrip} label=${exportLabel || 'Export'} scopes=${exportScopes} overlay=${overlayFor || chrome}
+                                                                    open=${exportOpen} onToggle=${() => setExportOpen(!exportOpen)} />` })
                         : masthead)
                     : null}
                 <!-- 🔴 THE EXPORT STRIP SITS UNDER THE MASTHEAD ON EVERY REALM THAT HAS ONE, not inside a realm's own
@@ -516,6 +529,8 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             </main>
             ${traySlot || null}
             ${overlaySlot || null}
+            ${exportScopes && exportScopes.length && exportOpen && conforming()
+                ? html`<${ExportDrawer} scopes=${exportScopes} overlay=${overlayFor || chrome} onClose=${() => setExportOpen(false)} />` : null}
             ${chrome.render()}
         </div>
     `;

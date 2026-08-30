@@ -89,7 +89,7 @@ function tickStep(span, widthPx) {
     return [1, 2, 3, 7, 14, 28, 56, 91, 182, 364].find((c) => c >= raw) || 364;
 }
 
-function Ruler({ view }) {
+function Ruler({ view, onPickDay }) {
     const ref = useRef(null);
     const [w, setW] = useState(1100);
     // Was an imperative renderRuler() re-run after every innerHTML rebuild, re-querying and re-binding as it went. Only the width needs measuring now, and a ResizeObserver reports it without a render loop.
@@ -103,9 +103,11 @@ function Ruler({ view }) {
     // so removing the whole span would leave a gap where a day is. Deleted here on the reasoning that the
     // collision could not happen; it does, at today's position, on the default window.
     useMeasured('rulermask:' + view.from + view.to, ref, (root) => {
-        const plot = root.parentElement;
-        if (!plot) return {};
-        const boxes = [...plot.querySelectorAll('.now')].map((n) => n.getBoundingClientRect());
+        // The NOW caption is not a sibling of the ruler — it lives inside the lanes, two levels down — so a
+        // parent-scoped query found nothing and every tick stayed unmasked while the code read as though it
+        // were masking. Query the document: there is one NOW on the page and it is the thing being avoided.
+        const boxes = [...document.querySelectorAll('.now')].map((n) => n.getBoundingClientRect())
+            .filter((b) => b.width > 0);
         for (const sp of root.querySelectorAll('span')) {
             const r = sp.getBoundingClientRect();
             sp.classList.toggle('masked', boxes.some((b) => r.right > b.left - 4 && r.left < b.right + 4));
@@ -115,7 +117,15 @@ function Ruler({ view }) {
     return html`
         <div class="ruler" ref=${ref}>
             ${TL.ticks(view, tickStep(view.span(), w)).map((t) => html`
-                <span key=${t.iso} style=${'left:' + t.x + '%'}><b>${t.label}</b></span>`)}
+                <!-- 🔴 EVERY TICK CARRIES ITS REAL DATE AND ANSWERS "what runs on this day". The design binds
+                     click and Enter on each one; here they were inert text, so the only route into the day
+                     drawer was the crosshair — a mouse-only affordance, on a page whose own notes say the fix
+                     for one of those is a keyboard route rather than a better sentence. -->
+                <span key=${t.iso} style=${'left:' + t.x + '%'} data-date=${t.iso}
+                      role=${onPickDay ? 'button' : null} tabindex=${onPickDay ? '0' : null}
+                      title=${onPickDay ? 'What runs on this day' : null}
+                      onClick=${onPickDay ? ((e) => { e.stopPropagation(); onPickDay(t.iso); }) : null}
+                      onKeyDown=${onPickDay ? ((e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPickDay(t.iso); } }) : null}><b>${t.label}</b></span>`)}
         </div>`;
 }
 
@@ -236,9 +246,11 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
                      POINT is a diamond rather than a bar, for the same reason a real draw is — a preview drawn in
                      a shape the record cannot have teaches the wrong thing about the record. -->
                 ${ghost && !collapsed ? html`
-                    <i class=${'tghost cmp' + (ghost.shape === 'point' ? ' pt' : '')}
+                    <!-- The design draws this as a div, not an i: i is the BAR in this component, and a ghost
+                         that borrows the bar's element inherits its rules as well as its meaning. -->
+                    <div class=${'tghost cmp' + (ghost.shape === 'point' ? ' pt' : '')}
                        style=${`left:${view.pct(ghost.start)}%` + (ghost.shape === 'point' ? '' : `;width:${view.wpct(ghost.start, ghost.end)}%`)}
-                       aria-hidden="true">${ghost.shape === 'point' ? '' : (ghost.name || 'Unnamed')}</i>` : null}
+                       aria-hidden="true">${ghost.shape === 'point' ? '' : (ghost.name || 'Unnamed')}</div>` : null}
                 ${collapsed ? html`<${LaneSummary} lane=${lane} list=${list} kit=${kit} view=${view} />` : null}
                 ${off ? html`<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : null}
                 ${collapsed ? null : list.map((it) => {
@@ -762,7 +774,7 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                      style=${hover === null ? undefined : 'left:' + hover + '%'} aria-hidden="true">
                     <span class="xd">${hoverDate ? html`<b>${TL.fmt(hoverDate)}</b>` : null}</span>
                 </div>
-                <${Ruler} view=${view} />
+                <${Ruler} view=${view} onPickDay=${onPickDay} />
                 <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} flips=${flips} />
                 <div class="lanes">
                     ${lanes.map((l) => html`

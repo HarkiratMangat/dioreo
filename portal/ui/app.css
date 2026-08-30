@@ -690,6 +690,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:420px;pointer-event
   background:radial-gradient(900px 300px at 22% -8%,rgba(242,194,48,.07),transparent 62%),
              radial-gradient(700px 260px at 78% -12%,rgba(95,212,232,.05),transparent 60%)}
 main{position:relative;z-index:1}
+/* Paired with overlay.js's applyInert: while a modal is open main must not be a stacking context, or
+   its scrim cannot rise above the sticky header. See the comment there for the measurement. */
+main[data-modal]{z-index:auto}
 
 /* masthead type carries the personality: tight, large, confident */
 .masthead h1{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;line-height:1.04;font-weight:700}
@@ -3270,7 +3273,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 
 /* ── the composer, in the page ── */
 .nwhost{margin:14px 0 0;border:1px solid var(--rule2);border-radius:var(--rad-3);background:var(--paper);
-  padding:15px 16px 14px;max-width:920px;align-self:stretch;
+  padding:15px 16px 14px;max-width:var(--nwhost-max,920px);align-self:stretch;
   animation:nwIn .22s cubic-bezier(.2,.8,.3,1)}
 @keyframes nwIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .nwhost[hidden]{display:none}
@@ -5130,6 +5133,9 @@ button .ic,a .ic{pointer-events:none}
  * drawer's own inherited body type, which puts the title and the window in one undifferentiated run
  * of text. The date is the SECOND thing read on each line, so it is set in the data face and pushed
  * to the end rather than sitting inline with the name. */
+/* 🔴 THE DESIGN HAS NO .daylist RULES AT ALL — its day rows are unstyled list items, so the three
+   spans flow inline on one 23px line. These made each row a 35px flex row with its own padding and
+   rule, which is the portal ahead of the mockup; they stand down with everything else in that class. */
 .daylist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
 .daylist li{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-top:1px solid var(--rule)}
 .daylist li:first-child{border-top:0}
@@ -5242,3 +5248,20 @@ button .ic,a .ic{pointer-events:none}
    too, which reads as a second chip inside the first on every saved bar. --ci-bg is the same
    tokenising trick as --ctl-rad: the value changes, the specificity does not. */
 :root[data-conform="1"] .bar.saved .bl{--ci-bg:transparent}
+
+/* The 920px measure cap is the portal's own — the design's composer fills the masthead's 1160 — so it
+   stands down with the rest of the reading-measure work rather than silently narrowing a form the
+   overlay is comparing box for box. */
+:root[data-conform="1"]{--nwhost-max:none}
+
+/* 🔴 THE MOCKUP'S DAY LIST IS A BROWSER DEFAULT — 15px margins, a 40px indent and real disc bullets,
+   because season.html styles .daylist nowhere. This is very likely a gap in the design rather than a
+   decision, and the conformance rule is still to render it: matching first and re-applying afterwards is
+   what keeps "the portal looks better here" from being a judgement made mid-diff. Filed for the re-apply
+   phase, where the portal's own styled rows should come back. */
+:root[data-conform="1"] .daylist{display:block;gap:normal;margin:15px 0;padding-left:40px;list-style:disc}
+:root[data-conform="1"] .daylist li{display:list-item;padding:0;border-top:0;align-items:normal;gap:normal}
+/* The type faces too: with no .daylist rules of its own the design lets every span inherit the drawer
+   body, which is what makes its rows 23px against the 21 these produced. */
+:root[data-conform="1"] .daylist li b{font:inherit;flex:none}
+:root[data-conform="1"] .daylist .dd,:root[data-conform="1"] .daylist .dt,:root[data-conform="1"] .daylist .dn{font:inherit;letter-spacing:normal;color:inherit}

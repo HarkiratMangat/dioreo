@@ -32,6 +32,22 @@ function TLib() {
     throw new Error('season.logic.js needs timeline.logic.js and neither runtime provided it');
 }
 
+// 🔴 THE INK ON A FILLED SURFACE IS A PROPERTY OF THAT SURFACE, not one global value. --on-accent is
+// near-black, which is right on Playlists' bright teal and 2.86:1 on a draw window's plum — so every
+// filled bar, label and state pill on a dark topic rendered unreadable ink the design does not use.
+// The design derives it from the accent's own luminance once and hands it over as --ci; this is that
+// function, and the hexes are the lane accents the tokens resolve to.
+const TOPIC_HEX = { '--draw': '#AE72E0', '--ret': '#E8639B', '--dw': '#6B4E7D', '--ev': '#4A90D9', '--play': '#2CC4C4', '--patch': '#F2C230' };
+function inkOn(hex) {
+    if (!hex || hex[0] !== '#') return '#07090A';
+    const full = hex.length === 4 ? '#' + hex.slice(1).replace(/./g, (c) => c + c) : hex;
+    const chan = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
+        .map((x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)));
+    const L = 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
+    return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? '#07090A' : '#FFFFFF';
+}
+const inkOnTopic = (topicVar) => inkOn(TOPIC_HEX[topicVar] || '');
+
 function seasonWindow(live, now = Date.now()) {
     const iso = (v) => (v ? String(v).slice(0, 10) : '');
     const ds = [new Date(now).toISOString().slice(0, 10)];
@@ -335,22 +351,6 @@ if (typeof module !== 'undefined' && module.exports) {
 // Three lines end a season and they do not end together: the battle pass, the ranked series and DMZ. models/SeasonalData.js stores each as a title/end/TBD triple, and every surface that counts down to "the end of the season" has to say WHICH end it means — a single number is a lie whenever two of the three differ, which is most seasons.
 //
 // 🔴 THE LINES ARE READ FROM THE SEASON DOCUMENT, NEVER FROM A FIELD SOMEBODY INVENTED. The mockup's first version of this read `Shell._LINES`, which nothing anywhere set — so it returned an empty array and the clock rendered "No deadline set for this season" on a season with three of them. It did not throw and it did not look broken; it looked like a season with no dates. A well-formed answer to a question nobody asked is the failure mode this whole file guards against.
-// 🔴 THE INK ON A FILLED SURFACE IS A PROPERTY OF THAT SURFACE, not one global value. --on-accent is
-// near-black, which is right on Playlists' bright teal and 2.86:1 on a draw window's plum — so every
-// filled bar, label and state pill on a dark topic rendered unreadable ink the design does not use.
-// The design derives it from the accent's own luminance once and hands it over as --ci; this is that
-// function, and the hexes are the lane accents the tokens resolve to.
-const TOPIC_HEX = { '--draw': '#AE72E0', '--ret': '#E8639B', '--dw': '#6B4E7D', '--ev': '#4A90D9', '--play': '#2CC4C4', '--patch': '#F2C230' };
-function inkOn(hex) {
-    if (!hex || hex[0] !== '#') return '#07090A';
-    const full = hex.length === 4 ? '#' + hex.slice(1).replace(/./g, (c) => c + c) : hex;
-    const chan = [1, 3, 5].map((i) => parseInt(full.slice(i, i + 2), 16) / 255)
-        .map((x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)));
-    const L = 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
-    return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? '#07090A' : '#FFFFFF';
-}
-const inkOnTopic = (topicVar) => inkOn(TOPIC_HEX[topicVar] || '');
-
 const SEASON_LINES = [
     { key: 'bp', label: 'BATTLE PASS', titleKey: 'bpTitle', endKey: 'bpEnd', tbdKey: 'bpEndTBD', hex: '#F2994A' },
     { key: 'rank', label: 'RANKED', titleKey: 'rankTitle', endKey: 'rankEnd', tbdKey: 'rankEndTBD', hex: '#FF3430' },

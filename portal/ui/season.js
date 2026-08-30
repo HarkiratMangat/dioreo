@@ -122,7 +122,20 @@ function toTrackItems(live, path, lane, ongoingEnd) {
 // ⚠️ IT READS THE TRACK'S OWN ITEMS, not a second query. `trackData` is what the Track is drawing at this moment, so a day that lists something the Track is not showing — or omits something it is — is impossible by construction rather than by care.
 //
 // ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see.
+// 🔴 ONE LANE VOCABULARY, NOT THREE. The design names a lane the same way wherever it appears — the
+// Track's headers, the Manifest's chips, the composer's kinds and this drawer all read "New draws ·
+// Returning · Draw windows · Events · Playlists". This map said "Draw · Event · Playlist" and the
+// composer's said something else again, so one record answered to two names one click apart.
 const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', drawwindow: 'Draw window', event: 'Event', playlist: 'Playlist' };
+const dayLaneLabel = (lane) => (conforming()
+    ? (CONFORM_KIND_WORDS[lane] || {}).label || DAY_LANE_LABEL[lane] || lane
+    : DAY_LANE_LABEL[lane] || lane);
+// The drawer lists a day in LANE order, as the Track does above it, so the two agree about what comes first.
+// The design's own order, from fixtures' seasonItems(): every new draw, then every returning draw, then
+// the calendar in its stored order — which on the live document is ascending by start date. Splitting the
+// calendar into three lane buckets, as trackData does for the Track, reorders a day's list against the
+// list the same data produces one click away.
+const DAY_RANK = { draw: 0, returning: 1 };
 
 function dayItems(source, day) {
     const out = [];
@@ -133,7 +146,10 @@ function dayItems(source, day) {
             if (a && a <= day && (b || a) >= day) out.push({ lane, title: i.title, a, b });
         }
     }
-    return out.sort((x, y) => (x.a < y.a ? -1 : 1));
+    // ⚠️ ONE SORT. A date-only sort was already here and ran LAST, so the lane ranking above it changed
+    // nothing at all — two orderings in one function, the second silently winning. Worth stating because the
+    // symptom was indistinguishable from the first sort not being written.
+    return out.sort((x, y) => ((DAY_RANK[x.lane] ?? 2) - (DAY_RANK[y.lane] ?? 2)) || (x.a < y.a ? -1 : x.a > y.a ? 1 : 0));
 }
 
 const shiftDay = (iso, n) => new Date(Date.parse(iso + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10);
@@ -143,30 +159,40 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
     const draftRows = withDraft && draft ? dayItems(draft, day) : [];
     const all = [...rows, ...draftRows.map((r) => ({ ...r, isDraft: true }))];
     return html`
-        <${Drawer} eyebrow=${`season · ${day}`} title=${fmtDay(day)} onClose=${onClose}
+        <${Drawer} eyebrow=${conforming() ? 'A single day' : `season · ${day}`}
+                   title=${conforming() ? TL.fmtLong(day) : fmtDay(day)} onClose=${onClose}
                    actions=${html`
                        <!-- 🔴 THE WAY IN WAS A CLICK ON A CROSSHAIR, WHICH IS NO WAY IN AT ALL FOR A KEYBOARD.
                             The drawer lists what runs on a date and nothing else in the portal does, so reaching
                             it had to stop depending on a pointer. These step the same drawer a day at a time,
                             which is also faster than re-aiming at a 3px column for anyone using a mouse. -->
+                       ${conforming() ? null : html`
                        <button class="btn" onClick=${() => onDay(shiftDay(day, -1))}
                                aria-label=${`Previous day, ${fmtDay(shiftDay(day, -1))}`}>← Previous day</button>
                        <button class="btn" onClick=${() => onDay(shiftDay(day, 1))}
-                               aria-label=${`Next day, ${fmtDay(shiftDay(day, 1))}`}>Next day →</button>
+                               aria-label=${`Next day, ${fmtDay(shiftDay(day, 1))}`}>Next day →</button>`}
                        <button class="btn" onClick=${onClose}>Close</button>`}>
-            <div class="dwbody">
+            <!-- 🔴 A WRAPPER THE DESIGN DOES NOT HAVE, AND IT CARRIED A FONT SIZE. dwbody sets 13px inside a
+                 drawer body the design leaves at the page's 15, so every row in the day list came out 21px
+                 against the design's 23 — two pixels a row, ten rows, and a drawer 20px short. The design's
+                 drawer body holds the list directly. -->
+            <div class=${conforming() ? null : 'dwbody'} style=${conforming() ? 'display:contents' : null}>
                 ${all.length ? html`
                     <ul class="daylist">
                         ${all.map((i, n) => html`
-                            <li key=${n}>
-                                <!-- The item's own name in the data face, so a list of six reads as a column of names rather than as six sentences. -->
-                                <span class="dn">${i.title}${i.isDraft ? html`${' '}<span class="nextmark">NEXT SEASON</span>` : null}</span>
-                                <span class="dd">${DAY_LANE_LABEL[i.lane] || i.lane}</span>
+                            <!-- The row is mark · name · TYPE · dates. The lane label carried the same class as
+                                 the date range, so the two read as one column of grey and the type stopped being
+                                 a distinct fact; the design gives it dt and leads the row with a topic dot. -->
+                            <li key=${n} style=${`--c:var(${topicVarFor(i.lane) || '--ink4'})`}>
+                                <i></i>
+                                <span class="dn">${i.title}${i.isDraft ? html`${' '}<span class="nextmark">NEXT SEASON</span>` : null}</span>${' '}
+                                <span class="dt">${dayLaneLabel(i.lane)}</span>${' '}
                                 <span class="dd">${i.b && i.b !== i.a ? `${fmtDay(i.a)} → ${fmtDay(i.b)}` : fmtDay(i.a)}</span>
                             </li>`)}
                     </ul>`
-                : html`<p class="dw-p">Nothing runs on this day. The season continues — no draw, event or playlist
-                    opens, runs or closes.</p>`}
+                : (conforming() ? html`<p class="dw-p">Nothing is scheduled on this day.</p>`
+                    : html`<p class="dw-p">Nothing runs on this day. The season continues — no draw, event or playlist
+                    opens, runs or closes.</p>`)}
                 ${draft ? html`
                     <label class="dwcheck" style="margin-top:12px">
                         <input type="checkbox" checked=${withDraft} onChange=${(e) => onWithDraft(e.target.checked)} />
@@ -336,6 +362,26 @@ function Eyebrow({ live, staged, flags }) {
 }
 
 // Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place.
+// 🔴 THE DESIGN NAMES THE KINDS AFTER THE LANES, NOT AFTER ONE ITEM. Its chips read "New draws ·
+// Returning · Draw windows · Events · Playlists · Patch notes" — the same six words the Track's lane
+// headers and the Manifest's filter chips use — while this said "Draw · Returning draw · Draw window ·
+// Event". Two vocabularies for one set of things, on two controls a thumb's width apart. The stage verb
+// is the SINGULAR of the same word ("Stage event"), which is why the design carries both forms.
+const CONFORM_KIND_WORDS = {
+    draw: { label: 'New draws', single: 'draw' },
+    returning: { label: 'Returning', single: 'returning draw' },
+    drawwindow: { label: 'Draw windows', single: 'draw window' },
+    event: { label: 'Events', single: 'event' },
+    playlist: { label: 'Playlists', single: 'playlist' },
+    patchnote: { label: 'Patch notes', single: 'patch note' },
+};
+const composeTypes = () => (!conforming() ? COMPOSE_TYPES : COMPOSE_TYPES.map((t) => ({
+    ...t, ...(CONFORM_KIND_WORDS[t.key] || {}),
+    // Every field is "Name" in the design — the kind is already stated by the pressed chip directly
+    // above it, so repeating it in the label is the form saying the same thing twice.
+    nameLabel: t.key === 'patchnote' ? 'Patch note title' : 'Name',
+})));
+
 const COMPOSE_TYPES = [
     { key: 'draw', label: 'Draw', hex: 'var(--draw)', shape: 'point', nameLabel: 'Draw name',
       placeholder: 'Crimson Moonlight', dateLabel: 'Releases',
@@ -1087,8 +1133,14 @@ export function SeasonRealm({ session }) {
                                                  today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope} />`;
 
     // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it.
+    // Extracted so the conformance mount above can take it: one Composer, two possible positions, never two instances.
+    const composerSlot = showAdd ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
+                                              onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
+                                              onStageMany=${handleStageMany}
+                                              onLive=${setComposeGhost}
+                                              onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null;
     const viewSlot = view === 'Track'
-        ? html`${showAdd ? html`<${Composer} types=${COMPOSE_TYPES} initialType=${showAdd === true ? null : showAdd}
+        ? html`${showAdd && !conforming() ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
                                               onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
                                               onStageMany=${handleStageMany}
                                               onLive=${setComposeGhost}
@@ -1115,11 +1167,6 @@ export function SeasonRealm({ session }) {
                     on the page agreeing with no other left edge. -->
                ${conforming() ? null : html`<p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
                                        data-tip="See everything running on one day">Open a day…</button></p>`}
-               ${dayOpen ? html`
-                   <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
-                                 withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
-                                 onDay=${setDayOpen}
-                                 onClose=${() => setDayOpen(null)} />` : null}
 `
         : view === 'Repairs'
             ? html`<${Repairs} data=${trackData} window=${visibleWindow} season=${state.live} onClamp=${handleDragCommit} />`
@@ -1148,6 +1195,17 @@ export function SeasonRealm({ session }) {
                                                 { label: 'Remove', danger: true, onClick: confirmBulkDelete },
                                             ]} />`;
 
+    // 🔴 EVERY OVERLAY RENDERS FROM THE SHELL'S SLOT, WHICH IS OUTSIDE main. The day drawer was mounted
+
+    // inside the Track's view slot, so it inherited the same two things the export drawer did before it
+
+    // moved: a scrim trapped by main's own z-index, and every descendant rule of whatever panel it
+
+    // happened to sit under. One overlay in the wrong place is a bug; two is the shape of the thing,
+
+    // and the shape is that overlays do not live in the content tree.
+
+
     return html`
         <${Shell} realm="season" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Track', 'Board', 'Repairs']} onSetView=${setView}
                   stateKey=${['saved', 'staged', 'conflict'].filter((k) => allRows.some((r) => (r.state === 'live' ? 'saved' : r.state) === k))}
@@ -1158,7 +1216,8 @@ export function SeasonRealm({ session }) {
                                                title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season’s own deadlines." 
                                                aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
-                                               actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`} />`}
+                                               actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`}
+                                               below=${conforming() ? composerSlot : null} />`}
                   contextSlot=${html`
                       <!-- The season's identity and its draft live ABOVE the view layer, not inside it —
                            they are the context the Track is read against, and they do not change when the
@@ -1180,7 +1239,11 @@ export function SeasonRealm({ session }) {
                           <p class="errmsg" role="alert">${pageError}
                               <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
                       ${viewSlot}`}
-                  overlaySlot=${overlay.render()} manifestSlot=${manifestSlot}
+                  overlaySlot=${html`${overlay.render()}${dayOpen ? html`
+                      <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
+                                    withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
+                                    onDay=${setDayOpen}
+                                    onClose=${() => setDayOpen(null)} />` : null}`} manifestSlot=${manifestSlot}
                   footSlot=${html`<${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
                   traySlot=${html`<${Tray} notices=${notices}
                                            blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}

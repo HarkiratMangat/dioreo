@@ -6,6 +6,7 @@
 //
 // composerReason/composerFields come from composer.logic.js, loaded as a classic script — see track.js's header for why every .logic.js sibling here loads that way.
 import { h } from '../vendor/preact.mjs';
+import { conforming } from './conform.js';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { fetchJson } from './httpClient.js';
@@ -33,7 +34,9 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
 
     const raw = String(value || '').trim();
     return html`
-        <div class="nw-f">
+        <!-- The design wraps only the NAME field in nw-f; a date field is a bare div, and the extra class
+             carries the form's own column padding onto two boxes that are already inside nw-dates. -->
+        <div class=${conforming() ? null : 'nw-f'}>
             <label class="nw-l" for=${id}>${label}</label>
             <input class="nw-i nw-smart" id=${id} type="text" autocomplete="off" spellcheck="false"
                    placeholder=${placeholder} value=${value}
@@ -42,9 +45,12 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
                  bad states — because it is a RESULT, not a hint: it reports what the server resolved
                  and whether it resolved at all, and it had been rendering in the generic muted grey that
                  says neither. -->
-            ${!raw ? null : html`
-                <span class=${'nw-date-echo ' + (iso ? 'ok' : 'bad')}>
-                    ${iso ? `${fmtDay(iso)}  ·  ${iso}` : 'not a date yet'}
+            <!-- The design creates this line ONCE and rewrites its class, so an untouched date field still
+                 carries an empty echo. Rendering it only when there is text made the element itself a
+                 state, which is a different shape from the one the stylesheet reserves space for. -->
+            ${!raw && !conforming() ? null : html`
+                <span class=${'nw-date-echo' + (!raw ? '' : (iso ? ' ok' : ' bad'))}>
+                    ${!raw ? '' : (iso ? `${fmtDay(iso)}  ·  ${iso}` : 'not a date yet')}
                 </span>`}
         </div>
     `;
@@ -111,8 +117,12 @@ function PasteZone({ kind, onStageAll }) {
 // ⚠️ IT RENDERS NOTHING UNTIL THERE IS SOMETHING TRUE TO SAY. `.nwhost .nw-prev:empty{display:none}` is in the adopted sheet, so an empty preview must be genuinely EMPTY rather than a wrapper holding a placeholder — a "nothing yet" line would reserve 76px of the composer forever and defeat the rule.
 function ComposePreview({ state, type }) {
     const ghost = composeGhostFor(state, type);
-    if (!ghost || !type) return html`<div class="nw-prev"></div>`;
     const name = (state.name || '').trim();
+    // 🔴 A DATE ALONE IS NOT SOMETHING TRUE TO SAY. With the first date pre-filled the way the design
+    // pre-fills it, this rendered a card titled "Name" for a record nobody had named yet — 153px of
+    // preview above a form still on its first field, where the design shows none. The rule this file
+    // already states ("nothing until there is something true to say") needed the name in its condition.
+    if (!ghost || !type || !name) return html`<div class="nw-prev"></div>`;
     const window = ghost.shape === 'point' || ghost.end === ghost.start
         ? fmtDay(ghost.start)
         : `${fmtDay(ghost.start)} → ${fmtDay(ghost.end)}`;
@@ -127,8 +137,36 @@ function ComposePreview({ state, type }) {
 }
 
 export function Composer({ types, initialType, onStage, onStageMany, onCancel, onLive }) {
-    const [state, setState] = useState({ type: initialType || null, name: '', aText: '', aIso: null, bText: '', bIso: null });
+    // 🔴 THE DESIGN BRINGS ITS COMPOSER INTO VIEW AND THIS DID NOT. On a season whose masthead is 510px
+    // tall the form opened below the fold, so pressing Add appeared to do nothing at all — the failure is
+    // silent and looks like a dead button. It is also why two fold-height captures of the same moment
+    // framed different parts of the page.
+    const hostRef = useRef(null);
+
+    useEffect(() => {
+        const el = hostRef.current;
+        // ⚠️ NOT SYNCHRONOUSLY, AND NOT rAF. The effect runs before the masthead has finished laying the
+        // section out, so an immediate call scrolls against a box that is still zero-height; rAF is banned
+        // here because it does not fire in a background tab, which is where every measurement runs.
+        const t = setTimeout(() => {
+            if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'auto' });
+        }, 60);
+        return () => clearTimeout(t);
+    }, []);
+    // The design opens with the first date already set to today — its Track ghost reads "+ Aug 24" and the
+    // echo under the field reads it back resolved. An empty field is not the same offer: it asks the reader
+    // to supply a date the page already knows, and it is why the mockup's date column measures 151px against
+    // an empty 150.
+    const todayISO = () => new Date().toISOString().slice(0, 10);
+    const [state, setState] = useState({ type: initialType || null, name: '',
+        aText: conforming() ? todayISO() : '', aIso: conforming() ? todayISO() : '',
+        bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;
+
+    // 🔴 THE LIVE GHOST NEVER FIRED ON OPEN. onLive was called from the field handlers only, so the Track
+    // drew nothing until somebody typed — even though the composer opens with a date already in it and the
+    // design's Track shows a `+ Aug 24` marker the moment it appears. The preview is state, not an event.
+    useEffect(() => { if (onLive) onLive(composeGhostFor(state, (types || []).find((t) => t.key === state.type) || null)); }, [state.type, state.aIso, state.bIso, state.name]);
 
     // 🔴 THE SIGNATURE MOMENT, and the one thing /manage structurally cannot do: it answers "when" with a line of text, and this draws the item where it will land, in its own lane, before it is staged. The composer does not own the Track, so it reports and the page draws — the alternative is a second miniature timeline beside the real one, which is two axes disagreeing about the same season.
     //
@@ -149,7 +187,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
     }, [initialType]);
 
     return html`
-        <section class="nwhost" aria-label="Add to the season">
+        <section ref=${hostRef} class=${conforming() ? 'nwhost nw-host' : 'nwhost'} aria-label="Add to the season">
             <div class="nw">
                 <div class="nw-types" role="group" aria-label="What are you adding">
                     ${types.map((t) => html`
@@ -193,7 +231,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
                     <span class="nw-why">${reason || 'Ready to stage.'}</span>
                     <button class="pill" onClick=${onCancel}>Cancel</button>
                     <button class="pill lead" disabled=${Boolean(reason)}
-                            onClick=${() => onStage(state.type, composerFields(state, type))}>Stage it</button>
+                            onClick=${() => onStage(state.type, composerFields(state, type))}>${conforming() && type ? `Stage ${type.single || String(type.label).toLowerCase()}` : 'Stage it'}</button>
                 </div>
             </div>
         </section>

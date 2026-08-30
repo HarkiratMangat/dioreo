@@ -35,10 +35,50 @@ function vendorPreactAndHtm() {
 //
 // ⚠️ At BUILD time rather than only in the suite: the source-level version in portalChrome.test.js runs after everything else, so a broken build got as far as four failing render cases with a message naming a variable nobody wrote. Refusing to emit the file is the earliest this can be caught.
 function assertNoBacktickInComments(file, src) {
+    // ⚠️ EVERY OFFENDER, NOT THE FIRST. Reporting one at a time turned a single sweep into nine
+    // separate build failures across this branch, each costing a round trip to find the next identical
+    // mistake. A gate that stops at the first instance teaches the instance; one that lists them all
+    // teaches the class.
+    const hits = [];
     for (const m of src.matchAll(/<!--[\s\S]*?-->/g)) {
         if (!m[0].includes('`')) continue;
         const line = src.slice(0, m.index).split('\n').length;
-        throw new Error(`portal/ui/${file}:${line} has a backtick inside an HTML comment — it closes the surrounding template. Say the name in plain words.`);
+        hits.push(`portal/ui/${file}:${line}`);
+    }
+    // 🔴 AND A COMMENT INSIDE A TAG'S ATTRIBUTE LIST, which is the other half of the same trap and has
+    // cost this branch two silent blank pages. htm stops parsing attributes at the comment and renders the
+    // rest of the tag as literal text, so the page comes up reading meta=Aug 4 ... masthead= — or, when the
+    // tag is the Shell itself, comes up empty. The note goes beside the value, never inside the tag.
+    //
+    // ⚠️ INTERPOLATIONS ARE BLANKED FIRST, and that is what makes this usable rather than noisy. A first
+    // version scanned the raw text and flagged two legitimate comments in armory.js: an arrow function
+    // inside an attribute contains a > , which reads as the tag closing, and a tag opened on one line
+    // closes on another. Blanking every balanced ${...} span removes both illusions.
+    const blanked = (() => {
+        const out = String(src).split('');
+        for (let i = 0; i < out.length - 1; i++) {
+            if (out[i] === '$' && out[i + 1] === '{') {
+                let depth = 0;
+                for (let j = i + 1; j < out.length; j++) {
+                    if (out[j] === '{') depth++;
+                    else if (out[j] === '}') { depth--; if (!depth) { for (let k = i; k <= j; k++) if (out[k] !== '\n') out[k] = ' '; i = j; break; } }
+                }
+            }
+        }
+        return out.join('');
+    })();
+    let at = -1;
+    while ((at = blanked.indexOf('<!--', at + 1)) !== -1) {
+        const open = blanked.lastIndexOf('<', at - 1);
+        if (open === -1) continue;
+        const close = blanked.indexOf('>', open + 1);
+        // Inside the tag only when no > separates its opening bracket from the comment.
+        if (/^<[$A-Za-z]/.test(blanked.slice(open, open + 2)) && (close === -1 || close > at)) {
+            hits.push(`portal/ui/${file}:${blanked.slice(0, at).split('\n').length} (comment inside an attribute list)`);
+        }
+    }
+    if (hits.length) {
+        throw new Error(`backtick inside an HTML comment closes the surrounding template — say the name in plain words:\n  ` + hits.join('\n  '));
     }
 }
 

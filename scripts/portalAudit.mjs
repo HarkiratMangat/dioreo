@@ -47,6 +47,13 @@ const has = (n) => args.includes(n);
 
 const realm = flag('--realm', 'season');
 const view = flag('--view', null);
+// 🔴 THE SAME BLIND SPOT AS portalDiff's, and it is worse here: this walks the DOM AS IT LOADS, so the
+// composer, the export panel, the day drawer and the typed-confirm have never appeared in ANY of the five
+// sections, on any realm. --open clicks a named control on both sides first, and REFUSES if the click
+// misses or opens nothing — a one-sided open produces five sections comparing an overlay against the page
+// behind it, which reads as hundreds of real findings and is entirely an artefact.
+const openText = flag('--open', null);
+const listTriggers = has('--triggers');
 const CAP = has('--all') ? 1e9 : 25;
 
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
@@ -66,10 +73,14 @@ const PROPS = ['display', 'position', 'width', 'minHeight', 'marginTop', 'margin
 // ── the in-page walk ─────────────────────────────────────────────────────────────────────────────
 // No depth cap. The whole point is that a table cell, a lane bar and a grid cell are where the
 // differences actually live, and every one of them sits below converge's fourth level.
-const COLLECT = (props) => {
+const COLLECT = (props, wholeBody) => {
     const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+    // 🔴 SCOPING TO `main` HID THE OVERLAY TIER ENTIRELY. The design's export panel renders into the
+    // page's `aside.tray`, a SIBLING of the wrapper — so with --open the walk compared the portal's inline
+    // panel against nothing at all and reported eighteen "only in portal" pieces that were an artefact of
+    // where the tool was looking. When something has been opened, the root is the body.
     const ms = [...document.querySelectorAll('main')];
-    const root = ms[ms.length - 1] || document.body;
+    const root = wholeBody ? document.body : (ms[ms.length - 1] || document.body);
     const out = [];
     const sigOf = (e) => {
         const cls = typeof e.className === 'string' ? e.className.trim() : '';
@@ -198,7 +209,55 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             if (!hit) throw new Error(`portal:audit refuses: no control reading "${view}" on the ${side} side.`);
             await p.evaluate(() => new Promise((r) => setTimeout(r, 1400)));
         }
-        const data = await p.evaluate(COLLECT, PROPS);
+        if (listTriggers) {
+            const list = await p.evaluate(() => {
+                const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+                const out = new Map();
+                for (const e of document.querySelectorAll('button,a,[role="button"],[role="tab"],summary')) {
+                    if (e.offsetParent === null) continue;
+                    const t = norm(e.textContent) || norm(e.getAttribute('aria-label'));
+                    if (!t || t.length > 60) continue;
+                    out.set(t, (out.get(t) || 0) + 1);
+                }
+                return [...out.entries()].map(([t, n]) => t + (n > 1 ? ` \u00d7${n}` : ''));
+            });
+            await p.close();
+            return { triggers: list };
+        }
+        if (openText) {
+            const sig = () => {
+                const t = String(document.body.innerText || '').replace(/\s+/g, ' ').trim();
+                const n = document.querySelectorAll('dialog,[role="dialog"],[aria-modal="true"],.ov,.ovl,.modal,.sheet,.drawer,.exs,.dw,.cmp').length;
+                return t.length + '|' + n + '|' + document.querySelectorAll('*').length;
+            };
+            const before = await p.evaluate(sig);
+            const hit = await p.evaluate((want) => {
+                const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                const c = [...document.querySelectorAll('button,a,[role="button"],[role="tab"]')]
+                    .filter((e) => n(e.textContent) === n(want) && e.offsetParent !== null)
+                    .sort((a, b) => a.textContent.length - b.textContent.length);
+                if (!c.length) return false; c[0].click(); return true;
+            }, openText);
+            if (!hit) throw new Error(`portal:audit refuses: no control reading "${openText}" on the ${side} side. Run --triggers to list what each side offers.`);
+            await p.evaluate(() => new Promise((r) => setTimeout(r, 1600)));
+            const after = await p.evaluate(sig);
+            if (after === before) throw new Error(`portal:audit refuses: clicking "${openText}" opened nothing on the ${side} side.`);
+            // 🔴 THE SAME FIX portalDiff NEEDED, FOR THE SAME REASON. `top` is reported including scrollY, so
+            // an overlay that scrolls itself into view on one side and not the other shifts every row beneath
+            // it — and the CASCADE section then names a page-wide offset that is a camera artefact rather than
+            // a layout one. Both sides are read from the same scroll position, always.
+            await p.evaluate(() => new Promise((r) => {
+                for (const el of [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement]) {
+                    if (el) el.scrollTop = 0;
+                }
+                window.scrollTo(0, 0);
+                setTimeout(r, 420);
+            }));
+        }
+        // ⚠️ A SECOND ARGUMENT, not a property hung off the array. page.evaluate serialises its arguments
+        // as JSON, and JSON.stringify drops every non-index property of an array — so the flag arrived
+        // undefined and the walk stayed scoped to main while reporting as though it had widened.
+        const data = await p.evaluate(COLLECT, PROPS, Boolean(openText));
         await p.close();
         return data;
     };
@@ -206,6 +265,19 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
     try {
         const mk = await grab(MOCKUP, 'MOCKUP');
         const pt = await grab(HARNESS, 'PORTAL');
+        if (listTriggers) {
+            const M = new Set(mk.triggers), P = new Set(pt.triggers);
+            const both = mk.triggers.filter((t) => P.has(t));
+            console.log(`\nTRIGGERS — season · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
+            console.log('  BOTH SIDES (openable with --open "<text>")');
+            for (const t of both) console.log('    · ' + t);
+            const onlyM = mk.triggers.filter((t) => !P.has(t));
+            const onlyP = pt.triggers.filter((t) => !M.has(t));
+            if (onlyM.length) { console.log('\n  ONLY IN MOCKUP — each one is a finding in its own right'); for (const t of onlyM) console.log('    · ' + t); }
+            if (onlyP.length) { console.log('\n  ONLY IN PORTAL'); for (const t of onlyP) console.log('    · ' + t); }
+            console.log('');
+            return;
+        }
         const mkH = Math.max(...mk.map((r) => r.top + r.h), 0);
         const ptH = Math.max(...pt.map((r) => r.top + r.h), 0);
 

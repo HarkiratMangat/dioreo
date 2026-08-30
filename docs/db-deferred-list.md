@@ -534,16 +534,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### 🔬 The conformance overlay has never opened anything — a whole tier of the UI is unmeasured `P1 · L · Sonnet5-XHigh`
-**Found by Harkirat 2026-08-29 10:59 EDT**, looking at the harness himself while the three Season views measured 0.1–0.2%.
+### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
+*Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
-`scripts/portalDiff.mjs` screenshots the page **as it loads** and `scripts/portalAudit.mjs` walks the DOM **as it loads**. Neither clicks a control. So the composer modal, the export panel, the day drawer, the typed-confirm overlay, the row preview, and every empty/error state behind a button have **never been compared on any realm — Broadcast included**. Every conformance number filed so far describes the page at rest.
+`--open` and `--triggers` now exist on both instruments and Season's composer, export drawer and day drawer are converged — but **Armory, Review, Access, Analytics and Home have had no overlay opened on either side.** The shared components (the composer, the export drawer, the confirm) are converged and carry over; anything a realm draws itself does not. `npm run portal:audit -- --realm <r> --triggers` prints both sides' openable controls and marks the one-sided ones, which is where to start.
 
-⚠️ **This was already written down as a caveat and that is precisely why it went unnoticed**: `CLAUDE.md`'s portal row and both handoffs say the overlay "cannot see … anything behind an interaction", which reads as a limit on confidence rather than as *an entire tier nobody has looked at*. A caveat that does not say what it EXCLUDES gets read as a hedge.
+⚠️ **Their RESTING pages are also unconverged and the numbers are large** — armory **13.6%** (729 regions), analytics **12.7%**, access **8.6%**, home **6.3%**, review **4.7%**, measured 2026-08-30. Season and Broadcast are the only two that have had a pass.
 
-**What to do.** Add `--open "<trigger text>"` to both instruments: click the same control on the mockup and the harness, settle, then capture. Both pages carry the same triggers, so this is one step, not a per-realm fixture. Then run the ordinary five-section loop per overlay. 🔴 **The overlays are SHARED components** — one composer, one export panel, one confirm — so each one converged is converged for all six realms at once.
+### 🎨 The mockup's day list is an unstyled browser default, and the portal now matches it `P3 · S · Sonnet5-Medium`
+`season.html` styles `.daylist` **nowhere**, so its day drawer renders UA defaults: 15px margins, a 40px indent and real disc bullets. The portal had proper rows; under the conformance flag it now reproduces the default, because the pass's rule is to match first and re-apply afterwards rather than decide mid-diff which side is better. **This one is almost certainly a gap in the design rather than a decision** — it is the clearest re-apply candidate found so far.
 
-**Verify condition:** `node scripts/portalDiff.mjs --realm season --open "Add" --portal harness` produces two frames showing the composer, and its region count can be driven the same way the page's was.
+### 🧪 `npm test` fails on the nameplate catalog snapshot — 941 ids against an expected 925 `P2 · S · Sonnet5-Medium`
+Pre-existing and unrelated to the portal: `docs/reference/nameplate-decoration-catalog.json` was modified in the working tree before this session began. The test's own message says what to do — **re-verify uniqueness rather than editing the number** — because the count is the assertion.
 
 
 ### Broadcast's overlay — ✅ both views at 1282, ⏳ 375×812 never run `[P2 · S · Opus5-High]`

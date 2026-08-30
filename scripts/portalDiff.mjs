@@ -70,9 +70,24 @@ const selfTest = args.includes('--selftest');
 
 // 🔴 --view IS THE MOST DANGEROUS FLAG IN THIS FILE, because its failure mode is FLATTERING. Season's Board and Repairs live behind tabs; if the click misses on one side the tool diffs the default view against the default view and prints a small, tidy region list that reads like Board is nearly conformant. That is the exact shape of every instrument failure this pass has produced: it runs, it emits well-formed output, and it measured something else. So the flag ASSERTS rather than attempts — on each side independently it records what main says before the click and after it, and refuses to report unless BOTH sides actually moved. A tab that is not found is a refusal, never a silent fall-through to the default view.
 const view = flag('--view', null);
+// 🔴 THE OVERLAY TIER, AND IT WAS THE WHOLE MISSING HALF. Harkirat opened the harness himself on
+// 2026-08-29 while Season's three views measured 0.1–0.2% and found the composer and the export panel
+// "severely broken" — because this tool screenshots the page AS IT LOADS and had never clicked anything.
+// Every modal, drawer and panel on every realm was therefore unmeasured, on both sides, from day one.
+// A realm at 0.1% was only ever a realm whose RESTING page matched, and nothing said so.
+//
+// ⚠️ IT REFUSES THE SAME WAY --view DOES, and for the same reason: a click that misses on one side
+// diffs the page against itself and prints a tidy, flattering region list. Found AND moved, on BOTH
+// sides, or no report.
+const openText = flag('--open', null);
+// A modal is anchored to the VIEWPORT, so growing the frame to the document's height would centre it
+// in four thousand pixels of matching background and report a percentage diluted by empty space.
+// --open captures one screenful; --open-full is the opt-out for a drawer that genuinely scrolls.
+const openFull = args.includes('--open-full');
+const openSlug = openText ? '-open' + String(openText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
 const viewSlug = view ? '-' + String(view).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
 const vpSlug = OFF_CONTRACT ? `-${VW}x${VH}` : '';
-const shotName = (side) => `${side}-${realm}${viewSlug}${vpSlug}.png`;
+const shotName = (side) => `${side}-${realm}${viewSlug}${openSlug}${vpSlug}.png`;
 
 // Addressed by the word on the control, so it needs no knowledge of either side's class names — the mockup and the portal do not share them. Case- and whitespace-insensitive, and it takes the SHORTEST matching element so a container whose text merely includes the word never wins over the tab itself.
 const CLICK_VIEW = (want) => {
@@ -84,6 +99,16 @@ const CLICK_VIEW = (want) => {
     if (!cands.length) return false;
     cands[0].click();
     return true;
+};
+// What an OVERLAY opening looks like, cheaply. A modal is frequently portaled OUTSIDE main — the tray,
+// the confirm sheet and the export panel all are — so the view signature below cannot see it. Body text
+// length plus the count of anything dialog-shaped moves for every one of them.
+const OPEN_SIG = () => {
+    const t = String(document.body.innerText || '').replace(/\s+/g, ' ').trim();
+    const n = document.querySelectorAll('dialog,[role="dialog"],[aria-modal="true"],.ov,.ovl,.modal,.sheet,.drawer,.exs,.dw,.cmp').length;
+    // Node COUNT, not innerHTML length: an aria-expanded flip changes the byte count by one and would
+    // pass this assertion while nothing opened, which is precisely the flattering failure it exists to stop.
+    return t.length + '|' + n + '|' + document.querySelectorAll('*').length;
 };
 // What the page IS, cheaply and without knowing its markup: how much text the content area holds plus how it starts. A view change moves both. Comparing this before and after the click is what turns a missed tab into a refusal instead of a clean-looking report.
 const VIEW_SIG = () => {
@@ -136,6 +161,33 @@ async function mintSession(discordId) {
 }
 
 // Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence.
+// Every visible control the page offers, both sides, as one map. Written because the first question the
+// overlay tier asks — "what is there to open, and does the other side have it?" — had no answer short of
+// reading two source files, and a control present on ONE side is itself a finding this reports for free.
+const LIST_TRIGGERS = () => {
+    const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+    const out = new Map();
+    for (const e of document.querySelectorAll('button,a,[role="button"],[role="tab"],summary')) {
+        if (e.offsetParent === null) continue;
+        const t = norm(e.textContent) || norm(e.getAttribute('aria-label'));
+        if (!t || t.length > 60) continue;
+        out.set(t, (out.get(t) || 0) + 1);
+    }
+    return [...out.entries()].map(([t, n]) => t + (n > 1 ? ` ×${n}` : ''));
+};
+
+async function openOverlay(page, side) {
+    if (!openText) return;
+    const before = await page.evaluate(OPEN_SIG);
+    const hit = await page.evaluate(CLICK_VIEW, openText);
+    if (!hit) throw new Error(`portal:diff refuses to report: no control reading "${openText}" exists on the ${side} side.\n`
+        + '  Run with --triggers to see every control both sides actually offer.');
+    await page.evaluate(() => new Promise((r) => setTimeout(r, 1100)));
+    const after = await page.evaluate(OPEN_SIG);
+    if (after === before) throw new Error(`portal:diff refuses to report: clicking "${openText}" opened nothing on the ${side} side.\n`
+        + '  The control was found and clicked and the page is byte-identical afterwards, so no overlay appeared.');
+}
+
 async function enterView(page, side) {
     if (!view) return;
     const before = await page.evaluate(VIEW_SIG);
@@ -191,6 +243,21 @@ async function shoot(page, url, label) {
             + '  for a session to be minted against.');
     }
     await enterView(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
+    await openOverlay(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
+    // 🔴 THE TWO SIDES LAND AT DIFFERENT SCROLL POSITIONS AND THAT ALONE DOMINATED THE NUMBER. The design's
+    // composer scrolls itself into view on open (its page ends at scrollTop 285); a portal that does not
+    // leaves the two fold-height frames photographing different parts of the page, and the residual reads
+    // as a composition failure when it is a camera failure. Whether each side auto-scrolls is a real
+    // question — the audit's `top` column answers it — but the pixel frame has to be deterministic first.
+    if (openText) {
+        await page.evaluate(() => new Promise((r) => {
+            for (const el of [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement]) {
+                if (el) el.scrollTop = 0;
+            }
+            window.scrollTo(0, 0);
+            setTimeout(r, 420);
+        }));
+    }
     // 🔴 THIS CLIPPED TO ONE SCREENFUL FOR ITS ENTIRE FIRST DAY, and the gap is the same shape as the one the tool was written to close. It captured { x:0, y:0, width:VW, height:VH } — 888px — so EVERYTHING BELOW THE FOLD had never been compared once, on any realm, at any width, while the report said "17.1% of pixels differ" as though it had read the page. A `--scroll` flag existed to reach further and nothing ever used it. Harkirat spotted broken differences in two seconds in the frames this produced; they were below 888px. Full-page is the DEFAULT now, and `--fold` is the opt-in for the old behaviour when the question is genuinely about what lands above the fold.
     //
     // ⚠️ THE TWO SIDES ARE DIFFERENT HEIGHTS, and that is a finding rather than an obstacle. The canvas subtraction needs one geometry, so both are compared over the SHORTER page and the leftover is reported as its own line — a portal 600px taller than its mockup is a composition difference that a percentage can never express. 🔴 `VH0` HAS TO BE PASSED IN. The first version of these four lines closed over it, and a page.evaluate callback is serialised and run in the BROWSER, where no such binding exists — ReferenceError, swallowed by a .catch I had written myself, falling back to 888. The run then printed "captured mk- 888px · pt- 888px" under a comment claiming full-page capture. A silent fallback on the one line whose failure most needed to be seen. It throws now.
@@ -202,7 +269,7 @@ async function shoot(page, url, label) {
             ...cands.map((e) => Math.max(e.scrollHeight || 0, e.getBoundingClientRect().bottom || 0)));
         return Math.ceil(h);
     }, VH0);
-    const h = foldOnly ? VH : Math.min(Math.max(full, VH), 12000);
+    const h = (foldOnly || (openText && !openFull)) ? VH : Math.min(Math.max(full, VH), 12000);
     if (!foldOnly) {
         // A page whose scroll container is `main` does not grow the window, so `fullPage` alone captures VH. Growing the viewport to the content makes the whole column paint, which is what has to be compared.
         await page.setViewport({ width: VW, height: h, deviceScaleFactor: 1 });
@@ -294,6 +361,7 @@ async function label(page, url, regions) {
         setTimeout(r, 2400);
     }), scrollY);
     await enterView(page, url.includes('8900') ? 'MOCKUP' : 'PORTAL');
+    await openOverlay(page, url.includes('8900') ? 'MOCKUP' : 'PORTAL');
     // The same growth shoot() applied. Without it elementsFromPoint is asked about y=2400 on a page that ends at 888 and answers with whatever is nearest — a confident name for the wrong element.
     if (!foldOnly) {
         const h = SHOT_H[url.includes('8900') ? 'mk' : 'pt'] || VH;

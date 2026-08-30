@@ -799,3 +799,24 @@ Filed as `[P3 · M · Sonnet5-Medium · 🧩needs-design]` from Harkirat's own w
 **Verify:** both pages report the same height and the region count drops to the shared-chrome floor the other two Season views sit at (~120–150).
 
 ⚠️ **Repairs also has a real FEATURE gap the overlay cannot grade:** the portal's own `findGaps` check ("a stretch of the visible window with nothing in this lane") has no counterpart in the design and is stood down under `?conform=1`. Whether it comes back is a re-apply-phase decision, not a conformance one.
+
+## ✅ The overlay tier is measurable, and Season's four overlays are converged — closed 2026-08-30 11:5x EDT
+
+**Closed by measurement.** `--open "<trigger>"` and `--triggers` are in both `portalDiff` and `portalAudit`, each refusing on either side if the click misses or opens nothing. Season's overlays, first reading → now: composer (Event) **17.2% → 0.9%**, composer (Draw) **11.0% → 1.2%**, export panel **14.7% → 0.2%**, day drawer **never opened at all → 1.0%**. Resting pages unmoved (Track 0.2 · Board 0.1 · Repairs 0.1) and Broadcast unmoved (0.2 / 0.3).
+
+🔴 **The defect was one class, not four bugs: an overlay rendered inside `main` is not the same component as one rendered outside it.** `main{position:relative;z-index:1}` makes a stacking context, so a modal's scrim painted at z-index 1 and left the sticky header lit above a page it had just declared inert; and `.masthead p{font-size:13.5px}` reached a retention paragraph rendering it at 13.5 against the design's 11.5. Both symptoms, one cause. The fix has two halves — `main` stops being a stacking context while any drawer is open (covers every Drawer), and every overlay mounts at the Shell's out-of-`main` slot (the export drawer moved, the day drawer moved).
+
+**Five instrument defects were found by their own wrong numbers, and each is the same shape: `--open` was bolted onto tools that assumed a page at rest.** The audit walked only `main`, so the design's export panel — which renders into the page's `aside.tray` — was invisible and reported as eighteen portal-only pieces. The open-assertion compared `innerHTML.length`, which an `aria-expanded` flip moves by one byte. `page.evaluate` serialises its arguments as JSON, and `JSON.stringify` drops non-index properties of an array, so the whole-body flag arrived `undefined` while the code read as though it had widened. Neither tool normalised scroll, so a mockup that scrolls its composer into view framed a different part of the page. And a class added to `main` to un-stack it changed `main`'s own signature, desynchronising the walk beneath it — the instrument reporting a difference the instrument created.
+
+*Verbatim, as filed:*
+
+### 🔬 The conformance overlay has never opened anything — a whole tier of the UI is unmeasured `P1 · L · Sonnet5-XHigh`
+**Found by Harkirat 2026-08-29 10:59 EDT**, looking at the harness himself while the three Season views measured 0.1–0.2%.
+
+`scripts/portalDiff.mjs` screenshots the page **as it loads** and `scripts/portalAudit.mjs` walks the DOM **as it loads**. Neither clicks a control. So the composer modal, the export panel, the day drawer, the typed-confirm overlay, the row preview, and every empty/error state behind a button have **never been compared on any realm — Broadcast included**. Every conformance number filed so far describes the page at rest.
+
+⚠️ **This was already written down as a caveat and that is precisely why it went unnoticed**: `CLAUDE.md`'s portal row and both handoffs say the overlay "cannot see … anything behind an interaction", which reads as a limit on confidence rather than as *an entire tier nobody has looked at*. A caveat that does not say what it EXCLUDES gets read as a hedge.
+
+**What to do.** Add `--open "<trigger text>"` to both instruments: click the same control on the mockup and the harness, settle, then capture. Both pages carry the same triggers, so this is one step, not a per-realm fixture. Then run the ordinary five-section loop per overlay. 🔴 **The overlays are SHARED components** — one composer, one export panel, one confirm — so each one converged is converged for all six realms at once.
+
+**Verify condition:** `node scripts/portalDiff.mjs --realm season --open "Add" --portal harness` produces two frames showing the composer, and its region count can be driven the same way the page's was.
