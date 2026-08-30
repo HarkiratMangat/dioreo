@@ -540,6 +540,17 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🔁 A THIRD read-only audit is owed — both prior runs scored 6/10 and the second found the first's fixes were half-fixes `P1 · XS · Sonnet5-Medium`
+*Filed 2026-08-30 17:0x EDT, named in a message and tracked nowhere until now.*
+
+Run 1 (at `96faa38`) found four defects; all were "fixed". Run 2 (at `aab0853`) scored **the same 6/10** and found those fixes were applied to `.remember` but not to the plan the carriers point at, that three duplicate section numbers were disambiguated without sweeping for a fourth (`§0.7`), and that the peer-worktree DO-NOT-DELETE protection existed in no auto-loaded carrier while `docs-audit` told every reader to remove it. **Those five are now fixed at `5002455` — by the same author, with the same blind spot, and unaudited.**
+
+🔴 **By this repo's own new rule (`session-handoff-guide.md`, "run it AGAIN after fixing"), one round is never enough** — and the evidence is that round 2 scored identically to round 1. **Do not declare the package compact-safe until a run comes back materially cleaner than 6/10.**
+
+**What to do:** the brief is verbatim in `docs/reference/session-handoff-guide.md` under "THE COMPACT-PREP AUDIT — COPY THIS, DO NOT RE-INVENT IT". Run it against HEAD, told explicitly to verify each of run 2's five fixes actually holds and to report what they broke.
+**Verify:** the run reports the five as verified-fixed, finds no new duplicate `§` number, no carrier disagreement, and scores above 6/10 — or its findings are fixed and a further run is owed.
+
+
 ### 🧪 `portalStatus`'s stale branch is UNPROVEN — the falsifier that would prove it is what destroyed a turn's work `P2 · XS · Sonnet5-Medium`
 *Filed 2026-08-30 16:0x EDT. Named in `96faa38`'s message and in no list until now.*
 
