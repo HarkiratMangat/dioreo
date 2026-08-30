@@ -32,11 +32,7 @@ function TLib() {
     throw new Error('season.logic.js needs timeline.logic.js and neither runtime provided it');
 }
 
-// 🔴 THE INK ON A FILLED SURFACE IS A PROPERTY OF THAT SURFACE, not one global value. --on-accent is
-// near-black, which is right on Playlists' bright teal and 2.86:1 on a draw window's plum — so every
-// filled bar, label and state pill on a dark topic rendered unreadable ink the design does not use.
-// The design derives it from the accent's own luminance once and hands it over as --ci; this is that
-// function, and the hexes are the lane accents the tokens resolve to.
+// 🔴 THE INK ON A FILLED SURFACE IS A PROPERTY OF THAT SURFACE, not one global value. --on-accent is near-black, which is right on Playlists' bright teal and 2.86:1 on a draw window's plum — so every filled bar, label and state pill on a dark topic rendered unreadable ink the design does not use. The design derives it from the accent's own luminance once and hands it over as --ci; this is that function, and the hexes are the lane accents the tokens resolve to.
 const TOPIC_HEX = { '--draw': '#AE72E0', '--ret': '#E8639B', '--dw': '#6B4E7D', '--ev': '#4A90D9', '--play': '#2CC4C4', '--patch': '#F2C230' };
 function inkOn(hex) {
     if (!hex || hex[0] !== '#') return '#07090A';
@@ -102,17 +98,20 @@ function stateForElement(elementId, changesets) {
 //
 // ⚠️ Found because the `.nextmark` branch in SEASON_COLUMNS could never be reached: the condition was `row.isDraft` and nothing ever set it. A branch that cannot be true is the same defect as a button with no handler, one layer down. 🔴 THE MANIFEST SAID *WHEN* AND NEVER *WHERE IN THE SEASON*. "Sep 3 → Sep 12" is a fact you have to hold three of at once to compare; the Track answers it visually and the table sitting under the Track did not, so scanning for "what is running late in the season" meant reading 39 date pairs. This is the same window the Track draws, so a row's bar and its lane bar cannot disagree.
 //
-// ⚠️ AND IT IS COMPUTED HERE, NOT IN THE COLUMN. A Manifest column receives a row and nothing else — no season, no window — so a column that scaled its own bar would need a second copy of the season bounds passed in beside it. Stamping it on the row keeps one derivation.
-function seasonSpanGeometry(live) {
-    // 🔴 THIS IS THE DESIGN'S *PAN* BOUNDS, NOT THE DATA'S EXTENT, and the difference was a factor of
-    // 1.8 on every bar the Manifest and the Board draw. This used to push bpEnd/rankEnd/dmzEnd into the
-    // extent unconditionally, so a DMZ season ending 2026-11-11 stretched a 54-day axis to 97 and every
-    // span shrank to 56% of the width the design gives it — thirty findings a view, on three views.
-    // The design's spark() measures against `BOUND` = panBounds() = the windowed bounds plus 6% room,
-    // deliberately wider than the data so the bar reads as a position on a map rather than a bar that
-    // always fills its track. seasonWindow() is already that window (it applies the proportional REACH
-    // rule, so a far-off deadline earns a pin rather than an axis), so the room is all that is left.
-    const w = seasonWindow(live);
+// ⚠️ AND IT IS COMPUTED HERE, NOT IN THE COLUMN. A Manifest column receives a row and nothing else — no season, no window — so a column that scaled its own bar would need a second copy of the season bounds passed in beside it. Stamping it on the row keeps one derivation. ⚠️ `now` IS A PARAMETER, NOT A READ OF THE CLOCK. seasonWindow includes today in its extent — the design's dataBounds does the same — so routing through it made this geometry drift with the wall clock: the same season produced different bars in August and in September, and a test asserting the midpoint of a Sep 1 → Oct 1 season passed or failed depending on the day it ran. Callers pass the day they are rendering.
+function seasonSpanGeometry(live, now = Date.now()) {
+    // 🔴 THIS IS THE DESIGN'S *PAN* BOUNDS, NOT THE DATA'S EXTENT, and the difference was a factor of 1.8 on every bar the Manifest and the Board draw. This used to push bpEnd/rankEnd/dmzEnd into the extent unconditionally, so a DMZ season ending 2026-11-11 stretched a 54-day axis to 97 and every span shrank to 56% of the width the design gives it — thirty findings a view, on three views. The design's spark() measures against `BOUND` = panBounds() = the windowed bounds plus 6% room, deliberately wider than the data so the bar reads as a position on a map rather than a bar that always fills its track. seasonWindow() is already that window (it applies the proportional REACH rule, so a far-off deadline earns a pin rather than an axis), so the room is all that is left. 🔴 DEGENERACY IS A FACT ABOUT THE DATA, AND seasonWindow HIDES IT. That function floors a window at MIN_SPAN_DAYS so the Track always has something readable to draw — which means a season whose every dated thing lands on one day comes back as a fourteen-day window, and this function could no longer return null. The protection it was written for is real: with no extent, every row divides by zero and paints a full-width bar. So the raw extent is checked HERE, before any flooring.
+    const days = [];
+    for (const key of ['newDraws', 'returningDraws', 'calendar']) {
+        for (const i of (live && live[key]) || []) {
+            for (const v of [i.date, i.endDate]) if (v) days.push(String(v).slice(0, 10));
+        }
+    }
+    for (const k of ['bpEnd', 'rankEnd', 'dmzEnd']) if (live && live[k] && !live[`${k}TBD`]) days.push(String(live[k]).slice(0, 10));
+    days.sort();
+    if (!days.length || days[0] === days[days.length - 1]) return null;
+
+    const w = seasonWindow(live, now);
     if (!w) return null;
     const room = Math.max(3, Math.round(TLib().days(w.start, w.end) * 0.06));
     const lo = Date.parse(`${TLib().addDays(w.start, -room)}T00:00:00Z`);
@@ -128,8 +127,7 @@ function spanBarFor(item, geo) {
     const b = Date.parse(`${String(item.endDate || item.date).slice(0, 10)}T00:00:00Z`);
     if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
     const left = ((a - geo.lo) / geo.span) * 100;
-    // A point-in-time release has zero width and would draw nothing at all; 1.5% is the floor that keeps a release visible without letting it read as a window.
-    // The design's floor is 2%, not 1.5 — a quarter of the width on all sixteen single-day bars.
+    // A point-in-time release has zero width and would draw nothing at all; 1.5% is the floor that keeps a release visible without letting it read as a window. The design's floor is 2%, not 1.5 — a quarter of the width on all sixteen single-day bars.
     const width = Math.max(2, ((b - a) / geo.span) * 100);
     return { left: Math.max(0, Math.min(100, left)), width: Math.min(100 - Math.max(0, Math.min(100, left)), width) };
 }
@@ -186,7 +184,8 @@ function newestPatchNoteId(items) {
 
 function toManifestRows(live, changesets, draft, opts) {
     if (!live) return [];
-    const geo = seasonSpanGeometry(live);
+    // Forwarded so a caller that knows which day it is rendering gets a geometry that does not move.
+    const geo = seasonSpanGeometry(live, (opts && opts.now) || undefined);
     const nowP = nowPctIn(geo, Date.now());
     const rows = [];
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {

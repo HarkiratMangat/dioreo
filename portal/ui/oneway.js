@@ -67,12 +67,7 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
                             <div class="ow-c">${item.count} <em>${plural(item.count, item.unit)}</em></div>
                             ${conf
                                 ? (canDestroy
-                                    // 🔴 STOOD DOWN, NOT ADOPTED. The design gates the BUTTON on a session-scoped
-                                    // export that the portal has no equivalent of — its export is a property of a
-                                    // changeset, which does not exist until the op is staged — so the interlock
-                                    // lives one screen later, in Review's gateCommit. Under the conformance flag the
-                                    // portal draws the design's affordance so the overlay compares like with like;
-                                    // the re-apply phase after all six realms match is where the real one returns.
+                                    // 🔴 STOOD DOWN, NOT ADOPTED. The design gates the BUTTON on a session-scoped export that the portal has no equivalent of — its export is a property of a changeset, which does not exist until the op is staged — so the interlock lives one screen later, in Review's gateCommit. Under the conformance flag the portal draws the design's affordance so the overlay compares like with like; the re-apply phase after all six realms match is where the real one returns.
                                     ? html`<button class="pill sm ghost" onClick=${() => run(item)}>Export first →</button>`
                                     : html`<button class="pill sm" disabled data-tip=${why}>Owner only</button>`)
                                 : (st.state === 'ready'

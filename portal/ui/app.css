@@ -5171,12 +5171,19 @@ button .ic,a .ic{pointer-events:none}
  * the migration, which is why these read as differences against the design that specifies them.
  * Under ?conform=1 they return to the design's colour so the overlay grades composition rather than
  * re-litigating a contrast decision the design already made and did not finish applying. */
+/* 🔴 CORRECTED 2026-08-30, AND THE CORRECTION IS THE LESSON. This list was built by reading the
+   design's STYLESHEET — where these selectors do carry color:var(--ink4) — and never by measuring what
+   the design RENDERS. Measured with portal:probe: .lnh-n, .lane.lnc .lnh and .cmdbar kbd all compute
+   #85939F (--ink3) on the mockup, because a later rule in its own sheet wins. So this stand-down was
+   forcing --ink4 onto three surfaces the design draws in --ink3 — a stand-down CREATING the difference
+   it exists to remove, and roughly fifteen rows of every Season view's STYLE section all session,
+   which I had been reading as noise. They are removed; the portal's own base rules already say --ink3.
+   ⚠️ THE FIVE BELOW ARE UNMEASURED — none of them renders anywhere on Season, so the same mistake in
+   the other direction is available. Measure each on the realm where it appears before trusting it:
+       node scripts/portalProbe.mjs --realm <r> --sel "<selector>" --props color --chain */
 :root[data-conform="1"] .round-u.none,
 :root[data-conform="1"] .mh-stats .stat .v.zero,
 :root[data-conform="1"] .pill .sub,
-:root[data-conform="1"] .lnh-n,
-:root[data-conform="1"] .lane.lnc .lnh,
-:root[data-conform="1"] .cmdbar kbd,
 :root[data-conform="1"] .att-i,
 :root[data-conform="1"] .atx{color:var(--ink4)}
 :root[data-conform="1"] .cb-in::placeholder{color:var(--ink4)}
@@ -5265,3 +5272,16 @@ button .ic,a .ic{pointer-events:none}
    body, which is what makes its rows 23px against the 21 these produced. */
 :root[data-conform="1"] .daylist li b{font:inherit;flex:none}
 :root[data-conform="1"] .daylist .dd,:root[data-conform="1"] .daylist .dt,:root[data-conform="1"] .daylist .dn{font:inherit;letter-spacing:normal;color:inherit}
+
+/* The design's shell adds nw-host to the composer host and defines NO rule for it — the class is part
+   of its DOM and not part of its styling. It is emitted here so the two trees match, and left empty on
+   purpose: any declaration would be a divergence the mockup does not have. The orphan gate requires a
+   class to have a rule, and an empty rule is the honest way to say "styled nowhere, by design". */
+.nw-host{}
+
+/* season.html's own style block draws a SECOND ring on a same-day patch cluster — 2px at 40% on the
+   element, over the 1.5px ::after ring already in the shared sheet. The portal deduped that deliberately
+   (see the note beside the .ptc family), which is a real improvement and a real divergence; under the
+   flag the design's double ring comes back so the overlay compares like with like. Found only once the
+   audit started sampling box-shadow, which it had never done. */
+:root[data-conform="1"] .ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}

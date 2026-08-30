@@ -16,11 +16,7 @@ import { reportFailure } from './async.js';
 
 const clock = (at) => new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
-// 🔴 THE ROW NOTES ARE THE DESIGN'S, AND EACH SCOPE STATES ITS OWN SHAPE. The portal described every
-// scope the same way ("Title, items, date, thumbnail — the exact fields…"), which is false for three of
-// Season's five: the calendar is prefixed bullet lines, patch notes have no bulk-add flow at all, and the
-// manifest is TSV. Nine pixels a row of wrap difference is how it surfaced; the wrong sentence is the
-// actual defect. Keyed by scope id so no realm has to carry a second copy of its own vocabulary.
+// 🔴 THE ROW NOTES ARE THE DESIGN'S, AND EACH SCOPE STATES ITS OWN SHAPE. The portal described every scope the same way ("Title, items, date, thumbnail — the exact fields…"), which is false for three of Season's five: the calendar is prefixed bullet lines, patch notes have no bulk-add flow at all, and the manifest is TSV. Nine pixels a row of wrap difference is how it surfaced; the wrong sentence is the actual defect. Keyed by scope id so no realm has to carry a second copy of its own vocabulary.
 const CONFORM_SCOPE_COPY = {
     'season.draws': { label: 'New draws', note: 'Bulk Add format — pastes straight back.' },
     'season.returning': { label: 'Returning draws', note: 'Bulk Add format — pastes straight back.' },
@@ -29,10 +25,7 @@ const CONFORM_SCOPE_COPY = {
     'season.all': { label: 'Everything on this Track', note: 'The manifest as tab-separated columns, every type in one file.' },
 };
 
-// The list and the retention block, with the actions that drive them. ONE implementation: the inline
-// panel and the drawer both mount this, so the two homes can never drift into two different export lists
-// — which they had already started to, with the drawer carrying the design's per-scope notes and the
-// inline copy still carrying the portal's.
+// The list and the retention block, with the actions that drive them. ONE implementation: the inline panel and the drawer both mount this, so the two homes can never drift into two different export lists — which they had already started to, with the drawer carrying the design's per-scope notes and the inline copy still carrying the portal's.
 function ExportBody({ scopes, overlay }) {
     const [busy, setBusy] = useState('');
     const [tick, setTick] = useState(0);
@@ -81,20 +74,17 @@ function ExportBody({ scopes, overlay }) {
                             <button class="pill sm" onClick=${() => downloadText(r.filename, r.body)}>Take it again</button>
                         </li>`)}
                 </ul>`
+            // 🔴 REGISTERED DIVERGENCE, AND THE DECISION WAS ALREADY MADE. The mockup's empty state reads that one-way operations are held until a session export exists — which is FALSE here: the strip does not gate on a session export, the interlock is the changeset export at Review. portalExport.test.js asserts this string can never appear in this file, with a comment saying exactly why. The conformance pass stands portal-ahead surfaces down; it does not carry a claim the portal cannot honour, even behind a flag anybody can open. The overlay shows a small copy difference here on purpose.
             : (conforming()
-                ? html`<p class="expnone">No export taken this session. One-way operations stay locked until there is one.</p>`
+                // The design's line is one sentence and this needs to be too — a three-line paragraph makes the drawer 25px taller and moves everything in it, which reads as an 11% difference over one sentence. So: as short as the design's, and TRUE, rather than choosing between the two.
+                ? html`<p class="expnone">No export taken this session. The copies kept here live until you reload.</p>`
                 : html`<p class="expnone">Nothing exported yet on this page. The copies listed here live until you
                     reload — the one that makes an irreversible change survivable is the changeset export on Review,
                     which is a file on your disk and a record on the server.</p>`)}
         </div>`;
 }
 
-// 🔴 RENDERED BY THE SHELL, OUTSIDE `main`, BECAUSE WHERE IT LIVES CHANGES WHAT IT IS. Mounted inside the
-// masthead — where the strip that opens it lives — this inherited two things the design's never sees, and
-// both were measured rather than guessed. `main{position:relative;z-index:1}` made the scrim's z-index 44
-// meaningless, so a modal that had just declared the page inert still had the sticky header lit above it.
-// And `.masthead p{font-size:13.5px}` reached the retention paragraph, rendering it at 13.5 against the
-// design's 11.5 and adding 25px to the drawer. season.html's drawer is a child of BODY; so is this one now.
+// 🔴 RENDERED BY THE SHELL, OUTSIDE `main`, BECAUSE WHERE IT LIVES CHANGES WHAT IT IS. Mounted inside the masthead — where the strip that opens it lives — this inherited two things the design's never sees, and both were measured rather than guessed. `main{position:relative;z-index:1}` made the scrim's z-index 44 meaningless, so a modal that had just declared the page inert still had the sticky header lit above it. And `.masthead p{font-size:13.5px}` reached the retention paragraph, rendering it at 13.5 against the design's 11.5 and adding 25px to the drawer. season.html's drawer is a child of BODY; so is this one now.
 export function ExportDrawer({ scopes, overlay, onClose }) {
     if (!scopes || !scopes.length) return null;
     return html`
@@ -106,9 +96,7 @@ export function ExportDrawer({ scopes, overlay, onClose }) {
         <//>`;
 }
 
-// ⚠️ THE OPEN STATE IS THE SHELL'S WHEN THE SHELL OFFERS ONE. The strip is inside the masthead and the
-// drawer must not be, so the one piece of state they share is lifted rather than duplicated; without the
-// props it keeps its own, which is what any other caller gets.
+// ⚠️ THE OPEN STATE IS THE SHELL'S WHEN THE SHELL OFFERS ONE. The strip is inside the masthead and the drawer must not be, so the one piece of state they share is lifted rather than duplicated; without the props it keeps its own, which is what any other caller gets.
 export function ExportStrip({ label, scopes, overlay, open: openProp = null, onToggle = null }) {
     const [openLocal, setOpenLocal] = useState(false);
     if (!scopes || !scopes.length) return null;

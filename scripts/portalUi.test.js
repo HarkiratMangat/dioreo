@@ -700,9 +700,10 @@ check('a local build is matched case- and space-insensitively, and only within i
 });
 
 check('a season whose dated things all land on one day yields no span geometry', () => {
-    // 🔴 OTHERWISE EVERY ROW DRAWS A FULL-WIDTH BAR. A zero span divides by zero; returning null makes the column render nothing, which is the honest answer for a season with no extent.
-    assert.strictEqual(seasonSpanGeometry({ newDraws: [{ date: '2026-09-03' }] }), null);
-    assert.strictEqual(seasonSpanGeometry({}), null);
+    // 🔴 OTHERWISE EVERY ROW DRAWS A FULL-WIDTH BAR. A zero span divides by zero; returning null makes the column render nothing, which is the honest answer for a season with no extent. Pinned for the same reason the midpoint case below is: with today in the extent, a single-day season is only degenerate when today is that day.
+    const ONE_DAY = Date.parse('2026-09-03T00:00:00Z');
+    assert.strictEqual(seasonSpanGeometry({ newDraws: [{ date: '2026-09-03' }] }, ONE_DAY), null);
+    assert.strictEqual(seasonSpanGeometry({}, ONE_DAY), null);
 });
 
 check('THE SPAN FLOOR CAN FAIL: a one-day release keeps a visible width', () => {
@@ -715,7 +716,8 @@ check('THE SPAN FLOOR CAN FAIL: a one-day release keeps a visible width', () => 
 });
 
 check('now is placed only when it falls inside the season, never clamped to an edge', () => {
-    const geo = seasonSpanGeometry({ calendar: [{ date: '2026-09-01', endDate: '2026-10-01' }] });
+    // 🔴 THE DAY IS PINNED. seasonWindow includes today in the extent, so an unpinned geometry made this assertion depend on the date the suite ran: the midpoint of a Sep 1 → Oct 1 season is only the midpoint if today is inside it. Pinning is what makes the 50% claim mean something.
+    const geo = seasonSpanGeometry({ calendar: [{ date: '2026-09-01', endDate: '2026-10-01' }] }, Date.parse('2026-09-16T00:00:00Z'));
     assert.strictEqual(nowPctIn(geo, Date.parse('2020-01-01T00:00:00Z')), null, 'before the season');
     assert.strictEqual(nowPctIn(geo, Date.parse('2030-01-01T00:00:00Z')), null, 'after the season');
     assert.ok(Math.abs(nowPctIn(geo, Date.parse('2026-09-16T00:00:00Z')) - 50) < 2);

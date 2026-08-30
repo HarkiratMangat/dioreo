@@ -1,7 +1,7 @@
 {
   "realm": "season",
-  "recordedAt": "2026-08-29T05:22:13.135Z",
-  "commit": "6e50bb1",
+  "recordedAt": "2026-08-30T17:04:24.446Z",
+  "commit": "5311b54",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,9 @@
   "views": {
     "Track": {
       "grid": {
-        "examined": 1404,
+        "examined": 1423,
         "nearMisses": 4,
-        "sizeIssues": 30
+        "sizeIssues": 32
       },
       "inventory": {
         "h1": "Season 7 — Terminated",
@@ -37,9 +37,9 @@
     },
     "Board": {
       "grid": {
-        "examined": 1566,
+        "examined": 1571,
         "nearMisses": 2,
-        "sizeIssues": 92
+        "sizeIssues": 93
       },
       "inventory": {
         "h1": "Season 7 — Terminated",
@@ -65,7 +65,7 @@
     },
     "Repairs": {
       "grid": {
-        "examined": 1324,
+        "examined": 1328,
         "nearMisses": 2,
         "sizeIssues": 12
       },

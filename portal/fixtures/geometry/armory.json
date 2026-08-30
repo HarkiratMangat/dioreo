@@ -1,0 +1,127 @@
+{
+  "realm": "armory",
+  "recordedAt": "2026-08-30T17:04:32.387Z",
+  "commit": "5311b54",
+  "viewport": {
+    "w": 1282,
+    "h": 888
+  },
+  "views": {
+    "Tier board": {
+      "grid": {
+        "examined": 4974,
+        "nearMisses": 2,
+        "sizeIssues": 801
+      },
+      "inventory": {
+        "h1": "Armory",
+        "tabs": [
+          "MP",
+          "DMZ",
+          "Tier board",
+          "Repairs",
+          "Compare",
+          "Bulk & export"
+        ],
+        "cols": [
+          "",
+          "Weapon",
+          "Build",
+          "Category",
+          "Gunsmith code",
+          "Attachments",
+          "Badges",
+          "Stage deletion"
+        ],
+        "sections": []
+      }
+    },
+    "Repairs": {
+      "grid": {
+        "examined": 3616,
+        "nearMisses": 2,
+        "sizeIssues": 284
+      },
+      "inventory": {
+        "h1": "Armory",
+        "tabs": [
+          "MP",
+          "DMZ",
+          "Tier board",
+          "Repairs",
+          "Compare",
+          "Bulk & export"
+        ],
+        "cols": [
+          "",
+          "Weapon",
+          "Build",
+          "Category",
+          "Gunsmith code",
+          "Attachments",
+          "Badges",
+          "Stage deletion"
+        ],
+        "sections": []
+      }
+    },
+    "Compare": {
+      "grid": {
+        "examined": 3638,
+        "nearMisses": 2,
+        "sizeIssues": 274
+      },
+      "inventory": {
+        "h1": "Armory",
+        "tabs": [
+          "MP",
+          "DMZ",
+          "Tier board",
+          "Repairs",
+          "Compare",
+          "Bulk & export"
+        ],
+        "cols": [
+          "",
+          "Weapon",
+          "Build",
+          "Category",
+          "Gunsmith code",
+          "Attachments",
+          "Badges",
+          "Stage deletion"
+        ],
+        "sections": []
+      }
+    },
+    "Bulk & export": {
+      "grid": {
+        "examined": 3582,
+        "nearMisses": 2,
+        "sizeIssues": 269
+      },
+      "inventory": {
+        "h1": "Armory",
+        "tabs": [
+          "MP",
+          "DMZ",
+          "Tier board",
+          "Repairs",
+          "Compare",
+          "Bulk & export"
+        ],
+        "cols": [
+          "",
+          "Weapon",
+          "Build",
+          "Category",
+          "Gunsmith code",
+          "Attachments",
+          "Badges",
+          "Stage deletion"
+        ],
+        "sections": []
+      }
+    }
+  }
+}

@@ -57,7 +57,7 @@ check('filenameForPublicId: derived FROM the id, so the attachment and the cache
     assert.strictEqual(filenameForPublicId('dev_decoration_webp/legacy-a-68fda5e6'), 'legacy-a-68fda5e6.webp');
 });
 
-check('the real catalog snapshot produces 925 DISTINCT ids -- checked globally, since the folder is flat', () => {
+check('the real catalog snapshot produces 941 DISTINCT ids -- checked globally, since the folder is flat', () => {
     const catalog = require('../docs/reference/nameplate-decoration-catalog.json');
     let total = 0;
     for (const [kind, folder] of [['nameplates', 'nameplate_webp'], ['decorations', 'decoration_webp']]) {
@@ -73,7 +73,7 @@ check('the real catalog snapshot produces 925 DISTINCT ids -- checked globally, 
             }
         }
     }
-    assert.strictEqual(total, 925, `expected the 925-SKU snapshot, got ${total} -- if the catalog was refreshed, re-verify uniqueness rather than editing this number`);
+    assert.strictEqual(total, 941, `expected the 941-SKU snapshot, got ${total} -- if the catalog was refreshed, re-verify uniqueness rather than editing this number`);
 });
 
 for (const [name, fn] of checks) {

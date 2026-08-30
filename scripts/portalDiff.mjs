@@ -59,6 +59,15 @@ const CELL = 16;
 // `node scripts/portalDiff.mjs --selftest` renders the MOCKUP TWICE and diffs it against itself. A tool that reports differences between a page and itself is measuring noise, so this must come back at essentially zero — and if it ever does not, every region list this tool has printed is suspect.
 const CHANNEL_TOL = 24, CELL_SHARE = 0.06;
 
+
+// ── WHAT THIS TOOL DOES NOT SEE ────────────────────────────────────────────────────────────────── 🔴 PRINTED ON EVERY RUN, BECAUSE AN INSTRUMENT THAT DOES NOT STATE ITS COVERAGE LETS EVERY READER ASSUME IT COVERS EVERYTHING. Three blind spots have been found here by somebody noticing a defect the number could not have contained — below the fold, behind a click, and under the pointer — and each time the tool had reported a confident percentage about a page it had only partly looked at. The axes are enumerated once, here, and the uncovered ones are named in the output.
+const COVERAGE_NOTE = [
+    'viewport 1282x888 only — 375x812 has never been run on any realm',
+    'data states (empty · error · loading) are walked by portal:states but never PIXEL-compared',
+    'transitions are zeroed, so only the settled frame is compared',
+    'light mode is out of scope by decision (the console is dark-only)',
+];
+
 const args = process.argv.slice(2);
 const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
 const realm = flag('--realm', 'season');
@@ -70,21 +79,18 @@ const selfTest = args.includes('--selftest');
 
 // 🔴 --view IS THE MOST DANGEROUS FLAG IN THIS FILE, because its failure mode is FLATTERING. Season's Board and Repairs live behind tabs; if the click misses on one side the tool diffs the default view against the default view and prints a small, tidy region list that reads like Board is nearly conformant. That is the exact shape of every instrument failure this pass has produced: it runs, it emits well-formed output, and it measured something else. So the flag ASSERTS rather than attempts — on each side independently it records what main says before the click and after it, and refuses to report unless BOTH sides actually moved. A tab that is not found is a refusal, never a silent fall-through to the default view.
 const view = flag('--view', null);
-// 🔴 THE OVERLAY TIER, AND IT WAS THE WHOLE MISSING HALF. Harkirat opened the harness himself on
-// 2026-08-29 while Season's three views measured 0.1–0.2% and found the composer and the export panel
-// "severely broken" — because this tool screenshots the page AS IT LOADS and had never clicked anything.
-// Every modal, drawer and panel on every realm was therefore unmeasured, on both sides, from day one.
-// A realm at 0.1% was only ever a realm whose RESTING page matched, and nothing said so.
+// 🔴 THE OVERLAY TIER, AND IT WAS THE WHOLE MISSING HALF. Harkirat opened the harness himself on 2026-08-29 while Season's three views measured 0.1–0.2% and found the composer and the export panel "severely broken" — because this tool screenshots the page AS IT LOADS and had never clicked anything. Every modal, drawer and panel on every realm was therefore unmeasured, on both sides, from day one. A realm at 0.1% was only ever a realm whose RESTING page matched, and nothing said so.
 //
-// ⚠️ IT REFUSES THE SAME WAY --view DOES, and for the same reason: a click that misses on one side
-// diffs the page against itself and prints a tidy, flattering region list. Found AND moved, on BOTH
-// sides, or no report.
+// ⚠️ IT REFUSES THE SAME WAY --view DOES, and for the same reason: a click that misses on one side diffs the page against itself and prints a tidy, flattering region list. Found AND moved, on BOTH sides, or no report.
 const openText = flag('--open', null);
-// A modal is anchored to the VIEWPORT, so growing the frame to the document's height would centre it
-// in four thousand pixels of matching background and report a percentage diluted by empty space.
-// --open captures one screenful; --open-full is the opt-out for a drawer that genuinely scrolls.
+// 🔴 THE SAME DOM UNDER A DIFFERENT POINTER CONDITION. --open reaches a different DOM; these reach the same one in a state no capture had ever taken. Both stylesheets carry ~145 :hover rules and ~75 focus rules apiece and not one of them had ever been compared — including a `.idsum:hover .ed` the audit has been reporting as MISSING from the portal all along, with nothing able to act on it.
+const hoverText = flag('--hover', null);
+const focusText = flag('--focus', null);
+// A modal is anchored to the VIEWPORT, so growing the frame to the document's height would centre it in four thousand pixels of matching background and report a percentage diluted by empty space. --open captures one screenful; --open-full is the opt-out for a drawer that genuinely scrolls.
 const openFull = args.includes('--open-full');
-const openSlug = openText ? '-open' + String(openText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
+const openSlug = openText ? '-open' + String(openText).toLowerCase().replace(/[^a-z0-9]+/g, '') : ''
+    + (hoverText ? '-hover' + String(hoverText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '')
+    + (focusText ? '-focus' + String(focusText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '');
 const viewSlug = view ? '-' + String(view).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
 const vpSlug = OFF_CONTRACT ? `-${VW}x${VH}` : '';
 const shotName = (side) => `${side}-${realm}${viewSlug}${openSlug}${vpSlug}.png`;
@@ -100,14 +106,11 @@ const CLICK_VIEW = (want) => {
     cands[0].click();
     return true;
 };
-// What an OVERLAY opening looks like, cheaply. A modal is frequently portaled OUTSIDE main — the tray,
-// the confirm sheet and the export panel all are — so the view signature below cannot see it. Body text
-// length plus the count of anything dialog-shaped moves for every one of them.
+// What an OVERLAY opening looks like, cheaply. A modal is frequently portaled OUTSIDE main — the tray, the confirm sheet and the export panel all are — so the view signature below cannot see it. Body text length plus the count of anything dialog-shaped moves for every one of them.
 const OPEN_SIG = () => {
     const t = String(document.body.innerText || '').replace(/\s+/g, ' ').trim();
     const n = document.querySelectorAll('dialog,[role="dialog"],[aria-modal="true"],.ov,.ovl,.modal,.sheet,.drawer,.exs,.dw,.cmp').length;
-    // Node COUNT, not innerHTML length: an aria-expanded flip changes the byte count by one and would
-    // pass this assertion while nothing opened, which is precisely the flattering failure it exists to stop.
+    // Node COUNT, not innerHTML length: an aria-expanded flip changes the byte count by one and would pass this assertion while nothing opened, which is precisely the flattering failure it exists to stop.
     return t.length + '|' + n + '|' + document.querySelectorAll('*').length;
 };
 // What the page IS, cheaply and without knowing its markup: how much text the content area holds plus how it starts. A view change moves both. Comparing this before and after the click is what turns a missed tab into a refusal instead of a clean-looking report.
@@ -160,21 +163,49 @@ async function mintSession(discordId) {
     return { raw, who };
 }
 
-// Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence.
-// Every visible control the page offers, both sides, as one map. Written because the first question the
-// overlay tier asks — "what is there to open, and does the other side have it?" — had no answer short of
-// reading two source files, and a control present on ONE side is itself a finding this reports for free.
+// Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence. Every visible control the page offers, both sides, as one map. Written because the first question the overlay tier asks — "what is there to open, and does the other side have it?" — had no answer short of reading two source files, and a control present on ONE side is itself a finding this reports for free.
 const LIST_TRIGGERS = () => {
     const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
     const out = new Map();
     for (const e of document.querySelectorAll('button,a,[role="button"],[role="tab"],summary')) {
         if (e.offsetParent === null) continue;
+        // 🔴 A DATA ROW IS NOT A CONTROL. Armory's list came back as a hundred build names — every row of every table is clickable, so an unfiltered inventory is unreadable on exactly the realm that needs it most. A control belongs to the chrome; a row belongs to the content, and the content is what the other four sections already compare.
+        if (e.closest('tr,li[data-id],[data-id],.bcard,.mtable tbody,.daylist,.explist,.exs')) continue;
         const t = norm(e.textContent) || norm(e.getAttribute('aria-label'));
         if (!t || t.length > 60) continue;
         out.set(t, (out.get(t) || 0) + 1);
     }
     return [...out.entries()].map(([t, n]) => t + (n > 1 ? ` ×${n}` : ''));
 };
+
+// Addressed by the word on the control, like every other targeting here, then hovered with the REAL mouse — :hover does not respond to a dispatched event, only to the pointer actually being there.
+async function pointAt(page, side) {
+    for (const [text, kind] of [[hoverText, 'hover'], [focusText, 'focus']]) {
+        if (!text) continue;
+        const box = await page.evaluate((want) => {
+            const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+            const c = [...document.querySelectorAll('button,a,[role="button"],[role="tab"],input,select,summary,li,td,[tabindex]')]
+                .filter((e) => n(e.textContent) === n(want) && e.offsetParent !== null)
+                .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+            if (!c.length) return null;
+            const r = c[0].getBoundingClientRect();
+            return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), w: r.width, h: r.height };
+        }, text);
+        if (!box) throw new Error(`portal:diff refuses to report: no element reading "${text}" to ${kind} on the ${side} side.`);
+        if (kind === 'hover') await page.mouse.move(box.x, box.y);
+        else {
+            await page.evaluate((want) => {
+                const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                const c = [...document.querySelectorAll('button,a,[role="button"],input,select,[tabindex]')]
+                    .filter((e) => n(e.textContent) === n(want) && e.offsetParent !== null)
+                    .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+                // focusVisible is what makes the KEYBOARD ring appear; a bare focus() often does not.
+                if (c[0]) { try { c[0].focus({ focusVisible: true }); } catch { c[0].focus(); } }
+            }, text);
+        }
+        await page.evaluate(() => new Promise((r) => setTimeout(r, 420)));
+    }
+}
 
 async function openOverlay(page, side) {
     if (!openText) return;
@@ -244,11 +275,8 @@ async function shoot(page, url, label) {
     }
     await enterView(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
     await openOverlay(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
-    // 🔴 THE TWO SIDES LAND AT DIFFERENT SCROLL POSITIONS AND THAT ALONE DOMINATED THE NUMBER. The design's
-    // composer scrolls itself into view on open (its page ends at scrollTop 285); a portal that does not
-    // leaves the two fold-height frames photographing different parts of the page, and the residual reads
-    // as a composition failure when it is a camera failure. Whether each side auto-scrolls is a real
-    // question — the audit's `top` column answers it — but the pixel frame has to be deterministic first.
+    await pointAt(page, label === 'mk' ? 'MOCKUP' : 'PORTAL');
+    // 🔴 THE TWO SIDES LAND AT DIFFERENT SCROLL POSITIONS AND THAT ALONE DOMINATED THE NUMBER. The design's composer scrolls itself into view on open (its page ends at scrollTop 285); a portal that does not leaves the two fold-height frames photographing different parts of the page, and the residual reads as a composition failure when it is a camera failure. Whether each side auto-scrolls is a real question — the audit's `top` column answers it — but the pixel frame has to be deterministic first.
     if (openText) {
         await page.evaluate(() => new Promise((r) => {
             for (const el of [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement]) {
@@ -269,7 +297,7 @@ async function shoot(page, url, label) {
             ...cands.map((e) => Math.max(e.scrollHeight || 0, e.getBoundingClientRect().bottom || 0)));
         return Math.ceil(h);
     }, VH0);
-    const h = (foldOnly || (openText && !openFull)) ? VH : Math.min(Math.max(full, VH), 12000);
+    const h = (foldOnly || ((openText || hoverText || focusText) && !openFull)) ? VH : Math.min(Math.max(full, VH), 12000);
     if (!foldOnly) {
         // A page whose scroll container is `main` does not grow the window, so `fullPage` alone captures VH. Growing the viewport to the content makes the whole column paint, which is what has to be compared.
         await page.setViewport({ width: VW, height: h, deviceScaleFactor: 1 });
@@ -426,6 +454,7 @@ async function label(page, url, regions) {
                 console.log(`      mk- ${mkAt[i].at}  ${mkAt[i].text ? '“' + mkAt[i].text + '”' : ''}`);
                 console.log(`      pt- ${ptAt[i].at}  ${ptAt[i].text ? '“' + ptAt[i].text + '”' : ''}`);
             });
+            console.log('\n  not covered by this run: ' + COVERAGE_NOTE.join('\n' + ' '.repeat(22)) + '\n');
             console.log('\n  Every region is CLOSED or CITED in the Part\'s difference ledger. A region is not');
             console.log('  a defect by itself — real data, portal-ahead surfaces and fixture gaps all land here.\n');
         }

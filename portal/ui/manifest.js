@@ -14,10 +14,7 @@ const PILL = { live: 'saved', saved: 'saved', staged: 'stag', scheduled: 'sched'
 const STATE_LABEL = { live: 'SAVED', saved: 'SAVED', staged: 'STAGED', conflict: 'CONFLICT' };
 export function StatePill({ state, accent }) {
     const key = String(state == null ? '' : state);
-    // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic.
-    // A filled pill needs its own ink for the same reason a filled bar does: --on-accent is near-black
-    // and a draw window's plum takes it to 2.86:1. inkOnTopic derives it from the accent's luminance;
-    // a realm that passes a literal colour, or none, falls back to the stylesheet's global.
+    // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic. A filled pill needs its own ink for the same reason a filled bar does: --on-accent is near-black and a draw window's plum takes it to 2.86:1. inkOnTopic derives it from the accent's luminance; a realm that passes a literal colour, or none, falls back to the stylesheet's global.
     const ink = accent && typeof inkOnTopic === 'function' && /^var\((--[\w-]+)\)$/.test(accent)
         ? inkOnTopic(accent.replace(/^var\(|\)$/g, '')) : '';
     return html`<span class=${'stt ' + (PILL[state] || 'conf')} style=${accent ? `--c:${accent}` + (ink ? `;--ci:${ink}` : '') : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;

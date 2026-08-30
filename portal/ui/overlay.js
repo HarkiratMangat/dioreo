@@ -24,16 +24,7 @@ export function Drawer({ eyebrow, title, children, actions, wide, side, onClose 
         for (const region of shellRegions()) {
             if (el) region.setAttribute('inert', '');
             else region.removeAttribute('inert');
-            // 🔴 THE SCRIM WAS TRAPPED INSIDE `main`. `main{position:relative;z-index:1}` makes a stacking
-            // context, so a drawer rendered anywhere inside it paints its scrim at z-index 1 no matter what
-            // the scrim's own 44 says — and the sticky header (z 40) stayed lit above a modal that had just
-            // declared the page inert. The design's drawer is a child of BODY, which is why it never hit
-            // this. Rather than move one component out, `main` stops being a stacking context for exactly
-            // as long as a modal is open: nothing inside it reorders, and the scrim's own z-index applies
-            // at the level it was written for. Keyboard modality and visual modality now agree.
-            // ⚠️ AN ATTRIBUTE, NOT A CLASS. The audit's element signature is tag plus classes, so a class
-            // that exists on one side and not the other makes `main` itself unpairable and desynchronises
-            // every row beneath it — the instrument reporting a difference the instrument created.
+            // 🔴 THE SCRIM WAS TRAPPED INSIDE `main`. `main{position:relative;z-index:1}` makes a stacking context, so a drawer rendered anywhere inside it paints its scrim at z-index 1 no matter what the scrim's own 44 says — and the sticky header (z 40) stayed lit above a modal that had just declared the page inert. The design's drawer is a child of BODY, which is why it never hit this. Rather than move one component out, `main` stops being a stacking context for exactly as long as a modal is open: nothing inside it reorders, and the scrim's own z-index applies at the level it was written for. Keyboard modality and visual modality now agree. ⚠️ AN ATTRIBUTE, NOT A CLASS. The audit's element signature is tag plus classes, so a class that exists on one side and not the other makes `main` itself unpairable and desynchronises every row beneath it — the instrument reporting a difference the instrument created.
             if (region.tagName === 'MAIN') { if (el) region.setAttribute('data-modal', ''); else region.removeAttribute('data-modal'); }
         }
         if (el) {

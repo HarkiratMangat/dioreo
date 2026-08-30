@@ -121,20 +121,12 @@ function toTrackItems(live, path, lane, ongoingEnd) {
 
 // ⚠️ IT READS THE TRACK'S OWN ITEMS, not a second query. `trackData` is what the Track is drawing at this moment, so a day that lists something the Track is not showing — or omits something it is — is impossible by construction rather than by care.
 //
-// ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see.
-// 🔴 ONE LANE VOCABULARY, NOT THREE. The design names a lane the same way wherever it appears — the
-// Track's headers, the Manifest's chips, the composer's kinds and this drawer all read "New draws ·
-// Returning · Draw windows · Events · Playlists". This map said "Draw · Event · Playlist" and the
-// composer's said something else again, so one record answered to two names one click apart.
+// ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see. 🔴 ONE LANE VOCABULARY, NOT THREE. The design names a lane the same way wherever it appears — the Track's headers, the Manifest's chips, the composer's kinds and this drawer all read "New draws · Returning · Draw windows · Events · Playlists". This map said "Draw · Event · Playlist" and the composer's said something else again, so one record answered to two names one click apart.
 const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', drawwindow: 'Draw window', event: 'Event', playlist: 'Playlist' };
 const dayLaneLabel = (lane) => (conforming()
     ? (CONFORM_KIND_WORDS[lane] || {}).label || DAY_LANE_LABEL[lane] || lane
     : DAY_LANE_LABEL[lane] || lane);
-// The drawer lists a day in LANE order, as the Track does above it, so the two agree about what comes first.
-// The design's own order, from fixtures' seasonItems(): every new draw, then every returning draw, then
-// the calendar in its stored order — which on the live document is ascending by start date. Splitting the
-// calendar into three lane buckets, as trackData does for the Track, reorders a day's list against the
-// list the same data produces one click away.
+// The drawer lists a day in LANE order, as the Track does above it, so the two agree about what comes first. The design's own order, from fixtures' seasonItems(): every new draw, then every returning draw, then the calendar in its stored order — which on the live document is ascending by start date. Splitting the calendar into three lane buckets, as trackData does for the Track, reorders a day's list against the list the same data produces one click away.
 const DAY_RANK = { draw: 0, returning: 1 };
 
 function dayItems(source, day) {
@@ -146,9 +138,7 @@ function dayItems(source, day) {
             if (a && a <= day && (b || a) >= day) out.push({ lane, title: i.title, a, b });
         }
     }
-    // ⚠️ ONE SORT. A date-only sort was already here and ran LAST, so the lane ranking above it changed
-    // nothing at all — two orderings in one function, the second silently winning. Worth stating because the
-    // symptom was indistinguishable from the first sort not being written.
+    // ⚠️ ONE SORT. A date-only sort was already here and ran LAST, so the lane ranking above it changed nothing at all — two orderings in one function, the second silently winning. Worth stating because the symptom was indistinguishable from the first sort not being written.
     return out.sort((x, y) => ((DAY_RANK[x.lane] ?? 2) - (DAY_RANK[y.lane] ?? 2)) || (x.a < y.a ? -1 : x.a > y.a ? 1 : 0));
 }
 
@@ -361,12 +351,7 @@ function Eyebrow({ live, staged, flags }) {
     return html`<div class="mh-eyebrow">${cell(live, 'live now')}${cell(staged, 'staged', 'stg')}${cell(flags, 'flags', 'warn')}</div>`;
 }
 
-// Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place.
-// 🔴 THE DESIGN NAMES THE KINDS AFTER THE LANES, NOT AFTER ONE ITEM. Its chips read "New draws ·
-// Returning · Draw windows · Events · Playlists · Patch notes" — the same six words the Track's lane
-// headers and the Manifest's filter chips use — while this said "Draw · Returning draw · Draw window ·
-// Event". Two vocabularies for one set of things, on two controls a thumb's width apart. The stage verb
-// is the SINGULAR of the same word ("Stage event"), which is why the design carries both forms.
+// Season is the ONLY realm with more than one kind of thing to add, so it is the only one that reveals its kinds. The others keep a single button, because a single button has nothing to reveal. Built from the lane table, so a kind cannot go missing here while existing on the Track. The composer's own type table: the label, the accent, and — the part the old select could not express — the SHAPE of the record behind it. A draw stores one date; an event stores a window. `hex` is a token rather than a literal because these are the season's own topic accents, which the Track and the Manifest already read from the same place. 🔴 THE DESIGN NAMES THE KINDS AFTER THE LANES, NOT AFTER ONE ITEM. Its chips read "New draws · Returning · Draw windows · Events · Playlists · Patch notes" — the same six words the Track's lane headers and the Manifest's filter chips use — while this said "Draw · Returning draw · Draw window · Event". Two vocabularies for one set of things, on two controls a thumb's width apart. The stage verb is the SINGULAR of the same word ("Stage event"), which is why the design carries both forms.
 const CONFORM_KIND_WORDS = {
     draw: { label: 'New draws', single: 'draw' },
     returning: { label: 'Returning', single: 'returning draw' },
@@ -377,8 +362,7 @@ const CONFORM_KIND_WORDS = {
 };
 const composeTypes = () => (!conforming() ? COMPOSE_TYPES : COMPOSE_TYPES.map((t) => ({
     ...t, ...(CONFORM_KIND_WORDS[t.key] || {}),
-    // Every field is "Name" in the design — the kind is already stated by the pressed chip directly
-    // above it, so repeating it in the label is the form saying the same thing twice.
+    // Every field is "Name" in the design — the kind is already stated by the pressed chip directly above it, so repeating it in the label is the form saying the same thing twice.
     nameLabel: t.key === 'patchnote' ? 'Patch note title' : 'Name',
 })));
 
@@ -1132,8 +1116,7 @@ export function SeasonRealm({ session }) {
                                                  editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
                                                  today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope} />`;
 
-    // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it.
-    // Extracted so the conformance mount above can take it: one Composer, two possible positions, never two instances.
+    // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it. Extracted so the conformance mount above can take it: one Composer, two possible positions, never two instances.
     const composerSlot = showAdd ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
                                               onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
                                               onStageMany=${handleStageMany}

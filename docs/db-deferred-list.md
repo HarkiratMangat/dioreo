@@ -534,6 +534,30 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🎨 The audit compared 27 properties and three of them carried state that was not among them `P1 · S · Sonnet5-High` — CLOSED 2026-08-30
+*Raised by Harkirat: "have your instruments even looked at styling or have they just been comparing raw pixel positions?"*
+
+They compared 27 computed properties, so styling yes — but **`boxShadow`, `backgroundImage` and `borderStyle` were not among them**, and COMPANION's own law is SHAPE CARRIES STATE: solid live, **dashed** staged, **hatched** conflict. 49 dashed/gradient rules and 98 box-shadows in the design (51 and 106 in the portal) had never been compared, so the audit could not tell a live bar from a staged one on any realm. Now 47 properties. It surfaced exactly one new defect on Season — a same-day patch cluster the design rings twice and the portal once — and, more usefully, produced the first evidence that the dashed and hatched treatments DO match.
+
+### 📄 ⑤ RULES read `assets/app.css` and called it the design's stylesheet `P1 · S · Sonnet5-High` — CLOSED 2026-08-30
+`season.html` carries **31 rules in its own `<style>` block**, including the `.ptc.same` ring above. The section now appends the realm page's style block: 2011 → 2038 design selectors. ⚠️ **Only season.html has any** — the other six pages have zero — so this changed one realm's reading and will change no other, but the assumption it removes ("one file is the design's CSS") is the same one that had the audit walking only `main`.
+
+
+### 🖱️ Hover and focus are measurable now, and two surfaces sit just above baseline `P2 · M · Sonnet5-High`
+*Filed 2026-08-30 12:5x EDT, after Harkirat asked whether the instrument checks hover states. It did not — nothing had ever compared one.*
+
+Both stylesheets carry ~145 `:hover` rules and ~75 focus rules apiece and not one had been compared. `--hover "<text>"` and `--focus "<text>"` are now on both instruments, with the same both-sides refusal as `--open`, and the mouse is really moved (a dispatched event does not trigger `:hover`).
+
+**The result is reassuring and should not be overstated:** against the matching fold-height baseline of **0.7% / 30 regions**, hovering Track is 0.7% (no change) and focusing Board is 0.7% (no change). Hovering **Export… is 0.9%** and **Board is 0.8%** — genuinely +0.1–0.2%, small but real, and unexamined.
+```
+node scripts/portalDiff.mjs --realm season --hover "Export…" --portal harness
+```
+⚠️ **A hovered or focused frame is captured at FOLD height**, like `--open`, so its percentage is only comparable to `--fold`, never to the full-page number.
+
+### 🧭 The instruments now print what they DO NOT cover, and four axes remain `P2 · M · Sonnet5-High`
+Three blind spots in this tool were found by a person noticing a defect the number could not have contained — below the fold, behind a click, and under the pointer. Each time it had reported a confident percentage about a page it had only partly looked at. Every run now prints its uncovered axes. What is still uncovered, verbatim from that list: **viewport 1282×888 only (375×812 never run on any realm)**; **data states — empty, error, loading — are walked by `portal:states` but never PIXEL-compared**, which is two instruments that have never been pointed at each other; **transitions are zeroed**, so only the settled frame is compared; **light mode is out of scope by decision.**
+
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
