@@ -319,7 +319,7 @@ function Header({ realm, view, session, staged, commands, onSignOut, chrome }) {
             <${CommandBar} commands=${commands} realmLabel=${realm === 'home' ? null : realmLabelOf(realm)} />
             <span class="sp"></span>
             ${staged ? html`
-                <a class="hdr-commit" href="#/review"><b>${staged}</b><span>staged · review</span></a>` : null}
+                <a class="hdr-commit" href="#/review"><b>${staged}</b>${' '}<span>staged · review</span></a>` : null}
             <${Account} session=${session} staged=${staged} onSignOut=${onSignOut} chrome=${chrome} />
         </header>
     `;

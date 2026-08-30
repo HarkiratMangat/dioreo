@@ -66,6 +66,34 @@ const COLLECT = function () {
             srOnly: /(^|\s)sr(\s|$)/.test(el.className || '') || cs.clip === 'rect(0px, 0px, 0px, 0px)' || cs.clipPath === 'inset(50%)' || parseFloat(cs.marginTop) <= -1,
         }));
 
+    // 🔴 WHAT PASS 6 READS. Two ELEMENT children adjacent in `childNodes` means no text node sits between them, which means no space — a whitespace-only text node would be a node, so its absence is the whole test and nothing has to guess at the markup. Elements carrying an explicit `aria-label` or `aria-labelledby` are skipped: those win over name-from-contents, so the fused text is never announced.
+    const NAME_FROM_CONTENTS = 'button,a[href],[role="button"],[role="link"],[role="tab"],[role="menuitem"],h1,h2,h3,h4,h5,h6,summary,label';
+    const fusedNames = [...document.querySelectorAll(NAME_FROM_CONTENTS)]
+        .filter(visible)
+        .filter((el) => !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby'))
+        .map((el) => {
+            // 🔴 IT RECURSES, AND IT SKIPS `aria-hidden`. The first version did neither, and each mistake pointed the opposite way. Looking only at DIRECT children missed the seam inside Home's `.att-x`, where `<b>` abuts `<em>` two levels down — the fused string was in the announced name the run printed while the seam list said nothing about it. And counting `aria-hidden` children INVENTED one: `.att-i` holds the row number "01" and is hidden from the accessibility tree, so it is in `textContent` and in no screen reader's output. A pass that reports a seam nobody can hear is the false positive that gets a gate suppressed rather than obeyed, and a pass that misses a real one is decoration.
+            const named = (n) => n.nodeType === 1 && n.getAttribute('aria-hidden') !== 'true';
+            // Defined before the walk because the SEAM EVIDENCE is quoted back to a reader who will go looking for those exact words, and `textContent` would put an aria-hidden arrow into a string describing what a screen reader says.
+            const spoken = (node) => [...node.childNodes]
+                .filter((n) => n.nodeType !== 1 || named(n))
+                .map((n) => (n.nodeType === 1 ? spoken(n) : (n.textContent || ''))).join('');
+            const joins = [];
+            const walk = (node) => {
+                const kids = [...node.childNodes].filter((n) => n.nodeType !== 1 || named(n));
+                for (let i = 0; i < kids.length - 1; i++) {
+                    if (kids[i].nodeType !== 1 || kids[i + 1].nodeType !== 1) continue;
+                    const a = spoken(kids[i]).trim(), b = spoken(kids[i + 1]).trim();
+                    if (!a || !b) continue;
+                    if (/[A-Za-z0-9]$/.test(a) && /^[A-Za-z0-9]/.test(b)) joins.push(a.slice(-14) + '\u205e' + b.slice(0, 14));
+                }
+                for (const k of kids) if (k.nodeType === 1) walk(k);
+            };
+            walk(el);
+            return joins.length ? { id: idOf(el), name: spoken(el).replace(/\s+/g, ' ').trim().slice(0, 70), joins } : null;
+        })
+        .filter(Boolean);
+
     const overflow = [...document.querySelectorAll('body, main, header, .rail, .panel, .app')]
         .filter((el) => el.scrollWidth - el.clientWidth > 1 && getComputedStyle(el).overflowX === 'visible')
         .map((el) => ({ id: idOf(el), scrollW: el.scrollWidth, clientW: el.clientWidth, overflowX: getComputedStyle(el).overflowX }));
@@ -96,7 +124,7 @@ const COLLECT = function () {
         }
         : { open: false, escapees: [] };
 
-    return { controls, clipped, overflow, unreachable, modal, animations, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
+    return { controls, clipped, overflow, unreachable, modal, animations, fusedNames, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
 };
 
 async function walk(page, state, port) {

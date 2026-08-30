@@ -260,13 +260,21 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
         const mk = await grab(MOCKUP, 'MOCKUP');
         const pt = await grab(HARNESS, 'PORTAL');
         if (listTriggers) {
-            const M = new Set(mk.triggers), P = new Set(pt.triggers);
-            const both = mk.triggers.filter((t) => P.has(t));
+            // 🔴 COMPARED WITH THE WHITESPACE REMOVED, PRINTED WITH IT INTACT. The two sides differ in inter-element whitespace BY CONSTRUCTION — the portal is assembled by htm, which drops the whitespace around a line break, while the mockup is hand-written HTML that keeps it. So a set comparison on the literal strings manufactures one-sided findings out of nothing: Board reported FOUR, `Live now 20 next ends Aug 26` against `Live now20next ends Aug 26`, under a heading calling each one "a finding in its own right". Verified before changing anything: with every space stripped, all four pairs are identical.
+            //
+            // ⚠️ The keys are stripped; the OUTPUT is not. A real content difference still surfaces, and where the two spellings differ the portal's is shown beside the mockup's rather than silently folded away — the point is to stop reporting whitespace as news, not to stop being able to see it.
+            const bare = (t) => t.replace(/\s+/g, '');
+            const mkBy = new Map(mk.triggers.map((t) => [bare(t), t]));
+            const ptBy = new Map(pt.triggers.map((t) => [bare(t), t]));
+            const both = [...mkBy.entries()].filter(([k]) => ptBy.has(k));
             console.log(`\nTRIGGERS — season · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
             console.log('  BOTH SIDES (openable with --open "<text>")');
-            for (const t of both) console.log('    · ' + t);
-            const onlyM = mk.triggers.filter((t) => !P.has(t));
-            const onlyP = pt.triggers.filter((t) => !M.has(t));
+            for (const [k, t] of both) {
+                const other = ptBy.get(k);
+                console.log('    · ' + t + (other === t ? '' : `   ⟨portal spells it: ${other}⟩`));
+            }
+            const onlyM = [...mkBy.entries()].filter(([k]) => !ptBy.has(k)).map(([, t]) => t);
+            const onlyP = [...ptBy.entries()].filter(([k]) => !mkBy.has(k)).map(([, t]) => t);
             if (onlyM.length) { console.log('\n  ONLY IN MOCKUP — each one is a finding in its own right'); for (const t of onlyM) console.log('    · ' + t); }
             if (onlyP.length) { console.log('\n  ONLY IN PORTAL'); for (const t of onlyP) console.log('    · ' + t); }
             console.log('');

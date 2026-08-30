@@ -594,7 +594,7 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
                       style=${`--c:${d.hex};left:${view.pct(d.date)}%;cursor:default`}
                       data-tip=${`${d.members.map((m) => m.title || m.label).join(' and ')} end${d.members.length > 1 ? '' : 's'} ${TL.fmt(d.date)}\nChange it in the panel above, where the date is typed and read by the same parser the bot uses.`}>
                     ${d.members.map((m) => html`<i key=${m.key} class="dfk" style=${`--c:${m.hex}`}></i>`)}
-                    <span class="dfl">${String(d.label).toUpperCase()}</span><span class="dfd">${TL.fmt(d.date)}</span>
+                    <span class="dfl">${String(d.label).toUpperCase()}</span>${' '}<span class="dfd">${TL.fmt(d.date)}</span>
                 </button>`)}
             <!-- A deadline outside the window is WELDED TO THE EDGE it is beyond, not floated at a
                  position it does not have. "Beyond this view" is a statement about the boundary, so

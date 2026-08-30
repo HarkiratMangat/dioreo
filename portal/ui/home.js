@@ -80,7 +80,7 @@ function AttentionList({ rows }) {
                 <a class=${`att-row s-${a.kind}`} href=${a.href} key=${a.text} style=${`--c:var(--r-${a.realm})`}>
                     <span class="att-i" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
                     <span class="att-b" aria-hidden="true"></span>
-                    <span class="att-x"><b>${a.text}</b><em>${a.realm} · ${a.act}</em></span>
+                    <span class="att-x"><b>${a.text}</b>${' '}<em>${a.realm} · ${a.act}</em></span>${' '}
                     <span class="att-go">
                         ${a.of ? html`<span class="att-sev">${a.n} of ${a.of}</span>` : null}
                         <span class="arw" aria-hidden="true">→</span>

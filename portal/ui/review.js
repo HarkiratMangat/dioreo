@@ -26,10 +26,10 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
         <div class=${'rvopwrap' + (selected ? ' on' : '')}>
             <button class=${'rvop' + (op.tier === 3 ? ' t3' : '')} role="tab" data-id=${op.id}
                     aria-selected=${selected ? 'true' : 'false'} onClick=${() => onSelect(op.id)}>
-                <span class="rvt">T${op.tier}</span>
+                <span class="rvt">T${op.tier}</span>${' '}
                 <span class="rvn">
-                    <b>${op.name || html`<span class="none">unnamed record</span>`}</b>
-                    <span>${op.op} · ${op.realm}</span>
+                    <b>${op.name || html`<span class="none">unnamed record</span>`}</b>${' '}
+                    <span>${op.op} · ${op.realm}</span>${' '}
                     ${warn ? html`<span class=${'rvw' + (warn === 'export saved' ? ' done' : '')}>${warn}</span>` : null}
                 </span>
             </button>
