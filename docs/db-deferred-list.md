@@ -675,6 +675,18 @@ Conformance closed it toward the design, which is correct — §0.1b's default i
 **Fix:** after all six realms match, decide whether one note can carry both facts, or whether the `/manage` pointer belongs somewhere else in the composer entirely — it is arguably more useful beside the Stage button than under the date.
 **Verify:** whatever lands, re-run `node scripts/portalDiff.mjs --realm season --portal harness --open "Patch note"` and account for any height change rather than absorbing it.
 
+### 🧪 A stand-down that renders NOTHING is not a stand-down — audit the other seven sites `P1 · M · Opus5-High`
+*Found 2026-08-30 19:4x EDT by measuring the expanded identity editor, which had never been opened on either side.*
+
+§0.6a's rule is that a portal-ahead surface renders **the mockup's version** under `?conform=1`. `season.js` had `conforming() ? null : <DraftZone/>`, which renders **nothing** — so under the flag the portal drew empty space where the design draws a paragraph and a button. That is not standing a surface down, it is removing it from the comparison, and no styling can close a difference the portal is not drawing. It cost **111px** of page height and left the overlay at 12.6% with no reachable fix.
+
+**The placement was the real finding, and only measuring caught it.** Mounting the component unconditionally took the three resting views from 0.2/0.1/0.1% to **13.1/10.2/9.8%** — because `season.html` mounts `#draftZone` as the last child of `.idbody`, inside the editor, visible only while it is expanded, while the portal deliberately puts it in the context strip above the view layer. Both placements are now correct: the design's under the flag, the portal's without it.
+
+⚠️ **Seven other `conforming() ? null` sites exist** (`composer.js` ×2, `season.js` ×5) and each needs the same question asked: **does the mockup render something at that position?** Where it does not — `season.js:82`'s thumbnail chip, for instance — rendering nothing IS the design's version and the site is correct. Where it does, the site is a hole of the same kind.
+
+**Fix:** walk the seven, and add a gate that can tell the two apart if one can be written — a `conforming()` branch returning `null` where the mockup's corresponding node exists is mechanically detectable from the audit's own ② SHAPE output.
+**Verify:** every site either renders the design's version or carries a comment saying the design renders nothing there.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
