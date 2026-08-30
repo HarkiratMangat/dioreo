@@ -11,7 +11,10 @@ status: live
 > ## 🔴 ACTIVE BRANCH — `feat/portal-redesign-session-b` · THE PORTAL CONFORMANCE PASS
 > **Delete this whole block when the pass ends.** It exists because the one file guaranteed to reach every session did not name the work governing the branch — and three sessions running spent turns rediscovering rules already written down. `.remember` is gitignored, rewritten wholesale each session, and demonstrably lossy; it cannot be the only pointer to an authority.
 >
-> **🔴 BEFORE TOUCHING A REALM, read `docs/superpowers/plans/2026-08-27-portal-conformance.md` — §0.1 · §0.1⟷§0.6 · §0.5 · §0.6 · §0.10.** Not a paraphrase — the sections. One call returns them: `ctx_search(queries:["precedence which artifact is the design","how §0.1 and §0.6 compose closure capture","how a part is actually checked","traps already paid for"])`
+> ## ⛔ NEVER DELETE `.claude/worktrees/draw-calculator-breakdown-146641`
+> **It is an ACTIVE PEER SESSION.** Harkirat, 2026-08-30 16:28 EDT: *"that's an active peer session. Uh, do not. I repeat. Do not delete that. That work is still in progress and will be merged later on."* 🔴 **`docs-audit` emits a `nested-worktree` WARNING for it on every run, and that warning's own text says "Remove it with `git worktree remove`."** The warning is EXPECTED and must never be actioned. This line is here because the protection previously lived only in `docs/db-deferred-list.md` — which a session tidying warnings would not open first.
+>
+> **🔴 BEFORE TOUCHING A REALM, read `docs/superpowers/plans/2026-08-27-portal-conformance.md` — §0.1a⟷§0.6a (closure vs capture) · §0.1b (precedence) · §0.5a (how a Part is checked) · §0.5b (the five phases) · §0.5c (the handoff audit) · §0.6a (the overlay method) · §0.7a (the audit loop) · §0.10 (traps).** Not a paraphrase — the sections. One call returns them: `ctx_search(queries:["precedence which artifact is the design","how §0.1 and §0.6 compose closure capture","how a part is actually checked","traps already paid for"])`
 >
 > **Five things sessions have repeatedly got wrong, every one already written in there:**
 > 1. **The diff is a FLOOR, not the definition of done.** A realm at 0.1% matches the mockup; that is not the same as good. His first three objections on 2026-08-28 were not conformance defects.

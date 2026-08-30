@@ -135,6 +135,30 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 
 ---
 
+## 🔴 THE COMPACT-PREP AUDIT — COPY THIS, DO NOT RE-INVENT IT (added 2026-08-30 16:5x EDT)
+
+**Run this BEFORE saying a compact is ready. It is the last step of compact prep, not an optional extra.** It found four defects on its first run and five more on its second — on a package that had already passed a full day of self-review, twice. **Every rule above this line was written by an author who then violated it within the hour; this is the only check that does not depend on the author.**
+
+⚠️ **Run it AGAIN after fixing what it finds.** The second run scored the same 6/10 as the first: the fixes were half-fixes — applied to `.remember` and not to the plan the carriers point at, and disambiguating three duplicate section numbers without sweeping for a fourth. **One round is not enough, and "I fixed what it said" is exactly the instance-not-class failure.**
+
+```
+Agent(subagent_type: "general-purpose", model: "sonnet", run_in_background: false, prompt: …)
+```
+
+**The brief, which is the part worth keeping verbatim:**
+
+> You are a STRICTLY READ-ONLY auditor. No edits, writes, deletes, git writes, or `--write` flags. `rg`, `cat`, `sed -n`, `git log/show/diff/status`, read-only node, `npm test`, `docs-audit` are fine.
+>
+> Simulate a FRESH session that has just been through a `/compact`. You have NO transcript. You get only what auto-loads: `CLAUDE.md`, `docs/SESSION-START.md`, the memory index, `.remember/remember.md`, plus what those four explicitly point to. **Your task: pick up the work and continue it. Then report every place you could NOT.**
+>
+> Answer concretely, citing file+line or saying NOTHING told you: what is the single next action, and is it derivable or a guess? · what is DONE vs OPEN? · name the exact command to measure, to diagnose, and to see what is already known · what do the instruments NOT see? · what has been TRIED AND RETIRED that you would wrongly re-propose? · **find every place two carriers disagree, every number that appears twice with different values, every claim stale relative to HEAD** · resolve every backticked path, every command, every `§n` — report each that fails · is anything presented as verified that was not? · **could you produce the next commit without asking a question?** · what would you WRONGLY do with confidence? · what exists in the repo that you needed and were never pointed to? · rate 0–10 and say precisely what is missing for a 10.
+>
+> Be blunt, most severe first: what is wrong, which file, the smallest concrete fix. Say "unverified" rather than assuming. On a re-run, **verify each previous fix actually holds and report what the fixes BROKE or missed** — do not trust the fix commit's diff, re-derive from scratch.
+
+🔴 **WHY IT WORKS AND SELF-REVIEW CANNOT.** The author knows what the words meant; the auditor only has the words. Every defect both runs found was invisible from the inside — a stale green looks like a green, a fixed-but-open filing looks fixed, two numbers from two methods look like one number, and your own ordering looks like the ordering. **It costs one subagent call and about twelve minutes.**
+
+---
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
