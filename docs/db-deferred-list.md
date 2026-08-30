@@ -540,6 +540,25 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### ❓ Is pixel-conformance still the right target for realms 2–6? `P1 · M · Opus5-High · 🧩needs-decision`
+*Raised 2026-08-30 14:4x EDT, after two sessions of driving Season's number to 0.1–0.2%.*
+
+The 2026-08-28 pivot — match the mockup first, rebuild redesigns on top — was a good call for the problem it solved: Part 1 had been closed and reopened three times on adjudication-by-judgement, and a number ended that. **Its premise was that the mockup is a fixed reference that can be converged on without arguing.** Three things hit that premise on 2026-08-30: the mockup has visual defects that were faithfully reproduced (unstyled day list with browser bullets, 3px focusable ruler ticks, a doubled ring); `DESIGN.md` turned out to be generated from the *superseded* package; and two "portal defects" from another session were artefacts of that same retired source. **Four wrong conclusions in one day, all from a reference that is less fixed than the pivot assumed.**
+
+**What is NOT in dispute:** the method works, the instruments are good, and Season genuinely matches. **What is:** whether "matches the mockup" is the right definition of done for the remaining five realms, or whether the pass should now (a) fix the mockup where it is wrong before converging on it, (b) converge to a coarser threshold and spend the difference on reachability/real-server correctness, or (c) continue as-is. **Harkirat's call, not mine.** Cost input: ~200 turns bought one realm and change; armory is 13.6% / 729 regions.
+
+
+### 📄 `DESIGN.md` was generated from the SUPERSEDED mockup package and declares itself authoritative `P1 · S · Sonnet5-High`
+*Found 2026-08-30 14:2x EDT while verifying the compact, not by any gate.*
+
+It was pointed at `docs/superpowers/mockups/**2026-08-20-portal**/` and opens with **"when this file and `portal/ui/` disagree, this file is right and the portal is behind."** The current authority is `2026-08-23-portal-interactive` — CLAUDE.md's portal row names it, the whole conformance pass diffs against it, and Harkirat settled it on 2026-08-27. `DESIGN.md` cites the 2026-08-23 package **zero** times.
+
+🔴 **This is the same root cause as the two false portal defects, one level up: a whole document asserting authority from a retired source.** Nothing catches it — docs-audit passes (the front matter is valid), the merge was clean, and the generating session was confident. A provenance warning is now in the file itself.
+
+**Fix:** regenerate it against `2026-08-23-portal-interactive`, or scope every measurement in it to the package it came from. Its DIRECTION section is a genuine record and is not in dispute; its tokens, measurements and divergence claims are.
+**Verify:** `rg -c '2026-08-23' DESIGN.md` returns non-zero and the Known-divergences section re-measures clean.
+
+
 ### 🖱️ Hover and focus are measurable now, and two surfaces sit just above baseline `P2 · M · Sonnet5-High`
 *Filed 2026-08-30 12:5x EDT, after Harkirat asked whether the instrument checks hover states. It did not — nothing had ever compared one.*
 

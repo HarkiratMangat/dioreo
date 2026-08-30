@@ -42,6 +42,12 @@ motion:
 <!-- impeccable:design-source mockups -->
 
 > 🔴 **THIS FILE DESCRIBES THE MOCKUPS, NOT `portal/ui/`.** Generated 2026-08-30 12:15 EDT by an `impeccable document` pass pointed deliberately at `docs/superpowers/mockups/2026-08-20-portal/` (six HTML files), **not** at the built portal, at Harkirat's instruction. The skill's default is to record the incumbent implementation; that default was overridden because the mockups are the design authority and the portal is the thing being converged onto them. Recording the incumbent would have canonised its drift — see "Known divergences" below, where the portal disagrees with this file in two measured places. **When this file and `portal/ui/` disagree, this file is right and the portal is behind.**
+>
+> 🔴 **PROVENANCE CORRECTION, 2026-08-30 14:2x EDT — READ BEFORE TREATING ANY OF THIS AS AUTHORITATIVE.** The package this was generated from, `2026-08-20-portal/`, is **SUPERSEDED**. The current design authority is `docs/superpowers/mockups/**2026-08-23-portal-interactive**/`, which CLAUDE.md's own portal row names as the design and which the entire conformance pass diffs against — Harkirat settled that on 2026-08-27 ("the design is the mockup"). This file cites the 2026-08-23 package **zero** times.
+>
+> That is not hypothetical drift: the two "Known divergences" below were re-measured on the current package on 2026-08-30 and **neither reproduces** — `portal/ui/app.css` carries 91 `transition` declarations against the current package's 91, and `--ink4:#5C6A75` is declared in both token files. Both are annotated in `docs/db-deferred-list.md`.
+>
+> **What to do with this file:** its DIRECTION section (blued steel, Operate mode, the house relationship to the public site) is a genuine record and is not in dispute. Its specific measurements, tokens and divergence claims are about a retired package and must be re-measured against 2026-08-23 before being acted on. Regenerating it against the current package would settle this properly — filed.
 
 ## Direction
 
