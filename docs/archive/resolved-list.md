@@ -843,3 +843,17 @@ The catalog was refreshed to 941 SKUs; the test's collision assertion — the pr
 
 ### 🧪 `npm test` fails on the nameplate catalog snapshot — 941 ids against an expected 925 `P2 · S · Sonnet5-Medium`
 Pre-existing and unrelated to the portal: `docs/reference/nameplate-decoration-catalog.json` was modified in the working tree before this session began. The test's own message says what to do — **re-verify uniqueness rather than editing the number** — because the count is the assertion.
+
+## ✅ The skills/tools-review worktree and branch — removed 2026-08-30 16:3x EDT
+
+Merged into `feat/portal-redesign-session-b` at `898d774`. Before removing anything: `git merge-base --is-ancestor 83bde29 HEAD` confirmed it was a true ancestor, `git status` in the worktree confirmed it clean, and `git log HEAD..claude/skills-tools-review-4ecca0` confirmed empty — so nothing could be lost. Worktree removed without `--force`; branch deleted with `git branch -d`, the form that refuses an unmerged branch rather than trusting the operator.
+
+🔴 **The verify-then-destroy sequence was deliberate**, an hour after a careless `git reset --hard` in this same session destroyed four uncommitted files. **Its sibling — `draw-calculator-breakdown-146641` — is an ACTIVE PEER SESSION and must never be removed;** it stays filed as a standing instruction in `docs/db-deferred-list.md`, not archived here.
+
+*Verbatim, as filed:*
+
+### 🧹 Two stray git worktrees inside `.claude/worktrees/` `P3 · XS · Sonnet5-Medium`
+*Flagged by `docs-audit`'s `nested-worktree` warning and by the read-only audit, 2026-08-30.*
+
+`skills-tools-review-4ecca0` (**merged into this branch at `898d774`** — the session that made it said the worktree is disposable, so this one is sanctioned to remove) and `draw-calculator-breakdown-146641` (**not mine, not sanctioned — ask before touching**). ⚠️ **Not removed in the same session that destroyed four files with a careless git command**; `git worktree remove` on someone else's workspace is exactly the shape that just went wrong.
+**Verify:** `git worktree list` shows only the main tree, and `docs-audit`'s `nested-worktree` warning is gone.

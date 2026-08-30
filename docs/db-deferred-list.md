@@ -560,12 +560,15 @@ The read-only audit found three defects that are checkable in principle, and I c
 
 **Revisit if** the same defect recurs after §0.5c's audit is in force — that would mean the outside reader is not sufficient and the mechanical layer is earning its cost. **Verify:** any of these built has a falsifier proving it fires, per §0.10.
 
-### 🧹 Two stray git worktrees inside `.claude/worktrees/` `P3 · XS · Sonnet5-Medium`
-*Flagged by `docs-audit`'s `nested-worktree` warning and by the read-only audit, 2026-08-30.*
 
-`skills-tools-review-4ecca0` (**merged into this branch at `898d774`** — the session that made it said the worktree is disposable, so this one is sanctioned to remove) and `draw-calculator-breakdown-146641` (**not mine, not sanctioned — ask before touching**). ⚠️ **Not removed in the same session that destroyed four files with a careless git command**; `git worktree remove` on someone else's workspace is exactly the shape that just went wrong.
-**Verify:** `git worktree list` shows only the main tree, and `docs-audit`'s `nested-worktree` warning is gone.
+### 🔴 DO NOT DELETE `.claude/worktrees/draw-calculator-breakdown-146641` — IT IS AN ACTIVE PEER SESSION `P1 · XS · standing-instruction`
+**Harkirat, 2026-08-30 16:28 EDT, emphatically:** *"the draw calculator one, that's an active peer session. Uh, do not. I repeat. Do not delete that. That work is still in progress and will be merged later on."*
 
+It is `claude/draw-calculator-breakdown-146641` at `9d26892`, live work by another session, and it **will be merged later**. `docs-audit` emits a `nested-worktree` WARNING for it — **that warning is expected and must not be "resolved" by removing the worktree.** A future session tidying warnings is the exact route by which this gets destroyed.
+
+⚠️ **The sibling half of this entry is CLOSED:** `skills-tools-review-4ecca0` was merged at `898d774`, verified with `git merge-base --is-ancestor 83bde29 HEAD`, its worktree confirmed clean and `HEAD..branch` confirmed empty before anything was touched; worktree removed and branch deleted with `git branch -d` (the safe form, which refuses an unmerged branch) on 2026-08-30 16:3x EDT. **Nothing was forced.**
+
+**Verify this entry is still being honoured:** `git worktree list` shows the draw-calculator worktree present, and `git branch --list 'claude/*'` shows its branch alive.
 
 ### 🎨 Three MOCKUP defects the portal now reproduces — the design is what needs fixing, not the portal `P2 · S · Opus5-Medium`
 *Verdicted 2026-08-30 15:1x EDT under the plan's new §0.1⟷§0.6 resolution. All three were closed toward the mockup on 2026-08-30 because the method had no other destination; each made the number better and the product worse.*
