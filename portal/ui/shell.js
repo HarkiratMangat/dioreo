@@ -314,7 +314,15 @@ function Header({ realm, view, session, staged, commands, onSignOut, chrome }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <span class="crumb">${realmLabelOf(realm)}${view ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
+            <!-- 🔴 THE SEPARATOR IS AN ICON HERE AND A GLYPH IN THE DESIGN, and it is the audit's FIRST
+                 cascade finding on every Season view: top 17 to 21, height 17 to 11, with 1445 offsets
+                 reported beneath it. The icon is the better call and it stays — reference_never_text_glyphs
+                 _for_icons exists because a text chevron inherits font metrics nothing controls, which is
+                 exactly the 6px this measures. So it stands down for the comparison rather than being
+                 given up, and comes back with the rest of the re-apply queue. -->
+            <span class="crumb">${realmLabelOf(realm)}${view ? (conforming()
+                ? html` <b class="crumb-sep">›</b> ${view}`
+                : html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}`) : null}</span>
             <span class="sp"></span>
             <${CommandBar} commands=${commands} realmLabel=${realm === 'home' ? null : realmLabelOf(realm)} />
             <span class="sp"></span>

@@ -583,9 +583,21 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                 </span>
                                 ${(() => {
                                     const raw = String(value(L.endKey) || '').slice(0, 10);
+                                    // ⚠️ `d` IS COMPUTED BEFORE EITHER BRANCH READS IT. The conform branch was first written above the `const d`, which is a temporal-dead-zone ReferenceError that does not fail the build, does not fail `node --check`, and blanks the whole identity section at runtime — the third TDZ of this shape on this branch.
+                                    const d = raw
+                                        ? Math.round((Date.parse(raw + 'T00:00:00Z') - Date.parse(todayIso() + 'T00:00:00Z')) / 86400000)
+                                        : NaN;
+                                    // The design puts the NUMBER in its own bold element and spells the unit out — "17 days left", not "17d left" — and pluralises it, having been caught rendering "1 days left" live. Its shapes are reproduced exactly under the flag; the portal's terser line is what a dense grid wants, and it comes back with the rest of the re-apply queue.
+                                    if (conforming()) {
+                                        if (tbd) return html`<span class="dl-left is-tbd">TBD</span>`;
+                                        if (!raw) return html`<span class="dl-left"><span style="color:var(--ink3)">not set</span></span>`;
+                                        if (!Number.isFinite(d)) return html`<span class="dl-left is-tbd">unreadable</span>`;
+                                        if (d < 0) return html`<span class="dl-left is-over">ended <b>${-d}d</b> ago</span>`;
+                                        if (d === 0) return html`<span class="dl-left">ends <b>today</b></span>`;
+                                        return html`<span class="dl-left"><b>${d}</b> ${d === 1 ? 'day' : 'days'} left</span>`;
+                                    }
                                     if (tbd) return html`<span class="dl-left is-tbd">no date yet</span>`;
                                     if (!raw) return html`<span class="dl-left is-tbd">not set</span>`;
-                                    const d = Math.round((Date.parse(raw + 'T00:00:00Z') - Date.parse(todayIso() + 'T00:00:00Z')) / 86400000);
                                     if (!Number.isFinite(d)) return html`<span class="dl-left is-tbd">unreadable</span>`;
                                     if (d < 0) return html`<span class="dl-left is-over">${-d}d ago</span>`;
                                     return html`<span class="dl-left">${d === 0 ? 'today' : `${d}d left`}</span>`;
@@ -601,7 +613,9 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                      re-introduced two lines away from the fix. A field that cannot be saved must not be offered. -->
                 ${editingDraft ? null : html`
                 <div class="bansec">
-                    <div class="bansec-h"><span class="bansec-n">Calendar page banners</span></div>
+                    <div class="bansec-h">${conforming()
+                        ? html`<span>Calendar banners</span><span class="bansec-n">one per /calendar page · re-hosted through Cloudinary</span>`
+                        : html`<span class="bansec-n">Calendar page banners</span>`}</div>
                     <div class="bans">
                         ${BANNERS.map((b) => {
                             const v = String(value(b.k) || '');
