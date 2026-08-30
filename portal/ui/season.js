@@ -380,9 +380,12 @@ const COMPOSE_TYPES = [
       placeholder: 'Clan Wars' },
     { key: 'playlist', label: 'Playlist', hex: 'var(--play)', shape: 'span', nameLabel: 'Playlist name',
       placeholder: 'Hardpoint 24/7' },
+    // A patch note is not released, it is PUBLISHED, and the design says so — `dateLabel` was falling through to the shared 'Releases' default written for draws. The note is the design's too: it answers the question the composer actually provokes, which is why this record has no lane on the Track, and it is one line longer, which is the whole of the 19.56px that made this overlay the worst-matching of the six at 8.4%.
+    //
+    // ⚠️ THE SENTENCE THIS REPLACED IS NOT WORTHLESS AND IS NOT STOOD DOWN. It said the description and the images are written in /manage — operational fact the design's copy does not carry. But §0.1b's default is that the mockup wins unless a COMPANION section or a dated decision postdates it, and there is no citation for the portal's wording, so it does not qualify as a portal-ahead advance to switch off behind `conforming()`. Filed in the post-conformance queue instead, where the two can be merged deliberately rather than one silently outliving the other.
     { key: 'patchnote', label: 'Patch note', hex: 'var(--pn)', shape: 'point', nameLabel: 'Season title',
-      placeholder: 'Season 8 — Codename', dateLabel: 'Releases',
-      pointNote: 'The description and the images are written in /manage — this stages the season and its date.' },
+      placeholder: 'Season 8 — Codename', dateLabel: 'Published',
+      pointNote: 'A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track.' },
 ];
 
 const ADD_CHIPS = [

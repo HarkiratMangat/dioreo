@@ -95,7 +95,7 @@ const viewSlug = view ? '-' + String(view).toLowerCase().replace(/[^a-z0-9]+/g, 
 const vpSlug = OFF_CONTRACT ? `-${VW}x${VH}` : '';
 const shotName = (side) => `${side}-${realm}${viewSlug}${openSlug}${vpSlug}.png`;
 
-// Addressed by the word on the control, so it needs no knowledge of either side's class names — the mockup and the portal do not share them. Case- and whitespace-insensitive, and it takes the SHORTEST matching element so a container whose text merely includes the word never wins over the tab itself.
+// Addressed by the word on the control, so it needs no knowledge of either side's class names — the mockup and the portal do not share them. Case- and whitespace-insensitive, and it takes the SHORTEST matching element so a container whose text merely includes the word never wins over the tab itself. 🔴 IT REPORTS WHAT IT CLICKED AND HOW MANY IT COULD HAVE, because returning a bare `true` is what let two sides open DIFFERENT panels and call the difference a conformance figure. The candidates are sorted by text length and `cands[0]` is clicked — so where several controls share a label, the two pages pick independently, and nothing downstream can tell. Measured 2026-08-30: `--open "Export first → "` opened the design's EXPORT DRAWER against the portal's STAGING DRAWER and reported **26.7% in 2 regions**; `--open "Season 7 — Terminated Jul 22 6 img current"` opened a Discord card preview against the identity summary and reported **18.7%**. Both numbers are well-formed, large, and about nothing. `--triggers` had already printed `Export first → ×5`: the tool knew the label was ambiguous, printed the count, and clicked one anyway.
 const CLICK_VIEW = (want) => {
     const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
     const target = norm(want);
@@ -103,8 +103,11 @@ const CLICK_VIEW = (want) => {
         .filter((e) => norm(e.textContent) === target && e.offsetParent !== null)
         .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
     if (!cands.length) return false;
-    cands[0].click();
-    return true;
+    const el = cands[0];
+    // The path is what makes two sides comparable: a label can repeat, but "the fourth `.exs-i` inside `.tray`" is a position, and two renderings of the same design agree about position or the difference is the finding.
+    const path = (n) => { const out = []; for (let e = n; e && e.tagName !== 'BODY'; e = e.parentElement) { const t = e.tagName.toLowerCase(); const c = (e.className && typeof e.className === 'string') ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''; out.unshift(t + c); } return out.slice(-4).join('>'); };
+    el.click();
+    return { n: cands.length, path: path(el) };
 };
 // What an OVERLAY opening looks like, cheaply. A modal is frequently portaled OUTSIDE main — the tray, the confirm sheet and the export panel all are — so the view signature below cannot see it. Body text length plus the count of anything dialog-shaped moves for every one of them.
 const OPEN_SIG = () => {
@@ -207,12 +210,18 @@ async function pointAt(page, side) {
     }
 }
 
+// 🔴 THE CROSS-SIDE PANEL COMPARISON WAS TRIED TWICE AND REMOVED, and the attempts are worth more than the code was. A signature taking the LAST visible overlay picked an empty `div.ov` scrim on both sides, so it matched while the panels underneath held different content — silent on the exact reading it was written for. Taking the one with the MOST TEXT then selected different elements on the two sides for panels that genuinely agree, and Event and Playlist started refusing at 0.9%. A guard with false positives gets suppressed rather than obeyed, and a third variant guessed at from here would be the same guess again. Filed with both measurements attached.
+//
+// What survives is the part that is exact: a label matching MORE THAN ONE control is refused, because the tie-break runs independently on each page. That alone caught `Export first → ` (5 matches, and `--triggers` had been printing `×5` all along). Where a label is unique the clicked PATH is the same on both sides — for the row preview both clicked `li.rec-row.cur` — so a large residual there is a real finding about two different panels, not an artefact.
 async function openOverlay(page, side) {
     if (!openText) return;
     const before = await page.evaluate(OPEN_SIG);
     const hit = await page.evaluate(CLICK_VIEW, openText);
     if (!hit) throw new Error(`portal:diff refuses to report: no control reading "${openText}" exists on the ${side} side.\n`
         + '  Run with --triggers to see every control both sides actually offer.');
+    // 🔴 AN AMBIGUOUS LABEL IS REFUSED, NOT RESOLVED BY GUESSING. Picking the shortest match is a tie-break, and a tie-break applied independently on two pages is how they end up comparing different things.
+    if (hit.n > 1) throw new Error(`portal:diff refuses to report: "${openText}" matches ${hit.n} controls on the ${side} side, and the tie is broken by text length — independently on each side, so the two pages can open different panels and the percentage would be about nothing.\n`
+        + `  It clicked ${hit.path}. Use a label that appears once, or open the panel from a control that does.`);
     await page.evaluate(() => new Promise((r) => setTimeout(r, 1100)));
     const after = await page.evaluate(OPEN_SIG);
     if (after === before) throw new Error(`portal:diff refuses to report: clicking "${openText}" opened nothing on the ${side} side.\n`

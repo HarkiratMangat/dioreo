@@ -663,6 +663,18 @@ The `views` column for **review** reads `T1Season identityseason.setTitlesDeadli
 **Fix:** scrape view labels from the mockup's view-tab control specifically rather than from whatever matches, join scraped text with a space, truncate the column, and let the freshness check consider `git status` as well as the commit range.
 **Verify:** review's `views` cell reads `(single view)` or names its real tabs, no cell truncates the column beside it, and a dirty `portal/ui` reports as dirty rather than fresh.
 
+### ✍️ A true sentence was lost closing the patch-note composer onto the design — merge the two after conformance `P3 · XS · Sonnet5-Medium`
+*Filed 2026-08-30 18:4x EDT, at the moment it was overwritten, so it cannot quietly outlive the change that removed it.*
+
+The portal's patch-note composer read **"The description and the images are written in `/manage` — this stages the season and its date."** The design's reads **"A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track."** Both are true and they answer different questions: the portal's says where the rest of the work happens, the design's says why this record behaves unlike every other one in the composer.
+
+Conformance closed it toward the design, which is correct — §0.1b's default is that the mockup wins unless a COMPANION section or a dated decision postdates it, and **there is no citation for the portal's wording**, so it is not a portal-ahead advance and does not qualify for a `conforming()` stand-down. ⚠️ **That is exactly why it is filed here rather than left to the stand-down register**: the register only holds things switched off, and an uncited sentence that is simply overwritten leaves no trace anywhere.
+
+**It also carried the whole defect.** The design's note is one line longer, and that one line was **19.56px** — the entire gap that made this the worst-matching of the six composer kinds at **8.4%, against 0.8–1.2% for every other kind**. Re-measured after the change: **0.9%**. `dateLabel` was a second, smaller instance of the same thing: it fell through to the shared `'Releases'` default written for draws, where a patch note is *published*.
+
+**Fix:** after all six realms match, decide whether one note can carry both facts, or whether the `/manage` pointer belongs somewhere else in the composer entirely — it is arguably more useful beside the Stage button than under the date.
+**Verify:** whatever lands, re-run `node scripts/portalDiff.mjs --realm season --portal harness --open "Patch note"` and account for any height change rather than absorbing it.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
