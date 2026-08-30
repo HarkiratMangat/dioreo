@@ -132,8 +132,15 @@ function allowedOrigins() {
     const out = [];
     const pub = String(process.env.PORTAL_PUBLIC_URL || '').replace(/\/+$/, '');
     if (pub) out.push(pub);
-    const port = process.env.PORTAL_PORT || 8787;
-    out.push(`http://localhost:${port}`, `http://127.0.0.1:${port}`);
+    // 🔴 THE LOOPBACK ORIGINS ARE OPT-IN, BECAUSE THIS LIST CANNOT SEE WHAT DISCORD HAS REGISTERED. The comment above used to assert that "only origins that are actually registered on the Discord application can appear here", and it was false: these two were pushed unconditionally while the dev application has only the tunnel callback registered. So `/auth/login` on http://127.0.0.1:8787 passed this check, built a loopback redirect_uri, and Discord answered "Invalid OAuth2 redirect_uri" — Harkirat hit exactly that on 2026-08-30 18:2x EDT.
+    //
+    // 🔴 THIS IS THE UNCLOSED HALF OF THE 2026-08-28 BUG, not a new one. That fix made the redirect follow the REQUEST so the cookie and the callback share an origin, which was right and is untouched. What it left standing is the other precondition: an origin must be allowed here AND registered there, and only the first was ever enforced. An allowlist that is WIDER than the registration turns a legible local refusal into Discord's error page, on a host the reader cannot inspect — the precise shape the refusal below exists to prevent.
+    //
+    // Set PORTAL_OAUTH_LOOPBACK=1 once http://localhost:<port>/auth/callback and http://127.0.0.1:<port>/auth/callback are both registered on the application. Until then the tunnel is the way in, and the refusal names it.
+    if (process.env.PORTAL_OAUTH_LOOPBACK === '1') {
+        const port = process.env.PORTAL_PORT || 8787;
+        out.push(`http://localhost:${port}`, `http://127.0.0.1:${port}`);
+    }
     return [...new Set(out)];
 }
 
@@ -141,9 +148,14 @@ function startOAuth(req, res) {
     const origin = originOf(req);
     if (!allowedOrigins().includes(origin)) {
         res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        const open = allowedOrigins();
+        // ⚠️ THE EMPTY CASE IS A CONFIGURATION FAULT, NOT A BAD ORIGIN, and saying "open one of these" followed by nothing is the least useful thing this could print.
         return res.end(`This portal does not sign in on ${origin}.\n\n`
-            + `Discord only accepts a redirect back to an address registered on the application, and this one is not registered here. Open one of these instead:\n\n`
-            + allowedOrigins().map((o) => `  ${o}`).join('\n') + '\n');
+            + (open.length
+                ? `Discord only accepts a redirect back to an address registered on the application, and this one is not registered here. Open one of these instead:\n\n`
+                    + open.map((o) => `  ${o}`).join('\n') + '\n\n'
+                    + `If you meant to sign in over loopback, register http://localhost:${process.env.PORTAL_PORT || 8787}/auth/callback on the Discord application first, then set PORTAL_OAUTH_LOOPBACK=1.\n`
+                : `No sign-in origin is configured at all: PORTAL_PUBLIC_URL is unset and PORTAL_OAUTH_LOOPBACK is not 1, so there is no address this portal could ask Discord to redirect back to.\n`));
     }
     const state = randomToken(16);
     const clientId = process.env.DISCORD_OAUTH_CLIENT_ID;

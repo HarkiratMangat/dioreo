@@ -54,15 +54,34 @@ check('originOf reads the proxy header, because behind the tunnel the socket is 
     assert.strictEqual(originOf({ headers: { host: 'localhost:8787' }, socket: {} }), 'http://localhost:8787');
 });
 
-check('allowedOrigins carries PORTAL_PUBLIC_URL and both localhost spellings', () => {
-    const prev = { u: process.env.PORTAL_PUBLIC_URL, p: process.env.PORTAL_PORT };
+// 🔴 THE LOOPBACK HALF OF THIS TEST WAS INVERTED ON 2026-08-30, because the behaviour it asserted was the bug. It required both localhost spellings to be present unconditionally — which is exactly what let `/auth/login` on http://127.0.0.1:8787 build a loopback redirect_uri that the Discord application has never had registered, so the flow died on Discord's error page instead of at the refusal twelve lines below. A test can pin a defect in place as firmly as it pins a fix.
+check('allowedOrigins carries PORTAL_PUBLIC_URL, and does NOT offer loopback unless it was opted in', () => {
+    const prev = { u: process.env.PORTAL_PUBLIC_URL, p: process.env.PORTAL_PORT, l: process.env.PORTAL_OAUTH_LOOPBACK };
     process.env.PORTAL_PUBLIC_URL = 'https://dev-portal.dioreo.app/';   // trailing slash on purpose
     process.env.PORTAL_PORT = '8787';
+    delete process.env.PORTAL_OAUTH_LOOPBACK;
     const list = allowedOrigins();
     assert.ok(list.includes('https://dev-portal.dioreo.app'), 'the trailing slash must be trimmed or nothing matches');
-    assert.ok(list.includes('http://localhost:8787'));
-    assert.ok(list.includes('http://127.0.0.1:8787'));
+    assert.ok(!list.includes('http://localhost:8787'), 'loopback is not registered on the application, so it must not be offered by default');
+    assert.ok(!list.includes('http://127.0.0.1:8787'));
+
+    process.env.PORTAL_OAUTH_LOOPBACK = '1';
+    const opted = allowedOrigins();
+    assert.ok(opted.includes('http://localhost:8787'), 'the opt-in must actually work, or running directly is impossible');
+    assert.ok(opted.includes('http://127.0.0.1:8787'));
+
     process.env.PORTAL_PUBLIC_URL = prev.u; process.env.PORTAL_PORT = prev.p;
+    if (prev.l === undefined) delete process.env.PORTAL_OAUTH_LOOPBACK; else process.env.PORTAL_OAUTH_LOOPBACK = prev.l;
+});
+
+// ⚠️ AND THE LIST CAN GO EMPTY, which is a configuration fault rather than a rejected origin — the refusal has a separate sentence for it, because "open one of these instead:" followed by nothing is the least actionable message this code could print.
+check('with no public URL and no opt-in there is no sign-in origin at all', () => {
+    const prev = { u: process.env.PORTAL_PUBLIC_URL, l: process.env.PORTAL_OAUTH_LOOPBACK };
+    delete process.env.PORTAL_PUBLIC_URL;
+    delete process.env.PORTAL_OAUTH_LOOPBACK;
+    assert.deepStrictEqual(allowedOrigins(), []);
+    if (prev.u === undefined) delete process.env.PORTAL_PUBLIC_URL; else process.env.PORTAL_PUBLIC_URL = prev.u;
+    if (prev.l === undefined) delete process.env.PORTAL_OAUTH_LOOPBACK; else process.env.PORTAL_OAUTH_LOOPBACK = prev.l;
 });
 
 check('THE ALLOWLIST CAN REFUSE: an origin nobody registered is not offered to Discord', () => {
