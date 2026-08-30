@@ -43,6 +43,8 @@ const realm = flag('--realm', 'season');
 const view = flag('--view', null);
 // 🔴 THE SAME BLIND SPOT AS portalDiff's, and it is worse here: this walks the DOM AS IT LOADS, so the composer, the export panel, the day drawer and the typed-confirm have never appeared in ANY of the five sections, on any realm. --open clicks a named control on both sides first, and REFUSES if the click misses or opens nothing — a one-sided open produces five sections comparing an overlay against the page behind it, which reads as hundreds of real findings and is entirely an artefact.
 const openText = flag('--open', null);
+// The selector door into the same tier — see portalDiff's note. Two of Season's seven overlays have no unique label to click: the identity editor opens from a `div` with no accessible name, and the one-way typed confirm from one of five buttons all reading "Export first → ".
+const openSel = flag('--open-sel', null);
 // 🔴 THE SAME DOM UNDER A DIFFERENT POINTER CONDITION. --open reaches a different DOM; these reach the same one in a state no capture had ever taken. Both stylesheets carry ~145 :hover rules and ~75 focus rules apiece and not one of them had ever been compared — including a `.idsum:hover .ed` the audit has been reporting as MISSING from the portal all along, with nothing able to act on it.
 const hoverText = flag('--hover', null);
 const focusText = flag('--focus', null);
@@ -191,12 +193,20 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             const R = Date; const F = function (...a) { return a.length ? new R(...a) : new R(t); };
             F.prototype = R.prototype; F.now = () => t; F.parse = R.parse; F.UTC = R.UTC; window.Date = F;
         }, FROZEN);
+        // 🔴 A CLEAN SLATE PER LOAD — see portalDiff's note. The mockup persists five pieces of UI state in sessionStorage, so one `--open` click on a toggle changed what every later run of EITHER tool measured. This tool opens a fresh page per side and would have been safer by accident; making it explicit means the two instruments cannot drift apart on the one property that decides whether a reading is reproducible.
+        await p.evaluateOnNewDocument(() => {
+            try { sessionStorage.clear(); } catch { /* a sandboxed context can refuse */ }
+            try { localStorage.clear(); } catch { /* same */ }
+        });
         await p.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
         await p.evaluate(() => document.fonts.ready);
         await p.evaluate(() => new Promise((r) => setTimeout(r, 2200)));
         if (view) {
             // ⚠️ REFUSES ON BOTH SIDES. A view flag that silently does nothing on one page produces a plausible number for the wrong comparison — which has happened, from shell word-splitting.
-            const hit = await p.evaluate((want) => {
+            const hit = openSel ? await p.evaluate((sel) => {
+                const all = [...document.querySelectorAll(sel)].filter((e) => e.getClientRects().length > 0);
+                if (!all.length) return false; all[0].click(); return true;
+            }, openSel) : await p.evaluate((want) => {
                 const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
                 const c = [...document.querySelectorAll('button,a,[role="tab"]')]
                     .filter((e) => n(e.textContent) === n(want) && e.offsetParent !== null)
@@ -223,24 +233,27 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             await p.close();
             return { triggers: list };
         }
-        if (openText) {
+        if (openText || openSel) {
             const sig = () => {
                 const t = String(document.body.innerText || '').replace(/\s+/g, ' ').trim();
                 const n = document.querySelectorAll('dialog,[role="dialog"],[aria-modal="true"],.ov,.ovl,.modal,.sheet,.drawer,.exs,.dw,.cmp').length;
                 return t.length + '|' + n + '|' + document.querySelectorAll('*').length;
             };
             const before = await p.evaluate(sig);
-            const hit = await p.evaluate((want) => {
+            const hit = openSel ? await p.evaluate((sel) => {
+                const all = [...document.querySelectorAll(sel)].filter((e) => e.getClientRects().length > 0);
+                if (!all.length) return false; all[0].click(); return true;
+            }, openSel) : await p.evaluate((want) => {
                 const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
                 const c = [...document.querySelectorAll('button,a,[role="button"],[role="tab"]')]
                     .filter((e) => n(e.textContent) === n(want) && e.offsetParent !== null)
                     .sort((a, b) => a.textContent.length - b.textContent.length);
                 if (!c.length) return false; c[0].click(); return true;
             }, openText);
-            if (!hit) throw new Error(`portal:audit refuses: no control reading "${openText}" on the ${side} side. Run --triggers to list what each side offers.`);
+            if (!hit) throw new Error(`portal:audit refuses: no visible element ${openSel ? 'matching ' + openSel : 'reading "' + openText + '"'} on the ${side} side. Run --triggers to list what each side offers.`);
             await p.evaluate(() => new Promise((r) => setTimeout(r, 1600)));
             const after = await p.evaluate(sig);
-            if (after === before) throw new Error(`portal:audit refuses: clicking "${openText}" opened nothing on the ${side} side.`);
+            if (after === before) throw new Error(`portal:audit refuses: clicking ${openSel || '"' + openText + '"'} opened nothing on the ${side} side.`);
             // 🔴 THE SAME FIX portalDiff NEEDED, FOR THE SAME REASON. `top` is reported including scrollY, so an overlay that scrolls itself into view on one side and not the other shifts every row beneath it — and the CASCADE section then names a page-wide offset that is a camera artefact rather than a layout one. Both sides are read from the same scroll position, always.
             await p.evaluate(() => new Promise((r) => {
                 for (const el of [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement]) {
@@ -251,7 +264,7 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             }));
         }
         // ⚠️ A SECOND ARGUMENT, not a property hung off the array. page.evaluate serialises its arguments as JSON, and JSON.stringify drops every non-index property of an array — so the flag arrived undefined and the walk stayed scoped to main while reporting as though it had widened.
-        const data = await p.evaluate(COLLECT, PROPS, Boolean(openText));
+        const data = await p.evaluate(COLLECT, PROPS, Boolean(openText || openSel));
         await p.close();
         return data;
     };

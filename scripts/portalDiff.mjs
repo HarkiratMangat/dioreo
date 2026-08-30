@@ -83,12 +83,14 @@ const view = flag('--view', null);
 //
 // ⚠️ IT REFUSES THE SAME WAY --view DOES, and for the same reason: a click that misses on one side diffs the page against itself and prints a tidy, flattering region list. Found AND moved, on BOTH sides, or no report.
 const openText = flag('--open', null);
+// 🔴 AN OVERLAY WHOSE TRIGGER HAS NO UNIQUE LABEL WAS UNMEASURABLE, AND TWO OF SEASON'S SEVEN ARE EXACTLY THAT. The identity editor opens from `.idsum`, a div with no accessible name at all, so it never appears in `--triggers` and `--open` can never reach it. The one-way typed confirm opens from one of FIVE buttons all reading "Export first → ", which the ambiguity guard correctly refuses. A label is the right default — it is what a person clicks — but a selector is what makes the tier complete rather than complete-except-where-the-markup-is-inconvenient.
+const openSel = flag('--open-sel', null);
 // 🔴 THE SAME DOM UNDER A DIFFERENT POINTER CONDITION. --open reaches a different DOM; these reach the same one in a state no capture had ever taken. Both stylesheets carry ~145 :hover rules and ~75 focus rules apiece and not one of them had ever been compared — including a `.idsum:hover .ed` the audit has been reporting as MISSING from the portal all along, with nothing able to act on it.
 const hoverText = flag('--hover', null);
 const focusText = flag('--focus', null);
 // A modal is anchored to the VIEWPORT, so growing the frame to the document's height would centre it in four thousand pixels of matching background and report a percentage diluted by empty space. --open captures one screenful; --open-full is the opt-out for a drawer that genuinely scrolls.
 const openFull = args.includes('--open-full');
-const openSlug = openText ? '-open' + String(openText).toLowerCase().replace(/[^a-z0-9]+/g, '') : ''
+const openSlug = (openText || openSel) ? '-open' + String(openText || openSel).toLowerCase().replace(/[^a-z0-9]+/g, '') : ''
     + (hoverText ? '-hover' + String(hoverText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '')
     + (focusText ? '-focus' + String(focusText).toLowerCase().replace(/[^a-z0-9]+/g, '') : '');
 const viewSlug = view ? '-' + String(view).toLowerCase().replace(/[^a-z0-9]+/g, '') : '';
@@ -213,18 +215,40 @@ async function pointAt(page, side) {
 // 🔴 THE CROSS-SIDE PANEL COMPARISON WAS TRIED TWICE AND REMOVED, and the attempts are worth more than the code was. A signature taking the LAST visible overlay picked an empty `div.ov` scrim on both sides, so it matched while the panels underneath held different content — silent on the exact reading it was written for. Taking the one with the MOST TEXT then selected different elements on the two sides for panels that genuinely agree, and Event and Playlist started refusing at 0.9%. A guard with false positives gets suppressed rather than obeyed, and a third variant guessed at from here would be the same guess again. Filed with both measurements attached.
 //
 // What survives is the part that is exact: a label matching MORE THAN ONE control is refused, because the tie-break runs independently on each page. That alone caught `Export first → ` (5 matches, and `--triggers` had been printing `×5` all along). Where a label is unique the clicked PATH is the same on both sides — for the row preview both clicked `li.rec-row.cur` — so a large residual there is a real finding about two different panels, not an artefact.
+const CLICK_SEL = (sel) => {
+    // ⚠️ `getClientRects()`, NOT `offsetParent`. The label matcher uses `offsetParent` and gets away with it because a labelled control is nearly always statically positioned; `.idsum` is not, and `offsetParent` is null for a positioned element whose containing block is the initial one — so the first version of this reported "no visible element matching .idsum" about an element `portal:probe` was measuring at 1160x147, on both sides, with every property agreeing. A visibility test that disagrees with a measurement of the same element is the wrong test.
+    const found = [...document.querySelectorAll(sel)];
+    const all = found.filter((e) => e.getClientRects().length > 0);
+    if (!all.length) return { n: 0, present: found.length, why: found.map((e) => {
+        const cs = getComputedStyle(e); const r = e.getBoundingClientRect();
+        return `display:${cs.display} visibility:${cs.visibility} ${Math.round(r.width)}x${Math.round(r.height)} parentDisplay:${e.parentElement ? getComputedStyle(e.parentElement).display : '-'}`;
+    }).join(' | ') };
+    all[0].click();
+    return { n: all.length, path: sel };
+};
+
 async function openOverlay(page, side) {
-    if (!openText) return;
+    if (!openText && !openSel) return;
     const before = await page.evaluate(OPEN_SIG);
-    const hit = await page.evaluate(CLICK_VIEW, openText);
-    if (!hit) throw new Error(`portal:diff refuses to report: no control reading "${openText}" exists on the ${side} side.\n`
+    // 🔴 POLL FOR THE TARGET, DO NOT ASSUME IT IS THERE — the third instance of this class today, and the same remedy each time. The mockup builds its identity summary with `idSum.innerHTML = …` in its own script, so for a moment `.idsum` is an empty div with no client rects. Clicking straight after `load` reported "no visible element matching .idsum" about an element `portal:probe` was measuring at 1160x147 on both sides with every property agreeing. A fixed sleep would paper over it on this machine and fail on a slower one; waiting for the element itself is exact and costs nothing when it is already there.
+    if (openSel) {
+        try {
+            await page.waitForFunction(
+                (sel) => [...document.querySelectorAll(sel)].some((e) => e.getClientRects().length > 0),
+                { timeout: 6000 }, openSel);
+        } catch { /* fall through to the refusal below, which says what was found and what was rendered */ }
+    }
+    const hit = openSel ? await page.evaluate(CLICK_SEL, openSel) : await page.evaluate(CLICK_VIEW, openText);
+    const what = openSel ? `matching ${openSel}` : `reading "${openText}"`;
+    if (!hit || !hit.n) throw new Error(`portal:diff refuses to report: no visible element ${what} on the ${side} side`
+        + (hit && hit.present ? ` — ${hit.present} match the selector but none is rendered (${hit.why}).\n` : '.\n')
         + '  Run with --triggers to see every control both sides actually offer.');
     // 🔴 AN AMBIGUOUS LABEL IS REFUSED, NOT RESOLVED BY GUESSING. Picking the shortest match is a tie-break, and a tie-break applied independently on two pages is how they end up comparing different things.
-    if (hit.n > 1) throw new Error(`portal:diff refuses to report: "${openText}" matches ${hit.n} controls on the ${side} side, and the tie is broken by text length — independently on each side, so the two pages can open different panels and the percentage would be about nothing.\n`
+    if (hit.n > 1) throw new Error(`portal:diff refuses to report: ${openSel || '"' + openText + '"'} matches ${hit.n} controls on the ${side} side, and the tie is broken by text length — independently on each side, so the two pages can open different panels and the percentage would be about nothing.\n`
         + `  It clicked ${hit.path}. Use a label that appears once, or open the panel from a control that does.`);
     await page.evaluate(() => new Promise((r) => setTimeout(r, 1100)));
     const after = await page.evaluate(OPEN_SIG);
-    if (after === before) throw new Error(`portal:diff refuses to report: clicking "${openText}" opened nothing on the ${side} side.\n`
+    if (after === before) throw new Error(`portal:diff refuses to report: clicking ${openSel || '"' + openText + '"'} opened nothing on the ${side} side.\n`
         + '  The control was found and clicked and the page is byte-identical afterwards, so no overlay appeared.');
 }
 
@@ -259,6 +283,16 @@ async function freezeClock(page) {
 async function shoot(page, url, label) {
     await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 1 });
     await freezeClock(page);
+
+    // 🔴 EVERY LOAD STARTS FROM A CLEAN SLATE, AND UNTIL 2026-08-30 18:5x EDT NONE OF THEM DID. The mockup persists FIVE pieces of UI state in sessionStorage — `dioreo-identity-open`, `dioreo-board-collapsed`, the lane-collapse map, the staged-ops tray and the export panel's open flag — and this tool reuses ONE page for the mockup shot, the portal shot and the labelling pass. sessionStorage is per-origin and survives navigation inside a tab, so a single `--open` click on any toggle that persists silently changed what every LATER run measured.
+    //
+    // It was found the long way. `--open-sel ".idsum"` refused with "no visible element ... 1 match the selector but none is rendered (display:none)", about an element `portal:probe` measured at 1160x147 on both sides with every property agreeing, and which a standalone puppeteer replication — plain load, networkidle2, the same 2400ms scroll settle, frozen clock and live clock — reported as `block` with one client rect in all five variants. The measurements disagreed because the FIRST attempt had expanded the identity section and the mockup remembered.
+    //
+    // ⚠️ THE CONSEQUENCE IS BIGGER THAN ONE REFUSAL. `dioreo-board-collapsed` and the lane-collapse map are persisted the same way, and "Events and Playlists auto-collapsing 20 of 39 Track items" has been carried as a Season defect in the plan's §L. That has to be re-measured from a clean slate before it is trusted as a difference between the two sides at all.
+    await page.evaluateOnNewDocument(() => {
+        try { sessionStorage.clear(); } catch { /* a sandboxed context can refuse; a clean load is still the default */ }
+        try { localStorage.clear(); } catch { /* same */ }
+    });
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
     // 🔴 NEVER rAF — it does not fire in a background tab and a pass gated on it waits forever. This is the same trap portalStates.mjs records; `document.fonts.ready` resolves regardless of visibility.
     await page.evaluate(() => document.fonts.ready);
@@ -388,6 +422,16 @@ async function diff(page, mkBuf, ptBuf) {
 async function label(page, url, regions) {
     await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 1 });
     await freezeClock(page);
+
+    // 🔴 EVERY LOAD STARTS FROM A CLEAN SLATE, AND UNTIL 2026-08-30 18:5x EDT NONE OF THEM DID. The mockup persists FIVE pieces of UI state in sessionStorage — `dioreo-identity-open`, `dioreo-board-collapsed`, the lane-collapse map, the staged-ops tray and the export panel's open flag — and this tool reuses ONE page for the mockup shot, the portal shot and the labelling pass. sessionStorage is per-origin and survives navigation inside a tab, so a single `--open` click on any toggle that persists silently changed what every LATER run measured.
+    //
+    // It was found the long way. `--open-sel ".idsum"` refused with "no visible element ... 1 match the selector but none is rendered (display:none)", about an element `portal:probe` measured at 1160x147 on both sides with every property agreeing, and which a standalone puppeteer replication — plain load, networkidle2, the same 2400ms scroll settle, frozen clock and live clock — reported as `block` with one client rect in all five variants. The measurements disagreed because the FIRST attempt had expanded the identity section and the mockup remembered.
+    //
+    // ⚠️ THE CONSEQUENCE IS BIGGER THAN ONE REFUSAL. `dioreo-board-collapsed` and the lane-collapse map are persisted the same way, and "Events and Playlists auto-collapsing 20 of 39 Track items" has been carried as a Season defect in the plan's §L. That has to be re-measured from a clean slate before it is trusted as a difference between the two sides at all.
+    await page.evaluateOnNewDocument(() => {
+        try { sessionStorage.clear(); } catch { /* a sandboxed context can refuse; a clean load is still the default */ }
+        try { localStorage.clear(); } catch { /* same */ }
+    });
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
     await page.evaluate(() => document.fonts.ready);
     await page.evaluate((y) => new Promise((r) => {

@@ -495,7 +495,7 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
 }
 
 // `editingDraft` is WHICH season you are editing; `draftStaged` is whether one exists at all. They were one flag, and the record read "staged draft" on the live season purely because a draft existed — the chip states the thing you are looking at, not the thing that exists elsewhere. 🔴 `editingDraft` WAS A PROP THE CALLER HARDCODED TO FALSE. It reached SeasonRecord, which styles the summary strip for it, and nothing could ever set it — so the whole draft half of this component was built, styled and unreachable. The switch is what the mockup specifies: one editor, two seasons, and which one you are editing said out loud rather than inferred from what the fields happen to contain.
-export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSave, onScope }) {
+export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSave, onScope, draftSlot }) {
     const [open, setOpen] = useState(() => { try { return sessionStorage.getItem(IDENTITY_KEY) === '1'; } catch { return false; } });
     const [edits, setEdits] = useState({});
     const value = (k) => (k in edits ? edits[k] : (season?.[k] ?? ''));
@@ -618,6 +618,17 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                         })}
                     </div>
                 </div>`}
+                <!-- 🔴 THE DESIGN PUTS THE DRAFT ZONE INSIDE THE EDITOR, AND THAT PLACEMENT IS THE WHOLE
+                     FINDING. season.html mounts #draftZone as the last child of .idbody, so it is on
+                     screen only while the editor is expanded. The portal mounts its own DraftZone in the
+                     context strip above the view layer — a deliberate advance, because a staged draft is
+                     context the Track is read against — and stood the whole component down under the flag.
+                     Standing it down was right for the RESTING page and wrong for the OPENED one: the
+                     expanded editor then had a 111px hole where the design has a paragraph and a button,
+                     and no amount of styling could close it. Measured both ways: mounting it unconditionally
+                     took the three resting views from 0.2/0.1/0.1% to 13.1/10.2/9.8%, because at rest the
+                     design shows nothing here at all. -->
+                ${draftSlot}
             </div>
         </section>`;
 }
@@ -654,6 +665,15 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
     const late = endsIn !== null && endsIn <= 7;
     const [comparing, setComparing] = useState(false);
     if (!draft || !draft.active) {
+        // 🔴 THE STAND-DOWN RENDERS THE DESIGN'S VERSION — IT DOES NOT DELETE THE SURFACE. This component used to be switched off wholesale by a `conforming() ? null` at its mount site, so under the flag the portal rendered NOTHING where the design renders a paragraph and a button. §0.6a's rule is that a portal-ahead surface renders the MOCKUP'S version for the duration of the comparison; a stand-down that renders nothing removes the surface from the comparison instead, which is a different thing and it cannot be closed. It cost 111px of page height and left the expanded identity editor at 12.6% with no reachable fix.
+        if (conforming()) {
+            return html`
+                <div class="nodraft">
+                    <p>No next season staged. A draft lets you build the whole next season — titles, deadlines,
+                       draws and calendar — without any of it going live.</p>
+                    <button class="chip" onClick=${() => onStart('')}>Start a draft</button>
+                </div>`;
+        }
         return html`
             <!-- 🔴 ONE LINE, NOT A PANEL. This was a 126px centred block — a paragraph, then an input and a
                  button on their own row — announcing that a thing does NOT exist, and it sat between the
@@ -1118,9 +1138,11 @@ export function SeasonRealm({ session }) {
     }
 
     const editingDraft = idScope === 'draft';
+    const draftZone = html`<${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />`;
     const identitySlot = html`<${SeasonIdentity} season=${editingDraft ? (state.draft || {}) : state.live}
                                                  editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
-                                                 today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope} />`;
+                                                 today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope}
+                                                 draftSlot=${conforming() ? draftZone : null} />`;
 
     // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it. Extracted so the conformance mount above can take it: one Composer, two possible positions, never two instances.
     const composerSlot = showAdd ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
@@ -1218,7 +1240,7 @@ export function SeasonRealm({ session }) {
                            63px block about a thing that does NOT exist above the Track. It stands down with
                            the rest of the pending work; where it finally belongs is a design question for
                            the re-apply phase, not something to settle inside a conformance pass. -->
-                      ${conforming() ? null : html`<${DraftZone} draft=${state.draft} live=${state.live} onStart=${startDraft} onDiscard=${confirmDiscardDraft} />`}`}
+                      ${conforming() ? null : draftZone}`}
                   viewSlot=${html`
                       <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
                            into the tray — the panel headed "Saved" — where it rendered in the same voice as a
