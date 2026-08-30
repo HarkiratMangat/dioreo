@@ -26,13 +26,17 @@ const sel = flag('--sel', null);
 const view = flag('--view', null);
 const openText = flag('--open', null);
 const chain = args.includes('--chain');
+// 🔴 THE FALSIFIER. Every other instrument here ships with a case proving it can report NO difference,
+// and this one did not — it was proven once by hand against a known-live finding and never again.
+// --selftest points both sides at the mockup: any property it reports as differing is the probe lying.
+const selfTest = args.includes('--selftest');
 const PROPS = String(flag('--props', 'width,height,fontSize,lineHeight,display,position,zIndex,margin,padding'))
     .split(',').map((s) => s.trim()).filter(Boolean);
 if (!sel) { console.error('portal:probe needs --sel "<css selector>"'); process.exit(2); }
 
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const MOCKUP = `http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`;
-const HARNESS = `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
+const HARNESS = selfTest ? MOCKUP : `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
 // Same instant as every other instrument here, for the same reason: an unfrozen clock moves the
 // countdown between two captures taken seconds apart.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
@@ -105,7 +109,8 @@ const READ = (selector, props, walkUp) => {
             console.log(`  mk  ${mk.self.name}\n      ${fmtBox(mk.self.box)}`);
             console.log(`  pt  ${pt.self.name}\n      ${fmtBox(pt.self.box)}\n`);
             const diff = PROPS.filter((p) => mk.self.style[p] !== pt.self.style[p]);
-            if (!diff.length) console.log('  every requested property agrees on this element.');
+            if (!diff.length) console.log(selfTest ? '  SELF-TEST: the mockup against itself — every property agrees.' : '  every requested property agrees on this element.');
+            if (selfTest && diff.length) { console.error(`portal:probe SELF-TEST FAILED — ${diff.length} property/ies differ between a page and itself.`); process.exitCode = 1; }
             for (const p of diff) console.log(`  ✗ ${p}   ${mk.self.style[p]}  →  ${pt.self.style[p]}`);
             // 🔴 THE POINT OF --chain: an element whose own rules match can still differ, because a
             // property it INHERITS is declared somewhere above it. Every hard finding today was of

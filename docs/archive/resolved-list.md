@@ -820,3 +820,15 @@ Filed as `[P3 · M · Sonnet5-Medium · 🧩needs-design]` from Harkirat's own w
 **What to do.** Add `--open "<trigger text>"` to both instruments: click the same control on the mockup and the harness, settle, then capture. Both pages carry the same triggers, so this is one step, not a per-realm fixture. Then run the ordinary five-section loop per overlay. 🔴 **The overlays are SHARED components** — one composer, one export panel, one confirm — so each one converged is converged for all six realms at once.
 
 **Verify condition:** `node scripts/portalDiff.mjs --realm season --open "Add" --portal harness` produces two frames showing the composer, and its region count can be driven the same way the page's was.
+
+## ✅ The instruments could not see the state law, hover, or the design's own page styles — closed 2026-08-30 13:2x EDT
+
+Both raised by Harkirat, neither by the tools. Closed in commit `02c7df5`; the two entries follow verbatim.
+
+### 🎨 The audit compared 27 properties and three of them carried state that was not among them `P1 · S · Sonnet5-High` — CLOSED 2026-08-30
+*Raised by Harkirat: "have your instruments even looked at styling or have they just been comparing raw pixel positions?"*
+
+They compared 27 computed properties, so styling yes — but **`boxShadow`, `backgroundImage` and `borderStyle` were not among them**, and COMPANION's own law is SHAPE CARRIES STATE: solid live, **dashed** staged, **hatched** conflict. 49 dashed/gradient rules and 98 box-shadows in the design (51 and 106 in the portal) had never been compared, so the audit could not tell a live bar from a staged one on any realm. Now 47 properties. It surfaced exactly one new defect on Season — a same-day patch cluster the design rings twice and the portal once — and, more usefully, produced the first evidence that the dashed and hatched treatments DO match.
+
+### 📄 ⑤ RULES read `assets/app.css` and called it the design's stylesheet `P1 · S · Sonnet5-High` — CLOSED 2026-08-30
+`season.html` carries **31 rules in its own `<style>` block**, including the `.ptc.same` ring above. The section now appends the realm page's style block: 2011 → 2038 design selectors. ⚠️ **Only season.html has any** — the other six pages have zero — so this changed one realm's reading and will change no other, but the assumption it removes ("one file is the design's CSS") is the same one that had the audit walking only `main`.
