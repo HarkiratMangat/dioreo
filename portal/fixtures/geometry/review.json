@@ -1,13 +1,13 @@
 {
   "realm": "review",
-  "recordedAt": "2026-08-30T17:04:41.352Z",
-  "commit": "5311b54",
+  "recordedAt": "2026-08-30T23:43:04.375Z",
+  "commit": "9e5c6c7",
   "viewport": {
     "w": 1282,
     "h": 888
   },
   "views": {
-    "T1Season identityseason.setTitlesDeadlines · season": {
+    "T1 Season identity season.setTitlesDeadlines · season": {
       "grid": {
         "examined": 125,
         "nearMisses": 2,
@@ -16,16 +16,16 @@
       "inventory": {
         "h1": "Review & commit",
         "tabs": [
-          "T1Season identityseason.setTitlesDeadlines · season",
-          "T1The Widow's Bite Drawdraw.edit · seasonneeds attention",
-          "T1AK117 — Meta Buildloadout.edit · armory",
-          "T3Molten Fusion Drawdraw.delete · seasonexport required"
+          "T1 Season identity season.setTitlesDeadlines · season",
+          "T1 The Widow's Bite Draw draw.edit · season needs attention",
+          "T1 AK117 — Meta Build loadout.edit · armory",
+          "T3 Molten Fusion Draw draw.delete · season export required"
         ],
         "cols": [],
         "sections": []
       }
     },
-    "T1The Widow's Bite Drawdraw.edit · seasonneeds attention": {
+    "T1 The Widow's Bite Draw draw.edit · season needs attention": {
       "grid": {
         "examined": 136,
         "nearMisses": 2,
@@ -34,16 +34,16 @@
       "inventory": {
         "h1": "Review & commit",
         "tabs": [
-          "T1Season identityseason.setTitlesDeadlines · season",
-          "T1The Widow's Bite Drawdraw.edit · seasonneeds attention",
-          "T1AK117 — Meta Buildloadout.edit · armory",
-          "T3Molten Fusion Drawdraw.delete · seasonexport required"
+          "T1 Season identity season.setTitlesDeadlines · season",
+          "T1 The Widow's Bite Draw draw.edit · season needs attention",
+          "T1 AK117 — Meta Build loadout.edit · armory",
+          "T3 Molten Fusion Draw draw.delete · season export required"
         ],
         "cols": [],
         "sections": []
       }
     },
-    "T1AK117 — Meta Buildloadout.edit · armory": {
+    "T1 AK117 — Meta Build loadout.edit · armory": {
       "grid": {
         "examined": 125,
         "nearMisses": 2,
@@ -52,16 +52,16 @@
       "inventory": {
         "h1": "Review & commit",
         "tabs": [
-          "T1Season identityseason.setTitlesDeadlines · season",
-          "T1The Widow's Bite Drawdraw.edit · seasonneeds attention",
-          "T1AK117 — Meta Buildloadout.edit · armory",
-          "T3Molten Fusion Drawdraw.delete · seasonexport required"
+          "T1 Season identity season.setTitlesDeadlines · season",
+          "T1 The Widow's Bite Draw draw.edit · season needs attention",
+          "T1 AK117 — Meta Build loadout.edit · armory",
+          "T3 Molten Fusion Draw draw.delete · season export required"
         ],
         "cols": [],
         "sections": []
       }
     },
-    "T3Molten Fusion Drawdraw.delete · seasonexport required": {
+    "T3 Molten Fusion Draw draw.delete · season export required": {
       "grid": {
         "examined": 132,
         "nearMisses": 2,
@@ -70,10 +70,10 @@
       "inventory": {
         "h1": "Review & commit",
         "tabs": [
-          "T1Season identityseason.setTitlesDeadlines · season",
-          "T1The Widow's Bite Drawdraw.edit · seasonneeds attention",
-          "T1AK117 — Meta Buildloadout.edit · armory",
-          "T3Molten Fusion Drawdraw.delete · seasonexport required"
+          "T1 Season identity season.setTitlesDeadlines · season",
+          "T1 The Widow's Bite Draw draw.edit · season needs attention",
+          "T1 AK117 — Meta Build loadout.edit · armory",
+          "T3 Molten Fusion Draw draw.delete · season export required"
         ],
         "cols": [],
         "sections": []
