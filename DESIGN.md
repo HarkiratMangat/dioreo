@@ -8,47 +8,54 @@ colors:
   paper: "#171E24"
   raised: "#1F272E"
   sunk: "#0B0F12"
+  hi: "#232C34"
   rule: "#2A343D"
+  rule2: "#3A4752"
   ink: "#E8EDF1"
   ink2: "#9DAAB4"
-  ink3: "#80909D"
-  ink4: "#4E5A64"
+  ink3: "#85939F"
+  ink4: "#5C6A75"
   patch: "#F2C230"
   warn: "#FF7A45"
+  warnInk: "#FF9E72"
   ok: "#3DDC97"
-  staged: "#5FD4E8"
-  conflict: "#FF5C5C"
-  draw: "#FF3430"
-  ret: "#337BA6"
-  ev: "#1F8A5E"
-  play: "#8A6BD1"
+  info: "#409AD0"
+  sched: "#A680FB"
+  del: "#FF6B6B"
+  laneNewDraws: "#AE72E0"
+  laneReturning: "#E8639B"
+  laneDrawWindow: "#6B4E7D"
+  laneEvent: "#4A90D9"
+  lanePlaylist: "#2CC4C4"
+  lanePatchNotes: "#F2C230"
+  lineBattlePass: "#F2994A"
+  lineRanked: "#FF3430"
+  lineDmz: "#337BA6"
   discord: "#5865F2"
 typography:
   ui:
-    fontFamily: "IBM Plex Sans Condensed, system-ui, sans-serif"
+    fontFamily: "Space Grotesk, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif"
   data:
-    fontFamily: "IBM Plex Mono, ui-monospace, monospace"
+    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+  display:
+    fontFamily: "Big Shoulders Display, Space Grotesk, sans-serif"
 rounded:
-  sm: "2px"
-  md: "3px"
-  lg: "5px"
-motion:
-  hover:
-    transition: "filter .12s, box-shadow .12s"
+  rad1: "3px"
+  rad2: "6px"
+  rad3: "10px"
+  round: "50%"
+  pill: "999px"
 ---
 
 # Design — Dioreo admin portal
 
 <!-- impeccable:design-source mockups -->
 
-> 🔴 **THIS FILE DESCRIBES THE MOCKUPS, NOT `portal/ui/`.** Generated 2026-08-30 12:15 EDT by an `impeccable document` pass pointed deliberately at `docs/superpowers/mockups/2026-08-20-portal/` (six HTML files), **not** at the built portal, at Harkirat's instruction. The skill's default is to record the incumbent implementation; that default was overridden because the mockups are the design authority and the portal is the thing being converged onto them. Recording the incumbent would have canonised its drift — see "Known divergences" below, where the portal disagrees with this file in two measured places. **When this file and `portal/ui/` disagree, this file is right and the portal is behind.**
+> 🔴 **THIS FILE DESCRIBES THE MOCKUPS, NOT `portal/ui/`** — the mockups are the design authority and the portal is the thing being converged onto them. Recording the incumbent would canonise its drift.
 >
-> 🔴 **PROVENANCE CORRECTION, 2026-08-30 14:2x EDT — READ BEFORE TREATING ANY OF THIS AS AUTHORITATIVE.** The package this was generated from, `2026-08-20-portal/`, is **SUPERSEDED**. The current design authority is `docs/superpowers/mockups/**2026-08-23-portal-interactive**/`, which CLAUDE.md's own portal row names as the design and which the entire conformance pass diffs against — Harkirat settled that on 2026-08-27 ("the design is the mockup"). This file cites the 2026-08-23 package **zero** times.
+> **Regenerated 2026-08-30 14:5x EDT against `docs/superpowers/mockups/2026-08-23-portal-interactive/`** — `assets/tokens.css`, `assets/app.css`, `assets/fixtures.js` and the seven realm pages. That package is the current authority: CLAUDE.md's portal row names it, the whole conformance pass diffs against it, and Harkirat settled it on 2026-08-27 (*"the design is the mockup"*).
 >
-> That is not hypothetical drift: the two "Known divergences" below were re-measured on the current package on 2026-08-30 and **neither reproduces** — `portal/ui/app.css` carries 91 `transition` declarations against the current package's 91, and `--ink4:#5C6A75` is declared in both token files. Both are annotated in `docs/db-deferred-list.md`.
->
-> **What to do with this file:** its DIRECTION section (blued steel, Operate mode, the house relationship to the public site) is a genuine record and is not in dispute. Its specific measurements, tokens and divergence claims are about a retired package and must be re-measured against 2026-08-23 before being acted on. Regenerating it against the current package would settle this properly — filed.
-
+> 🔴 **THE PREVIOUS VERSION OF THIS FILE WAS GENERATED FROM `2026-08-20-portal/`, WHICH IS SUPERSEDED — and it was wrong in almost every measurable field.** It recorded the typography as IBM Plex Sans Condensed / IBM Plex Mono (the package uses **Space Grotesk / JetBrains Mono / Big Shoulders Display**), the radii as 2–5px (they are **3 / 6 / 10px** plus a circle and a pill), `--ink3` as `#80909D` (**`#85939F`**, lifted to clear the AA floor), `--ink4` as `#4E5A64` (**`#5C6A75`**), and it claimed the direction was borders-only with no shadows and carried "exactly one" transition — the package has **98 `box-shadow` rules and 91 `transition` declarations**. Its two "known divergences" were re-measured on the current package and **neither reproduces**. **The lesson is the plan's own §0.5 R2: a citation has two tests — does it EXIST, and does it still GOVERN.** Date every source; the later artifact wins.
 ## Direction
 
 **Blued steel.** A dark, cool, instrument-panel surface — deliberately distinct from the public site's violet-graphite (legal pages) and green-black (chronicle) while obviously the same house. The operator arrives knowing what they came to change; the interface is a workbench, not a brochure. Mode is **Operate**: scanability, consistency and the real usage scene outrank expression, and brand lives in precise details rather than in decoration.
@@ -57,11 +64,17 @@ motion:
 
 Colour carries **topic**; shape carries **state**. That separation is the portal's signature and it is load-bearing rather than stylistic — it means a bar's meaning survives being read in greyscale, and it is why the accent is a fill and never a text colour (a proven 4.58:1 floor with `#000` ink).
 
-Five surfaces step from `--sunk` through `--desk`, `--paper`, `--raised` to `--rule`, each jump only a few points of lightness. Four ink tiers sit on them. Three signal colours (`--patch`, `--warn`, `--ok`) are the deliberate exception to the topic rule: they read as status regardless of topic. Four topic accents (`--draw`, `--ret`, `--ev`, `--play`) carry the season entities.
+Six surfaces step from `--sunk` through `--desk`, `--paper`, `--raised`, `--hi` to `--rule`/`--rule2`, each jump only a few points of lightness.
+
+🔴 **FOUR INK TIERS EXIST AND ONLY THREE MAY CARRY TEXT.** Measured 2026-08-24 against every surface: `--ink4` at `#5C6A75` scores **3.02:1 on `--paper`**, failing AA in all 89 places it coloured text. Solving for four AA-passing steps collapses two into each other — at this floor, on these surfaces, the scale has room for three text tones. `--ink3` was lifted from `#80909D` to **`#85939F`** to sit on the 4.5:1 floor exactly. **`--ink4` is kept dark deliberately, for the 11 places it draws a border, stroke or fill. Never write `color:var(--ink4)`.**
+
+⚠️ **Two signal colours have the same problem and the same solution — one value for the fill, one lifted for ink, hue and saturation untouched because those ARE the identity:** `--ev` (3.28:1) pairs with **`--ev-ink:#25A570`**, and `--warn` pairs with **`--warn-ink:#FF9E72`** (composited true value 4.53:1 — passing by 0.03, which is not a margin).
+
+⚠️ **TOPIC ACCENT IS TWO DIFFERENT SETS AND CONFLATING THEM IS A REAL TRAP.** The package's `:root` declares `--draw:#FF3430 · --ret:#337BA6 · --ev:#1F8A5E · --play:#8A6BD1`, but what the Track and Board actually paint comes from the LANES fixture: **new draws `#AE72E0` · returning `#E8639B` · draw windows `#6B4E7D` · events `#4A90D9` · playlists `#2CC4C4` · patch notes `#F2C230`**. `portal/ui/tokens.css` matches the LANE hexes. Two of the `:root` values (`#FF3430`, `#337BA6`) are the **deadline line** colours for Ranked and DMZ, so reading `:root` as the topic palette produces a set that is both wrong and confusingly plausible.
 
 ## Typography
 
-Two families, split by kind rather than by hierarchy. `--ui` (IBM Plex Sans Condensed) for interface chrome; `--data` (IBM Plex Mono) for **every date, count, id and code**, so numerals align in columns. The mono assignment is a data-integrity decision, not a texture one.
+**Three families, split by kind rather than by hierarchy.** `--ui` (**Space Grotesk**) for interface chrome; `--data` (**JetBrains Mono**) for **every date, count, id and code**, so numerals align in columns; `--display` (**Big Shoulders Display**) for figures and realm titles. The mono assignment is a data-integrity decision, not a texture one.
 
 ## Shape carries state
 
@@ -73,13 +86,15 @@ Applied via a `--topic-accent` custom property set on the element, never via a c
 
 ## Depth and geometry
 
-Borders-only, via `--rule`. No shadows: shadows do not read on dark, and mixing depth strategies is the failure this direction most wants to avoid. Radius is small throughout — the mockups use 2–5px with a `--rad` token — because a workbench control should read as machined, not soft.
+Structure is carried by **borders** (`--rule`, `--rule2`) — but "no shadows" is false and was an error in the previous version of this file: the package carries **98 `box-shadow` declarations**, overwhelmingly *inset* rings that occupy no layout (`inset 0 0 0 1px`) plus the drawer's single lift. **An inset ring is a border that does not take space** — that is the depth strategy, and it is why a ring can be added to an element whose box is already committed.
+
+**Five radii, named by size rather than by component:** `--rad-1:3px` (chips, ticks, tags — boxes under ~24px) · `--rad-2:6px` (**the default**: buttons, inputs, cards, panels) · `--rad-3:10px` (drawers, modals, the ⌘K palette) · `--rad-round:50%` (avatars, dots, beads) · `--rad-pill:999px` (a radius that always exceeds half the height). A workbench control reads as machined, not soft.
 
 ## Motion
 
-The mockups carry exactly **one** real transition — `filter .12s, box-shadow .12s` on an interactive bar — and otherwise set `transition:none!important` / `animation:none!important`.
+The package carries **91 `transition` declarations**; `portal/ui/app.css` carries **91**. The previous version of this file said "exactly one", measured against the retired package, and filed the difference as a portal defect. It does not reproduce.
 
-⚠️ **That suppression is a MEASUREMENT ARTEFACT, not a design position.** Motion is disabled in the mockups so the overlay's pixel diff is deterministic at a frozen clock. The consequence is that the conformance instrument is structurally incapable of specifying, measuring, or rewarding motion — and would score an added transition as a regression. Motion is therefore **an open design question with no current owner**, to be answered in the post-conformance phase, not inferred from this file's near-silence.
+⚠️ **The conformance instrument still cannot see motion, and that is a real limit rather than a design position.** `portalDiff` zeroes transitions and animations so its pixel comparison is deterministic at a frozen clock — so it would score an *added* transition as a regression, and can never reward one. `portalAudit` does not zero them and now samples `transitionProperty` / `transitionDuration`, so a **declared** transition is comparable even though its motion is not. **Motion beyond what is declared is an open design question for the post-conformance phase.**
 
 ## Spacing — deliberately absent, and this is the finding
 
@@ -87,11 +102,8 @@ The mockups carry exactly **one** real transition — `filter .12s, box-shadow .
 
 Recording an invented scale would have been the wrong move twice over: it would make an arbitrary set of numbers look decided, and snapping the portal onto a grid would move pixels and **raise** the conformance diff. Per Harkirat's decision 2026-08-30 11:46 EDT: **no action now; revisit once the portal is conformed to the mockups, since that is when redesign work resumes anyway.**
 
-## Known divergences — the portal does not currently match this file
+## Known divergences — none currently stand
 
-Both were found 2026-08-30 by comparing declared CSS properties between the mockups and `portal/ui/`, and **neither is visible to the overlay**, which reports 0.1–0.2% agreement across them. Filed in `docs/db-deferred-list.md`.
+The previous version listed two, both measured against the retired `2026-08-20-portal` package. **Both were re-measured on the current authority on 2026-08-30 and neither reproduces:** `portal/ui/app.css` carries 91 `transition` declarations against the package's 91, and `--ink4:#5C6A75` is declared identically in both token files. Both are annotated in `docs/db-deferred-list.md` rather than deleted, so the next reader of the retired package finds the correction instead of repeating the hunt.
 
-| Property | Mockups | `portal/ui/` |
-|---|---|---|
-| Hover transition | `filter .12s, box-shadow .12s` (2 of 6 files) | **zero `transition` declarations anywhere** |
-| Ink tiers | `--ink` / `--ink2` / `--ink3` / **`--ink4`** (4 of 6 files) | three tiers; `--ink4` absent |
+⚠️ **This section should not stay empty by neglect.** Where the portal genuinely differs from the design, the live record is the conformance measurement itself — `npm run portal:audit -- --realm <r>` and `portalDiff` — plus the stand-down register (`rg -n 'conforming\(\)' portal/ui/*.js`), which is the list of divergences that are deliberate and scheduled for re-application after all six realms match.

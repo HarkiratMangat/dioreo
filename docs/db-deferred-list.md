@@ -540,6 +540,16 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🔴 The handoff compresses the LOOP and drops the PRECEDENCE, and that is what makes Part 1 keep reopening `P1 · S · Opus5-Medium`
+*Diagnosed 2026-08-30 15:0x EDT, after a session rediscovered §0.1 the hard way and reproduced three of the mockup's own defects on the way.*
+
+Every session ends by writing `.remember` and a handoff. Both keep the mechanical half — the five-section batching contract, the commands, the traps — because it is compressible. Both drop §0.1's precedence rules, because judgement does not compress. **The next session then runs measure → fix with no adjudication step, and closes differences that should have been raised as mockup defects.** On 2026-08-30 that produced: browser-default disc bullets reproduced into the day drawer, 3px focusable ruler ticks, a doubled ring, an ink stand-down inverted, and every measurement taken against the harness when §0.5 ⓪ says the real server is the default.
+
+**Part 1 has now been declared finished three times and reopened three times, and this is the mechanism.** The plan diagnosed its own instruments in §0.45 (*"an indictment of the plan, not only of the session"*); this is the same shape one layer up — an indictment of the handoff.
+
+**Fix:** every handoff's first line is *read §0.1 and §0.5*, and the plan stays indexed so `ctx_search` returns them verbatim rather than a session trusting a paraphrase. **Verify:** a session that has not read §0.1 cannot cite its two questions, and closing a diff region without naming which of DRIFT / MOCKUP-DEFECT / DELIBERATE it is should read as incomplete.
+
+
 ### ❓ Is pixel-conformance still the right target for realms 2–6? `P1 · M · Opus5-High · 🧩needs-decision`
 *Raised 2026-08-30 14:4x EDT, after two sessions of driving Season's number to 0.1–0.2%.*
 
