@@ -540,6 +540,33 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### 🧪 `portalStatus`'s stale branch is UNPROVEN — the falsifier that would prove it is what destroyed a turn's work `P2 · XS · Sonnet5-Medium`
+*Filed 2026-08-30 16:0x EDT. Named in `96faa38`'s message and in no list until now.*
+
+`scripts/portalStatus.mjs` reports per realm whether `portal/ui` has moved since its geometry fixture was recorded. **The FRESH branch is proven** (all seven report fresh on a tree where nothing moved). **The STALE branch has never fired**, so by this repo's own rule — prove a probe can report PRESENCE before trusting its silence — it is uncertified. Its first version cried stale on all seven at once (a fixture cannot stamp the commit it is about to be committed in); that false positive is fixed and the true positive is untested.
+
+⚠️ **The safe falsifier matters here.** The obvious one — commit a real `portal/ui` change, run it, `git reset --hard` back — is what **destroyed four uncommitted edits on 2026-08-30 15:3x EDT**, including a plan correction that left a wrong instruction live for minutes. **Do not test it that way.** Test it in a scratch clone or a throwaway worktree, or by pointing the two `git log -1 --format=%ct` reads at fixture paths with known-different commit times.
+**Verify:** on a tree where `portal/ui` has a commit newer than a fixture, `npm run portal:status` prints `🔴 RE-MEASURE` for that realm and `✅ fresh` for the others.
+
+### 🤔 Three mechanical guards were CONSIDERED and deliberately not built `P3 · S · Opus5-Medium · 🚫decided-not-now`
+*Filed 2026-08-30 16:0x EDT so they are neither silently forgotten nor silently re-proposed.*
+
+The read-only audit found three defects that are checkable in principle, and I chose prose over hooks for each. **Recording the reasoning, because "we thought about it and said no" is invisible otherwise:**
+| Candidate | Would catch | Why not now |
+|---|---|---|
+| A gate refusing a commit that touches `scripts/` unless the suite ran at that tree | the stale green — the audit's #1 finding | Fires on every script commit; this repo already runs **~21 Bash hooks at a measured ~1ms dispatch each**, and its own rule is to quote that price before adding #22 |
+| A check running each filing's `Verify:` line and flagging any that now passes | the fixed-but-open filing, open for three hours | `Verify:` lines are prose, not uniformly machine-runnable. Would need a convention first |
+| A reader test resolving every command in the carriers | numbers and commands that no longer work | Largely covered by the read-only-agent audit now in plan §0.5c, which is cheaper and catches more |
+
+**Revisit if** the same defect recurs after §0.5c's audit is in force — that would mean the outside reader is not sufficient and the mechanical layer is earning its cost. **Verify:** any of these built has a falsifier proving it fires, per §0.10.
+
+### 🧹 Two stray git worktrees inside `.claude/worktrees/` `P3 · XS · Sonnet5-Medium`
+*Flagged by `docs-audit`'s `nested-worktree` warning and by the read-only audit, 2026-08-30.*
+
+`skills-tools-review-4ecca0` (**merged into this branch at `898d774`** — the session that made it said the worktree is disposable, so this one is sanctioned to remove) and `draw-calculator-breakdown-146641` (**not mine, not sanctioned — ask before touching**). ⚠️ **Not removed in the same session that destroyed four files with a careless git command**; `git worktree remove` on someone else's workspace is exactly the shape that just went wrong.
+**Verify:** `git worktree list` shows only the main tree, and `docs-audit`'s `nested-worktree` warning is gone.
+
+
 ### 🎨 Three MOCKUP defects the portal now reproduces — the design is what needs fixing, not the portal `P2 · S · Opus5-Medium`
 *Verdicted 2026-08-30 15:1x EDT under the plan's new §0.1⟷§0.6 resolution. All three were closed toward the mockup on 2026-08-30 because the method had no other destination; each made the number better and the product worse.*
 
