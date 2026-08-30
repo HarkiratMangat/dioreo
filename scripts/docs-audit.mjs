@@ -933,6 +933,8 @@ const FM_RULE = [
 const fmExpected = (f) => {
   for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;
   if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(f)) return "legal";
+  // PRODUCT.md is the impeccable skill's product record. It is a lookup doc (reference), but it MUST sit at the repo root: the skill's context.mjs resolves PROJECT_ROOT/PRODUCT.md and cannot be pointed at docs/reference/. Root placement is the tool's constraint, not a misfiling.
+  if (f === "PRODUCT.md" || f === "DESIGN.md") return "reference";
   if (f === "CLAUDE.md") return "guide";
   if (/^docs\/[^/]+\.md$/.test(f)) return "record";
   return null;

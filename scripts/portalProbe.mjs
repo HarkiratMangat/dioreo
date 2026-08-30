@@ -1,13 +1,6 @@
 // scripts/portalProbe.mjs — WHY a box differs, on both sides, in one call.
 //
-// 🔴 WHY THIS EXISTS. On 2026-08-30 the overlay pass repeatedly went: measure a percentage, guess a
-// cause, fix, re-measure. Every time that loop was broken, it was broken by the same ad-hoc script —
-// walk the ancestor chain, print each one's box and the computed property, and see which ancestor
-// first declares it. It found the composer's 240px (a container, not a rule), the trapped scrim
-// (`main{z-index:1}`), the 13.5px retention paragraph (`.masthead p` reaching into a nested drawer)
-// and the 2px day row (a portal-only wrapper carrying a font-size). It was retyped six times as a
-// heredoc and thrown away six times. portalDiff says HOW MUCH differs; portalAudit says WHAT; this
-// says WHY, which is the question that was costing the turns.
+// 🔴 WHY THIS EXISTS. On 2026-08-30 the overlay pass repeatedly went: measure a percentage, guess a cause, fix, re-measure. Every time that loop was broken, it was broken by the same ad-hoc script — walk the ancestor chain, print each one's box and the computed property, and see which ancestor first declares it. It found the composer's 240px (a container, not a rule), the trapped scrim (`main{z-index:1}`), the 13.5px retention paragraph (`.masthead p` reaching into a nested drawer) and the 2px day row (a portal-only wrapper carrying a font-size). It was retyped six times as a heredoc and thrown away six times. portalDiff says HOW MUCH differs; portalAudit says WHAT; this says WHY, which is the question that was costing the turns.
 //
 // Usage: node scripts/portalProbe.mjs --realm season --sel ".nwhost" [--open "Event"] [--view Board]
 //                                     [--props fontSize,width,zIndex] [--chain]
@@ -26,9 +19,7 @@ const sel = flag('--sel', null);
 const view = flag('--view', null);
 const openText = flag('--open', null);
 const chain = args.includes('--chain');
-// 🔴 THE FALSIFIER. Every other instrument here ships with a case proving it can report NO difference,
-// and this one did not — it was proven once by hand against a known-live finding and never again.
-// --selftest points both sides at the mockup: any property it reports as differing is the probe lying.
+// 🔴 THE FALSIFIER. Every other instrument here ships with a case proving it can report NO difference, and this one did not — it was proven once by hand against a known-live finding and never again. --selftest points both sides at the mockup: any property it reports as differing is the probe lying.
 const selfTest = args.includes('--selftest');
 const PROPS = String(flag('--props', 'width,height,fontSize,lineHeight,display,position,zIndex,margin,padding'))
     .split(',').map((s) => s.trim()).filter(Boolean);
@@ -37,8 +28,7 @@ if (!sel) { console.error('portal:probe needs --sel "<css selector>"'); process.
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const MOCKUP = `http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`;
 const HARNESS = selfTest ? MOCKUP : `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
-// Same instant as every other instrument here, for the same reason: an unfrozen clock moves the
-// countdown between two captures taken seconds apart.
+// Same instant as every other instrument here, for the same reason: an unfrozen clock moves the countdown between two captures taken seconds apart.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
 
 const CLICK = (want) => {
@@ -87,8 +77,7 @@ const READ = (selector, props, walkUp) => {
         for (const [txt, label] of [[view, '--view'], [openText, '--open']]) {
             if (!txt) continue;
             const hit = await p.evaluate(CLICK, txt);
-            // Refuses like every other instrument here: a click that misses on one side produces a
-            // tidy report about the wrong element, which is the failure mode all of these guard.
+            // Refuses like every other instrument here: a click that misses on one side produces a tidy report about the wrong element, which is the failure mode all of these guard.
             if (!hit) throw new Error(`portal:probe refuses: no control reading "${txt}" (${label}) on the ${side} side.`);
             await p.evaluate(() => new Promise((r) => setTimeout(r, 1400)));
         }
@@ -112,9 +101,7 @@ const READ = (selector, props, walkUp) => {
             if (!diff.length) console.log(selfTest ? '  SELF-TEST: the mockup against itself — every property agrees.' : '  every requested property agrees on this element.');
             if (selfTest && diff.length) { console.error(`portal:probe SELF-TEST FAILED — ${diff.length} property/ies differ between a page and itself.`); process.exitCode = 1; }
             for (const p of diff) console.log(`  ✗ ${p}   ${mk.self.style[p]}  →  ${pt.self.style[p]}`);
-            // 🔴 THE POINT OF --chain: an element whose own rules match can still differ, because a
-            // property it INHERITS is declared somewhere above it. Every hard finding today was of
-            // that shape, and the answer was always the first ancestor whose value changes.
+            // 🔴 THE POINT OF --chain: an element whose own rules match can still differ, because a property it INHERITS is declared somewhere above it. Every hard finding today was of that shape, and the answer was always the first ancestor whose value changes.
             if (chain && diff.length) {
                 for (const p of diff) {
                     const walk = (rows, own) => {
