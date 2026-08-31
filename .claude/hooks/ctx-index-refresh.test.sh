@@ -19,13 +19,21 @@ run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1; ok "exit 
 CDIR=$(git rev-parse --git-common-dir); case "$CDIR" in /*) ;; *) CDIR="$PWD/$CDIR";; esac
 RT=$(cd "$(dirname "$CDIR")" && pwd)
 STAMP="$HOME/.claude/context-mode/.dioreo-prose-stamp-$(printf '%s' "$RT" | shasum | cut -c1-12)"
+# 🔴 THE INDEXING PROOFS NEED THE CONTEXT-MODE CLI, WHICH ONLY EXISTS ON A DEV MACHINE. It is resolved from ~/.claude/plugins/cache/, and the hook itself exits 0 when it is absent (line 26, `[ -n "$CLI" ] && [ -f "$CLI" ] || exit 0`) — correct behaviour, since writing a stamp without indexing would claim a fresh index that does not exist. The test asserted the stamp UNCONDITIONALLY, so it passed here and failed in CI with "cold run wrote no stamp — the hook is a NO-OP", accusing the hook of the very bug it does not have. Found on the first push of feat/portal-redesign-session-b, 2026-08-31. ⚠️ THE SPLIT IS NOT A SKIP. Where the CLI exists the original proof runs unchanged and still catches the v1 no-op. Where it does not, the assertion becomes the one that IS checkable there — that the hook degrades silently instead of stamping — so neither branch is vacuous. A bare skip would have made this green everywhere and meaningless in CI, which is the failure mode this repo keeps paying for.
+CLI_PRESENT=$(ls -d "$HOME"/.claude/plugins/cache/context-mode/context-mode/*/cli.bundle.mjs 2>/dev/null | head -1)
 cp "$STAMP" "$STAMP.testbak" 2>/dev/null; rm -f "$STAMP"
 run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
-if [ -s "$STAMP" ]; then echo "  PASS  a cold run REALLY indexes (stamp written)"; pass=$((pass+1))
-else echo "  FAIL  cold run wrote no stamp — the hook is a NO-OP, which is the v1 bug"; fail=$((fail+1)); fi
-before="$(cat "$STAMP" 2>/dev/null)"
-run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
-ok "a warm run is a no-op (stamp unchanged)" "$(cat "$STAMP" 2>/dev/null)" "$before"
+if [ -n "$CLI_PRESENT" ]; then
+  if [ -s "$STAMP" ]; then echo "  PASS  a cold run REALLY indexes (stamp written)"; pass=$((pass+1))
+  else echo "  FAIL  cold run wrote no stamp — the hook is a NO-OP, which is the v1 bug"; fail=$((fail+1)); fi
+  before="$(cat "$STAMP" 2>/dev/null)"
+  run mcp__plugin_context-mode_context-mode__ctx_search >/dev/null 2>&1
+  ok "a warm run is a no-op (stamp unchanged)" "$(cat "$STAMP" 2>/dev/null)" "$before"
+else
+  if [ ! -e "$STAMP" ]; then echo "  PASS  no context-mode CLI: the hook stamps nothing rather than claiming a fresh index"; pass=$((pass+1))
+  else echo "  FAIL  no context-mode CLI, yet a stamp was written — that claims an index that does not exist"; fail=$((fail+1)); fi
+  grep -q '\[ -n "\$CLI" \] && \[ -f "\$CLI" \] || exit 0' "$HOOK" && { echo "  PASS  the hook guards on the CLI being present"; pass=$((pass+1)); } || { echo "  FAIL  the hook has no CLI guard"; fail=$((fail+1)); }
+fi
 mv "$STAMP.testbak" "$STAMP" 2>/dev/null
 
 # ── 🔴 THE ROOT MUST BE THE MAIN WORKTREE, NOT CLAUDE_PROJECT_DIR. In a worktree those differ, and the content DB is keyed on the project root — getting this wrong silently splits retrieval across DBs.
