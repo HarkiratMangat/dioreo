@@ -3,7 +3,7 @@ kind: plan
 status: live
 ---
 
-# Post-compact remediation — the twelve items, then the merge
+# Post-compact remediation — ten tasks, then the merge
 
 > **For agentic workers:** this plan is the FIRST thing to read after the 2026-08-31 compact. It is tracked in git deliberately — Batch H lived only in gitignored `local/` and a default `rg` could not see it, which is why its four remaining steps had to be re-filed by hand.
 
@@ -79,7 +79,13 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 🔴 **EVERY TASK BELOW CARRIES A FALSIFIER, AND THAT IS NOT DECORATION.** §0.7c was written as confident prose about an untested procedure and had to be marked untested the same day. **A remediation plan with no falsifiers is that mistake one level up.** If a task's falsifier cannot be stated, the task is not understood well enough to start.
 
-**Ordered by measured expected value, not by number:** **1** (≈25 turns saved today) → **4** (unskippable, and it now carries the ledger annotation) → **5** (the compact boundary) → **2** (highest ceiling, least certain) → the rest → **11** last.
+🔴 **THE ORDER IS THIS, IN FULL — NOT THE DOCUMENT'S TOP-TO-BOTTOM NUMBERING.** A read-only audit on 2026-08-31 flagged that *"the rest"* was unresolved and that a session working the file in order would run 1→2→3→…, which is a different sequence:
+
+**1 → 4 → 5 → 2 → 3 → 7 → 8 → 9 → 10 → 11.**
+
+**Why:** **1** ≈25 turns saved today · **4** is unskippable and carries the ledger annotation · **5** protects the compact boundary · **2** has the highest ceiling and the least certainty · **11 is last because merging over unfinished remediation is what created the compounding risk.**
+
+⚠️ **ONE STATED DEPENDENCY: Task 3 Step 2 moves three rules into Task 2's hook message, so 3 CANNOT precede 2.** Nothing else here is order-dependent.
 
 ---
 
@@ -236,6 +242,7 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 **Why now:** `docs:audit` reported the unfilled `(#PR)` on every run for six days and I called it *expected* every time. **A gate pre-classified as noise had stopped being a gate.**
 
+- [ ] **Step 0: `git fetch origin --prune && git rev-list --left-right --count origin/main...origin/v3-pre-release`.** ⚠️ **The target may have moved.** A 281-commit, 53,795-insertion squash is the worst possible operation to discover a drifted base after. `0 0` means identical; anything else means read what landed first.
 - [ ] **Step 1: `npm test` · `npm run docs:audit` · `node scripts/portalGeometry.mjs --all --check`.** Read exit codes. Expect `docs:audit` = 1 (the `(#PR)`) plus two worktree warnings.
 - [ ] **Step 2: Rewrite the changelog entry's scope line.** ⚠️ **The branch is NOT "Season"** — 281 commits, 198 files, 53,795 insertions, carrying the Preact migration, the instrument suite, the mode collapse, a destructive-surface change and the portal's whole build. Harkirat: *"it does not only contain Season Realm's work, it contains MUCH more."*
 - [ ] **Step 3: Push.** ⚠️ **Restate the approval sentence at the gate.**

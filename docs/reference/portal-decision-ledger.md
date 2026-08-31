@@ -16,7 +16,7 @@ status: live
 >
 > 🔴 **`feedback_token_conscious_tool_routing` already said this and I did not apply it: a QUESTION about prose → `ctx_search`; a known STRING → `rg`.** The memory records `rg` finding 0/4 on exactly this shape.
 >
-> ⚠️ **PRECONDITION, AND IT FAILS SILENTLY: `ctx_search` returns nothing for a file that was never indexed.** Run `ctx_index(path: "…/portal-decision-ledger.md")` once per session before trusting an empty result — **an unindexed ledger and a ledger with no matching row look identical.** Same failure shape as an untracked doc being invisible to `docs:audit`.
+> ⚠️ **PRECONDITION — INDEX IT ONCE, EVER. NOT once per session.** ✅ **Measured 2026-08-31 13:0x EDT: `ctx_search` printed `Auto-refreshed 1 stale source (file changed since indexing)` after the file was edited**, so it self-maintains and a stale index is not a hazard. **The only hazard is a file that was NEVER indexed — it returns nothing, and that is indistinguishable from a file with no matching row.** If a query comes back empty and you are not certain this file has ever been indexed, run `ctx_index(path: "…/portal-decision-ledger.md")` and ask again before believing the silence.
 >
 > **Batch it with the audit** — `ctx_batch_execute` runs the realm's audit and queries this file in one round trip, which is the moment both are needed.
 >

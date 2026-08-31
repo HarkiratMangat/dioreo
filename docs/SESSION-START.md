@@ -23,7 +23,13 @@ status: live
 > 4. **Date every source.** Two mockup packages exist; `2026-08-23-portal-interactive` supersedes `2026-08-20-portal`. A real citation from the retired one has produced five wrong conclusions.
 > 5. **`--portal harness` is a violation, not a convention** (§0.5 ⓪): harness and mockup are both fixture-driven, so they agree with each other and can both disagree with production. Nothing has been measured against the real server.
 >
-> **First commands:** `preview_start` → `repo-static` (:8900) + `portal-harness` (:8901) · `node -e "require('./scripts/buildPortal').build()"` · `npm run portal:status` (what is known, and whether it is stale) · then `npm run portal:audit -- --realm <r> --triggers`.
+> 🔴 **FIRST ACTION, SUPERSEDING THE COMMAND LIST BELOW (2026-08-31):** read **`docs/superpowers/plans/2026-08-31-post-compact-remediation.md`** — ten remediation tasks then the merge — and query **`docs/reference/portal-decision-ledger.md`** before re-deriving anything.
+>
+> ⚠️ **BOTH ARE TRACKED, AND THAT IS THE POINT.** They used to be reachable only through `.remember`, which this repo's own handoff guide calls *"gitignored, rewritten wholesale each session, and demonstrably lossy."* **A read-only audit on 2026-08-31 found that if `.remember` were lost there was no path back to either document.** The chain now starts here, in a tracked file the SessionStart hook injects.
+>
+> 🔴 **A REALM AUDIT IS NOT THE FIRST COMMAND ANY MORE.** Running one before the remediation plan skips all ten tasks — the audit found exactly that drift baked into this block.
+>
+> **Then, for realm work:** `preview_start` → `repo-static` (:8900) + `portal-harness` (:8901) · `node -e "require('./scripts/buildPortal').build()"` · `npm run portal:status` · then `npm run portal:audit -- --realm <r> --triggers`.
 >
 > **Cadence he has corrected repeatedly:** mega-batch — one turn carries the fix batch AND its measurement AND its verification · zero narration between tool calls, one structured summary at the end · `sequentialthinking` pre-emptively, to set method · decisions go in an `AskUserQuestion` popup, never prose · fix the CLASS, never the named instance · never write "done".
 
@@ -188,7 +194,7 @@ New session on Dioreo. Before anything else:
    (real repro or a trace point, not just "looks right"); test the naive alternative before
    a big rebuild.
 
-4. Infra facts: user-installed-only bot — only ONE instance may run **per bot token** (corrected
+4. Infra facts: ⚠️ **NOT "user-installed only" any more — corrected 2026-08-31.** `CLAUDE.md`'s hard-invariant section retired that half at v3: every public-facing command now registers `setIntegrationTypes([0, 1])`, so the app is guild-installable. **What still holds, and is the load-bearing half: the bot has ZERO standing guild permissions.** Read CLAUDE.md rather than this line. The bot — only ONE instance may run **per bot token** (corrected
    2026-07-26 13:45 EDT; there is now a **local dev bot** on its own token — see
    `project_local_dev_bot` + `docs/reference/deployment-and-ops.md` — which runs alongside prod by
    design). HOST = GCP VM `diors-builds-bot` (us-east1-b, project gen-lang-client-0549308254) under
