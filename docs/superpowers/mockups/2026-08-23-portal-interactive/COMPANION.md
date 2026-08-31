@@ -579,7 +579,9 @@ Columns are **content state**: `Live now · Upcoming · Staged · Ended`.
 
 #### 🔬 THE CONFORMANCE REGISTER — every place `portal/ui` deliberately differs from this package (added 2026-08-28)
 
-The portal is now built to OVERLAY this package pixel-for-pixel: `npm run portal:diff -- --realm <r> --portal harness` renders both and subtracts them, and the two must reach zero regions above the noise floor. That only works if every deliberate divergence is declared, so `?conform=1` renders the design-faithful variant and this is the list of what it switches off. **A divergence that is not here is a defect, in one direction or the other.**
+The portal is now built to OVERLAY this package pixel-for-pixel: `npm run portal:diff -- --realm <r> --portal harness` renders both and subtracts them, and the two must reach zero regions above the noise floor. That only works if every deliberate divergence is declared, and this is that list. **A divergence that is not here is a defect, in one direction or the other.**
+
+🔴 **UPDATED 2026-08-31 — THERE IS NO LONGER A FLAG THAT RENDERS A "DESIGN-FAITHFUL VARIANT".** `?conform=1` published `data-conform` and 57 sites read it; the two rendering modes collapsed into one, so the portal now renders a single thing and that is what the overlay measures. `?fresh=1` survives and does fixtures only. **35 of the decisions took this package's version and 13 kept the portal's**, so the list below is no longer a register of things temporarily switched off — it is a record of what was decided, and the 13 keeps are permanent differences the overlay will always report. Each is commented at its site; the reasoning is in `docs/db-deferred-list.md`.
 
 | Divergence | Why it exists | Conformance |
 |---|---|---|

@@ -16,6 +16,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+const { designClasses } = createRequire(import.meta.url)('./lib/designClasses.cjs');
+// Empty when the package cannot be read; the report says so rather than certifying every finding as the design's.
+const DESIGN_CLASSES = designClasses();
 import { parse } from 'acorn';
 import { CLASS_PROPS } from './portalClassProps.mjs';
 
@@ -354,8 +358,18 @@ const findings = {
         .filter(([c, n]) => n >= 2 && !emit.classes.has(c))
         .map(([c, n]) => ({ name: c, rules: n, maybe: shadowed(c) }))
         .sort((x, y) => y.rules - x.rules || x.name.localeCompare(y.name)),
+    // 🔴 A CLASS THE DESIGN ITSELF EMITS UNSTYLED IS NOT AN "ELEMENT NOTHING STYLES" — it is the
+    //    conformance pass working. `.rowlife` reached this list on 2026-08-31 when the mode collapse removed
+    //    the portal-only rule behind it, and the mockup's own season.html emits the same class on every row
+    //    with no rule for it either. Removing it would change the element's class list, which is what the
+    //    audit pairs on. It is reported below and does not fail; it never goes in the baseline, whose own
+    //    rule is that it only ever shrinks — growing it to absorb a correct match makes the ratchet a diary.
     mismatch: [...emit.classes.entries()]
-        .filter(([c]) => !css.classRules.has(c))
+        .filter(([c]) => !css.classRules.has(c) && !DESIGN_CLASSES.has(c))
+        .map(([c, files]) => ({ name: c, files: [...files].sort() }))
+        .sort((x, y) => x.name.localeCompare(y.name)),
+    inherited: [...emit.classes.entries()]
+        .filter(([c]) => !css.classRules.has(c) && DESIGN_CLASSES.has(c))
         .map(([c, files]) => ({ name: c, files: [...files].sort() }))
         .sort((x, y) => x.name.localeCompare(y.name)),
 };
@@ -390,6 +404,14 @@ console.log(`\n  ③ ${plural(findings.classes.length, 'class', 'classes')} with
 for (const c of findings.classes) console.log(`       .${c.name}`.padEnd(30) + `${c.rules} rules` + (c.maybe.length ? `   ⚠ may be reached by a dynamic expression: ${c.maybe.map((p) => p + '…').join(', ')}` : ''));
 console.log(`\n  ④ ${plural(findings.mismatch.length, 'class', 'classes')} EMITTED with no rule that matches`);
 for (const m of findings.mismatch) console.log(`       .${m.name}`.padEnd(30) + m.files.join(', '));
+if (!DESIGN_CLASSES.size) {
+    console.log('\n  ⚠️  the mockup package could not be read, so a class the DESIGN emits unstyled cannot be');
+    console.log('      told apart from one the portal renders into nothing. Every ④ above is treated as ours.');
+} else if (findings.inherited.length) {
+    console.log(`\n  📐 ${plural(findings.inherited.length, 'class', 'classes')} INHERITED from the design — emitted there too, and unstyled there too.`);
+    console.log('     Matching them is the pass working, so they do not fail. They still render into nothing:');
+    for (const m of findings.inherited) console.log(`       .${m.name}`.padEnd(30) + m.files.join(', '));
+}
 const opaqueTotal = [...emit.opaque.values()].reduce((a, b) => a + b, 0);
 console.log(`\n  · ${plural(opaqueTotal, 'class expression', 'class expressions')} resolved to nothing readable (a variable built elsewhere) — a ③ finding in ${[...emit.opaque.keys()].sort().join(', ') || '—'} may be a false positive and is checked by hand`);
 console.log(`  · ${plural(dynPrefixes.length, 'dynamic prefix', 'dynamic prefixes')} this scan could not resolve (annotation only, never a certification): ${dynPrefixes.sort().map((p) => p + '…').join(' ')}`);

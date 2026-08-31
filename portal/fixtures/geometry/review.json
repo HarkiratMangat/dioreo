@@ -1,7 +1,7 @@
 {
   "realm": "review",
-  "recordedAt": "2026-08-30T23:43:04.375Z",
-  "commit": "9e5c6c7",
+  "recordedAt": "2026-08-31T05:39:16.496Z",
+  "commit": "9b318d7",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -11,7 +11,7 @@
       "grid": {
         "examined": 125,
         "nearMisses": 2,
-        "sizeIssues": 11
+        "sizeIssues": 12
       },
       "inventory": {
         "h1": "Review & commit",
@@ -29,7 +29,7 @@
       "grid": {
         "examined": 136,
         "nearMisses": 2,
-        "sizeIssues": 14
+        "sizeIssues": 15
       },
       "inventory": {
         "h1": "Review & commit",
@@ -47,7 +47,7 @@
       "grid": {
         "examined": 125,
         "nearMisses": 2,
-        "sizeIssues": 11
+        "sizeIssues": 12
       },
       "inventory": {
         "h1": "Review & commit",
@@ -65,7 +65,7 @@
       "grid": {
         "examined": 132,
         "nearMisses": 2,
-        "sizeIssues": 11
+        "sizeIssues": 12
       },
       "inventory": {
         "h1": "Review & commit",

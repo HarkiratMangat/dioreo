@@ -146,8 +146,6 @@ main{overflow:auto;padding-bottom:96px}
    clock IS the stat block's replacement, so it takes that grid area instead of stacking under the
    title. It keeps its own LEFT internal alignment -- COMPANION 16.31a's fifth gap was about the
    text INSIDE the clock being ragged, not about which column the clock lives in. */
-.masthead .mh-aside{grid-area:stats;justify-self:end;min-width:0}
-@media (max-width:900px){ .masthead .mh-aside{justify-self:start} }
 
 /* A REALM KEY, beside the shared one. `clean` is an EMPTY slot on purpose -- a clean build carries
    no mark at all, so a filled swatch would name a mark the page never draws. See ArmoryKey. */
@@ -576,13 +574,15 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
    over the Track, ~2,900px from the strip they belong to. `.pill.ghost` had been unusable
    since the day it was written and nothing had used it, so nothing reported it.
    The 9th generic-class collision in this package — .now .left .tbd .k .tk .ed .col
-   window.frames, and now .ghost. */
+   window.frames, and now .ghost. ⚠️ `.pill.ghost` itself was REMOVED 2026-08-31: its only emitter was
+   oneway.js's "Export first →" button, refused in the mode collapse because it gates on an export
+   interlock this console does not have. */
 .tghost{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:var(--rad-2);border:1.5px dashed var(--patch);
   background:rgba(242,194,48,.08);pointer-events:none;display:flex;align-items:center;padding:0 8px;
   font-size:11px;color:var(--patch);white-space:nowrap;z-index:5}
 
 /* markers are draggable controls, not decoration */
-.now,.dend{touch-action:none}
+.now{touch-action:none}
 .win{cursor:grab;pointer-events:auto;touch-action:none}
 .win:hover{background:rgba(31,138,94,.18)}
 .win .wh{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
@@ -777,7 +777,7 @@ main[data-modal]{z-index:auto}
 .ruler{height:44px;margin-top:2px}
 .ruler span{top:18px;line-height:26px}
 
-.now::after,.dend::after{
+.now::after{
   top:-2px;background:var(--sunk);border:1px solid currentColor;border-radius:var(--rad-1);
   padding:1px 5px;line-height:14px;z-index:4;letter-spacing:.09em}
 .now::after{left:50%;transform:translateX(-50%);color:var(--patch)}
@@ -985,13 +985,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 
 /* Ranked + DMZ end markers alongside BP END. Three deadlines exist in the
    schema and only one was ever drawn. */
-.dend{position:absolute;top:0;bottom:0;width:0;border-left:1.5px dashed var(--c);z-index:4;
-  cursor:ew-resize;touch-action:none}
-.dend::after{content:attr(data-lbl);position:absolute;top:-2px;left:5px;
-  font:600 8.5px/1 var(--data);letter-spacing:.07em;color:var(--c);background:var(--sunk);
-  border:1px solid currentColor;border-radius:var(--rad-1);padding:2px 4px;white-space:nowrap}
-.dend.at-edge::after{left:auto;right:5px}
-.dend:hover,.dend.dragging{border-left-style:solid;border-left-width:2px}
 
 /* ══════════════════ BOARD — collapsible columns ══════════════════ */
 .bbar{display:flex;align-items:center;gap:10px;padding:0 2px 11px}
@@ -1103,9 +1096,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .identity .ph{padding:12px 16px}
 /* Stacked deadline captions (see maskCollidingTicks): each level drops one chip-height so
    two dates four days apart both stay readable at a season-wide zoom. */
-.dend.lvl1::after{top:16px}
-.dend.lvl2::after{top:34px}
-.dend.lvl3::after{top:52px}
 
 /* ── calendar banners: three independent images, one per /calendar page ── */
 .bansec{margin-top:14px;border-top:1px solid var(--rule);padding-top:13px}
@@ -1309,9 +1299,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .dspan::before{left:3px} .dspan::after{right:3px}
 .dspan:hover{background:var(--hi)}
 /* the vertical line is now ONLY a line — it carries no label and needs no hit area */
-.dend{position:absolute;top:0;bottom:0;width:0;border-left:1.5px solid var(--c);
-  z-index:4;pointer-events:none;opacity:.5}
-.dend::after{content:none}
 /* the global-span band: neutral, never a lane's colour */
 .win{position:absolute;top:0;bottom:0;pointer-events:none;
   background:rgba(61,220,151,.05);
@@ -1703,9 +1690,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* The context strip band. §10.4: "a slim bar, never a panel. It must not look like it competes with
    what follows." So it takes the margin the panels take and nothing else — no raised ground, no shadow,
    no accent border. The identity record inside it draws its own hairline; the band itself is invisible. */
-.ctxband{margin:0 22px}
-.ctxband > * + *{margin-top:9px}
-@media (max-width:820px){ .ctxband{margin:0 12px} }
 
 /* ── 10.4 COMPOSITION: the view layer is the hero ──
    The failure this replaces: three panels of identical weight, where nothing said which
@@ -3041,7 +3025,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .ptc:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 
 /* Deadline flags: same-date flags MERGE, and a flag near an edge flips rather than clipping.
-   🔴 THIS SELECTOR WAS `.dend .dflag.flip` AND MATCHED NOTHING, EVER. The flags live in
+   🔴 THIS SELECTOR WAS `.dend .dflag.flip` AND MATCHED NOTHING, EVER — and `.dend` itself was removed with the mode collapse on 2026-08-31, when the design's day-notches replaced the portal's battle-pass marker. The flags live in
    `.deadrail`; `.dend` is the vertical LINE on the overlay, a different element — the same
    defect the mockup records against its own fitFlags(), ported here along with the rule. It had
    a second reason never to fire: no code added the class either. Both are fixed together,
@@ -3139,8 +3123,6 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .pill.lead{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
   font-weight:600;font-size:13px;padding:10px 15px}
 .pill.lead:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
-.pill.ghost{border-style:dashed;border-color:var(--rule2);color:var(--ink3);background:none}
-.pill.ghost:hover{border-color:var(--patch);color:var(--patch)}
 .pill.sm{padding:5px 10px;font-size:11.5px;gap:5px}
 .pill[disabled]{opacity:.45;cursor:default;transform:none}
 /* 🔴 `[hidden]` IS A UA RULE AT SPECIFICITY 0,0,1 AND ANY CLASS BEATS IT. `.pill` sets
@@ -3972,13 +3954,13 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
   transition:left var(--dur-3) var(--ease),width var(--dur-3) var(--ease),
              transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s}
 .tk-inner.animate .pt{transition:left var(--dur-3) var(--ease),transform .14s}
-.tk-inner.animate .dend,.tk-inner.animate .now,.tk-inner.animate .win{
+.tk-inner.animate .now,.tk-inner.animate .win{
   transition:left var(--dur-3) var(--ease),width var(--dur-3) var(--ease)}
 /* A bar being dragged must never interpolate — it would trail the pointer by a third of a
    second, which reads as the page being broken rather than as animation. */
 .tk-inner.animate .bar.dragging{transition:none}
 @media (prefers-reduced-motion:reduce){
-  .tk-inner.animate .bar,.tk-inner.animate .pt,.tk-inner.animate .dend,
+  .tk-inner.animate .bar,.tk-inner.animate .pt,
   .tk-inner.animate .now,.tk-inner.animate .win{transition:none}
 }
 
@@ -4757,13 +4739,6 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 /* The distance to the later wall. Dimmer than the date it follows, because the date is the fact and
    this is the scale of it -- and separated by a middot rather than a gap so it never reads as a
    second, unrelated figure in a line that already has one. */
-.sc-far{font-style:normal;color:var(--ink4)}
-.sc-far::before{content:"·";margin-right:6px;color:var(--rule2)}
-.sc-chip{display:inline-flex;align-items:center;font-family:var(--data);font-size:var(--t-micro);
-  font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);
-  background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-1);
-  padding:3px 7px;line-height:1;white-space:nowrap}
-.sc-chip.ghost{background:none;color:var(--ink3)}
 /* The anchor DIVIDES rather than underlines — it spans the block, between the figure and the facts that
    qualify it, and it carries the tier colour, which is how the five tiers escalate now that they no
    longer bump the figure's size (16.31a). At `open` it is nearly invisible; at `today` it is the loudest
@@ -5205,7 +5180,6 @@ button .ic,a .ic{pointer-events:none}
 /* The context band is a portal wrapper carrying the SAME 22px side margin the identity inside it
    already has, so the record rendered 44px narrower than the design's. Under the stand-down the
    wrapper contributes nothing and the identity keeps its own margin, as the design draws it. */
-.ctxband{margin:0}
 /* `.rec-b` adds a 14px bottom margin the design's record does not have — the mockup emits the class
    and defines no rule for it. Inside the Track's wrapper that margin is contained rather than
    collapsed, so it landed as 14px of trailing space inside the view panel and every element below

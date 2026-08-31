@@ -7,6 +7,7 @@ import fs from 'fs';
 import { CLASS_PROPS } from './portalClassProps.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UI = path.join(ROOT, 'portal', 'ui');
@@ -52,16 +53,44 @@ function emittedClasses() {
     return out;
 }
 
+// 🔴 AN ORPHAN THE DESIGN ITSELF EMITS IS NOT THE SAME DEFECT, AND THIS GATE COULD NOT TELL THEM APART.
+// Added 2026-08-31, when the mode collapse deleted the portal-only rule behind `.rowlife` and this gate
+// correctly reported a new orphan. But the mockup's own season.html emits `<div class="rowmeta rowlife">`
+// on every row and its stylesheet defines no `.rowlife` either — it is a semantic hook the DESIGN carries
+// unstyled. Matching it is the conformance pass working; REMOVING it would change the element's class list,
+// which is what the audit pairs on, and desynchronise every node beneath it.
+//
+// The two cases need different verdicts and the same visibility. A class the PORTAL invented with no rule
+// still fails. A class INHERITED from the design, unstyled on both sides, is reported every run and does
+// not fail — so it can never quietly become an excuse, and it never needs a line in KNOWN_ORPHANS, whose
+// own rule is that it only ever shrinks.
+const { designClasses } = createRequire(import.meta.url)('./lib/designClasses.cjs');
+const designEmits = designClasses;
+const fromDesign = designEmits();
+const designReadable = fromDesign.size > 0;
+
 const defined = definedClasses();
 const emitted = emittedClasses();
 const orphans = [...emitted.entries()].filter(([c]) => !defined.has(c)).sort();
 
-const unexpected = orphans.filter(([c]) => !KNOWN_ORPHANS.has(c));
+const inherited = orphans.filter(([c]) => designReadable && fromDesign.has(c));
+const unexpected = orphans.filter(([c]) => !KNOWN_ORPHANS.has(c) && !(designReadable && fromDesign.has(c)));
 const stale = [...KNOWN_ORPHANS].filter((c) => !orphans.some(([o]) => o === c)).sort();
 
 console.log(`portal:orphans — ${orphans.length} class${orphans.length === 1 ? '' : 'es'} emitted with no rule in the adopted stylesheet\n`);
 for (const [c, files] of orphans) {
     console.log(`  .${c.padEnd(12)} ${[...files].sort().join(', ')}`);
+}
+
+if (!designReadable) {
+    console.log('\n⚠️  the mockup package could not be read, so an orphan inherited from the design cannot be');
+    console.log('   distinguished from one the portal invented. Every orphan below is treated as the portal\'s.');
+} else if (inherited.length) {
+    console.log(`\n📐 ${inherited.length} of these ${inherited.length === 1 ? 'is' : 'are'} INHERITED FROM THE DESIGN — the mockup emits the same class and`);
+    console.log('   defines no rule for it either, so matching it is the conformance pass working, not a defect:');
+    for (const [c, files] of inherited) console.log(`     .${c}  ←  ${[...files].sort().join(', ')}`);
+    console.log('   ⚠️  They still render into nothing. When the surface behind one is rebuilt after the pass,');
+    console.log('      it should gain a rule or stop being emitted — on BOTH sides.');
 }
 
 let bad = false;
@@ -77,5 +106,7 @@ if (stale.length) {
     console.log(`     ${stale.join(', ')}`);
     console.log('   The ratchet only counts if it is kept tight — a list of names nothing renders proves nothing.');
 }
-if (!bad) console.log(`\n✅ no new orphans. ${orphans.length} known; the list only ever shrinks.`);
+if (!bad) console.log(`\n✅ no new orphans. ${orphans.length} emitted with no rule`
+    + `${inherited.length ? `, of which ${inherited.length} ${inherited.length === 1 ? 'is' : 'are'} the design's own` : ''}`
+    + '; the portal-invented list only ever shrinks.');
 process.exit(bad ? 1 : 0);
