@@ -1273,7 +1273,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    read "BATTLE PASS" and "battle pass" 600px apart, which makes one reader ask whether they are the
    same thing. The mockup's rail strings are uppercase in its fixture; the portal composes them from
    real field labels, so the casing belongs in the rule rather than in the data. */
-.dflag .dfl{font-weight:700;color:var(--ink);text-transform:uppercase}
+.dflag .dfl{font-weight:700;color:var(--ink)}
 .dflag .dfd{color:var(--ink2);font-weight:500}
 .dflag.lvl1,.dspan.lvl1{top:21px}
 .dflag.lvl2,.dspan.lvl2{top:42px}
@@ -3761,7 +3761,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    else to be stated — and that made the colgroup's own rule ("widths are derived from each
    column's role") false for exactly one column. `.c-ra` now names it like the rest; these two
    cells keep the alignment and the padding, which are about the CELL and not the column. */
-.mtable td.ra,.mtable th.ra{padding-right:8px;text-align:right}
+.mtable td.ra,.mtable th.ra{width:40px;padding-right:8px;text-align:right}
 .mtable col.c-ra{width:40px}
 .rmv{width:28px;height:28px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
   color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;

@@ -615,10 +615,22 @@ export function Track({ data, draft, publications, window: visible, full, season
 
     const lanes = LANES.filter((l) => (data[l.key] || []).length || (draft && (draft[l.key] || []).length));
 
-    // Everything the season holds, flattened to {start, end, accent} for the overview strip. Draft items are included and wear their own lane's colour: the scrubber's job is to show what EXISTS, and a staged item exists — the plot above is where the difference between live and staged is drawn. 🔴 ONE ROW PER LANE, NOT ONE PILE. `.scrub .mini` is absolutely positioned with no `top`, so every bar in the season stacked at the same y and thirty-seven items rendered as one continuous stripe — an overview that shows the season has things in it and nothing else. The adopted stylesheet's own comment calls this strip a filmstrip; a filmstrip has frames. The row is the lane's index, which is also why the colours line up with the plot below.
-    const scrubItems = LANES.flatMap((l, row) => [...(data[l.key] || []), ...((draft && draft[l.key]) || [])]
-        .map((i) => ({ start: i.startDate || i.date, end: i.endDate || i.startDate || i.date, accent: `var(${l.topic})`, row }))
-        .filter((i) => i.start && i.end))
+    // Everything the season holds, flattened to {start, end, accent} for the overview strip. Draft items are included and wear their own lane's colour: the scrubber's job is to show what EXISTS, and a staged item exists — the plot above is where the difference between live and staged is drawn. 🔴 ONE ROW PER LANE, NOT ONE PILE. `.scrub .mini` is absolutely positioned with no `top`, so every bar in the season stacked at the same y and thirty-seven items rendered as one continuous stripe — an overview that shows the season has things in it and nothing else. The adopted stylesheet's own comment calls this strip a filmstrip; a filmstrip has frames. The row is the lane's index, which is also why the colours line up with the plot below. 🔴 IN THE DESIGN'S ORDER, NOT LANE-GROUPED. A mini is placed by absolute left/top, so sibling order
+    //    is invisible on screen — which is why this went unnoticed. The design walks its item list (draws,
+    //    returning, then the CALENDAR IN ITS STORED ORDER, then publications); the portal walked LANES and
+    //    emitted every draw window, then every event, then every playlist. Same picture, different DOM, and
+    //    with 39 identical-looking siblings the audit's LCS pairing matched the wrong ones and reported
+    //    about twenty width and colour differences that were not differences. Ordering costs nothing and
+    //    makes the comparison mean something.
+    const laneRow = (key) => Math.max(0, LANES.findIndex((l) => l.key === key));
+    const calOrder = ['drawwindow', 'event', 'playlist'];
+    const scrubItems = ['draw', 'returning'].flatMap((k) => [...(data[k] || []), ...((draft && draft[k]) || [])]
+        .map((i) => ({ i, key: k })))
+        .concat(calOrder.flatMap((k) => [...(data[k] || []), ...((draft && draft[k]) || [])].map((i) => ({ i, key: k })))
+            .sort((a, b) => String(a.i.startDate || a.i.date || '').localeCompare(String(b.i.startDate || b.i.date || ''))))
+        .map(({ i, key }) => ({ start: i.startDate || i.date, end: i.endDate || i.startDate || i.date,
+            accent: `var(${(LANES.find((l) => l.key === key) || {}).topic || '--ink3'})`, row: laneRow(key) }))
+        .filter((i) => i.start && i.end)
         // 🔴 PUBLICATIONS ARE ON THE STRIP TOO. The design's overview draws every item the season holds, and
         //    patch notes are items even though they are not a Track LANE — which is exactly why they were
         //    missed here: the strip was built by walking lanes. Two publications, so two minis, and the

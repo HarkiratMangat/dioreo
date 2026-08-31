@@ -36,6 +36,47 @@ status: live
 
 **Measured on Season's Board:** 664 reported differences → 10, in five batched passes rather than sixty single ones. Broadcast holds at 0.3% in both views throughout, which is the shared-surface regression check.
 
+## §0.7c — HOW TO WORK A REALM WITHOUT SPENDING A SESSION ON IT (written 2026-08-31 after Season cost one)
+
+🔴 **THIS SECTION EXISTS BECAUSE SEASON'S TAIL — five ② SHAPE findings — COST ROUGHLY TWENTY-FIVE TURNS.** Harkirat, 2026-08-31 11:0x EDT: *"I'm afraid you're going to waste multiple sessions and hundreds of turns on armory realm, and then again on analytics."* §0.7a already said ②–⑤ are each ONE BATCH; it was loaded at session start and worked against anyway. **A rule that has been ignored once needs the failure written beside it, not a louder restatement.**
+
+**What actually went wrong, and it is one mistake with three faces:** each finding was probed, root-caused, edited and re-measured on its own. Five findings became five investigations. The audit had already grouped them.
+
+### The loop, and it is four calls for a realm's resting pass
+
+| | Call | What it does |
+|---|---|---|
+| **1** | `npm run portal:audit -- --realm <r> --all` for each view | Capture. Nothing else. |
+| **2** | **TRIAGE, no browser, no probe** | Sort **every** ③/④/⑤ row into four buckets from the audit's own output plus the comment beside the code. Write `local/<realm>-triage.md`. |
+| **3** | **ONE scripted edit** for the FIX bucket, with an assert per change, then build, then re-audit all views **in the same call** | |
+| **4** | Close: ledger · §L · changelog · fixture · gates | |
+
+### 🔴 THE FOUR TRIAGE BUCKETS. Measured on Season: only a handful of rows survive into FIX.
+
+| Bucket | Test | Season's example |
+|---|---|---|
+| **CITED (b)/(c)** | A difference kept on purpose. **It reports forever and is not work.** | The tier pills, the clock digits, the one-way strip's 7-vs-5, every disabled control |
+| **DEAD ON BOTH SIDES** | The design's stylesheet keeps a rule its own page does not emit | `.dend` ×8 and `.pill.ghost` — **0 elements in either page** |
+| **ALREADY SETTLED** | The answer is written down somewhere. **Read the comment before probing** | The accent tokens, settled in `tokens.css`'s own comment; `dateOnly`, settled in `rowLifecycleByDate`'s |
+| **FIX** | Everything else | |
+
+### Three tests that retire a whole class of finding at once
+
+1. 🔴 **⑤ RULES IS ADVISORY — a rule difference the RENDERED page does not show is not work.** §0.10 already says the rendered value is ground truth. Season's ⑤ listed 44 differing selectors; almost none manifested in ④.
+2. 🔴 **A SYMMETRIC DIFFERENCE IS A PAIRING ARTIFACT.** When `A → B` and `B → A` both appear, the instrument matched the wrong pair. Season's overview strip reported ~20 width and colour differences that way. **The test is to compare the elements AS A SET, order-independently** — sorted `left,top,width,colour` tuples. Done for the minis: `left`, `width` and colour matched **exactly**, and the sets differed only by a constant **+15px** of `top`, which is the cited cascade. They were never wrong.
+3. **A SUB-PIXEL DIFFERENCE IS NOISE.** `width: 921px → 920.469px` is not a finding.
+
+### ⛔ The rules that keep the loop closed
+
+- **Never investigate during triage.** If a FIX row needs a probe, it goes to a second batch — inline investigation is the loop this section exists to break.
+- **Read the neighbouring comment before writing a probe.** Twice on 2026-08-31 the answer sat three lines from the code.
+- **Fix the first ① CASCADE offset alone — unless it is CITED**, in which case close it and work ④ through it. A kept difference cannot be driven to zero, and Season's ① will report its +16px forever (Harkirat, 2026-08-31 10:5x EDT).
+- **A realm's number has a FLOOR made of its cited rows.** Grade on the enumeration — are the regions exactly the cited set — never on the percentage.
+
+⚠️ **Armory is the second-densest reference (99.6KB, 13 handlers) and earns the full treatment including the interaction tier. It must not earn a second discovery of this method.**
+
+---
+
 ## §L — THE LIVE LEDGER
 
 🔴 **THE ONE RULE THAT KEEPS THIS DOCUMENT TRUE: update this table in the SAME COMMIT that closes a unit.** Not afterwards, not in a handoff. A row whose status is wrong is worse than no row, because the next session trusts it — which is exactly how the doubled search bar came to be recorded as fixed while it was on screen.
