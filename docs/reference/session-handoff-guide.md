@@ -5,6 +5,27 @@ status: live
 
 # Preparing a handoff or a compact — the whole procedure
 
+## 🔴 YOU ARE NOT WRITING A NEW PACKAGE. YOU ARE APPENDING TO A STANDING ONE. (added 2026-08-31 13:0x EDT)
+
+**Harkirat, 2026-08-31:** *"will a future session create/apply the same thorough handoff package for the session that follows it? … this should realistically be a 1 time hurdle, not something recreated every session."*
+
+**He is right, and the answer is structural rather than instructional.** The 2026-08-31 package cost most of a session to build. **Almost none of it should ever be rebuilt** — the durable half is now tracked and self-announcing:
+
+| Carrier | What it holds | How you maintain it |
+|---|---|---|
+| **`docs/SESSION-START.md`** | The FIRST ACTION, and pointers to the live plan and the decision ledger. **A hook injects it every session** | Edit only when the first action itself changes |
+| **`CLAUDE.md`**'s docs table | The same two pointers, in the deepest source of truth | Same |
+| **`docs/reference/portal-decision-ledger.md`** | Every settled decision, with a falsifier per row | **APPEND a row when a decision is made.** Never rewrite |
+| **`docs/db-deferred-list.md`** | Open work | Append, or close an entry |
+| **`docs/CHANGELOG.md`** | What shipped | Append a `###` to the open entry |
+| **`.remember/remember.md`** | ⚠️ **A THIN POINTER ONLY** | Rewritten each session — **and that is fine, because nothing depends on it alone any more** |
+
+🔴 **THE RULE: A HANDOFF IS THREE APPENDS AND ONE SHORT REWRITE.** Append the decisions, append the open work, append the changelog section — then rewrite `.remember` as a pointer. ⚠️ **If you find yourself AUTHORING a long `.remember`, the durable carriers are missing something, and THAT is the thing to fix.** A fact worth a paragraph in `.remember` is a fact that belongs in the ledger or the deferred list.
+
+⚠️ **WHY THIS EXISTS: a read-only audit on 2026-08-31 found the entire package hanging off `.remember`** — gitignored, rewritten wholesale, and by this guide's own words *"demonstrably lossy."* Neither `SESSION-START.md` nor `CLAUDE.md` mentioned the plan or the ledger, so **losing one untracked file would have stranded a session's work.** Fixed the same day; this rule is what keeps it fixed.
+
+---
+
 **Written 2026-08-25 18:2x EDT, distilled from the compact prep at the end of the portal liveliness session.** Harkirat's ask: *"something frictionless that can be looked at and used to prep a handoff even at the last moment, with no needless/useless/repeated/unwanted testing and stuff bloating the context window more."*
 
 **Use this when:** a compact is coming, the session is ending with work left, a task deserves its own session, or a model/effort change is warranted. The triggers themselves are in the memory `feedback_session_handoff_prompts`; this file is the *procedure*.
