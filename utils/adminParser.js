@@ -214,8 +214,7 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
 }
 
-// Can't just bulkText.split('•') anymore -- the prefix letter sits BEFORE the bullet it belongs to, so a naive split leaves it dangling on the END of the PREVIOUS entry's content instead of tagging the entry that follows. This regex's non-greedy content group stops as early as possible, which is always right at the next real "[dpe]?•" boundary -- verified against legacy unprefixed text too (no prefix character = zero-width match, same split points as the old bulkText.split('•') behavior).
-const BULLETED_ENTRY = /([depgm])?•\s*([\s\S]*?)(?=[depgm]?•|$)/g;
+// A literal '•' is an unambiguous delimiter in this format (per buildCalendarEventFromParts's own header comment: '•' never appears inside content), so line.split('•') always yields a clean, strictly alternating [prefixCandidate, body, prefixCandidate, body, ...] array -- no regex guessing required. The PREVIOUS implementation used a non-greedy lookahead regex ("[depgm]?•|$") that had to GUESS where a body ended, and a non-greedy engine always prefers the EARLIEST position that satisfies the lookahead -- so whenever a title's own last character happened to be one of d/p/e/g/m and was immediately followed by a real bullet, it silently swallowed that trailing letter as if it were the NEXT entry's optional prefix, truncating the title by one character (found live 2026-08-22 19:30 EDT, "Krai BR Mode" -> "Krai BR Mod"; see docs/db-deferred-list.md).
 // Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
 const BARE_LINE = /^\s*(?:([depgm])\s+)?(.*)$/;
 
@@ -226,10 +225,14 @@ function parseBulkEvents(bulkText) {
     for (const line of bulkText.split('\n')) {
         if (!line.trim()) continue;
         if (line.includes('•')) {
-            let match;
-            BULLETED_ENTRY.lastIndex = 0; // stateful global regex reused across lines -- reset or later lines silently start mid-pattern
-            while ((match = BULLETED_ENTRY.exec(line)) !== null) {
-                const built = buildCalendarEventFromParts(match[1], match[2]);
+            // Pair the split output two at a time: even indices are the prefix candidate for the
+            // entry that follows (possibly '', meaning no explicit prefix), odd indices are that
+            // entry's body. A trailing unpaired fragment (an incomplete paste ending mid-bullet) is
+            // silently dropped by the `i + 1 < parts.length` bound, same as it would have been before.
+            const parts = line.split('•');
+            for (let i = 0; i + 1 < parts.length; i += 2) {
+                const prefixChar = /^[depgm]$/.test(parts[i]) ? parts[i] : undefined;
+                const built = buildCalendarEventFromParts(prefixChar, parts[i + 1]);
                 if (built) parsedEvents.push(built);
             }
         } else {
