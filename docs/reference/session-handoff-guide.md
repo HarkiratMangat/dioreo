@@ -254,6 +254,20 @@ Not "did I do the steps" — that is the checklist restating itself. Two falsifi
 
 ---
 
+## 🔴 THE RECEIVING END — before touching anything (Task 7, added 2026-08-31 14:20 EDT)
+
+Every failure this guide records is a RECEIVING failure, not a writing one — a session read a well-written handoff, missed one line, and closed a Part wrongly anyway. Writing better has already been tried three times and did not fix it.
+
+**First action, before acting on anything the handoff prose claims:** produce the realm's own numbers.
+1. `npm run portal:status` — what is recorded, and whether it is stale against the current commit.
+2. The realm's own audit — `npm run portal:audit -- --realm <realm>`.
+
+**If those numbers disagree with what the handoff says, that disagreement is the most valuable thing in the session** — surface it in the first two minutes, not at the close. A handoff describes a state as of when it was written; the filesystem describes the state now, and only the second one is ground truth.
+
+⚠️ This guide is already ~15 sections and was growing the same way `docs/superpowers/plans/2026-08-31-post-compact-remediation.md` did before that plan was split off. Adding this section is justified only because it is the first one about RECEIVING rather than writing — do not add another section here without removing one.
+
+---
+
 ## The six steps, in order
 
 ### 1 · Checkpoint FIRST, before writing a word

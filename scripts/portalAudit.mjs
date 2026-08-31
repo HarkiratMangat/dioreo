@@ -182,6 +182,28 @@ function groupRuns(rows) {
 const pad = (v, n) => String(v).padStart(n);
 const sgn = (n) => (n >= 0 ? '+' : '') + n;
 
+// ── ledger annotation — a coarse keyword pass, not the lookup ───────────────────────────────────── 🔴 Task 4 of docs/superpowers/plans/2026-08-31-post-compact-remediation.md. Per the measurement recorded in portal-decision-ledger.md's own header: literal/substring matching against the ledger found 1 of 6 real finding selectors; ctx_search (prose search) found 5 of 5 on the same questions — a ledger row is prose and a finding is a literal, and substring matching cannot bridge that gap. This exists to catch the cheap cases and say so; it is never the real lookup. IT ANNOTATES, IT NEVER FILTERS OR SUPPRESSES a finding.
+const LEDGER_PATH = path.join(ROOT, 'docs/reference/portal-decision-ledger.md');
+const ledgerSurfaces = (() => {
+    if (!fs.existsSync(LEDGER_PATH)) return [];
+    const rows = [];
+    for (const line of fs.readFileSync(LEDGER_PATH, 'utf8').split('\n')) {
+        const m = line.match(/^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*\d{4}-\d{2}-\d{2}\s*\|/);
+        if (!m) continue;
+        const surface = m[1].replace(/[`*]/g, '').trim();
+        if (surface && surface !== 'Surface' && !/^-+$/.test(surface)) rows.push(surface);
+    }
+    return rows;
+})();
+const classFrag = (key) => { const m = String(key).match(/\.[a-zA-Z0-9_-]+/); return m ? m[0] : String(key || '').trim(); };
+const annotate = (key) => {
+    const frag = classFrag(key);
+    if (!frag) return '';
+    const hit = ledgerSurfaces.find((s) => s.includes(frag));
+    if (!hit) return '';
+    return `      ⚠ ledger may cover this — verify with ctx_search, not this match: ${hit.slice(0, 90)}${hit.length > 90 ? '…' : ''}`;
+};
+
 (async () => {
     const { findChrome } = require('./lib/chromePath.cjs');
     const puppeteer = require('puppeteer-core');
@@ -303,6 +325,15 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
 
         console.log(`\nportal:audit — ${realm}${view ? ' · ' + view : ''}    mk ${mk.length} nodes / ${mkH}px    ·    pt ${pt.length} / ${ptH}px    (${sgn(ptH - mkH)}px)\n`);
 
+        // 🔴 Task 4 — printed here, above every finding, because the tool must run to get findings and nobody can drop a header printed above their own results the way three sessions dropped this document's §0.1. Triage a finding into exactly one bucket:
+        console.log('OPERATING RULES — triage every finding below into ONE of these:');
+        console.log('  CITED — a decision (portal-decision-ledger.md) already covers it; report it every run, do not chase it.');
+        console.log('  DEAD-ON-BOTH — zero elements on either side; not a defect, delete the code that would produce one.');
+        console.log('  ALREADY-SETTLED — fixed since the last run; verify the number moved before re-filing it.');
+        console.log('  FIX — the rest. 🔴 A FIX row that removes a GATE, a GUARD or a CONDITION is never a triage row — read why it exists first.');
+        console.log('§0.7d: the diff finds SURFACES, the session reads the CODE, HARKIRAT closes by looking. The percentage is a pointer, never a target.');
+        console.log('⚠ lines below cite the decision ledger — coarse keyword matching, verify with ctx_search before trusting a hit OR a silence.\n');
+
         // 🔴 PAIRING IS SEQUENCE ALIGNMENT, AND BOTH SIMPLER RULES WERE TRIED AND MEASURED FIRST. Pairing globally by signature in document order — what portal:converge does — survives four levels and collapses at sixteen: on Season's Board the first `b` in the page paired with a `b` four cards away and 622 of 1608 nodes reported as present-on-one-side. Pairing strictly by ancestor path plus ordinal is worse, 1610 groups, because ONE extra wrapper div desynchronises every path beneath it and nothing below the first structural difference pairs at all.
         //
         // The two pages are two renderings of the same tree with insertions and deletions between them, which is precisely what a longest-common-subsequence solves. Aligning the signature SEQUENCES pairs correctly straight through a missing wrapper, and what falls outside the alignment is a real structural difference rather than an artifact of counting.
@@ -339,6 +370,8 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             const [a, b] = offsets[0];
             console.log(`   ✗ ${a.sig}   top ${pad(a.top, 5)}→${pad(b.top, 5)} (${sgn(b.top - a.top)})   h ${pad(a.h, 4)}→${pad(b.h, 4)} (${sgn(b.h - a.h)})`);
             console.log(`      at ${a.path.slice(-110)}`);
+            const note0 = annotate(a.sig);
+            if (note0) console.log(note0);
             console.log(`      ${offsets.length - 1} more offset(s) below it — expect most to be this one, counted again.\n`);
         }
 
@@ -353,8 +386,8 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             return [...m.entries()].sort((x, y) => y[1].n - x[1].n);
         };
         const shape = [];
-        for (const [sig, g] of bySig(absent)) shape.push(`   ONLY IN MOCKUP  ×${pad(g.n, 4)}  ${sig.padEnd(26)} in ${g.parents.size} place(s)   ${g.sample.all.slice(0, 40)}`);
-        for (const [sig, g] of bySig(extra)) shape.push(`   ONLY IN PORTAL  ×${pad(g.n, 4)}  ${sig.padEnd(26)} in ${g.parents.size} place(s)   ${g.sample.all.slice(0, 40)}`);
+        for (const [sig, g] of bySig(absent)) { shape.push(`   ONLY IN MOCKUP  ×${pad(g.n, 4)}  ${sig.padEnd(26)} in ${g.parents.size} place(s)   ${g.sample.all.slice(0, 40)}`); const n = annotate(sig); if (n) shape.push(n); }
+        for (const [sig, g] of bySig(extra)) { shape.push(`   ONLY IN PORTAL  ×${pad(g.n, 4)}  ${sig.padEnd(26)} in ${g.parents.size} place(s)   ${g.sample.all.slice(0, 40)}`); const n = annotate(sig); if (n) shape.push(n); }
         console.log(`② SHAPE (${shape.length} component piece(s)) — independent of each other. ONE BATCH.`);
         shape.slice(0, CAP).forEach((l) => console.log(l));
         if (shape.length > CAP) console.log(`   … ${shape.length - CAP} more — re-run with --all`);
@@ -373,6 +406,8 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
         [...wordGroups].slice(0, CAP).forEach(([sig, list]) => {
             console.log(`   ${sig}${list.length > 1 ? `  ×${list.length}` : ''}`);
             list.slice(0, 3).forEach(([m, p]) => console.log(`      mk “${m.slice(0, 68)}”\n      pt “${p.slice(0, 68)}”`));
+            const n = annotate(sig);
+            if (n) console.log(n);
         });
         if (wordGroups.size > CAP) console.log(`   … ${wordGroups.size - CAP} more — re-run with --all`);
         console.log('');
@@ -392,6 +427,8 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
         [...styleGroups].sort((x, y) => y[1] - x[1]).slice(0, CAP).forEach(([k, n]) => {
             const [sig, prop, mv, pv] = k.split(KEY_SEP);
             console.log(`   ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
+            const note = annotate(sig);
+            if (note) console.log(note);
         });
         if (styleGroups.size > CAP) console.log(`   … ${styleGroups.size - CAP} more — re-run with --all`);
         console.log('');
@@ -406,6 +443,8 @@ const sgn = (n) => (n >= 0 ? '+' : '') + n;
             console.log(`   DIFFERS        ${sel}`);
             if (aOnly.length) console.log(`      design only: ${aOnly.join(' ; ').slice(0, 150)}`);
             if (bOnly.length) console.log(`      portal only: ${bOnly.join(' ; ').slice(0, 150)}`);
+            const note = annotate(sel);
+            if (note) console.log(note);
         });
         if (css.differ.length > CAP) console.log(`   … ${css.differ.length - CAP} more — re-run with --all`);
         console.log('');

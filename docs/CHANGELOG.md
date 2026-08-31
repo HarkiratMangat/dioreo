@@ -28,8 +28,10 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.69.0 — 2026-08-26 → 2026-08-30 (#PR) — the portal conformance pass, on one branch
+## Pre-Release v3.69.0 — 2026-08-26 → 2026-08-30 (#PR) — the portal migrates to Preact, builds its own instrument suite, and converges onto its design
 
+> 🔴 **SCOPE, STATED PLAINLY — NOT JUST SEASON.** 281 commits, 198 files, 53,795 insertions since `v3-pre-release`: the Preact migration, six new portal instruments (`portalDiff`/`portalAudit`/`portalProbe`/`portalStatus`/`portalConverge`/`portalInventory`), the collapse of the portal's two rendering modes into one, a destructive-surface behavior change, and the Season and Broadcast conformance passes themselves. Harkirat, 2026-08-31: "it does not only contain Season Realm's work, it contains MUCH more."
+>
 > 🔴 **ONE ENTRY FOR THE WHOLE BRANCH, AND LATER SESSIONS ADD A SUB-HEADING RATHER THAN A NEW RELEASE.** Harkirat, 2026-08-30 22:0x EDT. `feat/portal-redesign-session-b` had accumulated FOUR unmerged pre-release entries, one per session, each citing an unfilled `(#PR)` — four errors in `docs:audit` for one piece of unmerged work. The workflow puts the version bump at *the final pre-merge checkpoint*, and there is no merge planned, so every one of them was minted early. Consolidated here: the version is minted once, at the merge, and the `(#PR)` is filled once.
 >
 > **How to extend it:** append a `### <date> — <what changed>` section at the foot of this entry. Do not add a `## Pre-Release` heading and do not bump `package.json` until the branch actually merges.
