@@ -503,6 +503,9 @@ Six of seven realms share `shell.js`, `app.css`, `async.js`, `manifest.js`, `exp
 | 🔴 **AN AMBIGUOUS `--open` LABEL HAD THE TWO SIDES OPENING DIFFERENT PANELS** | and reporting the difference as conformance — 26.7% comparing an export drawer against a staging drawer. Both instruments refuse a multi-match now. ⚠️ A cross-side PANEL comparison was tried twice and removed both times; do not re-propose it without reading why |
 | ⚠️ **`portalGeometry` does NOT freeze its clock, `portalDiff` does** | so a date-derived count drifts a fixture with no code change. Filed. **A geometry failure naming a count is time, not you** |
 | ⚠️ **An instrument's PAIRING is not evidence about the page** | ② SHAPE reported an `All` chip and two `Sep 15` nodes as one-sided; loading both pages showed them byte-identical. LCS alignment paired them against neighbours. **Check the page before closing a SHAPE finding** |
+| 🔴 **A conform CSS rule must NOT change an element's SIGNATURE** | its class list is what the audit's walk pairs on, so changing it desynchronises every node beneath. Use a data-attribute — `main[data-modal]` — not an added class |
+| 🔴 **⑤ RULES is ADVISORY; the RENDERED value is ground truth** | a stand-down written from reading the stylesheet inverted itself for a week. Read the computed value before acting on a declaration |
+| 🔴 **0.1% MEANS *MATCHES*, NOT *GOOD*** | two sessions drove a percentage toward zero against a reference with real defects and reproduced them faithfully — browser-default bullets, 3px focusable ticks, a doubled ring. §0.1b is the long form; this is the sentence to remember while looking at a number |
 | ⚠️ **`main` is the portal's scroll container** | `window.scrollY` can never show a portal scroll bug |
 
 ---
