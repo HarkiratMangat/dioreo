@@ -151,7 +151,7 @@ Agent(subagent_type: "general-purpose", model: "sonnet", run_in_background: fals
 >
 > Simulate a FRESH session that has just been through a `/compact`. You have NO transcript. You get only what auto-loads: `CLAUDE.md`, `docs/SESSION-START.md`, the memory index, `.remember/remember.md`, plus what those four explicitly point to. **Your task: pick up the work and continue it. Then report every place you could NOT.**
 >
-> Answer concretely, citing file+line or saying NOTHING told you: what is the single next action, and is it derivable or a guess? · what is DONE vs OPEN? · name the exact command to measure, to diagnose, and to see what is already known · what do the instruments NOT see? · what has been TRIED AND RETIRED that you would wrongly re-propose? · **find every place two carriers disagree, every number that appears twice with different values, every claim stale relative to HEAD** · resolve every backticked path, every command, every `§n` — report each that fails · is anything presented as verified that was not? · **could you produce the next commit without asking a question?** · what would you WRONGLY do with confidence? · what exists in the repo that you needed and were never pointed to? · rate 0–10 and say precisely what is missing for a 10.
+> Answer concretely, citing file+line or saying NOTHING told you: **CAN YOU START — name the exact commands to bring up the environment and produce the first measurement, and say whether you could do it from the handoff alone or had to hunt** · **IS EVERY STEP RUNNABLE — for each numbered step, quote the command it gives you, and flag any step written as prose while its neighbours are commands** · what is the single next action, and is it derivable or a guess? · what is DONE vs OPEN? · name the exact command to measure, to diagnose, and to see what is already known · what do the instruments NOT see? · what has been TRIED AND RETIRED that you would wrongly re-propose? · **find every place two carriers disagree, every number that appears twice with different values, every claim stale relative to HEAD** · resolve every backticked path, every command, every `§n` — report each that fails · is anything presented as verified that was not? · **could you produce the next commit without asking a question?** · what would you WRONGLY do with confidence? · what exists in the repo that you needed and were never pointed to? · rate 0–10 and say precisely what is missing for a 10.
 >
 > Be blunt, most severe first: what is wrong, which file, the smallest concrete fix. Say "unverified" rather than assuming. On a re-run, **verify each previous fix actually holds and report what the fixes BROKE or missed** — do not trust the fix commit's diff, re-derive from scratch.
 
@@ -180,6 +180,27 @@ The test below asks whether a session could *produce the next commit*. That is t
 
 - 🔴 **Ask "could a fresh session BRING UP the environment?" before "could it produce a commit?"** Servers, build step, credentials, which command produces the first number. An orientation document that cannot be acted on is a reading list.
 - ⚠️ **Compression pressure attacks setup lines first**, because they look like boilerplate and read as the least interesting thing on the page. They are the most load-bearing: everything else in the handoff is *unreachable* without them.
+
+---
+
+## 🔴 EVERY STEP MUST BE RUNNABLE — AND PROSE SITTING AMONG COMMANDS IS ITSELF THE FINDING (added 2026-08-30 23:2x EDT)
+
+**A read-only audit found this in one grep, on a package its author had just declared ready.** The filed plan's step 1 was marked *irreversible, do this before any edit* — and it was the only step in the entry with **no command**. Every neighbour handed the reader an exact invocation; that one handed them prose. Confirming the gap took a single search: no script in the repo had a `--conform` flag at all, so a fresh session would have had to **invent a method at the one step that cannot be undone.**
+
+🔴 **THE ASYMMETRY IS THE SIGNAL, AND IT POINTS THE WRONG WAY BY DEFAULT.** A step gets written as prose precisely when nobody has done it yet — and the steps nobody has done yet are the novel and irreversible ones. So the danger correlates *inversely* with how much detail the writer had to hand. **Scan a finished handoff for the step that is prose while its siblings are commands; that is where the reader will improvise.**
+
+- **The test:** could you paste every step into a terminal? Where you cannot, either supply the command, or **say explicitly that none exists and name the concrete method** — the two URLs, the file to copy from, the manual gesture. "No flag exists for this and that is the point of saying so" is a complete instruction; silence is not.
+- ⚠️ **Do not fix it by inventing tooling at handoff time.** Naming the gap costs a sentence; building a script at 23:00 to make a document look complete is how an unreviewed tool enters the repo.
+
+## 🔴 A BLOCKER BELONGS AT THE INSTRUCTION, AND RUNNABILITY BEATS NUMBERING (added 2026-08-30 23:2x EDT)
+
+The same audit: `.remember`'s **First action** read as something to *do*. It actually routed to a filing where steps 1–2 were runnable and **step 3 was gated on Harkirat's answer** — a fact one file-hop away, discoverable only after the reader had committed to the task.
+
+🔴 **And the sharper half, which no rule on this page had:** step 2 carried a command and step 1 did not. **A reader does the runnable thing first, whatever the numbers say.** So the ordering the writer intended was inverted by the shape of the instructions rather than by any misreading — and the step that would have been skipped was the irreversible one.
+
+- **State the gate before the pointer, never behind it.** *"Steps 1 and 2 are yours; step 3 needs his answer"* belongs in the sentence that sends the reader, not in the document they are sent to.
+- **Order is enforced by what is runnable.** If step 1 must precede step 2, step 1 needs at least as concrete an instruction as step 2 — otherwise the numbering is decoration.
+- ⚠️ **A protection written as a wildcard does not tell a reader what it protects.** `.claude/worktrees/*` covered both live worktrees correctly and named neither, so a reader could not tell whether their case was included. **Name the instances beside the pattern.**
 
 ---
 
