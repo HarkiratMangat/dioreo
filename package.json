@@ -9,6 +9,7 @@
     "site": "node --check scripts/buildLegalPages.js && node --check scripts/lib/chronicle.js && node --check scripts/lib/commandsPage.js && node --check scripts/lib/commandCatalog.js && node --check scripts/lib/commandProse.js && node scripts/buildLegalPages.js",
     "portal": "node portal/server.js",
     "docs:audit": "node scripts/docs-audit.mjs",
+    "handoff": "node scripts/handoffCheck.mjs",
     "docs:audit:test": "node scripts/testCache.mjs docs-audit-test scripts/docs-audit.mjs scripts/docs-audit.test.mjs scripts/docs-audit-test-parallel.mjs -- node scripts/docs-audit-test-parallel.mjs",
     "test:hooks": "node scripts/testCache.mjs hooks .claude/hooks -- bash .claude/hooks/run-all-tests.sh",
     "portal:gate": "node docs/superpowers/mockups/2026-08-23-portal-interactive/.schema-gate.mjs --self-test",

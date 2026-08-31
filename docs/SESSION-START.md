@@ -23,6 +23,8 @@ status: live
 > 4. **Date every source.** Two mockup packages exist; `2026-08-23-portal-interactive` supersedes `2026-08-20-portal`. A real citation from the retired one has produced five wrong conclusions.
 > 5. **`--portal harness` is a violation, not a convention** (§0.5 ⓪): harness and mockup are both fixture-driven, so they agree with each other and can both disagree with production. Nothing has been measured against the real server.
 >
+> 🔴 **ENDING THE SESSION, OR ABOUT TO COMPACT? RUN `npm run handoff`.** It checks the carriers — the tracked pointer chain, `.remember`'s size, whether the ledger / deferred list / changelog actually grew, and whether anything is uncommitted. ⚠️ **A pass means the CARRIERS are in order; it says nothing about whether what you wrote is RIGHT.** The procedure behind it is `docs/reference/session-handoff-guide.md`, but **you should not need to read 400 lines to hand off — run the command.**
+>
 > 🔴 **FIRST ACTION, SUPERSEDING THE COMMAND LIST BELOW (2026-08-31):** read **`docs/superpowers/plans/2026-08-31-post-compact-remediation.md`** — ten remediation tasks then the merge — and query **`docs/reference/portal-decision-ledger.md`** before re-deriving anything.
 >
 > ⚠️ **BOTH ARE TRACKED, AND THAT IS THE POINT.** They used to be reachable only through `.remember`, which this repo's own handoff guide calls *"gitignored, rewritten wholesale each session, and demonstrably lossy."* **A read-only audit on 2026-08-31 found that if `.remember` were lost there was no path back to either document.** The chain now starts here, in a tracked file the SessionStart hook injects.
