@@ -40,6 +40,13 @@ silent "a turn with no text at all" $f
 f=$work/chk; { usermsg; tool2 Bash Read; tool2 Edit Edit; tool Bash; txt "The geometry check disagreed with the fixture on count only, which is the signature of an unfrozen clock rather than a real drift, so the remaining work is unaffected."; tool2 Edit Bash; txt "$SUM"; } > $f
 silent "ONE substantive mid-turn checkpoint in a long run is legitimate and deliberately not flagged" $f
 
+# 🔴 A TURN BOUNDARY IS A HUMAN MESSAGE WHATEVER SHAPE ITS CONTENT HAS. Observed live 2026-08-31: a message carrying a screenshot has ARRAY content, the detector matched only STRING content, so it skipped the boundary and summed the previous turn into this one — the reported run climbed 47 -> 57 across a turn holding ONE tool call. A tool_result carrier is ALSO type:"user" with array content, so shape alone cannot separate them; the discriminator is whether the array holds a text or image block.
+attach() { printf '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{}}]}}\n{"type":"user","message":{"role":"user","content":[{"type":"image"},{"type":"text","text":"look at this"}]}}\n'; }
+f=$work/att; { usermsg; tool Bash; txt "Now let me check the next thing, a narration line long enough to be counted."; tool Edit; txt "Now let me do another, also long enough to count as narration here."; tool Edit; attach; tool Bash; } > $f
+silent "a turn opened by an ATTACHMENT message does not absorb the previous turn" $f
+f=$work/att2; { usermsg; tool Bash; attach; tool Bash; txt "Now let me start on this, which is narration long enough to be counted properly."; tool Edit; txt "Now let me continue, also long enough to count as a second instance here."; tool Edit; } > $f
+fires "narration AFTER an attachment boundary is still counted" $f
+
 # ── MUST FIRE ──
 f=$work/i; { usermsg; tool Bash; txt "Found it."; tool Edit; txt "$SUM"; } > $f
 fires "ACK: a nine-character acknowledgement between tool calls" $f

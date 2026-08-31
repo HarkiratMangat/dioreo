@@ -24,8 +24,7 @@ tp=$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null)
 ln=$(grep -n '"role":"user","content":"' "$tp" 2>/dev/null | tail -1 | cut -d: -f1)
 ln=${ln:-1}
 
-# One row per tool-carrying assistant message: the pipe-delimited files it edited, or RESET if it
-# made any non-edit call. Pipes delimit so a path can never partially match another path.
+# One row per tool-carrying assistant message: the pipe-delimited files it edited, or RESET if it made any non-edit call. Pipes delimit so a path can never partially match another path.
 rows=$(tail -n +"$ln" "$tp" 2>/dev/null | grep '"type":"assistant"' | jq -rc '
   .message.content as $c
   | ($c | map(select(.type=="tool_use"))) as $t

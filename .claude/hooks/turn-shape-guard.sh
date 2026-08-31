@@ -33,7 +33,25 @@ active=$(printf '%s' "$input" | jq -r '.stop_hook_active // false' 2>/dev/null)
 tp=$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null)
 [ -f "$tp" ] || exit 0
 
-ln=$(grep -n '"role":"user","content":"' "$tp" 2>/dev/null | tail -1 | cut -d: -f1)
+# 🔴 A TURN BOUNDARY IS A HUMAN MESSAGE, AND CONTENT SHAPE DOES NOT DECIDE THAT. The first version matched only `"role":"user","content":"` — a STRING body. A message carrying an attachment has ARRAY content (`['image','text']`), so it was skipped, the scope silently extended back through the PREVIOUS turn, and the counts summed two turns together. Observed live on 2026-08-31: the reported run went 47 -> 57 across a turn containing ONE tool call, which is the signature. A tool_result carrier is also `type:"user"` with array content, so shape alone cannot separate them — the test is whether the array holds a text or image block, which only a human message does.
+ln=$(python3 - "$tp" <<'PYSCOPE' 2>/dev/null
+import sys, json
+last = 1
+for i, line in enumerate(open(sys.argv[1], encoding='utf-8', errors='replace'), 1):
+    try:
+        o = json.loads(line)
+    except Exception:
+        continue
+    if o.get('type') != 'user':
+        continue
+    c = o.get('message', {}).get('content')
+    if isinstance(c, str):
+        last = i
+    elif isinstance(c, list) and any(b.get('type') in ('text', 'image') for b in c):
+        last = i
+print(last)
+PYSCOPE
+)
 ln=${ln:-1}
 
 # One row per assistant message: a tool-carrying message, or the text of a text-only one. Regex note: apostrophes are written as `.` (let.s, i.ll) so the jq program can stay single-quoted.

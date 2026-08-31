@@ -50,10 +50,7 @@ function printTable(title, entries) {
 async function connectMongo() {
     require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
     const mongoose = require('mongoose');
-    // Prefers a read-only credential scoped to this analysis path over the read-write MONGODB_URI
-    // every other script uses, per docs/superpowers/specs/2026-08-16-observability-layer-design.md's
-    // storage-growth section. Falls back to MONGODB_URI so this script keeps working before the
-    // read-only user exists (see docs/db-deferred-list.md) or if ANALYTICS_READONLY_URI is ever unset.
+    // Prefers a read-only credential scoped to this analysis path over the read-write MONGODB_URI every other script uses, per docs/superpowers/specs/2026-08-16-observability-layer-design.md's storage-growth section. Falls back to MONGODB_URI so this script keeps working before the read-only user exists (see docs/db-deferred-list.md) or if ANALYTICS_READONLY_URI is ever unset.
     const uri = process.env.ANALYTICS_READONLY_URI || process.env.MONGODB_URI;
     if (!uri) throw new Error('ANALYTICS_READONLY_URI or MONGODB_URI must be set (check .env)');
     await mongoose.connect(uri);

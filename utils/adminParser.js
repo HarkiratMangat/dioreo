@@ -214,8 +214,7 @@ function buildCalendarEventFromParts(prefixChar, rawEntry) {
     return { title, startDate, endDate, isOngoing, category, isDoubleCP };
 }
 
-// A literal '•' is an unambiguous delimiter in this format (per buildCalendarEventFromParts's own header comment: '•' never appears inside content), so line.split('•') always yields a clean, strictly alternating [prefixCandidate, body, prefixCandidate, body, ...] array -- no regex guessing required. The PREVIOUS implementation used a non-greedy lookahead regex ("[depgm]?•|$") that had to GUESS where a body ended, and a non-greedy engine always prefers the EARLIEST position that satisfies the lookahead -- so whenever a title's own last character happened to be one of d/p/e/g/m and was immediately followed by a real bullet, it silently swallowed that trailing letter as if it were the NEXT entry's optional prefix, truncating the title by one character (found live 2026-08-22 19:30 EDT, "Krai BR Mode" -> "Krai BR Mod"; see docs/db-deferred-list.md).
-// Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
+// A literal '•' is an unambiguous delimiter in this format (per buildCalendarEventFromParts's own header comment: '•' never appears inside content), so line.split('•') always yields a clean, strictly alternating [prefixCandidate, body, prefixCandidate, body, ...] array -- no regex guessing required. The PREVIOUS implementation used a non-greedy lookahead regex ("[depgm]?•|$") that had to GUESS where a body ended, and a non-greedy engine always prefers the EARLIEST position that satisfies the lookahead -- so whenever a title's own last character happened to be one of d/p/e/g/m and was immediately followed by a real bullet, it silently swallowed that trailing letter as if it were the NEXT entry's optional prefix, truncating the title by one character (found live 2026-08-22 19:30 EDT, "Krai BR Mode" -> "Krai BR Mod"; see docs/db-deferred-list.md). Bulletless, newline-delimited entry (added 2026-08-22 19:47 EDT, Harkirat's direct pick -- "newline ends it", offered as an alternative to bullet-joined pastes rather than a replacement for them): prefix letter optionally followed by whitespace instead of a bullet ("p 8/6-8/19 | Krai BR").
 const BARE_LINE = /^\s*(?:([depgm])\s+)?(.*)$/;
 
 function parseBulkEvents(bulkText) {
@@ -225,10 +224,7 @@ function parseBulkEvents(bulkText) {
     for (const line of bulkText.split('\n')) {
         if (!line.trim()) continue;
         if (line.includes('•')) {
-            // Pair the split output two at a time: even indices are the prefix candidate for the
-            // entry that follows (possibly '', meaning no explicit prefix), odd indices are that
-            // entry's body. A trailing unpaired fragment (an incomplete paste ending mid-bullet) is
-            // silently dropped by the `i + 1 < parts.length` bound, same as it would have been before.
+            // Pair the split output two at a time: even indices are the prefix candidate for the entry that follows (possibly '', meaning no explicit prefix), odd indices are that entry's body. A trailing unpaired fragment (an incomplete paste ending mid-bullet) is silently dropped by the `i + 1 < parts.length` bound, same as it would have been before.
             const parts = line.split('•');
             for (let i = 0; i + 1 < parts.length; i += 2) {
                 const prefixChar = /^[depgm]$/.test(parts[i]) ? parts[i] : undefined;
