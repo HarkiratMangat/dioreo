@@ -77,6 +77,19 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 ---
 
+## 🔴 THE FOUR PRODUCERS BEHIND ALL 19 AUDIT FINDINGS — fix these, not the instances
+
+Two read-only audits found 19 things. They are not 19 problems; they are **four producers**, and every finding is downstream of one:
+
+| | Producer | What it looks like | The kill |
+|---|---|---|---|
+| **A** | **Edited a doc, never re-ran the system it lives in** | `npm test` went red on a file I created; an `xref` error from my own edit; a duplicate paragraph | `npm run handoff` now runs `docs:audit` + both reflow gates |
+| **B** | **Wrote a command or check and never RAN it** | Task 11's drift check compared the wrong branch pair and would have read red forever; *"rg the ledger"* (1 hit of 6); the hardcoded plan filename | **`npm run doc:claims`** runs the commands live documents assert and prints what they actually return |
+| **C** | **Fixed ONE occurrence of a fact** | Title said ten while the Goal three lines below said twelve; `.remember`-only fixes | **After changing a value, assert the OLD value has zero occurrences** — the generalisation of *"a rename is finished only when the old identifier has zero occurrences"*, which I wrote and then failed to apply to facts |
+| **D** | 🔴 **Asserted on a FORMATTED STRING that encodes the expected value** | `rg -c 'fail CI \(1\)'` — when the real count became **2** it matched nothing, printed nothing, and I read a separate exit code as confirmation | **Assert on a PARSED value, never a string containing the expected answer.** A check that silently passes when its subject changes is worse than no check |
+
+⚠️ **D is the worst because it is why A survived my own checking.** Its signature is easy to spot: **a grep whose pattern contains the answer.**
+
 🔴 **EVERY TASK BELOW CARRIES A FALSIFIER, AND THAT IS NOT DECORATION.** §0.7c was written as confident prose about an untested procedure and had to be marked untested the same day. **A remediation plan with no falsifiers is that mistake one level up.** If a task's falsifier cannot be stated, the task is not understood well enough to start.
 
 🔴 **THE ORDER IS THIS, IN FULL — NOT THE DOCUMENT'S TOP-TO-BOTTOM NUMBERING.** A read-only audit on 2026-08-31 flagged that *"the rest"* was unresolved and that a session working the file in order would run 1→2→3→…, which is a different sequence:
@@ -89,7 +102,19 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 ---
 
-## Task 1: The four mechanical guards
+## Task 1: ✅ DONE 2026-08-31 — the TDZ guard shipped; the other three are re-scoped
+
+🔴 **`no-use-before-define` IS LIVE, VIA ESLINT, RATCHETED.** `npm run tdz` runs in `npm test`. Baseline **30** findings frozen in `portal/fixtures/tdz-baseline.json`; **falsified in BOTH directions** — a new TDZ fails, and a baseline entry that was fixed and left listed also fails, so the list cannot rot.
+
+🔴 **THE LESSON COST MORE THAN THE RULE AND IS THE REAL DELIVERABLE.** I dismissed eslint as *"heavy for one rule"* and then spent **eight turns building two worse detectors, both of which I deleted:**
+- A **static analyser**: 40 findings, nearly all false — it could not tell a module-scope call from one inside another function's body.
+- An **import-based checker**: could not evaluate `season.js`, the very file where the defect keeps happening.
+- ⚠️ **Both had falsifiers that PASSED FOR THE WRONG REASON.** Reintroducing the real bug made each exit 1 — but each was already exiting 1 on everything. **A falsifier that cannot distinguish "caught it" from "fails always" is not a falsifier.**
+- **eslint was one install and a five-line config, and it caught the exact defect both hand-built tools missed.**
+
+⚠️ **THE OTHER THREE GUARDS ARE NOT BUILT** — orphaned ternary tails, backtick-in-HTML-comment at edit time, unquoted `$var` in generated shell loops. The backtick one already exists in `portalRender.test.js` at BUILD time; the gap is only that it fires minutes late. **Original text below, for the three that remain.**
+
+### ORIGINAL — Task 1: The four mechanical guards
 
 **Files:** Create `.claude/hooks/edit-syntax-guard.sh` + `.test.sh` · Modify `package.json`, `eslint.config.js` (or create)
 

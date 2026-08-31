@@ -18,18 +18,20 @@ const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); 
 
 const LEDGER = 'docs/reference/portal-decision-ledger.md';
 
-// 🔴 THE LIVE PLAN IS DERIVED, NEVER HARDCODED. The first version of this file pinned '2026-08-31-post-compact-remediation.md' as a constant — and a dated plan is a SNAPSHOT this repo's own taxonomy expects to be completed and superseded. The moment it was, this script would either demand SESSION-START cite a dead file forever, or silently pass a check that verified nothing. Caught by the second read-only audit. A plan is live when its own front matter says so.
+// 🔴 THE LIVE PLAN COMES FROM SESSION-START, WHICH IS THE ONLY FILE THAT DECIDES WHAT GOVERNS NOW.
+//
+// Two earlier versions of this were both wrong, and the second wrongness is the interesting one. First it HARDCODED a dated filename that this repo's taxonomy expects to be superseded — caught by the second audit. Then it globbed for `kind: plan` + `status: live` and took the newest — and that is wrong by DESIGN, not by edge case: **there are legitimately TWO live plans right now** (the conformance plan governs realm work, the remediation plan governs the fixes), so "the live plan" was never a singular thing and a glob silently picked one. With zero live plans it would have thrown on path.basename(null).
+//
+// SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else.
 function livePlan() {
-    const dir = path.join(ROOT, 'docs/superpowers/plans');
-    const live = fs.readdirSync(dir).filter((f) => f.endsWith('.md')).filter((f) => {
-        const head = fs.readFileSync(path.join(dir, f), 'utf8').slice(0, 300);
-        return /^kind:\s*plan/m.test(head) && /^status:\s*live/m.test(head);
-    }).sort().reverse();
-    return live.length ? 'docs/superpowers/plans/' + live[0] : null;
+    const start = read(START) || '';
+    const m = start.match(/docs\/superpowers\/plans\/[\w.-]+\.md/);
+    return m ? m[0] : null;
 }
-const PLAN = livePlan();
+// ⚠️ CALLED BELOW, AFTER `START` EXISTS. Assigning here read `START` in its temporal dead zone and threw at import — a live TDZ, written minutes after committing a plan whose Task 1 exists to catch exactly this, and which `node --check` passes. That is the whole argument for the lint rule.
 const REMEMBER = '.remember/remember.md';
 const START = 'docs/SESSION-START.md';
+const PLAN = livePlan();
 
 let bad = 0, warn = 0;
 const fail = (m, fix) => { bad++; console.log(`\n  ❌ ${m}\n     → ${fix}`); };
@@ -42,7 +44,9 @@ console.log('\nhandoff check — a handoff is THREE APPENDS and ONE SHORT REWRIT
 //    hung off .remember, which is gitignored and rewritten wholesale. If the tracked files do not
 //    name the live plan, losing one untracked file strands the work.
 const start = read(START) || '';
-for (const [f, label] of [[PLAN, 'the live plan'], [LEDGER, 'the decision ledger']]) {
+if (!PLAN) fail('SESSION-START names no plan at all — there is no first action',
+    `add the governing plan's path to ${START}. Every other check here assumes one exists.`);
+for (const [f, label] of [[PLAN || '\u0000none', 'the live plan'], [LEDGER, 'the decision ledger']]) {
     if (start.includes(path.basename(f)) || start.includes(f)) ok(`SESSION-START names ${label}`);
     else fail(`SESSION-START does NOT name ${label} — the pointer chain runs through .remember alone`,
         `add a line to ${START}. It is TRACKED and hook-injected; .remember is neither.`);
