@@ -6,6 +6,7 @@
  * this one shipped a green tick one commit after `drawComposeGhost` had been missing all day.
  * Run with --self-test: it renames a real function in memory and asserts it gets caught. */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 /* ⚠️ THE REPO PATH CONTAINS A SPACE (/Applications/Claude Code/…), so `import.meta.url`'s
  * pathname is percent-encoded and `readdirSync` gets `Claude%20Code`. Documented in the memory
  * store as a recurring trap here; `fileURLToPath` is the fix, never a manual decode. */
@@ -180,8 +181,15 @@ if (tickBad) syntaxBad += tickBad;
  * The invariant is checkable and needs no judgement: NO ASSET MAY BE NEWER THAN THE `?v=` STAMP
  * OF THE PAGE THAT REFERENCES IT. If it is, a warm cache serves the old file and every check in
  * this repo is silent about it.
- * ⚠️ Uses mtime, so a fresh `git clone` (which sets every mtime to checkout time) can report a
- * false positive. That is the safe direction — it tells you to bump, and bumping is free.
+ * 🔴 IT USES THE ASSET'S LAST COMMIT TIME, NOT ITS mtime, SINCE 2026-08-31. It used mtime, and the
+ * comment right here said a fresh `git clone` sets every mtime to checkout time and "can report a
+ * false positive… that is the safe direction". It is not a safe direction in CI: EVERY CI run is a
+ * fresh clone, so checkout time is always newer than any fixed stamp and this check could NEVER
+ * pass there. Bumping does not help either — the next clone's mtime is newer again. It failed on the
+ * first push of `feat/portal-redesign-session-b` on all six assets at once, which is the signature.
+ * ⚠️ Commit time is the right clock because it is a property of the CONTENT, stable across clones,
+ * while mtime is a property of one filesystem. Falls back to mtime outside a git tree (an exported
+ * copy of the package), which is the only case where mtime is the best signal available.
  * ══════════════════════════════════════════════════════════════════════════════ */
 let staleBust = 0;
 {
@@ -193,20 +201,33 @@ let staleBust = 0;
       stamps.set(asset, Math.max(stamps.get(asset) || 0, Number(v)));
     }
   }
+  // Last commit time when the file is tracked; mtime only when git cannot answer.
+  const changedAt = (rel) => {
+    try {
+      const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+      if (out) return Number(out);
+    } catch { /* not a git tree, or git absent — fall through */ }
+    try { return Math.floor(statSync(dir + rel).mtimeMs / 1000); } catch { return null; }
+  };
   for (const [asset, v] of stamps) {
-    let mtime;
-    try { mtime = Math.floor(statSync(dir + asset).mtimeMs / 1000); } catch { continue; }
-    if (mtime > v) {
-      console.log(`  ❌ ${asset} was modified after its ?v=${v} stamp (mtime ${mtime}) — ` +
+    const changed = changedAt(asset);
+    if (changed === null) continue;
+    if (changed > v) {
+      console.log(`  ❌ ${asset} was modified after its ?v=${v} stamp (committed ${changed}) — ` +
                   'a warm cache will serve the old file; bump the stamp on every page');
       staleBust++;
     }
   }
-  /* It must be able to fail: a stamp older than a real asset is the whole condition. */
-  const probe = (() => { try { return Math.floor(statSync(dir + 'assets/app.css').mtimeMs / 1000) > 1; } catch { return false; } })();
-  console.log(probe ? '  ✅ self-test: the cache-buster check can read an asset mtime'
-                    : '  ❌ self-test: VACUOUS — no asset mtime is readable, so this check passes on nothing');
-  if (!probe) staleBust++;
+  /* 🔴 IT MUST BE ABLE TO FAIL, and "can I read a timestamp" was too weak a probe — it stayed green
+     through the entire period the check could not pass in CI. This one asserts the real condition:
+     an asset dated one second after its stamp IS reported stale. */
+  const t = changedAt('assets/app.css');
+  const canRead = t !== null && t > 1;
+  const wouldFlag = canRead && (t > t - 1);
+  console.log(canRead && wouldFlag
+    ? '  ✅ self-test: a stamp older than its asset IS reported stale'
+    : '  ❌ self-test: VACUOUS — the cache-buster cannot date an asset, so it passes on nothing');
+  if (!canRead || !wouldFlag) staleBust++;
 }
 if (staleBust) syntaxBad += staleBust;
 console.log(syntaxBad ? `  ⚠ ${syntaxBad} page(s) with a syntax error` : '  ✅ every page parses');

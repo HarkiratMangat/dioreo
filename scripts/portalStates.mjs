@@ -163,9 +163,16 @@ async function walk(page, state, port) {
     }
     // A state can declare its own settle time. The slow state is the reason: it exists to be measured WHILE the request is still out, so waiting for the data would destroy the very thing being walked.
     if (state.settleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.settleMs);
-    // 🔴 `expect` IS WHAT MAKES A REGISTERED STATE A STATE RATHER THAN A CLAIM. The export-strip entry clicked `.mh-take` — which is the role="group" WRAPPER, not the toggle inside it — so the walk opened nothing, examined the default view, and reported a clean pass under the name of a state it had never reached. Five states were vacuous the same way for one run. A state that names the element its own steps are supposed to produce cannot lie about having got there.
-    const expected = state.expect ? await page.evaluate((sel) => !!document.querySelector(sel), state.expect) : true;
-    if (!expected) throw new Error(`state "${state.name}" did not reach its own subject — nothing matches ${state.expect} after its steps ran, so a clean result would be a clean result for the DEFAULT view`);
+    // 🔴 `expect` IS WHAT MAKES A REGISTERED STATE A STATE RATHER THAN A CLAIM. The export-strip entry clicked `.mh-take` — which is the role="group" WRAPPER, not the toggle inside it — so the walk opened nothing, examined the default view, and reported a clean pass under the name of a state it had never reached. Five states were vacuous the same way for one run. A state that names the element its own steps are supposed to produce cannot lie about having got there. 🔴 IT WAITS FOR THE SUBJECT, IT DOES NOT SNAPSHOT FOR IT. This was a single `querySelector` taken immediately after the fixed settle above, which made the whole gate a coin flip: measured 2026-08-31, three consecutive `--ci` runs went fail / pass / fail with a DIFFERENT state each time (`identity · closed again`, `default · home`, `one-way panel · tier 3`, `command bar open`, `export strip open`). Roughly half of all local suite runs were red for reasons unrelated to the change under test — worse than a broken gate, because it trains a session to re-run until green and then believe the green. A fixed 700ms delay had already been tried as a remedy on 2026-08-30 and was evidently not enough; a DEADLINE is the right shape because a slow render costs only the time it needs while a genuinely unreached subject still fails, just 4s later. ⚠️ THE FAILURE MEANING IS UNCHANGED, which is the whole point of catching the timeout rather than letting puppeteer's own TimeoutError through: a state that never reaches its subject still fails, with the same sentence a reader already knows how to act on.
+    let expected = true;
+    if (state.expect) {
+        try {
+            await page.waitForSelector(state.expect, { timeout: 4000 });
+        } catch {
+            expected = false;
+        }
+    }
+    if (!expected) throw new Error(`state "${state.name}" did not reach its own subject — nothing matches ${state.expect} within 4s after its steps ran, so a clean result would be a clean result for the DEFAULT view`);
 
     // 🔴 A PROBE MUST BE ABLE TO REPORT PRESENCE BEFORE AN ABSENCE MEANS ANYTHING. A run that walked to a page the SPA had not routed yet returned all-zeroes and read as a clean sweep, so a state that finds nothing to examine is an ERROR here, not a pass.
     const records = await page.evaluate(COLLECT);
