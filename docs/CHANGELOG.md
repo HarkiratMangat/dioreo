@@ -960,6 +960,10 @@ Three of the four pieces needed less than expected. **The data confound did not 
 
 **Two gates could not tell a defect from the pass working.** `.rowlife` is emitted with no rule — and the mockup's own `season.html` emits it on every row and defines no rule for it either, so matching it is correct and *removing* it would change the class list the audit pairs on. One shared helper now answers "does the design emit this too", and both gates read it; an inherited orphan is reported every run, never fails, and never enters a debt baseline whose own rule is that it only ever shrinks. Both gates were proved still able to fail before their passes were trusted.
 
+**Season's audit sections are all worked, and what remains is a floor made of decisions.** Triage with the retirement tests encoded: **23 FIX** against **83 cited**, **40 advisory** rule differences the rendered page never shows, **6** sub-pixel, **14** dead in both pages. Five real fixes came out of it, every one the portal having added a declaration the design does not have — the masked ruler tick lacked the design's `opacity:0`, so a tick's LABEL stayed visible under the NOW chip, which is the one thing masking exists to prevent.
+
+**The real-server pass runs clean** — past the door, 58/47/61 rows across the three views, one favicon 404. It matters because the harness and the mockup are both fixture-driven: they agree with each other and can both disagree with production.
+
 **And `portalGeometry` never froze its clock**, alone among the instruments. The collapse is what made it reproducible: a live countdown changes the *width* of its readout as digits roll, so a fixture drifted by one between a write and a check seconds later. The tell was two consecutive checks agreeing with each other while both disagreed with the fixture — stable, so not noise; disagreeing, so not the page. **A re-record would have buried it.**
 
 ## Pre-Release v3.68.0 — 2026-08-26 19:36 EDT (#175) — the draw calculator becomes one live panel

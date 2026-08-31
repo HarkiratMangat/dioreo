@@ -848,7 +848,7 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Verify:** `rg -c 'conforming\(\)' portal/ui/*.js` and `rg -c 'data-conform' portal/ui/app.css` both reach zero except for deliberate (b)/(c) keeps that carry a comment naming which; the Season conform figures are unchanged from their pre-collapse values; and no doc still describes `?conform=1` as a live mode.
 
-### 🔴 SEASON'S PART-1 CLOSE IS FOUR STEPS SHORT, AND THEY LIVE ONLY IN A GITIGNORED FILE `P1 · M · Opus5-High`
+### ✅ SEASON'S PART-1 CLOSE — **H2b, H4 and H5 DONE 2026-08-31 11:3x EDT; H3 DROPPED by Harkirat.** The realm's remaining difference is a CITED FLOOR, not a backlog: 23 FIX rows (fixed), 83 cited, 40 advisory, 6 noise, 14 dead on both sides. `portalRealWalk` passes. ⚠️ **Its ① CASCADE and ③ WORDS report forever — that is correct, not unfinished.** **Harkirat decides when Part 1 closes.** ORIGINAL ENTRY:, AND THEY LIVE ONLY IN A GITIGNORED FILE `P1 · M · Opus5-High`
 **Filed 2026-08-31 11:2x EDT** because `local/season-finish-plan.md`'s Batch H is gitignored and a default `rg` cannot see it. Season is **not** closed and Armory must not start before these land.
 
 - **H2b · the triage bucket does not match the reasoning.** `local/season-triage.md` reports **92 FIX rows**; three were fixed and the rest were retired in prose as cited / pairing artifact / sub-pixel noise. **Encode §0.7c's three retirement tests in the triage script so the bucket says what is actually true** — a FIX count nobody believes is worse than no count. **Verify:** the FIX bucket contains only rows a person would act on.
