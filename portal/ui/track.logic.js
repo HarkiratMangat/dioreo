@@ -271,7 +271,9 @@ function findingRows(data, season, opts) {
     for (const e of ((data || {}).event || []).concat((data || {}).playlist || [], (data || {}).drawwindow || [])) {
         const k = norm(e.title) + '|' + String(e.startDate || e.date || '').slice(0, 10);
         if (seen.has(k)) dupe.push({ id: e.id, label: e.title, seenAs: seen.get(k) });
-        else seen.set(k, o.conforming ? String(e.id || '').slice(-6) : e.title);
+        // The design names an ALREADY-SEEN row by the last six of its id, not by its title: in a duplicate
+        // the titles are identical by definition, so repeating one says nothing the label has not.
+        else seen.set(k, String(e.id || '').slice(-6));
     }
     const banner = findExpiringBanners(season).map((b) => ({ id: b.key, label: b.label, why: b.why }));
     const pastBp = (bpEnd ? all.filter((i) => i.endDate && String(i.endDate).slice(0, 10) > bpEnd) : [])

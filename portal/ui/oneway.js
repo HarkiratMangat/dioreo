@@ -6,7 +6,6 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState } from '../vendor/preact-hooks.mjs';
-import { conforming } from './conform.js';
 
 /* global oneWayItems, whyNoDestroy, owRowState, plural */
 
@@ -15,7 +14,6 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
     const items = oneWayItems(live, draft);
     const canDestroy = Boolean(session?.canDestroy);
     const why = whyNoDestroy(session);
-    const conf = conforming();
 
     function run(item) {
         const value = String(fields[item.id] || '').trim();
@@ -42,15 +40,19 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
         <section class="ow">
             <div class="ow-h">
                 <span class="ow-k">ONE-WAY</span>
-                <h3>${conf ? 'One-way operations' : 'Operations that cannot be taken back'}</h3>
-                <p>${conf
-                    ? "These cannot be undone, and the portal will not run one until an export of the same data exists. Everything above this line can be taken back from the tray."
-                    : html`Everything above this line can be undone from the record it writes. These cannot. Each one stages
+                <h3>One-way operations</h3>
+                <!-- 🔴 THE HEADING IS THE DESIGN'S AND THE PROSE IS NOT, AND THAT SPLIT IS DELIBERATE. The design's
+                     body says the portal "will not run one until an export of the same data exists" — which is FALSE
+                     here. This screen has no session-scoped export to gate on; the interlock is the changeset export
+                     at Review, one screen later, in gateCommit. scripts/portalExport.test.js asserts the mockup's
+                     version of that promise can never appear in this tree. A console does not tell an admin it holds
+                     a safeguard it does not hold, so the sentence stays the portal's.
+                     Same reason for the word below: the codebase's noun is PERMISSION (session.canDestroy, the
+                     the destructive permission), not the design's "capability", and there is no export copy to promise. -->
+                <p>${html`Everything above this line can be undone from the record it writes. These cannot. Each one stages
                     like any other change, and Review refuses to commit it until an export of the same data exists.`}${' '}
                     ${canDestroy
-                        ? (session?.isOwner ? '' : (conf
-                            ? html`<b>You hold the Destructive capability</b>, which only the owner can grant. A copy of the export is kept with the record.`
-                            : html`<b>You hold the Destructive permission</b>, which only the owner can grant.`))
+                        ? (session?.isOwner ? '' : html`<b>You hold the Destructive permission</b>, which only the owner can grant.`)
                         : html`<b>${why}</b>`}</p>
             </div>
             <ul class="ow-l">
@@ -60,19 +62,22 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
                         <li class=${'ow-i' + (canDestroy ? '' : ' ow-locked')} key=${item.id}>
                             <div class="ow-t"><b>${item.title}</b><span>${item.note}</span></div>
                             <!-- .nw-i is width:100% because every other place it appears is a stacked form field. Here it is a cell in a flex row, so it needs a basis of its own or it claims the whole line and pushes the count and the button onto a second one — the row then reads as two rows and stops lining up with its six siblings. It is 0 1 rather than 1 1 for the same reason one step further: GROWING pushed this row's count to x=1114 while the other six sat at 954, and took the row to 88px against their 65. -->
-                            ${item.field && canDestroy && !conf ? html`
+                            <!-- 🔴 THIS FIELD IS THE TYPING GATE IN FRONT OF SEVEN IRREVERSIBLE OPERATIONS, and the
+                                 design does not draw it. It is kept on purpose: a conformance pass moves composition,
+                                 never a safeguard. -->
+                            ${item.field && canDestroy ? html`
                                 <input class="nw-i" type="text" aria-label=${item.field.label} style="flex:0 1 240px;width:auto;min-width:150px"
                                        placeholder=${item.field.placeholder} value=${fields[item.id] || ''}
                                        onInput=${(e) => setFields({ ...fields, [item.id]: e.target.value })} />` : null}
                             <div class="ow-c">${item.count} <em>${plural(item.count, item.unit)}</em></div>
-                            ${conf
-                                ? (canDestroy
-                                    // 🔴 STOOD DOWN, NOT ADOPTED. The design gates the BUTTON on a session-scoped export that the portal has no equivalent of — its export is a property of a changeset, which does not exist until the op is staged — so the interlock lives one screen later, in Review's gateCommit. Under the conformance flag the portal draws the design's affordance so the overlay compares like with like; the re-apply phase after all six realms match is where the real one returns.
-                                    ? html`<button class="pill sm ghost" onClick=${() => run(item)}>Export first →</button>`
-                                    : html`<button class="pill sm" disabled data-tip=${why}>Owner only</button>`)
-                                : (st.state === 'ready'
-                                    ? html`<button class="pill sm dang" onClick=${() => run(item)}>${st.label}</button>`
-                                    : html`<button class="pill sm" disabled title=${st.state === 'locked' ? why : ''}>${st.label}</button>`)}
+                            <!-- 🔴 REFUSED, NOT STOOD DOWN. The design's button reads "Export first →", gating on a
+                                 session-scoped export that does not exist here — the portal's export is a property of a
+                                 CHANGESET, which does not exist until the op is staged, so the interlock lives one screen
+                                 later in Review's gateCommit. Drawing the design's affordance would offer an admin a
+                                 safeguard this screen cannot honour. owRowState is the real state and it stays. -->
+                            ${st.state === 'ready'
+                                ? html`<button class="pill sm dang" onClick=${() => run(item)}>${st.label}</button>`
+                                : html`<button class="pill sm" disabled title=${st.state === 'locked' ? why : ''}>${st.label}</button>`}
                         </li>`;
                 })}
             </ul>

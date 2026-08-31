@@ -14,7 +14,6 @@ import { useState, useCallback, useRef } from '../vendor/preact-hooks.mjs';
 import { Fold } from './icons.js';
 import { useMeasured } from './useMeasured.js';
 /* global inkOnTopic, flaggedIds, findingRows, findingBarIds */
-import { conforming } from './conform.js';
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
 //
@@ -283,7 +282,10 @@ function seasonLastDeadline(season) {
 function deriveFlags(data, window, season, actions) {
     const all = Object.values(data).flat();
     const out = [];
-    if (conforming()) {
+    // Two derivations the design runs and the portal did not: an item outliving the season's own last
+    // deadline, and two draw windows that overlap. Neither duplicates pastBp, which measures against the
+    // BATTLE-PASS end rather than the season's.
+    {
         const end = seasonLastDeadline(season);
         if (end) {
             for (const it of all) {
@@ -349,7 +351,7 @@ export function Repairs({ data, window: visible, season, onClamp }) {
     // 🔴 SIX CHECKS, IN TWO KINDS, AND THE PORTAL HAD FOUR IN ONE. The design splits them by whether a MACHINE CAN BE SURE — a duplicate row, an expiring link, a date past the battle pass, a window with no draw — from what only the person can decide: a draw served without a window never ends, and a title that looks like a 2x CP event but is not flagged. Presenting them as one list asks a reader to work out, per finding, whether they are being told a fact or asked a question.
     //
     // ⚠️ THE TWO ZERO-FINDING CHECKS ARE THE POINT OF THE SPLIT, not filler: both CAN fire — rename any draw and its window orphans immediately — and a check that reports nothing is a different statement from a check nobody wrote. The SELECTION lives in track.logic.js so the Track can mark the same rows; the WHY lines stay here, because they are copy and copy belongs where it is read.
-    const rows = findingRows(data, season, { conforming: conforming() });
+    const rows = findingRows(data, season);
     // The design names the ALREADY-SEEN row by the last six of its id, not by its title — the titles are identical by definition here, so repeating one says nothing the label has not.
     const dupeRows = rows.dupe.map((r) => ({ id: r.id, label: r.label, why: `identical to ${r.seenAs} — same title, same start` }));
     const bannerRows = rows.banner;
@@ -364,24 +366,18 @@ export function Repairs({ data, window: visible, season, onClamp }) {
         { id: 'dupe-calendar', kind: 'mechanical', label: 'Duplicate calendar rows', hits: dupeRows,
           note: 'Same title, same start date. /calendar renders both, so a player sees the entry twice.' },
         { id: 'expiring-banner', kind: 'mechanical', label: 'Banner on an expiring Discord link', hits: bannerRows,
-          note: conforming()
-            ? 'A media.discordapp.net URL is SIGNED — it carries an `ex=` parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.'
-            : 'A media.discordapp.net URL is SIGNED — it carries an ex= parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.' },
+          note: 'A media.discordapp.net URL is SIGNED — it carries an `ex=` parameter and 404s once that passes. utils/calendarBannerCache.js re-hosts these through Cloudinary; these never went through it.' },
         { id: 'past-bp', kind: 'mechanical', label: 'Runs past the battle pass', hits: pastBp,
           note: `Ends after ${bpEnd || 'the battle-pass end, which is not set'}. Not automatically wrong — a DMZ or ranked-tail event legitimately can — but it is the one thing a season calendar cannot show you.` },
         { id: 'orphan-window', kind: 'mechanical', label: 'Draw window with no draw', hits: orphanWindows,
-          note: conforming()
-            ? "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Reports zero here, and CAN fire: rename any draw and its window orphans immediately."
-            : "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Rename any draw and its window orphans immediately." },
+          note: "An explicit calendar draw row matching no entry in newDraws/returningDraws. commands/calendar.js defaults an orphan's drawType to 'new' — arbitrary, and stated as such in its own comment. Reports zero here, and CAN fire: rename any draw and its window orphans immediately." },
         { id: 'no-window', kind: 'judgement', label: 'Draw served synthetic', hits: noWindow,
-          note: conforming()
-            // The design builds this with innerHTML, so its "Releases <date>" is PARSED — the browser makes an empty <date> element of it and nothing shows between the quotes. Escaped as text the six characters are visible, which is a different sentence on the page.
-            ? html`No explicit calendar row, so commands/calendar.js synthesises a \`dateOnly\` entry that renders as "Releases <date></date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it from the array. That is by design; whether you want it is the judgement.`
-            : 'No explicit calendar row, so commands/calendar.js synthesises a dateOnly entry that renders as "Releases <date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it. That is by design; whether you want it is the judgement.' },
+          // 🔴 THE DESIGN'S VERSION OF THIS SENTENCE HAS LOST ITS SUBJECT AND IS NOT ADOPTED. It is built with
+          //    innerHTML, so its "Releases <date>" is PARSED — the browser makes an empty element of it and nothing
+          //    shows between the quotes. That is a rendering artifact, not a design decision, so the escaped text stays.
+          note: 'No explicit calendar row, so commands/calendar.js synthesises a dateOnly entry that renders as "Releases <date>" — and isEventEnded() returns false for it FOREVER. It leaves /calendar only when the season rollover drops it. That is by design; whether you want it is the judgement.' },
         { id: 'untagged-2xcp', kind: 'judgement', label: 'Looks like a 2× CP event, not flagged', hits: untagged2x,
-          note: conforming()
-            ? 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — corrected twice live on 2026-08-22 because "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP". Reports zero here, and that is the corrected rule WORKING: five "COD Point Rush" rows carry a CP token and no doubling word.'
-            : 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP".' },
+          note: 'isDoubleCP drives /draw calculator\'s pricing, so a miss quotes someone the wrong purchase. The rule needs BOTH a CP token AND a doubling indicator — corrected twice live on 2026-08-22 because "CP Rebate Offer" is not a 2× event and neither is "2x Weapon XP". Reports zero here, and that is the corrected rule WORKING: five "COD Point Rush" rows carry a CP token and no doubling word.' },
     ];
     const mech = CHECKS.filter((c) => c.kind === 'mechanical');
     const judg = CHECKS.filter((c) => c.kind === 'judgement');
@@ -438,11 +434,11 @@ export function Zoomer({ win, full, onWindow }) {
     return html`
         <div class="zoomer" role="group" aria-label="Zoom"
              data-tip="⌘/ctrl-wheel zooms at the cursor · drag the ruler to pan · a horizontal wheel pans too">
-            <button title="Zoom out" aria-label="Zoom out" disabled=${fitted && !conforming()}
+            <button title="Zoom out" aria-label="Zoom out" disabled=${fitted}
                     onClick=${() => onWindow(zoomWindow(win, 1.6, full))}>−</button>
-            <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3 && !conforming()}
+            <button title="Zoom in" aria-label="Zoom in" disabled=${days <= 3}
                     onClick=${() => onWindow(zoomWindow(win, 0.625, full))}>+</button>
-            <button class="wide" title="Fit everything" disabled=${fitted && !conforming()}
+            <button class="wide" title="Fit everything" disabled=${fitted}
                     onClick=${() => onWindow(null)}>FIT</button>
             <span class="rd"><b>${days} ${days === 1 ? 'day' : 'days'}</b> shown</span>
             <!-- The window's actual dates, at the far right of the bar, where season.html puts them. "44 days
@@ -549,7 +545,10 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
     const nowP = view.pct(todayIso), nextP = next ? view.pct(next.date) : null;
     const spanOk = next && nowP >= 0 && nextP > nowP && nextP <= 100;
     // ⚠️ THE RESERVATION HAS TO STAND DOWN WITH THE THING IT RESERVES FOR. railBox sizes the rail for a second row; suppressing only the bar left the 34px it needs, so the lanes stayed where they were and the page looked unchanged. A stand-down that hides an element and keeps its space is not one.
-    const showSpan = Boolean(spanOk) && !conforming();
+    // The design's rail carries the deadline flag and the off-window pin and nothing else. The portal's
+    // time-remaining second row comes back with the rest of the re-apply queue; railBox must lose the 34px
+    // it reserves at the same moment, or the lanes stay where they were and the page looks unchanged.
+    const showSpan = false;
     const box = railBox(rail, showSpan);
     return html`
         <div class="deadrail" aria-label="Season deadlines" style=${`min-height:${box.height}px`}>
@@ -712,7 +711,7 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
         .filter((k) => season && season[k] && !season[`${k}TBD`]).map((k) => String(season[k]).slice(0, 10)).sort();
     const oosPct = ends.length ? (() => { const p = view.pct(ends[ends.length - 1]); return p >= 0 && p < 100 ? p : null; })() : null;
     // The design marks the bar a finding is ABOUT, so a reader scanning the Track can see which item the list underneath is talking about. flaggedIds is a global here, the same way bandClass and inkOnTopic are — track.logic.js loads as a plain script, so there is no import to add. 🔴 THE TRACK DERIVES ITS OWN FINDINGS — season.js passes no `flags` prop and its own comment says so — which is why the first attempt at this wired a `flagged` class to an empty set and rendered nothing. `flags` stays supported for a caller that has them; absent one, the same rule Repairs uses answers here too.
-    const flaggedSet = (flags && flags.length) ? flaggedIds(flags) : findingBarIds(data, season, { conforming: conforming() });
+    const flaggedSet = (flags && flags.length) ? flaggedIds(flags) : findingBarIds(data, season);
 
     return html`
         <!-- 🔴 THIS PANEL HAD ITS OWN HEADER AND IT SAID NOTHING THE BAR 60px ABOVE IT HAD NOT ALREADY SAID.
@@ -810,12 +809,11 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                              and DMZ was never drawn at all. The design's dnotch carries one i element per
                              line sharing that date, which is how a shared deadline reads as one moment
                              holding two facts instead of one unexplained line. -->
-                        ${conforming() ? (rail?.flags || []).map((d) => html`
+                        ${(rail?.flags || []).map((d) => html`
                             <div class="dnotch" key=${'notch:' + d.key} data-date=${String(d.date).slice(0, 10)} data-line=${d.key}
                                  style=${`--c:${d.hex};left:${view.pct(d.date)}%`}>
                                 ${d.members.map((m) => html`<i key=${m.key} style=${`--c:${m.hex}`}></i>`)}
-                            </div>`)
-                            : (season?.bpEnd ? html`<div class="dend" data-lbl="battle pass" style=${'left:' + view.pct(season.bpEnd) + '%;--c:var(--warn)'}></div>` : null)}
+                            </div>`)}
                     </div>
                 </div>
             </div></div>

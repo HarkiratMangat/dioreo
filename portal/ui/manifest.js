@@ -6,7 +6,6 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useMemo, useEffect } from '../vendor/preact-hooks.mjs';
 import { stageAndCommit } from './composeClient.js';
 import { Icon } from './icons.js';
-import { conforming } from './conform.js';
 
 // `filterGroups` is [{key, label, options:[{value,label}]}]. One CHIP PER GROUP that cycles through its own options, not one chip per option: 03-three-surfaces.html renders exactly two chips ("Type: all ×", "State: staged ×") for a table with five types and four states, so the chip shows the current value rather than enumerating every possible one. `all` is always the first option and is what the × returns to. The state pill's own class comes from the state VALUE, so a realm reporting 'scheduled' or 'expired' gets the right shape without this component learning its vocabulary. Anything unrecognised falls to the conflict shape, which is the safe default: an unknown state should look like something to look at, never like a confirmed live row. 🔴 EXPORTED, because a realm that needs to add something BESIDE the state (Season's outlives-the-season warning) used to supply its own `render` and lose the pill entirely — the column whose whole job is state, drawn as a bare word, on every row. ⚠️ `live` MAPS TO `saved`. The stylesheet fills `.stt.saved`; `.stt.live` has no rule, so the one column whose job is to carry state as a filled chip rendered as plain text on every live row. The stored value and the class are different vocabularies and this is where they meet.
 const PILL = { live: 'saved', saved: 'saved', staged: 'stag', scheduled: 'sched', expired: 'exp', conflict: 'conf' };
@@ -35,7 +34,7 @@ function FilterChips({ groups, filters, onChange }) {
             <button key=${g.key + ':' + o.value}
                     ${'' /* The design carries the pressed state on aria-pressed alone; the extra on class is the portal's and shows up as a different element to anything comparing the two. */}
                     aria-pressed=${o.value === current}
-                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '') + (o.value === current && !conforming() ? ' on' : '')}
+                    class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '')}
                     aria-pressed=${o.value === current}
                     style=${o.hex ? `--c:${o.hex}` : null}
                     title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}

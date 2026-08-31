@@ -40,7 +40,6 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
 /* The classic visually-hidden trio is the PORTAL's addition — the design's .sr stops at clip.
    margin:-1px reached label.sr, whose design margin-bottom is 5px, on every search field. Kept for
    real mode (it is what stops a 1px box contributing a scrollbar) and stood down under conformance. */
-:root:not([data-conform="1"]) .sr{padding:0;margin:-1px;border:0}
 
 /* ═══ FORM CONTROLS — styled as ELEMENTS, never as classes ═══ */
 /* 🔴 This used to be `input[type=text],input[type=search],input[type=date]` — ATTRIBUTE
@@ -1369,8 +1368,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    tier words render as plain --ink3. Adding the colour here was the portal getting AHEAD of the
    mockup, which the conformance pass stands down; the re-apply phase after all six realms match is
    where it comes back. A duplicate .t-epic block also lived here — invisible to every gate we run. */
-:root:not([data-conform="1"]) .t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
-:root:not([data-conform="1"]) .t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
+.t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
+.t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
 .t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
 .mtable .det .dsub{font-size:12px;color:var(--ink3)}
 .mtable .det .none{color:var(--ink3);font-style:italic}
@@ -2937,7 +2936,6 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    own, not the mockup's, so it stands down while the overlay is grading — otherwise a paragraph the
    design draws on two lines and the portal draws on three reads as a defect on every page that has
    one, and the 18px it adds cascades into every element below it. */
-:root:not([data-conform="1"]) :is(.racknote,.chint,.hint,.hbanner p,.hp,.ow-i .ow-t){max-width:78ch}
 /* .hp was missed on the first pass and caught by re-measuring at 1700 rather than by re-reading the rule -- it is Analytics' bare note paragraph, same profile as the rest: transparent, unbordered, unpadded, and it was running 706px at 11.5px. */
 
 @media (max-width:860px){
@@ -3070,7 +3068,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 /* --gut is 24px in the portal and UNDEFINED in the design, whose .bcols therefore takes its own
    16px fallback. 8px of padding a side is 4px off every column, which is 220 reported differences
    on the Board — one number, and the largest single cause on that view. */
-:root[data-conform="1"] .bcols{padding:0 16px 16px}
+.bcols{padding:0 16px 16px}
 
 /* A stemmed label dropped the words every sibling shares — the full name is on the tooltip and in
  * the Manifest. The leading mark says the name is abbreviated rather than mis-entered. */
@@ -3837,7 +3835,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* The design sizes these at 126/none. The portal widened both so the longest verb ("Purge every
    returning draw…") does not wrap; under conformance the button reads "Export first →" instead and
    the extra room is exactly the 62px the one-way text column was losing. */
-:root[data-conform="1"]{--ow-c-min:88px;--ow-pill-min:126px}
+:root{--ow-c-min:88px;--ow-pill-min:126px}
 .pill.dang{border-color:var(--danger-edge);color:var(--danger-ink);
   background:color-mix(in srgb,var(--del) 12%,transparent)}
 .pill.dang:hover{border-color:var(--del);background:color-mix(in srgb,var(--del) 20%,transparent);color:var(--ink)}
@@ -4914,9 +4912,9 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    with paddingTop and paddingBottom 16 against 9 — and nothing else in ④ STYLE moved by more than
    1.5px. Copied from the design's own rule rather than retyped, so it cannot drift from its source.
    The portal's strip is untouched and returns when the flag comes off. */
-[data-conform] .nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
+.nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
   border-radius:var(--rad-2);text-align:center;display:block;align-items:normal;gap:normal;flex-wrap:nowrap;font-size:revert}
-[data-conform] .nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
+.nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
 .nd-late{color:var(--warn-ink);font-weight:500}
 
 @media (prefers-reduced-motion:reduce){
@@ -5139,7 +5137,6 @@ button .ic,a .ic{pointer-events:none}
    same weight, same case as the day count beside it — and giving it its own uppercase treatment made
    thirty-nine rows differ in five computed properties at once. Whether the state line deserves its own
    voice is a design question for the re-apply phase, not something to settle inside a conformance pass. */
-:root:not([data-conform="1"]) .rowmeta.rowlife{font:600 9.5px/1 var(--data);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 /* The day drawer's list. The adopted sheet names both and styles neither — it renders them with the
  * drawer's own inherited body type, which puts the title and the window in one undifferentiated run
  * of text. The date is the SECOND thing read on each line, so it is set in the data face and pushed
@@ -5192,12 +5189,12 @@ button .ic,a .ic{pointer-events:none}
    ⚠️ THE FIVE BELOW ARE UNMEASURED — none of them renders anywhere on Season, so the same mistake in
    the other direction is available. Measure each on the realm where it appears before trusting it:
        node scripts/portalProbe.mjs --realm <r> --sel "<selector>" --props color --chain */
-:root[data-conform="1"] .round-u.none,
-:root[data-conform="1"] .mh-stats .stat .v.zero,
-:root[data-conform="1"] .pill .sub,
-:root[data-conform="1"] .att-i,
-:root[data-conform="1"] .atx{color:var(--ink4)}
-:root[data-conform="1"] .cb-in::placeholder{color:var(--ink4)}
+.round-u.none,
+.mh-stats .stat .v.zero,
+.pill .sub,
+.att-i,
+.atx{color:var(--ink4)}
+.cb-in::placeholder{color:var(--ink4)}
 
 
 /* ════ STAND-DOWN · the design's own season clock ════
@@ -5208,43 +5205,43 @@ button .ic,a .ic{pointer-events:none}
 /* The context band is a portal wrapper carrying the SAME 22px side margin the identity inside it
    already has, so the record rendered 44px narrower than the design's. Under the stand-down the
    wrapper contributes nothing and the identity keeps its own margin, as the design draws it. */
-:root[data-conform="1"] .ctxband{margin:0}
+.ctxband{margin:0}
 /* `.rec-b` adds a 14px bottom margin the design's record does not have — the mockup emits the class
    and defines no rule for it. Inside the Track's wrapper that margin is contained rather than
    collapsed, so it landed as 14px of trailing space inside the view panel and every element below
    the panel inherited the offset. */
-:root[data-conform="1"] .rec-b{margin-bottom:0}
+.rec-b{margin-bottom:0}
 /* The draw-window accent: the design's #6B4E7D against the portal's brighter #B06BA8. Every row dot,
    bar and chip in that lane carries it, so it is one token and a lot of pixels. */
-:root[data-conform="1"]{--dw:#6B4E7D}
-:root[data-conform="1"] .sc-u{display:flex;flex-direction:column;align-items:center;gap:6px}
-:root[data-conform="1"] .sc-u b{font-weight:700;font-size:var(--t-display);letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;display:block}
-:root[data-conform="1"] .sc-u i{font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:500;letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
-:root[data-conform="1"] .sc-u.sec b{font-size:var(--t-h1);letter-spacing:var(--tr-h1);color:var(--ink2)}
-:root[data-conform="1"] .sc-sep{font-family:var(--display);font-weight:400;font-size:var(--t-figure);color:var(--ink3);line-height:1;margin-top:-1px}
-:root[data-conform="1"] .sclock{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
-:root[data-conform="1"] .sc-face{display:flex;flex-direction:row;align-items:flex-start;gap:9px;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:.8;color:var(--ink)}
-:root[data-conform="1"] .sc-when{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-sm);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);max-width:34ch;display:block}
-:root[data-conform="1"] .sc-when b{color:var(--ink);font-weight:500}
-:root[data-conform="1"] .sc-then{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
-:root[data-conform="1"] .sc-then b{color:var(--ink2);font-weight:500}
-:root[data-conform="1"] .sclock[data-tier="closing"] .sc-u:first-child b{color:var(--patch);font-size:calc(var(--t-display) * 1.18)}
-:root[data-conform="1"] .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
-:root[data-conform="1"] .sclock[data-tier="final"] .sc-then{display:none}
-:root[data-conform="1"] .sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
-:root[data-conform="1"] .sclock[data-tier="today"] .sc-then{display:none}
+:root{--dw:#6B4E7D}
+.sc-u{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sc-u b{font-weight:700;font-size:var(--t-display);letter-spacing:var(--tr-display);font-variant-numeric:tabular-nums;display:block}
+.sc-u i{font-style:normal;font-family:var(--data);font-size:var(--t-micro);font-weight:500;letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
+.sc-u.sec b{font-size:var(--t-h1);letter-spacing:var(--tr-h1);color:var(--ink2)}
+.sc-sep{font-family:var(--display);font-weight:400;font-size:var(--t-figure);color:var(--ink3);line-height:1;margin-top:-1px}
+.sclock{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.sc-face{display:flex;flex-direction:row;align-items:flex-start;gap:9px;font-family:var(--display);font-variant-numeric:tabular-nums;line-height:.8;color:var(--ink)}
+.sc-when{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-sm);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);max-width:34ch;display:block}
+.sc-when b{color:var(--ink);font-weight:500}
+.sc-then{gap:normal;align-items:normal;justify-content:normal;flex-wrap:nowrap;font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block}
+.sc-then b{color:var(--ink2);font-weight:500}
+.sclock[data-tier="closing"] .sc-u:first-child b{color:var(--patch);font-size:calc(var(--t-display) * 1.18)}
+.sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
+.sclock[data-tier="final"] .sc-then{display:none}
+.sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
+.sclock[data-tier="today"] .sc-then{display:none}
 /* ⚠️ THESE TWO ARE A MOTION ACCOMMODATION AND NOTHING ELSE — they stop the seconds ticking, they
    are not the resting state. Lifting them out of their at-rule (and lifting a 820px type size out
    of its breakpoint at the same time) is how the first copy of this block rendered a smaller face
    with no seconds at a desktop width: a rule copied without its at-rule is a different rule.
    Any extraction from another stylesheet carries the @media it was written inside. */
 @media (prefers-reduced-motion:reduce){
-  :root[data-conform="1"] .sclock .sc-u.sec{display:none}
-  :root[data-conform="1"] .sclock .sc-face > :nth-last-child(2){display:none}
+  .sclock .sc-u.sec{display:none}
+  .sclock .sc-face > :nth-last-child(2){display:none}
 }
 @media (max-width:820px){
-  :root[data-conform="1"] .sclock{align-items:flex-start;text-align:left}
-  :root[data-conform="1"] .sc-u b{font-size:var(--t-figure)}
+  .sclock{align-items:flex-start;text-align:left}
+  .sc-u b{font-size:var(--t-figure)}
 }
 
 
@@ -5253,36 +5250,36 @@ button .ic,a .ic{pointer-events:none}
    span.masked` at the ruler) and both stand in real mode. The conformance overlay renders the
    design's version, so they are restored here and nowhere else — the re-apply phase after all six
    realms match is where the deletions are re-argued, not silently kept by leaving them out. */
-:root[data-conform="1"] .dnotch{position:absolute;top:0;height:15px;width:0;z-index:4;pointer-events:none;
+.dnotch{position:absolute;top:0;height:15px;width:0;z-index:4;pointer-events:none;
   border-left:1.5px solid var(--c)}
-:root[data-conform="1"] .dnotch i{position:absolute;left:-2.5px;width:5px;height:5px;border-radius:var(--rad-1);
+.dnotch i{position:absolute;left:-2.5px;width:5px;height:5px;border-radius:var(--rad-1);
   background:var(--c);transform:rotate(45deg)}
-:root[data-conform="1"] .dnotch i:nth-child(1){top:-3px}
-:root[data-conform="1"] .dnotch i:nth-child(2){top:13px}
-:root[data-conform="1"] .ruler span.masked{pointer-events:none;cursor:default}
-:root[data-conform="1"] .ruler span.masked b{display:none}
+.dnotch i:nth-child(1){top:-3px}
+.dnotch i:nth-child(2){top:13px}
+.ruler span.masked{pointer-events:none;cursor:default}
+.ruler span.masked b{display:none}
 
 /* The design fills the BAR and leaves the label inside it transparent; the portal painted the label
    too, which reads as a second chip inside the first on every saved bar. --ci-bg is the same
    tokenising trick as --ctl-rad: the value changes, the specificity does not. */
-:root[data-conform="1"] .bar.saved .bl{--ci-bg:transparent}
+.bar.saved .bl{--ci-bg:transparent}
 
 /* The 920px measure cap is the portal's own — the design's composer fills the masthead's 1160 — so it
    stands down with the rest of the reading-measure work rather than silently narrowing a form the
    overlay is comparing box for box. */
-:root[data-conform="1"]{--nwhost-max:none}
+:root{--nwhost-max:none}
 
 /* 🔴 THE MOCKUP'S DAY LIST IS A BROWSER DEFAULT — 15px margins, a 40px indent and real disc bullets,
    because season.html styles .daylist nowhere. This is very likely a gap in the design rather than a
    decision, and the conformance rule is still to render it: matching first and re-applying afterwards is
    what keeps "the portal looks better here" from being a judgement made mid-diff. Filed for the re-apply
    phase, where the portal's own styled rows should come back. */
-:root[data-conform="1"] .daylist{display:block;gap:normal;margin:15px 0;padding-left:40px;list-style:disc}
-:root[data-conform="1"] .daylist li{display:list-item;padding:0;border-top:0;align-items:normal;gap:normal}
+.daylist{display:block;gap:normal;margin:15px 0;padding-left:40px;list-style:disc}
+.daylist li{display:list-item;padding:0;border-top:0;align-items:normal;gap:normal}
 /* The type faces too: with no .daylist rules of its own the design lets every span inherit the drawer
    body, which is what makes its rows 23px against the 21 these produced. */
-:root[data-conform="1"] .daylist li b{font:inherit;flex:none}
-:root[data-conform="1"] .daylist .dd,:root[data-conform="1"] .daylist .dt,:root[data-conform="1"] .daylist .dn{font:inherit;letter-spacing:normal;color:inherit}
+.daylist li b{font:inherit;flex:none}
+.daylist .dd,.daylist .dt,.daylist .dn{font:inherit;letter-spacing:normal;color:inherit}
 
 /* The design's shell adds nw-host to the composer host and defines NO rule for it — the class is part
    of its DOM and not part of its styling. It is emitted here so the two trees match, and left empty on
@@ -5295,4 +5292,4 @@ button .ic,a .ic{pointer-events:none}
    (see the note beside the .ptc family), which is a real improvement and a real divergence; under the
    flag the design's double ring comes back so the overlay compares like with like. Found only once the
    audit started sampling box-shadow, which it had never done. */
-:root[data-conform="1"] .ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+.ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}

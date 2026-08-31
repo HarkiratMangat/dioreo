@@ -6,7 +6,6 @@
 //
 // composerReason/composerFields come from composer.logic.js, loaded as a classic script — see track.js's header for why every .logic.js sibling here loads that way.
 import { h } from '../vendor/preact.mjs';
-import { conforming } from './conform.js';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { fetchJson } from './httpClient.js';
@@ -35,8 +34,8 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
     const raw = String(value || '').trim();
     return html`
         <!-- The design wraps only the NAME field in nw-f; a date field is a bare div, and the extra class
-             carries the form's own column padding onto two boxes that are already inside nw-dates. -->
-        <div class=${conforming() ? null : 'nw-f'}>
+             carried the form's own column padding onto two boxes that are already inside nw-dates. -->
+        <div>
             <label class="nw-l" for=${id}>${label}</label>
             <input class="nw-i nw-smart" id=${id} type="text" autocomplete="off" spellcheck="false"
                    placeholder=${placeholder} value=${value}
@@ -48,7 +47,7 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
             <!-- The design creates this line ONCE and rewrites its class, so an untouched date field still
                  carries an empty echo. Rendering it only when there is text made the element itself a
                  state, which is a different shape from the one the stylesheet reserves space for. -->
-            ${!raw && !conforming() ? null : html`
+            ${html`
                 <span class=${['nw-date-echo', !raw ? '' : (iso ? 'ok' : 'bad')].filter(Boolean).join(' ')}>
                     ${!raw ? '' : (iso ? `${fmtDay(iso)}  ·  ${iso}` : 'not a date yet')}
                 </span>`}
@@ -148,7 +147,9 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
     // The design opens with the first date already set to today — its Track ghost reads "+ Aug 24" and the echo under the field reads it back resolved. An empty field is not the same offer: it asks the reader to supply a date the page already knows, and it is why the mockup's date column measures 151px against an empty 150.
     const todayISO = () => new Date().toISOString().slice(0, 10);
     const [state, setState] = useState({ type: initialType || null, name: '',
-        aText: conforming() ? todayISO() : '', aIso: conforming() ? todayISO() : '',
+        // The composer opens with today already in it, which is what makes the Track's live ghost
+        // appear the moment it mounts rather than waiting for a keystroke.
+        aText: todayISO(), aIso: todayISO(),
         bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;
 
@@ -174,7 +175,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
     }, [initialType]);
 
     return html`
-        <section ref=${hostRef} class=${conforming() ? 'nwhost nw-host' : 'nwhost'} aria-label="Add to the season">
+        <section ref=${hostRef} class="nwhost nw-host" aria-label="Add to the season">
             <div class="nw">
                 <div class="nw-types" role="group" aria-label="What are you adding">
                     ${types.map((t) => html`
@@ -218,7 +219,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
                     <span class="nw-why">${reason || 'Ready to stage.'}</span>
                     <button class="pill" onClick=${onCancel}>Cancel</button>
                     <button class="pill lead" disabled=${Boolean(reason)}
-                            onClick=${() => onStage(state.type, composerFields(state, type))}>${conforming() && type ? `Stage ${type.single || String(type.label).toLowerCase()}` : 'Stage it'}</button>
+                            onClick=${() => onStage(state.type, composerFields(state, type))}>${type ? `Stage ${type.single || String(type.label).toLowerCase()}` : 'Stage it'}</button>
                 </div>
             </div>
         </section>

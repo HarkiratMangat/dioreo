@@ -12,7 +12,6 @@ import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay } from './overlay.js';
-import { conforming } from './conform.js';
 
 // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
 const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
@@ -287,18 +286,6 @@ function PostForm({ onSubmit, onCancel }) {
 // 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
 //
 // ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
-function AirtimeKey({ rows }) {
-    const has = (state) => (rows || []).some((r) => r.state === state);
-    const items = [];
-    if (has('live')) items.push(['bk-live', 'showing']);
-    if (has('scheduled')) items.push(['bk-sched', 'scheduled']);
-    if (has('expired')) items.push(['bk-over', 'over']);
-    if (!items.length) return null;
-    return html`
-        <span class="key rkey" aria-label="What a bar's shape means">
-            ${items.map(([cls, label]) => html`<span key=${cls} class=${cls}><i></i>${label}</span>`)}
-        </span>`;
-}
 
 export function BroadcastRealm({ session }) {
     const [showAdd, setShowAdd] = useState(false);
@@ -389,7 +376,6 @@ export function BroadcastRealm({ session }) {
 
     return html`
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
-                  realmKey=${view === 'Airtime' && !conforming() ? html`<${AirtimeKey} rows=${rows} />` : null}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   commands=${[
@@ -413,13 +399,13 @@ export function BroadcastRealm({ session }) {
                   `}
                   
                   stateKey=${false}
-                  tools=${view === 'Delivery queue' || conforming() ? html`<span class="key" aria-label="What the marks mean"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span>` : null}
+                  tools=${html`<span class="key" aria-label="What the marks mean"><span class="l"><i></i>saved</span><span class="s"><i></i>staged</span></span>`}
                   meta=${view === 'Delivery queue'
                       ? `${Math.min(counts.live, data.maxPerMessage)} in one message, oldest first · cap ${data.maxPerMessage}${counts.live > data.maxPerMessage ? ` · ${counts.live - data.maxPerMessage} wait for the next` : ''}`
                       : `${data.all.length} announcement${data.all.length === 1 ? '' : 's'} on the axis`}
                   noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    label="Manifest" selectable=${!conforming()} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" selectable=${false} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
                                                     onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Remove"

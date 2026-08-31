@@ -6,7 +6,6 @@
 //
 // exportRecords/recordExport/exportSummary come from exportPanel.logic.js, loaded as a classic script.
 import { h } from '../vendor/preact.mjs';
-import { conforming } from './conform.js';
 import { Drawer } from './overlay.js';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState } from '../vendor/preact-hooks.mjs';
@@ -17,7 +16,7 @@ import { reportFailure } from './async.js';
 const clock = (at) => new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 // 🔴 THE ROW NOTES ARE THE DESIGN'S, AND EACH SCOPE STATES ITS OWN SHAPE. The portal described every scope the same way ("Title, items, date, thumbnail — the exact fields…"), which is false for three of Season's five: the calendar is prefixed bullet lines, patch notes have no bulk-add flow at all, and the manifest is TSV. Nine pixels a row of wrap difference is how it surfaced; the wrong sentence is the actual defect. Keyed by scope id so no realm has to carry a second copy of its own vocabulary.
-const CONFORM_SCOPE_COPY = {
+const SCOPE_COPY = {
     'season.draws': { label: 'New draws', note: 'Bulk Add format — pastes straight back.' },
     'season.returning': { label: 'Returning draws', note: 'Bulk Add format — pastes straight back.' },
     'season.calendar': { label: 'Calendar', note: 'Prefixed bullet lines, the format Bulk Add takes.' },
@@ -30,7 +29,7 @@ function ExportBody({ scopes, overlay }) {
     const [busy, setBusy] = useState('');
     const [tick, setTick] = useState(0);
     const records = exportRecords();
-    const copyOf = (sc) => (conforming() && CONFORM_SCOPE_COPY[sc.id] ? { ...sc, ...CONFORM_SCOPE_COPY[sc.id] } : sc);
+    const copyOf = (sc) => (SCOPE_COPY[sc.id] ? { ...sc, ...SCOPE_COPY[sc.id] } : sc);
 
     async function take(scope) {
         setBusy(scope.id);
@@ -75,12 +74,9 @@ function ExportBody({ scopes, overlay }) {
                         </li>`)}
                 </ul>`
             // 🔴 REGISTERED DIVERGENCE, AND THE DECISION WAS ALREADY MADE. The mockup's empty state reads that one-way operations are held until a session export exists — which is FALSE here: the strip does not gate on a session export, the interlock is the changeset export at Review. portalExport.test.js asserts this string can never appear in this file, with a comment saying exactly why. The conformance pass stands portal-ahead surfaces down; it does not carry a claim the portal cannot honour, even behind a flag anybody can open. The overlay shows a small copy difference here on purpose.
-            : (conforming()
-                // The design's line is one sentence and this needs to be too — a three-line paragraph makes the drawer 25px taller and moves everything in it, which reads as an 11% difference over one sentence. So: as short as the design's, and TRUE, rather than choosing between the two.
-                ? html`<p class="expnone">No export taken this session. The copies kept here live until you reload.</p>`
-                : html`<p class="expnone">Nothing exported yet on this page. The copies listed here live until you
-                    reload — the one that makes an irreversible change survivable is the changeset export on Review,
-                    which is a file on your disk and a record on the server.</p>`)}
+            // One sentence, because a three-line paragraph makes the drawer 25px taller and moves everything in
+            // it. And TRUE: the design's own line promises a session-export interlock this console does not have.
+            : html`<p class="expnone">No export taken this session. The copies kept here live until you reload.</p>`}
         </div>`;
 }
 
@@ -111,8 +107,8 @@ export function ExportStrip({ label, scopes, overlay, open: openProp = null, onT
                      stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>
                 Export…
             </button>
+            <!-- The list lives in the DRAWER, which shell.js mounts. It used to also render inline here, which
+                 was the same component in two homes and they had already begun to drift. -->
             <span class="mh-take-n">${exportSummary(scopes)}</span>
-            ${open && !conforming() ? html`
-                <div style="flex-basis:100%"><${ExportBody} scopes=${scopes} overlay=${overlay} /></div>` : null}
         </div>`;
 }

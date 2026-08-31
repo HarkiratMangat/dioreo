@@ -320,7 +320,7 @@ input, select, textarea, button {
 /* The browser's own button padding, written out. `revert` inside a var() is invalid at computed-value
    time and silently took the fallback, which is the value being stood down — a stand-down that quietly
    does nothing is worse than none, because the number moves and the cause looks like something else. */
-:root[data-conform="1"] { --ctl-min: auto; --ctl-pad: 1px 6px; --ctl-rad: 0; }
+:root { --ctl-min: auto; --ctl-pad: 1px 6px; --ctl-rad: 0; }
 button {
     background: var(--raised);
     font-weight: 600;

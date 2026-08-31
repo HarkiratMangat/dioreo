@@ -18,7 +18,6 @@ import { useOverlay, Drawer } from './overlay.js';
 import { DiscordCard } from './v2Render.js';
 import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
-import { conforming } from './conform.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused. ⚠️ A READABLE MAP, NOT A BUILT STRING. The design's markup emits the full tier word, and writing that as `t-${tier}` makes the three rules it needs invisible to the reverse-orphan scan — which reads source, not a running page, and correctly reported them as rules nothing triggers. Spelling them out costs three lines and keeps the gate able to see what is emitted.
 const TIER_WORD_CLASS = { legendary: 't-legendary', mythic: 't-mythic', epic: 't-epic' };
@@ -80,14 +79,14 @@ const SEASON_COLUMNS = [
                     : html`<span class="dsub"><span class="none">no detail</span></span>`}
                 <!-- A draw's thumbnail is re-hosted on Cloudinary when it is saved; "not cached" is a fact
                      about THIS record, and the only place it was visible before was a Discord card. -->
-                ${conforming() || row.lane === 'calendar' || row.lane === 'patchNotes' ? null : html`<span class=${'thumb ' + (row.thumbnailUrl ? 'ok' : 'no')}>${row.thumbnailUrl ? 'cached' : 'no image'}</span>`}
+
             </div>`;
     } },
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
     { key: 'state', label: 'State', dataKind: 'right', sortable: false,
-      render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />${row.outlivesSeason
-          && !conforming()
-          ? html`${' '}<span class="warnmark" data-tip="Ends after the battle pass does">!</span>` : null}` },
+      // The "outlives the battle pass" mark is not lost with the warnmark: the design's own Repairs checks
+      // report it as a finding, which is where a qualification about a row belongs rather than in the row.
+      render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />` },
 ];
 
 // 03-three-surfaces.html's filter row. One chip per GROUP, cycling its own options -- see manifest.js's FilterChips for why that shape rather than one chip per possible value. 🔴 THREE CHIPS FOR SIX KINDS OF THING. The filter read the row's STORAGE key — newDraws, returningDraws, calendar — so a draw window, an event and a playlist all filtered as "Event", and the three the calendar holds could not be told apart at all. The design's chips are the LANES, in the lane colours, which is the same vocabulary the Track, the row dots and the composer use.
@@ -124,9 +123,7 @@ function toTrackItems(live, path, lane, ongoingEnd) {
 //
 // ⚠️ THE DRAFT IS OFF BY DEFAULT AND SAYS SO. A day drawer that silently mixed staged next-season items into today's list would answer a question nobody asked, in the one place a person is checking what players actually see. 🔴 ONE LANE VOCABULARY, NOT THREE. The design names a lane the same way wherever it appears — the Track's headers, the Manifest's chips, the composer's kinds and this drawer all read "New draws · Returning · Draw windows · Events · Playlists". This map said "Draw · Event · Playlist" and the composer's said something else again, so one record answered to two names one click apart.
 const DAY_LANE_LABEL = { draw: 'Draw', returning: 'Returning', drawwindow: 'Draw window', event: 'Event', playlist: 'Playlist' };
-const dayLaneLabel = (lane) => (conforming()
-    ? (CONFORM_KIND_WORDS[lane] || {}).label || DAY_LANE_LABEL[lane] || lane
-    : DAY_LANE_LABEL[lane] || lane);
+const dayLaneLabel = (lane) => (CONFORM_KIND_WORDS[lane] || {}).label || DAY_LANE_LABEL[lane] || lane;
 // The drawer lists a day in LANE order, as the Track does above it, so the two agree about what comes first. The design's own order, from fixtures' seasonItems(): every new draw, then every returning draw, then the calendar in its stored order — which on the live document is ascending by start date. Splitting the calendar into three lane buckets, as trackData does for the Track, reorders a day's list against the list the same data produces one click away.
 const DAY_RANK = { draw: 0, returning: 1 };
 
@@ -150,14 +147,14 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
     const draftRows = withDraft && draft ? dayItems(draft, day) : [];
     const all = [...rows, ...draftRows.map((r) => ({ ...r, isDraft: true }))];
     return html`
-        <${Drawer} eyebrow=${conforming() ? 'A single day' : `season · ${day}`}
-                   title=${conforming() ? TL.fmtLong(day) : fmtDay(day)} onClose=${onClose}
+        <${Drawer} eyebrow="A single day"
+                   title=${TL.fmtLong(day)} onClose=${onClose}
                    actions=${html`
                        <!-- 🔴 THE WAY IN WAS A CLICK ON A CROSSHAIR, WHICH IS NO WAY IN AT ALL FOR A KEYBOARD.
                             The drawer lists what runs on a date and nothing else in the portal does, so reaching
                             it had to stop depending on a pointer. These step the same drawer a day at a time,
                             which is also faster than re-aiming at a 3px column for anyone using a mouse. -->
-                       ${conforming() ? null : html`
+                       ${html`
                        <button class="btn" onClick=${() => onDay(shiftDay(day, -1))}
                                aria-label=${`Previous day, ${fmtDay(shiftDay(day, -1))}`}>← Previous day</button>
                        <button class="btn" onClick=${() => onDay(shiftDay(day, 1))}
@@ -167,7 +164,7 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
                  drawer body the design leaves at the page's 15, so every row in the day list came out 21px
                  against the design's 23 — two pixels a row, ten rows, and a drawer 20px short. The design's
                  drawer body holds the list directly. -->
-            <div class=${conforming() ? null : 'dwbody'} style=${conforming() ? 'display:contents' : null}>
+            <div style="display:contents">
                 ${all.length ? html`
                     <ul class="daylist">
                         ${all.map((i, n) => html`
@@ -181,9 +178,7 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
                                 <span class="dd">${i.b && i.b !== i.a ? `${fmtDay(i.a)} → ${fmtDay(i.b)}` : fmtDay(i.a)}</span>
                             </li>`)}
                     </ul>`
-                : (conforming() ? html`<p class="dw-p">Nothing is scheduled on this day.</p>`
-                    : html`<p class="dw-p">Nothing runs on this day. The season continues — no draw, event or playlist
-                    opens, runs or closes.</p>`)}
+                : html`<p class="dw-p">Nothing is scheduled on this day.</p>`}
                 ${draft ? html`
                     <label class="dwcheck" style="margin-top:12px">
                         <input type="checkbox" checked=${withDraft} onChange=${(e) => onWithDraft(e.target.checked)} />
@@ -297,13 +292,21 @@ function SeasonClock({ season, today }) {
     }
     const next = moments[0];
     const rest = moments.slice(1);
-    // ⚠️ THE DESIGN COUNTS FROM THE START OF ITS DAY, NOT FROM THE INSTANT. Its clock is called with the fixture's `today`, so it reads 23h 59m 59s at every hour of that day; this read Date.now(), so the two faces disagreed by however far into the day the screenshot was taken — a difference that is real on screen and impossible to attribute without knowing both call sites.
-    const p = countdownParts(next.iso, conforming()
-        ? Date.parse(`${today || new Date().toISOString().slice(0, 10)}T00:00:00Z`) : Date.now());
+    // 🔴 THE INSTANT, NOT THE START OF THE DAY. The design's clock is called with its fixture's own date, so it
+    //    reads 23h 59m 59s at every hour of that day — which is what made two captures seconds apart comparable,
+    //    and is not a clock for a console that is running. The READOUT below is the design's; this line is not,
+    //    and the two sat in one paragraph of code pointing in opposite directions.
+    const p = countdownParts(next.iso, Date.now());
     if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
 
-    // 🔴 THE REDESIGNED CLOCK STANDS DOWN UNDER ?conform=1 AND THE DESIGN'S OWN READOUT RENDERS INSTEAD. Harkirat, 2026-08-28: the pivot is to ignore pending redesigns, match the mockup first, and rebuild the redesigns on top once ALL SIX realms match. So this is not a divergence to annotate and leave on screen — it is switched off for the duration of the comparison. The hero-figure clock (§16.31a, and thirteen rejected designs behind it) is the one that comes back afterwards; nothing here retires it.
-    if (conforming()) {
+    // 🔴 THE HERO-FIGURE CLOCK WAS DELETED HERE, DELIBERATELY, AND ITS ONLY RECORD IS A PUBLISHED ARTIFACT.
+    //    Harkirat, 2026-08-30: the ahead rendering is scrapped and redesigns get rebuilt fresh on the conformed
+    //    base. This readout is the design's. What stood here was attempt 13 (COMPANION §16.31a), its own critique
+    //    never addressed, and it is queued for redesign in docs/db-deferred-list.md — so what comes back is not
+    //    this code. Photographed before deletion:
+    //    https://claude.ai/code/artifact/48baf822-3a53-46d0-9fe9-93da8e00d104
+    {
+
         const units = [];
         if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
         if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
@@ -322,19 +325,6 @@ function SeasonClock({ season, today }) {
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
             </div>`;
     }
-
-    return html`
-        <div class="sclock" data-tier=${seasonTier(p.d)}>
-            <${ClockFace} p=${p} />
-            <div class="sc-when">
-                until <b>${fmtDay(next.iso)}</b>
-                ${next.lines.map((L) => html`<span class="sc-chip">${L.label}</span>`)}
-            </div>
-            ${rest.length ? html`
-                <div class="sc-then">then
-                    ${rest.map((m) => html`${m.lines.map((L) => html`<span class="sc-chip ghost">${L.label}</span>`)}${' '}<b>${fmtDay(m.iso)}</b>${' '}<i class="sc-far">${daysUntil(m.iso)}d</i>`)}
-                </div>` : null}
-        </div>`;
 }
 
 // A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset.
@@ -365,7 +355,7 @@ const CONFORM_KIND_WORDS = {
     playlist: { label: 'Playlists', single: 'playlist' },
     patchnote: { label: 'Patch notes', single: 'patch note' },
 };
-const composeTypes = () => (!conforming() ? COMPOSE_TYPES : COMPOSE_TYPES.map((t) => ({
+const composeTypes = () => (COMPOSE_TYPES.map((t) => ({
     ...t, ...(CONFORM_KIND_WORDS[t.key] || {}),
     // Every field is "Name" in the design — the kind is already stated by the pressed chip directly above it, so repeating it in the label is the form saying the same thing twice.
     nameLabel: t.key === 'patchnote' ? 'Patch note title' : 'Name',
@@ -387,7 +377,7 @@ const COMPOSE_TYPES = [
       placeholder: 'Hardpoint 24/7' },
     // A patch note is not released, it is PUBLISHED, and the design says so — `dateLabel` was falling through to the shared 'Releases' default written for draws. The note is the design's too: it answers the question the composer actually provokes, which is why this record has no lane on the Track, and it is one line longer, which is the whole of the 19.56px that made this overlay the worst-matching of the six at 8.4%.
     //
-    // ⚠️ THE SENTENCE THIS REPLACED IS NOT WORTHLESS AND IS NOT STOOD DOWN. It said the description and the images are written in /manage — operational fact the design's copy does not carry. But §0.1b's default is that the mockup wins unless a COMPANION section or a dated decision postdates it, and there is no citation for the portal's wording, so it does not qualify as a portal-ahead advance to switch off behind `conforming()`. Filed in the post-conformance queue instead, where the two can be merged deliberately rather than one silently outliving the other.
+    // ⚠️ THE SENTENCE THIS REPLACED IS NOT WORTHLESS AND IS NOT STOOD DOWN. It said the description and the images are written in /manage — operational fact the design's copy does not carry. But §0.1b's default is that the mockup wins unless a COMPANION section or a dated decision postdates it, and there is no citation for the portal's wording, so it was not a portal-ahead advance to keep. Filed in the post-conformance queue instead, where the two can be merged deliberately rather than one silently outliving the other.
     { key: 'patchnote', label: 'Patch note', hex: 'var(--pn)', shape: 'point', nameLabel: 'Season title',
       placeholder: 'Season 8 — Codename', dateLabel: 'Published',
       pointNote: 'A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track.' },
@@ -476,13 +466,19 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                     const on = (season?.[b.k] || '').trim();
                     const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows && !conforming() ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
                             <span class=${'t' + (on ? '' : ' unset')}>
-                                ${shows && !conforming()
+                                <!-- 🔴 THE WHOLE MECHANISM IS KEPT, AND THE CLASSIFICATION THAT SPLIT IT WAS WRONG. The design
+                                     draws no thumbnail and states "image cached and serving" for any banner that is set.
+                                     But THIS IMG IS THE DETECTOR: brokenBanner is written by its onError, and the dead
+                                     class, the status words and the d aria-label all read that state. Adopt the design's
+                                     no-image version and nothing ever fires the error, so a broken banner asserts its own
+                                     health — a falsehood about live data. The three sites are ONE decision and it is (b). -->
+                                ${shows
                                     ? html`<img class="srec-thumb" src=${on} alt="" loading="lazy" decoding="async"
                                                 onError=${() => setBrokenBanner((m) => ({ ...m, [b.k]: true }))} />`
-                                    : (on ? (conforming() ? 'image cached and serving' : 'set, but the image will not load') : 'no image set')}
+                                    : (on ? 'set, but the image will not load' : 'no image set')}
                             </span>
                             <span class="d" role="img" aria-label=${on ? (shows ? 'set' : 'set but not loading') : 'not set'}><em></em></span>
                         </div>`;
@@ -593,7 +589,7 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                                         ? Math.round((Date.parse(raw + 'T00:00:00Z') - Date.parse(todayIso() + 'T00:00:00Z')) / 86400000)
                                         : NaN;
                                     // The design puts the NUMBER in its own bold element and spells the unit out — "17 days left", not "17d left" — and pluralises it, having been caught rendering "1 days left" live. Its shapes are reproduced exactly under the flag; the portal's terser line is what a dense grid wants, and it comes back with the rest of the re-apply queue.
-                                    if (conforming()) {
+                                    {
                                         if (tbd) return html`<span class="dl-left is-tbd">TBD</span>`;
                                         if (!raw) return html`<span class="dl-left"><span style="color:var(--ink3)">not set</span></span>`;
                                         if (!Number.isFinite(d)) return html`<span class="dl-left is-tbd">unreadable</span>`;
@@ -618,9 +614,7 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                      re-introduced two lines away from the fix. A field that cannot be saved must not be offered. -->
                 ${editingDraft ? null : html`
                 <div class="bansec">
-                    <div class="bansec-h">${conforming()
-                        ? html`<span>Calendar banners</span><span class="bansec-n">one per /calendar page · re-hosted through Cloudinary</span>`
-                        : html`<span class="bansec-n">Calendar page banners</span>`}</div>
+                    <div class="bansec-h"><span>Calendar banners</span><span class="bansec-n">one per /calendar page · re-hosted through Cloudinary</span></div>
                     <div class="bans">
                         ${BANNERS.map((b) => {
                             const v = String(value(b.k) || '');
@@ -684,33 +678,12 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
     const late = endsIn !== null && endsIn <= 7;
     const [comparing, setComparing] = useState(false);
     if (!draft || !draft.active) {
-        // 🔴 THE STAND-DOWN RENDERS THE DESIGN'S VERSION — IT DOES NOT DELETE THE SURFACE. This component used to be switched off wholesale by a `conforming() ? null` at its mount site, so under the flag the portal rendered NOTHING where the design renders a paragraph and a button. §0.6a's rule is that a portal-ahead surface renders the MOCKUP'S version for the duration of the comparison; a stand-down that renders nothing removes the surface from the comparison instead, which is a different thing and it cannot be closed. It cost 111px of page height and left the expanded identity editor at 12.6% with no reachable fix.
-        if (conforming()) {
-            return html`
-                <div class="nodraft">
-                    <p>No next season staged. A draft lets you build the whole next season — titles, deadlines,
-                       draws and calendar — without any of it going live.</p>
-                    <button class="chip" onClick=${() => onStart('')}>Start a draft</button>
-                </div>`;
-        }
+        // 🔴 THE STAND-DOWN RENDERS THE DESIGN'S VERSION — IT DOES NOT DELETE THE SURFACE. This component was once switched off wholesale by a null at its mount site, so the portal rendered NOTHING where the design renders a paragraph and a button. §0.6a's rule is that a portal-ahead surface renders the MOCKUP'S version for the duration of the comparison; a stand-down that renders nothing removes the surface from the comparison instead, which is a different thing and it cannot be closed. It cost 111px of page height and left the expanded identity editor at 12.6% with no reachable fix.
         return html`
-            <!-- 🔴 ONE LINE, NOT A PANEL. This was a 126px centred block — a paragraph, then an input and a
-                 button on their own row — announcing that a thing does NOT exist, and it sat between the
-                 context strip and the Track. Measured 2026-08-28 at the 806px fold: it was one of three
-                 blocks holding the realm's own subject 530px below it. An absence does not earn the page's
-                 most valuable band. The record above sets the pattern for this exact
-                 job in this exact strip — one dashed line that states the fact and offers the way out —
-                 so this follows it rather than inventing a second empty-state shape. Nothing is lost: the
-                 sentence it dropped explained what a draft IS, and that belongs on the control, which now
-                 carries it as a tooltip. -->
-            <div class=${'nodraft' + (late ? ' late' : '')}>
-                <b>No next season staged.</b>
-                ${late ? html`<span class="nd-late">This one ends in ${endsIn} day${endsIn === 1 ? '' : 's'}.</span>` : null}
-                <input class="nw-i" type="text" aria-label="Next season title"
-                       placeholder="Season 8 — …" value=${title}
-                       onInput=${(e) => setTitle(e.target.value)} />
-                <button class="chip" disabled=${!title.trim()} onClick=${() => onStart(title.trim())}
-                        data-tip="Builds the whole next season — titles, deadlines, draws and calendar — with none of it going live until you promote it">Start a draft</button>
+            <div class="nodraft">
+                <p>No next season staged. A draft lets you build the whole next season — titles, deadlines,
+                   draws and calendar — without any of it going live.</p>
+                <button class="chip" onClick=${() => onStart('')}>Start a draft</button>
             </div>`;
     }
     const n = (draft.newDraws || []).length + (draft.returningDraws || []).length + (draft.calendar || []).length;
@@ -870,7 +843,7 @@ function AddRow({ onStage }) {
             <input id="a-start" type="date" value=${start} onInput=${(e) => setStart(e.target.value)} />
             <label class="sr" for="a-end">End</label>
             <input id="a-end" type="date" value=${end} onInput=${(e) => setEnd(e.target.value)} />
-            <button class="go" disabled=${!ready && !conforming()} onClick=${stage}>Stage item</button>
+            <button class="go" disabled=${!ready} onClick=${stage}>Stage item</button>
             <span style="font-size:11.5px;color:var(--ink3)">or click any empty lane on the Track</span>
         </div>`;
 }
@@ -1185,7 +1158,7 @@ export function SeasonRealm({ session }) {
     const identitySlot = html`<${SeasonIdentity} season=${editingDraft ? (state.draft || {}) : state.live}
                                                  editingDraft=${editingDraft} draftStaged=${Boolean(state.draft?.active)}
                                                  today=${todayIso()} onSave=${handleIdentitySave} onScope=${setIdScope}
-                                                 draftSlot=${conforming() ? draftZone : null} />`;
+                                                 draftSlot=${draftZone} />`;
 
     // The window range is the view bar's meta line on EVERY view of this panel, not only the Track: it says where in the season you are, and the Board and Repairs are just as much a view of it. Extracted so the conformance mount above can take it: one Composer, two possible positions, never two instances.
     const composerSlot = showAdd ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
@@ -1194,12 +1167,7 @@ export function SeasonRealm({ session }) {
                                               onLive=${setComposeGhost}
                                               onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null;
     const viewSlot = view === 'Track'
-        ? html`${showAdd && !conforming() ? html`<${Composer} types=${composeTypes()} initialType=${showAdd === true ? null : showAdd}
-                                              onStage=${(kind, fields) => handleAdd(buildSeasonAddOp(kind, fields))}
-                                              onStageMany=${handleStageMany}
-                                              onLive=${setComposeGhost}
-                                              onCancel=${() => { setComposeGhost(null); setShowAdd(null); }} />` : null}
-               <!-- 🔴 THE TRACK WAS THE SIXTH BLOCK ON THE TRACK TAB. Measured at 1280: you clicked "Track"
+        ? html`               <!-- 🔴 THE TRACK WAS THE SIXTH BLOCK ON THE TRACK TAB. Measured at 1280: you clicked "Track"
                     and the ruler began 863px below the tab, behind the identity strip, a 126px draft card
                     and a 438px staged-changes callout. StagedPanel's own comment says the mockup keeps
                     pending changes "right beside the Track" — the intent was adjacency and the execution
@@ -1211,7 +1179,7 @@ export function SeasonRealm({ session }) {
                           season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')}
                           foot=${html`<${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
-                                                      onPreview=${conforming() ? setRecPreview : null}
+                                                      onPreview=${setRecPreview}
                                                       onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />`} />
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
@@ -1220,7 +1188,7 @@ export function SeasonRealm({ session }) {
                <!-- Aligned with the staged band above it rather than the panel's own padding edge: measured at
                     1282 it sat at x=111 while the band sat at x=123, so a single floating pill was the one thing
                     on the page agreeing with no other left edge. -->
-               ${conforming() ? null : html`<p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
+               ${html`<p class="hint" style="margin:0 22px 14px"><button class="chip" onClick=${() => setDayOpen(todayIso())}
                                        data-tip="See everything running on one day">Open a day…</button></p>`}
 `
         : view === 'Repairs'
@@ -1242,7 +1210,7 @@ export function SeasonRealm({ session }) {
                                             bulkTier=${2} rowNoun=${['item', 'items']}
                                             onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Remove"
                                             emptyText="This season has no draws or calendar items yet." 
-                                            onAdd=${conforming() ? null : () => setShowAdd(true)} realm="season" csrfToken=${session.csrfToken}
+                                            onAdd=${null} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
                                             onEditError=${(msg) => setPageError(msg)}
                                             bulkActions=${[
@@ -1272,7 +1240,7 @@ export function SeasonRealm({ session }) {
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season’s own deadlines." 
                                                aside=${html`<${SeasonClock} season=${state.live} today=${todayIso()} />`}
                                                actions=${html`<${AddChips} onAdd=${(key) => setShowAdd(key)} />`}
-                                               below=${conforming() ? composerSlot : null} />`}
+                                               below=${composerSlot} />`}
                   contextSlot=${html`
                       <!-- The season's identity and its draft live ABOVE the view layer, not inside it —
                            they are the context the Track is read against, and they do not change when the
@@ -1284,7 +1252,7 @@ export function SeasonRealm({ session }) {
                            63px block about a thing that does NOT exist above the Track. It stands down with
                            the rest of the pending work; where it finally belongs is a design question for
                            the re-apply phase, not something to settle inside a conformance pass. -->
-                      ${conforming() ? null : draftZone}`}
+`}
                   viewSlot=${html`
                       <!-- 🔴 A REJECTED EDIT LOOKED LIKE A SAVED ONE. The edit-error callback pushed the server's refusal
                            into the tray — the panel headed "Saved" — where it rendered in the same voice as a

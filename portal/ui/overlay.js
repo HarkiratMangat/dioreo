@@ -4,7 +4,6 @@
 //
 // `inert` is the honest primitive: it removes the rest of the page from the tab order AND from the accessibility tree, so a screen reader stops reading the page behind too — which a hand-rolled TAB-cycling trap never fixes.
 import { h } from '../vendor/preact.mjs';
-import { conforming } from './conform.js';
 import { html } from '../vendor/htm-preact.mjs';
 import { useEffect, useRef, useState } from '../vendor/preact-hooks.mjs';
 import { Icon } from './icons.js';
@@ -48,10 +47,12 @@ export function Drawer({ eyebrow, title, children, actions, wide, side, onClose 
                     ${eyebrow ? html`<span class="dw-eye">${eyebrow}</span>` : null}
                     <h2>${title}</h2>
                 </div>
-                <!-- The design draws this as the character ✕, not as an icon: the drawer's close is the one control
-                     in the component that has to read identically at any font size, and an SVG here measures
-                     differently from the glyph the header's own type sets. -->
-                <button class="x" aria-label="Close" onClick=${onClose}>${conforming() ? '\u2715' : html`<${Icon} name="x" cls="sm" />`}</button>
+                <!-- 🔴 THE DESIGN DRAWS THIS AS THE CHARACTER ✕ AND THE PORTAL DOES NOT, DELIBERATELY. Its case is
+                     that the close has to read identically at any font size — but a text glyph is exactly what
+                     inherits metrics nothing here controls, and reference_never_text_glyphs_for_icons is a standing
+                     rule while that argument is an inline comment. Kept with shell.js's crumb separator: the two are
+                     one rule, and resolving them differently leaves the console with two habits instead. -->
+                <button class="x" aria-label="Close" onClick=${onClose}><${Icon} name="x" cls="sm" /></button>
             </header>
             <div class="dw-b">${children}</div>
             ${actions ? html`<footer class="dw-f">${actions}</footer>` : null}

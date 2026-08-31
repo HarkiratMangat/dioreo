@@ -11,7 +11,6 @@ import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
 import { ExportStrip, ExportDrawer } from './exportPanel.js';
 import { installTips } from './tips.js';
-import { conforming } from './conform.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -152,7 +151,7 @@ export function Masthead({ title, sub, stats = [], actions = null, eyebrow = nul
                  in the masthead grid itself, carrying the mh-stats and sclock classes on one element; wrapping it added a
                  box between the grid and the thing the grid was placing. Under the conformance flag the
                  aside renders bare so the two mastheads have the same skeleton. -->
-            ${aside ? (conforming() ? aside : html`<div class="mh-aside">${aside}</div>`) : null}
+            ${aside || null}
             ${!aside && stats.length ? html`
                 <div class="mh-stats">
                     ${stats.map((s) => html`
@@ -320,9 +319,12 @@ function Header({ realm, view, session, staged, commands, onSignOut, chrome }) {
                  _for_icons exists because a text chevron inherits font metrics nothing controls, which is
                  exactly the 6px this measures. So it stands down for the comparison rather than being
                  given up, and comes back with the rest of the re-apply queue. -->
-            <span class="crumb">${realmLabelOf(realm)}${view ? (conforming()
-                ? html` <b class="crumb-sep">›</b> ${view}`
-                : html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}`) : null}</span>
+            <!-- 🔴 THE DESIGN SETS THIS SEPARATOR AS A TEXT CHEVRON AND THE PORTAL DOES NOT, DELIBERATELY.
+                 reference_never_text_glyphs_for_icons: a glyph inherits font metrics nothing here controls, so it
+                 lands differently on every stack. Lucide is already inlined in this package. Kept with the drawer's
+                 close in overlay.js — the two are one rule, and an SVG here beside a glyph there is two habits. -->
+            <span class="crumb">${realmLabelOf(realm)}${view
+                ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
             <${CommandBar} commands=${commands} realmLabel=${realm === 'home' ? null : realmLabelOf(realm)} />
             <span class="sp"></span>
@@ -468,7 +470,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      the view layer with the Manifest and the Manifest stays recessive. Anything put here
                      must earn a permanent place above the realm's subject; if it is only sometimes present,
                      it belongs inside the view. -->
-                ${contextSlot ? (conforming() ? contextSlot : html`<div class="ctxband">${contextSlot}</div>`) : null}
+                ${contextSlot || null}
                 <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
                      Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
                      composition rule: masthead, context strip, view layer, then the mechanism beneath the picture.
@@ -537,7 +539,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             </main>
             ${traySlot || null}
             ${overlaySlot || null}
-            ${exportScopes && exportScopes.length && exportOpen && conforming()
+            ${exportScopes && exportScopes.length && exportOpen
                 ? html`<${ExportDrawer} scopes=${exportScopes} overlay=${overlayFor || chrome} onClose=${() => setExportOpen(false)} />` : null}
             ${chrome.render()}
         </div>
