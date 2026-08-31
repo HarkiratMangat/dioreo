@@ -707,6 +707,18 @@ The substitute in use is `superpowers:writing-plans`' own Self-Review — spec c
 **What to do:** decide which of three this branch gets before it merges — (a) Harkirat reads the diff, (b) subagents are re-enabled for one scoped review pass, or (c) an agent-free reviewer that is a *program* rather than a reading: the branch's own gates already do this for structure, and the gap is composition and correctness.
 **Verify:** whichever is chosen, the branch does not merge until something other than the author has looked at it — and the choice is recorded here, not left as an assumption.
 
+### 📊 The season overview strip drops two of its thirty-nine bars `P3 · XS · Sonnet5-Medium`
+*Found 2026-08-30 21:0x EDT, cause located in the same diagnostic that found it.*
+
+The mockup's scrubber renders **39** `.mini` bars; the portal renders **37**. Measured on both pages under the same frozen clock with storage cleared, so it is not a state difference.
+
+**The cause is a filter the design does not have.** `portal/ui/track.js`'s `scrubItems` ends with `.filter((i) => i.start && i.end)`, while `season.html`'s own `st.items.forEach` filters nothing and positions every item with `full.pct(it.start)`. Two items therefore have neither a `startDate` nor a `date` and are dropped here and drawn there.
+
+⚠️ **Do not just delete the filter.** An item with no start would be positioned at `NaN%`, and NaN reaching a rendered page is a defect this pass has already met once — `TL.days` told a reader an item *"ends NaN days after the battle pass"*. The question is what the design actually draws for a dateless item, which needs the two rows identified first.
+
+**What to do:** name the two items (log `scrubItems` before and after the filter against the fixture), then decide — either they have a date the mapping is not reading, or the design draws something specific for a dateless row and the portal should draw the same.
+**Verify:** the strip renders 39 bars, none of them at a NaN offset, and `npm run portal:audit -- --realm season` no longer reports `span.mini` as mockup-only.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
