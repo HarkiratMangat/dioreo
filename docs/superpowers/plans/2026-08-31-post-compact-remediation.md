@@ -7,7 +7,7 @@ status: live
 
 > **For agentic workers:** this plan is the FIRST thing to read after the 2026-08-31 compact. It is tracked in git deliberately — Batch H lived only in gitignored `local/` and a default `rg` could not see it, which is why its four remaining steps had to be re-filed by hand.
 
-**Goal:** close twelve remediation items found by an adversarial audit, then merge a 281-commit branch that has never had a PR.
+**Goal:** close ten remediation tasks found by an adversarial audit, then merge a branch that has never had a PR. ⚠️ **This line said "twelve" while the title said ten — a half-fix caught by the SECOND audit.** Two of the original twelve were already done when the plan was written.
 
 **Why this plan exists:** Season's conformance pass cost **600–700+ turns across many sessions**. An honest decomposition puts **~500 of those on my own mistakes, drift and false confidence** — not on the plan, the instruments or the mockup. This plan fixes the mechanisms that produced them.
 
@@ -243,7 +243,7 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 **Why now:** `docs:audit` reported the unfilled `(#PR)` on every run for six days and I called it *expected* every time. **A gate pre-classified as noise had stopped being a gate.**
 
-- [ ] **Step 0: `git fetch origin --prune && git rev-list --left-right --count origin/main...origin/v3-pre-release`.** ⚠️ **The target may have moved.** A 281-commit, 53,795-insertion squash is the worst possible operation to discover a drifted base after. `0 0` means identical; anything else means read what landed first.
+- [ ] **Step 0: `git fetch origin --prune && git rev-list --left-right --count origin/v3-pre-release...HEAD`.** **A `0` on the LEFT means the base has not moved under the branch.** ⚠️ **THIS ORIGINALLY COMPARED `origin/main...origin/v3-pre-release`, WHICH IS THE WRONG PAIR AND IS NON-ZERO BY DESIGN** — `v3-pre-release` is permanently ahead of `main` during the pre-release line, so the check would have read red forever, for the wrong reason, while never testing whether the merge target moved. **A gate that always reads red trains the reader to ignore it** — the same furniture failure the plan warns about for Task 2. Caught by the second audit.
 - [ ] **Step 1: `npm test` · `npm run docs:audit` · `node scripts/portalGeometry.mjs --all --check`.** Read exit codes. Expect `docs:audit` = 1 (the `(#PR)`) plus two worktree warnings.
 - [ ] **Step 2: Rewrite the changelog entry's scope line.** ⚠️ **The branch is NOT "Season"** — 281 commits, 198 files, 53,795 insertions, carrying the Preact migration, the instrument suite, the mode collapse, a destructive-surface change and the portal's whole build. Harkirat: *"it does not only contain Season Realm's work, it contains MUCH more."*
 - [ ] **Step 3: Push.** ⚠️ **Restate the approval sentence at the gate.**

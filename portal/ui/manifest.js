@@ -98,8 +98,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     async function commitEdit(row, columnKey) {
         const op = buildEditOp(row, columnKey, editValue);
         setEditingCell(null);
-        // A realm may REFUSE an edit for a row its op vocabulary does not cover — Season refuses a
-        // publication. Without this the null went to stageAndCommit and the server saw [null].
+        // A realm may REFUSE an edit for a row its op vocabulary does not cover — Season refuses a publication. Without this the null went to stageAndCommit and the server saw [null].
         if (!op) { if (onEditError) onEditError('That row cannot be edited here.'); return; }
         const result = await stageAndCommit(realm, [op], csrfToken);
         if (!result.ok && onEditError) onEditError(result.reason || 'Edit failed.');

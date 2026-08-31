@@ -1,19 +1,11 @@
 #!/usr/bin/env node
 // scripts/handoffCheck.mjs — THE HANDOFF, AS A COMMAND RATHER THAN A PROCEDURE TO REMEMBER.
 //
-// 🔴 WHY THIS EXISTS. `docs/reference/session-handoff-guide.md` is 400+ lines of correct procedure and it
-// has been followed inconsistently for weeks — because reading it is a thing you must REMEMBER to do, at
-// exactly the moment (80% context, work in flight) when remembering is hardest. Harkirat, 2026-08-31:
-// *"so what do I tell the future session so it properly hands off to the following session?"*
+// 🔴 WHY THIS EXISTS. `docs/reference/session-handoff-guide.md` is 400+ lines of correct procedure and it has been followed inconsistently for weeks — because reading it is a thing you must REMEMBER to do, at exactly the moment (80% context, work in flight) when remembering is hardest. Harkirat, 2026-08-31: *"so what do I tell the future session so it properly hands off to the following session?"*
 //
-// **The answer should be one word.** He says "hand off"; the session runs this; the script says what is
-// missing. Anything he has to explain beyond that is a defect in this file, not in the session.
+// **The answer should be one word.** He says "hand off"; the session runs this; the script says what is missing. Anything he has to explain beyond that is a defect in this file, not in the session.
 //
-// ⚠️ WHAT IT CANNOT DO, SAID FIRST SO NOBODY READS A PASS AS A GUARANTEE. It cannot tell whether a
-// DECISION was made this session — that is judgement, and no script has it. What it can do is put the
-// question in front of you with the evidence attached: here are the commits that touched decision-bearing
-// code, and here is whether the ledger grew. A green run means the CARRIERS are in order, never that the
-// content is right.
+// ⚠️ WHAT IT CANNOT DO, SAID FIRST SO NOBODY READS A PASS AS A GUARANTEE. It cannot tell whether a DECISION was made this session — that is judgement, and no script has it. What it can do is put the question in front of you with the evidence attached: here are the commits that touched decision-bearing code, and here is whether the ledger grew. A green run means the CARRIERS are in order, never that the content is right.
 
 import fs from 'fs';
 import path from 'path';
@@ -25,7 +17,17 @@ const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).tr
 const read = (p) => { try { return fs.readFileSync(path.join(ROOT, p), 'utf8'); } catch { return null; } };
 
 const LEDGER = 'docs/reference/portal-decision-ledger.md';
-const PLAN = 'docs/superpowers/plans/2026-08-31-post-compact-remediation.md';
+
+// 🔴 THE LIVE PLAN IS DERIVED, NEVER HARDCODED. The first version of this file pinned '2026-08-31-post-compact-remediation.md' as a constant — and a dated plan is a SNAPSHOT this repo's own taxonomy expects to be completed and superseded. The moment it was, this script would either demand SESSION-START cite a dead file forever, or silently pass a check that verified nothing. Caught by the second read-only audit. A plan is live when its own front matter says so.
+function livePlan() {
+    const dir = path.join(ROOT, 'docs/superpowers/plans');
+    const live = fs.readdirSync(dir).filter((f) => f.endsWith('.md')).filter((f) => {
+        const head = fs.readFileSync(path.join(dir, f), 'utf8').slice(0, 300);
+        return /^kind:\s*plan/m.test(head) && /^status:\s*live/m.test(head);
+    }).sort().reverse();
+    return live.length ? 'docs/superpowers/plans/' + live[0] : null;
+}
+const PLAN = livePlan();
 const REMEMBER = '.remember/remember.md';
 const START = 'docs/SESSION-START.md';
 
@@ -61,9 +63,12 @@ else {
     else ok('.remember names the live plan');
 }
 
-// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed?
-const since = sh('git log --oneline -30 --format=%H') .split('\n').filter(Boolean);
-const base = since[Math.min(since.length - 1, 19)] || 'HEAD~1';
+// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it.
+const sinceArg = process.argv.includes('--since') ? process.argv[process.argv.indexOf('--since') + 1] : null;
+const hist = sh('git log --oneline -40 --format=%H').split('\n').filter(Boolean);
+const base = sinceArg || hist[Math.min(hist.length - 1, 19)] || 'HEAD~1';
+console.log(`  ℹ️  window: ${base.slice(0, 9)}..HEAD (${sh(`git rev-list --count ${base}..HEAD`) || '?'} commits)`
+    + `${sinceArg ? '' : ' — a GUESS, not the session boundary. Pass --since <ref> if it is wrong.'}`);
 const touched = sh(`git diff --name-only ${base}..HEAD`).split('\n').filter(Boolean);
 const codeTouched = touched.filter((f) => f.startsWith('portal/ui/') || f.startsWith('core/') || f.startsWith('scripts/portal'));
 const ledgerGrew = touched.includes(LEDGER);
@@ -71,6 +76,9 @@ const listGrew = touched.includes('docs/db-deferred-list.md');
 const logGrew = touched.includes('docs/CHANGELOG.md');
 
 if (codeTouched.length && !ledgerGrew) {
+    console.log('\n  ══════════════════════════════════════════════════════════════════════');
+    console.log('  🔴 THE ONE QUESTION THIS SCRIPT CANNOT ANSWER, AND THE MOST DANGEROUS ONE');
+    console.log('  ══════════════════════════════════════════════════════════════════════');
     soft(`${codeTouched.length} decision-bearing file(s) changed and the ledger did NOT grow`,
         `a script cannot tell whether you DECIDED anything — you can. If any of these was a judgement call, append a row to ${LEDGER}:\n        ${codeTouched.slice(0, 6).join('\n        ')}`);
 } else if (ledgerGrew) ok('the decision ledger grew');
@@ -84,7 +92,31 @@ if (codeTouched.length && !logGrew) soft('code changed and the changelog did not
     'append a ### to the open entry. Do NOT mint a new version.');
 else if (logGrew) ok('the changelog grew');
 
-// ── 4. NOTHING UNCOMMITTED. Work in flight does not survive a compact.
+// ── 4. 🔴 IS THE CODE ACTUALLY GREEN? The second audit's headline: this script reported full green while
+//    `npm test` was RED on a file the same round of work had just created, and `docs:audit` carried an
+//    unaccounted second error. **It verified the documentation plumbing while being structurally blind to
+//    the thing plumbing exists to protect.** The fast gates run here; the full suite is named, not run.
+for (const [cmd, label] of [['npm run docs:audit', 'docs:audit'],
+                            ['node scripts/reflow-prose.mjs --check', 'prose reflow'],
+                            ['node scripts/reflow-comments.mjs --check', 'comment reflow']]) {
+    let code = 0;
+    try { execSync(cmd, { cwd: ROOT, stdio: 'pipe' }); } catch (e) { code = e.status ?? 1; }
+    // docs:audit exits 1 on the single expected (#PR) placeholder while the branch has no PR. Anything ELSE failing is a real finding, so the count is read rather than the exit code alone.
+    if (label === 'docs:audit') {
+        let out = ''; try { out = execSync(cmd + ' 2>&1 || true', { cwd: ROOT, encoding: 'utf8' }); } catch { /* captured below */ }
+        const m = /fail CI \((\d+)\)/.exec(out);
+        const n = m ? Number(m[1]) : (code ? -1 : 0);
+        if (n > 1) fail(`docs:audit reports ${n} errors — more than the one expected (#PR) placeholder`,
+            'read them. The plan\'s Task 11 expects exactly 1; anything more is unaccounted for.');
+        else if (n < 0) fail('docs:audit failed and its error count could not be read', 'run it directly.');
+        else ok(`docs:audit at its expected baseline (${n} error)`);
+    } else if (code) fail(`${label} FAILS`, `run the command and fix it — it is a blocking gate in npm test, so the suite is RED right now.`);
+    else ok(`${label} clean`);
+}
+console.log('     ⚠️  `npm test` itself is NOT run here (minutes long). It is an && chain, so an early');
+console.log('        failure means the LATER gates never ran at all — a red suite is not one failure.');
+
+// ── 5. NOTHING UNCOMMITTED. Work in flight does not survive a compact.
 const dirty = sh('git status --porcelain').split('\n').filter(Boolean);
 if (dirty.length) fail(`${dirty.length} uncommitted change(s)`, 'commit them — a compact does not preserve a dirty tree.');
 else ok('working tree clean');

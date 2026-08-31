@@ -1,7 +1,4 @@
-// 🔴 THE GUARD THAT WAS MISSING FOR ONE DAY. When the conformance collapse removed the flag keeping patch
-// notes out of the Season manifest, it also removed the only thing keeping them out of an ACTION surface:
-// buildSeasonEditOp branches on isDraw and everything else falls through to calendar.edit. This asserts the
-// refusal directly, because "core/ would probably reject it" is not a guard.
+// 🔴 THE GUARD THAT WAS MISSING FOR ONE DAY. When the conformance collapse removed the flag keeping patch notes out of the Season manifest, it also removed the only thing keeping them out of an ACTION surface: buildSeasonEditOp branches on isDraw and everything else falls through to calendar.edit. This asserts the refusal directly, because "core/ would probably reject it" is not a guard.
 const assert = require('assert');
 const path = require('path');
 const { buildSeasonEditOp } = require(path.join(__dirname, '..', 'portal', 'ui', 'season.logic.js'));
