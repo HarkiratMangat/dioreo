@@ -23,9 +23,22 @@ silent "a run with no prose at all reports nothing" $f
 # Mid-run prose is the whole subject.
 f=$work/dirty; { usermsg; tool; txt "Now let me check the next thing here."; tool; txt "And now this one too."; tool; txt "Final summary of the run."; } > $f
 says "it counts turns, not messages"            $f "COST 6 TURNS"
-says "it separates tool turns from prose turns" $f "3 ran a tool, 2 produced only prose"
+says "it separates tool turns from mid-run prose" $f "3 ran a tool, 2 were mid-run prose"
+
+# 🔴 THE DISCRIMINATION IS THE WHOLE POINT — a count that cannot come back non-zero, or cannot come back zero, answers nothing. Harkirat: "where do you draw the line between useful bytes that should be there vs pure useless narration?" These four cases ARE that line.
+f=$work/hedge; { usermsg; tool; txt "Now let me check the fixture."; tool; txt "Summary."; } > $f
+says "a HEDGE counts as carrying nothing"       $f "1 OF THOSE CARRIED NOTHING"
+f=$work/ack;   { usermsg; tool; txt "Found it."; tool; txt "Summary."; } > $f
+says "an ACKNOWLEDGEMENT counts as carrying nothing" $f "1 OF THOSE CARRIED NOTHING"
+DUP="The geometry check disagreed with the fixture on the count only, which is the signature of an unfrozen clock rather than genuine drift."
+f=$work/dup;   { usermsg; tool; txt "$DUP"; tool; txt "$DUP And nothing else changed."; } > $f
+says "a DUPLICATE of the summary counts as carrying nothing" $f "1 OF THOSE CARRIED NOTHING"
+f=$work/subst; { usermsg; tool; txt "The privacy appendix omits colorsVisibility, so the published policy is inaccurate about live collection."; tool; txt "Unrelated closing summary about branch state and gates."; } > $f
+says "a SUBSTANTIVE checkpoint is counted as prose but NOT as carrying nothing" $f "0 OF THOSE CARRIED NOTHING"
+f=$work/wait;  { usermsg; tool; txt "Suite running in the background; continuing on docs meanwhile."; tool; txt "Summary."; } > $f
+says "his background-wait carve-out carries nothing against it" $f "0 OF THOSE CARRIED NOTHING"
 says "it names the round-trip cost of a turn"   $f "round trip it costs"
-says "it reports rather than advises"           $f "a number, not advice"
+says "it reports rather than advises"           $f "A number, not advice"
 # It must measure the PREVIOUS run only, and an attachment must open a new one.
 f=$work/prev; { usermsg; tool; txt "Now let me do a thing here mid-run."; tool; txt "Summary."; attach; tool; } > $f
 silent "the run in progress is not reported — only a COMPLETED previous one that was dirty" $f
