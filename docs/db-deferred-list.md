@@ -746,6 +746,35 @@ So any recorded value derived from *today* drifts without a code change. Measure
 
 **Verify:** the count of regions in a conform-on/conform-off diff reconciles against `rg -c 'conforming\(\)' portal/ui/*.js` plus the `data-conform` blocks, with every discrepancy named.
 
+### 🔴 THE TWO RENDERING MODES COLLAPSE INTO ONE — decided, unbuilt, and it reshapes the rest of the pass `P1 · L · Opus5-XHigh`
+**Approved:** ✅ Harkirat, 2026-08-30 22:45 EDT. **Built:** ❌ nothing. **Filed:** ✅ here, plus linksee `#36774` and perseus `temporary-flag-with-no-expiry-becomes-a-second-codebase`.
+
+**His words:** treat the "ahead" portal as scrapped; keep only the CONFORMED rendering; document what the ahead version had as a reference; build the redesigns and feature-adds **fresh on top of the conformed base**. End state: **mockup > portal with static data > portal with live data.** Three surfaces, one code path.
+
+**Why, measured 2026-08-30:** `?conform=1` had reached **57** `conforming()` call sites and **51** `data-conform` blocks across five sessions — 108 forks where the thing measured is not the thing shipped. It also makes a whole class of defect invisible: a stand-down that renders NOTHING where the design renders content cost the identity editor 111px and was found only by opening the overlay. And the third view he asked for is unreachable — `dataset.conform` is set only by `portal/ui/harness/stub.js`, so the real server has no path into conform mode.
+
+🔴 **THE COLLAPSE IS NOT UNIFORM. Three kinds, and a blanket collapse ships a falsehood that no later diff can see** (after the collapse the two sides agree by construction):
+
+| Kind | Take | Example, verified |
+|---|---|---|
+| **(a) genuine redesign** | the **design's** version; rebuild fresh later | the hero clock (attempt 13, he called it ugly), the context band, the one-line draft state |
+| **(b) the design is WRONG** | keep the **portal's** | `scripts/portalExport.test.js:147` asserts the mockup's *"One-way operations stay locked until there is one"* can never appear — the interlock is the changeset export at Review, so conforming it promises an admin a safeguard that does not exist |
+| **(c) conforming breaks a standing rule** | keep the **portal's** | the crumb separator — an inlined SVG chevron, because `reference_never_text_glyphs_for_icons` exists and a text `›` inherits font metrics nothing controls |
+
+⚠️ **Only 22 of 57 sites carry a comment saying what they stand down.** Classification is the expensive step; assume it, not the edit, is the session.
+
+**The four steps, in this order — and the first is the irreversible one:**
+1. 🔴 **CAPTURE conform-off against conform-on, per affected surface, BEFORE any edit.** Today the conform-off rendering is the ONLY record of what the advances look like; nothing anywhere renders it. Miss this and the reference is prose plus git archaeology. *(The published A/B artifact covers conform-ON only: `https://claude.ai/code/artifact/7943280f-c5ca-48f6-a6a4-ca145fbe3787`.)*
+2. **Classify** all 57 into (a)/(b)/(c).
+3. **Collapse**, with an exact oracle: **the conform diff must not move**, because the conformed rendering is what survives. Any number that shifts means the collapse ate something.
+4. **Sweep the docs.** `?conform=1` stops meaning anything and will keep WORKING while meaning something else — an unknown query param is inert. Named in CLAUDE.md's portal row, the conformance plan's every command, `.claude/rules/scripts-and-migrations.md`, COMPANION, `portalDiff`/`portalAudit`/`portalProbe`/`portalInventory`, the harness.
+
+⚠️ **UNANSWERED, AND IT NEEDS HIS ANSWER BEFORE STEP 3:** `app.css` and `shell.js` are shared, so the collapse cannot be per-realm. Either it happens **now, globally** — the five unconformed realms then render the design's version permanently and their conformance continues from there — or it waits for all six, which is the old re-apply plan renamed. **My read: collapse now, and conform the remaining five with NO NEW stand-down sites**, because conforming a realm and then collapsing it is doing the work twice.
+
+⚠️ **Five sites added 2026-08-30 are already scheduled for deletion** — the crumb glyph, the deadline "days left" line, the banner section header, the no-draft box, and `RecordPreview`. Correct that morning, superseded that evening. Do not read those commits as the pattern to follow.
+
+**Verify:** `rg -c 'conforming\(\)' portal/ui/*.js` and `rg -c 'data-conform' portal/ui/app.css` both reach zero except for deliberate (b)/(c) keeps that carry a comment naming which; the Season conform figures are unchanged from their pre-collapse values; and no doc still describes `?conform=1` as a live mode.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
