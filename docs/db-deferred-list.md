@@ -572,7 +572,9 @@ The read-only audit found three defects that are checkable in principle, and I c
 **Revisit if** the same defect recurs after §0.5c's audit is in force — that would mean the outside reader is not sufficient and the mechanical layer is earning its cost. **Verify:** any of these built has a falsifier proving it fires, per §0.10.
 
 
-### 🔴 DO NOT DELETE `.claude/worktrees/draw-calculator-breakdown-146641` — IT IS AN ACTIVE PEER SESSION `P1 · XS · standing-instruction`
+### 🔴 DO NOT DELETE ANY LIVE WORKTREE — `draw-calculator-breakdown-146641` AND `outstanding-v3-items-135f3b` ARE BOTH ACTIVE PEER SESSIONS `P1 · XS · standing-instruction`
+
+⚠️ **`outstanding-v3-items-135f3b` APPEARED DURING THE 2026-08-30 SESSION AND WAS IN NO TRACKED FILE UNTIL 23:2x EDT.** It was named only in `.remember`, which is gitignored and rewritten wholesale each session — so a reader of the durable carriers had no protection for it at all. A second read-only audit caught it. **The count is not fixed: run `git worktree list` and treat every non-primary entry as protected until Harkirat says otherwise.**
 **Harkirat, 2026-08-30 16:28 EDT, emphatically:** *"the draw calculator one, that's an active peer session. Uh, do not. I repeat. Do not delete that. That work is still in progress and will be merged later on."*
 
 It is `claude/draw-calculator-breakdown-146641` at `9d26892`, live work by another session, and it **will be merged later**. `docs-audit` emits a `nested-worktree` WARNING for it — **that warning is expected and must not be "resolved" by removing the worktree.** A future session tidying warnings is the exact route by which this gets destroyed.

@@ -183,6 +183,24 @@ The test below asks whether a session could *produce the next commit*. That is t
 
 ---
 
+## 🔴 A FIX APPLIED ONLY TO `.remember` IS NOT A FIX (added 2026-08-30 23:2x EDT)
+
+**The second audit pass caught this on the very session that wrote the two sections above, and it is the third time the "half-fix on round one" pattern has been recorded here.** A first pass found that one of two live worktrees was protected by a wildcard and named nowhere. The "fix" named both — **in `.remember` only.** The durable carriers, `docs/SESSION-START.md` and `docs/db-deferred-list.md`, still named one. A grep for the second worktree across the whole tracked tree returned **zero hits**, so a fresh session reading the auto-loaded file could have deleted a peer session's work while believing it had followed the rule.
+
+🔴 **`.remember` IS THE LEAST DURABLE CARRIER, AND ITS OWN NEIGHBOUR SAYS SO.** `docs/SESSION-START.md` carries the sentence *"`.remember` is gitignored, rewritten wholesale each session, and demonstrably lossy; it cannot be the only pointer to an authority."* Writing a fix there and nowhere else means the fix survives exactly one session — and it is **invisible to `git log`**, so no diff, no review and no later audit of the commit can see that it happened at all.
+
+- **The rule:** every fact that a reader could act on destructively, or that gates a decision, lands in a **tracked** file in the same change. `.remember` may then point at it. Never the reverse.
+- **The test, one command:** for each claim you just "fixed", `rg -c '<the distinctive phrase>' docs/ CLAUDE.md .claude/` — **if the only hit is `.remember`, you have not fixed anything.**
+- ⚠️ **And check the HEADING, not only the body.** The tracked entry did discuss both worktrees in prose while its `###` heading named one — a reader scanning headings, which is how anyone uses a 1500-line tracker, would never reach the correction.
+
+## ⚠️ AND DO NOT LET THE COMMIT MESSAGE OVERSELL THE EDIT (added 2026-08-30 23:2x EDT)
+
+The same pass found a commit claiming *"the gating is now stated before the pointer, not after it"* when the current text still read pointer-then-gate in one paragraph. Functionally close enough; **factually wrong, in a permanent record, about the author's own change.** A later reader trusting the message over the file inherits a false belief that nothing will contradict.
+
+**Re-read the rendered result and describe THAT, not the intent you had while editing.** If the message and the file disagree, the file is the fact.
+
+---
+
 ## 🔴 EVERY STEP MUST BE RUNNABLE — AND PROSE SITTING AMONG COMMANDS IS ITSELF THE FINDING (added 2026-08-30 23:2x EDT)
 
 **A read-only audit found this in one grep, on a package its author had just declared ready.** The filed plan's step 1 was marked *irreversible, do this before any edit* — and it was the only step in the entry with **no command**. Every neighbour handed the reader an exact invocation; that one handed them prose. Confirming the gap took a single search: no script in the repo had a `--conform` flag at all, so a fresh session would have had to **invent a method at the one step that cannot be undone.**
