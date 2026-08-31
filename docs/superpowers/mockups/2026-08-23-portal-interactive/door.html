@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787939712"><link rel="stylesheet" href="assets/app.css?v=1787939712">
+</head><body>
+<main class="door">
+  <div class="doorcard">
+    <span class="doormk"><span class="glyph"></span>DIOREO<b>/</b>PORTAL</span>
+    <div id="fail"></div>
+    <h1>Sign in with Discord</h1>
+    <p>The portal is for Dioreo's admins. It uses your Discord account — there is no separate
+       password to create, and none to lose.</p>
+
+    <button class="dbtn" id="signin">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.5c1.6.4 2.9 1 4.2 1.8a16.6 16.6 0 0 0-14.7 0A17 17 0 0 1 8.9 3.5L8.6 3a19.7 19.7 0 0 0-4.9 1.4C.9 8.5.2 12.5.5 16.4a19.9 19.9 0 0 0 6 3l1.2-1.9c-.7-.2-1.3-.5-1.9-.9l.4-.3a14.2 14.2 0 0 0 11.6 0l.5.3c-.6.4-1.3.7-2 .9l1.2 1.9a19.8 19.8 0 0 0 6-3c.5-4.6-.6-8.6-3.2-12zM8.5 14.2c-1.2 0-2.1-1.1-2.1-2.4S7.3 9.4 8.5 9.4s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm7 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+      Continue with Discord
+    </button>
+
+    <div class="dnote">
+      <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>
+      <span>Being signed in is not the same as being allowed. Every request re-checks your
+        permissions server-side — the portal never trusts this browser about what you may see or do.</span>
+    </div>
+    <div class="dnote">
+      <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5L10 10"/></svg>
+      <span>A session lasts 12 hours and lives in this browser only.
+        <b>Your staged work does not</b> &mdash; it is held against your account, so signing out or losing
+        this tab does not discard it, and signing back in returns you to it.</span>
+    </div>
+    <div class="dnote">
+      <svg viewBox="0 0 16 16"><path d="M8 2l5 2v4c0 3-2.1 5.3-5 6-2.9-.7-5-3-5-6V4l5-2z"/></svg>
+      <span>Dioreo reads only your Discord user ID. It requests no server list, no messages,
+        and no email.</span>
+    </div>
+  </div>
+</main>
+
+<script src="assets/icons.js?v=1787939712"></script>
+<script src="assets/shell.js?v=1787939712"></script>
+<script>
+(function () {
+  const S = window.Shell;
+
+  /* The door has no rail, no tray and no realm — it is the only surface a signed-OUT
+   * person can reach, so it must not imply the app is already open behind it. */
+  const params = new URLSearchParams(location.search);
+  if (params.get('denied')) {
+    document.getElementById('fail').innerHTML = `
+      <div class="dfail">
+        <svg class="ic lg" aria-hidden="true"><use href="#i-triangle-alert"/></svg>
+        <span><b>That account is not an admin.</b> Signing in worked; you have no permissions
+          here. Ask the owner to grant you access, then sign in again.</span>
+      </div>`;
+  }
+
+  document.getElementById('signin').onclick = () => {
+    /* Wiring: this becomes a real redirect to Discord's OAuth authorize URL. The mockup
+     * goes straight to the home screen so the rest of the package is reachable. */
+    sessionStorage.setItem('dioreo-portal-demo-signedin', '1');
+    location.href = 'index.html';
+  };
+
+  S.audit && (window.Shell||window.S).holdTop();
+  S.audit();
+})();
+</script>
+</body></html>

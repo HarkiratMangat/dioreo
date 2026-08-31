@@ -29,4 +29,12 @@ function forbidden(res, reason) {
     sendJson(res, 403, { error: reason });
 }
 
-module.exports = { readJsonBody, segment, sendJson, forbidden };
+// 🔴 A MALFORMED ID IS A CLIENT MISTAKE AND WAS BEING REPORTED AS A SERVER ERROR. Every route that looks a document up by a client-supplied id handed the raw string to Mongoose, which throws a CastError on anything that is not 24 hex characters — so `?id=x` produced a **500** with a full stack trace in the log and "Something went wrong. It has been logged." in the response. Found by curling the real server for the first time; six call sites across two files had it.
+//
+// ⚠️ It matters beyond tidiness in two ways: a 500 tells the caller to retry and tells the operator to investigate, both wrong here; and a log filling with stack traces from bad input is a log where a real 500 stops standing out.
+const OBJECT_ID = /^[0-9a-fA-F]{24}$/;
+function isObjectId(value) {
+    return typeof value === 'string' && OBJECT_ID.test(value);
+}
+
+module.exports = { readJsonBody, segment, sendJson, forbidden, isObjectId };

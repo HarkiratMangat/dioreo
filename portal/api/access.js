@@ -20,21 +20,22 @@ function ownerOnly(handler) {
 
 // "By scope" \u2014 flags a scope held by exactly one non-owner (a single point of failure).
 function singlePointsOfFailure(admins) {
-    const holders = new Map(); // scope -> discordId[]
+    // ⚠️ A SET, NOT A LIST. `parsePermissionsInput` accepts "manage, manage.draws", and with the two effects below now both applying (they were mutually exclusive until 2026-08-24), that admin was pushed TWICE for manage.draws — so ids.length === 2 and the one scope they hold most explicitly was the one scope never reported as a single point. Deduping by id makes "how many people hold this" mean what it says.
+    const holders = new Map(); // scope -> Set<discordId>
     for (const scope of [...ADMIN_COMMANDS, ...MANAGE_PAGE_SCOPES.map(p => `manage.${p}`)]) {
-        holders.set(scope, []);
+        holders.set(scope, new Set());
     }
     for (const admin of admins) {
         for (const perm of admin.permissions || []) {
+            // 🔴 `manage` COUNTS AS ITSELF, not only as its expansion. This was an `else if`, so a bare `manage` recorded holders for the eight page scopes and never for `manage` -- leaving the token permanently at 0 holders and therefore never reportable, when a lone holder of the FULL token is the most consequential single point of failure there is: lose them and every page goes at once. Found 2026-08-24 rebuilding the Access mockup on the real permission model, where the page's own count disagreed with this endpoint's. Both effects now apply.
+            if (holders.has(perm)) holders.get(perm).add(admin.discordId);
             if (perm === 'manage') {
-                for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.push(admin.discordId);
-            } else if (holders.has(perm)) {
-                holders.get(perm).push(admin.discordId);
+                for (const p of MANAGE_PAGE_SCOPES) holders.get(`manage.${p}`)?.add(admin.discordId);
             }
         }
     }
     const spof = [];
-    for (const [scope, ids] of holders) if (ids.length === 1) spof.push({ scope, discordId: ids[0] });
+    for (const [scope, ids] of holders) if (ids.size === 1) spof.push({ scope, discordId: [...ids][0] });
     return spof;
 }
 
@@ -47,19 +48,31 @@ const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot' };
 
 // Gap audit §3.2: the permission-grid data this needs already exists (getAdminPermissionsMap, MANAGE_PAGE_SCOPES) -- this reuses the EXACT same scope enumeration singlePointsOfFailure() above already established, rather than a second list that could drift from it. Shaped for a grid component directly (rows=admins, columns=scopes), not a raw dump of AdminUser docs.
 function buildPermissionMatrix(admins) {
+    // The realm a scope governs travels with it, so the grid's column colour is a fact from the permission model rather than a palette the UI invented. Required lazily for the same reason auth.js does it: these three modules register routes of their own and requiring them at load time would make the import order load-bearing.
+    const { realmForScope } = require('./realmAccess');
+    const pageLists = {
+        SEASON_PAGES: require('./season').SEASON_PAGES,
+        ARMORY_PAGES: require('./armory').ARMORY_PAGES,
+        BROADCAST_PAGES: require('./broadcast').BROADCAST_PAGES,
+    };
     const scopes = [
-        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command' })),
-        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page' })),
+        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command', realm: realmForScope(key, pageLists) })),
+        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page', realm: realmForScope(`manage.${page}`, pageLists) })),
     ];
     const rows = admins.map((admin) => {
         const perms = admin.permissions || [];
         const grants = {};
         for (const scope of scopes) {
-            grants[scope.key] = scope.kind === 'page'
-                ? (perms.includes('manage') || perms.includes(scope.key))
-                : perms.includes(scope.key);
+            // 🔴 DIRECT vs INHERITED is the whole reason a grid beats the comma-separated string it replaces, and the original shape collapsed them into one boolean. A bare `manage` token lights every page column -- but you did not hand those pages over individually, and revoking `manage` takes all of them back at once. 06-access-and-analytics.html renders the two differently for exactly that reason, and its own legend spells it out: "granted directly / inherited — bare manage covers every page."
+            const direct = perms.includes(scope.key);
+            const inherited = scope.kind === 'page' && !direct && perms.includes('manage');
+            grants[scope.key] = { direct, inherited, held: direct || inherited };
         }
-        return { discordId: admin.discordId, grants };
+        // ⚠️ `grantedAt` IS STORED. models/AdminUser.js has declared `grantedAt: { type: Date, default: Date.now }` since 566b3ca (2026-08-13) and every live document carries one -- this comment previously asserted the model "has no timestamp at all", which was already ten days stale when it was written, and the derivation below silently discarded the real value. The ObjectId fallback is kept for a document written before the field existed, but it is a FALLBACK: an ObjectId's embedded timestamp is the DOCUMENT's creation and never moves when permissions are later edited, so it answers a different question than "when was this granted".
+        const grantedAt = admin.grantedAt
+            ? new Date(admin.grantedAt)
+            : (admin._id ? new Date(parseInt(String(admin._id).slice(0, 8), 16) * 1000) : null);
+        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', grantedAt };
     });
     return { admins: rows, scopes };
 }
@@ -76,6 +89,47 @@ function register(route) {
     route('GET', /^\/api\/access\/matrix$/, requireAdmin(ownerOnly(async (req, res) => {
         const admins = await AdminUser.find({}).lean();
         sendJson(res, 200, buildPermissionMatrix(admins));
+    })));
+
+    // 🔴 THE PERMISSION MODEL HAD NO WAY OUT OF THE PORTAL, which is the one realm where that matters most: a grant is not derivable from anything else, `AdminUser` is the only record of who can do what, and the page that shows it is owner-only. ⚠️ The matrix goes out as CSV because it IS a grid -- prose would flatten the direct-vs-inherited distinction that is the entire reason the grid beats a comma-separated string.
+    route('GET', /^\/api\/access\/export$/, requireAdmin(ownerOnly(async (req, res, url) => {
+        const { toCsv } = require('./analytics');
+        const scope = url.searchParams.get('scope');
+        const admins = await AdminUser.find({}).lean();
+        const day = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '—');
+        if (scope === 'admins') {
+            const text = admins.map(a => [
+                a.discordId + (a.note ? `  (${a.note})` : ''),
+                `granted ${day(a.grantedAt)} by ${a.grantedBy}`,
+                (a.permissions || []).join(', ') || '(none)',
+            ].join('\n')).join('\n\n');
+            return sendJson(res, 200, { text, count: admins.length });
+        }
+        if (scope === 'matrix') {
+            const m = buildPermissionMatrix(admins);
+            // A cell says what it IS, not merely whether it is on: "direct" and "inherited" are different facts, and a boolean grid would be the string this page exists to replace. ⚠️ THE SHAPE IS `{admins:[{discordId, grants:{key:{direct,inherited}}}], scopes:[{key,label}]}` -- read off buildPermissionMatrix rather than guessed. A first draft here reached for a top-level `m.grants[id]` that does not exist, which would have written a CSV of empty cells: a well-formed file asserting that nobody holds anything.
+            const cols = [
+                { label: 'Admin', get: (r) => r.discordId },
+                { label: 'Note', get: (r) => r.note },
+                ...(m.scopes || []).map((sc) => ({
+                    label: sc.label || sc.key,
+                    get: (r) => { const v = (r.grants || {})[sc.key] || {}; return v.direct ? 'direct' : v.inherited ? 'inherited' : ''; },
+                })),
+            ];
+            const rows = m.admins || [];
+            return sendJson(res, 200, { text: toCsv(rows, cols), count: rows.length });
+        }
+        if (scope === 'sessions') {
+            const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
+            const cols = [
+                { label: 'Admin', get: (r) => r.discordId },
+                { label: 'Signed in', get: (r) => r.createdAt },
+                { label: 'Last seen', get: (r) => r.lastSeenAt },
+                { label: 'Expires', get: (r) => r.expiresAt },
+            ];
+            return sendJson(res, 200, { text: toCsv(sessions, cols), count: sessions.length });
+        }
+        return sendJson(res, 400, { error: 'export needs one of: admins, matrix, sessions' });
     })));
 
     route('POST', /^\/api\/access\/grant$/, requireAdmin(ownerOnly(async (req, res, url, session) => {

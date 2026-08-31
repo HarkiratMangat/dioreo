@@ -1,0 +1,701 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787939712"><link rel="stylesheet" href="assets/app.css?v=1787939712">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Analytics</h1>
+        <span class="job">What the bot did, what it cost, and what somebody looked for and did not find.</span>
+      </div>
+      <div class="mh-stats">
+        <span class="stat lead" style="--c:var(--r-analytics)"><span class="v" id="sEvents"></span> <span class="k">interactions</span></span>
+        <span class="stat"><span class="v" id="sOk"></span> <span class="k">succeeded</span></span>
+        <span class="stat warn"><span class="v" id="sErr"></span> <span class="k">errors</span></span>
+        <span class="stat"><span class="v" id="sAck"></span> <span class="k">worst ack</span></span>
+      </div>
+      <!-- Analytics is the one realm with nothing to create, so there is no create control to
+           hang the "take out" line off. It gets its own anchor in the same grid slot the other
+           realms put their create button in, so the line lands in the same place on every realm. -->
+      <div class="mh-anchor" id="mhAnchor" aria-hidden="true"></div>
+    </div>
+
+    <section class="panel" aria-label="Analytics view">
+      <div class="ph">
+        <span class="t">Analytics</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="health"  aria-pressed="true">Health</button>
+          <button role="tab" data-view="usage"   aria-pressed="false">Usage</button>
+          <button role="tab" data-view="timing"  aria-pressed="false">Timing</button>
+          <button role="tab" data-view="reach"   aria-pressed="false">Reach</button>
+          <button role="tab" data-view="search"  aria-pressed="false">Search</button>
+        </div>
+        <label class="adminsw"><input type="checkbox" id="incAdmin"> include admin traffic</label>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a stat row). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewHealth" data-async-host data-skel="4|34,30,20,10"></div>
+      <div id="viewUsage" hidden></div>
+      <div id="viewTiming" hidden></div>
+      <div id="viewReach" hidden></div>
+      <div id="viewSearch" hidden></div>
+    </section>
+
+    <!-- 04 · The Manifest existed only as an aria-label and in two toasts, so a toast saying
+           "Pick a category chip in the Manifest" pointed at a word that was nowhere on the
+           screen it was pointing at. It is one component with one spec across four pages, so
+           it gets the same eyebrow treatment every other labelled row here uses. -->
+    <section class="panel" style="margin-top:16px" aria-labelledby="mfLabel">
+      <div class="mtools">
+        <span class="mlabel"><span id="mfLabel">Manifest</span></span>
+        <span class="srch"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <label class="sr" for="q">Search alerts and changes</label>
+          <input id="q" type="search" placeholder="Search alerts and changes…" autocomplete="off">
+        </span>
+        <button class="chip" data-riv="all" aria-pressed="true">All</button>
+        <button class="chip" data-riv="alert">Alerts</button>
+        <button class="chip" data-riv="change">Changes</button>
+        <button class="chip" data-riv="boot">Deploys</button>
+        <span class="chipset" id="lvlChips"></span>
+        <span class="rt" id="count"></span>
+      </div>
+      <div class="mscroll"><table class="mtable">
+        <colgroup><col class="c-win"><col class="c-type"><col class="c-item"><col class="c-state"></colgroup>
+        <thead><tr>
+          <th>When</th><th>Kind</th><th>What happened</th><th class="ta-r drop-sm">Who</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+
+<script src="assets/fixtures.js?v=1787939712"></script>
+<script src="assets/icons.js?v=1787939712"></script>
+<script src="assets/shell.js?v=1787939712"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell;
+  S.init('analytics');
+  S.mountHeader('Analytics', 'Health');
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * Every number here comes from the REAL observability layer — models/
+   * AnalyticsEvent.js, AlertLog.js, ChangeLog.js, SearchTerm.js, BootRecord.js —
+   * aggregated from the dev database on 2026-08-24: 496 events, 998 alerts,
+   * 303 boots, 26 rollups, 22 changes.
+   *
+   * The earlier version of this page invented six commands and a flat "usage"
+   * number. That erased every dimension the layer actually records, and with it
+   * every question the page exists to answer:
+   *   · outcome — six of them, not two
+   *   · entry — SEVEN entry points, and `background` is the largest by far
+   *   · context + installType — user-install vs guild-install adoption
+   *   · isAdmin — a self-observing system distorting its own product stats
+   *   · ackMs vs durationMs — two different clocks, one with a hard deadline
+   *   · deps[] — where the milliseconds actually go
+   *   · SearchTerm.zeroResults — what people asked for and did not get
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  const EM = '#1F8A5E';                                  // CP Emerald, the bot's numbers colour
+  const st = { mode:'health', riv:'all', lvl:null, q:'', admin:false, sort:-1 };
+  const pct = (n, d) => d ? (n / d) * 100 : 0;
+  const fmtMs = ms => ms >= 1000 ? (ms / 1000).toFixed(2) + 's' : Math.round(ms) + 'ms';
+
+  /* isAdmin traffic is EXCLUDED by default. The schema's own comment says why: /manage,
+   * /bot and /autobuild are the system observing itself, and leaving them in makes the
+   * product look busier than it is. The toggle is present because sometimes you want
+   * exactly that — but the default has to be the honest one. */
+  const cmds = () => F.cmdStats.filter(c => st.admin || !['mng','bot','manage','add','edit'].includes(c.command));
+  const totalEvents = () => st.admin ? F.OBS_TOTALS.events : F.adminSplit.product;
+
+  /* ═══ HEALTH ═══ what is up, what it costs, and what broke. */
+  function renderHealth() {
+    const err = F.outcomeStats.find(o => o.outcome === 'error');
+    const errN = err ? err.n : 0;
+    const pinged = F.alertStats.reduce((a, x) => a + x.pinged, 0);
+    const slowest = F.depStats[0];
+    viewHealth.innerHTML = `
+      <div class="tiles">
+        ${[
+          { k:'Interactions', v:F.OBS_TOTALS.events, u:'', s:'all time in this database', t:'' },
+          /* 🔴 A THRESHOLD ON THE RATE, NOT A TEST FOR "ANY ERROR AT ALL". `errN ? 'warn' : 'ok'`
+             painted 99.0% in alarm orange because five events out of 496 failed — and in
+             production there is always at least one, so the tile would have been orange forever.
+             That is the same defect as Armory's headline reading 109 when 104 of them were
+             merely stale: a colour that is on regardless stops carrying information.
+             Green is reserved for a rate with NOTHING against it, because "good" that is
+             awarded to 99% and to 100% alike says nothing about the difference. */
+          { k:'Success rate', v:(100 - pct(errN, F.OBS_TOTALS.events)).toFixed(1), u:'%',
+            s:`${errN} error${errN === 1 ? '' : 's'} across ${F.OBS_TOTALS.events} events`,
+            t: !errN ? 'ok' : (100 - pct(errN, F.OBS_TOTALS.events)) < 99 ? 'warn' : '' },
+          { k:'Restarts', v:F.OBS_TOTALS.boots, u:'', s:`last ${F.bootStats.lastVersion} · ${F.bootStats.lastCommit}`, t:'' },
+          /* Memory is CONTEXT, not an achievement. Painting 132 MB green said "good" about a
+             number nobody set a goal for, next to a success rate painted orange — the two tiles
+             had their semantics inverted. Neutral unless it is actually high. */
+          { k:'Memory', v:F.memStats.avgMb, u:'MB', s:`${F.memStats.minMb}–${F.memStats.maxMb} MB observed`, t:F.memStats.maxMb > 400 ? 'warn' : '' }
+        ].map(t => `<button class="tile ${t.t}" data-tile="${t.k}">
+            <span class="tl-k">${t.k}</span><span class="tl-v">${t.v}<i>${t.u}</i></span>
+            <span class="tl-s">${t.s}</span></button>`).join('')}
+      </div>
+
+      <div class="hsplit">
+        <section class="hpanel">
+          <h4>Where the milliseconds go</h4>
+          <p class="hp">Timings are aggregated <b>per dependency name</b>, never per call — that is what
+            keeps the array on the event bounded. Read it as: how long this subsystem costs when it is used.</p>
+          <div class="depbars">
+            ${F.depStats.map(d => `
+              <div class="depb ${d.ms > 1000 ? 'slow' : ''}">
+                <span class="dn">${d.name}</span>
+                <span class="dt"><i style="width:${pct(d.ms, F.depStats[0].ms)}%"></i></span>
+                <span class="dv">${fmtMs(d.ms)}</span>
+                <span class="dc">${d.calls} call${d.calls === 1 ? '' : 's'} · ${d.events} event${d.events === 1 ? '' : 's'}</span>
+              </div>`).join('')}
+          </div>
+          <!-- 🔴 THIS BANNER ASSUMED DATA EXISTS, in three separate places rather than one.
+               slowest is depStats[0], undefined with no timings; the atlas lookup returns
+               undefined if that dependency has simply never been called, which is a REAL state on
+               a freshly started bot and not only an empty fixture; and the reader of an empty
+               portal needs to be told the reason is "nothing has run yet" rather than shown a
+               blank. Measured: this threw a TypeError under ?empty=1 and killed the page before
+               S.audit ran, so the states sweep reported "no selfCheck" — a page that dies is a
+               page no check can see.
+               ⚠️ AND THE FIRST VERSION OF THIS COMMENT BROKE THE PAGE. Backticks inside an HTML
+               comment inside a TEMPLATE LITERAL terminate the literal. THIRD time in this
+               package. There are no backticks in this comment and there must never be. -->
+          ${(() => {
+            if (!F.depStats.length) return `<div class="hbanner">
+              <span class="hbi">&#10003;</span>
+              <div><h4>No timings recorded yet</h4>
+                <p>A dependency only appears here once something has called it. On a bot that has
+                   just started, that is the correct reading — not a gap.</p></div></div>`;
+            const atlas = F.depStats.find(d => d.name === 'atlas');
+            return `<div class="hbanner ${slowest.ms > 3000 ? 'warn' : ''}">
+            <span class="hbi">${slowest.ms > 3000 ? '!' : '&#10003;'}</span>
+            <div><h4>${slowest.name} is the outlier at ${fmtMs(slowest.ms)}</h4>
+              <p>${atlas
+                ? `Atlas answers in <b>${fmtMs(atlas.ms)}</b> across <b>${atlas.calls}</b> calls, so the
+                   database is not the cost — image work is. `
+                : `Atlas has not been called in this window, so the database is not in this picture at all. `}${slowest.ms > F.ACK_DEADLINE_MS
+                  ? `At ${fmtMs(slowest.ms)} it exceeds Discord's ${F.ACK_DEADLINE_MS / 1000}s ack deadline on its own, which is survivable only because it runs as a <b>background</b> job rather than inside an interaction.`
+                  : 'It stays inside the interaction budget.'}</p></div>
+          </div>`; })()}
+        </section>
+
+        <section class="hpanel">
+          <h4>Alerts by level</h4>
+          <p class="hp">Three tiers, and they never collapse into one number:
+            <b>info</b> is a record, <b>caution</b> is a look-when-convenient, <b>error</b> pings a human.</p>
+          <div class="lvlbars">
+            ${F.alertStats.map(a => `
+              <button class="lvlb lv-${a.level}" data-lvl="${a.level}">
+                <span class="ln">${a.level}</span>
+                <span class="lt"><i style="width:${pct(a.n, F.OBS_TOTALS.alerts)}%"></i></span>
+                <span class="lv2">${a.n}</span>
+                <span class="lp">${a.pinged ? a.pinged + ' pinged' : 'never pings'}</span>
+              </button>`).join('')}
+          </div>
+          <div class="bootcard">
+            <h5>Last boot</h5>
+            <div class="bootgrid">
+              <span>Version</span><b>${F.bootStats.lastVersion}</b>
+              <span>Commit</span><b>${F.bootStats.lastCommit}</b>
+              <span>Kind</span><b>${F.bootStats.kind}</b>
+              <span>Guilds</span><b>${F.bootStats.guilds}</b>
+              <span>Commands</span><b>${F.bootStats.commandsRegistered}</b>
+              <span>Emoji</span><b>${F.bootStats.emojiSynced} synced${F.bootStats.emojiMissing ? ', ' + F.bootStats.emojiMissing + ' missing' : ''}</b>
+              <span>Mongo</span><b class="${F.bootStats.mongoOk ? 'ok' : 'bad'}">${F.bootStats.mongoOk ? 'connected' : 'down'}</b>
+              <span>Cloudinary</span><b class="${F.bootStats.cloudinaryConfigured ? 'ok' : 'bad'}">${F.bootStats.cloudinaryConfigured ? 'configured' : 'missing'}</b>
+            </div>
+            <p class="hp">${pinged} of ${F.OBS_TOTALS.alerts} alerts pinged a human — every one of them an
+              <b>error</b>. That ratio is the point of the tiering: ${(100 - pct(pinged, F.OBS_TOTALS.alerts)).toFixed(1)}%
+              of what the bot records is something you can read later.</p>
+          </div>
+        </section>
+      </div>`;
+    wireTiles();
+    viewHealth.querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => {
+      st.riv = 'alert'; st.lvl = b.dataset.lvl;
+      document.querySelectorAll('[data-riv]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.riv === 'alert')));
+      renderRows(); document.querySelector('#rows').scrollIntoView({ behavior:'smooth', block:'center' });
+    });
+  }
+
+  /* ═══ USAGE ═══ by command AND subcommand, with the outcome and entry split. */
+  function renderUsage() {
+    const list = cmds(), max = Math.max(...list.map(c => c.n), 1);
+    viewUsage.innerHTML = `
+      <div class="ubars">
+        ${list.map(c => {
+          const fail = c.n - c.ok;
+          return `<button class="ub2" data-cmd="${c.command}|${c.subcommand || ''}">
+            <span class="ubk">/${c.command}${c.subcommand ? ' ' + c.subcommand : ''}</span>
+            <span class="ubt2">
+              <i class="ok" style="width:${pct(c.ok, max)}%"></i>
+              ${fail ? `<i class="bad" style="width:${pct(fail, max)}%"></i>` : ''}
+            </span>
+            <span class="ubv">${c.n}${fail ? `<em class="dn">${fail} failed</em>` : ''}</span>
+            <span class="ubt3">${fmtMs(c.dur)}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <div class="usplit">
+        <div class="uside">
+          <h5>How interactions start</h5>
+          <p class="hp">Seven entry points exist. <b>${F.entryStats[0].entry}</b> is the largest, which is
+            the shape of a bot that does most of its work <em>without anyone typing anything</em> —
+            caches warming, images rendering, rollups folding.</p>
+          ${F.entryStats.map(e => `<div class="erow">
+            <span class="ek">${F.ENTRY_LABEL[e.entry] || e.entry}</span>
+            <span class="et"><i style="width:${pct(e.n, F.entryStats[0].n)}%"></i></span>
+            <span class="ev">${e.n}</span></div>`).join('')}
+        </div>
+        <div class="uside">
+          <h5>Outcomes</h5>
+          <p class="hp">There are <b>six</b> possible outcomes. Only two have ever occurred here — and the four that
+            have not are the interesting ones: no interaction has been blocked by policy, swallowed by a
+            cooldown, expired, or rejected for lack of admin.</p>
+          ${F.OUTCOMES.map(o => {
+            const hit = F.outcomeStats.find(x => x.outcome === o);
+            return `<div class="erow ${hit ? '' : 'never'}">
+              <span class="ek">${F.OUTCOME_LABEL[o]}</span>
+              <span class="et"><i style="width:${hit ? pct(hit.n, F.OBS_TOTALS.events) : 0}%;background:${o === 'ok' ? 'var(--ok)' : 'var(--warn)'}"></i></span>
+              <span class="ev">${hit ? hit.n : '—'}</span></div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    viewUsage.querySelectorAll('[data-cmd]').forEach(b => b.onclick = () => openCmd(b.dataset.cmd));
+  }
+
+  function openCmd(key) {
+    const [command, sub] = key.split('|');
+    const c = F.cmdStats.find(x => x.command === command && (x.subcommand || '') === sub);
+    if (!c) return;
+    const fail = c.n - c.ok;
+    S.drawer({
+      eyebrow:`analytics.command · read only`, title:`/${c.command}${c.subcommand ? ' ' + c.subcommand : ''}`, wide:true,
+      body:`<div class="dwbody">
+        <div class="tiles" style="padding:0;grid-template-columns:repeat(3,1fr)">
+          <div class="tile"><span class="tl-k">Invocations</span><span class="tl-v">${c.n}</span>
+            <span class="tl-s">${pct(c.n, F.OBS_TOTALS.events).toFixed(1)}% of all events</span></div>
+          <div class="tile ${c.ack > F.ACK_DEADLINE_MS ? 'err' : c.ack > 1000 ? 'warn' : 'ok'}">
+            <span class="tl-k">Ack</span><span class="tl-v">${c.ack}<i>ms</i></span>
+            <span class="tl-s">deadline ${F.ACK_DEADLINE_MS / 1000}s</span></div>
+          <div class="tile ${c.dur > 3000 ? 'warn' : ''}"><span class="tl-k">Total handler</span>
+            <span class="tl-v">${fmtMs(c.dur)}</span><span class="tl-s">mean duration</span></div>
+        </div>
+        <div class="diff" style="margin-top:16px">
+          <div class="diff-r"><span class="dk">Succeeded</span><span>${c.ok} of ${c.n}</span></div>
+          <div class="diff-r"><span class="dk">Failed</span><span>${fail || 'none'}</span></div>
+          <div class="diff-r"><span class="dk">Counted as</span>
+            <span>${['mng','bot','manage','add','edit'].includes(c.command)
+              ? 'admin traffic — excluded from product stats by default'
+              : 'product traffic'}</span></div>
+        </div>
+        <p class="dw-p" style="margin-top:16px">${c.ack === 0
+          ? `Ack is <b>0ms</b> because this never runs inside an interaction — it is a background job, so
+             Discord's ${F.ACK_DEADLINE_MS / 1000}-second deadline does not apply to it at all.`
+          : `Ack is the time to the first defer or reply. Discord closes the window at
+             <b>${F.ACK_DEADLINE_MS / 1000} seconds</b>; total handler time can exceed that safely once
+             the interaction is deferred, which is why the two clocks are recorded separately.`}</p>
+      </div>`,
+      actions:`<button class="btn go" id="cOk">Close</button>`
+    });
+    document.getElementById('cOk').onclick = () => S.closeDrawer();
+  }
+
+  /* ═══ TIMING ═══ two clocks, one hard deadline. This is the view that has an ANSWER in it:
+   * ack is what Discord judges you on, duration is what the user feels, and they are not
+   * the same measurement — a page that shows one "latency" number hides which one is at risk. */
+  /* The reading of the ack panel, in one sentence, computed rather than written — an
+   * observation that has to be re-typed when the data moves is a comment about a snapshot. */
+  function ackReading() {
+    const el = document.getElementById('ackGlyphRead'); if (!el) return;
+    const BUCKETS = [0, 100, 250, 500, 1000, 2000, 3000];
+    const counts = BUCKETS.map(b => (F.ackBuckets.find(x => x.from === b) || { n:0 }).n);
+    const total = counts.reduce((a, n) => a + n, 0), empty = counts.filter(n => !n).length;
+    el.innerHTML = empty
+      ? `<b>${counts[0]} of ${total}</b> acks land in the first bucket, and <em>${empty} of ${counts.length} buckets are empty</em> — including the one past the deadline.`
+      : `Spread across all ${counts.length} buckets.`;
+  }
+
+  function renderTiming() {
+    const measured = F.ackBuckets.reduce((a, b) => a + b.n, 0);
+    const LABELS = { 0:'under 100ms', 100:'100–250ms', 250:'250–500ms', 500:'500ms–1s',
+                     1000:'1–2s', 2000:'2–3s', 3000:'over 3s — MISSED' };
+    const worst = F.cmdStats.slice().sort((a, b) => b.dur - a.dur);
+    viewTiming.innerHTML = `
+      <div class="tim2">
+        <section class="hpanel">
+          <h4>Ack — the clock Discord is holding</h4>
+          <p class="hp">Every interaction must be acknowledged within <b>${F.ACK_DEADLINE_MS / 1000} seconds</b>
+            or Discord discards it and the user sees a failure the bot never gets to explain. This axis is
+            that deadline, not an invented target.</p>
+          <!-- 🔴 THE CHART AESTHETIC HARKIRAT KEPT — AND WHERE IT ACTUALLY LANDED.
+               He rejected the season-shape glyph as INFORMATION ("so useless and tells me
+               nothing") and kept its LOOK: "i like the chart design and want it's aesthetic
+               implemented to some areas of the Analytics realm, based on your decision of
+               wherever it would look nice." My first call was a canvas density glyph on this
+               ack distribution, and it was built, rendered, and thrown away after looking at
+               it: the reference glyph reads as a shape because it is TWENTY-EIGHT narrow bars,
+               and seven buckets drawn the same way is one green block beside six invisible
+               slivers. The data does not have the cardinality the picture needs, and forcing it
+               produces a chart that is technically the same code and visually nothing like it.
+               So the aesthetic went onto the bars Analytics ALREADY has — five groups of them,
+               not one canvas: the gradient fill that fades along the bar, the hairline
+               baseline, and the one idea worth more than the look, which is that AN EMPTY SLOT
+               IS DRAWN rather than left blank. "5 of 7 buckets are empty, including the one
+               past the deadline" is the reading of this panel, and an em-dash in a table cell
+               was not saying it. -->
+          <p class="gread" id="ackGlyphRead"></p>
+          <div class="ackscale">
+            ${[0, 100, 250, 500, 1000, 2000, 3000].map(b => {
+              const hit = F.ackBuckets.find(x => x.from === b);
+              const n = hit ? hit.n : 0;
+              return `<div class="ackrow ${b >= 2000 ? 'danger' : ''} ${n ? '' : 'zero'}">
+                <span class="al">${LABELS[b]}</span>
+                <span class="at"><i style="width:${pct(n, measured || 1)}%"></i></span>
+                <span class="av">${n || '—'}</span></div>`;
+            }).join('')}
+          </div>
+          <div class="hbanner">
+            <span class="hbi">&#10003;</span>
+            <div><h4>${F.ackBuckets[0].n} of ${measured} acks land under 100ms</h4>
+              <p>The deadline is <b>30&#215;</b> the observed worst case, so ack is not where the risk is.
+                <b>Duration</b> is — and duration only matters once the interaction is deferred, which is
+                exactly why the schema records the two separately instead of averaging them into "latency".</p></div>
+          </div>
+        </section>
+        <section class="hpanel">
+          <h4>Duration — the clock the user feels</h4>
+          <p class="hp">Total handler time, after the ack. Sorted worst first, because the slowest thing is
+            the only one anyone will describe as "the bot is slow".</p>
+          <div class="durlist">
+            ${worst.map(c => `<div class="durrow ${c.dur > 2000 ? 'slow' : ''}">
+              <span class="dl">/${c.command}${c.subcommand ? ' ' + c.subcommand : ''}</span>
+              <span class="dt2"><i style="width:${pct(c.dur, worst[0].dur)}%"></i>
+                <b class="deadline" style="left:${Math.min(pct(F.ACK_DEADLINE_MS, worst[0].dur), 100)}%"></b></span>
+              <span class="dv2">${fmtMs(c.dur)}</span></div>`).join('')}
+          </div>
+          <p class="hp"><span class="dlkey"></span> marks the ${F.ACK_DEADLINE_MS / 1000}s ack deadline.
+            Anything past it <b>must</b> defer first — and the three that do are all background image work,
+            which never had an interaction to answer in the first place.</p>
+        </section>
+      </div>`;
+    /* Chained onto the render that CREATES the canvas, not called from renderAll — a canvas
+     * drawn before its element exists is a silent no-op that leaves a blank box and no error,
+     * which is the exact defect shape this branch keeps paying for. */
+    ackReading();
+  }
+
+  /* ═══ REACH ═══ the dimension the earlier page did not have at all. Who is using this,
+   * from where, and under which install type — the question the v3 guild-install work exists
+   * to answer, and the one Discord itself will never tell you. */
+  function renderReach() {
+    const total = F.reachStats.reduce((a, r) => a + r.n, 0);
+    const byCtx = ['guild', 'dm'].map(c => ({ c, n:F.reachStats.filter(r => r.context === c).reduce((a, r) => a + r.n, 0) }));
+    const byInstall = [
+      { k:'guild', label:'Guild install', n:F.reachStats.filter(r => r.installType === 'guild').reduce((a, r) => a + r.n, 0),
+        note:'the app is added to a server; everyone there can use it' },
+      { k:'user',  label:'User install',  n:F.reachStats.filter(r => r.installType === 'user').reduce((a, r) => a + r.n, 0),
+        note:'the app travels with one person, into any server and any DM' },
+      { k:null,    label:'Not reported',  n:F.reachStats.filter(r => !r.installType).reduce((a, r) => a + r.n, 0),
+        note:'Discord did not say how the app was installed for these' }
+    ];
+    viewReach.innerHTML = `
+      <div class="reach">
+        <section class="hpanel">
+          <h4>Where the interaction happened</h4>
+          <div class="donutrow">
+            ${byCtx.map(x => `<div class="dcell">
+              <div class="donut" style="--p:${pct(x.n, total).toFixed(1)};--c:${x.c === 'dm' ? 'var(--sched)' : EM}">
+                <b>${pct(x.n, total).toFixed(0)}<i>%</i></b></div>
+              <span class="dlab">${x.c === 'dm' ? 'Direct message' : 'In a server'}</span>
+              <span class="dsub">${x.n} interaction${x.n === 1 ? '' : 's'}</span>
+            </div>`).join('')}
+          </div>
+          <p class="hp">More than half of all use is in <b>DMs</b> — a bot answering privately, one screenful
+            at a time, which is not the place to audit a season or bulk-edit an armory.</p>
+        </section>
+        <section class="hpanel">
+          <h4>How the app was installed</h4>
+          <p class="hp">Whether each interaction came from a server that added the app or from a person who did. The
+            v3 line made every public command guild-installable while the admin commands stayed user-only —
+            this is the measurement that tells you whether that landed.</p>
+          ${byInstall.map(x => `<div class="inrow ${x.k ? '' : 'muted'}">
+            <span class="ik">${x.label}</span>
+            <span class="it"><i style="width:${pct(x.n, total)}%"></i></span>
+            <span class="iv">${x.n}</span>
+            <span class="inote">${x.note}</span></div>`).join('')}
+          <div class="hbanner">
+            <span class="hbi">&#10003;</span>
+            <div><h4>${F.adminSplit.admin} of ${F.OBS_TOTALS.events} events are the system watching itself</h4>
+              <p><code>/manage</code>, <code>/bot</code> and <code>/autobuild</code> are admin surfaces, and
+                they are <b>excluded from product stats by default</b> — a self-observing system that counts
+                its own admin traffic reports a product that looks ${(pct(F.adminSplit.admin, F.OBS_TOTALS.events)).toFixed(0)}%
+                busier than it is. The toggle above the view turns them back on deliberately.</p></div>
+          </div>
+        </section>
+      </div>`;
+  }
+
+  /* ═══ SEARCH ═══ what people asked for and did NOT get. A zero-result search is the only
+   * signal in the whole system that names something the bot does not have — every other
+   * number here describes what it does. */
+  function renderSearch() {
+    const t = F.searchTerms;
+    const zero = t.filter(x => x.zeroResults > 0);
+    viewSearch.innerHTML = `
+      <div class="srchview">
+        <div class="tiles" style="grid-template-columns:repeat(3,1fr)">
+          <div class="tile"><span class="tl-k">Terms recorded</span><span class="tl-v">${t.length}</span>
+            <span class="tl-s">distinct autocomplete queries</span></div>
+          <div class="tile ${zero.length ? 'warn' : 'ok'}"><span class="tl-k">Returned nothing</span>
+            <span class="tl-v">${zero.length}</span><span class="tl-s">someone wanted this and did not get it</span></div>
+          <div class="tile"><span class="tl-k">Picked a result</span>
+            <span class="tl-v">${t.reduce((a, x) => a + x.picked, 0)}</span>
+            <span class="tl-s">searches that ended in a choice</span></div>
+        </div>
+        ${t.length ? `
+          <table class="mtable srchtab"><thead><tr>
+            <th>Term</th><th>Command</th><th>Field</th><th class="ta-r">Searches</th>
+            <th class="ta-r">Zero results</th><th class="ta-r">Picked</th></tr></thead>
+            <tbody>${t.map(x => `<tr class="${x.zeroResults ? 'zero' : ''}">
+              <td class="n"><b>${x.term}</b></td><td>/${x.command}</td><td>${x.field}</td>
+              <td class="nums ta-r">${x.searches}</td>
+              <td class="nums ta-r ${x.zeroResults ? 'bad' : ''}">${x.zeroResults || '—'}</td>
+              <td class="nums ta-r">${x.picked || '—'}</td></tr>`).join('')}</tbody></table>`
+        : `<div class="estate"><span class="eicon">${S.icon('search-x', {cls:'xl'})}</span>
+             <h4>No searches recorded yet</h4>
+             <p>SearchTerm only fills from autocomplete sessions. An empty table here means nobody has
+                typed into an autocomplete field since the collection was created — not that nobody
+                searched.</p></div>`}
+        <div class="bvnote">
+          <b>What this view is for.</b> Every other number in Analytics describes what the bot
+          <em>did</em>. <code>zeroResults</code> is the only one that describes what someone
+          <em>wanted</em> — a term typed into an autocomplete that matched nothing. One row exists today:
+          somebody typed <code>${t[0] ? t[0].term : '—'}</code> into <code>/manage</code>'s action field and
+          got an empty list back. That is either a missing alias or a missing feature, and it is
+          invisible everywhere else.
+        </div>
+      </div>`;
+  }
+
+  /* ═══ THE RIVER ═══ alerts, changes and deploys in one stream. A ChangeLog row carries its
+   * own inverse, which is why "Undo" is offered here and nowhere else in Analytics: it is the
+   * only kind of event in the system that can be replayed backwards. */
+  function river() {
+    const rows = [];
+    if (st.riv === 'all' || st.riv === 'alert')
+      F.alertSample.forEach((a, i) => rows.push({ kind:'alert', at:a.at, level:a.level,
+        what:a.title, detail:a.detail, who:'system', id:'al' + i, rss:a.rssMb, up:a.uptimeSec, pinged:a.pinged }));
+    if (st.riv === 'all' || st.riv === 'change')
+      F.changeLog.forEach((c, i) => rows.push({ kind:'change', at:c.at, level:'info',
+        what:c.summary, detail:`${c.page} · ${c.action} · ${c.model}`, who:c.actorId ? 'admin' : 'system',
+        id:'ch' + i, undone:c.undone, page:c.page, action:c.action, model:c.model }));
+    /* 🔴 THIS ROW WAS UNCONDITIONAL. It is a hand-written boot event, and it was pushed into
+     * the river whether or not any boot had been recorded — so with an empty BootRecord the
+     * stream said "Bot online — 3.66.0-pre" beside a header reading "0 recorded". The river is
+     * a record of what happened; a row it invents is worse than a row it omits, because a
+     * reader has no way to tell the two apart. Found by the states sweep's empty pass, which
+     * is the only thing that could have: with real data the row is indistinguishable from a
+     * true one. */
+    if ((st.riv === 'all' || st.riv === 'boot') && F.bootStats.boots > 0)
+      rows.push({ kind:'boot', at:'2026-08-23 17:17', level:'info',
+        what:`Bot online — ${F.bootStats.lastVersion}`, who:'system', id:'bt0',
+        detail:`${F.bootStats.kind} restart · ${F.bootStats.commandsRegistered} commands · ${F.bootStats.guilds} guilds` });
+    let l = rows;
+    if (st.lvl) l = l.filter(r => r.level === st.lvl);
+    if (st.q) l = l.filter(r => (r.what + ' ' + (r.detail || '')).toLowerCase().includes(st.q));
+    return l.sort((a, b) => (a.at > b.at ? 1 : a.at < b.at ? -1 : 0) * st.sort);
+  }
+  const KIND_LABEL = { alert:'Alert', change:'Change', boot:'Deploy' };
+  function renderRows() {
+    const l = river();
+    count.textContent = `${l.length} shown · ${F.OBS_TOTALS.alerts + F.OBS_TOTALS.changes + F.OBS_TOTALS.boots} recorded`;
+    rows.innerHTML = l.length ? l.map(r => `
+      <tr data-id="${r.id}">
+        <td class="nums">${r.at}</td>
+        <td><span class="rivk ${r.kind}">${KIND_LABEL[r.kind]}</span>
+          ${r.level && r.kind === 'alert' ? `<span class="lvtag lv-${r.level}">${r.level}</span>` : ''}</td>
+        <td class="n"><span class="ncell"><span class="sev ${r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : 'info'}"></span>
+          <span><b style="font-weight:500">${r.what}</b>
+          ${r.detail ? `<span class="rowmeta">${r.detail}</span>` : ''}</span></span></td>
+        <td class="ta-r drop-sm">${r.who === 'system' ? '<span class="none">system</span>' : r.who}</td>
+      </tr>`).join('') : `<tr><td colspan="4"><div class="empty">
+        <b>Nothing matches that.</b> Clear the search or a filter &mdash; ${F.OBS_TOTALS.alerts} alerts,
+        ${F.OBS_TOTALS.changes} changes and ${F.OBS_TOTALS.boots} deploys are recorded in total.
+        </div></td></tr>`;
+    /* 🔴 THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS — mouse-only, on
+     * every event table in this realm. Season's and Armory's rows escaped the same fault only
+     * because they happen to contain a rename input; these hold plain text, so the row itself is
+     * the control and has to say so. Enter and Space, because a role=button must answer both. */
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('tabindex', '0');
+      const open = () => openEvent(tr.dataset.id, l);
+      tr.onclick = open;
+      tr.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+    });
+  }
+  function openEvent(id, list) {
+    const r = list.find(x => x.id === id); if (!r) return;
+    S.drawer({
+      eyebrow:`${KIND_LABEL[r.kind]} · ${r.at}`, title:r.what,
+      body:`<div class="dwbody">
+        <div class="diff">
+          <div class="diff-r"><span class="dk">Kind</span><span>${KIND_LABEL[r.kind]}</span></div>
+          ${r.kind === 'alert' ? `
+            <div class="diff-r"><span class="dk">Level</span><span>${r.level}</span></div>
+            <div class="diff-r"><span class="dk">Pinged a human</span><span>${r.pinged ? 'yes' : 'no'}</span></div>
+            <div class="diff-r"><span class="dk">Memory at the time</span><span>${r.rss} MB</span></div>
+            <div class="diff-r"><span class="dk">Uptime</span><span>${r.up} s</span></div>` : ''}
+          ${r.kind === 'change' ? `
+            <div class="diff-r"><span class="dk">Page</span><span>${r.page}</span></div>
+            <div class="diff-r"><span class="dk">Action</span><span>${r.action}</span></div>
+            <div class="diff-r"><span class="dk">Model</span><span>${r.model}</span></div>
+            <div class="diff-r"><span class="dk">Undone</span><span>${r.undone ? 'yes' : 'no'}</span></div>` : ''}
+          ${r.detail ? `<div class="diff-r"><span class="dk">Detail</span><span>${r.detail}</span></div>` : ''}
+        </div>
+        <p class="dw-p" style="margin-top:16px">${r.kind === 'change'
+          ? 'Every portal and <code>/manage</code> write is recorded with the step that reverses it, so this row can be put back from either surface, and it survives a restart.'
+          : r.kind === 'alert'
+          ? 'Alerts come from the bot itself and mirror to the alert webhook. They carry no inverse — an alert is a record of something that happened, not an operation.'
+          : 'Deploy records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that tells you what is actually running.'}</p>
+      </div>`,
+      actions:`<button class="btn" id="eOk">Close</button>` +
+        (r.kind === 'change' && !r.undone ? `<button class="btn dang" id="eUndo">Reverse this change</button>` : '')
+    });
+    document.getElementById('eOk').onclick = () => S.closeDrawer();
+    const u = document.getElementById('eUndo');
+    if (u) u.onclick = () => { S.closeDrawer();
+      S.confirm({ op:'changelog.revert', tier:2, danger:true, confirm:'Stage the reversal',
+        title:`Reverse “${r.what}”?`,
+        body:`<p class="dw-p">This puts the old value back with a <b>new</b> change &mdash; it does not
+                remove the original. Both stay in the record, because an audit trail that can be
+                edited is not one.</p>`,
+        onConfirm(){ S.toast(`Inverse of “${r.what}” staged.`); } }); };
+  }
+
+  function wireTiles(){ document.querySelectorAll('[data-tile]').forEach(b =>
+    b.onclick = () => { st.mode = 'timing'; showView('timing'); }); }
+
+  function renderStats() {
+    const err = F.outcomeStats.find(o => o.outcome === 'error');
+    sEvents.textContent = F.OBS_TOTALS.events;
+    sOk.textContent = ((F.outcomeStats.find(o => o.outcome === 'ok') || { n:0 }).n);
+    sErr.textContent = err ? err.n : 0;
+    const worstAck = Math.max(...F.cmdStats.map(c => c.ack));
+    sAck.textContent = worstAck + 'ms';
+    viewMeta.textContent =
+      st.mode === 'health' ? `${F.OBS_TOTALS.events} events · ${F.OBS_TOTALS.alerts} alerts · ${F.OBS_TOTALS.boots} boots`
+    : st.mode === 'usage'  ? `${cmds().length} command${cmds().length === 1 ? '' : 's'}${st.admin ? '' : ' — admin traffic excluded'}`
+    : st.mode === 'timing' ? `ack vs duration, against Discord's ${F.ACK_DEADLINE_MS / 1000}s deadline`
+    : st.mode === 'reach'  ? `${F.reachStats.reduce((a, r) => a + r.n, 0)} events by context and install type`
+    : `${F.searchTerms.length} term${F.searchTerms.length === 1 ? '' : 's'} recorded`;
+  }
+  function showView(v) {
+    st.mode = v;
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.view === v)));
+    viewHealth.hidden = v !== 'health'; viewUsage.hidden = v !== 'usage';
+    viewTiming.hidden = v !== 'timing'; viewReach.hidden = v !== 'reach'; viewSearch.hidden = v !== 'search';
+    document.getElementById('crumbView').textContent =
+      { health:'Health', usage:'Usage', timing:'Timing', reach:'Reach', search:'Search' }[v];
+    renderStats();
+  }
+
+  lvlChips.innerHTML = F.alertStats.map(a =>
+    `<button class="chip" data-lvlchip="${a.level}" aria-pressed="false">${a.level}</button>`).join('');
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => showView(b.dataset.view));
+  document.querySelectorAll('[data-riv]').forEach(b => b.onclick = () => {
+    st.riv = b.dataset.riv; st.lvl = null;
+    document.querySelectorAll('[data-riv]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    document.querySelectorAll('[data-lvlchip]').forEach(x => x.setAttribute('aria-pressed', 'false'));
+    renderRows();
+  });
+  document.querySelectorAll('[data-lvlchip]').forEach(b => b.onclick = () => {
+    st.lvl = st.lvl === b.dataset.lvlchip ? null : b.dataset.lvlchip;
+    document.querySelectorAll('[data-lvlchip]').forEach(x =>
+      x.setAttribute('aria-pressed', String(x.dataset.lvlchip === st.lvl)));
+    renderRows();
+  });
+  incAdmin.onchange = e => { st.admin = e.target.checked; renderAll(); };
+  q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
+  S.onAfterRevert = renderAll;
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * EXPORT. Analytics had none — and it is the realm where taking data out is the
+   * PRIMARY act rather than a safeguard. Nothing here is destructive (core/ops registers
+   * no analytics operation at all, and AnalyticsEvent expires on its own TTL), so this
+   * realm gets export and no delete, which is the honest shape rather than a symmetric one.
+   *
+   * 🔴 THESE DO NOT ROUND-TRIP, AND SAY SO. Every other export in the portal is checked
+   * byte for byte against utils/adminParser.js because something re-ingests it. Nothing
+   * re-ingests analytics: the destination is a spreadsheet, so the format is CSV and the
+   * panel states that rather than implying a symmetry that does not exist.
+   *
+   * RFC-4180 quoting, and not by reflex — a search term is arbitrary user text that people
+   * really do type commas and quotes into, and the change log's summary field is a sentence
+   * with quoted titles in it ('Added new draw "Test Draw"'). Naive joining would corrupt
+   * exactly the two columns worth exporting. */
+  const csvCell = v => {
+    const t = v === null || v === undefined ? '' : String(v);
+    return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  };
+  const csv = (head, rows) => [head, ...rows].map(r => r.map(csvCell).join(',')).join('\n');
+  const stamp = () => new Date().toISOString().slice(0, 10);
+
+  function analyticsScopes(){
+    return [
+      { id:'analytics.usage', label:'Command usage', note:'Calls, successes, deferred acks and total ms per command.',
+        count:F.cmdStats.length, unit:'commands', file:'dioreo-command-usage-' + stamp() + '.csv',
+        build:() => csv(['command','subcommand','calls','succeeded','deferred','total_ms','avg_ms'],
+          F.cmdStats.map(c => [c.command, c.subcommand || '', c.n, c.ok, c.ack, c.dur,
+                               c.n ? Math.round(c.dur / c.n) : 0])) },
+      { id:'analytics.timing', label:'Timing by subsystem', note:'Where the milliseconds go — per call, not per interaction.',
+        count:F.depStats.length, unit:'subsystems', file:'dioreo-timing-' + stamp() + '.csv',
+        build:() => csv(['subsystem','events','calls','total_ms','ms_per_call'],
+          F.depStats.map(d => [d.name, d.events, d.calls, d.ms, d.calls ? Math.round(d.ms / d.calls) : 0])) },
+      { id:'analytics.search', label:'What people searched for', note:'Including the terms that returned nothing — the only record of what the bot does not have.',
+        count:F.searchTerms.length, unit:'terms', file:'dioreo-search-terms-' + stamp() + '.csv',
+        build:() => csv(['term','command','field','searches','zero_results','picked','first_seen','last_seen'],
+          F.searchTerms.map(t => [t.term, t.command, t.field, t.searches, t.zeroResults, t.picked, t.firstSeen, t.lastSeen])) },
+      { id:'analytics.changes', label:'Change log', note:'Who changed what, and whether it was undone. The audit record.',
+        count:F.changeLog.length, unit:'changes', file:'dioreo-change-log-' + stamp() + '.csv',
+        build:() => csv(['at','page','action','model','target','summary','undone'],
+          F.changeLog.map(c => [c.at, c.page, c.action, c.model, c.target, c.summary, c.undone ? 'yes' : 'no'])) },
+      { id:'analytics.alerts', label:'Alerts', note:'Every alert the bot raised, with the level and whether it pinged.',
+        count:F.alertSample.length, unit:'alerts', file:'dioreo-alerts-' + stamp() + '.csv',
+        build:() => csv(['at','level','title','detail','pinged','rss_mb','uptime_sec'],
+          F.alertSample.map(a => [a.at, a.level, a.title, a.detail, a.pinged ? 'yes' : 'no', a.rssMb, a.uptimeSec])) }
+    ];
+  }
+
+  function renderAll(){ renderHealth(); renderUsage(); renderTiming(); renderReach(); renderSearch();
+    S.mastheadExport({ host:'#mhAnchor', scopes:analyticsScopes, label:'Export',
+      summary:() => 'CSV for a spreadsheet · 5 tables' });
+    renderRows(); renderStats(); S.mountRail('analytics'); }
+  renderAll();
+  (window.Shell||window.S).holdTop();
+  S.audit({
+    interactions: () => [
+      { name:'river event',    when: () => !!rows.querySelector('tr[data-id]'),
+        run: () => rows.querySelector('tr[data-id]').click() },
+      { name:'command detail', when: () => F.cmdStats.length > 0,
+        run: () => openCmd(F.cmdStats[0].command + '|' + (F.cmdStats[0].subcommand || '')) }
+    ]
+  });
+})();
+</script>
+</body></html>

@@ -6,7 +6,7 @@
 const crypto = require('node:crypto');
 const https = require('node:https');
 const PortalSession = require('../models/PortalSession');
-const { isAdmin, isOwner } = require('../utils/adminAccess');
+const { isAdmin, isOwner, hasCommandAccess } = require('../utils/adminAccess');
 const { sendJson, forbidden } = require('./api/httpUtil');
 
 const SESSION_COOKIE = 'portal_session';
@@ -40,23 +40,38 @@ function verifyState(received, expected) {
     return crypto.timingSafeEqual(a, b);
 }
 
-function cookieAttrs({ maxAge } = {}) {
-    // No `Domain` attribute — a host-only cookie is never sent to dioreo.app, which is the whole reason portal.dioreo.app is a separate subdomain (spec decision 8).
-    const parts = ['Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax'];
+// 🔴 THE ORIGIN A REQUEST ARRIVED ON, not the one an env var names. Everything below keys off this: the cookie's `Secure` flag, the OAuth redirect_uri, and the allowlist that decides whether a login can complete at all. Behind the Cloudflare tunnel the original Host is forwarded and the scheme arrives as `x-forwarded-proto`, so this reports the public hostname; run directly and it reports localhost. Same code, both ways of running the dev portal.
+function originOf(req) {
+    const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim()
+        || (req.socket && req.socket.encrypted ? 'https' : 'http');
+    return `${proto}://${req.headers.host}`;
+}
+
+// A host-only cookie is never sent to dioreo.app, which is the whole reason the portal is a separate subdomain (spec decision 8) — so there is no `Domain` attribute here, deliberately.
+//
+// ⚠️ `Secure` IS CONDITIONAL, and it has to be. It was unconditional, which is right for every real deployment and wrong for the one way the dev portal is most often run: over plain HTTP on localhost. Browsers differ on whether they will store a `Secure` cookie on an http://localhost origin, and the ones that refuse produce no error anywhere — the login simply comes back saying the state is invalid, which reads as a server bug. Localhost is a secure context by definition (RFC 6761), so dropping the flag there costs nothing and removes a silent, browser-dependent failure. Anything else keeps it.
+function isLocalOrigin(origin) {
+    return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(origin);
+}
+
+function cookieAttrs(origin, { maxAge } = {}) {
+    const parts = ['Path=/', 'HttpOnly', 'SameSite=Lax'];
+    if (!isLocalOrigin(origin) || origin.startsWith('https://')) parts.splice(2, 0, 'Secure');
     if (maxAge != null) parts.push(`Max-Age=${maxAge}`);
     return parts;
 }
 
-function buildCookie(rawSessionId) {
-    return [`${SESSION_COOKIE}=${rawSessionId}`, ...cookieAttrs({ maxAge: SESSION_MAX_AGE })].join('; ');
+function buildCookie(origin, rawSessionId) {
+    return [`${SESSION_COOKIE}=${rawSessionId}`, ...cookieAttrs(origin, { maxAge: SESSION_MAX_AGE })].join('; ');
 }
 
-function buildStateCookie(state) {
-    return [`${STATE_COOKIE}=${state}`, ...cookieAttrs({ maxAge: 600 })].join('; '); // 10 min to finish login
+function buildStateCookie(origin, state) {
+    return [`${STATE_COOKIE}=${state}`, ...cookieAttrs(origin, { maxAge: 600 })].join('; '); // 10 min to finish login
 }
 
-function clearCookie(name) {
-    return `${name}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+// ⚠️ A CLEAR MUST MATCH THE ATTRIBUTES IT IS CLEARING. A browser only replaces a cookie when the name, path and domain agree; getting `Secure` wrong here leaves the old one in place.
+function clearCookie(origin, name) {
+    return [`${name}=`, ...cookieAttrs(origin, { maxAge: 0 })].join('; ');
 }
 
 function parseCookies(req) {
@@ -106,11 +121,46 @@ async function fetchDiscordUser(accessToken) {
     return discordRequest({ method: 'GET', path: '/api/users/@me', headers: { authorization: `Bearer ${accessToken}` } });
 }
 
+// 🔴 THE REDIRECT URI FOLLOWS THE REQUEST, NOT `PORTAL_PUBLIC_URL`, AND THE REASON IS A LIVE FAILURE. This built the redirect from the env var alone. Start the flow on http://localhost:8787 while that var names the tunnel and here is what happens: the state cookie is set on the localhost origin, Discord sends the browser to https://dev-portal.dioreo.app/auth/callback, and that origin has never seen the cookie — because it is host-only by design (spec decision 8). The callback then reports "invalid or expired state", which describes a forged request and is exactly wrong: nothing expired and nothing was forged, the two halves of the handshake simply happened on two different hosts.
+//
+// Deriving both halves from the request makes the cookie and the callback share an origin by construction, so both ways of reaching the dev portal work with no env change between them.
+//
+// ⚠️ AN ALLOWLIST, NOT A BARE `req.headers.host`. Host is client-controlled; echoing it into an OAuth redirect is how an open redirector gets built. Only origins that are actually registered on the Discord application can appear here, and `PORTAL_PUBLIC_URL` is always one of them.
+//
+// ⚠️ AND AN UNKNOWN ORIGIN IS REFUSED AT LOGIN, not carried into a handshake that cannot complete. A flow that fails four steps later, on a different host, with a message about state, is the shape of bug that costs an hour; refusing here names the origin to use instead.
+function allowedOrigins() {
+    const out = [];
+    const pub = String(process.env.PORTAL_PUBLIC_URL || '').replace(/\/+$/, '');
+    if (pub) out.push(pub);
+    // 🔴 THE LOOPBACK ORIGINS ARE OPT-IN, BECAUSE THIS LIST CANNOT SEE WHAT DISCORD HAS REGISTERED. The comment above used to assert that "only origins that are actually registered on the Discord application can appear here", and it was false: these two were pushed unconditionally while the dev application has only the tunnel callback registered. So `/auth/login` on http://127.0.0.1:8787 passed this check, built a loopback redirect_uri, and Discord answered "Invalid OAuth2 redirect_uri" — Harkirat hit exactly that on 2026-08-30 18:2x EDT.
+    //
+    // 🔴 THIS IS THE UNCLOSED HALF OF THE 2026-08-28 BUG, not a new one. That fix made the redirect follow the REQUEST so the cookie and the callback share an origin, which was right and is untouched. What it left standing is the other precondition: an origin must be allowed here AND registered there, and only the first was ever enforced. An allowlist that is WIDER than the registration turns a legible local refusal into Discord's error page, on a host the reader cannot inspect — the precise shape the refusal below exists to prevent.
+    //
+    // Set PORTAL_OAUTH_LOOPBACK=1 once http://localhost:<port>/auth/callback and http://127.0.0.1:<port>/auth/callback are both registered on the application. Until then the tunnel is the way in, and the refusal names it.
+    if (process.env.PORTAL_OAUTH_LOOPBACK === '1') {
+        const port = process.env.PORTAL_PORT || 8787;
+        out.push(`http://localhost:${port}`, `http://127.0.0.1:${port}`);
+    }
+    return [...new Set(out)];
+}
+
 function startOAuth(req, res) {
+    const origin = originOf(req);
+    if (!allowedOrigins().includes(origin)) {
+        res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        const open = allowedOrigins();
+        // ⚠️ THE EMPTY CASE IS A CONFIGURATION FAULT, NOT A BAD ORIGIN, and saying "open one of these" followed by nothing is the least useful thing this could print.
+        return res.end(`This portal does not sign in on ${origin}.\n\n`
+            + (open.length
+                ? `Discord only accepts a redirect back to an address registered on the application, and this one is not registered here. Open one of these instead:\n\n`
+                    + open.map((o) => `  ${o}`).join('\n') + '\n\n'
+                    + `If you meant to sign in over loopback, register http://localhost:${process.env.PORTAL_PORT || 8787}/auth/callback on the Discord application first, then set PORTAL_OAUTH_LOOPBACK=1.\n`
+                : `No sign-in origin is configured at all: PORTAL_PUBLIC_URL is unset and PORTAL_OAUTH_LOOPBACK is not 1, so there is no address this portal could ask Discord to redirect back to.\n`));
+    }
     const state = randomToken(16);
     const clientId = process.env.DISCORD_OAUTH_CLIENT_ID;
-    const redirectUri = `${process.env.PORTAL_PUBLIC_URL}/auth/callback`;
-    res.writeHead(302, { Location: buildAuthorizeUrl({ clientId, redirectUri, state }), 'Set-Cookie': buildStateCookie(state) });
+    const redirectUri = `${origin}/auth/callback`;
+    res.writeHead(302, { Location: buildAuthorizeUrl({ clientId, redirectUri, state }), 'Set-Cookie': buildStateCookie(origin, state) });
     res.end();
 }
 
@@ -119,12 +169,17 @@ async function handleCallback(req, res, url) {
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     if (!verifyState(state, cookies[STATE_COOKIE])) {
-        res.writeHead(400, { 'content-type': 'text/plain' });
-        return res.end('Login failed: invalid or expired state.');
+        // ⚠️ THE MESSAGE NAMES THE CAUSE THAT ACTUALLY HAPPENS. The overwhelmingly common reason this fires is not a forged request or a stale tab — it is a login begun on one origin and finished on another, so the host-only state cookie was never sent here. Saying only "invalid or expired" sends the reader looking for a server fault. Redirect derivation now makes this near-impossible, and if it still fires the first thing worth checking is which address the login started on.
+        res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' });
+        return res.end('Login failed: invalid or expired state.\n\n'
+            + `This request arrived on ${originOf(req)}${cookies[STATE_COOKIE] ? '' : ' with no state cookie at all'}, `
+            + 'which usually means the sign-in was started on a different address than it finished on. '
+            + 'Start again from the address you want to use, and it will complete there.\n');
     }
     const clientId = process.env.DISCORD_OAUTH_CLIENT_ID;
     const clientSecret = process.env.DISCORD_OAUTH_CLIENT_SECRET;
-    const redirectUri = `${process.env.PORTAL_PUBLIC_URL}/auth/callback`;
+    // The SAME origin the login used — Discord verifies that the exchange repeats the redirect_uri it was given, and the callback necessarily arrives on that host, so reading the request is exact.
+    const redirectUri = `${originOf(req)}/auth/callback`;
 
     let discordId;
     try {
@@ -145,7 +200,8 @@ async function handleCallback(req, res, url) {
         userAgent: (req.headers['user-agent'] || '').slice(0, 300),
     });
 
-    res.writeHead(302, { Location: '/', 'Set-Cookie': [buildCookie(rawSessionId), clearCookie(STATE_COOKIE)] });
+    const origin = originOf(req);
+    res.writeHead(302, { Location: '/', 'Set-Cookie': [buildCookie(origin, rawSessionId), clearCookie(origin, STATE_COOKIE)] });
     res.end();
 }
 
@@ -160,7 +216,8 @@ async function sessionFor(req) {
     if (Date.now() - new Date(row.lastSeenAt).getTime() > 60_000) {
         PortalSession.updateOne({ sessionHash }, { lastSeenAt: new Date() }).catch((e) => console.error('Portal lastSeenAt update failed:', e));
     }
-    return { discordId: row.discordId, sessionId: sessionHash };
+    // createdAt rides along so /auth/csrf can tell the browser when this session expires — the account panel states a fact about the reader rather than restating the 12-hour policy at them.
+    return { discordId: row.discordId, sessionId: sessionHash, createdAt: row.createdAt };
 }
 
 function csrfToken(session) {
@@ -196,16 +253,24 @@ function registerAuthRoutes(route) {
         const { BROADCAST_PAGES } = require('./api/broadcast');
         const owner = isOwner(session.discordId);
         const realms = await visibleRealms(session.discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES });
-        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, visibleRealms: realms });
+        // The deadline is Mongo's own: models/PortalSession.js expires the row SESSION_TTL_SECONDS after createdAt, so this is when the session actually stops working rather than a client-side guess. Null for a row written before createdAt was carried through, which the panel renders as an em dash instead of inventing a countdown.
+        const expiresAt = session.createdAt
+            ? new Date(new Date(session.createdAt).getTime() + PortalSession.SESSION_TTL_SECONDS * 1000).toISOString()
+            : null;
+        // 🔴 `destructive` IS NOT A REALM AND MUST NOT BE INFERRED FROM ONE. utils/adminAccess.js keeps it out of `all` on purpose — the owner typing "all" is asking for broad access, not for somebody else to be able to purge the season — so the portal has to ask for it by name. Sent on the session because the one-way strip has to render DISABLED WITH THE REASON for an admin who lacks it, which it cannot do if it does not know.
+        const canDestroy = owner || await hasCommandAccess(session.discordId, 'destructive');
+        sendJson(res, 200, { csrfToken: csrfToken(session), discordId: session.discordId, isOwner: owner, canDestroy, visibleRealms: realms, sessionExpiresAt: expiresAt });
     }));
     route('POST', /^\/auth\/logout$/, requireAdmin(async (req, res, url, session) => {
         await PortalSession.updateOne({ sessionHash: session.sessionId }, { revokedAt: new Date() });
-        res.writeHead(302, { Location: '/', 'Set-Cookie': clearCookie(SESSION_COOKIE) });
+        res.writeHead(302, { Location: '/', 'Set-Cookie': clearCookie(originOf(req), SESSION_COOKIE) });
         res.end();
     }));
 }
 
 module.exports = {
     buildAuthorizeUrl, verifyState, hashSession, buildCookie,
+    // Exported for scripts/portalAuth.test.js. The origin-derivation fix shipped without a falsifier for several hours, in a session whose whole subject was checks that do not check — and the bug it fixes (a login begun on one origin and finished on another) is invisible to every gate here and surfaced only when Harkirat hit it. Three pure functions; there was no excuse.
+    originOf, allowedOrigins, cookieAttrs, isLocalOrigin,
     startOAuth, handleCallback, sessionFor, requireAdmin, csrfToken, verifyCsrf, registerAuthRoutes,
 };

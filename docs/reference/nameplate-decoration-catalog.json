@@ -1,4 +1,198 @@
 {
+    "Creepy Crawlers": {
+        "decorations": [
+            {
+                "group_name": "Bug Reveal",
+                "base_sku_id": "1536486975799038032",
+                "variants": [
+                    {
+                        "sku_id": "1536486975799038032",
+                        "name": "Bug Reveal",
+                        "asset": "a_537eb6f8ed8d9ca4eb2fbe602aced10f",
+                        "label": "A magnifying glass with four colorful beetles scuttling underneath"
+                    }
+                ]
+            },
+            {
+                "group_name": "Bug Hug",
+                "base_sku_id": "1536486899101999194",
+                "variants": [
+                    {
+                        "sku_id": "1536486899101999194",
+                        "name": "Bug Hug",
+                        "asset": "a_b425daac2feaac4be21110dfd612ad51",
+                        "label": "Dark red insect claws and legs reach in from all sides as if closing in"
+                    }
+                ]
+            },
+            {
+                "group_name": "Motyxia",
+                "base_sku_id": "1536486756558569482",
+                "variants": [
+                    {
+                        "sku_id": "1536486756558569482",
+                        "name": "Motyxia",
+                        "asset": "a_387e5d2f596a3e7f47260893728dc172",
+                        "label": "A bioluminescent teal millipede crawls around the avatar"
+                    }
+                ]
+            },
+            {
+                "group_name": "Black Widow",
+                "base_sku_id": "1536486483009994872",
+                "variants": [
+                    {
+                        "sku_id": "1536486483009994872",
+                        "name": "Black Widow",
+                        "asset": "a_2646a0d9296a41380bb766c56a258b36",
+                        "label": "A glossy black widow spider with red markings and sharp legs scuttles along the top of the avatar"
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Bug Colony",
+                "base_sku_id": "1536487566893649941",
+                "variants": [
+                    {
+                        "sku_id": "1536487566893649941",
+                        "name": "Bug Colony",
+                        "asset": "nameplates/bug_colony/1536487566893649941/",
+                        "label": "A cluster of colorful beetles scuttle around",
+                        "palette": "black",
+                        "palette_hex": "#000000"
+                    }
+                ]
+            },
+            {
+                "group_name": "Dung Beetle",
+                "base_sku_id": "1536487394369609739",
+                "variants": [
+                    {
+                        "sku_id": "1536487394369609739",
+                        "name": "Dung Beetle",
+                        "asset": "nameplates/dung_beetle/1536487394369609739/",
+                        "label": "A dung beetle rolls a large ball of dung across a sandy surface",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7"
+                    }
+                ]
+            },
+            {
+                "group_name": "Water Strider",
+                "base_sku_id": "1536487277646323853",
+                "variants": [
+                    {
+                        "sku_id": "1536487277646323853",
+                        "name": "Water Strider",
+                        "asset": "nameplates/water_strider/1536487277646323853/",
+                        "label": "A water strider stands on the surface of rippling water",
+                        "palette": "sky",
+                        "palette_hex": "#0080b7"
+                    }
+                ]
+            },
+            {
+                "group_name": "Jumping Spider",
+                "base_sku_id": "1536487054613942324",
+                "variants": [
+                    {
+                        "sku_id": "1536487054613942324",
+                        "name": "Jumping Spider",
+                        "asset": "nameplates/jumping_spider/1536487054613942324/",
+                        "label": "A colorful jumping spider with vivid orange and teal markings",
+                        "palette": "crimson",
+                        "palette_hex": "#900007"
+                    }
+                ]
+            }
+        ]
+    },
+    "Pale Reverie": {
+        "decorations": [
+            {
+                "group_name": "Butterfly Waltz",
+                "base_sku_id": "1538991362601656420",
+                "variants": [
+                    {
+                        "sku_id": "1538991362601656420",
+                        "name": "Butterfly Waltz",
+                        "asset": "a_92af94f6167b9d12f8f72e6e306a5b80",
+                        "label": "Pale, glowing butterflies flutter around the avatar"
+                    }
+                ]
+            },
+            {
+                "group_name": "Crescent Dreams",
+                "base_sku_id": "1538991167511994549",
+                "variants": [
+                    {
+                        "sku_id": "1538991167511994549",
+                        "name": "Crescent Dreams",
+                        "asset": "a_9850506c85f382f6f8af97cf6d60c000",
+                        "label": "A sparkling crescent moon peeks through soft grey clouds"
+                    }
+                ]
+            },
+            {
+                "group_name": "Rose Filigree",
+                "base_sku_id": "1538990902306152558",
+                "variants": [
+                    {
+                        "sku_id": "1538990902306152558",
+                        "name": "Rose Filigree",
+                        "asset": "a_d943453ba3b3f0286c0a76a3b0b0f896",
+                        "label": "Sparkling pale roses and delicate vines form a circular wreath"
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Butterfly Waltz",
+                "base_sku_id": "1538991887497695252",
+                "variants": [
+                    {
+                        "sku_id": "1538991887497695252",
+                        "name": "Butterfly Waltz",
+                        "asset": "nameplates/butterfly_waltz/1538991887497695252/",
+                        "label": "Soft glowing butterflies drift across a pale lavender background",
+                        "palette": "white",
+                        "palette_hex": "#ffffff"
+                    }
+                ]
+            },
+            {
+                "group_name": "Spirit Wolf",
+                "base_sku_id": "1538991722535714867",
+                "variants": [
+                    {
+                        "sku_id": "1538991722535714867",
+                        "name": "Spirit Wolf",
+                        "asset": "nameplates/spirit_wolf/1538991722535714867/",
+                        "label": "A close-up of a white wolf's glistening purple eye",
+                        "palette": "white",
+                        "palette_hex": "#ffffff"
+                    }
+                ]
+            },
+            {
+                "group_name": "Mystic Rose Petals",
+                "base_sku_id": "1538991537399136407",
+                "variants": [
+                    {
+                        "sku_id": "1538991537399136407",
+                        "name": "Mystic Rose Petals",
+                        "asset": "nameplates/mystic_rose_petals/1538991537399136407/",
+                        "label": "Pale, glowing rose petals drift across a lavender background",
+                        "palette": "black",
+                        "palette_hex": "#000000"
+                    }
+                ]
+            }
+        ]
+    },
     "Underworld": {
         "decorations": [
             {
@@ -331,7 +525,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Night Terrors": {
         "decorations": [
@@ -3415,7 +3610,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "LOVE XP": {
         "decorations": [
@@ -5744,7 +5940,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "decorations": []
     },
     "Borderlands 4": {
         "decorations": [
@@ -6074,7 +6271,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Rawr xD": {
         "decorations": [
@@ -6195,7 +6393,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Dragon Ball Daima": {
         "decorations": [
@@ -6511,7 +6710,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Spirit Blossom Beyond": {
         "decorations": [
@@ -6839,7 +7039,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Dungeons & Dragons": {
         "decorations": [
@@ -7047,7 +7248,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "decorations": []
     },
     "Zen Protocol": {
         "decorations": [
@@ -7123,7 +7325,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Magic: The Gathering": {
         "decorations": [
@@ -7347,7 +7550,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "decorations": []
     },
     "My Hero Academia": {
         "decorations": [
@@ -7447,7 +7651,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Cozy Valley": {
         "decorations": [
@@ -7586,7 +7791,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Star Wars\u2122": {
         "decorations": [
@@ -7844,7 +8050,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "decorations": []
     },
     "GGEZ": {
         "decorations": [
@@ -7940,7 +8147,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Chibi Cafe": {
         "decorations": [
@@ -8060,7 +8268,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Shenanigans": {
         "decorations": [
@@ -8133,6 +8342,22 @@
                         "name": "Buffering...",
                         "asset": "a_780cd1b7e878dce85d20c7ee495a86fe",
                         "label": "A buffering icon spinning over your forehead... this might take a while."
+                    }
+                ]
+            }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Buffering...",
+                "base_sku_id": "1541529803809755246",
+                "variants": [
+                    {
+                        "sku_id": "1541529803809755246",
+                        "name": "Buffering...",
+                        "asset": "nameplates/buffering.../1541529803809755246/",
+                        "label": "A buffering icon spinning... this might take a while.",
+                        "palette": "cobalt",
+                        "palette_hex": "#0131c2"
                     }
                 ]
             }
@@ -8264,7 +8489,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Anime": {
         "decorations": [
@@ -8811,6 +9037,22 @@
                     }
                 ]
             }
+        ],
+        "nameplates": [
+            {
+                "group_name": "Angry",
+                "base_sku_id": "1541533896326512781",
+                "variants": [
+                    {
+                        "sku_id": "1541533896326512781",
+                        "name": "Angry",
+                        "asset": "nameplates/angry/1541533896326512781/",
+                        "label": "Anger Symbol with Exclamation Mark Speech Bubble, Anime-Style, Red, Animated",
+                        "palette": "crimson",
+                        "palette_hex": "#900007"
+                    }
+                ]
+            }
         ]
     },
     "Valentines": {
@@ -8923,7 +9165,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Civilization VII": {
         "decorations": [
@@ -8999,7 +9242,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Lunar New Year": {
         "decorations": [
@@ -9111,7 +9355,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Steampunk": {
         "decorations": [
@@ -9187,7 +9432,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Fantasy": {
         "decorations": [
@@ -9414,7 +9660,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Winter Wonderland": {
         "decorations": [
@@ -9551,7 +9798,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Lofi Girl": {
         "decorations": [
@@ -9635,7 +9883,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Kawaii Mode": {
         "decorations": [
@@ -9735,7 +9984,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Arcane": {
         "decorations": [
@@ -9835,7 +10085,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Mythical Creatures": {
         "decorations": [
@@ -9911,7 +10162,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Spooky Night": {
         "decorations": [
@@ -10049,7 +10301,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Street Fighter 6": {
         "decorations": [
@@ -10149,7 +10402,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Autumn Equinox": {
         "decorations": [
@@ -10249,7 +10503,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Fall": {
         "decorations": [
@@ -10307,7 +10562,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Dojo": {
         "decorations": [
@@ -10383,7 +10639,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "VALORANT Champions": {
         "decorations": [
@@ -10483,7 +10740,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Dark Fantasy": {
         "decorations": [
@@ -10559,7 +10817,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Galaxy": {
         "decorations": [
@@ -10635,7 +10894,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Lofi Vibes": {
         "decorations": [
@@ -10711,7 +10971,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Cyberpunk": {
         "decorations": [
@@ -10763,7 +11024,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Elements": {
         "decorations": [
@@ -10839,7 +11101,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Pirates": {
         "decorations": [
@@ -10915,7 +11178,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Arcade": {
         "decorations": [
@@ -10991,7 +11255,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Springtoons": {
         "decorations": [
@@ -11067,7 +11332,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "Feelin' Retro": {
         "decorations": [
@@ -11119,7 +11385,8 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     },
     "DISXCORE": {
         "decorations": [
@@ -11159,6 +11426,7 @@
                     }
                 ]
             }
-        ]
+        ],
+        "nameplates": []
     }
 }

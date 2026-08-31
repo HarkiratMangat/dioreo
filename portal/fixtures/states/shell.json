@@ -1,0 +1,215 @@
+{
+  "surface": "shell",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing). ⚠️ TWO OF async.js's SIX REQUEST STATES ARE NOT REGISTERED HERE, and the reason is not that nobody tried: `refreshing` and `progress` were registered, walked, and REFUSED to appear — see docs/db-deferred-list.md. An `expect` selector is what turned that from a passing state into a question.",
+  "states": [
+    {
+      "name": "default · home",
+      "realm": "home",
+      "flags": {},
+      "known": [],
+      "expect": "main h1"
+    },
+    {
+      "name": "default · season",
+      "realm": "season",
+      "flags": {},
+      "known": [],
+      "expect": ".mtable"
+    },
+    {
+      "name": "command bar open",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "key": "k",
+          "meta": true
+        }
+      ],
+      "known": [],
+      "expect": ".cmdbar.on"
+    },
+    {
+      "name": "command bar · typed query",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "key": "k",
+          "meta": true
+        },
+        {
+          "type": {
+            "sel": ".cb-in",
+            "text": "draw"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".cb-drop .plist"
+    },
+    {
+      "name": "account panel open",
+      "realm": "home",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".who button"
+        }
+      ],
+      "known": [],
+      "expect": ".who [role=menuitem]"
+    },
+    {
+      "name": "request failure (500)",
+      "realm": "season",
+      "flags": {
+        "fail": "500"
+      },
+      "known": [],
+      "expect": ".dfail, .fail, [role=alert], .panel"
+    },
+    {
+      "name": "connection never lands",
+      "realm": "season",
+      "flags": {
+        "fail": "offline"
+      },
+      "known": [],
+      "expect": ".netbar, [role=alert], .panel"
+    },
+    {
+      "name": "unreadable 200",
+      "realm": "season",
+      "flags": {
+        "fail": "garbage"
+      },
+      "known": [],
+      "expect": ".dfail, .fail, [role=alert], .panel"
+    },
+    {
+      "name": "slow request",
+      "realm": "season",
+      "flags": {
+        "slow": "4000"
+      },
+      "known": [],
+      "settleMs": 900,
+      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state",
+      "expect": ".is-slow, .skeleton, [class*=skel], main"
+    },
+    {
+      "name": "not the owner",
+      "realm": "season",
+      "flags": {
+        "owner": "0"
+      },
+      "known": [],
+      "expect": "main .panel"
+    },
+    {
+      "name": "review · staged work",
+      "realm": "review",
+      "flags": {},
+      "known": [],
+      "expect": ".rounds, .board, main .panel"
+    },
+    {
+      "name": "the door · signed out",
+      "realm": "home",
+      "flags": {
+        "fail": "expired"
+      },
+      "known": [],
+      "note": "the only surface a signed-out person reaches; it must not imply the app is open behind it",
+      "expect": "main.door .dbtn"
+    },
+    {
+      "name": "the door · not an admin",
+      "realm": "home",
+      "flags": {
+        "fail": "forbidden"
+      },
+      "known": [],
+      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
+      "expect": "main.door .dfail"
+    },
+    {
+      "name": "export strip open",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mh-take button"
+        }
+      ],
+      "known": [],
+      "note": "the masthead Export strip — each scope states its OWN shape, because only some of them re-import",
+      "expect": ".exs"
+    },
+    {
+      "name": "tooltip runtime",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "hover": "[data-tip]"
+        }
+      ],
+      "known": [],
+      "note": "32 data-tip hosts on Season and the runtime is delegated from the document; tooltips are content and are invisible to a screenshot",
+      "expect": ".tip"
+    },
+    {
+      "name": "toast after an account action",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".who button"
+        },
+        {
+          "clickText": {
+            "sel": ".who [role=menuitem]",
+            "text": "Copy ID"
+          }
+        }
+      ],
+      "known": [],
+      "note": "the toast layer, reached the way a reader reaches it — and the state that found Copy ID acknowledging nothing at all",
+      "expect": ".toast"
+    },
+    {
+      "name": "manifest selection bar",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mtable tbody .cb[role=checkbox]"
+        }
+      ],
+      "known": [],
+      "note": "selecting a row mounts .selbar and sets body.has-selbar — a shell surface a realm switches on",
+      "expect": ".selbar.on"
+    },
+    {
+      "name": "one-way panel · tier 3",
+      "realm": "season",
+      "flags": {
+        "destroy": "1"
+      },
+      "known": [],
+      "note": "the seven irreversible ops at the foot of Season, gated on the destructive permission",
+      "expect": ".ow"
+    },
+    {
+      "name": "reduced motion · season",
+      "realm": "season",
+      "flags": {},
+      "reduceMotion": true,
+      "expect": ".mtable",
+      "known": [],
+      "note": "PASS 5 — the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
+    }
+  ]
+}

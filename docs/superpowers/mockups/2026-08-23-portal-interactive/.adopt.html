@@ -1,0 +1,36 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>adoption</title>
+<style>body{margin:0;background:#111;color:#eee;font:12px/1.55 monospace;white-space:pre;padding:10px}
+iframe{border:0;width:1280px;height:880px;position:fixed;left:0;top:0;visibility:hidden}</style></head><body>
+<div id="out">…</div>
+<!-- ⚠️ READ THE NUMBERS THE RIGHT WAY AFTER 2026-08-24. This harness counts `.pill` against
+     hand-rolled chips, and it produced the finding that started the component work: ONE `.pill`
+     across eight realms against 93 chips. The layer was then adopted by REDEFINING `.chip`,
+     `.seg button` and `.tbdsw button` in terms of `.pill` rather than renaming 93 markup sites —
+     because `.chip` is queried by name in six pages of JS and a mass rename trades a styling
+     inconsistency for a functional break. So a LOW `.pill` count no longer means low adoption; it
+     means the adoption was done by redefinition. To check adoption now, compare the COMPUTED
+     border-radius / transition / focus ring of a `.chip` against a `.pill`, not the class census.
+     Left in place because the historical measurement is what justified the work. -->
+<script>
+const P=['index','season','armory','broadcast','access','analytics','review','door'];
+(async()=>{ const rows=[];
+for(const n of P){
+  const f=document.createElement('iframe'); f.src=n+'.html?a='+Math.random(); document.body.appendChild(f);
+  await new Promise(r=>{f.onload=r;setTimeout(r,5000)}); await new Promise(r=>setTimeout(r,1200));
+  const d=f.contentDocument,m=d.querySelector('main');
+  const q=s=>d.querySelectorAll(s).length;
+  rows.push([n.padEnd(10),
+    'h='+String(m?m.scrollHeight:0).padStart(5),
+    'pill='+String(q('.pill')).padStart(3),
+    'handChip='+String(q('[class*="chip"],[class*="tab"],[class*="sw"]')-q('.pill')).padStart(3),
+    'tips='+String(q('[data-tip]')).padStart(3),
+    'title='+String(q('[title]')).padStart(3),
+    'btns='+String(q('main button')).padStart(3),
+    'panels='+String(q('.panel')).padStart(2),
+    'h1='+(d.querySelector('main h1')?'y':'n'),
+    'probs='+((f.contentWindow.__selfCheck||{}).problems||[]).length
+  ].join(' '));
+  f.remove(); document.getElementById('out').textContent=rows.join('\n');
+}
+window.__done=1; document.getElementById('out').textContent='DONE\n'+rows.join('\n'); })();
+</script></body></html>

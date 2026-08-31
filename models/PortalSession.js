@@ -15,6 +15,11 @@ const PortalSessionSchema = new mongoose.Schema({
 });
 
 // 12-hour sessions, swept by Mongo itself rather than by anything remembering to run.
-PortalSessionSchema.index({ createdAt: 1 }, { expireAfterSeconds: 12 * 60 * 60 });
+//
+// ⚠️ EXPORTED, BECAUSE TWO PLACES NOW NEED THE SAME NUMBER. The account panel tells you when this session expires, which it can only do by adding the TTL to `createdAt` — and a second literal `12` in portal/auth.js would be a copy of state that nothing keeps in step, so the panel would keep counting down to a deadline Mongo had stopped using. The index and the countdown read one constant.
+const SESSION_TTL_SECONDS = 12 * 60 * 60;
+PortalSessionSchema.index({ createdAt: 1 }, { expireAfterSeconds: SESSION_TTL_SECONDS });
 
-module.exports = mongoose.model('PortalSession', PortalSessionSchema);
+const PortalSession = mongoose.model('PortalSession', PortalSessionSchema);
+PortalSession.SESSION_TTL_SECONDS = SESSION_TTL_SECONDS;
+module.exports = PortalSession;

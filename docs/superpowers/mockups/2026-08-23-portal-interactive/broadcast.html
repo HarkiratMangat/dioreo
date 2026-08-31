@@ -1,0 +1,635 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Broadcast · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787939712"><link rel="stylesheet" href="assets/app.css?v=1787939712">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Broadcast</h1>
+        <span class="job">One text field, delivered once per player, in the order it was written &mdash; and the two things Discord never shows you: what has not started yet, and what will never stop.</span>
+      </div>
+      <div class="mh-stats" id="mhStats"></div>
+      <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
+           Harkirat named the class, not the instance: "the page is just the visualization of what
+           they trigger." Measured across the portal earlier, every create control on every realm
+           sat below its own fold or under a filter row. Season and Armory were fixed one at a
+           time; this is the same fix applied everywhere, so a reader learns ONE place to look. -->
+      <button class="pill lead mh-new" id="mhPost" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> Post announcement
+        <kbd>N</kbd>
+      </button>
+    </div>
+
+    <section class="panel" aria-label="Broadcast view">
+      <div class="ph">
+        <span class="t">Broadcast</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="queue" aria-pressed="true">Delivery queue</button>
+          <button role="tab" data-view="air" aria-pressed="false">Airtime</button>
+        </div>
+        <span class="key" id="key"></span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a queue row: position, text, badge). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewQueue" data-async-host data-skel="4|4,68,14,10"></div>
+      <div id="viewAir" hidden></div>
+    </section>
+
+    <div id="headsup"></div>
+
+    <!-- 04 · The Manifest existed only as an aria-label and in two toasts, so a toast saying
+           "Pick a category chip in the Manifest" pointed at a word that was nowhere on the
+           screen it was pointing at. It is one component with one spec across four pages, so
+           it gets the same eyebrow treatment every other labelled row here uses. -->
+    <section class="panel" style="margin-top:16px" aria-labelledby="mfLabel">
+      <div class="mtools">
+        <span class="mlabel"><span id="mfLabel">Manifest</span></span>
+        <span class="srch"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <label class="sr" for="q">Search announcements</label>
+          <input id="q" type="search" placeholder="Search the text&hellip;" autocomplete="off">
+        </span>
+        <button class="chip" data-filter="all" aria-pressed="true">All</button>
+        <span class="chipset" id="stateChips"></span>
+        <button class="chip go" id="addBtn">+ Post announcement</button>
+        <span class="rt" id="count"></span>
+      </div>
+      <div class="mscroll"><table class="mtable">
+        <colgroup><col class="c-item"><col class="c-type"><col class="c-win"><col class="c-detail"><col class="c-state"></colgroup>
+        <thead><tr>
+          <th class="sortable" data-sort="text"><button type="button" class="sortbtn" data-sort="text">Announcement</button></th>
+          <th class="sortable drop-sm" data-sort="createdAt"><button type="button" class="sortbtn" data-sort="createdAt">Posted</button></th>
+          <th class="sortable" data-sort="startsAt"><button type="button" class="sortbtn" data-sort="startsAt">Starts</button></th>
+          <th class="sortable" data-sort="expiresAt"><button type="button" class="sortbtn" data-sort="expiresAt">Ends</button></th>
+          <th class="ta-r">State</th>
+        
+          <th class="ra"><span class="sr">Remove</span></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+<script src="assets/fixtures.js?v=1787939712"></script>
+<script src="assets/timeline.js?v=1787939712"></script>
+<script src="assets/icons.js?v=1787939712"></script>
+<script src="assets/shell.js?v=1787939712"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell, T = window.TL;
+  S.init('broadcast');
+  S.mountHeader('Broadcast', 'Delivery queue');
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+   * models/Announcement.js has SIX fields and none of them is a title, a body, a
+   * pin or a view count. The previous build of this page had all four, and each
+   * one changed what the page claimed:
+   *   · `title` + `body` re-introduced a header Harkirat had explicitly REMOVED
+   *     (utils/announcement.js's buildAnnouncementEmbed) — a heading is markdown
+   *     typed into the text itself.
+   *   · `pinned` and a drag-to-reorder "priority" made the page's PRIMARY
+   *     interaction a field that does not exist. Delivery order is createdAt
+   *     ascending and there is no ordering column; portal/ui/broadcast.js states
+   *     outright that adding one is a schema change to file, not to assume.
+   *   · `views: 12840` was fabricated telemetry, which is the worst kind of
+   *     fixture error because it is indistinguishable from data.
+   * What replaced the fake priority is the real portal-only capability:
+   * `startsAt` has been settable since 2026-08-21 and NO Discord surface has ever
+   * rendered it. ═══════════════════════════════════════════════════════════════ */
+  const GOLD = '#F2C230';
+  const st = { mode:'queue', q:'', filter:'all', sort:{ k:'createdAt', dir:1 },
+               ann: F.announcements.map(a => ({ ...a })) };
+
+  /* Two vocabularies, kept apart (COMPANION §4.3). lifecycle() is what a PLAYER
+   * experiences; stateOf() is whether this portal has committed it. `staged` never
+   * appears in lifecycle and `live` never appears in stateOf. */
+  const lifecycle = a => a.state === 'scheduled' ? 'UPCOMING'
+                       : a.state === 'expired'   ? 'ENDED' : 'LIVE NOW';
+  const stateOf   = a => a.staged ? 'STAGED' : 'SAVED';
+  const fmt  = d => d ? T.fmt(String(d).slice(0, 10)) : null;
+  const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+  const NOW  = F.today;
+
+  /* portal/api/broadcast.js's announcementState, verbatim — the ONE definition of
+   * live, and it must agree with utils/announcement.js's getActiveAnnouncements or
+   * the portal lists something Discord is correctly withholding. That exact drift
+   * was found live on 2026-08-23 with an announcement dated three days out. */
+  const recompute = a => { const n = new Date(NOW);
+    a.state = a.expiresAt && new Date(a.expiresAt) <= n ? 'expired'
+            : a.startsAt && new Date(a.startsAt) > n ? 'scheduled' : 'live'; return a; };
+  st.ann.forEach(recompute);
+
+  /* Delivery order is createdAt ASCENDING — oldest unseen first — and the first
+   * MAX_EMBEDS_PER_MESSAGE of them arrive in one message; the rest wait for that
+   * player's next command. Both facts come from utils/announcement.js. */
+  const queue = () => st.ann.filter(a => a.state === 'live')
+    .sort((x, y) => x.createdAt.localeCompare(y.createdAt));
+
+  /* ═══ VIEW 1 · DELIVERY QUEUE ═══ */
+  function renderQueue() {
+    const list = queue(), cap = F.MAX_EMBEDS_PER_MESSAGE;
+    viewQueue.innerHTML = `
+      <div class="nowwrap">
+        <div>
+          <div class="nstack" role="list" aria-label="Announcements in delivery order">
+            ${list.length ? list.map((a, i) => card(a, i, cap)).join('') : `
+              <div class="nsempty">Nothing is live. Players get no announcement message at all &mdash;
+                a valid state, not a broken one. Anything scheduled is in Airtime.</div>`}
+          </div>
+          <p class="chint" style="margin-top:12px">
+            Position is <b>delivery order</b> &mdash; oldest first, and nothing else. There is no way
+            to reorder announcements.
+            ${list.length > cap ? ` <b style="color:var(--warn)">${list.length - cap} of these will not
+              arrive in the same message</b> &mdash; Discord caps one message at ${cap} embeds, so the
+              overflow waits for that player's next command.` : ''}
+          </p>
+        </div>
+        <div class="nprev">
+          <h5>What one player gets</h5>
+          <div id="prevSlot"></div>
+          <p class="pnote">Delivered as an <b>ephemeral follow-up</b> after any top-level slash command,
+            every unseen announcement as its own embed in ONE message. Each carries its own stored
+            accent &mdash; that colour is the only thing telling two of them apart.</p>
+        </div>
+      </div>`;
+    renderPreview();
+    viewQueue.querySelectorAll('.nscard').forEach(el => {
+      el.onclick = () => openAnn(el.dataset.id);
+      el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAnn(el.dataset.id); } };
+    });
+  }
+
+  /* ⚠️ COLOUR CARRIES TOPIC, and here the "topic" is WHICH ANNOUNCEMENT — its
+   * stored `color`, generated once at creation and never regenerated on edit, so
+   * it is identity rather than decoration. The rule is intact: shape still carries
+   * state (a scheduled card is dashed, an expired one muted). */
+  function card(a, i, cap) {
+    const over = i >= cap;
+    return `<div class="nscard ${a.staged ? 'staged' : ''} ${i === 0 ? 'p0' : ''} ${over ? 'over' : ''}"
+                 style="--c:${F.annAccent(a)}" data-id="${a._id}" role="listitem" tabindex="0"
+                 ${a.staged ? '' : 'data-live="1"'}
+                 aria-label="Delivery position ${i + 1}${over ? ', beyond the ' + cap + '-embed cap' : ''}">
+      <span class="np">${i + 1}</span>
+      <span class="nsb">
+        <span class="nt">${esc(a.text)}</span>
+        <span class="nd">up ${days(a.createdAt, NOW)}d${a.createdBy !== F.OWNER_ID ? ` &middot; posted by &hellip;${a.createdBy.slice(-4)}` : ''}</span>
+      </span>
+      <span class="nsmeta">
+        ${a.expiresAt ? `<span class="nschan">ends ${fmt(a.expiresAt)}</span>`
+                      : `<span class="nspin warn">never ends</span>`}
+        ${over ? `<span class="nspin warn">waits</span>` : ''}
+      </span>
+    </div>`;
+  }
+
+  function renderPreview() {
+    const slot = document.getElementById('prevSlot'); if (!slot) return;
+    const list = queue().slice(0, F.MAX_EMBEDS_PER_MESSAGE);
+    /* ⚠️ WHEN NO HEADING IS TYPED THERE IS NO TITLE — not a placeholder. buildAnnouncementEmbed
+     * sets `description` and `color` and NOTHING else; the generic "📢 Announcement" header was
+     * removed on 2026-08-13 at Harkirat's direct correction. Rendering "(no heading typed)"
+     * where Discord renders nothing puts a line on screen the player never sees, which is the
+     * same class of error as inventing a field. */
+    slot.innerHTML = list.length ? list.map(a => {
+      const h = firstHeading(a.text);
+      return S.discordCard({
+        accent: F.annAccent(a),
+        title: h || bodyOf(a.text),
+        sub: h ? bodyOf(a.text) : '',
+        rows: [['Posted', `${days(a.createdAt, NOW)} ${S.plural(days(a.createdAt, NOW), 'days')} ago`],
+               ['Ends', a.expiresAt ? fmt(a.expiresAt) : 'never']]
+      });
+    }).join('') : `<div class="nsempty">No message is sent.</div>`;
+  }
+  /* The bot renders the raw text; a leading "# …" line is the only heading there is. */
+  const firstHeading = t => (t.match(/^#{1,3}\s+(.+)$/m) || [])[1] || null;
+  const bodyOf = t => t.replace(/^#{1,3}\s+.+$/m, '').trim().slice(0, 110) || t.slice(0, 110);
+  const esc = t => String(t).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+
+  /* ═══ VIEW 2 · AIRTIME ═══
+   * Every announcement on one axis. Two shapes the list cannot express: a bar that
+   * starts LATER than it was posted (a scheduled one), and a bar with NO RIGHT EDGE
+   * — because a bar that stops reads as an end date, and "never ends" is exactly the
+   * misreading to prevent. */
+  function bounds() {
+    const ds = [NOW];
+    st.ann.forEach(a => { ds.push(a.createdAt.slice(0,10));
+      if (a.startsAt) ds.push(a.startsAt.slice(0,10));
+      if (a.expiresAt) ds.push(a.expiresAt.slice(0,10)); });
+    const lo = ds.slice().sort()[0], hi = ds.slice().sort().pop();
+    return { lo, hi: T.days(lo, hi) < 21 ? T.addDays(lo, 21) : hi };
+  }
+  /* ⚠️ FOUND BY LOOKING AT THE REAL DATA, not by reading the code. Every announcement in the dev
+   * database opens with the same "SESSIONB-SEED " prefix, so a fixed-length truncation rendered
+   * four lanes whose labels were byte-identical — the axis was unreadable, and no audit rule could
+   * see it, because four different strings truncated to the same string is still well-formed text.
+   * A shared opener is not unique to seeded data: a house style ("PSA:", "[Maintenance]") collides
+   * exactly the same way. Strip whatever prefix ALL of them share, then truncate. */
+  function commonPrefix(list) {
+    if (list.length < 2) return '';
+    let n = 0;
+    while (n < list[0].length && list.every(t => t[n] === list[0][n])) n++;
+    while (n > 0 && !/\s/.test(list[0][n - 1])) n--;   // back off to a word boundary
+    return list[0].slice(0, n);
+  }
+
+  function renderAir() {
+    const B = bounds(), span = Math.max(1, T.days(B.lo, B.hi));
+    const pct = d => (T.days(B.lo, String(d).slice(0,10)) / span) * 100;
+    viewAir.innerHTML = `
+      <div class="tk-wrap"><div class="tk-inner">
+        <div class="ruler">
+          <span style="left:0%">${T.fmt(B.lo)}</span><span style="left:100%;transform:translateX(-100%)">${T.fmt(B.hi)}</span>
+        </div>
+        <div class="lanes">
+          ${(() => { const rows = st.ann.slice().sort((a,b)=>a.createdAt.localeCompare(b.createdAt));
+            const bare = t => t.replace(/^#{1,3}\s+/, '');
+            const shared = commonPrefix(rows.map(a => bare(a.text)));
+            return rows.map(a => {
+            const start = a.startsAt || a.createdAt;
+            const forever = !a.expiresAt;
+            const l = pct(start), r = forever ? 100 : pct(a.expiresAt);
+            const cls = a.state === 'scheduled' ? 'staged' : a.state === 'expired' ? 'ended' : 'saved';
+            return `<div class="lane" style="--c:${F.annAccent(a)}">
+              <span class="nm" data-tip="${esc(a.text)}">${esc(bare(a.text).slice(shared.length, shared.length + 16))}${bare(a.text).length > shared.length + 16 ? '&hellip;' : ''}</span>
+              <div class="tk">
+                <div class="bar ${cls} ${forever ? 'forever' : ''}" data-id="${a._id}" tabindex="0"
+                     style="--c:${F.annAccent(a)};left:${l}%;width:${Math.max(1.2, r - l)}%"
+                     aria-label="${esc(a.text.slice(0,40))}, ${lifecycle(a)}${forever ? ', no end date' : ''}">
+                  <span class="bl">${a.state === 'scheduled' ? 'starts ' + fmt(a.startsAt) : forever ? 'no expiry &rarr;' : ''}</span>
+                </div>
+              </div></div>`;
+          }).join(''); })()}
+          <div class="ov"><div class="now" style="left:${pct(NOW)}%"></div></div>
+        </div>
+      </div></div>
+      <p class="racknote">A bar begins at <code>startsAt</code> when one is set, otherwise at
+        <code>createdAt</code>. A bar with <b>no right edge</b> has <b>no end date at all</b> and runs
+        until somebody deletes it. Nothing expires it and nothing reminds you.</p>`;
+    viewAir.querySelectorAll('.bar').forEach(b => b.onclick = () => openAnn(b.dataset.id));
+  }
+
+  /* ═══ THE CALLOUT ═══ names the specific offender and the specific number. An
+   * "announcements can stay up forever" notice teaches nothing. */
+  function renderHeadsUp() {
+    const forever = st.ann.filter(a => a.state === 'live' && !a.expiresAt)
+      .map(a => ({ ...a, d: days(a.createdAt, NOW) })).sort((x, y) => y.d - x.d);
+    headsup.innerHTML = !forever.length ? '' : `
+      <div class="panel" style="margin-top:16px"><div class="callout">
+        <b>Heads up:</b> &ldquo;${esc(forever[0].text.slice(0, 62))}${forever[0].text.length > 62 ? '&hellip;' : ''}&rdquo;
+        has no expiry and has been showing for <b>${forever[0].d} ${S.plural(forever[0].d, 'days')}</b>.
+        ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}
+        A blank expiry field means the ${F.DEFAULT_EXPIRY_DAYS}-day default; <code>never</code> means this.
+      </div></div>`;
+  }
+
+  /* ═══ POST / EDIT ═══
+   * ⚠️ THE EXPIRY FIELD IS NOT A DATE. utils/announcement.js's computeExpiresAt
+   * understands blank (the 60-day default), "never"/"none", or a whole number of
+   * DAYS — and returns `undefined` for anything else, which callers must treat as a
+   * validation error rather than silently defaulting. core/ops/announcements.js's
+   * own header records that an earlier draft of its test assumed an absolute date
+   * and would have rejected every valid post. `startsAt` IS an absolute admin date,
+   * because "starts on" reads as a calendar day where "expires in" does not. */
+  function parseExpiry(raw) {
+    const t = (raw || '').trim().toLowerCase();
+    if (t === '') return { ok:true, at: T.addDays(NOW, F.DEFAULT_EXPIRY_DAYS), how:`blank &rarr; the ${F.DEFAULT_EXPIRY_DAYS}-day default` };
+    if (t === 'never' || t === 'none') return { ok:true, at: null, how:'never expires' };
+    const n = Number(t);
+    if (!Number.isInteger(n) || n <= 0) return { ok:false };
+    return { ok:true, at: T.addDays(NOW, n), how:`${n} ${S.plural(n, 'days')} from now` };
+  }
+
+  function openAnn(id) {
+    const a = st.ann.find(x => x._id === id); if (!a) return;
+    /* ⚠️ CEIL, NOT ROUND. utils/announcement.js's expiryToInputValue uses Math.ceil, and the
+     * difference is not cosmetic: an expiry 1.4 days out prefills "1" under rounding, so
+     * re-opening this drawer to fix a typo and re-submitting SHORTENS the expiry — precisely the
+     * silent reset that function's own comment says it exists to prevent. */
+    const expIn = a.expiresAt
+      ? String(Math.max(1, Math.ceil((new Date(a.expiresAt) - new Date(NOW)) / 86400000)))
+      : 'never';
+    S.drawer({
+      eyebrow:`announcement.edit &middot; tier ${F.OP_TIERS['announcement.edit']}`, title:'Announcement', wide:true,
+      body:`<div class="dwbody">
+        <div class="idop" style="border-left:3px solid ${F.annAccent(a)}">
+          <b>${lifecycle(a)}</b> &mdash; ${a.state === 'scheduled'
+            ? `starts ${fmt(a.startsAt)}, so nobody has seen it yet`
+            : a.state === 'expired' ? `ended ${fmt(a.expiresAt)}; it is never queried again`
+            : `delivered once per player, then never again for that player`}
+        </div>
+        <div class="dwfield" style="margin-top:14px"><label for="aText">Text &mdash; the only content field there is</label>
+          <textarea id="aText" rows="4">${esc(a.text)}</textarea></div>
+        <p class="dw-p">There is no title field, deliberately. A heading is markdown typed into the
+          text (<code># Like this</code>). There is no separate title field.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
+          <div class="dwfield"><label for="aStart">Starts (blank = immediately)</label>
+            <input id="aStart" type="date" value="${a.startsAt ? a.startsAt.slice(0,10) : ''}"></div>
+          <div class="dwfield"><label for="aExp">Expires in</label>
+            <input id="aExp" type="text" value="${expIn}" placeholder="days, or never"></div>
+        </div>
+        <p class="dw-p" id="expHint">Blank means the ${F.DEFAULT_EXPIRY_DAYS}-day default. A whole number of
+          days, or <code>never</code>. Not a date &mdash; the field the bot reads is a duration.</p>
+        <div class="idop" style="margin-top:14px">Accent <span style="display:inline-block;width:11px;height:11px;
+          border-radius:var(--rad-1);background:${F.annAccent(a)};vertical-align:-1px"></span>
+          <code>#${a.color.toString(16).padStart(6,'0')}</code> &mdash; generated once at creation and
+          <b>never regenerated on edit</b>. An edit is a correction to the same announcement, so its
+          colour is part of its identity.</div>
+        ${a.reach ? `<p class="dw-p">Seen by <b>${a.reach}</b> player${a.reach === 1 ? '' : 's'}.</p>`
+          : `<p class="dw-p">No deliveries recorded yet. Reach appears once players start seeing it.</p>`}
+      </div>`,
+      actions:`<button class="btn" id="aCancel">Cancel</button>
+               <button class="btn dang" id="aDel">Stage deletion</button>
+               <button class="btn go" id="aSave">Stage changes</button>`
+    });
+    const hint = document.getElementById('expHint');
+    aExp.addEventListener('input', () => {
+      const p = parseExpiry(aExp.value);
+      aExp.classList.toggle('err', !p.ok);
+      hint.innerHTML = p.ok ? `Reads as: <b>${p.how}</b>.`
+        : `<b style="color:var(--warn)">&ldquo;${esc(aExp.value)}&rdquo; is not understood.</b>
+           Blank, a whole number of days, or <code>never</code>.`;
+    });
+    document.getElementById('aCancel').onclick = () => S.closeDrawer();
+    document.getElementById('aDel').onclick = () => { S.closeDrawer(); stageDelete(a); };
+    document.getElementById('aSave').onclick = () => {
+      const p = parseExpiry(aExp.value);
+      if (!p.ok) { aExp.classList.add('err'); S.toast('Expiry must be blank, a whole number of days, or "never".'); return; }
+      const before = { text:a.text, startsAt:a.startsAt, expiresAt:a.expiresAt };
+      const after  = { text:aText.value, startsAt: aStart.value ? aStart.value + 'T00:00:00.000Z' : null, expiresAt: p.at ? p.at + 'T00:00:00.000Z' : null };
+      const rows = [];
+      if (before.text !== after.text) rows.push(['Text', before.text.slice(0,40), after.text.slice(0,40)]);
+      if ((before.startsAt||'') !== (after.startsAt||'')) rows.push(['Starts', fmt(before.startsAt) || 'immediately', fmt(after.startsAt) || 'immediately']);
+      if ((before.expiresAt||'') !== (after.expiresAt||'')) rows.push(['Ends', fmt(before.expiresAt) || 'never', fmt(after.expiresAt) || 'never']);
+      if (!rows.length) { S.closeDrawer(); S.toast('Nothing changed.'); return; }
+      Object.assign(a, after); a.staged = true; recompute(a);
+      const opId = 'bc-edit-' + a._id;
+      /* Registered BEFORE add(), and it RE-RENDERS — an inverse that restores state without
+       * repainting leaves the card showing the new value with nothing staged. */
+      S.Store.onInvert(opId, () => { Object.assign(a, before); a.staged = false; recompute(a); renderAll(); });
+      S.Store.add({ id:opId, name:after.text.slice(0, 34), verb:`${rows.length} field${rows.length===1?'':'s'} changed`,
+                    realm:'broadcast', op:'announcement.edit', rows });
+      S.closeDrawer();
+      S.toast('Change staged.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
+      renderAll();
+    };
+  }
+
+  /* No bulk-delete op exists for announcements, unlike loadouts. N deletes go into ONE
+   * changeset as N ops — which is exactly what a multi-op changeset is for. */
+  function stageDelete(a) {
+    /* 🔴 ONE OP, TWO IDENTITIES. This path said "Delete this announcement?" / "Stage deletion"
+     * / verb `deleted`; the table's trash path said "Remove this announcement?" / "Remove" /
+     * verb `removed`, for the SAME `announcement.delete`. A reader who learns "Remove is safe"
+     * from the table would read Delete here as something worse. One verb: Remove. */
+    S.confirm({ op:'announcement.delete', tier:F.OP_TIERS['announcement.delete'], danger:true, confirm:'Remove',
+      title:'Remove this announcement?',
+      body:`<p class="dw-p">Players who already saw it keep having seen it &mdash; the seen-list is per
+              player and is not rewound. Players who never saw it never will.</p>
+            <p class="dw-p">Tier ${F.OP_TIERS['announcement.delete']}: the inverse re-posts the whole record, colour and
+              creation date included, so this is exactly reversible.</p>`,
+      onConfirm(){
+        const i = st.ann.indexOf(a); st.ann.splice(i, 1);
+        const opId = 'bc-del-' + a._id;
+        S.Store.onInvert(opId, () => { st.ann.splice(i, 0, a); renderAll(); });
+        S.Store.add({ id:opId, name:a.text.slice(0, 34), verb:'removed', realm:'broadcast',
+                      op:'announcement.delete', destroys:true,
+                      rows:[['Text', a.text.slice(0,40), 'removed'],
+                            ['Posted', fmt(a.createdAt), '—'],
+                            ['Ends', a.expiresAt ? fmt(a.expiresAt) : 'never', '—']] });
+        S.toast('Removed — staged, not deleted.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
+        renderAll();
+      } });
+  }
+
+  function openPost() {
+    S.drawer({ eyebrow:`announcement.post &middot; tier ${F.OP_TIERS['announcement.post']}`, title:'Post an announcement',
+      body:`<div class="dwbody">
+        <div class="dwfield"><label for="pText">Text</label>
+          <textarea id="pText" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="dwfield"><label for="pStart">Starts (blank = immediately)</label><input id="pStart" type="date"></div>
+          <div class="dwfield"><label for="pExp">Expires in</label><input id="pExp" type="text" placeholder="blank, days, or never"></div>
+        </div>
+        <p class="dw-p" id="pHint">Blank means the ${F.DEFAULT_EXPIRY_DAYS}-day default.</p>
+        <p class="dw-p">A colour is generated for you at creation and never changes afterwards.
+          Every player who has not seen it gets it once, after their next slash command.</p>
+      </div>`,
+      actions:`<button class="btn" id="pCancel">Cancel</button><button class="btn go" id="pGo">Stage post</button>` });
+    pExp.addEventListener('input', () => { const p = parseExpiry(pExp.value);
+      pExp.classList.toggle('err', !p.ok);
+      pHint.innerHTML = p.ok ? `Reads as: <b>${p.how}</b>.` : `<b style="color:var(--warn)">Not understood.</b> Blank, a whole number of days, or <code>never</code>.`; });
+    document.getElementById('pCancel').onclick = () => S.closeDrawer();
+    document.getElementById('pGo').onclick = () => {
+      const text = pText.value.trim();
+      if (!text) { pText.classList.add('err'); S.toast('An announcement needs text.'); return; }
+      const p = parseExpiry(pExp.value);
+      if (!p.ok) { pExp.classList.add('err'); S.toast('Expiry must be blank, a whole number of days, or "never".'); return; }
+      const startsAt = pStart.value ? pStart.value + 'T00:00:00.000Z' : null;
+      const expiresAt = p.at ? p.at + 'T00:00:00.000Z' : null;
+      /* core/ops/announcements.js validates exactly this and rejects it in words. */
+      if (startsAt && expiresAt && startsAt > expiresAt) {
+        pStart.classList.add('err'); S.toast('An announcement that starts after it expires can never show.'); return; }
+      const a = recompute({ _id:'new-' + Date.now(), text, createdAt: NOW + 'T00:00:00.000Z',
+                            createdBy: F.OWNER_ID, startsAt, expiresAt, color: 0xF2C230, reach:0, staged:true });
+      st.ann.push(a);
+      const opId = 'bc-post-' + a._id;
+      S.Store.onInvert(opId, () => { st.ann = st.ann.filter(x => x !== a); renderAll(); });
+      S.Store.add({ id:opId, name:text.slice(0, 34), verb:'posted', realm:'broadcast', op:'announcement.post',
+                    rows:[['Text','—', text.slice(0,40)],
+                          ['Starts','—', fmt(startsAt) || 'immediately'],
+                          ['Ends','—', expiresAt ? fmt(expiresAt) : 'never']] });
+      S.closeDrawer();
+      S.toast('Post staged.', 'Undo', () => { S.Store.revert(opId); renderAll(); });
+      renderAll();
+      /* After renderAll — the node does not exist until the table is rebuilt. */
+      S.arrive(`#rows tr[data-id="${a._id}"]`);
+    };
+  }
+
+  /* ═══ MANIFEST ═══ */
+  function visible() {
+    let l = st.ann.slice();
+    if (st.filter !== 'all') l = l.filter(a => a.state === st.filter);
+    if (st.q) l = l.filter(a => a.text.toLowerCase().includes(st.q));
+    const k = st.sort.k, d = st.sort.dir;
+    return l.sort((x, y) => (String(x[k] ?? '') > String(y[k] ?? '') ? 1 : String(x[k] ?? '') < String(y[k] ?? '') ? -1 : 0) * d);
+  }
+  function renderRows() {
+    const l = visible();
+    count.textContent = `${l.length} of ${st.ann.length}`;
+    rows.innerHTML = l.length ? l.map(a => `
+      <tr data-id="${a._id}">
+        <td class="n"><span class="ncell"><span class="sev" style="background:${F.annAccent(a)}"></span>
+          <span><b>${esc(a.text.replace(/^#{1,3}\s+/,'').slice(0, 46))}</b><span class="rowmeta">up ${days(a.createdAt, NOW)}d</span></span></span></td>
+        <td class="nums drop-sm">${fmt(a.createdAt)}</td>
+        <td class="nums">${a.startsAt ? fmt(a.startsAt) : '<span class="none">immediately</span>'}</td>
+        <td class="nums">${a.expiresAt ? fmt(a.expiresAt) : '<b style="color:var(--warn)">never</b>'}</td>
+        <td class="ta-r"><!-- 🔴 THIS BADGE NEVER SET ITS OWN COLOUR VARIABLE. .stt.saved styles itself as a
+             FILLED chip (background from that variable, near-black text) — with it unset the
+             background resolved to nothing and near-black text sat on the dark row at 1.19:1.
+             It rendered as "styled as if filled, not actually filled", which no eye catches at
+             9px and no check caught until real computed contrast existed. The fix is NOT to give it a fill — on Broadcast the state is TEXT in a cell, which is
+             what Harkirat's own report described ("I can barely see it"). The bug was the FALLBACK:
+             color:var(--ci, var(--on-accent)) defaults to near-black, which is right on a fill and
+             catastrophic without one. .stt.saved now defaults to --ink2 and takes --ci only where a
+             fill actually exists. A fallback must be safe in the ABSENCE of what it falls back from.
+             ⚠️ AND THE FIRST VERSION OF THIS COMMENT BROKE THE PAGE — backticks inside an HTML
+             comment inside a TEMPLATE LITERAL terminate the literal. Second time today. -->
+          <span class="stt ${a.staged ? 'staged' : 'saved'}">${stateOf(a)}</span>
+          <span class="rowmeta" style="margin-left:6px">${lifecycle(a)}</span></td>
+        ${S.removeCell(a.text.replace(/^#{1,3}\s+/,'').slice(0, 46))}
+      </tr>`).join('') : `<tr><td colspan="6"><div class="empty">
+        ${st.q || st.filter !== 'all'
+          ? `<b>Nothing matches${st.q ? ' &ldquo;' + esc(st.q) + '&rdquo;' : ''}.</b> Clear the search or the filter &mdash; ${st.ann.length} announcements exist in total.`
+          : `<b>Nothing has ever been announced.</b> Players get no announcement message at all. Post one to change that.`}
+      </div></td></tr>`;
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      tr.querySelector('[data-rmv]').onclick = e => { e.stopPropagation(); removeAnn(tr.dataset.id); };
+      tr.onclick = e => { if (!e.target.closest('[data-rmv]')) openAnn(tr.dataset.id); };
+    });
+  }
+
+  /* core/ops registers announcement.delete as TIER 1 — apply() captures the document before
+   * removing it. Note that /manage has NO delete at all for announcements: utils/manageActions
+   * lists exactly `post` and `formatguide` for the announcement page, while core/ops carries
+   * post, edit AND delete. The op existed and no surface could reach it, which is the clearest
+   * single case for why this portal exists. */
+  function removeAnn(id) {
+    const a = st.ann.find(x => x._id === id); if (!a) return;
+    const title = a.text.replace(/^#{1,3}\s+/, '').slice(0, 60);
+    S.confirm({
+      /* The tier is DERIVED at Store.add() from core/ops; stating 1 here only made the two
+       * delete paths show different tiers in their confirmations for the same operation. */
+      title:'Remove this announcement?', op:'announcement.delete', tier:F.OP_TIERS['announcement.delete'], danger:true, confirm:'Remove',
+      body:'<p class="dw-p"><b>' + esc(title) + '</b></p><p class="dw-p">Players stop seeing it on their next command. ' +
+           'It is <b>staged, not deleted</b> — nothing is written until you commit on Review.</p>' +
+           /* 🔴 `lifecycle()` returns 'LIVE NOW', never 'live', so this callout had NEVER
+            * rendered once. `a.state` is the field it meant — the same one renderStats and
+            * queue() already read. */
+           (a.state === 'live' ? '<div class="callout">This one is <b>live right now</b>. Removing it is the only way to take it down early; there is no pause.</div>' : ''),
+      onConfirm(){
+        const at = st.ann.indexOf(a);
+        st.ann.splice(at, 1);
+        const sid = 'rm-ann-' + id;
+        S.Store.add({ id:sid, op:'announcement.delete', name:title, verb:'removed', tier:1, scope:'broadcast.all',
+          rows:[{ field:'Announcement', was:title, becomes:'(removed)' },
+                { field:'State', was:lifecycle(a), becomes:'—' }] });
+        S.Store.onInvert(sid, () => { st.ann.splice(at, 0, a); renderAll(); });
+        S.toast('Removed. Staged, not gone.', 'Undo', () => S.Store.revert(sid));
+        renderAll();
+      }
+    });
+  }
+
+  /* Broadcast has no /manage export either. The value here is not a paste format — there is
+   * no bulk-add flow to paste back into — it is the RECORD: what was said, when, and for how
+   * long. Two shapes, because "what is up now" and "everything ever" are different questions. */
+  function broadcastScopes() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const line = a => [fmt(a.createdAt), a.startsAt ? fmt(a.startsAt) : 'immediately',
+                       a.expiresAt ? fmt(a.expiresAt) : 'never', lifecycle(a),
+                       a.text.replace(/\n/g, ' \\n ')].join(' | ');
+    return [
+      { id:'broadcast.live', label:'What is live now', note:'Only the announcements a player would see on their next command.',
+        /* Same defect, and this one built an EMPTY FILE: the "what is live now" export
+         * permanently counted 0 because no announcement's lifecycle() is ever the string 'live'. */
+        count:st.ann.filter(a => a.state === 'live').length, unit:'announcements',
+        file:'dioreo-announcements-live-' + stamp + '.txt',
+        build:() => st.ann.filter(a => a.state === 'live').map(line).join('\n') },
+      { id:'broadcast.all', label:'Every announcement', note:'The full record — created, starts, expires, state, text.',
+        count:st.ann.length, unit:'announcements', file:'dioreo-announcements-' + stamp + '.txt',
+        build:() => st.ann.map(line).join('\n') }
+    ];
+  }
+
+  function renderKey() {
+    S.mastheadExport({ host:'#mhPost', scopes:broadcastScopes, label:'Export',
+      summary:() => st.ann.length + ' announcements · 2 formats' });
+    key.innerHTML = `<span class="l"><i></i>saved</span><span class="s"><i></i>staged</span>`;
+  }
+  function renderStats() {
+    const live = st.ann.filter(a => a.state === 'live').length;
+    const sched = st.ann.filter(a => a.state === 'scheduled').length;
+    const forever = st.ann.filter(a => a.state === 'live' && !a.expiresAt).length;
+    mhStats.innerHTML = `
+      <span class="stat lead" style="--c:var(--r-broadcast)"><span class="v">${live}</span> <span class="k">live</span></span>
+      <span class="stat"><span class="v">${sched}</span> <span class="k">scheduled</span></span>
+      <!-- A number in a page's own masthead is read as being about that page: this showed the
+           GLOBAL staged count, so four Season edits read as "4 staged" on Broadcast. index.html
+           already scopes its own. -->
+      <span class="stat stg"><span class="v" id="sStaged">${S.Store.all().filter(o => o.realm && o.realm.href === 'broadcast.html').length}</span> <span class="k">staged</span></span>
+      <span class="stat ${forever ? 'warn' : ''}"><span class="v">${forever}</span> <span class="k">never ends</span></span>`;
+    /* innerHTML, not textContent — an entity assigned to textContent renders as the literal
+     * characters "&middot;". Visible on screen and invisible to every geometric audit rule,
+     * because a stray entity is well-formed text. */
+    viewMeta.innerHTML = st.mode === 'queue'
+      ? `${live} in one message, oldest first &middot; cap ${F.MAX_EMBEDS_PER_MESSAGE}`
+      : `${st.ann.length} announcement${st.ann.length === 1 ? '' : 's'} on the axis`;
+  }
+  function renderAll(){ renderQueue(); renderAir(); renderHeadsUp(); renderRows(); renderKey(); renderStats(); S.mountRail('broadcast'); }
+
+  stateChips.innerHTML = ['live','scheduled','expired'].map(r =>
+    `<button class="chip" data-filter="${r}" aria-pressed="false">${r}</button>`).join('');
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    st.mode = b.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    viewQueue.hidden = st.mode !== 'queue'; viewAir.hidden = st.mode !== 'air';
+    document.getElementById('crumbView').textContent = { queue:'Delivery queue', air:'Airtime' }[st.mode];
+    renderStats();
+  });
+  document.querySelectorAll('[data-filter]').forEach(c => c.onclick = () => {
+    st.filter = c.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+    renderRows();
+  });
+  /* 🔴 THE ELEMENT THAT HANDLES THE CLICK IS THE ELEMENT THAT TAKES FOCUS. A <th> with an
+     onclick and no tabindex made every sort MOUSE-ONLY, on four realms, and the keyboard
+     pass could not see it because it selected by ROLE and a bare th has none. */
+  document.querySelectorAll('button.sortbtn').forEach(th => th.onclick = () => {
+    const k = th.dataset.sort;
+    st.sort = { k, dir: st.sort.k === k ? -st.sort.dir : 1 };
+    document.querySelectorAll('th.sortable').forEach(x => x.className = x.className.replace(/ sorted-\w+/, ''));
+    th.className += st.sort.dir === 1 ? ' sorted-asc' : ' sorted-desc';
+    renderRows();
+  });
+  q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
+  addBtn.onclick = openPost;
+  S.onAfterRevert = renderAll;
+
+  renderAll();
+  (window.Shell||window.S).holdTop();
+  S.audit({
+    interactions: () => [
+      { name:'announcement record', run: () => openAnn(st.ann[0]._id) },
+      { name:'post announcement', run: openPost }
+    ],
+    states: () => ['saved','staged']
+  });
+})();
+</script>
+<script>
+/* One handler, two entry points — the masthead action and the in-context shortcut must never be
+   able to disagree. Delegated, so it works no matter when the page wires its own button. */
+(function () {
+  const go = () => document.getElementById('addBtn')?.click();
+  document.getElementById('mhPost').addEventListener('click', go);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || !document.getElementById('cbDrop').hidden) return;
+    e.preventDefault(); go();
+  });
+})();
+</script>
+</body></html>

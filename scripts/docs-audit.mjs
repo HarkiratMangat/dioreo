@@ -914,7 +914,8 @@ const FM_KINDS = {
   idea: ["live"],
   legal: ["live"],
   spec: ["frozen", "superseded"],
-  plan: ["frozen", "superseded"],
+  // 🔴 `plan` GAINED `live` ON 2026-08-27 21:0x EDT, and the reason is the whole point of the field. Every plan here had been a frozen snapshot, which is right for a plan that is written once and then executed. It is WRONG for a plan that tracks its own execution: Harkirat asked for one that "never accidentally goes out of sync — mark off things that were done, or update the plan if anything changes midway". A frozen plan cannot do that, and forcing the status to `frozen` would have made the document lie about its own tense contract — the exact failure the field exists to prevent, pointing the other way. `spec` deliberately does NOT gain it: a dated design snapshot is superseded by a new one, never edited.
+  plan: ["frozen", "superseded", "live"],
   archive: ["dead"],
 };
 // The location→kind rule. Kept as ordered prefixes so the first match wins, mirroring the taxonomy table in CLAUDE.md. A new docs/ subdirectory MUST be added here, and that is intentional: an unclassifiable doc is a doc whose purpose nobody has decided.
@@ -922,6 +923,8 @@ const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
   ["docs/superpowers/specs/", "spec"],
+  // A mockup package's COMPANION is a LIVING reference — "read this to wire it correctly", kept true against the code — not a frozen dated snapshot like specs/. That distinction is the whole point of classifying it: a stale spec is correct, a stale COMPANION is a defect.
+  ["docs/superpowers/mockups/", "reference"],
   ["docs/superpowers/plans/", "plan"],
   ["docs/reference/", "reference"],
   ["docs/ideas/", "idea"],
@@ -930,6 +933,8 @@ const FM_RULE = [
 const fmExpected = (f) => {
   for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;
   if (["CONTRIBUTING.md", "CONTRIBUTORS.md", "SECURITY.md"].includes(f)) return "legal";
+  // PRODUCT.md is the impeccable skill's product record. It is a lookup doc (reference), but it MUST sit at the repo root: the skill's context.mjs resolves PROJECT_ROOT/PRODUCT.md and cannot be pointed at docs/reference/. Root placement is the tool's constraint, not a misfiling.
+  if (f === "PRODUCT.md" || f === "DESIGN.md") return "reference";
   if (f === "CLAUDE.md") return "guide";
   if (/^docs\/[^/]+\.md$/.test(f)) return "record";
   return null;

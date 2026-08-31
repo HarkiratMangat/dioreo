@@ -17,7 +17,7 @@ require.cache[adminUserPath] = {
 
 const {
     isOwner, hasCommandAccess, hasManagePageAccess, getManagePages,
-    parsePermissionsInput, formatPermissions, invalidateAdminCache, ADMIN_COMMANDS, MANAGE_PAGE_SCOPES,
+    parsePermissionsInput, formatPermissions, invalidateAdminCache, ADMIN_COMMANDS, MANAGE_PAGE_SCOPES, NOT_IN_ALL, unformattablePermissions,
 } = require('../utils/adminAccess');
 const { ALLOWED_ADMIN_ID } = require('../utils/owner');
 
@@ -86,7 +86,48 @@ async function run() {
         assert.deepStrictEqual(parsePermissionsInput('bot'), ['bot']);
         assert.strictEqual(parsePermissionsInput('alerts'), null, '"alerts" should no longer parse as a valid token');
         assert.strictEqual(parsePermissionsInput('audit'), null, '"audit" should no longer parse as a valid token');
-        assert.deepStrictEqual(parsePermissionsInput('all').slice().sort(), [...ADMIN_COMMANDS].sort());
+        /* 🔴 'all' EXPANDS TO EVERY COMMAND EXCEPT THE ONES ON NOT_IN_ALL, and asserting that
+         * explicitly is the whole point. The previous line read `[...ADMIN_COMMANDS].sort()`,
+         * which would have silently absorbed 'destructive' the moment it was added — a test that
+         * tracks the implementation cannot notice the implementation going wrong. */
+        assert.deepStrictEqual(parsePermissionsInput('all').slice().sort(),
+            ['autobuild', 'bot', 'manage'],
+            "'all' must stay a convenience for the three ordinary commands");
+    });
+
+    await check("🔴 'all' NEVER hands out 'destructive' -- a convenience that quietly grants irreversibility is the opposite of one", () => {
+        const all = parsePermissionsInput('all');
+        for (const token of NOT_IN_ALL) {
+            assert.ok(!all.includes(token),
+                `'all' expanded to "${token}"; tier-3 delegation must be typed, never inherited from a shorthand`);
+        }
+        /* And it must still be reachable when NAMED, or the token would be un-grantable and the
+         * exclusion above would be indistinguishable from the feature not existing. */
+        assert.deepStrictEqual(parsePermissionsInput('destructive'), ['destructive']);
+        assert.deepStrictEqual(parsePermissionsInput('manage,destructive').slice().sort(),
+            ['destructive', 'manage']);
+    });
+
+    await check("🔴 formatPermissions renders EVERY grantable token -- a permission that is granted and invisible is worse than one that is not granted", () => {
+        /* This exists because 'destructive' was added to ADMIN_COMMANDS and formatPermissions,
+         * which enumerates tokens by name, silently dropped it: ['destructive','manage'] read
+         * back as "/manage (full)". The owner reviewing an admin's access could not see that
+         * they held the right to purge. A hand-maintained formatter always loses the next token;
+         * this catches it at the point it is added. */
+        assert.deepStrictEqual(unformattablePermissions(), [],
+            'these grantable tokens render as nothing in a permission summary');
+        assert.ok(/one-way/i.test(formatPermissions(['destructive'])),
+            'the destructive token must name what it actually allows');
+        assert.ok(/one-way/i.test(formatPermissions(['manage', 'destructive'])),
+            'destructive must survive being listed alongside a broader token');
+    });
+
+    await check("every NOT_IN_ALL token is a real ADMIN_COMMAND -- an exclusion list naming a token that does not exist protects nothing", () => {
+        for (const token of NOT_IN_ALL) {
+            assert.ok(ADMIN_COMMANDS.includes(token),
+                `NOT_IN_ALL names "${token}", which is not in ADMIN_COMMANDS`);
+        }
+        assert.ok(NOT_IN_ALL.length > 0, 'NOT_IN_ALL is empty, so the exclusion test above is vacuous');
     });
 
     await check("formatPermissions renders the 'bot' token as /bot analytics, never as /alerts or /audit", () => {

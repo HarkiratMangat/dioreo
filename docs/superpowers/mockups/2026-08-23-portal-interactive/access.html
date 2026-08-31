@@ -1,0 +1,753 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Access · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787939712"><link rel="stylesheet" href="assets/app.css?v=1787939712">
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <h1>Access</h1>
+        <span class="job">Who can do what &mdash; and where you are the only one who can do it.</span>
+      </div>
+      <div class="mh-stats" id="mhStats"></div>
+      <!-- 🔴 THE PRIMARY DATA-MANAGEMENT ACTION BELONGS AT MASTHEAD LEVEL ON EVERY REALM.
+           Harkirat named the class, not the instance: "the page is just the visualization of what
+           they trigger." Measured across the portal earlier, every create control on every realm
+           sat below its own fold or under a filter row. Season and Armory were fixed one at a
+           time; this is the same fix applied everywhere, so a reader learns ONE place to look. -->
+      <button class="pill lead mh-new" id="mhGrant" accesskey="n">
+        <span class="mh-plus" aria-hidden="true">+</span> Grant access
+        <kbd>N</kbd>
+      </button>
+    </div>
+
+    <div id="ownerNote"></div>
+
+    <section class="panel" aria-label="Access view">
+      <div class="ph">
+        <span class="t">Access</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="grid" aria-pressed="true">By admin</button>
+          <button role="tab" data-view="scope" aria-pressed="false">By permission</button>
+        </div>
+        <span class="key" id="key"></span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (a matrix row: admin, cells, actions). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewGrid" data-async-host data-skel="4|22,52,14,10"></div>
+      <div id="viewScope" hidden></div>
+    </section>
+
+    <section class="panel" style="margin-top:16px" aria-label="Live portal sessions">
+      <div class="ph">
+        <span class="t">Signed in right now</span>
+        <span class="rt" id="sessCount"></span>
+        <span class="sp">Revoking an admin in Discord does not end their browser session. This does.</span>
+      </div>
+      <div id="viewSess"></div>
+    </section>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+<script src="assets/fixtures.js?v=1787939712"></script>
+<script src="assets/timeline.js?v=1787939712"></script>
+<script src="assets/icons.js?v=1787939712"></script>
+<script src="assets/shell.js?v=1787939712"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell, T = window.TL;
+  S.init('access');
+  S.mountHeader('Access', 'By admin');
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+   * FOUR THINGS THE PREVIOUS BUILD OF THIS PAGE GOT WRONG, all of them the same
+   * class — a name written confidently that exists nowhere in this system:
+   *   · an `editor` role ("granted scopes, no destructive action"). There are TWO
+   *     roles: the hardcoded owner and a Mongo-granted admin. It was not
+   *     unenforced, it was fictional, and calling it a gap invited someone to
+   *     build it.
+   *   · seven page scopes. utils/adminAccess.js has EIGHT, and the missing one was
+   *     `season` — the pseudo-page that exists precisely because editing what is
+   *     LIVE and staging what is NEXT are different blast radii.
+   *   · no command tokens at all, so a real admin in the dev database holding
+   *     ["manage","bot"] could not be represented on the page meant to show them.
+   *   · every grant STAGED into the tray. portal/api/access.js: admin grants and
+   *     revokes are "NOT part of the core operation algebra" — direct AdminUser
+   *     writes, gated by typing the target's own Discord ID. They never stage, and
+   *     the page's own copy about session revokes ("a security action that waits
+   *     in a tray is not a security action") is the argument for why.
+   * ═══════════════════════════════════════════════════════════════════════════ */
+  const SM = F.SCOPE_META, RM = F.ROLE_META;
+  const st = { mode:'grid', pending:{},
+               admins: F.accessAdmins.map(a => ({ ...a, grants: { ...a.grants } })),
+               sessions: F.sessions.map(s => ({ ...s })), notice:'' };
+  const COMMANDS = F.accessScopes.filter(s => s.kind === 'command');
+  const PAGES    = F.accessScopes.filter(s => s.kind === 'page');
+  const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+  const fmt = d => d ? T.fmt(String(d).slice(0, 10)) : '—';
+  const held = (a, k) => (a.grants[k] || {}).held;
+  const holders = k => st.admins.filter(a => held(a, k)).map(a => a.discordId);
+
+  /* Recomputed rather than read back from the fixture, so a grant made on this page
+   * updates inheritance and single-points-of-failure the same way the server would.
+   * utils/adminAccess.js: a bare `manage` covers every page; a `manage.<page>` covers one. */
+  function recompute(a) {
+    for (const s of F.accessScopes) {
+      const direct = a.permissions.includes(s.key);
+      const inherited = s.kind === 'page' && !direct && a.permissions.includes('manage');
+      a.grants[s.key] = { direct, inherited, held: direct || inherited };
+    }
+    return a;
+  }
+  /* 🔴 THE EXPORT IS THE ANSWER. This used to re-derive single-points-of-failure with a rule
+   * that deliberately excluded `manage`, reproducing a blind spot in the endpoint — and then the
+   * endpoint was FIXED in the same commit series, so the page said 5 while `F.spof` (exported
+   * from the real singlePointsOfFailure) said 6, and index.html rendered 6 beside it. The comment
+   * even said "filed as a finding, not patched here" about a defect already patched.
+   *
+   * Derived from the live grants when they change on this page, seeded from the export otherwise,
+   * and — critically — using the SAME rule the endpoint now uses: `manage` counts as itself AND
+   * expands. One definition, in one function, matching the server's. */
+  const EXPORT_SPOF = new Set(F.spof.map(s => s.scope));
+  let touched = false;                      // set once a grant is edited here
+  const spofScopes = () => touched
+    ? new Set(F.accessScopes.map(s => s.key).filter(k => holders(k).length === 1))
+    : new Set(EXPORT_SPOF);
+  const unheld     = () => F.accessScopes.map(s => s.key).filter(k => holders(k).length === 0);
+
+  /* ═══ THE OWNER NOTE ═══ this realm is not page-scoped at all. portal/api/realmAccess.js
+   * pushes 'access' onto the visible list only `if (owner)`, and portal/api/access.js wraps
+   * every route in ownerOnly(). It has no token, at any scope, ever. */
+  function renderOwnerNote() {
+    ownerNote.innerHTML = `
+      <div class="panel" style="margin-bottom:16px"><div class="callout">
+        <b>Owner-only, and not by choice.</b> Access has <b>no grantable permission</b> &mdash; there is
+        nothing here you could hand out if you wanted to, and the rail hides this page entirely for
+        anyone else, exactly like <code>/bot access</code> in Discord.
+        The owner is <code>&hellip;${esc(F.OWNER_ID.slice(-6))}</code> and holds everything regardless
+        of this list.
+      </div></div>`;
+  }
+
+  /* ═══ VIEW 1 · BY ADMIN — THE GRID ═══
+   * ⚠️ DIRECT vs INHERITED IS THE ENTIRE REASON A GRID BEATS THE STRING IT REPLACES.
+   * A bare `manage` lights all eight page columns — but you did not hand those pages
+   * over one at a time, and revoking `manage` takes all eight back at once. Collapsing
+   * the two into one boolean loses the only thing you needed to see. */
+  function renderGrid() {
+    const spof = spofScopes();
+    viewGrid.innerHTML = `
+      <div class="mxwrap">
+        <table class="mx">
+          <thead>
+            <tr class="mxgrp">
+              <th class="mxwho"></th>
+              <th colspan="${COMMANDS.length}"><span>Commands</span></th>
+              <th colspan="${PAGES.length}"><span>/manage pages</span></th>
+              <th></th>
+            </tr>
+            <tr>
+              <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
+              <!-- 🔴 AN OWNER-ONLY TOKEN MUST NOT LOOK LIKE THE OTHER ELEVEN. The destructive scope
+                   is the first in this model whose GRANTING is restricted — any admin holding a bare
+                   manage token can hand out page scopes, and nobody but the owner can hand out this
+                   one. (No backticks in this comment: it lives inside a template literal, and a
+                   backtick here kills the page — the fifth occurrence of that, caught by the parse
+                   gate within a minute of writing it.)
+                   A column that renders identically to its neighbours while behaving differently is
+                   exactly the "one class, two contracts" failure that put Broadcast's ruler 128px off
+                   its own lanes. So it carries a lock and the legend says what the lock means. -->
+              ${F.accessScopes.map(s => `<th><span class="mxs mxcol ${spof.has(s.key) ? 'spof' : ''}${s.ownerOnly ? ' ownly' : ''}" data-tip="${spof.has(s.key) ? s.label + ' — single point of failure: exactly one person besides the owner holds it' : s.label}"
+                    style="--c:${SM[s.key].hex}" data-tip="${esc(s.key)} — ${holders(s.key).length} holder${holders(s.key).length === 1 ? '' : 's'} besides the owner${SM[s.key].realm !== '—' ? ' · portal realm: ' + SM[s.key].realm : ' · Discord only, no portal realm'}">
+                  <i></i>${esc(s.label)}${s.ownerOnly ? '<b class="ownly-k" aria-label="owner-grantable only">&#128274;</b>' : ''}<em class="mxn2">${holders(s.key).length}</em></span></th>`).join('')}
+              <th><span class="mxs">&nbsp;</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="ownerrow">
+              <td class="mxwho"><span class="mxid">
+                <span class="mxav">${S.icon('user')}</span>
+                <span class="mxn"><b>Owner</b><span>&hellip;${esc(F.OWNER_ID.slice(-6))} &middot; built in</span></span>
+              </span></td>
+              ${F.accessScopes.map(s => `<td><span class="mxcell on locked" style="--c:${SM[s.key].hex}"
+                  role="img" aria-label="${esc(s.label)}: held by the owner, not editable"
+                  data-tip="The owner short-circuits every check"></span></td>`).join('')}
+              <td><span class="holder">locked</span></td>
+            </tr>
+            ${st.admins.map(a => `
+            <tr data-admin="${esc(a.discordId)}">
+              <td class="mxwho"><span class="mxid">
+                <span class="mxav">${esc(a.note ? a.note[0].toUpperCase() : a.discordId.slice(-1))}</span>
+                <span class="mxn"><b>&hellip;${esc(a.discordId.slice(-6))}</b><span>${esc(a.note || 'no label')} &middot; granted ${fmt(a.grantedAt)}</span></span>
+              </span></td>
+              ${F.accessScopes.map(s => {
+                const g = a.grants[s.key] || {};
+                const pk = a.discordId + '|' + s.key;
+                const pend = st.pending[pk];
+                const base = g.direct ? 'on' : g.inherited ? 'inh' : '';
+                /* A pending cell shows what it WILL be, ringed, so the matrix reads as the
+                 * state you are about to save rather than the one you are leaving. */
+                const cls = pend === true ? 'on pend' : pend === false ? 'pend off' : base;
+                const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
+                const willBe = pend === true ? ' — pending: will be granted'
+                             : pend === false ? ' — pending: will be revoked' : '';
+                return `<td><button class="mxcell ${cls}${g.inherited && pend === undefined ? ' inherited' : ''}"
+                    style="--c:${SM[s.key].hex}" data-cell="${esc(a.discordId)}" data-scope="${esc(s.key)}"
+                    aria-pressed="${pend === undefined ? !!(g.direct || g.inherited) : pend}"
+                    aria-label="${esc(s.label)} for ${esc(a.discordId.slice(-6))}: ${what}${willBe}"
+                    data-tip="${esc(s.label)} — ${what}${willBe}"></button></td>`;
+              }).join('')}
+              <td class="mxact"><span class="mxacts">
+                <button class="chip" data-edit="${esc(a.discordId)}">Edit</button>
+                <button class="rmv" data-drop="${esc(a.discordId)}" aria-label="Revoke …${esc(a.discordId.slice(-6))} entirely">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>
+                </button>
+              </span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="mxfoot">
+        <span><span class="mxlegend on"></span>granted <b>directly</b> &mdash; revoking it removes exactly this.</span>
+        <span><span class="mxlegend inh"></span><b>inherited</b> &mdash; holding <code>manage</code> covers every page at once.
+        <!-- ⚠️ THE RING'S KEY USED TO BE HERE AND IT DID NOT WORK. It was added here when someone
+             noticed the mark was unexplained, which treated absence when the defect was DISTANCE:
+             600px below the marks, while the key for direct/inherited sat 60px above them. It now
+             lives with the other two marks. This line stays only to say WHY it moved, so the next
+             reader does not "restore" it and recreate two authorities for one mark. -->
+        </span>
+        <span class="sp" style="flex:1"></span>
+        <button class="chip go" id="grantBtn">+ Grant access</button>
+      </div>
+      <p class="racknote">${F.PERM_TOKENS.length} permissions: four commands (<code>manage</code>, <code>autobuild</code>,
+        <code>bot</code>, <code>destructive</code>) and eight <code>/manage</code> pages.
+        <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and
+        <b>never to <code>destructive</code></b> &mdash; a convenience that quietly hands out
+        irreversibility is the opposite of one. An admin must always hold at least one permission
+        &mdash; an admin with nothing granted should be revoked, not parked in limbo.
+        <b>&#128274; <code>destructive</code> is a real permission in the bot</b>, and the only one
+        the <code>all</code> shorthand never includes &mdash; it can arrive only by being typed
+        deliberately, because a convenience that quietly hands out irreversibility is not one.</p>`;
+    viewGrid.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openAdmin(b.dataset.edit));
+    viewGrid.querySelectorAll('[data-drop]').forEach(b => b.onclick = () => {
+      const a = st.admins.find(x => x.discordId === b.dataset.drop); if (a) confirmRevoke(a); });
+    viewGrid.querySelectorAll('[data-cell]').forEach(b => b.onclick = () => cellClick(b.dataset.cell, b.dataset.scope));
+    document.getElementById('grantBtn').onclick = openGrant;
+  }
+
+  /* ═══ VIEW 2 · BY SCOPE ═══
+   * The inverse of the grid, answering what a row structurally cannot: "who can touch
+   * the calendar?" without reading across. Derived from the SAME grants, so the two
+   * views can never disagree. Two findings live only here — a scope held by exactly
+   * ONE person, and a scope held by NOBODY but the owner. */
+  function renderScope() {
+    const spof = spofScopes(), none = new Set(unheld());
+    viewScope.innerHTML = `
+      <div class="scopes">
+        ${F.accessScopes.map(s => {
+          const hs = holders(s.key);
+          const flag = spof.has(s.key) ? 'spof' : none.has(s.key) ? 'lone' : '';
+          return `<div class="scope ${flag}" style="--c:${SM[s.key].hex}">
+            <span class="nm"><i></i>${esc(s.label)}<em>${esc(s.key)}</em></span>
+            <span class="hs">
+              <span class="holder owner" data-tip="The owner holds every permission implicitly">owner</span>
+              ${hs.map(id => `<span class="holder">&hellip;${esc(id.slice(-6))}</span>`).join('')}
+            </span>
+            <span class="rl">${SM[s.key].realm === '—'
+              ? '<span class="none">Discord only</span>'
+              : `reaches <b>${esc(SM[s.key].realm)}</b>`}</span>
+            ${flag === 'spof' ? `<span class="flag">single point &mdash; only ${esc(hs[0].slice(-6))} besides you</span>` : ''}
+            ${flag === 'lone' ? `<span class="flag quiet">nobody but you</span>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="mxfoot">
+        <span><b style="color:var(--warn)">Single point</b> &mdash; exactly one non-owner holds it. If they
+          go, you are the only one left who can do it.</span>
+        <span><b>Nobody but you</b> &mdash; zero non-owner holders. Safe, and also the reason you are
+          still doing it yourself.</span>
+      </div>`;
+  }
+
+  /* ═══ SESSIONS ═══
+   * models/PortalSession.js: sessionHash (the cookie holds the raw value, the database
+   * holds only a hash), discordId, lastSeenAt, userAgent, revokedAt. NO IP is stored
+   * anywhere — an earlier build of this page had an `ip` column and a `current` flag,
+   * and neither field exists. "Signed in now" is DERIVED from lastSeenAt inside 15
+   * minutes, because a browser session has no logout event unless somebody clicks one. */
+  function renderSess() {
+    const liveN = st.sessions.filter(isLive).length;
+    sessCount.textContent = st.sessions.length
+      ? `${liveN} active &middot; ${st.sessions.length} total`
+      : 'none';
+    viewSess.innerHTML = st.sessions.length ? `
+      <div class="sesslist">
+        ${st.sessions.map(s => `
+          <div class="sess ${isLive(s) ? '' : 'stale'}">
+            <span class="sdot" aria-hidden="true"></span>
+            <span class="sessb">
+              <b>&hellip;${esc(s.discordId.slice(-6))}</b>
+              <span>${esc(s.userAgent || 'device not recorded')} &middot; ${rel(s.lastSeenAt)}</span>
+            </span>
+            <button class="chip danger" data-end="${esc(s.sessionHash)}">End session</button>
+          </div>`).join('')}
+      </div>
+      <div class="mxfoot">
+        <span>Sessions expire after <b>${F.SESSION_TTL_HOURS} hours</b> on their own &mdash; nothing has to be cleaned up.</span>
+        <span>Ending one is immediate and unstaged &mdash; a security action that waits in a tray is not one.</span>
+      </div>`
+    : `<div class="estate">
+        <span class="eicon">◍</span>
+        <h4>Nobody is signed in to the portal</h4>
+        <p>Your own session should always be in this list, so an empty list means it failed to
+          load rather than that nobody is here. Reload the page.</p>
+        <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves
+          their tab working until it expires ${F.SESSION_TTL_HOURS} hours after sign-in &mdash; ending it
+          here is the only thing that closes that window.</p>
+      </div>`;
+    viewSess.querySelectorAll('[data-end]').forEach(b => b.onclick = () => endSession(b.dataset.end));
+  }
+  const isLive = s => Date.now() - new Date(s.lastSeenAt).getTime() < F.SESSION_LIVE_MS;
+  function rel(v) {
+    const secs = Math.max(0, Math.round((Date.now() - new Date(v).getTime()) / 1000));
+    if (secs < 90) return 'here now';
+    if (secs < 5400) return `${Math.round(secs / 60)}m ago`;
+    if (secs < 172800) return `${Math.round(secs / 3600)}h ago`;
+    return `${Math.round(secs / 86400)}d ago`;
+  }
+  function endSession(hash) {
+    const s = st.sessions.find(x => x.sessionHash === hash); if (!s) return;
+    S.confirm({ op:'session.end', danger:true, confirm:'End it now',
+      title:`End the session for …${s.discordId.slice(-6)}?`,
+      /* Staging is server-side (§15.11), so ending a session does not touch it. This used to say
+       * the opposite, which made three screens disagree about the one fact worth being sure of. */
+      body:`<p class="dw-p">Immediate, and nothing to commit. Anything they have staged is kept
+              against their account and will be there when they sign in again.</p>`,
+      onConfirm(){ st.sessions = st.sessions.filter(x => x !== s);
+        S.toast('Session ended.'); renderAll(); } });
+  }
+
+  /* ═══ GRANT / EDIT / REVOKE ═══
+   * ⚠️ THESE DO NOT STAGE. portal/api/access.js writes AdminUser directly; the only
+   * safeguard is typing the target's own Discord ID, and that is deliberate — the
+   * export half of the tier-3 gate is meaningless for a permission change, because
+   * there is no data to export. So there is no tray, no review screen, and no undo:
+   * the confirmation IS the gate.
+   *
+   * ⚠️ AND ONE BAD TOKEN REJECTS THE WHOLE SUBMISSION. parsePermissionsInput returns
+   * null if any token is unrecognised, on the stated reasoning that a partial grant
+   * from a typo is worse than an error. Reproduced here rather than softened. */
+  function parseTokens(raw) {
+    const toks = (raw || '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    if (!toks.length) return { ok:false, why:'An admin must always hold at least one permission.' };
+    if (toks.length === 1 && toks[0] === 'all') return { ok:true, list:['manage','autobuild','bot'], note:'“all” expanded to the three command permissions.' };
+    const bad = toks.filter(t => !F.PERM_TOKENS.includes(t));
+    if (bad.length) return { ok:false, why:`${bad.map(b => `“${b}”`).join(', ')} ${bad.length === 1 ? 'is not a' : 'are not'} recognised permission${bad.length === 1 ? '' : 's'}. Nothing is granted until every name is valid.` };
+    return { ok:true, list:[...new Set(toks)] };
+  }
+
+  function grantForm(a) {
+    const editing = !!a;
+    const idField = editing
+      ? `<div class="dwfield"><label>Discord ID</label><input type="text" value="${esc(a.discordId)}" readonly></div>`
+      : `<div class="dwfield"><label for="gId">Discord ID</label>
+           <input id="gId" type="text" placeholder="17–19 digits" inputmode="numeric" autocomplete="off"></div>`;
+    return `<div class="dwbody">
+      ${idField}
+      <div class="dwfield"><label for="gPerm">Permissions &mdash; comma separated</label>
+        <input id="gPerm" type="text" value="${editing ? esc(a.permissions.join(',')) : ''}"
+               placeholder="e.g. manage.draws,manage.calendar,bot" autocomplete="off"></div>
+      <p class="dw-p" id="gHint">${F.PERM_TOKENS.length} permissions are valid. <code>manage</code> alone means every page, and <code>destructive</code> is the one the owner alone can hand out.</p>
+      <div class="tokgrid" id="tokGrid">
+        ${F.accessScopes.map(s => `<button class="chip topic" data-tok="${esc(s.key)}" aria-pressed="false"
+            style="--c:${SM[s.key].hex}" title="${esc(s.key)}"><i></i>${esc(s.label)}</button>`).join('')}
+      </div>
+      <div class="dwfield" style="margin-top:14px"><label for="gNote">Label (optional)</label>
+        <input id="gNote" type="text" value="${editing ? esc(a.note) : ''}" placeholder="How you will recognise them"></div>
+      <div class="dwfield"><label for="gConf">Type the Discord ID again to confirm</label>
+        <input id="gConf" type="text" placeholder="${editing ? esc(a.discordId) : 'the same 17–19 digits'}" autocomplete="off"></div>
+      <p class="dw-p"><b>This commits immediately.</b> A permission change is not staged and has no
+        review screen &mdash; typing the ID is the entire gate, because there is no data to export and
+        nothing meaningful to preview. It takes effect in the bot within
+        ${F.ADMIN_CACHE_TTL_MS / 1000}s at worst; the allowlist cache is invalidated on write, so in
+        practice on their very next click.</p>
+    </div>`;
+  }
+
+  function wireGrantForm(a, onCommit) {
+    const editing = !!a;
+    const idOf = () => editing ? a.discordId : (document.getElementById('gId').value.trim());
+    const hint = document.getElementById('gHint');
+    const sync = () => {
+      const p = parseTokens(gPerm.value);
+      const set = new Set(p.ok ? p.list : []);
+      document.querySelectorAll('[data-tok]').forEach(b => {
+        const k = b.dataset.tok;
+        const inh = !set.has(k) && set.has('manage') && k.startsWith('manage.');
+        b.setAttribute('aria-pressed', String(set.has(k)));
+        b.classList.toggle('inh', inh);
+      });
+      gPerm.classList.toggle('err', !p.ok);
+      hint.innerHTML = p.ok
+        ? `<b>${p.list.length} permission${p.list.length === 1 ? '' : 's'}</b> &mdash; ${p.list.map(t => `<code>${esc(t)}</code>`).join(' ')}${p.note ? ' &middot; ' + p.note : ''}${p.list.includes('manage') ? ' &middot; <code>manage</code> lights every page by inheritance.' : ''}`
+        : `<b style="color:var(--warn)">${p.why}</b>`;
+    };
+    gPerm.addEventListener('input', sync);
+    document.querySelectorAll('[data-tok]').forEach(b => b.onclick = () => {
+      const k = b.dataset.tok;
+      const cur = new Set(gPerm.value.split(',').map(t => t.trim()).filter(Boolean));
+      cur.has(k) ? cur.delete(k) : cur.add(k);
+      gPerm.value = [...cur].join(','); sync();
+    });
+    const check = () => {
+      const p = parseTokens(gPerm.value);
+      go.disabled = !(p.ok && idOf() && gConf.value.trim() === idOf());
+    };
+    ['input','change'].forEach(ev => {
+      gPerm.addEventListener(ev, check); gConf.addEventListener(ev, check);
+      if (!editing) gId.addEventListener(ev, check);
+    });
+    document.querySelectorAll('[data-tok]').forEach(b => b.addEventListener('click', check));
+    sync(); check();
+    go.onclick = () => {
+      const id = idOf(), p = parseTokens(gPerm.value);
+      if (!editing && !/^\d{17,19}$/.test(id)) { gId.classList.add('err');
+        S.toast('A Discord ID is 17–19 digits. Right-click a user with developer mode on to copy it.'); return; }
+      if (!p.ok) { gPerm.classList.add('err'); S.toast(p.why); return; }
+      onCommit(id, p.list, document.getElementById('gNote').value.trim());
+    };
+  }
+
+  function openGrant() {
+    S.drawer({ eyebrow:'Grant access &middot; commits immediately, typed confirmation', title:'Grant portal access', wide:true,
+      body: grantForm(null),
+      actions:`<button class="btn" id="cancel">Cancel</button><button class="btn go" id="go" disabled>Grant now</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    wireGrantForm(null, (id, list, note) => {
+      touched = true;
+      st.admins.push(recompute({ discordId:id, permissions:list, note, grantedBy:F.OWNER_ID,
+                                 grantedAt:F.today, grants:{} }));
+      S.closeDrawer();
+      S.toast(`Granted ${list.length} permission${list.length === 1 ? '' : 's'} to …${id.slice(-6)}. Live in the bot on their next click.`);
+      renderAll();
+    });
+  }
+
+  function openAdmin(id) {
+    const a = st.admins.find(x => x.discordId === id); if (!a) return;
+    S.drawer({ eyebrow:'Edit access &middot; commits immediately, typed confirmation', title:`…${a.discordId.slice(-6)}`, wide:true,
+      body: `<div class="idop"><b>${RM.admin.label}</b> &mdash; ${RM.admin.note}</div>
+             <div class="idop" style="margin-top:8px">Granted by
+               <code>&hellip;${esc((a.grantedBy || '').slice(-6))}</code> on <b>${fmt(a.grantedAt)}</b>.
+               <span style="color:var(--ink3)">Only the owner may grant, revoke or edit permissions &mdash;
+               so this is always you.</span></div>`
+             + grantForm(a),
+      actions:`<button class="btn" id="cancel">Cancel</button>
+               <button class="btn dang" id="revoke">Revoke everything&hellip;</button>
+               <button class="btn go" id="go" disabled>Save permissions</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    document.getElementById('revoke').onclick = () => { S.closeDrawer(); confirmRevoke(a); };
+    wireGrantForm(a, (_id, list) => {
+      const before = a.permissions.slice();
+      a.permissions = list; recompute(a); touched = true;
+      S.closeDrawer();
+      S.toast(`Permissions updated: ${before.length} → ${list.length} permission${list.length === 1 ? '' : 's'}.`);
+      renderAll();
+    });
+  }
+
+  function confirmRevoke(a) {
+    const lost = F.accessScopes.filter(s => held(a, s.key)).map(s => s.label);
+    const orphaned = F.accessScopes.filter(s => held(a, s.key) && holders(s.key).length === 1).map(s => s.label);
+    S.drawer({ eyebrow:'Revoke access &middot; commits immediately, typed confirmation', title:`Revoke …${a.discordId.slice(-6)}?`,
+      body:`<div class="dwbody">
+        <p class="dw-p">Deletes the whole <code>AdminUser</code> document &mdash; there is no partial
+          revoke here, and no undo. They keep their Discord account and every public command; they
+          stop being an admin.</p>
+        <p class="dw-p">They lose <b>${lost.length}</b> permission${lost.length === 1 ? '' : 's'}:
+          ${esc(lost.join(', ')) || 'none'}.</p>
+        ${orphaned.length ? `<div class="callout"><b>You would be the only one left</b> holding
+          ${esc(orphaned.join(', '))}. That is not a reason not to &mdash; it is the thing you cannot see
+          from a permissions string.</div>` : ''}
+        <p class="dw-p">Their browser session, if any, keeps working until it is ended above or
+          expires ${F.SESSION_TTL_HOURS}h after sign-in. Revoking in the bot does not close a tab.</p>
+        <div class="dwfield" style="margin-top:12px"><label for="rConf">Type <code>${esc(a.discordId)}</code> to confirm</label>
+          <input id="rConf" type="text" autocomplete="off"></div>
+      </div>`,
+      actions:`<button class="btn" id="cancel">Cancel</button><button class="btn dang" id="go" disabled>Revoke now</button>` });
+    document.getElementById('cancel').onclick = () => S.closeDrawer();
+    rConf.addEventListener('input', () => { go.disabled = rConf.value.trim() !== a.discordId; });
+    go.onclick = () => {
+      st.admins = st.admins.filter(x => x !== a); touched = true;
+      S.closeDrawer(); S.toast(`…${a.discordId.slice(-6)} revoked. There is no undo for this one.`);
+      renderAll();
+    };
+  }
+
+  /* Access has no /manage export at all — utils/manageActions registers nine export
+   * actions and none of them is permissions. It gets one anyway, because the portal is not
+   * limited to what the Discord panel can do and "who could do what, on this date" is the
+   * single most useful thing to be able to hand to someone later. Two shapes: the matrix as
+   * a grid (readable), and one row per grant (greppable, diffable against last month's). */
+  function accessScopes() {
+    const stamp = new Date().toISOString().slice(0, 10);
+    return [
+      { id:'access.matrix', label:'The matrix', note:'One row per admin, one column per permission — the grid as you see it.',
+        count:st.admins.length, unit:'admins', file:'dioreo-access-matrix-' + stamp + '.tsv',
+        build(){
+          const head = ['ADMIN','LABEL','GRANTED'].concat(F.accessScopes.map(x => x.key.toUpperCase()));
+          const rows = st.admins.map(a => [a.discordId, a.note || '', fmt(a.grantedAt)]
+            .concat(F.accessScopes.map(x => { const g = a.grants[x.key] || {};
+              return g.direct ? 'direct' : g.inherited ? 'inherited' : ''; })));
+          return ['# Dioreo — access matrix · ' + new Date().toISOString(),
+                  '# The owner holds every permission implicitly and is not a row here.',
+                  head.join('\t')].concat(rows.map(r => r.join('\t'))).join('\n');
+        } },
+      { id:'access.grants', label:'One line per grant', note:'Long form — one line per grant, easy to search or compare against an older export.',
+        count:st.admins.reduce((n, a) => n + F.accessScopes.filter(x => held(a, x.key)).length, 0),
+        unit:'grants', file:'dioreo-access-grants-' + stamp + '.txt',
+        build(){
+          const out = [];
+          st.admins.forEach(a => F.accessScopes.forEach(x => { const g = a.grants[x.key] || {};
+            if (g.direct || g.inherited) out.push(a.discordId + ' | ' + x.key + ' | ' + (g.direct ? 'direct' : 'inherited') + ' | ' + (a.note || '')); }));
+          return out.join('\n');
+        } },
+      { id:'access.sessions', label:'Browser sessions', note:'Who is signed into the portal right now, and until when.',
+        count:st.sessions.length, unit:'sessions', file:'dioreo-access-sessions-' + stamp + '.txt',
+        build(){ return st.sessions.map(x => [x.discordId, x.signedInAt, isLive(x) ? 'LIVE' : 'expired'].join(' | ')).join('\n'); } }
+    ];
+  }
+
+  function renderKey() {
+    /* The legend names states PRESENT on screen (audit rule 7). The lock is always present
+       because the column always is, so it is always named. */
+    const nSpof = spofScopes().size;
+    key.innerHTML = `<span class="l"><i></i>direct</span><span class="s"><i></i>inherited</span>` +
+      /* data-note: these explain a COLUMN mark, not a cell state — see audit rule 6. */
+      (nSpof ? `<span class="l spofk" data-note><i></i>underlined &mdash; held by <b>one person</b> besides you</span>` : '') +
+      `<span class="l" data-note><i style="background:none">&#128274;</i>owner-grantable only</span>`;
+  }
+  function renderStats() {
+    const spofN = spofScopes().size, liveN = st.sessions.filter(isLive).length;
+    mhStats.innerHTML = `
+      <span class="stat lead" style="--c:var(--r-access)"><span class="v">${st.admins.length}</span> <span class="k">granted</span></span>
+      <span class="stat"><span class="v">${st.admins.reduce((n, a) => n + a.permissions.length, 0)}</span> <span class="k">permissions</span></span>
+      <span class="stat"><span class="v">${liveN}</span> <span class="k">signed in</span></span>
+      <span class="stat ${spofN ? 'warn' : ''}"><span class="v">${spofN}</span> <span class="k">single points</span></span>`;
+    viewMeta.innerHTML = st.mode === 'grid'
+      ? `${st.admins.length} admin${st.admins.length === 1 ? '' : 's'} &times; ${F.accessScopes.length} permissions`
+      : `${spofScopes().size} single point${spofScopes().size === 1 ? '' : 's'} &middot; ${unheld().length} held by nobody but you`;
+  }
+  /* ══════════════════════════════════════════════════════════════════════════
+   * CLICK-TO-TOGGLE — Harkirat, 2026-08-24: "why can't i just directly click these
+   * boxes to give/revoke access and then just click an overall 'save' at the end
+   * somewhere". Before this the matrix was 8 scopes x N admins of `role="img"` spans:
+   * it DISPLAYED the answer to the question the page exists to answer and could not
+   * change it. Every edit went through a drawer, one admin at a time.
+   *
+   * The decided shape, and why each half is deliberate:
+   *   · click any cell freely — no dialog per click, no staging tray. The tray is for
+   *     work that crosses realms and commits together; permissions are one write to one
+   *     collection and portal/api/access.js writes them DIRECTLY, so routing them through
+   *     the changeset would state a transaction the API does not have.
+   *   · ONE Save, ONE confirm listing every grant and every revoke. Reading the whole
+   *     diff once is what makes a batch safer than eight separate yes-clicks, not less safe.
+   *   · a typed id is required only when a revoke would leave someone with NO scope at
+   *     all — the one outcome that is not a permission change but an admin ceasing to exist.
+   *
+   * 🔴 AN INHERITED CELL IS NOT TOGGLEABLE, and saying so is the point. It is filled by a
+   * bare `manage` token covering every page at once, so "revoking" it here would silently
+   * mean revoking `manage` — a far wider act than the cell describes. Clicking one explains
+   * where the grant comes from instead of quietly doing something bigger than it looks. */
+  function cellClick(id, scope) {
+    const a = st.admins.find(x => x.discordId === id); if (!a) return;
+    const g = a.grants[scope] || {};
+    /* 🔴 ONLY THE OWNER MAY HAND OUT THE DESTRUCTIVE CAPABILITY. Every other token in this model
+     * can be granted by anyone holding a bare `manage`; this one cannot, and that asymmetry is
+     * the whole point of it — a delegated admin must not be able to delegate irreversibility
+     * onward. Refused with the REASON rather than a dead cell, because a cell that does nothing
+     * and says nothing reads as a bug. */
+    const sc = F.accessScopes.find(x => x.key === scope) || {};
+    if (sc.ownerOnly && !S.actor().isOwner) {
+      S.toast('Only the owner can grant or revoke ' + sc.label + '. It is the one permission that holding manage does not cover.');
+      return;
+    }
+    if (g.inherited && !g.direct) {
+      S.toast('That one is inherited from manage, which covers every page. Edit manage to change it.', 'Edit', () => openAdmin(id));
+      return;
+    }
+    const pk = id + '|' + scope;
+    const now = st.pending[pk] === undefined ? !!g.direct : st.pending[pk];
+    const next = !now;
+    if (next === !!g.direct) delete st.pending[pk]; else st.pending[pk] = next;
+    renderGrid(); renderSaveBar();
+  }
+
+  function pendingList() {
+    return Object.entries(st.pending).map(([pk, v]) => {
+      const [id, scope] = pk.split('|');
+      const a = st.admins.find(x => x.discordId === id);
+      const sc = F.accessScopes.find(x => x.key === scope);
+      return { id, scope, grant: v, who: '…' + id.slice(-6), label: sc ? sc.label : scope, admin: a };
+    });
+  }
+  /* Who would be left with nothing. This is the ONLY case that asks for a typed id, and it
+   * is computed from the pending set rather than from the click, because it is only true
+   * once every pending revoke for that person is counted together. */
+  function wouldEmpty(list) {
+    const out = [];
+    st.admins.forEach(a => {
+      const after = F.accessScopes.filter(s => {
+        const pk = a.discordId + '|' + s.key;
+        return st.pending[pk] === undefined ? held(a, s.key) : st.pending[pk];
+      });
+      if (!after.length && F.accessScopes.some(s => held(a, s.key))) out.push(a);
+    });
+    return out;
+  }
+
+  function renderSaveBar() {
+    const list = pendingList();
+    if (!list.length) { S.selection({ count:0 }); return; }
+    const grants = list.filter(x => x.grant).length, revokes = list.length - grants;
+    const empties = wouldEmpty(list);
+    S.selection({
+      count:list.length, noun:'pending', clearLabel:'Discard',
+      tier: empties.length ? 3 : 1,
+      badge: empties.length
+        ? 'deletes ' + empties.length + ' admin record' + (empties.length > 1 ? 's' : '') + ' · no undo'
+        : 'written directly · not staged',
+      summary:[grants ? grants + ' grant' + (grants > 1 ? 's' : '') : null,
+               revokes ? revokes + ' revoke' + (revokes > 1 ? 's' : '') : null,
+               empties.length ? empties.length + ' admin' + (empties.length > 1 ? 's' : '') + ' left with nothing' : null]
+              .filter(Boolean).join(' · '),
+      onClear(){ st.pending = {}; renderGrid(); renderSaveBar(); },
+      actions:[{ label:'Save ' + list.length + ' change' + (list.length > 1 ? 's' : ''), kind: empties.length ? 'danger' : 'normal', on: saveAccess }]
+    });
+  }
+
+  function saveAccess() {
+    const list = pendingList(); if (!list.length) return;
+    const grants = list.filter(x => x.grant), revokes = list.filter(x => !x.grant);
+    const empties = wouldEmpty(list);
+    /* Only a GRANT of the capability needs the warning — revoking it is the safe direction, and
+     * a dialog that shouts equally at both teaches the reader to skip both. */
+    const dGrants = grants.filter(x => x.scope === 'destructive');
+    const rows = who => who.map(x => '<li><code>' + esc(x.who) + '</code> &middot; ' + esc(x.label) + '</li>').join('');
+    const body =
+      '<p class="dw-p">This writes straight to <code>AdminUser</code> — there is no staging tray for permissions, ' +
+      'and it takes effect on their next click in the bot.</p>' +
+      (grants.length ? '<div class="acg"><b class="acg-k on">Granting ' + grants.length + '</b><ul class="dw-l">' + rows(grants) + '</ul></div>' : '') +
+      (revokes.length ? '<div class="acg"><b class="acg-k off">Revoking ' + revokes.length + '</b><ul class="dw-l">' + rows(revokes) + '</ul></div>' : '') +
+      (empties.length ? '<div class="callout"><b>' + empties.length + ' admin' + (empties.length > 1 ? 's' : '') +
+        ' would be left holding nothing, so their <code>AdminUser</code> record is deleted outright.</b> ' +
+        'An admin must always hold at least one permission (see the note under the matrix) — an admin with ' +
+        'nothing granted is not an admin with reduced access, it is a row that no longer means anything. ' +
+        'They keep their Discord account and every public command. <b>There is no undo for that half.</b></div>' : '') +
+      /* 🔴 HANDING OVER IRREVERSIBILITY GETS ITS OWN WARNING, IN THE OWNER'S OWN WORDS. Every
+       * other token in this batch grants access to a SURFACE; this one grants the ability to
+       * destroy data on all of them, and it is the only grant the person reading this dialog
+       * cannot take back by re-granting afterwards — what the delegate purges is gone.
+       * It is spelled out rather than trusted to the row list, because "Destructive" reads like
+       * a twelfth checkbox in a list of twelve. */
+      (dGrants.length ? '<div class="callout dangerous"><b>You are handing ' +
+        (dGrants.length > 1 ? dGrants.length + ' admins' : '<code>' + esc(dGrants[0].who) + '</code>') +
+        ' the ability to run operations that cannot be undone.</b> That is every purge, ' +
+        'the season rollover and draft promotion — on <b>every realm</b>, not just the pages they hold. ' +
+        'The portal will still make them export first, and it now keeps a copy of that export with the ' +
+        'record so you hold the data afterwards rather than a note saying they downloaded it. ' +
+        '<b>Only you can grant or revoke this; holding <code>manage</code> does not cover it, ' +
+        'and they cannot pass it on.</b></div>' : '');
+
+    const apply = () => {
+      list.forEach(x => {
+        const a = x.admin; if (!a) return;
+        if (x.grant) { if (!a.permissions.includes(x.scope)) a.permissions.push(x.scope); }
+        else a.permissions = a.permissions.filter(p => p !== x.scope);
+        recompute(a);
+      });
+      /* The invariant the matrix note states — a permissions array is never empty — is
+       * enforced HERE rather than by refusing the click, because refusing would leave the
+       * operator holding a change they meant and no way to express it. Emptying someone is
+       * a real intention; it just means something bigger than a permission edit. */
+      if (empties.length) st.admins = st.admins.filter(a => !empties.includes(a));
+      touched = true; st.pending = {};
+      S.toast(grants.length + ' granted, ' + revokes.length + ' revoked' +
+        (empties.length ? ', ' + empties.length + ' record' + (empties.length > 1 ? 's' : '') + ' deleted' : '') +
+        '. Live on their next click.');
+      renderAll(); renderSaveBar();
+    };
+
+    if (empties.length) {
+      S.typedConfirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : ''),
+        op:'access.grant', tier:3, word:empties[0].discordId,
+        /* typedConfirm already renders the instruction and echoes the word it wants; repeating
+         * it here is the dialog telling you twice, which reads as two different requirements. */
+        body,
+        onConfirm: apply });
+    } else if (dGrants.length) {
+      /* 🔴 TYPED, LIKE A PURGE — because it AUTHORISES purges. Asking for a typed word on a
+       * reversible change teaches people to type without reading, which is why this file uses it
+       * sparingly; this is the case it exists for. The word is DESTRUCTIVE rather than an id,
+       * because the thing being confirmed is the capability, not a particular person. */
+      S.typedConfirm({ title:'Grant the Destructive capability',
+        op:'access.grant', tier:3, word:'DESTRUCTIVE',
+        body: body + '<p class="dw-p">This is the only permission you cannot delegate the granting of. ' +
+              'Type <b>DESTRUCTIVE</b> to confirm you have read what it allows.</p>',
+        onConfirm: apply });
+    } else {
+      S.confirm({ title:'Save ' + list.length + ' permission change' + (list.length > 1 ? 's' : '') + '?',
+        op:'access.grant', tier:1, confirm:'Save changes', body, onConfirm: apply });
+    }
+  }
+
+  function renderAll(){ renderOwnerNote(); renderGrid(); renderScope(); renderSess(); renderKey(); renderStats();
+    S.mountRail('access'); renderSaveBar();
+    S.mastheadExport({ host:'#mhGrant', scopes:accessScopes, label:'Export',
+      summary:() => st.admins.length + ' admins · 3 formats' }); }
+
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    st.mode = b.dataset.view;
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    viewGrid.hidden = st.mode !== 'grid'; viewScope.hidden = st.mode !== 'scope';
+    document.getElementById('crumbView').textContent = { grid:'By admin', scope:'By scope' }[st.mode];
+    renderStats();
+  });
+  S.onAfterRevert = renderAll;
+
+  renderAll();
+  (window.Shell||window.S).holdTop();
+  S.audit({
+    interactions: () => [
+      { name:'admin permissions', run: () => openAdmin(st.admins[0].discordId) },
+      { name:'grant access', run: openGrant }
+    ],
+    states: () => ['direct','inherited']
+  });
+})();
+</script>
+<script>
+/* One handler, two entry points — the masthead action and the in-context shortcut must never be
+   able to disagree. Delegated rather than re-bound, so it works no matter when the page wires
+   its own button. `N` means the same thing in every realm. */
+(function () {
+  const go = () => document.getElementById('grantBtn')?.click();
+  document.getElementById('mhGrant').addEventListener('click', go);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || !document.getElementById('cbDrop').hidden) return;
+    e.preventDefault(); go();
+  });
+})();
+</script>
+</body></html>

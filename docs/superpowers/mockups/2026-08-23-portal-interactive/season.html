@@ -1,0 +1,3073 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Season · Dioreo Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css?v=1787939712"><link rel="stylesheet" href="assets/app.css?v=1787939712">
+<style>
+/* creation, promoted out of the page's basement */
+.mh-new{margin-top:14px;align-self:flex-start;width:fit-content;display:inline-flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--rad-3);
+  border:1px solid var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
+  font:600 13px/1 var(--ui);cursor:pointer;transition:background .14s}
+.mh-new:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
+.mh-plus{font-size:16px;line-height:1;color:var(--patch)}
+.mh-new kbd{font:500 10px/1 var(--data);letter-spacing:.08em;color:var(--ink3);border:1px solid var(--rule2);
+  border-radius:var(--rad-2);padding:3px 5px}
+
+/* `.masthead` stretches its children, so `display:inline-flex` alone still produced a
+   940px-wide banner where a button belonged. Measured, not guessed: the first render of it. */
+/* the masthead grid moved to app.css — every realm's masthead is the same shape */
+}
+/* `no detail` was clipping to `no detai` with no ellipsis — the cell sets text-overflow but the
+   italic <em> inside it is the box that actually overflows, and it had none. */
+/* ⚠️ `display:block` on the CELL broke table layout — the td stopped filling its row and the
+   package's own audit caught it 39 times, once per row. Only the inner <em> needs the ellipsis;
+   `.mtable .det` already has one and must stay a table-cell. */
+.mtable .det{min-width:0}
+/* The real box is `.det > .detcell > .dsub`, not an <em> — an earlier guess styled an element
+   that does not exist here, which is why "no detail" still clipped to "no detai" with the rule
+   in place and the audit reporting nothing. `text-overflow` needs the ellipsis on the box that
+   actually overflows. */
+.mtable .det .detcell,.mtable .det .dsub{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtable .det .dsub{display:block}
+/* the composer's preview axis */
+/* the mini-axis styles went with composePreview() — the real Track is the preview now */
+/* a same-day cluster is a fact, not a zoom artefact — it reads solid, not hollow */
+.ptc.same{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 40%,transparent)}
+
+.rec{margin:16px 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:14px 16px 16px}
+.rec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:10px}
+.rec-t{font:600 10.5px/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.rec-n{font-size:11.5px;color:var(--ink3)}
+.rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
+  padding:6px 11px;font:500 12px/1 var(--ui);cursor:pointer}
+.rec-cta:hover{border-color:var(--patch);color:var(--patch)}
+.rec-list{list-style:none;margin:0;padding:0;position:relative}
+/* 🔴 THE SPINE AND THE MARKERS DID NOT SHARE AN X. The rail was drawn at a hardcoded `left:5px`
+   while each marker sat in a 20px grid column and was CENTRED in it — so the line ran at x=5 and
+   the diamonds at x=10, and the line entered and left the diamonds off-centre. Same defect class
+   as the Track's two coordinate origins: one position expressed twice, in two places, in two
+   different units, with nothing asserting they agree.
+   `--rec-x` is now the single source for both, so the spine cannot drift from what it threads.
+   It also runs from the FIRST marker to the LAST rather than from an arbitrary 8px inset —
+   a spine that starts above its first bead is a line pointing at nothing. */
+.rec-list{--rec-x:10px}
+.rec-list::before{content:"";position:absolute;left:var(--rec-x);top:22px;bottom:22px;width:1px;
+  background:var(--rule2);transform:translateX(-.5px)}
+.rec-row{display:grid;grid-template-columns:calc(var(--rec-x) * 2) 1fr auto auto auto;align-items:center;gap:12px;
+  padding:9px 4px;border-bottom:1px solid var(--rule);cursor:pointer}
+.rec-row:last-child{border-bottom:0}
+.rec-row:hover,.rec-row:focus-visible{background:var(--hi)}
+.rec-mk{width:11px;height:11px;border-radius:var(--rad-1);transform:rotate(45deg) scale(.82);
+  background:var(--sunk);box-shadow:inset 0 0 0 1.5px var(--patch);position:relative;z-index:1}
+.rec-row.cur .rec-mk{background:var(--patch);box-shadow:0 0 0 4px color-mix(in srgb,var(--patch) 22%,transparent)}
+.rec-ttl{font:600 13.5px/1.3 var(--ui);color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-row.cur .rec-ttl{color:var(--ink)}
+.rec-d,.rec-meta{font:500 11px/1 var(--data);letter-spacing:.07em;color:var(--ink3);white-space:nowrap}
+.rec-tag{font:600 9.5px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:var(--rad-2);
+  background:var(--sunk);color:var(--ink3);white-space:nowrap}
+.rec-row.cur .rec-tag{background:color-mix(in srgb,var(--patch) 18%,transparent);color:var(--patch)}
+.rec-empty{list-style:none;font-size:13px;color:var(--ink3);padding:8px 0}
+@media (max-width:820px){.rec-row{grid-template-columns:20px 1fr auto}.rec-meta,.rec-d{display:none}}
+</style>
+</head><body>
+<div class="app">
+  <header id="hdr"></header>
+  <nav class="rail" aria-label="Realms"></nav>
+  <main>
+    <div class="masthead">
+      <div class="mh-id">
+        <!-- 🔴 THE FIGURES ARE DEMOTED, NOT DELETED. Harkirat on the old stat block:
+             "the thing the countdown should replace is these numbers in the masthead,
+             they're so useless if im being honest. make them more of an eyebrow element
+             above the page's title." BATTLE PASS 17d is NOT here because it was not
+             demoted - it was SUBSUMED. It was the countdown, badly. -->
+        <div class="mh-eyebrow" id="mhEyebrow"></div>
+        <h1 id="hTitle"></h1>
+        <span class="job">Everything scheduled this season on one axis &mdash; and whether it still fits inside the season&rsquo;s own deadlines.</span>
+      </div>
+      <!-- The clock takes the stat block's place. Its subjects are the season's TIME and,
+           through the H1 beside it, the season's NAME. Nothing else lives here: the item
+           lists belong to Home, and editing belongs to the record below. -->
+      <div class="sclock mh-stats" id="sClock" aria-live="off"></div>
+      <!-- 🔴 CREATION AT THE TOP OF THE PAGE. Measured before this existed: Season's three
+           create controls sat at 1464px, 3548px and 3551px inside an 828px viewport — the
+           primary one 4.3 screens down. The portal's whole claim over "/manage" is that
+           creating is easier here, and the control was the hardest thing on the page to find. -->
+      <!-- 🔴 A BEAUTIFUL BUTTON WHOSE ONLY JOB WAS TO REVEAL SIX MORE BUTTONS. Two clicks to
+           begin, and the realm's vocabulary hidden behind the first one. The six types ARE the
+           action; there is nothing for a wrapper to add. One click starts the thing you actually
+           wanted, and what this realm can hold is legible without touching anything. Season is
+           the only realm with more than one kind of thing to add — the others keep a single
+           button, because a single button has nothing to reveal. -->
+      <div class="mh-add" id="mhAdd" role="group" aria-label="Add to this season">
+        <span class="mh-add-k">Add</span>
+      </div>
+      <!-- The "take out" line is mounted by Shell.mastheadExport, not written here: it is
+           the same line on five realms and a hand-written copy per page is five things that
+           can drift. Export sits on its own row rather than inside the Add group because it
+           is not a thing you are adding — in the group, the row read as seven creation
+           buttons one of which did the opposite. -->
+      <!-- The composer renders HERE, in the page. Not a modal: "/manage" creates through a
+           Discord modal, and reproducing that shape reproduces the thing this is meant to beat. -->
+      <section class="nwhost" id="nwHost" hidden aria-label="Add to the season"></section>
+    </div>
+
+    <!-- SEASON IDENTITY -->
+    <section class="identity collapsed" id="identity" aria-label="Season identity">
+      <div class="idsum" id="idSum" role="button" tabindex="0" aria-expanded="false"></div>
+      <div class="idbody">
+      <div class="ph idhead"><span class="t">Season identity</span>
+        <div class="lnsw" id="lnsw" role="group" aria-label="Which season">
+          <button data-sn="live" aria-pressed="true"><span class="pip"></span>Live</button>
+          <button data-sn="draft" aria-pressed="false"><span class="pip draft" data-pip></span>Next</button>
+        </div>
+        <span class="sp" id="idState">no unsaved edits</span>
+        <button class="idclose" id="idClose" aria-label="Collapse season identity">Done</button></div>
+
+      <div class="draftnote" id="draftNote">Editing the <b>staged next season</b> — none of this is visible to players until you promote it.</div>
+      <div class="f-main"><label for="f-title">Season title</label>
+        <input id="f-title" autocomplete="off" spellcheck="false"></div>
+
+      <div class="dlines" id="dlines"></div>
+
+      <div class="bansec">
+        <div class="bansec-h"><span>Calendar banners</span>
+          <span class="bansec-n">one per /calendar page · re-hosted through Cloudinary</span></div>
+        <div class="bans" id="bans"></div>
+      </div>
+
+      <div id="draftZone"></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Season view">
+      <div class="ph">
+        <span class="t">Season</span>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="track" aria-pressed="true">Track</button>
+          <button role="tab" data-view="board" aria-pressed="false">Board</button>
+          <button role="tab" data-view="repairs" aria-pressed="false">Repairs</button>
+        </div>
+        <div class="zoomer" id="zoomer" role="group" aria-label="Zoom">
+          <button id="zOut" title="Zoom out (−)" aria-label="Zoom out">−</button>
+          <button id="zIn"  title="Zoom in (+)"  aria-label="Zoom in">+</button>
+          <button id="zFit" class="wide" title="Fit everything (0)">FIT</button>
+          <span class="rd"><b id="zSpan"></b> shown</span>
+        </div>
+        <span class="key" id="key"></span>
+        <span class="sp" id="viewMeta"></span>
+      </div>
+      <!-- data-async-host marks the element that OWNS this realm's data, and
+           data-skel declares its skeleton shape (the Track: a lane name, a plot area, a count). One attribute pair per
+           realm, so a new realm cannot forget to wire async and quietly ship
+           with no loading state at all. See Shell.async.applyFlag. -->
+      <div id="viewTrack" data-async-host data-skel="5|18,62,12,8"></div>
+      <div id="viewBoard" hidden></div>
+      <div id="viewRepairs" hidden></div>
+    </section>
+
+    <!-- 04 · The Manifest existed only as an aria-label and in two toasts, so a toast saying
+           "Pick a category chip in the Manifest" pointed at a word that was nowhere on the
+           screen it was pointing at. It is one component with one spec across four pages, so
+           it gets the same eyebrow treatment every other labelled row here uses. -->
+    <section class="panel" style="margin-top:16px" aria-labelledby="mfLabel">
+      <div class="mtools">
+        <span class="mlabel"><span id="mfLabel">Manifest</span></span>
+        <span class="srch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <label class="sr" for="q">Search this season</label>
+          <input id="q" type="search" placeholder="Search this season…" autocomplete="off">
+        </span>
+        <button class="chip" data-filter="all" aria-pressed="true">All</button>
+        <span class="chipset" id="typeChips"></span>
+        <button class="chip stagedchip" data-state="staged" aria-pressed="false">Staged only</button>
+        <span class="rt" id="count"></span>
+      </div>
+      <div class="mscroll"><table class="mtable">
+        <colgroup><col class="c-cb"><col class="c-item"><col class="c-type"><col class="c-win">
+                  <col class="c-spark"><col class="c-detail"><col class="c-state"><col class="c-ra"></colgroup>
+        <thead><tr>
+          <th><span class="cb" id="cbAll" role="checkbox" aria-checked="false" tabindex="0"></span></th>
+          <th class="sortable" data-sort="name"><button type="button" class="sortbtn" data-sort="name">Item</button></th>
+          <th class="sortable" data-sort="type"><button type="button" class="sortbtn" data-sort="type">Type</button></th>
+          <th class="sortable sorted-asc" data-sort="start"><button type="button" class="sortbtn" data-sort="start">Window</button></th>
+          <th class="drop-sm">Span</th>
+          <th>Detail</th><th class="ta-r">State</th>
+          <!-- A real column with a real header, not a hover reveal. See Shell.removeCell. -->
+          <th class="ra"><span class="sr">Remove</span></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <div id="bulk" hidden></div>
+      <div class="addrow">
+        <label class="sr" for="a-name">New item name</label>
+        <input id="a-name" type="text" placeholder="New item name…" style="flex:1 1 200px">
+        <label class="sr" for="a-type">Type</label>
+        <select id="a-type">
+          <option value="draw">Draw</option><option value="returning">Returning</option>
+          <option value="event">Event</option><option value="playlist">Playlist</option>
+          <option value="patchnote">Patch note</option>
+        </select>
+        <label class="sr" for="a-start">Start</label><input id="a-start" type="date">
+        <label class="sr" for="a-end">End</label><input id="a-end" type="date">
+        <button class="go" id="a-go">Stage item</button>
+        <span style="font-size:11.5px;color:var(--ink3)">or click any empty lane on the Track</span>
+      </div>
+    </section>
+    <!-- The one-way strip. Last thing on the page on purpose: by the time a reader reaches
+         it they have already seen every record the operation would destroy. -->
+    <div id="oneway"></div>
+  </main>
+</div>
+<aside class="tray" hidden></aside>
+
+<script src="assets/fixtures.js?v=1787939712"></script>
+<script src="assets/timeline.js?v=1787939712"></script>
+<script src="assets/icons.js?v=1787939712"></script>
+<script src="assets/shell.js?v=1787939712"></script>
+<script>
+(function () {
+  const F = window.FIX, S = window.Shell, T = window.TL;
+  S.init('season');
+  S.mountHeader('Season','Track');
+
+  /* ── single state object; every control writes here, every render reads it ── */
+  const st = {
+    season: { ...F.season },
+    draft:  { ...F.draft },
+    sn:     'live',              // which season the identity editor is editing
+    items:  F.items.map(i => ({ ...i })),
+    mode:   'track',
+    collapsed: new Set(JSON.parse(sessionStorage.getItem('dioreo-board-collapsed') || '[]')),
+    q:'', filter:'all', stagedOnly:false, sortKey:'start', sortDir:1,
+    selected: new Set(),
+    dirty: new Set()
+  };
+  /* The schema has no season-start field, so the Track's outer bounds come from the DATA:
+   * the earliest item and the latest of (latest item, every deadline), padded. Nothing to
+   * invent, and it cannot drift out of step with the items it has to contain. */
+  /* 🔴 FIT MEANS FIT THE CONTENT, NOT FIT EVERY MARKER — and the live document is what proved it.
+   * This used to include all three deadlines in the bounds. `dmzEnd` is 2026-11-11 while every
+   * scheduled item ends 2026-09-19, so FIT produced a Jul 1 → Nov 16 axis in which 100% of the
+   * content was crushed into 55% of the width and the right two months were empty. DMZ running
+   * two months past the battle pass is normal CODM, not an anomaly, so this is the ordinary case.
+   *
+   * The question this page asks is "does it still fit inside the season's own deadlines", and an
+   * item is late against the deadline it would FIRST violate — the earliest one still ahead — not
+   * the latest. A DMZ season ending in November does not make an August event late. So the window
+   * spans the content plus the nearest deadline ahead; anything further out is PINNED to the edge
+   * rail with its real distance, which states the relationship more precisely than two empty
+   * months of axis ever did.
+   *
+   * Edge cases, all real states of this schema:
+   *   · every deadline TBD  → no deadline to reach for; content bounds alone
+   *   · every deadline past → same, and the markers pin to the LEFT rail
+   *   · one item / no items → the 14-day floor keeps the axis from collapsing to a point
+   *   · an isOngoing row    → its end already resolved to bpEnd upstream, so it cannot drag the
+   *                           window past a deadline that the window is derived from */
+  const MIN_SPAN_DAYS = 14;
+  function liveDeadlines() {
+    return ['bpEnd','rankEnd','dmzEnd']
+      .filter(k => !st.season[k + 'TBD'] && st.season[k])
+      .map(k => ({ key:k.replace('End',''), date: st.season[k] }));
+  }
+  /* 🔴 A PUBLICATION IS NOT A SCHEDULE ENTRY, so it does not get to stretch the axis.
+   * Every other lane answers "when is this ON?" — a state with a duration. A patch note is a
+   * thing the bot SAID, once; models/PatchNote.js gives it a releaseDate and no end, and
+   * isEventEnded() therefore returns false for it forever. The live season publishes on Jul 6
+   * and Jul 22 while nothing is scheduled before Aug 6, so including them spent the left third
+   * of the canvas on empty time. This is the same rule the deadline REACH below already applies
+   * on the right — it was written for outliers ahead of the content and never applied to
+   * outliers behind it, which is the whole class rather than the one instance. */
+  /* 🔴 A FILLED BAR'S TEXT COLOUR IS A PROPERTY OF THAT BAR, not one global value. `--on-accent`
+   * is near-black, which is right on Playlists' bright teal and 2.86:1 on Draw windows' plum —
+   * measured, by the contrast rule added today. COMPANION already says the stored `bar` value is
+   * lifted "so it can carry --ink text at 4.5:1"; the code was painting the opposite. Derive the
+   * ink from the lane's own luminance, once, and hand it to the bar as `--ci`. */
+  const barInk = hex => S.inkOn(hex);   // Shell owns the choice; bars, badges and chips share it
+  const isPublication = it => it.type === 'patchNotes';
+
+  /* 🔴 SIX IDENTICAL ROWS OF RECTANGLES IS NOT A TIMELINE, IT IS A TABLE DRAWN SIDEWAYS.
+   * Each lane holds a genuinely different KIND of fact, and until now every one of them was
+   * drawn the same way — which is why the Track reads as one undifferentiated block and why it
+   * stops working the moment a lane needs five rows. Each lane now gets an instrument tuned to
+   * what it actually holds, a collapsed form that answers that lane's OWN question, and a
+   * default that keeps the whole season on one screen.
+   *   · draws / returning — releases. TIER is the fact that matters, so the mark carries it.
+   *   · draw windows      — a window belongs to a draw (`drawId`); hovering one lights its draw.
+   *   · events            — usually a SERIES ("COD Point Rush Week 1…5"); a run reads as one thing.
+   *   · playlists         — the densest lane, and the question there is never "which one" but
+   *                         "how many are live at once", so its collapsed form is a load ribbon. */
+  /* `single` exists because deriving a singular by chopping an "s" produced "New new draw" in the
+   * command bar and "Stage new draw" on the composer's button — the lane LABEL is a column
+   * heading ("New draws"), not a noun for one of the things in it. Two different jobs, two
+   * different words, written down rather than computed. */
+  const LANE_KIT = {
+    newDraws:       { sum:'pips', single:'draw',           ask:'what released, and how rare' },
+    returningDraws: { sum:'pips', single:'returning draw', ask:'what came back' },
+    /* Two purchase windows open at once is a real conflict — a player cannot tell which draw they
+     * are buying into. No other lane has that property: two events, or two playlists, is Tuesday. */
+    drawWindow:     { sum:'runs', single:'draw window',    ask:'when you could buy', overlapMatters:true },
+    event:          { sum:'runs', single:'event',          ask:'what was running' },
+    playlist:       { sum:'load', single:'playlist',       ask:'how many modes at once' },
+    patchNotes:     { sum:'pips', single:'patch note',     ask:'what was published' }
+  };
+  const LANE_COL_KEY = 'dioreo-lane-col';
+  st.laneCol = (() => { try { return JSON.parse(sessionStorage.getItem(LANE_COL_KEY)) || {}; } catch { return {}; } })();
+  const saveLaneCol = () => { try { sessionStorage.setItem(LANE_COL_KEY, JSON.stringify(st.laneCol)); } catch (e) {} };
+  /* Merge overlapping intervals into the runs a reader actually perceives. */
+  function mergeRuns(list) {
+    const xs = list.filter(i => i.kind !== 'point').map(i => ({ a:i.start, b:i.end }))
+                   .sort((x, y) => x.a < y.a ? -1 : 1);
+    const out = [];
+    for (const r of xs) {
+      const last = out[out.length - 1];
+      if (last && T.days(r.a, last.b) >= -1) { if (T.days(last.b, r.b) > 0) last.b = r.b; last.n++; }
+      else out.push({ ...r, n:1 });
+    }
+    return out;
+  }
+  /* Concurrency, sampled across the visible window — the playlists lane's real question. */
+  function loadCurve(list, steps = 64) {
+    const v = st.view, out = [];
+    for (let i = 0; i < steps; i++) {
+      const d = v.dateAt((i / (steps - 1)) * 100);
+      out.push(list.filter(it => T.days(it.start, d) >= 0 && T.days(d, it.end) >= 0).length);
+    }
+    return out;
+  }
+  function dataBounds() {
+    const ds = [F.today];
+    st.items.filter(i => !isPublication(i)).forEach(i => { ds.push(i.start, i.end); });
+    const sorted = ds.filter(Boolean).sort();
+    let lo = sorted[0], hi = sorted[sorted.length - 1];
+
+    /* ⚠️ PROPORTION, not "nearest ahead" — the first version of this reached to the nearest
+     * deadline PAST THE CONTENT, and on the live season bpEnd (Sep 10) falls INSIDE the content
+     * (which runs to Sep 19), so it was skipped and dmzEnd was still the nearest, leaving the
+     * axis exactly as wrong as before. A deadline earns space in the window by being CLOSE to the
+     * content; one far beyond it earns a pin. 53 days past a 75-day season is far. */
+    const span = Math.max(1, T.days(lo, hi));
+    const REACH = Math.max(7, Math.round(span * 0.25));
+    for (const d of liveDeadlines().map(x => x.date)) {
+      if (d > hi && T.days(hi, d) <= REACH) hi = d;
+      if (d < lo && T.days(d, lo) <= REACH) lo = d;
+    }
+
+    if (T.days(lo, hi) < MIN_SPAN_DAYS) hi = T.addDays(lo, MIN_SPAN_DAYS);
+    const pad = Math.max(2, Math.round(T.days(lo, hi) * 0.04));
+    return { min: T.addDays(lo, -pad), max: T.addDays(hi, pad) };
+  }
+  /* Deadlines that fall outside the visible window — rendered as pinned edge markers rather than
+   * dropped, because "62 days beyond this view" is the answer, not a missing label. */
+  function outOfViewDeadlines() {
+    return liveDeadlines()
+      .map(d => ({ ...d, side: d.date < st.view.from ? 'l' : d.date > st.view.to ? 'r' : null }))
+      .filter(d => d.side);
+  }
+  /* How far you may scrub — deliberately wider than the data, so the overview reads as a
+   * map with context rather than a bar the window always fills edge to edge. */
+  function panBounds() {
+    /* A small margin so an item can be dragged just past the edge — not a display range. */
+    const d = dataBounds(), room = Math.max(3, Math.round(T.days(d.min, d.max) * 0.06));
+    return { min: T.addDays(d.min, -room), max: T.addDays(d.max, room) };
+  }
+  let FIT = dataBounds();
+  let BOUND = panBounds();
+  const MIN_SPAN = 7;                                   // never zoom past a readable week
+  const refreshBounds = () => { FIT = dataBounds(); BOUND = panBounds(); };
+  st.view = T.make(FIT.min, FIT.max);
+  const cur = () => st.sn === 'live' ? st.season : st.draft;
+  /* TWO AXES, and an earlier draft let both call themselves "live" — a row could
+   * read ENDED under Type and LIVE under State at the same time.
+   *   stateOf()   = the STAGING axis: is this change written, pending, or broken?
+   *   lifecycle() = the CONTENT axis: has this item started, is it running, is it over?
+   * Distinct vocabularies, so no word means two things. */
+  /* An item is in conflict when it outlives the season it belongs to. The season ends at the
+   * LAST of its three deadlines — an item running past BP but inside Ranked is not a conflict.
+   * A TBD line is 'undecided', not 'zero', so it never bounds anything. */
+  const seasonEnd = o => {
+    const ends = ['bpEnd','rankEnd','dmzEnd']
+      .filter(k => !o[k + 'TBD'] && o[k]).map(k => o[k]).sort();
+    return ends.length ? ends[ends.length - 1] : null;
+  };
+  /* Whether an item outlives its season is a SEPARATE fact from whether it is staged —
+   * a staged item can also be in conflict, and that is exactly when you want to know,
+   * before committing it. So this is its own predicate, not a branch of stateOf(). */
+  const conflicts = it => {
+    const e = seasonEnd(it.draft ? st.draft : st.season);
+    return !!e && T.days(it.end, e) < 0;
+  };
+  const stateOf = it => {
+    if (it.state === 'staged') return 'staged';
+    const e = seasonEnd(it.draft ? st.draft : st.season);
+    if (e && T.days(it.end, e) < 0) return 'conflict';
+    return 'saved';
+  };
+  const STATE_LABEL = { saved:'SAVED', staged:'STAGED', conflict:'CONFLICT' };
+  const LIFE_LABEL  = { live:'LIVE NOW', upcoming:'UPCOMING', staged:'NOT LIVE', ended:'ENDED' };
+  const lifecycle = it => {
+    if (it.state === 'staged') return 'staged';
+    /* commands/calendar.js's isEventEnded, and it is not a formality: a `dateOnly` draw —
+     * one with no explicit calendar row — returns FALSE forever, and an `isOngoing` row ends
+     * when the battle pass does rather than on a date of its own. Testing `end <= today`
+     * instead (as this did) reported a draw as ENDED the instant its UTC-midnight release
+     * passed, which for any US-timezone viewer is almost immediately. That exact bug shipped
+     * in the bot and was fixed on 2026-08-07; reproducing it here would have re-taught it. */
+    /* ⚠️ isEventEnded() is a CALENDAR rule and patch notes are not calendar entries — the bot's
+     * own function never sees one. Applying it to the patch-note lane made a note released
+     * 2026-07-06 read LIVE NOW forever, which is how 23 of 39 items ended up in "Live now".
+     * A patch note is an announcement of a moment: the newest is current, the rest are history. */
+    if (it.lane === 'patchNotes') {
+      const newest = st.items.filter(x => x.lane === 'patchNotes')
+                             .reduce((a, b) => (a && a.start > b.start ? a : b), null);
+      if (T.days(it.start, F.today) < 0) return 'upcoming';
+      return newest && newest.id === it.id ? 'live' : 'ended';
+    }
+    /* 🔴 A RELEASE IS A MOMENT, AND A MOMENT CANNOT BE "LIVE NOW" FOR A MONTH. isEventEnded
+     * short-circuits `kind === 'point'` to false because the bot's own function never sees one —
+     * so the port fell through to "started and not ended" and labelled every past draw release
+     * LIVE NOW forever. Invisible on the pinned date because the season was young; at
+     * ?today=2026-09-10 three rows claimed to be live weeks after they happened, found by the
+     * time pass comparing each row's label against that row's own dates.
+     * The distinction is `dateOnly`. A draw with NO calendar window genuinely never ends — that
+     * is deliberate bot behaviour and the single most useful thing this page tells an admin, and
+     * 11 of the 14 real draws are like that. A draw WITH a window has its liveness carried by
+     * that window row; its release marker is history the day after it fires. */
+    if (it.kind === 'point' && !it.dateOnly && T.days(it.start, F.today) > 0) return 'ended';
+    if (!F.isEventEnded(it, new Date(F.today).getTime())) {
+      return T.days(it.start, F.today) >= 0 ? 'live' : 'upcoming';
+    }
+    return 'ended';
+  };
+  /* Returns a real colour, not a token name. LANES carries the bot's own hex values now,
+   * and every call site below interpolates the colour directly — an earlier shape change
+   * left these resolving to var(--undefined), which is why the whole Track went grey. */
+  const accentOf = t => (F.LANES.find(l => l.type === t) || {}).bar || '#80909D';
+  const lineHex  = k => (F.LINES.find(l => l.key === k) || {}).hex || '#80909D';
+  /* One pluraliser, because "1 days" turned up in three different templates independently. */
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+  /* ═══ IDENTITY ═══ */
+  /* ⚠️ NO TIER HERE ANY MORE. §4.4 makes the tier a property of the OP, so it is read from
+   * core/ops's registry at Store.add() and stating it beside the name was a second copy that
+   * could disagree — and did, at nine other staging sites on this page. */
+  const OPS = {
+    live:  { name:'season.setTitlesDeadlines' },
+    draft: { name:'season.setDraftTitlesDeadlines' }
+  };
+  const fmtLeft = (o, L) => {
+    if (o[L.tbdKey]) return { cls:'is-tbd', html:'TBD' };
+    if (!o[L.endKey]) return { cls:'', html:'<span style="color:var(--ink3)">not set</span>' };
+    const d = T.days(F.today, o[L.endKey]);
+    if (d < 0) return { cls:'is-over', html:`ended <b>${-d}d</b> ago` };
+    /* Seen live at ?today=2026-09-09: "1 days left". Fourth occurrence of the bug the
+     * pluraliser above was written for, in the function immediately below it. And zero
+     * days left is not "0 days left" - it is today, which is a different sentence. */
+    if (d === 0) return { cls:'', html:`ends <b>today</b>` };
+    return { cls:'', html:`<b>${d}</b> ${S.plural(d, 'days')} left` };
+  };
+
+  function renderIdentity() {
+    const o = cur(), isDraft = st.sn === 'draft';
+    /* Editing the draft must be UNMISTAKABLE. The values did swap correctly, but the two
+     * seasons share most of their strings, so the switch read as a dead button. The whole
+     * editor changes state now — same dashed-cyan language a staged bar uses. */
+    identityEl.classList.toggle('editing-draft', isDraft);
+    document.querySelectorAll('#lnsw button').forEach(b =>
+      b.setAttribute('aria-pressed', String(b.dataset.sn === st.sn)));
+    /* 🔴 A SELF-DESTROYING SELECTOR. This queried `.pip.draft` and then RENAMED that very
+     * class — so with no draft staged it worked exactly once and threw `Cannot set properties
+     * of null` on every render after. It never surfaced because the authored fixture always
+     * had draft.active === true, which left the class in place; the live document has
+     * draft.active === false. Anchored on a stable `data-pip` hook instead: query by what a
+     * thing IS, never by the state you are about to overwrite. */
+    const pip = document.querySelector('#lnsw [data-pip]');
+    if (pip) pip.className = 'pip ' + (st.draft.active ? 'draft' : 'none');
+
+    const t = document.getElementById('f-title');
+    if (document.activeElement !== t) t.value = o.currentSeasonTitle || '';
+    t.placeholder = isDraft ? 'Name the next season…' : 'Season title';
+
+    dlines.innerHTML = F.LINES.map(L => {
+      const left = fmtLeft(o, L), tbd = !!o[L.tbdKey];
+      return `<div class="dline${st.dirty.has(st.sn + ':' + L.key) ? ' dirty' : ''}"
+                   style="--c:${L.hex}" data-line="${L.key}">
+        <span class="trk">${L.label}</span>
+        <input type="text" data-f="${L.titleKey}" value="${(o[L.titleKey]||'').replace(/"/g,'&quot;')}"
+               aria-label="${L.label} title" spellcheck="false">
+        <input type="date" data-f="${L.endKey}" value="${o[L.endKey]||''}" ${tbd?'disabled':''}
+               aria-label="${L.label} end date">
+        <span class="tbdsw" role="group" aria-label="${L.label} end is">
+          <button data-tbd="${L.tbdKey}" data-v="0" aria-pressed="${!tbd}">DATE</button>
+          <button data-tbd="${L.tbdKey}" data-v="1" aria-pressed="${tbd}">TBD</button>
+        </span>
+        <span class="dl-left ${left.cls}">${left.html}</span>
+      </div>`;
+    }).join('');
+
+    renderBanners();
+    renderDraftZone();
+    renderIdSummary();
+    const n = st.dirty.size;
+    idState.textContent = n ? `${n} unsaved edit${n>1?'s':''}` : 'no unsaved edits';
+    hTitle.textContent = st.season.currentSeasonTitle;
+    wireIdentity();
+  }
+
+  /* Three independent banners, one per /calendar page. Blank means "show nothing" — NOT a
+   * placeholder — so an empty field is a real, meaningful value and is labelled as such. */
+  const BANNERS = [
+    { k:'drawsBannerUrl',     label:'Draws',     hex:'#AE72E0' },
+    { k:'eventsBannerUrl',    label:'Events',    hex:'#4A90D9' },
+    { k:'playlistsBannerUrl', label:'Playlists', hex:'#2CC4C4' }
+  ];
+  function renderBanners() {
+    const o = cur();
+    bans.innerHTML = BANNERS.map(B => {
+      const v = o[B.k] || '';
+      return `<div class="ban" style="--c:${B.hex}">
+        <span class="bl">${B.label}</span>
+        <span class="bthumb${v ? ' has' : ''}">${v ? '' : 'none'}</span>
+        <input type="url" data-b="${B.k}" value="${v.replace(/"/g,'&quot;')}"
+               placeholder="Paste an image URL — blank shows no banner"
+               aria-label="${B.label} page banner URL" spellcheck="false">
+        <span class="bst">${v ? 'cached' : 'no banner'}</span>
+      </div>`;
+    }).join('');
+    bans.querySelectorAll('input[data-b]').forEach(el => {
+      el.oninput = () => {
+        o[el.dataset.b] = el.value.trim();
+        st.dirty.add(st.sn + ':banners');
+        el.closest('.ban').querySelector('.bst').textContent = el.value.trim() ? 'will re-host on save' : 'no banner';
+        el.closest('.ban').querySelector('.bthumb').className = 'bthumb' + (el.value.trim() ? ' has' : '');
+        idState.textContent = `${st.dirty.size} unsaved edit${st.dirty.size>1?'s':''}`;
+      };
+      el.onblur = () => {
+        if (!st.dirty.has(st.sn + ':banners')) return;
+        S.Store.add({ id:'season-banners-' + st.sn, op:'calendar.setBanners', name:'Calendar banners', verb:'banner changed' });
+        syncStaged();
+      };
+    });
+  }
+
+  /* The collapsed strip has to answer the same question the open editor does — what are the
+   * dates — or collapsing it just hides information. It is a summary, not a placeholder. */
+  /* ═══ THE SEASON RECORD, COLLAPSED ═══════════════════════════════════════════════════
+   * Harkirat, on what this used to be: "Nothing about it suggests that it also encompasses
+   * the calendar page banner urls. The dates and titles inside of collapsed strip are not
+   * informative or sized correctly considering the level of information they hold. they
+   * feel like 3rd tier support information. the intuitiveness/ux-copy are not present."
+   *
+   * Three complaints, one defect: it was written as a CAPTION for a thing that is a RECORD.
+   * So it now names every kind of thing it holds - including the banners, which it never
+   * admitted to - sets the titles and dates at the scale of the content rather than as 10px
+   * chips, and says what it is and what opening it does instead of the bare label
+   * "Live season".
+   *
+   * 🔴 IT NO LONGER SAYS "17 DAYS LEFT". That belongs to the clock in the masthead. This
+   * shows the dates AS STORED, because this is the record you EDIT - and that split is what
+   * stops the two elements repeating each other, which is what made both feel redundant.
+   * The collapse/expand toggle is unchanged; only the closed state was rebuilt. */
+  function renderIdSummary() {
+    const o = st.season, isDraft = st.sn === 'draft';
+    const titled = (o.currentSeasonTitle || '').trim();
+    const set = BANNERS.filter(b => (o[b.k] || '').trim());
+    /* Silent unless it is genuinely late AND nothing is staged. One line, never repeated,
+     * gone the moment a draft exists - "dont make it naggy". */
+    const near = S.seasonMoments(o, F.today)[0];
+    const daysOut = near ? T.days(F.today, near.iso) : null;
+    const nudge = !isDraft && !st.draft.active && daysOut !== null && daysOut <= 7;
+
+    /* 🔴 REBUILT 2026-08-25 21:22 EDT, three corrections:
+     *  · "making it this vertical is just wasted space" - the three lines were stacked rows
+     *    running the full width for three short facts. They go three-abreast instead, two
+     *    lines each, and the block loses roughly a third of its height while using the
+     *    width it always had.
+     *  · "THE RECORD THIS BOT SHOWS PLAYERS is a useless line" - it described the component
+     *    to somebody who is already looking at it. Only the half that says what is INSIDE
+     *    survives, which is the half that was doing work.
+     *  · "the calendar banners portion needs to stop feeling like a foot note. it's
+     *    literally one of the main elements" - they were a grey line under a rule, below
+     *    the fold of the component. They now get the IDENTICAL cell treatment as the
+     *    deadlines, on their own row of three: same bar, same label, same state line.
+     *    Peers, not a footer. */
+    idSum.innerHTML = `<div class="srec">
+      <div class="srec-top">
+        <span class="srec-kind">Titles, dates and calendar banners</span>
+        <span class="srec-state${isDraft ? ' staged' : ''}">${isDraft ? 'staged draft' : 'live'}</span>
+      </div>
+      <p class="srec-title${titled ? '' : ' untitled'}">${titled || 'No season title set'}</p>
+      <!-- 🔴 ONE GRID, NOT SIX. Every cell used to be its own flex row that arranged itself
+           from its own content, so the six titles began at 128.3 / 478.1 / 840.6 / 145.6 /
+           525.2 / 917.5 - six different x positions - and the dates were not even
+           right-aligned to each other (ends 401.3 / 782.7 / 1164 / 404.3 / 777.7 / 1151).
+           display:contents dissolves each cell so all eighteen parts land in ONE grid,
+           where the label column is sized by the widest label ACROSS ALL SIX. -->
+      <div class="srec-grid">
+        ${F.LINES.map(L => {
+          const t = (o[L.titleKey] || '').trim();
+          const tbd = o[L.tbdKey], iso = o[L.endKey];
+          return `<div class="srec-c" style="--c:${L.hex}">
+            <span class="k">${L.label}</span>
+            <span class="t${t ? '' : ' unset'}">${t || 'no title set'}</span>
+            <span class="d${tbd || !iso ? ' tbd' : ''}">${tbd ? 'TBD' : (iso ? T.fmt(iso) : 'no date')}</span></div>`;
+        }).join('')}
+        <!-- 🔴 A DOT, NOT THE WORD "set". A short word at the end of a row reads as a BUTTON -
+             "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
+             in the rows above, so a verb here also broke the peerage the shared treatment was
+             establishing. A filled ring cannot be read as an action. The ABSENT state is the
+             one that matters, so it is the one that is marked. -->
+        ${BANNERS.map(b => {
+          const on = (o[b.k] || '').trim();
+          return `<div class="srec-c${on ? '' : ' off'}" style="--c:${b.hex}">
+            <span class="k">${b.label}</span>
+            <span class="t${on ? '' : ' unset'}">${on ? 'image cached and serving' : 'no image set'}</span>
+            <span class="d" role="img" aria-label="${on ? 'set' : 'not set'}"><em></em></span></div>`;
+        }).join('')}
+      </div>
+      ${nudge ? `<div class="srec-nudge"><b>Next season isn&rsquo;t staged.</b>
+        A draft lets you build it &mdash; titles, dates, draws and calendar &mdash; without any of it going live.</div>` : ''}
+    </div>`;
+    /* The strip IS the button - role, tabindex, cursor, hover and aria-expanded are all on it.
+     * A floating "Open to edit" label was an apology for an affordance that already existed,
+     * and it sat wherever margin-left:auto dropped it. The words move into the accessible
+     * name, where a keyboard user actually needs them. */
+    idSum.setAttribute('aria-label',
+      `Season record: ${titled || 'no title set'}. Open to edit titles, dates and calendar banners.`);
+  }
+  const identityEl = document.getElementById('identity');
+  const toggleIdentity = () => {
+    const open = identityEl.classList.toggle('collapsed');
+    idSum.setAttribute('aria-expanded', String(!open));
+    sessionStorage.setItem('dioreo-identity-open', open ? '0' : '1');
+  };
+  idSum.onclick = toggleIdentity;
+  document.getElementById('idClose').onclick = toggleIdentity;
+  idSum.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleIdentity(); } };
+  if (sessionStorage.getItem('dioreo-identity-open') === '1') identityEl.classList.remove('collapsed');
+
+  /* Only CHANGED fields render, so a draft that matches live is visibly empty rather than
+   * a wall of identical rows the reader has to scan to discover nothing happened. */
+  function renderDiff() {
+    const rows = [];
+    /* NOT class="now" — that is the Track's today-marker (absolute, 1px, gold) and it
+     * turned this column into a glowing hairline pinned to the left edge. Generic class
+     * names are the recurring bug in this file; every diff class is namespaced. */
+    const push = (k, a, b, add) => { if ((a||'') !== (b||'')) rows.push(
+      `<div class="diff-r"><span class="dk">${k}</span>
+        <span class="dwas">${a || '—'}</span>
+        <span class="dnow${add?' add':''}">${b || '—'}</span></div>`); };
+    push('title', st.season.currentSeasonTitle, st.draft.currentSeasonTitle);
+    F.LINES.forEach(L => {
+      push(L.label.toLowerCase(), st.season[L.titleKey], st.draft[L.titleKey]);
+      const a = st.season[L.tbdKey] ? 'TBD' : (st.season[L.endKey] ? T.fmt(st.season[L.endKey]) : '');
+      const b = st.draft[L.tbdKey]  ? 'TBD' : (st.draft[L.endKey]  ? T.fmt(st.draft[L.endKey])  : '');
+      push(L.label.toLowerCase() + ' ends', a, b);
+    });
+    const dn = st.items.filter(i => i.draft).length;
+    if (dn) rows.push(`<div class="diff-r"><span class="dk">content</span>
+      <span class="dwas">${st.items.filter(i=>!i.draft).length} live items</span>
+      <span class="dnow add">+${dn} staged for next</span></div>`);
+    return `<div class="diff"><div class="diff-h"><span>FIELD</span><span>LIVE NOW</span><span>AFTER PROMOTE</span></div>
+      ${rows.length ? rows.join('') : '<div class="diff-none">The draft is identical to what is live.</div>'}</div>`;
+  }
+
+  function renderDraftZone() {
+    if (!st.draft.active) {
+      draftZone.innerHTML = `<div class="nodraft">
+        <p>No next season staged. A draft lets you build the whole next season — titles, deadlines,
+           draws and calendar — without any of it going live.</p>
+        <button class="chip" id="mkDraft">Start a draft</button></div>`;
+      return;
+    }
+    const n = st.items.filter(i => i.draft).length;
+    draftZone.innerHTML = `
+      <div class="draftbar">
+        <span class="dt">Next season staged</span>
+        <span class="dsub">${st.draft.currentSeasonTitle || 'untitled'} · ${n} item${n===1?'':'s'} · not visible to players</span>
+        <span class="sp"></span>
+        <button class="chip" id="dDiff" aria-pressed="false">Compare</button>
+        <button class="chip danger" id="dDiscard">Discard draft</button>
+        <button class="commit" id="dPromote">Promote to live</button>
+      </div>
+      <div id="diffBox" hidden>${renderDiff()}</div>`;
+  }
+
+  function wireIdentity() {
+    const o = cur();
+    dlines.querySelectorAll('input[data-f]').forEach(el => {
+      el.oninput = () => {
+        o[el.dataset.f] = el.value || (el.type === 'date' ? null : '');
+        st.dirty.add(st.sn + ':' + el.closest('.dline').dataset.line);
+        el.closest('.dline').classList.add('dirty');
+        const n = st.dirty.size;
+        idState.textContent = `${n} unsaved edit${n>1?'s':''}`;
+        /* A text edit only changes a label, so patch that cell in place. Re-rendering the
+         * whole row on every keystroke destroys the input the caret is sitting in — the
+         * refocus-and-restore dance that replaced was a workaround for damage this avoids. */
+        if (el.type === 'date') {
+          refreshBounds();
+          renderIdentity(); renderStats(); renderTrack(); renderRows();
+        } else if (st.sn === 'draft') renderDraftZone();
+      };
+      el.onblur = () => stageIdentity();
+    });
+    dlines.querySelectorAll('[data-tbd]').forEach(b => b.onclick = () => {
+      o[b.dataset.tbd] = b.dataset.v === '1';
+      st.dirty.add(st.sn + ':' + b.closest('.dline').dataset.line);
+      refreshBounds();
+      renderIdentity(); renderTrack(); renderStats(); renderRows(); stageIdentity();
+    });
+    const mk = document.getElementById('mkDraft');
+    if (mk) mk.onclick = () => {
+      st.draft = { ...st.season, active:true, currentSeasonTitle:'' };
+      st.sn = 'draft'; renderIdentity();
+      S.toast('Draft started from the live season. Nothing is public until you promote it.');
+    };
+    const df = document.getElementById('dDiff');
+    if (df) df.onclick = () => {
+      const box = document.getElementById('diffBox'), open = box.hidden;
+      box.hidden = !open; df.setAttribute('aria-pressed', String(open));
+    };
+    const dp = document.getElementById('dPromote');
+    if (dp) dp.onclick = () => S.confirm({
+      title:'Promote the staged draft to live?', tier:3,
+      body:`<p class="dw-p">This swaps the draft's title and deadlines in as what is live <b>right now</b>,
+             moves ${(n => n + ' staged item' + (n === 1 ? '' : 's'))(st.items.filter(i=>i.draft).length)} into the live season, and clears the draft.</p>
+            ${renderDiff()}
+            <p class="dw-p" style="margin-top:12px"><b>This cannot be undone from the portal.</b>
+             Export the season first if you want a way back.</p>`,
+      confirm:'Promote to live', op:'season.promoteDraft',
+      onConfirm(){ promoteDraft(); }
+    });
+    const dd = document.getElementById('dDiscard');
+    if (dd) dd.onclick = () => S.confirm({
+      title:'Discard the staged draft?',
+      /* Was: "It is tier 2 in core/ops — a draft restore is an exact inverse — but nothing in
+       * the portal offers that restore yet, so treat it as final until it does." That asks the
+       * reader to hold a caveat about the product's own unfinished roadmap, in a confirmation. */
+      body:`<p class="dw-p">This erases everything staged for next season — titles, deadlines and
+             ${(n => n + ' item' + (n === 1 ? '' : 's'))(st.items.filter(i=>i.draft).length)}.
+             What is currently live is untouched. <b>There is no way to restore a discarded draft
+             from the portal.</b></p>`,
+      confirm:'Discard the draft', danger:true, op:'season.discardDraft',
+      onConfirm(){ st.draft = { active:false, currentSeasonTitle:'', bpTitle:'', rankTitle:'', dmzTitle:'',
+                                bpEnd:null, rankEnd:null, dmzEnd:null,
+                                bpEndTBD:false, rankEndTBD:false, dmzEndTBD:false };
+                   st.items = st.items.filter(i => !i.draft); st.sn = 'live';
+                   refreshBounds(); renderAll(); S.toast('Draft discarded. Live season untouched.'); }
+    });
+  }
+
+  function promoteDraft() {
+    const prevSeason = { ...st.season }, prevItems = st.items.map(i => ({ ...i })), prevDraft = { ...st.draft };
+    st.season = { ...st.draft }; delete st.season.active;
+    st.items = st.items.map(i => i.draft ? { ...i, draft:false, state:'saved' } : i);
+    st.draft = { active:false, currentSeasonTitle:'', bpTitle:'', rankTitle:'', dmzTitle:'',
+                 bpEnd:null, rankEnd:null, dmzEnd:null, bpEndTBD:false, rankEndTBD:false, dmzEndTBD:false };
+    st.sn = 'live'; refreshBounds(); renderAll();
+    S.toast(`"${st.season.currentSeasonTitle}" is now live.`, 'Undo', () => {
+      st.season = prevSeason; st.items = prevItems; st.draft = prevDraft;
+      refreshBounds(); renderAll();
+    });
+  }
+
+  document.getElementById('f-title').addEventListener('input', e => {
+    cur().currentSeasonTitle = e.target.value;
+    st.dirty.add(st.sn + ':title');
+    hTitle.textContent = st.season.currentSeasonTitle;
+    idState.textContent = `${st.dirty.size} unsaved edit${st.dirty.size>1?'s':''}`;
+    if (st.sn === 'draft') renderDraftZone();
+  });
+  document.getElementById('f-title').addEventListener('blur', () => stageIdentity());
+  document.querySelectorAll('#lnsw button').forEach(b => b.onclick = () => {
+    if (b.dataset.sn === 'draft' && !st.draft.active) { st.sn = 'draft'; renderIdentity(); return; }
+    st.sn = b.dataset.sn; renderIdentity();
+  });
+
+  function stageIdentity() {
+    const mine = [...st.dirty].filter(k => k.startsWith(st.sn + ':'));
+    if (!mine.length) return;
+    const op = OPS[st.sn];
+    S.Store.add({ id:'season-identity-' + st.sn, op:op.name,
+      name: st.sn === 'draft' ? 'Next season identity' : 'Season identity',
+      verb:`${mine.length} field${mine.length>1?'s':''} changed` });
+    syncStaged();
+  }
+
+  /* ═══ TRACK ═══ */
+  const trackEl = () => viewTrack.querySelector('.lanes');
+  const pxPerDay = () => {
+    const tk = viewTrack.querySelector('.tk');
+    return tk ? tk.getBoundingClientRect().width / st.view.span() : 10;
+  };
+
+  let renderTrack = function () {
+    const v = st.view;
+    /* 🔴 A LANE IS NOT ONE ROW. The shipped portal's track.logic.js solved this and its own
+     * comment records the case: two same-lane events "painted on the same pixels". The mockup had
+     * every item at top:50%, so overlapping bars stacked invisibly. Greedy interval assignment —
+     * sort by start, place each item in the first row whose last item has already ended. Lanes
+     * then GROW to hold their rows, which is why every overlay below measures the lanes box
+     * instead of assuming lanes.length × a fixed height. */
+    function assignRows(list) {
+      const sorted = [...list].sort((a, b) => a.start.localeCompare(b.start));
+      const ends = [];
+      const row = new Map();
+      for (const it of sorted) {
+        /* One day of clearance: two bars that merely TOUCH are consecutive, not overlapping, and
+         * belong on the same row separated by a gutter (see .bar's inset below). */
+        let r = ends.findIndex(e => T.days(e, it.start) >= 0);
+        if (r === -1) { r = ends.length; ends.push(it.end); } else { ends[r] = it.end; }
+        row.set(it.id, r);
+      }
+      return { row, rows: Math.max(1, ends.length) };
+    }
+
+    /* A collapsed lane must still ANSWER something — a row that only says "5 hidden" is a
+     * worse version of nothing. Each lane's summary answers that lane's own question. */
+    function laneSummary(lane, list, kit) {
+      const v = st.view;
+      if (kit.sum === 'pips')
+        return `<span class="lsum">${list.map(it => `<i class="lpip${it.tier === 'mythic' ? ' myth' : ''}"
+                  style="--c:${lane.bar};left:${v.pct(it.start)}%"
+                  data-tip="${it.name} · ${T.fmt(it.start)}"></i>`).join('')}</span>`;
+      if (kit.sum === 'load') {
+        const c = loadCurve(list), max = Math.max(1, ...c);
+        /* 🔴 THE PEAK WAS ASSERTED, NOT SHOWN. The ribbon painted every bar at a LINEAR height,
+         * so on a curve whose peak is 7 and whose typical value is 1 or 2, six bars out of seven
+         * rendered as a 14% stub and the only thing carrying "7 at peak" was the text beside it.
+         * Gamma-compressing (0.6) lifts the low end enough that the SHAPE is the reading and the
+         * label becomes a confirmation rather than the source.
+         * 🔴 AND A ZERO IS DRAWN. `opacity:0` erased every empty day, so a gap in the rotation —
+         * which is the one thing a person scanning this lane would act on — was indistinguishable
+         * from the lane simply ending. An empty day is now a warn tick on the baseline: the same
+         * idea the ack panel uses, and the half of the density glyph worth keeping. */
+        const empties = c.filter(n => !n).length;
+        return `<span class="lsum load" data-tip="How many run at once — peak ${max}${
+            empties ? `, and ${empties} day${empties === 1 ? '' : 's'} with nothing running` : ''}">${
+          c.map((n, i) => {
+            const x = (i / (c.length - 1)) * 100;
+            if (!n) return `<i class="ld0" style="left:${x}%"></i>`;
+            return `<i style="--c:${lane.bar};left:${x}%;height:${
+              Math.round(Math.pow(n / max, .6) * 100)}%"></i>`;
+          }).join('')}<b>${max} at peak</b></span>`;
+      }
+      const runs = mergeRuns(list);
+      return `<span class="lsum">${runs.map(r => `<i class="lrun" style="--c:${lane.bar};left:${
+        v.pct(r.a)}%;width:${v.wpct(r.a, r.b)}%" data-tip="${r.n} item${r.n === 1 ? '' : 's'} · ${
+        T.fmt(r.a)} → ${T.fmt(r.b)}"></i>`).join('')}</span>`;
+    }
+
+    const laneRow = (lane, list, isDraft) => {
+      const spans = list.filter(i => i.kind !== 'point');
+      const { row, rows } = assignRows(spans);
+      const H = 26, PAD = 10;
+      const laneH = Math.max(38, rows * H + PAD);
+      const kit = LANE_KIT[lane.type] || { sum:'runs', ask:'what is scheduled' };
+      /* A lane needing more than three rows opens COLLAPSED. Playlists alone needs five, which is
+       * ~130px before anything else is drawn — you land on a wall and the lane you came for is
+       * off-screen. An explicit choice always wins over the default, and it persists. */
+      const ckey = (isDraft ? 'd:' : '') + lane.type;
+      const col = ckey in st.laneCol ? st.laneCol[ckey] : rows > 3;
+      return `
+      <!-- 🔴 THE LANE CARRIES ITS OWN TOPIC ACCENT. It used to live only on the header dot, so the
+           lane itself had no identity — every row was the same grey stripe on a shared field. The
+           card's left edge and its header ground both read from --c, which is what makes a lane
+           recognisably ITS lane before you read the label. -->
+      <div class="lane${col ? ' lnc' : ''}" data-lane="${lane.type}" data-draft="${isDraft?1:0}" data-rows="${rows}"
+           style="--c:${lane.bar};height:${col ? 30 : laneH}px">
+        <button class="lnh" data-lanebtn="${lane.type}" data-draft="${isDraft?1:0}"
+                aria-expanded="${!col}" data-tip="${col ? 'Expand' : 'Collapse'} this lane — ${kit.ask}. Alt-click to solo it.">
+          ${S.fold(!col, {cls:'sm lnh-i'})}
+          <span class="lnh-d" style="--c:${lane.bar}"></span>
+          <span class="lnh-t">${isDraft ? 'Draft ' + lane.label.toLowerCase() : lane.label}</span>
+          <span class="lnh-n">${list.length}</span>
+        </button>
+        <div class="tk">
+          ${col ? laneSummary(lane, list, kit) : ''}
+          ${(() => { const off = list.filter(it => T.days(it.end, st.view.from) > 0 || T.days(st.view.to, it.start) > 0).length;
+             return off ? `<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : ''; })()}
+          ${col ? '' : list.map(it => {
+            const r = row.has(it.id) ? row.get(it.id) : 0;
+            const top = rows === 1 ? null : `top:${PAD/2 + r * H}px;transform:none;height:${H - 5}px`;
+            /* 🔴 `kind` DECIDES THE SHAPE, and three lanes now carry points. models/SeasonalData.js
+             * gives a draw ONE field — `date` — and no end at all; only a `calendar` row has both.
+             * This used to test `type === 'patchnote'`, which was the only point-like lane the
+             * authored fixtures had, so every draw rendered as a band spanning a duration that
+             * does not exist in the schema. A draw is a RELEASE. */
+            const s = stateOf(it), pt = it.kind === 'point';
+            return pt
+              ? `<span class="pt ${s}" data-id="${it.id}" tabindex="0" role="button"
+                   data-tier="${it.tier || ''}" data-lanekind="${lane.type}"
+                   style="--c:${lane.bar};left:${v.pct(it.start)}%"
+                   data-name="${it.name.replace(/"/g,'&quot;')}" data-date="${it.start}"
+                   aria-label="${it.name}, releases ${T.fmt(it.start)}${it.dateOnly ? ', no calendar window' : ''}"
+                   data-tip="${it.name} · releases ${T.fmt(it.start)}${it.detail && it.detail !== '—' ? ' · ' + it.detail : ''}${it.dateOnly ? ' · no window — /calendar synthesises one that never ends' : ''}"></span>`
+              : `<div class="bar ${s}${it.openEnded ? ' forever' : ''}" data-id="${it.id}" tabindex="0" role="button"
+                   style="--c:${lane.bar};--ci:${barInk(lane.bar)};left:${v.pct(it.start)}%;width:${v.wpct(it.start,it.end)}%${top ? ';' + top : ''}"
+                   aria-label="${it.name}, ${T.fmt(it.start)} ${it.openEnded ? 'onward, with no end date' : 'to ' + T.fmt(it.end)}${it.isOngoing ? ', runs all season' : ''}, ${s}">
+                   <span class="gr a" data-edge="start"></span><span class="bl">${it.name}</span><span class="gr b" data-edge="end"></span></div>`;
+          }).join('')}
+        </div></div>`;
+    };
+
+    const live  = st.items.filter(i => !i.draft);
+    const draft = st.items.filter(i =>  i.draft);
+    const flags = computeFlags();
+
+    viewTrack.innerHTML = `
+      <div class="tk-wrap"><div class="tk-inner">
+        <div class="scrub">
+          <span class="scrub-label">overview</span>
+          <div class="scrub-track" id="scrub" data-tip="Drag the ends to zoom, the middle to pan"></div>
+        </div>
+        <div class="xhair" id="xhair" aria-hidden="true"><span class="xd" id="xdate"></span></div>
+        <div class="ruler" id="ruler"></div>
+        <div class="deadrail" id="deadrail" aria-label="Season deadlines"></div>
+        <div class="lanes">
+          ${F.LANES.filter(l => l.key !== 'patchNotes').map(l => laneRow(l, live.filter(i => i.type === l.type), false)).join('')}
+          ${draft.length ? `<div class="divider">Season 8 draft — staged, not live</div>` : ''}
+          ${F.LANES.filter(l => l.key !== 'patchNotes' && draft.some(i => i.type === l.type))
+                   .map(l => laneRow(l, draft.filter(i => i.type === l.type), true)).join('')}
+          <div class="ov" id="ov"></div>
+        </div>
+      </div></div>
+      <!-- ⚠️ TWO LARGE CARDS UNDER THE PLOT, DESCRIBING THE PAIR OF BARS DIRECTLY ABOVE THEM AND
+           POINTING AT NEITHER — the affordance-distance shape again, at reading distance instead
+           of scroll distance. The finding now marks the BAR it is about (see markFlagged below)
+           and the strip collapses to one line per finding. -->
+      <div class="flags tight">${flags.length ? flags.map(f => `
+        <span class="flag ${f.sev === 'info' ? 'info' : ''}" data-flagid="${f.id}">${f.text}
+          <button data-fix="${f.id}">${f.fix}</button></span>`).join('')
+        : `<span class="flag info" style="border-left-color:var(--ok)">No conflicts, overlaps or gaps in the current window.</span>`}</div>`
+      + renderRecord();
+
+    renderRuler(); renderOverlay(); renderScrub(); wireTrack(); pinClippedLabels(); renderKey();
+    markFlagged(flags);
+    /* 🔴 EVERY MEASURING PASS LIVED IN repositionBars(), WHICH DOES NOT RUN ON FIRST PAINT — so a
+     * freshly loaded Track showed "We⋮ We⋮ We⋮ We⋮" where five event labels belong, and only a
+     * zoom or a drag ever corrected it. I had "verified" the label fix by clicking zoom FIRST,
+     * which is the one action that makes the pass run: a check designed after knowing the fix is
+     * not a check. Bars have geometry only after layout, hence the frame. */
+    requestAnimationFrame(() => { fitLabels(); clusterPoints(); fitFlags(); pinFarDeadlines();
+      const r = viewTrack.querySelector('.deadrail'); if (r) stackFlags(r); });
+    /* Wired here rather than once at boot: the Track's innerHTML is rebuilt on every zoom and
+     * pan, so a listener bound to the old node would silently stop working after the first
+     * interaction — the same self-destroying-selector class that broke `#lnsw .pip.draft`. */
+    document.getElementById('recAdd')?.addEventListener('click',
+      () => openComposer({ type:'patchNotes' }));
+    /* Collapse is per lane and needs no global "dense mode" — a mode is what you build when you
+     * cannot decide. Alt-click solos: everything else folds, which is the gesture you want when
+     * one lane is the reason you opened the page. */
+    viewTrack.querySelectorAll('[data-lanebtn]').forEach(b => b.addEventListener('click', e => {
+      const k = (b.dataset.draft === '1' ? 'd:' : '') + b.dataset.lanebtn;
+      if (e.altKey) {
+        viewTrack.querySelectorAll('[data-lanebtn]').forEach(o => {
+          const ok = (o.dataset.draft === '1' ? 'd:' : '') + o.dataset.lanebtn;
+          st.laneCol[ok] = ok !== k;
+        });
+      } else st.laneCol[k] = !(b.getAttribute('aria-expanded') === 'false');
+      saveLaneCol(); renderTrack();
+    }));
+    viewTrack.querySelectorAll('[data-recid]').forEach(el =>
+      el.addEventListener('click', () => openItem(el.dataset.recid)));
+  };
+
+  /* Pixels decide the spacing, not days — a rule that holds at any span. */
+  function tickStep(span, widthPx) {
+    const want = Math.max(1, Math.floor(widthPx / 92));          // ~1 label per 92px
+    const raw  = span / want;
+    return [1, 2, 3, 7, 14, 28, 56, 91, 182, 364].find(c => c >= raw) || 364;
+  }
+  function renderRuler() {
+    /* Each tick carries its real date so clicking one can answer "what is on this day?".
+     * They previously inherited the ruler's ew-resize cursor and offered nothing. */
+    const w = ruler.getBoundingClientRect().width || 1100;
+    ruler.innerHTML = T.ticks(st.view, tickStep(st.view.span(), w)).map(t =>
+      `<span style="left:${t.x}%" data-date="${t.iso || st.view.dateAt(t.x)}"
+             role="button" tabindex="0" title="What runs on this day"><b>${t.label}</b></span>`).join('');
+    ruler.querySelectorAll('span').forEach(sp => {
+      sp.addEventListener('click', e => { e.stopPropagation(); openDay(sp.dataset.date); });
+      sp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); openDay(sp.dataset.date); } });
+    });
+  }
+
+  /* What is running on one day — the question a date label invites. */
+  function openDay(iso) {
+    const on = st.items.filter(i => T.days(i.start, iso) >= 0 && T.days(iso, i.end) >= 0);
+    S.drawer({
+      eyebrow: 'A single day', title: T.fmtLong ? T.fmtLong(iso) : T.fmt(iso),
+      body: on.length ? `<ul class="daylist">${on.map(i => `
+              <li style="--c:${accentOf(i.type)}"><i></i>
+                <span class="dn">${i.name}</span>
+                <span class="dt">${F.TYPE_LABEL[i.type]}</span>
+                <span class="dd">${T.fmt(i.start)} &rarr; ${T.fmt(i.end)}</span></li>`).join('')}</ul>`
+            : `<p class="dw-p">Nothing is scheduled on this day.</p>`,
+      actions: `<button class="btn" onclick="Shell.closeDrawer()">Close</button>`
+    });
+  }
+
+  /* One deadline, editable on its own — reachable from the marker and from the scrubber. */
+  function openDeadline(key) {
+    const L = F.LINES.find(l => l.key === key), o = st.season;
+    S.drawer({
+      eyebrow: 'season.setTitlesDeadlines · tier 1', title: `${L.label} deadline`,
+      body: `<div class="dwfield"><label for="dwt">${L.label} title</label>
+               <input id="dwt" value="${(o[L.titleKey]||'').replace(/"/g,'&quot;')}"></div>
+             <div class="dwfield"><label for="dwd">Ends</label>
+               <input id="dwd" type="date" value="${o[L.endKey]||''}" ${o[L.tbdKey]?'disabled':''}></div>
+             <label class="dwcheck"><input type="checkbox" id="dwtbd" ${o[L.tbdKey]?'checked':''}>
+               <span>End date is <b>TBD</b> — known to be undecided, not merely unset</span></label>
+             <p class="dw-p" style="margin-top:14px;color:var(--ink3)">
+               ${o[L.tbdKey] ? 'Nothing is bounded by a TBD deadline.'
+                 : (n => `${n} ${S.plural(n, 'items')} currently run past this date.`)(st.items.filter(i => o[L.endKey] && T.days(i.end, o[L.endKey]) < 0).length)}</p>`,
+      actions: `<button class="btn" onclick="Shell.closeDrawer()">Cancel</button>
+                <button class="btn go" id="dwsave">Stage this change</button>`
+    });
+    document.getElementById('dwtbd').onchange = e => {
+      document.getElementById('dwd').disabled = e.target.checked; };
+    document.getElementById('dwsave').onclick = () => {
+      o[L.titleKey] = document.getElementById('dwt').value;
+      o[L.tbdKey] = document.getElementById('dwtbd').checked;
+      if (!o[L.tbdKey]) o[L.endKey] = document.getElementById('dwd').value || null;
+      st.dirty.add('live:' + L.key); refreshBounds();
+      stageIdentity(); S.closeDrawer(); renderAll();
+      S.toast(`${L.label} deadline staged.`);
+    };
+  }
+
+  function renderOverlay() {
+    const v = st.view, ov = document.getElementById('ov');
+    const cp = st.items.find(i => i.isDoubleCP);
+    ov.innerHTML = `
+      ${cp ? `<div class="win" id="cpwin" style="left:${v.pct(cp.start)}%;width:${v.wpct(cp.start,cp.end)}%"
+                data-tip="Double CP — every draw in this window is priced differently">
+                <span class="wh l" data-edge="start"></span><span class="wh r" data-edge="end"></span></div>` : ''}
+      <!-- 🔴 NOW STATES THE ACTUAL TIME. It was a 1px gold hairline labelled NOW, which is
+           a position and not a fact — on a 48-day window one day is ~14px, so a marker that
+           literally crept would move 0.6px an hour and say nothing. A live readout says the
+           true thing instead: this is where the line is, and this is when that is. It ticks
+           on the minute (see startClock), which is the only rate at which the text changes. -->
+      <!-- 🔴 THE CLOCK LIVES INSIDE THE NOW MARKER, not floating beside it. Added yesterday
+           without deciding where it belonged, it rendered as a bare timestamp between the ruler
+           and the first lane, anchored to neither — Harkirat: "why does the timestamp look so out
+           of place? like an afterthought. and why is it randomly in the middle of the track?"
+           It was homeless: an element whose position was whatever its own CSS said, in a band
+           nothing owned. NOW is one object now — the line, the pill and the time. -->
+      <div class="now" style="left:${v.pct(F.today)}%" data-now="NOW ${clockText()}"></div>
+      <!-- 🔴 THE FULL-HEIGHT DEADLINE LINE IS GONE, AND NOT BECAUSE IT LOOKED BUSY.
+           Harkirat: "why do they even have a line going down into the track? How is that helpful
+           to anyone?" The comfortable defence is the textbook one — a vertical rule lets you see
+           which bars cross the deadline — and it fails three ways here:
+             · THE PAGE ALREADY ANSWERS IT. FLAGS in the masthead, the Repairs view and the
+               Manifest's WINDOW column all state which items run past the season. A visual
+               affordance whose output is a worse copy of a computed answer is a ritual.
+             · IT DREW THE WRONG BOUNDARY. "seasonEnd()" deliberately takes the LAST of the three
+               deadlines ("an item running past BP but inside Ranked is not a conflict") — so the
+               line at Sep 10, the FIRST deadline, invited you to eyeball a boundary the page's
+               own conflict rule does not use.
+             · MEASURED 2026-08-25 16:1x EDT: ".dend" returned TWO elements at the SAME x (1016),
+               "rgb(242,153,74)" and "rgb(255,52,48)", both at opacity .5, so one date rendered as
+               two overlapping half-transparent lines whose visible colour is whichever painted
+               last — plus a THIRD rendering, the chip's amber stem. §5.9c.6 fixed "two chips for
+               one date" by grouping and left the LINE ungrouped: the identical modelling error
+               survived one layer down and was on screen for days.
+           What replaces it: ONE notch per DATE at the top of the plot. A deadline marks its own
+           coordinate on the axis it belongs to; it does not cross content it makes no claim about. -->
+      ${(() => {
+          const o = st.season, byDate = {};
+          F.LINES.forEach(L => { if (o[L.tbdKey] || !o[L.endKey]) return;
+            (byDate[o[L.endKey]] = byDate[o[L.endKey]] || []).push(L); });
+          return Object.entries(byDate).map(([date, Ls]) => {
+            const x = v.pct(date);
+            if (x < -2 || x > 102) return '';
+            /* One moment, one mark. Two deadlines on one date share the notch and it carries a
+             * stop for each, so the pair is visible without drawing the date twice. */
+            return `<div class="dnotch" data-date="${date}" data-line="${Ls[0].key}"
+                        style="--c:${Ls[0].hex};left:${x}%">${
+                      Ls.map(L => `<i style="--c:${L.hex}"></i>`).join('')}</div>`;
+          }).join('');
+        })()}
+      <!-- 🔴 THE BOUNDARY IS A REGION, NOT AN EDGE. A boundary separates two territories, and
+           drawing only the edge makes the reader infer them — the modelling error one level up
+           from the one above. Past "seasonEnd()" the plot is OUT OF SEASON and now looks it.
+           ⚠️ It renders from the LAST deadline, so it agrees with the flag count on the same
+           screen. On today's data that is Nov 11, 51 days beyond the view, so NOTHING DRAWS —
+           and that is the point: the picture stops asserting a boundary that is not there, and
+           the ".dpin" chip ("DMZ NOV 11 · 51d beyond this view") is promoted from a footnote to
+           the boundary's stand-in. -->
+      ${(() => {
+          const e = seasonEnd(st.season); if (!e) return '';
+          const x = v.pct(e);
+          if (x >= 100) return '';
+          return `<div class="oos${100 - x >= 14 ? ' wide' : ''}" style="left:${Math.max(0, x)}%" aria-hidden="true"></div>`;
+        })()}`;
+
+    /* Labels live on the rail; the line is only the line. */
+    const rail = document.getElementById('deadrail');
+    if (rail) {
+      /* 🔴 TWO DEADLINES ON ONE DATE ARE ONE MOMENT, NOT TWO CHIPS. Battle Pass and Ranked both
+       * end Sep 10, so stacking them drew two boxes over one line with two stems to the same x —
+       * and the second box hid the first before the stacking fix, then merely doubled it after.
+       * Two labels for one date is a modelling error, and the fix is to model it: group by date,
+       * one chip, both names. Grouping also removes the alignment problem by construction —
+       * one chip per date means one stem per date. */
+      const byDate = {};
+      F.LINES.forEach(L => { const o = st.season;
+        if (o[L.tbdKey] || !o[L.endKey]) return;
+        (byDate[o[L.endKey]] = byDate[o[L.endKey]] || []).push(L); });
+      rail.innerHTML = Object.entries(byDate).map(([date, Ls]) => {
+        const x = v.pct(date);
+        if (x < -2 || x > 102) return '';
+        const names = Ls.map(L => L.label).join(' + ');
+        return `<button class="dflag" data-line="${Ls[0].key}" style="--c:${Ls[0].hex};left:${x}%"
+                  aria-label="${names} end${Ls.length > 1 ? '' : 's'} ${T.fmt(date)}. Drag to move, or press Enter to edit."
+                  data-tip="${names} end${Ls.length > 1 ? '' : 's'} ${T.fmt(date)} — drag to move, click to edit"
+                >${Ls.map(L => `<i class="dfk" style="--c:${L.hex}"></i>`).join('')
+                }<span class="dfl">${names}</span><span class="dfd">${T.fmt(date)}</span></button>`;
+      }).join('') + (() => {
+        /* A global SPAN belongs on the same rail as the global POINTS — same axis, same
+         * meaning ("this applies to every lane"), different shape. */
+        const c = st.items.find(i => i.isDoubleCP); if (!c) return '';
+        const a = v.pct(c.start), b = v.pct(c.end);
+        if (b < -2 || a > 102) return '';
+        return `<button class="dspan" data-id="${c.id}" style="left:${a}%;width:${Math.max(3,b-a)}%"
+                  aria-label="Double CP, ${T.fmt(c.start)} to ${T.fmt(c.end)}. Applies to every lane."
+                  data-tip="Double CP — every draw in this window is priced differently"
+                ><span class="dfl">2× CP</span></button>`;
+      })();
+      stackFlags(rail);
+    }
+    maskCollidingTicks();
+  }
+
+  /* A caption chip and a date tick can occupy the same x. The tick is the one that is
+   * redundant — the ruler has many, the marker has exactly one — so hide the tick rather
+   * than let two strings share pixels.
+   * The caption is a ::after pseudo-element, so it has no node to measure. An earlier
+   * version padded +-34px around the marker LINE and called that the caption's box; the
+   * real chip is ~90px wide and sits entirely to ONE side, so ticks sitting under the
+   * caption fell outside the compared range and were never masked — the check reported
+   * success while three labels overlapped. Read the pseudo-element's own width and build
+   * the box on the side it actually renders. */
+  /* Flags that would overlap step down a row. Real elements now, so the boxes are measured
+   * rather than inferred from a pseudo-element's computed width. */
+  function stackFlags(rail) {
+    /* 🔴 `.dpin` WAS NOT IN THIS QUERY, and it is appended to the same rail by
+     * pinFarDeadlines() AFTER this ran — so the pinned "DMZ Nov 11 · 49d beyond this view"
+     * chip took no row, sat at top:0, and painted straight over the Ranked flag, which
+     * disappeared entirely. Everything on the rail is on the same axis and must share the
+     * same packing; a marker that opts out of the layout is not a marker, it is a defect. */
+    const flags = [...rail.querySelectorAll('.dflag,.dspan,.dpin')]
+      .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
+    const rows = [];
+    flags.forEach(f => {
+      f.classList.remove('lvl1', 'lvl2', 'lvl3');
+      const b = f.getBoundingClientRect();
+      let lvl = rows.findIndex(right => b.left > right + 8);
+      if (lvl === -1) { lvl = rows.length; rows.push(b.right); } else rows[lvl] = b.right;
+      if (lvl) f.classList.add('lvl' + Math.min(lvl, 3));
+    });
+    const h = 24 + Math.max(0, rows.length - 1) * 21;
+    rail.style.minHeight = h + 'px';
+    /* The crosshair readout used a HARD-CODED 60px offset, so the moment the rail grew a row
+     * the date bubble landed on top of the flags it was supposed to sit above. The rail knows
+     * its own height; the crosshair reads it. */
+    viewTrack.style.setProperty('--xtop', (h + 44) + 'px');
+  }
+
+  function captionBox(marker) {
+    const r  = marker.getBoundingClientRect();
+    const cs = getComputedStyle(marker, '::after');
+    const w  = parseFloat(cs.width)  || 70;
+    const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) || 8;
+    const total = w + pad + 4;
+    const centred = cs.transform && cs.transform !== 'none';   // .now centres its chip
+    if (centred)                          return { l: r.left - total / 2, r: r.left + total / 2 };
+    if (marker.classList.contains('at-edge')) return { l: r.right - total - 5, r: r.right };
+    return { l: r.left, r: r.left + total + 5 };
+  }
+  /* Deliberately SYNCHRONOUS. This used to defer through requestAnimationFrame to "wait for
+   * layout" — but reading getBoundingClientRect() forces layout by itself, so the wait bought
+   * nothing, and Chrome suspends rAF in a background tab. A page opened in a background tab
+   * therefore rendered with the masking never applied and no error anywhere; measured here as
+   * 0 masked ticks while the same code run by hand masked 2. Nothing that decides what the
+   * reader SEES may depend on the tab being frontmost. */
+  /* A bar that starts before the window is clipped at the track's left edge, taking its
+   * label with it — "Shadow Blade rerun" read as "ade rerun". Nudge the label back into the
+   * visible part so an item entering from off-screen is still identifiable. Measured against
+   * the real boxes; nothing here assumes a width. */
+  function pinClippedLabels() {
+    viewTrack.querySelectorAll('.lane .tk').forEach(tk => {
+      const t = tk.getBoundingClientRect();
+      tk.querySelectorAll('.bar').forEach(bar => {
+        const b = bar.getBoundingClientRect(), lbl = bar.querySelector('.bl');
+        if (!lbl) return;
+        const hidden = Math.max(0, t.left - b.left);
+        const visible = b.right - Math.max(b.left, t.left);
+        lbl.style.paddingLeft = (hidden && visible > 46) ? (hidden + 8) + 'px' : '';
+        bar.classList.toggle('clipped-l', hidden > 2);
+      });
+    });
+  }
+
+  /* Put every finding ON the thing it is about. A notice 40px below the plot that names two
+   * bars and points at neither is the same defect as an action bar 1,682px below the fold.
+   * 🔴 THE COUNT IS REPORTED, NOT ASSUMED. A selector that matches nothing fails silently
+   * forever — this file has already paid for that twice (`.dend .dflag`, and the `.cn.bad ~ *`
+   * meter rule) — so a flag whose bar cannot be found says so in the console instead of
+   * quietly marking nothing. */
+  function markFlagged(flags) {
+    viewTrack.querySelectorAll('.bar.flagged,.pt.flagged').forEach(b => b.classList.remove('flagged'));
+    let hit = 0, miss = 0;
+    (flags || []).filter(f => f.sev !== 'info').forEach(f => {
+      const id = String(f.id).replace(/^(ovl|past|gap)-/, '');
+      const el = viewTrack.querySelector(`.bar[data-id="${id}"], .pt[data-id="${id}"]`);
+      if (el) { el.classList.add('flagged'); el.dataset.flagid = f.id; hit++; } else miss++;
+    });
+    if (miss && !hit) console.warn(`[dioreo] markFlagged matched 0 of ${miss} findings — the bar selector is wrong, not the data.`);
+  }
+
+  function maskCollidingTicks() {
+    viewTrack.querySelectorAll('.dnotch').forEach(m =>
+      m.classList.toggle('at-edge', parseFloat(m.style.left) > 88));
+
+    /* Two DEADLINES can also collide with each other — Battle Pass Sep 4 and Ranked Sep 8 sit
+     * four days apart, so at a season-wide zoom their chips overlapped and neither was readable.
+     * Masking cannot help here: unlike a ruler tick, neither caption is redundant. So stack
+     * them instead, left-to-right, dropping each one that would overlap the row above. */
+    const marks = [...viewTrack.querySelectorAll('.dnotch')]
+      .sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+    const rows = [];                                   // rows[i] = right edge occupied on that row
+    marks.forEach(m => {
+      m.className = m.className.replace(/ ?lvl\d/g, '');
+      const b = captionBox(m);
+      let lvl = rows.findIndex(right => b.l > right + 6);
+      if (lvl === -1) { lvl = rows.length; rows.push(b.r); } else rows[lvl] = b.r;
+      if (lvl) m.classList.add('lvl' + Math.min(lvl, 3));
+    });
+
+    /* ⚠️ THE MASK USED TO HIDE THE WHOLE TICK, AND A RULER WITH A MISSING GRADATION READS AS A
+     * RENDERING FAULT. Measured: `Aug 25` was present in the DOM and invisible on screen, so the
+     * ruler ran Aug 18 → [gap] → Sep 1 under the NOW pill. A ruler's regularity IS its
+     * legibility. The LABEL is the redundant half (NOW's own chip already states the date); the
+     * tick mark is the axis. `.masked` now hides only the text. */
+    const boxes = [...viewTrack.querySelectorAll('.now')].map(captionBox);
+    viewTrack.querySelectorAll('#ruler span').forEach(t => {
+      const r = t.getBoundingClientRect();
+      t.classList.toggle('masked', boxes.some(b => r.right > b.l - 4 && r.left < b.r + 4));
+    });
+  }
+
+  function renderScrub() {
+    /* The overview shows the DATA, not the pan room. */
+    const full = T.make(FIT.min, FIT.max);
+    const box = document.getElementById('scrub');
+    box.querySelectorAll('.mini,.winbox,.season-end,.smask').forEach(n => n.remove());
+    /* 🔴 THE ROW WAS `i % 4` — THE ITEM'S POSITION IN AN ARRAY. So vertical position in the
+     * overview carried no meaning at all: two draws a day apart landed on different rows, a draw
+     * and a playlist landed on the same one, and the whole strip read as a smear of colour with
+     * a box drawn round part of it. It looked like data and was texture.
+     * One row per LANE, in the Track's own lane order, makes this a MINIATURE OF THE TRACK — the
+     * thing directly below it — so the eye can carry structure from one to the other. That is the
+     * entire job of an overview strip, and it is why an arbitrary row can never do it. */
+    const laneRow = t => Math.max(0, F.LANES.findIndex(l => l.type === t));
+    st.items.forEach(it => {
+      const d = document.createElement('span');
+      d.className = 'mini';
+      d.style.cssText = `--c:${accentOf(it.type)};left:${full.pct(it.start)}%;` +
+        `width:${full.wpct(it.start, it.end)}%;top:${5 + laneRow(it.type) * 6}px`;
+      d.dataset.tip = `${F.TYPE_LABEL[it.type]} — ${it.name}`;
+      box.appendChild(d);
+    });
+    F.LINES.forEach(L => {
+      if (st.season[L.tbdKey] || !st.season[L.endKey]) return;
+      const e = document.createElement('span');
+      e.className = 'season-end';
+      e.style.cssText = `left:${full.pct(st.season[L.endKey])}%;--c:${L.hex}`;
+      e.dataset.tip = `${L.label} ends ${T.fmt(st.season[L.endKey])}`;
+      box.appendChild(e);
+    });
+    /* Dim what is OUTSIDE the window and leave the selection at full brightness. The old
+     * treatment tinted the SELECTION instead, so once the window grew the whole bar was
+     * washed gold and nothing read as chosen. Two masks, both derived from st.view. */
+    const l = full.pct(st.view.from), r = full.pct(st.view.to);
+    const mL = document.createElement('div');
+    mL.className = 'smask l'; mL.style.width = Math.max(0, l) + '%';
+    const mR = document.createElement('div');
+    mR.className = 'smask r'; mR.style.left = r + '%'; mR.style.width = Math.max(0, 100 - r) + '%';
+    box.appendChild(mL); box.appendChild(mR);
+
+    const w = document.createElement('div');
+    w.className = 'winbox'; w.id = 'winbox';
+    w.style.left = l + '%';
+    w.style.width = Math.max(2, r - l) + '%';
+    w.innerHTML = '<span class="wh l" aria-label="Window start"></span>' +
+                  '<span class="wh r" aria-label="Window end"></span>';
+    box.appendChild(w);
+    wireScrub(full, w, box);
+  }
+
+  /* ── tooltip that reports the live date while dragging ── */
+  let tip;
+  const showTip = (e, html) => {
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tip'; document.body.appendChild(tip); }
+    tip.innerHTML = html;
+    tip.style.left = Math.min(window.innerWidth - 190, e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 46) + 'px';
+  };
+  const hideTip = () => { tip && tip.remove(); tip = null; };
+
+  /* Extracted from wireTrack() because renderOverlay() runs on its OWN during zoom, pan and
+   * scrubbing — three paths that rebuilt these nodes and left them without handlers. One
+   * copy, called wherever the overlay is rendered. */
+  function wireOverlay() {
+    /* Every deadline marker drags, not just Battle Pass — the schema has three and each is
+     * independently editable, so each is independently draggable. */
+    viewTrack.querySelectorAll('.dflag').forEach(m => {
+      const L = F.LINES.find(l => l.key === m.dataset.line);
+      /* Keyed by DATE, because the notch is grouped by date — two deadlines that share a day
+       * share one notch, so looking it up by line key would miss it for the second of the pair. */
+      const line = viewTrack.querySelector(`.dnotch[data-date="${st.season[L.endKey]}"]`);
+      const orig = st.season[L.endKey];
+      T.drag(m, { pxPerDay,
+        onMove: (d, ev) => {
+          m.classList.add('dragging');
+          st.season[L.endKey] = T.addDays(orig, d);
+          const x = st.view.pct(st.season[L.endKey]) + '%';
+          m.style.left = x; if (line) line.style.left = x;
+          showTip(ev, `<b>${L.label} ends ${T.fmt(st.season[L.endKey])}</b><span class="sub">drag to change this deadline</span>`);
+        },
+        onEnd: d => {
+          m.classList.remove('dragging'); hideTip();
+          if (!d) { openDeadline(L.key); return; }   // no movement = a click, not a drag
+          st.dirty.add('live:' + L.key); refreshBounds();
+          stageIdentity(); renderAll();
+        }});
+      m.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDeadline(L.key); }
+      });
+    });
+
+    /* 2XCP window — drag to move, edges to resize */
+    const cw = document.getElementById('cpwin');
+    if (cw) {
+      const cp = st.items.find(i => i.isDoubleCP);
+      const o = { s: cp.start, e: cp.end };
+      const mv = edge => (d, ev) => {
+        if (edge === 'start') cp.start = T.addDays(o.s, d);
+        else if (edge === 'end') cp.end = T.addDays(o.e, d);
+        else { cp.start = T.addDays(o.s, d); cp.end = T.addDays(o.e, d); }
+        cw.style.left = st.view.pct(cp.start) + '%';
+        cw.style.width = st.view.wpct(cp.start, cp.end) + '%';
+        showTip(ev, `<b>2XCP ${T.fmt(cp.start)} → ${T.fmt(cp.end)}</b><span class="sub">double-CP window</span>`);
+      };
+      const en = d => { hideTip(); if (!d) return; o.s = cp.start; o.e = cp.end;
+        S.Store.add({ id:'move-'+cp.id, op:'calendar.edit', name:'Double CP', verb:'window changed' }); renderAll(); };
+      T.drag(cw, { pxPerDay, onMove: mv(null), onEnd: en });
+      cw.querySelectorAll('.wh').forEach(h => T.drag(h, { pxPerDay, onMove: mv(h.dataset.edge), onEnd: en }));
+      cw.addEventListener('click', e => { if (!e.defaultPrevented) openItem(cp.id); });
+    }
+
+  }
+
+  /* The crosshair is the answer to "when does this actually start?" — it reads the date
+   * under the pointer continuously, and names the item's real window when over a bar. */
+  function wireCrosshair() {
+    const wrap = viewTrack.querySelector('.tk-wrap'); if (!wrap) return;
+    const xh = document.getElementById('xhair'), xd = document.getElementById('xdate');
+    const lanes = viewTrack.querySelector('.lanes');
+    wrap.addEventListener('mousemove', e => {
+      const tk = viewTrack.querySelector('.lane .tk'); if (!tk) return;
+      const r = tk.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right) { xh.classList.remove('on'); return; }
+      const pct = ((e.clientX - r.left) / r.width) * 100;
+      const d = st.view.dateAt(pct);
+      xh.classList.add('on');
+      const wr = wrap.getBoundingClientRect();
+      xh.style.left = (e.clientX - wr.left) + 'px';
+      if (lanes) {
+        const top = lanes.getBoundingClientRect().top - wr.top;
+        xh.style.setProperty('--xtop', top + 'px');
+      }
+      /* Keep the chip inside the track rather than letting it clip at either edge. */
+      const half = xd.offsetWidth / 2, x = e.clientX - wr.left;
+      xd.style.transform = `translateX(${Math.max(half - x, Math.min(0, wr.width - x - half)) - half}px)`;
+      const bar = e.target.closest('.bar, .pt');
+      if (bar) {
+        const it = st.items.find(x => x.id === bar.dataset.id);
+        if (it) {
+          xd.innerHTML = it.start === it.end
+            ? `<b>${T.fmtLong(it.start)}</b><i>${it.name}</i>`
+            : `<b>${T.fmt(it.start)} → ${T.fmt(it.end)}</b><i>${it.name} · ${plural(T.days(it.start,it.end)+1,'day')}</i>`;
+          xh.classList.add('on-item');
+          return;
+        }
+      }
+      xh.classList.remove('on-item');
+      /* On empty track the useful extra is how this date sits relative to today. */
+      const off = T.days(F.today, d);
+      xd.innerHTML = `<b>${T.fmtLong(d)}</b><i>${off === 0 ? 'today' : off > 0 ? `in ${plural(off,'day')}` : `${plural(-off,'day')} ago`}</i>`;
+    });
+    wrap.addEventListener('mouseleave', () => xh.classList.remove('on'));
+  }
+
+  function wireTrack() {
+    wireOverlay();
+    wireCrosshair();
+    /* bars: drag to move, edges to resize — both produce REAL dates */
+    viewTrack.querySelectorAll('.bar').forEach(bar => {
+      const it = st.items.find(x => x.id === bar.dataset.id);
+      const orig = { s: it.start, e: it.end };
+
+      const startDrag = edge => (d, ev) => {
+        bar.classList.add('dragging');
+        if (edge === 'start')      it.start = T.addDays(orig.s, d);
+        else if (edge === 'end')   it.end   = T.addDays(orig.e, d);
+        else { it.start = T.addDays(orig.s, d); it.end = T.addDays(orig.e, d); }
+        if (T.days(it.start, it.end) < 0) { if (edge === 'start') it.start = it.end; else it.end = it.start; }
+        bar.style.left  = st.view.pct(it.start) + '%';
+        bar.style.width = st.view.wpct(it.start, it.end) + '%';
+        bar.className = 'bar ' + stateOf(it) + ' dragging';
+        showTip(ev, `<b>${T.fmt(it.start)} → ${T.fmt(it.end)}</b><span class="sub">${T.days(it.start,it.end)+1} ${S.plural(T.days(it.start,it.end)+1, 'days')} · ${it.name}</span>`);
+      };
+      const endDrag = d => {
+        bar.classList.remove('dragging'); hideTip();
+        if (!d) return;
+        orig.s = it.start; orig.e = it.end;
+        S.Store.add({ id:'move-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'dates changed' });
+        S.toast(`${it.name} → ${T.fmt(it.start)} – ${T.fmt(it.end)}.`, 'Undo', () => {
+          it.start = orig.s; it.end = orig.e; S.Store.remove('move-'+it.id); renderAll();
+        });
+        renderAll();
+      };
+      T.drag(bar, { pxPerDay, onMove: startDrag(null), onEnd: endDrag });
+      bar.querySelectorAll('.gr').forEach(g =>
+        T.drag(g, { pxPerDay, onMove: startDrag(g.dataset.edge), onEnd: endDrag }));
+
+      bar.addEventListener('click', e => { if (!e.defaultPrevented) openItem(it.id); });
+      bar.addEventListener('mouseenter', () => link(it.id, true));
+      bar.addEventListener('mouseleave', () => link(it.id, false));
+    });
+
+    viewTrack.querySelectorAll('.pt').forEach(p =>
+      p.addEventListener('click', () => openItem(p.dataset.id)));
+
+    /* click an empty lane to create an item at that date */
+    viewTrack.querySelectorAll('.lane .tk').forEach(tk => {
+      let ghost;
+      tk.addEventListener('mousemove', e => {
+        /* Only offer to create on genuinely empty track — never over an existing item. */
+        if (e.target !== tk || e.target.closest('.bar, .pt')) { ghost && ghost.remove(); ghost = null; return; }
+        const r = tk.getBoundingClientRect(), p = ((e.clientX - r.left) / r.width) * 100;
+        if (!ghost) { ghost = document.createElement('div'); ghost.className = 'tghost'; tk.appendChild(ghost); }
+        ghost.style.left = p + '%';
+        ghost.style.width = st.view.wpct(st.view.dateAt(p), T.addDays(st.view.dateAt(p), 5)) + '%';
+        ghost.textContent = '+ ' + T.fmt(st.view.dateAt(p));
+      });
+      tk.addEventListener('mouseleave', () => { ghost && ghost.remove(); ghost = null; });
+      tk.addEventListener('click', e => {
+        if (e.target !== tk) return;
+        const r = tk.getBoundingClientRect(), p = ((e.clientX - r.left) / r.width) * 100;
+        const s = st.view.dateAt(p);
+        const lk = tk.closest('.lane').dataset.lane;
+        const isPt = (F.LANE_BY_KEY[lk] || {}).kind === 'point';
+        /* The gesture stops being a documented secret and becomes the FAST path: it opens
+         * the composer already knowing the lane and the date, so the only thing left is the
+         * name. It used to create an item called "New draw" outright, which staged a real op
+         * from a stray click. */
+        openComposer({ type: lk, a: s, b: isPt ? s : T.addDays(s, 5) });
+      });
+    });
+
+    /* ruler: drag to pan, wheel to zoom */
+    const r = document.getElementById('ruler');
+    T.drag(r, { pxPerDay,
+      onMove: d => { r.classList.add('grabbing');
+        setView(T.addDays(st.view.from, -d), T.addDays(st.view.to, -d));
+        renderRuler(); renderOverlay(); repositionBars(); wireOverlay(); },
+      onEnd: () => { r.classList.remove('grabbing'); renderScrub(); } });
+    /* A bare wheel event over the Track USED to zoom. On a trackpad that IS ordinary
+     * two-finger scrolling, so scrolling the page here zoomed instead — and with no visible
+     * control, there was no way back out. Zoom now needs a deliberate modifier; a plain
+     * wheel scrolls the page like everywhere else. Horizontal intent still pans. */
+    const wrap = viewTrack.querySelector('.tk-wrap');
+    wrap.addEventListener('wheel', e => {
+      if (e.ctrlKey || e.metaKey) {                      // pinch-zoom / ⌘-wheel
+        e.preventDefault();
+        const r = wrap.getBoundingClientRect();
+        /* Proportional, and capped per event. A trackpad pinch fires tens of wheel events;
+         * a fixed factor compounded (1.09^30 is about 13x) and slammed the view into a
+         * bound on a small gesture. exp() keeps zoom-in and zoom-out symmetric. */
+        const step = Math.max(-0.05, Math.min(0.05, e.deltaY * 0.002));
+        zoom(Math.exp(step), ((e.clientX - r.left) / r.width) * 100);
+      } else if (Math.abs(e.deltaX) > Math.abs(e.deltaY) + 2) {
+        e.preventDefault();
+        /* Pan in DAYS proportional to the gesture, not a fixed slice of the span per event. */
+        const perPx = st.view.span() / Math.max(1, wrap.getBoundingClientRect().width);
+        panDays(Math.round(e.deltaX * perPx) || Math.sign(e.deltaX));
+      }
+    }, { passive:false });
+
+    viewTrack.querySelectorAll('[data-fix]').forEach(b => b.onclick = () => applyFix(b.dataset.fix));
+  }
+
+  /* 🔴 A 40px BAR SHOWING "Jud" IS WORSE THAN A 40px BAR SHOWING NOTHING — it reads as corrupt
+   * data rather than as a truncated name. Measured on the live season at FIT: the events lane
+   * rendered "Termina", "CO…", "COD…", "COD…" and the draw-windows lane rendered "Judg". Below
+   * ~56px a label cannot carry four characters plus an ellipsis at 11px, so it carries none: the
+   * bar's colour, position and width are the signal, and the name is one hover away and printed
+   * in full in the Manifest directly beneath. Above 56px it fits normally.
+   *
+   * Measured after layout rather than computed from percentages, because the same percentage is a
+   * different pixel count at every zoom level and viewport width. */
+  const LABEL_MIN_PX = 56;
+  /* Roughly six characters and an ellipsis at 10.5px — the point below which a fragment stops
+   * telling you which item this is. */
+  const TRUNC_MIN_PX = 44;
+
+  function fitLabels() {
+    /* 🔴 STRIP THE SHARED PREFIX **BEFORE** MEASURING, NOT AFTER. It used to run at the END of
+     * this function and skipped `.nolabel` bars — so a label was hidden for not fitting, and
+     * then the one transformation that would have made it fit was deliberately not applied to
+     * it. "Nuketown Dedicated MP Playlist" and "Nuketown 10v10 MP Playlist" share nine
+     * characters; stripping first is what lets both fit where neither did. The order was
+     * backwards, and the effect was invisible because the evidence was the hidden label. */
+    stripSharedPrefixes();
+    viewTrack.querySelectorAll('.bar').forEach(b => {
+      const bl = b.querySelector('.bl');
+      b.classList.remove('nolabel', 'lbl-cut');
+      if (!bl) return;
+      const w = b.getBoundingClientRect().width;
+      /* Two conditions, and the second is the one that matters. A 62px bar clears the pixel
+       * floor and still renders "COD …" — the SAME fragment for five different events, which is
+       * worse than five unlabelled bars because it looks like five copies of one thing. So the
+       * real test is how much of the NAME survives: if less than half of it fits, none of it
+       * does. Measured from the text node's own scrollWidth after layout, never guessed. */
+      const fits = bl.scrollWidth ? (w / bl.scrollWidth) : 1;
+      b.classList.remove('lbl-out', 'lbl-out-l');
+      /* ⚠️ THE 55% THRESHOLD WAS RIGHT WHEN THE ONLY ALTERNATIVES WERE "truncate" AND "drop the
+       * label". Now that a label can move OUTSIDE the bar, accepting a 55%-cut name is accepting
+       * a worse outcome than one that is available: measured at a 620px viewport with every lane
+       * expanded, ten labels moved outside cleanly and three stayed clipped purely because they
+       * cleared this bar. Any overflow at all now looks for room beside the bar first. */
+      const clipped = bl.scrollWidth > bl.clientWidth + 1;
+      if (w >= LABEL_MIN_PX && fits >= 0.55 && !clipped) return;
+      /* 🔴 OUTSIDE BEFORE TRUNCATED. "Attack of …", "Safeguar…", "Nuketown…" all had empty track
+       * beside them. In a timeline the label leaves the bar when the bar is too small for it —
+       * truncation is the LAST resort, not the first, and dropping the label entirely is worse
+       * still. Right by default, flipped left when the right edge has no room. */
+      const tk = b.closest('.tk'); if (!tk) { b.classList.add('nolabel'); return; }
+      const br = b.getBoundingClientRect(), tr = tk.getBoundingClientRect();
+      const need = bl.scrollWidth + 10;
+      /* 🔴 ROOM MEANS ROOM BEFORE THE NEXT BAR, not before the lane ends. Five weekly events sit
+       * end to end; measuring to the lane's right edge put every label on top of its neighbour —
+       * worse than the truncation it replaced. Only siblings on the SAME row can collide, since
+       * row assignment already guarantees no vertical overlap. */
+      /* 🔴 "SAME ROW" IS VERTICAL OVERLAP, NOT A MATCHING `style.top` STRING. The string test
+       * silently grouped every bar whose top was set some other way (a class, a CSS variable, or
+       * not at all in a single-row lane) into ONE pseudo-row — so `rightWall` became the nearest
+       * bar in ANY row and four labels were told they had no room beside them. The audit caught
+       * it immediately after the truncation rung landed: "truncated with 928px free beside it",
+       * four times. Two bars can only collide if their rects actually overlap vertically, so
+       * that is what the filter asks. */
+      const sibs = [...tk.querySelectorAll('.bar')].filter(o => o !== b).map(o => o.getBoundingClientRect())
+                     .filter(r => r.top < br.bottom - 1 && r.bottom > br.top + 1);
+      const rightWall = Math.min(tr.right, ...sibs.filter(r => r.left >= br.right - 1).map(r => r.left));
+      const leftWall  = Math.max(tr.left,  ...sibs.filter(r => r.right <= br.left + 1).map(r => r.right));
+      if (rightWall - br.right > need)     b.classList.add('lbl-out');
+      else if (br.left - leftWall > need)  b.classList.add('lbl-out-l');
+      /* 🔴 THE LADDER WAS MISSING ITS LAST RUNG. It went inside -> outside -> HIDE, and the
+       * comment three lines up says "truncation is the LAST resort... dropping the label
+       * entirely is worse still" — which was the intent and never the code. Measured on the
+       * playlist lane with every lane expanded: FOUR bars 140px wide, each carrying a real
+       * name ("Nuketown Dedicated MP Playlist"), all rendered as blank coloured rectangles.
+       * A bar with no label is not a bar; it is a rectangle. 44px holds roughly six characters
+       * and an ellipsis, which is a worse label than a full one and a far better object than
+       * an anonymous block. Below that there is genuinely nothing to say, so it hides. */
+      else if (w >= TRUNC_MIN_PX)          b.classList.add('lbl-cut');
+      else                                 b.classList.add('nolabel');
+    });
+  }
+
+  /* 🔴 FIVE BARS READING "COD Point R…" ARE FIVE IDENTICAL FRAGMENTS. Truncation cuts from the
+   * END, and CODM names its recurring content by a shared stem plus a distinguishing tail —
+   * "COD Point Rush Week 1…5", "Attack of the Undead MP Mode". So the half that survives
+   * truncation is the half every sibling shares, and the half that identifies the item is the
+   * half that gets cut. Exactly the defect already fixed on Broadcast's Airtime axis, where every
+   * announcement opened with the same seeded prefix.
+   *
+   * Strip the prefix shared by EVERY bar in the lane, back off to a word boundary, and keep the
+   * full name in the tooltip and the Manifest. Only applies at 3+ siblings — two bars sharing a
+   * stem are still told apart by position. */
+  function stripSharedPrefixes() {
+    viewTrack.querySelectorAll('.lane .tk').forEach(tk => {
+      /* Every bar, not `:not(.nolabel)` — this runs BEFORE fitting now, so no bar has been
+       * judged yet, and the ones that most need the prefix gone are exactly the ones that would
+       * have been excluded. */
+      const bars = [...tk.querySelectorAll('.bar .bl')];
+      bars.forEach(bl => { if (bl.dataset.full) bl.textContent = bl.dataset.full; });
+      if (bars.length < 3) return;
+      /* ⚠️ PER GROUP, NOT PER LANE. The events lane is five "COD Point Rush Week N" bars plus one
+       * "Terminator 2 Themed Event" — requiring EVERY bar in the lane to share a stem meant none
+       * did, and the five identical fragments survived the first version of this untouched. Group
+       * by first-two-words, then strip inside any group of three or more. */
+      const groups = new Map();
+      for (const bl of bars) {
+        const full = bl.dataset.full || bl.textContent;
+        bl.dataset.full = full;
+        const k = full.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+        (groups.get(k) || groups.set(k, []).get(k)).push(bl);
+      }
+      for (const g of groups.values()) {
+        if (g.length < 3) continue;
+        const names = g.map(bl => bl.dataset.full);
+        let n = 0;
+        while (n < names[0].length && names.every(t => t[n] === names[0][n])) n++;
+        while (n > 0 && !/\s/.test(names[0][n - 1])) n--;
+        if (n < 4) continue;                   // nothing meaningful shared
+        /* ⚠️ AND DO NOT STRIP TO A BARE TOKEN. The first version cut "COD Point Rush Week 1" all
+         * the way to "1" — five bars reading 1..5 with nothing saying what they are, which trades
+         * one unreadable label for another. Back the cut off until at least two words survive, so
+         * these read "Week 1".."Week 5": short, distinct, and still self-describing. */
+        let cut = n;
+        const tailWords = (t) => t.slice(cut).trim().split(/\s+/).filter(Boolean).length;
+        while (cut > 0 && names.some(t => tailWords(t) < 2)) {
+          const prev = names[0].lastIndexOf(' ', cut - 2);
+          if (prev < 0) { cut = 0; break; }
+          cut = prev + 1;
+        }
+        if (cut < 4) continue;
+        g.forEach((bl, i) => {
+          bl.textContent = names[i].slice(cut);
+          bl.closest('.bar').classList.add('stemmed');
+          bl.closest('.bar').dataset.tip = names[i];   // the full name lives in OUR tooltip, not the OS's
+        });
+      }
+    });
+  }
+
+  /* 🔴 TWO DRAWS RELEASED A DAY APART ARE TWO DIAMONDS PAINTED ON EACH OTHER. The live season has
+   * returning draws on Aug 21, 22 and 22 — a 13px marker is ~0.1% of a 4.5-month axis, so
+   * anything inside four days collides and you cannot even count them. A cluster badge showing
+   * "3" is strictly MORE information than three overlapping diamonds, and it is zoom-dependent:
+   * the threshold is in PIXELS, so zooming in separates them back into individual markers with
+   * no special case. Clicking one zooms to its span, which is the gesture it is asking for. */
+  const CLUSTER_PX = 17;
+  function clusterPoints() {
+    viewTrack.querySelectorAll('.lane').forEach(lane => {
+      const tk = lane.querySelector('.tk'); if (!tk) return;
+      tk.querySelectorAll('.ptc').forEach(c => c.remove());
+      const pts = [...tk.querySelectorAll('.pt')];
+      pts.forEach(el => el.classList.remove('hid'));
+      if (pts.length < 2) return;
+      const W = tk.getBoundingClientRect().width; if (!W) return;
+      const xs = pts.map(el => ({ el, x: (parseFloat(el.style.left) || 0) / 100 * W }))
+                    .sort((a, b) => a.x - b.x);
+      const flush = (g) => {
+        if (g.length < 2) return;
+        g.forEach(o => o.el.classList.add('hid'));
+        const names = g.map(o => `${o.el.dataset.name} · ${T.fmt(o.el.dataset.date)}`);
+        const mid = (g[0].x + g[g.length - 1].x) / 2;
+        const c = document.createElement('button');
+        /* 🔴 IT USED TO BE DRAWN ON TOP OF WHAT IT REPLACED, so a diamond bled out from behind
+         * the disc and the mark read as a diamond with a blister. A cluster REPLACES its members
+         * and says "several" as a SHAPE — two offset diamonds — before anyone reads the number. */
+        c.className = 'ptc mark stack';   // `.same` is added below, once sameDay exists
+        c.style.cssText = `--c:${getComputedStyle(g[0].el).getPropertyValue('--c')};left:${(mid / W) * 100}%`;
+        c.innerHTML = `<span class="n">${g.length}</span>`;
+        /* 🔴 SAME DAY IS NOT A ZOOM PROBLEM. This used to read "N releases within 17px at this
+         * zoom — zoom in to separate them" for two draws BOTH dated Aug 22, which is an
+         * instruction that cannot succeed: no zoom level separates two points at the same
+         * coordinate. It also leaked the pixel constant into a sentence a person reads. Branch
+         * on the FACT — how far apart the dates actually are — not on the pixel condition that
+         * happened to trigger the grouping. */
+        const sameDay = g.every(o => o.el.dataset.date === g[0].el.dataset.date);
+        const gapDays = T.days(g[0].el.dataset.date, g[g.length - 1].el.dataset.date);
+        c.classList.toggle('same', sameDay);
+        c.dataset.tip = sameDay
+          ? `${g.length} releases on ${T.fmt(g[0].el.dataset.date)} — the same day, so zooming will not separate them:\n${names.join('\n')}`
+          : `${g.length} releases within ${gapDays} day${gapDays === 1 ? '' : 's'} of each other — zoom in to separate them:\n${names.join('\n')}`;
+        c.setAttribute('aria-label', sameDay
+          ? `${g.length} releases, all on ${T.fmt(g[0].el.dataset.date)}: ${names.join(', ')}. Activate to select them in the manifest.`
+          : `${g.length} releases: ${names.join(', ')}. Activate to zoom in on them.`);
+        c.dataset.from = g[0].el.dataset.date; c.dataset.to = g[g.length - 1].el.dataset.date;
+        const ids = g.map(o => o.el.dataset.id);
+        c.onclick = () => {
+          /* A same-day cluster gets the action that is actually available: put the rows in
+           * front of you. Zooming is offered only where zooming does something. */
+          if (sameDay) {
+            ids.forEach(id => st.selected.add(id));
+            renderRows();
+            document.querySelector('.mtable')?.scrollIntoView({ block:'nearest', behavior:'smooth' });
+            S.toast(`Selected ${ids.length} releases from ${T.fmt(c.dataset.from)} in the manifest.`);
+            return;
+          }
+          const pad = Math.max(3, T.days(c.dataset.from, c.dataset.to));
+          withMotion(() => { setView(T.addDays(c.dataset.from, -pad), T.addDays(c.dataset.to, pad)); afterZoom(); });
+        };
+        tk.appendChild(c);
+      };
+      let g = [xs[0]];
+      for (let i = 1; i < xs.length; i++) {
+        if (xs[i].x - g[g.length - 1].x < CLUSTER_PX) g.push(xs[i]);
+        else { flush(g); g = [xs[i]]; }
+      }
+      flush(g);
+    });
+  }
+
+  /* A flag whose box would run past the right edge anchors its RIGHT side to the line instead of
+   * its left — standard tooltip flip. Without it the DMZ deadline at 97% rendered as "DMZ Nov"
+   * with the year and half the box cut off by the panel. Same at the left edge. */
+  function fitFlags() {
+    const box = viewTrack.querySelector('.tk-inner'); if (!box) return;
+    const R = box.getBoundingClientRect();
+    /* 🔴 `.dend .dflag` MATCHED NOTHING. The flags live in `.deadrail`; `.dend` is the vertical
+     * LINE on the overlay, a different element entirely. So the edge-flip this function exists to
+     * perform has never once run — and merging Battle Pass and Ranked into one chip made the box
+     * 205px wide, which at 1024px pushed the Track into a horizontal scroll. A selector that
+     * matches nothing fails silently forever; the surface sweep found it by measuring the
+     * OVERFLOW rather than by asking whether the function had been called. */
+    viewTrack.querySelectorAll('.deadrail .dflag,.deadrail .dspan').forEach(f => {
+      f.classList.remove('flip');
+      const r = f.getBoundingClientRect();
+      if (r.right > R.right - 4) f.classList.add('flip');
+    });
+  }
+
+  /* A deadline outside the visible window is PINNED to the rail with its real distance rather
+   * than dropped. "DMZ Nov 11 · 53d beyond" states the relationship that two empty months of
+   * axis were trying to imply, and costs no width to say. */
+  const LINE_LABEL = { bp:'battle pass', rank:'ranked', dmz:'DMZ' };
+  function pinFarDeadlines() {
+    /* On the DEADLINE RAIL, not on .tk-inner — whose top edge is the overview scrubber, where the
+     * first version of this landed on top of the minimap. A pinned deadline is a continuation of
+     * the flag row, so it belongs in the flag row. */
+    const host = viewTrack.querySelector('.deadrail') || viewTrack.querySelector('.tk-inner');
+    if (!host) return;
+    host.querySelectorAll('.dpin').forEach(el => el.remove());
+    for (const d of outOfViewDeadlines()) {
+      const away = d.side === 'r' ? T.days(st.view.to, d.date) : T.days(d.date, st.view.from);
+      const el = document.createElement('span');
+      /* Welded to the edge it is beyond, not floating mid-rail at no grid position. "Beyond this
+       * view" is a statement ABOUT the boundary, so it belongs on the boundary. */
+      el.className = `dpin edge ${d.side}`;
+      el.style.setProperty('--c', lineHex(d.key));
+      el.innerHTML = `${LINE_LABEL[d.key] || d.key} ${T.fmt(d.date)} <em>${away}d ${d.side === 'r' ? 'beyond' : 'before'} this view</em>`;
+      el.dataset.tip = `Outside the current window. Press FIT or zoom out to bring it in.`;
+      host.appendChild(el);
+    }
+  }
+
+  function repositionBars() {
+    _reposition();
+    pinClippedLabels();      // bars have their final geometry only after _reposition()
+      fitLabels();
+    clusterPoints();
+      fitFlags();
+    pinFarDeadlines();
+    /* AFTER the pins are in the DOM — stacking a rail that is missing half its contents was
+     * the original bug, and running this first would reintroduce it exactly. */
+    { const r = viewTrack.querySelector('.deadrail'); if (r) stackFlags(r); }
+  }
+  function _reposition() {
+    viewTrack.querySelectorAll('.bar').forEach(b => {
+      const it = st.items.find(x => x.id === b.dataset.id);
+      b.style.left = st.view.pct(it.start) + '%';
+      b.style.width = st.view.wpct(it.start, it.end) + '%';
+    });
+    viewTrack.querySelectorAll('.pt').forEach(p => {
+      const it = st.items.find(x => x.id === p.dataset.id);
+      p.style.left = st.view.pct(it.start) + '%';
+    });
+  }
+
+  /* Zoom is BOUNDED at both ends and anchored on a point you choose, so it can never land
+   * somewhere there is no way out of. Anchor defaults to the middle; wheel-zoom passes the
+   * cursor so the date under the pointer stays put. FIT is always one click away. */
+  const fullSpan = () => T.days(BOUND.min, BOUND.max);
+  /* EVERY change to the visible window goes through here.
+   * Measured from the screen recording: dragging the scrubber's left handle marched the view
+   * start backward about a month per frame — Jun 22, May 8, Apr 19, Mar 29, Feb 8, Jan 13,
+   * Dec 15, Nov 14 — straight past BOUND.min into the previous year, while the end stayed
+   * near Oct. The cause is that T.make().clamp() only ever SHIFTS a window; it never shrinks
+   * one, so nothing bounded the span and each drag widened it further. Three call sites each
+   * applied their own (different) rules. One setter, one set of invariants. */
+  function setView(from, to) {
+    if (T.days(from, to) < 0) { const x = from; from = to; to = x; }        // never inverted
+    const span = Math.min(fullSpan(), Math.max(MIN_SPAN, T.days(from, to)));// never unbounded
+    if (T.days(BOUND.min, from) < 0) from = BOUND.min;                      // never before the start
+    to = T.addDays(from, span);
+    if (T.days(to, BOUND.max) < 0) { to = BOUND.max; from = T.addDays(to, -span); }
+    st.view = T.make(from, to);
+    return st.view;
+  }
+  function zoomTo(span, anchorPct) {
+    const maxSpan = fullSpan();
+    span = Math.max(MIN_SPAN, Math.min(maxSpan, Math.round(span)));
+    const p = anchorPct == null ? 50 : Math.max(0, Math.min(100, anchorPct));
+    const anchorDate = st.view.dateAt(p);
+    const from = T.addDays(anchorDate, -Math.round(span * (p / 100)));
+    setView(from, T.addDays(from, span));
+    afterZoom();
+  }
+  const zoom = (factor, anchorPct) => zoomTo(st.view.span() * factor, anchorPct);
+  function fitAll() { refreshBounds(); setView(FIT.min, FIT.max); afterZoom(); }
+  function afterZoom() {
+    renderRuler(); renderOverlay(); repositionBars(); renderScrub(); syncZoomUI();
+    wireOverlay();          // renderOverlay() replaced the nodes; the handlers must follow
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════════
+   * MOTION — three moments, and no more.
+   *
+   * The premise of this realm is a TIMELINE and it never animated time: zoom teleported,
+   * NOW was a static hairline, and a staged item appeared rather than arrived. The tokens
+   * already state the standard — "motion earns its place by explaining where something came
+   * from; anything that is not doing that stays a colour fade" — so each of these has to be
+   * able to answer that, and anything that could not is not here.
+   *
+   * 🔴 WHY A CSS TRANSITION WORKS AT ALL, which is not obvious and is the whole design:
+   * zoom and pan do NOT rebuild the Track. They call repositionBars(), which rewrites
+   * `left` and `width` on the SAME nodes — so the browser can interpolate them, and object
+   * identity survives the view change. That is the textbook justification for animating a
+   * view change and the reason this is worth doing rather than decorative. If a later change
+   * ever makes zoom rebuild innerHTML, this silently stops animating and would need FLIP.
+   *
+   * 🔴 AND WHY IT IS OPT-IN PER CHANGE, not a permanent transition on .bar: a trackpad pinch
+   * fires tens of wheel events, and a 320ms interpolation restarted on each one lags the
+   * gesture by a third of a second — the pointer stops and the bars keep sliding. So the
+   * class is added only around a DISCRETE change (the +/-/FIT buttons, a keyboard step, a
+   * command-bar zoom, zoom-to-cluster) and removed after. Continuous drag and pinch paths
+   * call the same functions without it and stay pinned to the finger. */
+  let _motionOff;
+  /* The fixture date is frozen at F.today so every screenshot of this package is
+   * reproducible; the CLOCK is real, because the time of day is not part of what the fixture
+   * pins and a stopped clock beside a live-looking marker is worse than no clock. */
+  function clockText(){
+    return new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit' });
+  }
+  /* 🔴 STARTED ONCE, NOT ONCE PER RENDER. This is called from renderAll(), which runs on every
+   * stage, remove and zoom. Clearing `__nowClock` was not enough: each call also queued a fresh
+   * ALIGNMENT TIMEOUT, and every one of those later created its own interval — so after twenty
+   * renders there were twenty pending timeouts about to install twenty intervals, of which the
+   * variable could only ever hold the last. The rest tick forever, unreferenced and unclearable.
+   * The tick itself re-reads #nowT by id, so it survives the Track being rebuilt underneath it
+   * and does not need restarting at all. */
+  function startClock(){
+    if (window.__nowClockStarted) return;
+    window.__nowClockStarted = true;
+    const tick = () => { const el = viewTrack.querySelector('.now'); if (el) el.dataset.now = 'NOW ' + clockText(); };
+    /* Align to the next minute boundary rather than firing every 60s from load — otherwise the
+     * readout can sit up to 59s stale against the wall clock it claims to be. */
+    setTimeout(() => { tick(); window.__nowClock = setInterval(tick, 60000); },
+      (60 - new Date().getSeconds()) * 1000);
+  }
+
+  function withMotion(fn){
+    /* 🔴 `.tk` IS PER-LANE — there are FIVE of them, one inside each `.lane`, and
+     * `viewTrack.querySelector('.tk')` returns only the first. The first version of this
+     * animated exactly one lane while the other four teleported, which reads as a rendering
+     * fault rather than a missing feature. Same defect class as fitFlags() querying
+     * `.dend .dflag`: a selector that reads as "the Track" and reaches part of it.
+     * `.tk-inner` is the one node that contains every lane. */
+    const tk = viewTrack.querySelector('.tk-inner');
+    if (!tk || matchMedia('(prefers-reduced-motion: reduce)').matches) { fn(); return; }
+    tk.classList.add('animate');
+    fn();
+    clearTimeout(_motionOff);
+    /* Time-based rather than transitionend: several properties animate on several nodes, so
+     * the last transitionend is not knowable in advance, and a missed one would leave the
+     * class on and make the next pinch lag. --dur-3 is 320ms; 380 covers the tail. */
+    _motionOff = setTimeout(() => tk.classList.remove('animate'), 380);
+  }
+  /* The key lists only the states actually on screen. */
+  function renderKey() {
+    const el = document.getElementById('key'); if (!el) return;
+    const present = new Set(st.items.map(stateOf));
+    const defs = [['saved','l','saved'],['staged','s','staged'],['conflict','c','conflict']];
+    el.innerHTML = defs.filter(([k]) => present.has(k))
+      .map(([k,cls,label]) => `<span class="${cls}"><i></i>${label}</span>`).join('');
+  }
+
+  function syncZoomUI() {
+    const sp = st.view.span();
+    zSpan.textContent = sp >= 60 ? (sp / 30.4).toFixed(1) + ' mo' : sp + ' days';
+    zIn.disabled  = sp <= MIN_SPAN;
+    zOut.disabled = sp >= fullSpan();
+    /* FIT is only "already done" when the view IS the data extent — not merely wide. */
+    zFit.disabled = st.view.from === FIT.min && st.view.to === FIT.max;
+    viewMeta.textContent = `${T.fmt(st.view.from)} → ${T.fmt(st.view.to)}`;
+  }
+  zIn.onclick  = () => withMotion(() => zoom(0.62));
+  zOut.onclick = () => withMotion(() => zoom(1.6));
+  zFit.onclick = fitAll;
+  /* Keyboard is the guaranteed escape hatch: 0 always fits, whatever state the view is in. */
+  addEventListener('keydown', e => {
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.metaKey || e.ctrlKey) return;
+    if (e.key === '+' || e.key === '=') { withMotion(() => zoom(0.62)); e.preventDefault(); }
+    else if (e.key === '-' || e.key === '_') { withMotion(() => zoom(1.6)); e.preventDefault(); }
+    else if (e.key === '0') { fitAll(); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft'  && st.mode === 'track') { panDays(-Math.max(1, Math.round(st.view.span()*.2))); e.preventDefault(); }
+    else if (e.key === 'ArrowRight' && st.mode === 'track') { panDays( Math.max(1, Math.round(st.view.span()*.2))); e.preventDefault(); }
+  });
+  function panDays(d) {
+    setView(T.addDays(st.view.from, d), T.addDays(st.view.to, d));
+    afterZoom();
+  }
+
+  function wireScrub(full, win, box) {
+    const pxDay = () => box.getBoundingClientRect().width / full.span();
+    const o = { f: st.view.from, t: st.view.to };
+    /* The window box and the two dimmed masks are DERIVED from st.view every frame, never
+     * positioned by hand. The old code set left/width itself while clamping separately, so
+     * after any clamp the handle and the view disagreed. syncZoomUI() runs here too — the
+     * readout said "2.8 mo shown" through the entire recording because this path never
+     * refreshed it. */
+    const paint = () => {
+      const l = full.pct(st.view.from), r = full.pct(st.view.to);
+      win.style.left = l + '%';
+      win.style.width = Math.max(2, r - l) + '%';
+      const mL = box.querySelector('.smask.l'), mR = box.querySelector('.smask.r');
+      if (mL) mL.style.width = Math.max(0, l) + '%';
+      if (mR) { mR.style.left = r + '%'; mR.style.width = Math.max(0, 100 - r) + '%'; }
+      renderRuler(); renderOverlay(); repositionBars(); wireOverlay(); syncZoomUI();
+    };
+    T.drag(win, { pxPerDay: pxDay,
+      onMove: d => { setView(T.addDays(o.f, d), T.addDays(o.t, d)); paint(); },
+      onEnd: () => { o.f = st.view.from; o.t = st.view.to; } });
+    win.querySelectorAll('.wh').forEach((h, i) =>
+      T.drag(h, { pxPerDay: pxDay,
+        onMove: d => {
+          /* Each grip moves only its OWN edge, against the edge as it was when the drag
+           * began. setView enforces order, the minimum span and the outer bounds. */
+          if (i === 0) {
+            const limit = T.addDays(st.view.to, -MIN_SPAN);       // cannot pass the right grip
+            let f = T.addDays(o.f, d);
+            if (T.days(f, limit) < 0) f = limit;
+            setView(f, st.view.to);
+          } else {
+            const limit = T.addDays(st.view.from, MIN_SPAN);      // cannot pass the left grip
+            let t = T.addDays(o.t, d);
+            if (T.days(limit, t) < 0) t = limit;
+            setView(st.view.from, t);
+          }
+          paint();
+        },
+        onEnd: () => { o.f = st.view.from; o.t = st.view.to; renderScrub(); } }));
+  }
+
+  /* ── flags recompute from live dates, so dragging changes them ── */
+  function computeFlags() {
+    const out = [];
+    st.items.filter(i => !i.draft).forEach(it => {
+      const e = seasonEnd(st.season);
+      if (e && T.days(it.end, e) < 0) {
+        const L = F.LINES.find(l => st.season[l.endKey] === e);
+        out.push({ id:'past-'+it.id, sev:'warn', fix:`Clamp to ${L ? L.label.toLowerCase() : 'season end'}`,
+          text:`<b>${it.name}</b> ends ${-T.days(it.end, e)} ${S.plural(-T.days(it.end, e), 'days')} after the season does.` });
+      }
+    });
+    /* 🔴 SIXTEEN "X AND Y OVERLAP" BOXES rendered below the Track, taller than the Track itself,
+     * and NINE were playlists overlapping playlists. Concurrent playlists are not a defect — they
+     * are how the game works, and this same page draws a load ribbon whose entire purpose is to
+     * show that several run at once. Two features on one screen disagreeing about whether the
+     * same fact is a problem. Capping the list would have hidden the symptom and kept the
+     * contradiction, so the RULE changed: overlap is a finding only where the lane's own
+     * semantics make it one. */
+    F.LANES.filter(l => (LANE_KIT[l.key] || {}).overlapMatters).forEach(l => {
+      const xs = st.items.filter(i => i.type === l.type && !i.draft && i.kind === 'span')
+                         .sort((a,b) => a.start.localeCompare(b.start));
+      for (let i = 1; i < xs.length; i++)
+        if (T.days(xs[i].start, xs[i-1].end) >= 0)
+          out.push({ id:'ovl-'+xs[i].id, sev:'warn', fix:'Show both',
+            text:`<b>${xs[i-1].name}</b> and <b>${xs[i].name}</b> overlap.` });
+    });
+    /* A drought is a stretch with no draw RELEASING, so it is measured release-to-release
+     * across both draw lanes — not end-to-start, which a draw has no field for. */
+    const draws = st.items.filter(i => (i.type === 'newDraws' || i.type === 'returningDraws') && !i.draft)
+                          .sort((a,b) => a.start.localeCompare(b.start));
+    for (let i = 1; i < draws.length; i++) {
+      const gap = T.days(draws[i-1].start, draws[i].start);
+      if (gap > 7) out.push({ id:'gap-'+draws[i].id, sev:'info', fix:'Fill',
+        text:`<b>${T.fmt(draws[i-1].start)} – ${T.fmt(draws[i].start)}</b> — ${gap} ${S.plural(gap, 'days')} with no draw releasing.` });
+    }
+    return out;
+  }
+
+  function applyFix(id) {
+    if (id.startsWith('past-')) {
+      const it = st.items.find(x => x.id === id.slice(5));
+      it.end = seasonEnd(st.season);
+      S.Store.add({ id:'fix-'+it.id, op:(it.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:it.name, verb:'shortened to the season end' });
+      S.toast(`${it.name} now ends ${T.fmt(it.end)}.`);
+    } else if (id.startsWith('gap-')) {
+      const it = st.items.find(x => x.id === id.slice(4));
+      addItem('newDraws', 'New draw', T.addDays(it.start, -4), T.addDays(it.start, -4));
+      return;
+    } else S.toast('Both items shown — the Manifest is filtered to the overlap.');
+    renderAll();
+  }
+
+  S.onAfterRevert = () => { refreshBounds(); renderAll(); };
+
+  /* ═══ THE COMPOSER — Season's schema, the Shell's form ═══
+   * Shell.compose() owns the interaction; the realm owns the vocabulary. Every type here is a
+   * real lane from fixtures' LANES, and its `shape` is that lane's own `kind`, so the form can
+   * never offer a field the record does not have. `/manage` needs a Guide on every page because
+   * there the format IS the interface; there is nothing here to document. */
+  const COMPOSE_TYPES = () => F.LANES.map(l => ({
+    key: l.key, label: l.label, single: (LANE_KIT[l.key] || {}).single, hex: l.bar, shape: l.kind,
+    nameLabel: l.key === 'patchNotes' ? 'Patch note title' : 'Name',
+    dateLabel: l.key === 'patchNotes' ? 'Published' : 'Releases',
+    placeholder: { newDraws:'Undead Legion Series Armory', returningDraws:'Widow’s Bite Draw',
+                   drawWindow:'Judgment Day draw window', event:'Terminator 2 Themed Event',
+                   playlist:'Hardpoint Mayhem MP Mode', patchNotes:'Season 7 — Terminated' }[l.key] || '',
+    pointNote: l.key === 'patchNotes'
+      ? 'A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track.'
+      : 'A draw has one date in the schema and no end — the Track draws it as a marker, not a band.'
+  }));
+
+  /* ⚠️ `composePreview()` AND ITS MINI-AXIS LIVED HERE AND ARE GONE. It drew a small copy of
+   * the season axis inside the composer — a worse version of the real Track sitting directly
+   * behind it. Once the composer moved inline and started drawing a ghost on the real lane, the
+   * miniature was a second, lower-fidelity answer to a question already answered better.
+   * Recover it from git if a surface ever needs a preview with no timeline of its own. */
+
+  /* 🔴 THE TRACK IS THE PREVIEW — and this function, which is the whole idea, was DELETED by my
+   * own dead-code sweep an hour after I wrote it. The sweep cut from a comment to
+   * `function openComposer`, and this sat in between. Three call sites kept referring to it; the
+   * page never threw, because it is only reached when the composer opens, and I did not reopen
+   * the composer after the sweep. `probs=0` the whole time. Restored, with the collapsed-lane
+   * guard pointing at the renamed class. */
+  let ghostPreview = null;
+  function drawComposeGhost(c) {
+    viewTrack.querySelectorAll('.tghost.cmp').forEach(g => g.remove());
+    ghostPreview = null;
+    if (!c || !c.type || !c.a) { viewTrack.querySelectorAll('.lane.aim').forEach(l => l.classList.remove('aim')); return; }
+    const lane = viewTrack.querySelector(`.lane[data-lane="${c.type}"][data-draft="0"]`);
+    if (!lane) return;
+    /* Aiming at a folded lane unfolds it — you cannot preview into something you cannot see. */
+    if (lane.classList.contains('lnc')) { st.laneCol[c.type] = false; saveLaneCol(); renderTrack(); return drawComposeGhost(c); }
+    const tk = lane.querySelector('.tk'); if (!tk) return;
+    const end = c.shape === 'point' ? c.a : (c.b || c.a);
+    const g = document.createElement('div');
+    g.className = 'tghost cmp' + (c.shape === 'point' ? ' pt' : '');
+    g.style.left = st.view.pct(c.a) + '%';
+    if (c.shape !== 'point') g.style.width = st.view.wpct(c.a, end) + '%';
+    g.textContent = c.name ? c.name : '+ ' + T.fmt(c.a);
+    tk.appendChild(g); ghostPreview = g;
+    viewTrack.querySelectorAll('.lane').forEach(l => l.classList.toggle('aim', l === lane));
+    lane.scrollIntoView({ block:'nearest' });
+  }
+
+  /* ⌘K stages straight from one typed line, using the same parser as the paste field. It is
+   * registered per realm because the OP is per realm — the command bar itself knows nothing
+   * about draws, which is what keeps it a shell control rather than a Season feature. */
+  S.registerCommandStage(r => { addItem(r.kind, r.name, r.start, r.end || r.start);
+    S.toast('Staged ' + r.kindLabel.toLowerCase() + ' · ' + r.name + '.'); });
+
+  function openComposer(pre) {
+    const stage = ({ type, name, a, b }) => { drawComposeGhost(null); addItem(type, name, a, b); };
+    stage.live = drawComposeGhost;
+    /* 🔴 THE ONE THAT CHANGES HOW THE JOB FEELS — "I pasted the patch notes and it filled in
+     * the season." Six lines in six different shapes become six staged items, each with its
+     * own op and tier, none of them live until Review. It reuses `addItem` rather than writing
+     * its own path, so a pasted draw and a typed draw are the same record by construction and
+     * cannot drift into two shapes of the same thing. */
+    stage.bulk = rows => {
+      drawComposeGhost(null);
+      rows.forEach(r => addItem(r.kind, r.name, r.start, r.end || r.start));
+      S.toast(rows.length + ' item' + (rows.length === 1 ? '' : 's') + ' staged from what you pasted.');
+    };
+    S.compose({
+      eyebrow: 'season · create', title: 'Add to the season',
+      types: COMPOSE_TYPES(), initial: pre || {},
+      host: document.getElementById('nwHost'),
+      onStage: stage,
+      onClose: () => { drawComposeGhost(null);
+        viewTrack.querySelectorAll('.lane.aim').forEach(l => l.classList.remove('aim'));
+        document.querySelector(`[data-addtype="${(pre && pre.type) || ''}"]`)?.focus(); }
+    });
+    document.getElementById('nwHost').scrollIntoView({ block:'nearest', behavior:'smooth' });
+  }
+
+  /* ═══ THE SEASON RECORD — variant B, the vertical rail ═══ */
+  function renderRecord() {
+    const notes = st.items.filter(isPublication).sort((x, y) => x.start < y.start ? 1 : -1);
+    return `<section class="rec rec-b" aria-label="Season record">
+      <header class="rec-h"><span class="rec-t">Season record</span>
+        <span class="rec-n">${notes.length} published · newest first</span>
+        <button type="button" id="recAdd" class="rec-cta">+ Publish</button></header>
+      <ol class="rec-list">
+        ${notes.map((n, i) => `<li class="rec-row${i === 0 ? ' cur' : ''}" tabindex="0" role="button"
+              data-recid="${n.id}" aria-label="${n.name}, published ${T.fmt(n.start)}${i === 0 ? ', current' : ''}">
+            <span class="rec-mk"></span>
+            <span class="rec-ttl">${n.name}</span>
+            <span class="rec-d">${T.fmt(n.start)}</span>
+            <span class="rec-meta">${n.imageCount || 0} img</span>
+            <span class="rec-tag">${i === 0 ? 'current' : 'history'}</span>
+          </li>`).join('') || `<li class="rec-empty">Nothing published this season yet.</li>`}
+      </ol>
+    </section>`;
+  }
+
+  function addItem(type, name, start, end) {
+    /* A new item inherits its lane's own kind, so a staged draw is a marker exactly like a
+     * saved one — an earlier version defaulted everything to a band and a freshly staged draw
+     * rendered differently from the ones beside it. */
+    const kind = (F.LANE_BY_KEY[type] || {}).kind || 'span';
+    const it = { id:'new-'+Date.now(), name, title:name, type, lane:type, kind, start, end,
+                 date:start, endDate: kind === 'span' ? end : null, state:'staged', detail:'—' };
+    st.items.push(it);
+    /* 🔴 THE OP IS DECIDED BY THE LANE, NOT BY THE SHAPE. `kind === 'point'` is true for
+     * patch notes too, so staging one named `draw.add` — an op core/ops routes to a different
+     * collection entirely. Three lanes are points and they are not all draws. */
+    const OP_FOR = { newDraws:'draw.add', returningDraws:'draw.add', patchNotes:'patchnote.addSeason',
+                     drawWindow:'calendar.add', event:'calendar.add', playlist:'calendar.add' };
+    S.Store.add({ id:it.id, op:(OP_FOR[type] || (kind === 'point' ? 'draw.add' : 'calendar.add')), name, verb:'added', rows:[['Item','—',name],['Date','—',start]] });
+    S.toast(`Staged ${name} · ${T.fmt(start)} → ${T.fmt(end)}.`, 'Undo', () => {
+      st.items = st.items.filter(x => x.id !== it.id); S.Store.remove(it.id); renderAll();
+    });
+    renderAll();
+    /* The thing you just created ARRIVES rather than simply existing on the next frame.
+     * Without it a staged item is indistinguishable from one that was already there, and the
+     * reader loses track of the object they were looking at — the single most common reason
+     * a person re-reads a whole list after adding one row to it. After renderAll(), because
+     * the node does not exist until the Track is rebuilt; the class is removed on animation
+     * end so a later re-render cannot replay it. */
+    requestAnimationFrame(() => {
+      const el = viewTrack.querySelector(`.bar[data-id="${it.id}"], .pt[data-id="${it.id}"]`);
+      if (!el) return;
+      el.classList.add('arriving');
+      el.addEventListener('animationend', () => el.classList.remove('arriving'), { once:true });
+    });
+  }
+
+  /* ═══ BOARD — content state, the useful axis ═══ */
+  /* Empty states name what the column IS, why it is empty, and what to do —
+   * "Nothing here" tells a reader nothing they could not already see. */
+  const EMPTY = {
+    live:     'Nothing is live right now. Items appear here between their start and end dates.',
+    upcoming: 'Nothing scheduled ahead. Add an item below, or click an empty lane on the Track.',
+    staged:   'Nothing staged. Edits collect here until you commit them — the bot sees none of it yet.',
+    ended:    'Nothing has ended yet this season.'
+  };
+  const BCOLS = [
+    { k:'live',     t:'Live now' },
+    { k:'upcoming', t:'Upcoming' },
+    { k:'staged',   t:'Staged' },
+    { k:'ended',    t:'Ended' }
+  ];
+  /* 🔴 A POINT HAS NO PROGRESS. It happened, or it has not. The old line divided by
+   * `Math.max(1, T.days(start,end))` — a guard written to avoid a divide-by-zero that instead
+   * produced a confident nonsense number: for a draw released 17 days ago, start === end, so the
+   * denominator was 1 and the card read "ends in -17d · 1700% through". Both halves wrong, and
+   * the "-17d" was a second bug on top — "ends in" with a negative number should read "ended".
+   * This is the same class as everything else this pass fixed: a point fed to arithmetic that
+   * assumes a span. */
+  /* 🔴 IMMINENCE, NOT MERELY TIME. Every relative-time figure on the board was painted in the
+   * alarm colour — "released 15d ago" as loudly as "releases in 1d" — so the colour fired on all
+   * 39 cards and said nothing. Two days is the window in which an admin can still act: a draw
+   * releasing tomorrow can be pulled, one that released a fortnight ago cannot.
+   * Staged is never "soon": it is not scheduled at all until it is committed. */
+  const SOON_DAYS = 2;
+  function boardSoon(i, col) {
+    if (col === 'staged' || col === 'ended') return false;
+    const d = i.kind === 'point' ? T.days(F.today, i.start)
+            : col === 'upcoming' ? T.days(F.today, i.start)
+            : T.days(F.today, i.end);
+    return d >= 0 && d <= SOON_DAYS;
+  }
+
+  function boardMeta(i, col) {
+    const pt = i.kind === 'point';
+    if (col === 'staged') return 'not visible to players yet';
+    if (pt) {
+      const d = T.days(F.today, i.start);
+      return d > 0 ? `releases in <b>${d}d</b>`
+           : d === 0 ? 'releases <b>today</b>'
+           : `released <b>${-d}d</b> ago`;
+    }
+    if (col === 'upcoming') return `starts in <b>${T.days(F.today, i.start)}d</b>`;
+    if (col === 'ended')    return `ran <b>${T.days(i.start, i.end) + 1}d</b>`;
+    const left = T.days(F.today, i.end);
+    const span = Math.max(1, T.days(i.start, i.end));
+    const pct  = Math.min(100, Math.max(0, Math.round((T.days(i.start, F.today) / span) * 100)));
+    return left < 0 ? `ended <b>${-left}d</b> ago`
+         : `ends in <b>${left}d</b> <span class="dot2">·</span> ${pct}% through`;
+  }
+
+  function renderBoard() {
+    const g = { live:[], upcoming:[], staged:[], ended:[] };
+    st.items.forEach(i => g[lifecycle(i)].push(i));
+    const open = BCOLS.filter(c => !st.collapsed.has(c.k)).length;
+
+    const anyOff = st.collapsed.size > 0;
+    viewBoard.innerHTML = `
+      <div class="bbar">
+        <span class="bbar-t">${st.items.length} items across 4 states — drag a card between columns,
+          or focus one and press <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd>. The columns are dates, so
+          moving a card moves its window.</span>
+        <span class="sp"></span>
+        ${anyOff ? `<button class="chip" id="expandAll">Expand all (${st.collapsed.size} hidden)</button>` : ''}
+      </div>
+      <div class="bcols">${BCOLS.map(c => {
+      const col = g[c.k], off = st.collapsed.has(c.k);
+      /* ⚠️ ONLY A SPAN ENDS. Reading `.end` across the whole column pulled in points, whose end IS
+       * their release date, so "Live now" reported "next ends Jul 22" — the release of the patch
+       * note sitting at the top of the column, which does not end at all. If a column holds only
+       * points there is nothing to report, and reporting nothing is correct. */
+      const ending = col.filter(x => x.kind === 'span').map(x => x.end).filter(Boolean).sort();
+      const sum = c.k==='live'     ? (ending.length ? 'next ends ' + T.fmt(ending[0])
+                                    : col.length ? col.filter(x=>x.kind==='point').length + ' with no end date' : '')
+                : c.k==='upcoming' ? (col.length ? 'next ' + T.fmt(col.map(x=>x.start).sort()[0]) : '')
+                : c.k==='staged'   ? (col.length ? 'uncommitted' : '')
+                /* 🔴 EVERY COLUMN'S SECOND LINE ANSWERS THE SAME QUESTION: "what is at the edge
+                 * of this column?" Live and Upcoming both named a DATE; Ended said "10 archived",
+                 * which is the count already in the pill beside it — so one column in four spent
+                 * its only line of explanation repeating its neighbour. */
+                :                    (col.length ? 'last ended ' + T.fmt(col.filter(x => x.end).map(x => x.end).sort().slice(-1)[0] || '') : '');
+      return `<section class="bcol${off?' collapsed':''}" data-col="${c.k}">
+        <button class="bcol-h" data-toggle="${c.k}" aria-expanded="${!off}"
+                aria-label="${off ? 'Expand' : 'Collapse'} ${c.t}, ${col.length} items">
+          <span class="chev" aria-hidden="true"></span>
+          <span class="bcol-t">${c.t}</span>
+          <span class="bcol-n">${col.length}</span>
+          <span class="bcol-sum">${sum}</span>
+        </button>
+        <div class="bcol-body">
+        ${col.length ? col.map(i => `
+          <div class="bcard ${stateOf(i)==='staged'?'staged':''}" data-id="${i.id}" draggable="true"
+               tabindex="0" role="button"
+               aria-label="${i.name}, ${F.TYPE_LABEL[i.type]}, in ${c.k}. Alt plus left or right arrow moves it."
+               style="--c:${accentOf(i.type)}">
+            <span class="bn">${i.name}</span>
+            <span class="bd">${F.TYPE_LABEL[i.type]} <span class="dot2">·</span> ${T.fmt(i.start)} &rarr; ${T.fmt(i.end)}</span>
+<!-- The soon class is what makes the alarm colour mean something on a board of 39 cards:
+                 set only when the thing is within two days of starting or ending, so the orange
+                 marks the rows that need you rather than all of them.
+                 NO BACKTICKS IN THIS COMMENT - it lives inside a template literal. FIFTH and
+                 SIXTH occurrence, both within one edit, and the fifth taught something new: a
+                 backtick before a member access makes a TAGGED TEMPLATE, which is valid
+                 JavaScript, so the parse gate read it clean and it failed at runtime with
+                 ".soon is not a function". The sixth was the comment written to warn about the
+                 fifth. Write these comments with plain quotes. -->
+            <div class="bmeta${boardSoon(i, c.k) ? ' soon' : ''}">${boardMeta(i, c.k)}</div>
+            ${i.kind === 'point' ? '' : `<div class="sparkwrap">${spark(i)}</div>`}
+            ${c.k === 'staged' ? `<div class="actions">
+              <button data-discard="${i.id}">Undo</button>
+              <button class="go" data-commit="${i.id}">Review</button></div>` : ''}
+          </div>`).join('') : `<p class="bempty">${EMPTY[c.k]}</p>`}
+        </div>
+      </section>`; }).join('')}</div>`;
+
+    const ea = document.getElementById('expandAll');
+    if (ea) ea.onclick = () => { st.collapsed.clear();
+      sessionStorage.setItem('dioreo-board-collapsed', '[]'); renderBoard(); };
+
+    viewBoard.querySelectorAll('[data-toggle]').forEach(b => b.onclick = e => {
+      e.stopPropagation();
+      const k = b.dataset.toggle;
+      st.collapsed.has(k) ? st.collapsed.delete(k) : st.collapsed.add(k);
+      /* Never let every column collapse — that leaves a board with nothing on it. The
+       * Expand-all button is the other half of the guarantee: whatever state you reach,
+       * one visible control returns you to the full board. */
+      if (st.collapsed.size === BCOLS.length) st.collapsed.delete(k);
+      sessionStorage.setItem('dioreo-board-collapsed', JSON.stringify([...st.collapsed]));
+      renderBoard();
+    });
+    viewBoard.querySelectorAll('.bcard').forEach(c => {
+      c.addEventListener('click', e => { if (!e.target.closest('button')) openItem(c.dataset.id); });
+      c.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openItem(c.dataset.id); return; }
+        /* Alt+Arrow moves a card between columns — and because the columns ARE dates, that
+         * is a real edit, identical to the drag. 'ended' is derived from today and is never
+         * a target, so it is absent from BCOLS rather than special-cased here. */
+        if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && (e.altKey || e.metaKey)) {
+          e.preventDefault();
+          const it = st.items.find(x => x.id === c.dataset.id); if (!it) return;
+          const cur = it.state === 'staged' ? 'staged'
+                    : lifecycle(it) === 'live' ? 'live'
+                    : lifecycle(it) === 'ended' ? 'ended' : 'upcoming';
+          if (cur === 'ended') { S.toast('An ended item cannot be moved — its dates are in the past.'); return; }
+          const i = MOVE_TARGETS.indexOf(cur);
+          const j = e.key === 'ArrowLeft' ? i - 1 : i + 1;
+          if (j < 0 || j >= MOVE_TARGETS.length) { S.toast(`Already in ${cur}.`); return; }
+          moveToColumn(c.dataset.id, MOVE_TARGETS[j], true);
+        }
+      });
+    });
+    viewBoard.querySelectorAll('[data-discard]').forEach(b => b.onclick = () => {
+      const i = st.items.find(x => x.id === b.dataset.discard);
+      const snapshot = { ...i };
+      st.items = st.items.filter(x => x.id !== i.id);
+      S.Store.remove(i.id);
+      S.toast(`Discarded ${snapshot.name}.`, 'Undo', () => { st.items.push(snapshot); renderAll(); });
+      renderAll();
+    });
+    viewBoard.querySelectorAll('[data-commit]').forEach(b => b.onclick = () => location.href = 'review.html');
+    viewBoard.querySelectorAll('.bcard').forEach(c => {
+      c.addEventListener('mouseenter', () => link(c.dataset.id, true));
+      c.addEventListener('mouseleave', () => link(c.dataset.id, false));
+    });
+    wireBoardDnD();
+  }
+
+  /* Dragging a card between columns is a real edit: the columns ARE dates, so landing in
+   * "Upcoming" has to move the item's dates, not just its position. Ended/Live/Upcoming are
+   * derived from today, so only the moves that mean something are accepted. */
+  /* Extracted from the drop handler so DRAG and KEYBOARD share one code path. Inline, the
+   * behaviour had exactly one way in, which is why the Board was pointer-only. */
+  const MOVE_TARGETS = ['live', 'upcoming', 'staged'];   // 'ended' is derived, never a target
+  function moveToColumn(id, k, focusAfter) {
+    const it = st.items.find(x => x.id === id); if (!it || k === 'ended') return false;
+    const was = { s:it.start, e:it.end, st:it.state };
+    const len = T.days(it.start, it.end);
+    if (k === 'staged') it.state = 'staged';
+    else {
+      it.state = 'saved';
+      if (k === 'live' && lifecycle(it) !== 'live') {
+        it.start = T.addDays(F.today, -1); it.end = T.addDays(it.start, len);
+      } else if (k === 'upcoming') {
+        it.start = T.addDays(F.today, 3); it.end = T.addDays(it.start, len);
+      }
+    }
+    /* Inverse first — see the note in armory.html's moveToTier for why the order matters. */
+    S.Store.onInvert('move-'+it.id, () => {
+      it.start = was.s; it.end = was.e; it.state = was.st; refreshBounds(); renderAll();
+    });
+    S.Store.add({ id:'move-'+it.id, tier:1, name:it.name, verb:`moved to ${k}`,
+                  realm:'season', op:'calendar.edit',
+                  rows:[['Window', `${T.fmt(was.s)} → ${T.fmt(was.e)}`, `${T.fmt(it.start)} → ${T.fmt(it.end)}`],
+                        ['Column', was.st === 'staged' ? 'staged' : 'saved', k]] });
+    refreshBounds(); renderAll();
+    if (focusAfter) { const again = viewBoard.querySelector(`.bcard[data-id="${it.id}"]`);
+                      if (again) again.focus(); }
+    S.toast(`${it.name} → ${k}.`, 'Undo', () => {
+      it.start = was.s; it.end = was.e; it.state = was.st;
+      S.Store.remove('move-'+it.id); refreshBounds(); renderAll();
+    });
+    return true;
+  }
+
+  function wireBoardDnD() {
+    let dragId = null;
+    viewBoard.querySelectorAll('.bcard').forEach(c => {
+      c.addEventListener('dragstart', e => { dragId = c.dataset.id; e.dataTransfer.effectAllowed = 'move'; });
+      c.addEventListener('dragend', () => { dragId = null;
+        viewBoard.querySelectorAll('.bcol').forEach(x => x.classList.remove('drop')); });
+    });
+    viewBoard.querySelectorAll('.bcol').forEach(col => {
+      col.addEventListener('dragover', e => {
+        if (!dragId || col.dataset.col === 'ended') return;
+        e.preventDefault(); col.classList.add('drop');
+      });
+      col.addEventListener('dragleave', () => col.classList.remove('drop'));
+      col.addEventListener('drop', e => {
+        e.preventDefault(); col.classList.remove('drop');
+        moveToColumn(dragId, col.dataset.col, false);
+      });
+    });
+  }
+
+  /* ═══ MANIFEST ═══ */
+  function visible() {
+    return st.items
+      .filter(i => st.filter === 'all' || i.type === st.filter)
+      .filter(i => !st.stagedOnly || i.state === 'staged')
+      .filter(i => !st.q || (i.name + ' ' + F.TYPE_LABEL[i.type] + ' ' + i.detail).toLowerCase().includes(st.q))
+      .sort((a, b) => String(a[st.sortKey]).localeCompare(String(b[st.sortKey])) * st.sortDir);
+  }
+  /* One dataset, two views. Hovering either side lights the other. */
+  function link(id, on) {
+    document.querySelectorAll(`#viewTrack .bar[data-id="${id}"], #viewTrack .pt[data-id="${id}"]`)
+      .forEach(el => el.classList.toggle('lit', on));
+    const row = document.querySelector(`.mtable tr[data-id="${id}"]`);
+    if (row) row.classList.toggle('lit', on);
+  }
+
+  function renderRows() {
+    const v = visible();
+    count.textContent = `${v.length} of ${st.items.length} shown`;
+    rows.innerHTML = v.length ? v.map(i => {
+      const s = stateOf(i);
+      /* 🔴 THE ROW STATES ITS OWN DATES AND ITS OWN VERDICT. A lifecycle label is a CLAIM about
+       * dates, so the only check worth having compares the two — and that is impossible from the
+       * outside while the dates exist solely as "Jul 6 -> Jul 6" formatted text. The states sweep
+       * used to assert instead that no row may read ENDED on 2026-08-04, an invariant nobody
+       * verified: the one row that did was a patch note published on Jul 6, correctly history a
+       * month later. A hard-coded date in a check is a guess about the fixture; a relational
+       * assertion is true on every date and cannot be wrong about one.
+       * `data-open` marks the two documented cases with no meaningful end — a `dateOnly` draw
+       * (isEventEnded returns false for it forever) and an open-ended span — so a checker knows
+       * not to hold them to an end date rather than discovering it as a false positive. */
+      return `<tr data-id="${i.id}" data-lane="${i.lane}" data-life="${i.draft ? 'draft' : lifecycle(i)}"
+                  data-start="${i.start}" data-end="${i.end}" data-open="${i.dateOnly || i.openEnded ? 1 : 0}"
+                  class="${st.selected.has(i.id)?'sel':''}">
+        <td><span class="cb ${st.selected.has(i.id)?'on':''}" role="checkbox" aria-checked="${st.selected.has(i.id)}" tabindex="0"></span></td>
+        <td class="n"><div class="ncell"><span class="dot" style="--c:${accentOf(i.type)}"></span>
+            <input class="edit" value="${i.name.replace(/"/g,'&quot;')}" aria-label="Rename ${i.name}"></div></td>
+        <td>${F.TYPE_LABEL[i.type]}<div class="rowmeta rowlife">${
+            i.draft ? '<span class="nextmark">NEXT SEASON</span>' : LIFE_LABEL[lifecycle(i)]}</div></td>
+        <td class="nums">${T.fmt(i.start)} <span class="arw">&rarr;</span> ${T.fmt(i.end)}
+            <div class="rowmeta">${plural(T.days(i.start,i.end)+1,'day')}</div></td>
+        <td class="drop-sm">${spark(i)}</td>
+        <td class="det"><div class="detcell">${
+          i.tiers && i.tiers.length
+            ? `<span class="tiers">${i.tiers.map(t => `<b class="t-${t.toLowerCase()}">${t}</b>`).join('')}</span>
+               <span class="dsub">${i.detail}</span>`
+            : `<span class="dsub">${i.detail === '—' ? '<span class="none">no detail</span>' : i.detail}</span>`
+        }${i.thumb ? `<span class="thumb ${i.thumb === 'cached' ? 'ok' : 'no'}">${i.thumb}</span>` : ''}</div></td>
+        <td class="ta-r">${conflicts(i) && s !== 'conflict'
+            ? `<span class="warnmark" data-tip="Ends after the season does">!</span>` : ''}
+          <span class="stt ${s}" style="--c:${accentOf(i.type)};--ci:${S.inkOn(accentOf(i.type))}">${STATE_LABEL[s]}</span></td>
+        ${S.removeCell(i.name)}</tr>`;
+    }).join('') : `<tr><td colspan="8"><div class="empty"><b>Nothing matches${st.q ? ' \u201c' + st.q + '\u201d' : ' this filter'}.</b>Clear the search or a filter chip &mdash; ${st.items.length} items exist in this season.</div></td></tr>`;
+    cbAll.classList.toggle('on', v.length > 0 && v.every(i => st.selected.has(i.id)));
+    renderBulk();
+    rows.querySelectorAll('tr[data-id]').forEach(tr => {
+      const id = tr.dataset.id;
+      tr.querySelector('.cb').addEventListener('click', e => { e.stopPropagation(); 
+        st.selected.has(id) ? st.selected.delete(id) : st.selected.add(id); renderRows(); });
+      const ed = tr.querySelector('.edit');
+      ed.addEventListener('click', e => e.stopPropagation());
+      ed.addEventListener('change', () => {
+        const i = st.items.find(x => x.id === id);
+        if (!ed.value.trim()) { ed.value = i.name; return; }
+        i.name = ed.value.trim();
+        S.Store.add({ id:'rename-'+id, op:(i.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:i.name, verb:'renamed' });
+        S.toast(`Renamed to "${i.name}".`); renderAll();
+      });
+      ed.addEventListener('keydown', e => { if (e.key === 'Enter') ed.blur(); });
+      /* stopPropagation, or the row click behind it opens the detail drawer under the confirm. */
+      tr.querySelector('[data-rmv]').addEventListener('click', e => { e.stopPropagation(); removeOne(id); });
+      tr.addEventListener('click', e => { if (e.target !== ed && !e.target.closest('[data-rmv]')) openItem(id); });
+      tr.addEventListener('mouseenter', () => highlightBar(id, true));
+      tr.addEventListener('mouseleave', () => highlightBar(id, false));
+    });
+  }
+  /* ══════════════════════════════════════════════════════════════════════════
+   * DELETE AND EXPORT — see the long note above Shell.Export in assets/shell.js.
+   *
+   * 🔴 WHAT THIS REPLACED, AND WHY IT COUNTED AS MISSING. The previous renderBulk()
+   * built a real bar with "Export selection" and "Stage deletion" in it, into
+   * `<div id="bulk">` — which sits in normal flow AFTER a 39-row table. Measured at
+   * 1280x860: selecting the first row put that bar 1,682px BELOW THE FOLD. The user
+   * selected two rows, saw two checkmarks and no consequence, and reported delete and
+   * export as absent. He was right. `#bulk` is now a fallback host that stays hidden;
+   * the bar docks to the viewport through Shell.selection().
+   *
+   * 🔴 AND THE OLD EXPORT WAS A LIE. It ran a 700ms setTimeout and then toasted
+   * "Exported N items in Bulk Add format" while producing no file at all. A mockup may
+   * simplify; it may not claim an outcome that did not happen — that is the same defect
+   * class as a probe that reports clean without being able to fail. Every export below
+   * emits the REAL text utils/adminParser.js emits, and downloads it.
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  /* The bot's own formats, ported verbatim from utils/adminParser.js so a round trip is
+   * genuinely lossless rather than lossless-looking. Three DIFFERENT shapes, because the
+   * three entities really do have three: draws are comma-separated with a shorthand tier
+   * per item, calendar rows are a prefixed bullet line, and patch notes have no bulk-add
+   * flow at all so their export is a readable dump rather than a paste format. */
+  const TIER_SHORTHAND = { mythic:'m', legendary:'l', legacy:'lg', epic:'e', comment:'-#' };
+  const CAL_PREFIX = { draw:'d', playlist:'p', event:'e' };
+  const longDate = iso => { const d = new Date(iso + 'T00:00:00Z');
+    return d.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric', timeZone:'UTC' }); };
+  const shortDate = iso => { const d = new Date(iso + 'T00:00:00Z');
+    return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); };
+
+  function drawsBulkText(list){
+    return list.map(d => {
+      const items = (d.items || []).map(it => (TIER_SHORTHAND[it.tier] || it.tier) + ' ' + it.name).join(', ');
+      return [d.title, items, longDate(d.date), d.thumbnailUrl || ''].join(', ');
+    }).join('\n');
+  }
+  function calendarBulkText(list){
+    return list.map(e => (CAL_PREFIX[e.category] || 'e') + '• ' + shortDate(e.date) + ' - ' +
+      (e.isOngoing ? 'All Season' : shortDate(e.endDate)) + ' | ' + e.title).join('\n');
+  }
+  /* 🔴 THE SEPARATOR IS `---`, NOT A BLANK LINE, and the title is `title` — never
+   * `titleOverride`. Both were caught by diffing this function's output against the bot's
+   * real formatPatchNotesAsText over the same 2 fixture documents, which is the only check
+   * that could have caught either: an export nothing re-reads looks correct by construction.
+   * Armory's export failed the same test harder — it was still emitting the seven-segment
+   * pipe format the parser was rewritten to REJECT on 2026-08-22. */
+  function patchNotesText(list){
+    return list.map(n => ['Title: ' + n.title,
+      'Release Date: ' + longDate(String(n.releaseDate).slice(0,10)),
+      'Description: ' + (n.description && n.description.trim() ? n.description : '(none)'),
+      'URLs:', ...(n.images || [])].join('\n')).join('\n\n---\n\n');
+  }
+  /* A selection spans every entity, so its export cannot use any one bulk format. It gets
+   * the manifest's own columns instead, and SAYS SO — an export that silently reshapes what
+   * you asked for is worse than one that names its shape. */
+  function manifestText(list){
+    return ['# Dioreo — season manifest export',
+            '# ' + list.length + ' ' + S.plural(list.length, 'items') + ' · ' + new Date().toISOString(),
+            '# Tab-separated. This is the manifest view, not a bulk-add format —',
+            '# use Export by type below for text that pastes back into /manage.',
+            ['NAME','TYPE','START','END','DETAIL','STATE'].join('\t')]
+      .concat(list.map(i => [i.name, F.TYPE_LABEL[i.type] || i.type, i.start, i.end,
+                             i.detail, stateOf(i)].join('\t'))).join('\n');
+  }
+
+  const SEASON_TAG = () => (F.season.title || 'season').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  function exportScopes(){
+    return [
+      { id:'season.newDraws', label:'New draws', note:'Bulk Add format — pastes straight back.',
+        count:F.newDraws.length, unit:'draws', file:'dioreo-new-draws-' + SEASON_TAG() + '.txt',
+        build:() => drawsBulkText(F.newDraws) },
+      { id:'season.returningDraws', label:'Returning draws', note:'Bulk Add format — pastes straight back.',
+        count:F.returningDraws.length, unit:'draws', file:'dioreo-returning-draws-' + SEASON_TAG() + '.txt',
+        build:() => drawsBulkText(F.returningDraws) },
+      { id:'season.calendar', label:'Calendar', note:'Prefixed bullet lines, the format Bulk Add takes.',
+        count:F.calendar.length, unit:'events', file:'dioreo-calendar-' + SEASON_TAG() + '.txt',
+        build:() => calendarBulkText(F.calendar) },
+      { id:'season.patchNotes', label:'Patch notes', note:'A readable dump — patch notes have no bulk-add flow to paste into.',
+        count:F.patchNotes.length, unit:'entries', file:'dioreo-patch-notes-' + SEASON_TAG() + '.txt',
+        build:() => patchNotesText(F.patchNotes) },
+      { id:'season.all', label:'Everything on this Track', note:'The manifest as tab-separated columns, every type in one file.',
+        count:st.items.length, unit:'items', file:'dioreo-season-manifest-' + SEASON_TAG() + '.tsv',
+        build:() => manifestText(st.items) }
+    ];
+  }
+  function openExport(focus){
+    S.Export.panel({ title:'Export this season', scopes:exportScopes(), focus });
+  }
+
+  /* Single remove. core/ops registers calendar.delete and draw.delete as TIER 1 — apply()
+   * captures the whole document before removing it, so the inverse is exact. The dialog says
+   * so rather than performing alarm: a portal that treats a reversible delete as a crisis
+   * trains people to click through the one that is not. */
+  function removeOne(id){
+    const i = st.items.find(x => x.id === id); if (!i) return;
+    const op = i.kind === 'point' ? 'draw.delete' : 'calendar.delete';
+    S.confirm({
+      /* No hand-typed `tier:`. The op here is a VARIABLE (draw.delete or calendar.delete
+       * depending on the row), so the schema gate cannot resolve it statically and correctly
+       * refuses to accept a tier it has no way to check — a tier that nothing verifies is
+       * exactly the "states one, is never checked against it" hole Store.add warns about.
+       * Both Shell.confirm and Store.add derive the real tier from FIX.OP_TIERS anyway, so
+       * dropping it loses nothing and removes the chance of stating it wrong. */
+      title:'Remove ' + i.name + '?', op, danger:true, confirm:'Remove',
+      body:'<p class="dw-p">It leaves the Track and the manifest and is <b>staged, not deleted</b> — ' +
+           'nothing is written until you commit on Review, and the tray can put it back until then.</p>',
+      onConfirm(){
+        const at = st.items.indexOf(i);
+        st.items.splice(at, 1);
+        st.selected.delete(id);
+        const sid = 'rm-' + id;
+        S.Store.add({ id:sid, op, name:i.name, verb:'removed', scope:'season.' + (i.kind === 'point' ? 'newDraws' : 'calendar'),
+          rows:[{ field:'Item', was:i.name, becomes:'(removed)' },
+                { field:'Window', was:T.fmt(i.start) + ' → ' + T.fmt(i.end), becomes:'—' }] });
+        S.Store.onInvert(sid, () => { st.items.splice(at, 0, i); renderAll(); });
+        S.toast('Removed "' + i.name + '". Staged, not gone.', 'Undo', () => { S.Store.revert(sid); });
+        renderAll();
+      }
+    });
+  }
+
+  /* The selection summary is the realm speaking in its own terms — a span and a type count,
+   * not "2 rows". It is the sentence that tells you whether you selected what you meant to. */
+  function selectionSummary(list){
+    if (!list.length) return '';
+    const starts = list.map(i => i.start).sort(), ends = list.map(i => i.end).sort();
+    const types = new Set(list.map(i => i.type));
+    return T.fmt(starts[0]) + ' → ' + T.fmt(ends[ends.length - 1]) + ' · ' +
+      types.size + ' type' + (types.size > 1 ? 's' : '');
+  }
+
+  function renderBulk() {
+    bulk.hidden = true;                       /* kept as a host only — see the note above */
+    const list = st.items.filter(i => st.selected.has(i.id));
+    if (!list.length) { S.selection({ count:0 }); return; }
+    const n = list.length, plural = n > 1 ? 's' : '';
+    S.selection({
+      count:n, summary:selectionSummary(list), tier:2,
+      onClear(){ st.selected.clear(); renderRows(); },
+      actions:[
+        { label:'Shift +7 days', on(){
+            const before = list.map(i => ({ i, start:i.start, end:i.end }));
+            list.forEach(i => { i.start = T.addDays(i.start, 7); i.end = T.addDays(i.end, 7); });
+            const sid = 'shift-' + Date.now();
+            S.Store.add({ id:sid, op:'calendar.bulkReplace', name:n + ' item' + plural, verb:'shifted +7 days', tier:2,
+              rows:list.slice(0, 4).map(i => ({ field:i.name, was:T.fmt(before.find(b => b.i === i).start), becomes:T.fmt(i.start) })) });
+            S.Store.onInvert(sid, () => { before.forEach(b => { b.i.start = b.start; b.i.end = b.end; }); renderAll(); });
+            S.toast('Shifted ' + n + ' item' + plural + ' 7 days forward.', 'Undo', () => S.Store.revert(sid));
+            st.selected.clear(); renderAll();
+          } },
+        { label:'Export ' + n, on(){
+            S.Export.file('dioreo-selection-' + SEASON_TAG() + '.tsv', manifestText(list));
+            S.toast(n + ' item' + plural + ' exported as the manifest view.');
+          } },
+        { label:'Remove ' + n, kind:'danger', on(){
+            S.confirm({
+              title:'Remove ' + n + ' item' + plural + '?', op:'calendar.bulkDelete', tier:2, danger:true,
+              confirm:'Remove ' + n,
+              body:'<p class="dw-p">These leave the Track and the manifest and are <b>staged, not deleted</b>:</p>' +
+                   '<ul class="dw-l">' + list.slice(0, 8).map(i => '<li>' + i.name + '</li>').join('') +
+                   (n > 8 ? '<li>and ' + (n - 8) + ' more</li>' : '') + '</ul>',
+              onConfirm(){
+                const removed = list.map(i => ({ i, at:st.items.indexOf(i) })).sort((a, b) => b.at - a.at);
+                removed.forEach(r => st.items.splice(r.at, 1));
+                const sid = 'del-' + [...st.selected].join('-');
+                S.Store.add({ id:sid, op:'calendar.bulkDelete', name:n + ' item' + plural, verb:'removed', tier:2,
+                  scope:'season.all',
+                  rows:list.slice(0, 6).map(i => ({ field:i.name, was:'on the Track', becomes:'(removed)' })) });
+                S.Store.onInvert(sid, () => {
+                  removed.slice().reverse().forEach(r => st.items.splice(r.at, 0, r.i)); renderAll(); });
+                S.toast('Removed ' + n + ' item' + plural + '. Staged, not gone.', 'Undo', () => S.Store.revert(sid));
+                st.selected.clear(); renderAll();
+              }
+            });
+          } }
+      ]
+    });
+  }
+
+  /* ── THE ONE-WAY STRIP ──────────────────────────────────────────────────────
+   * Season owns FIVE tier-3 operations and had nowhere to put any of them, which is why
+   * /manage stayed the only place they could be run at all. core/ops: draw.purge,
+   * calendar.purge, patchnote.purge, season.startNew (all tier 3) and season.discardDraft
+   * (tier 2, so it is NOT here — it lives with the draft it discards). */
+  function renderOneWay(){
+    S.oneWay({
+      host:'#oneway', exportScopes,
+      items:[
+        { id:'purge-new', title:'Purge new draws', op:'draw.purge', scope:'season.newDraws',
+          confirmWord:'PURGE', count:F.newDraws.length, unit:'draws',
+          note:'Empties the New Draws list. Returning draws are untouched.',
+          onRun(){ stageOneWay('draw.purge', 'season.newDraws', 'New draws purged', F.newDraws.length + ' draws'); } },
+        { id:'purge-ret', title:'Purge returning draws', op:'draw.purge', scope:'season.returningDraws',
+          confirmWord:'PURGE', count:F.returningDraws.length, unit:'draws',
+          note:'Empties the Returning Draws list. New draws are untouched.',
+          onRun(){ stageOneWay('draw.purge', 'season.returningDraws', 'Returning draws purged', F.returningDraws.length + ' draws'); } },
+        { id:'purge-cal', title:'Purge calendar', op:'calendar.purge', scope:'season.calendar',
+          confirmWord:'PURGE', count:F.calendar.length, unit:'events',
+          note:'Removes every event, playlist and calendar draw row for this season.',
+          onRun(){ stageOneWay('calendar.purge', 'season.calendar', 'Calendar purged', F.calendar.length + ' events'); } },
+        { id:'purge-pn', title:'Purge patch notes', op:'patchnote.purge', scope:'season.patchNotes',
+          confirmWord:'PURGE', count:F.patchNotes.length, unit:'entries',
+          note:'Clears the whole patch-note history, published entries included.',
+          onRun(){ stageOneWay('patchnote.purge', 'season.patchNotes', 'Patch notes purged', F.patchNotes.length + ' entries'); } },
+        { id:'start-new', title:'Start a new season', op:'season.startNew', scope:'season.all',
+          confirmWord:'NEW SEASON', count:st.items.length, unit:'items',
+          note:'Clears draws, calendar and titles together and opens an empty season.',
+          onRun(){ stageOneWay('season.startNew', 'season.all', 'New season started', 'everything on the Track'); } }
+      ]
+    });
+  }
+  /* Even a one-way op STAGES rather than firing — Review is the only place anything is
+   * written, and a purge that skipped it would make the commit screen a partial record of
+   * what the portal did. Store.blocked() keeps it from committing without its export. */
+  function stageOneWay(op, scope, label, what){
+    const sid = op + '-' + Date.now();
+    /* Same reason: `op` is a parameter. Store.add reads the real tier out of FIX.OP_TIERS,
+     * which is what Store.blocked() then tests for tier 3 — so the export gate still works,
+     * it just works from the registry instead of from a number typed here. */
+    S.Store.add({ id:sid, op, name:label, verb:'staged', scope,
+      rows:[{ field:'Scope', was:what, becomes:'(empty)' },
+            { field:'Recoverable from', was:'—', becomes:'your export of ' + scope }] });
+    S.Store.onInvert(sid, () => {});
+    S.toast(label + ' staged. It commits only from Review, and only because you exported first.',
+      'Review', () => location.href = 'review.html');
+  }
+
+  /* One measurement, three surfaces. Same engine as the Track. */
+  function spark(i) {
+    const full = T.make(BOUND.min, BOUND.max);
+    const st8 = stateOf(i);
+    const l = Math.max(0, full.pct(i.start)), w = Math.max(2, full.wpct(i.start, i.end));
+    const nowP = full.pct(F.today);
+    const elapsed = (lifecycle(i) === 'live')
+      ? Math.max(0, Math.min(100, ((T.days(i.start, F.today)) / Math.max(1, T.days(i.start, i.end))) * 100)) : 0;
+    return `<span class="spark" style="--c:${accentOf(i.type)}" aria-hidden="true">
+      <i class="${st8}" style="left:${l}%;width:${w}%">${elapsed ? `<span class="done" style="width:${elapsed}%"></span>` : ''}</i>
+      ${nowP >= 0 && nowP <= 100 ? `<span class="nowdot" style="left:${nowP}%"></span>` : ''}</span>`;
+  }
+
+  /* Superseded by link(), which lights BOTH views — this only ever drove one direction. */
+  const highlightBar = (id, on) => { const b = viewTrack.querySelector(`[data-id="${id}"]`); b && b.classList.toggle('sel', on); };
+
+  function openItem(id) {
+    const i = st.items.find(x => x.id === id); if (!i) return;
+    S.drawer({
+      eyebrow: `${F.TYPE_LABEL[i.type]} · ${STATE_LABEL[stateOf(i)]} · ${LIFE_LABEL[lifecycle(i)]}`,
+      title: i.name,
+      body: `<p class="dw-p">This is the card <b>as Discord renders it</b> — the same builder the
+               bot calls, so the preview cannot drift from what ships.</p>
+        ${S.discordCard({ accent:accentOf(i.type), title:i.name,
+          sub:`${F.TYPE_LABEL[i.type]} · ${T.fmtLong(i.start)}`,
+          rows:[['Window', `${T.fmt(i.start)} → ${T.fmt(i.end)}`],
+                ['Duration', plural(T.days(i.start,i.end)+1,'day')],
+                ['Detail', i.detail], ['Thumbnail', i.thumb || '—']], badges:i.tiers })}
+        <div class="dwfield" style="margin-top:16px"><label for="p-start">Starts</label>
+          <input id="p-start" type="date" value="${i.start}"></div>
+        <div class="dwfield"><label for="p-end">Ends</label>
+          <input id="p-end" type="date" value="${i.end}"></div>`,
+      actions: `<button class="btn" onclick="Shell.closeDrawer()">Cancel</button>
+                <button class="btn go" id="p-save">Stage these dates</button>`
+    });
+    document.getElementById('p-save').onclick = () => {
+      const ps = document.getElementById('p-start'), pe = document.getElementById('p-end');
+      if (T.days(ps.value, pe.value) < 0) {
+        fieldError(pe, `The end date is before the start. Pick a date on or after ${T.fmt(ps.value)}.`);
+        return;
+      }
+      fieldError(pe, '');
+      i.start = ps.value;
+      i.end   = pe.value;
+      S.Store.add({ id:'move-'+i.id, op:(i.kind === 'point' ? 'draw.edit' : 'calendar.edit'), name:i.name, verb:'dates changed' });
+      S.toast(`${i.name} → ${T.fmt(i.start)} – ${T.fmt(i.end)}.`);
+      S.closeDrawer(); renderAll();
+    };
+  }
+
+  /* ═══ WIRING ═══ */
+  /* One switcher, used by the tabs AND the palette — two copies would drift. */
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => setMode(b.dataset.view));
+  q.addEventListener('input', e => { st.q = e.target.value.toLowerCase().trim(); renderRows(); });
+  /* Built from LANES so a chip cannot drift from the lane it filters — same label, same
+   * colour, one source. */
+  /* Built from LANES, so a type cannot go missing from here while existing on the Track. */
+  document.getElementById('mhAdd').insertAdjacentHTML('beforeend',
+    COMPOSE_TYPES().map(t => `<button class="pill mh-t" data-addtype="${t.key}" style="--c:${t.hex}">
+      <span class="dot"></span>${t.single ? t.single[0].toUpperCase() + t.single.slice(1) : t.label}
+    </button>`).join('') +
+      /* A bare "N" in a box is not a hint, it is a label nobody can read. It says what it does
+         on hover and to a screen reader, like every other control here. */
+      '<kbd class="mh-k" data-tip="Press N to open the composer" aria-label="Keyboard shortcut: N">N</kbd>');
+  document.querySelectorAll('[data-addtype]').forEach(b => b.onclick = () =>
+    openComposer({ type: b.dataset.addtype, a: F.today }));
+  /* `N` for new, but never while you are typing into something. */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'n' && e.key !== 'N') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) return;
+    if (document.querySelector('.drawer.open') || document.querySelector('.cb-drop:not([hidden])')) return;
+    e.preventDefault();
+    /* No wrapper button to press any more — N puts you on the first type, arrows do the rest. */
+    document.querySelector('[data-addtype]')?.focus();
+  });
+  typeChips.innerHTML = F.LANES.map(l =>
+    `<button class="chip topic" data-filter="${l.type}" aria-pressed="false"
+             style="--c:${l.bar}"><i></i>${l.label}</button>`).join('');
+
+  document.querySelectorAll('[data-filter]').forEach(c => c.onclick = () => {
+    st.filter = c.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+    renderRows();
+  });
+  document.querySelector('[data-state]').onclick = function () {
+    st.stagedOnly = !st.stagedOnly; this.setAttribute('aria-pressed', String(st.stagedOnly)); renderRows();
+  };
+  /* 🔴 THE ELEMENT THAT HANDLES THE CLICK IS THE ELEMENT THAT TAKES FOCUS. A <th> with an
+     onclick and no tabindex made every sort MOUSE-ONLY, on four realms, and the keyboard
+     pass could not see it because it selected by ROLE and a bare th has none. */
+  document.querySelectorAll('button.sortbtn').forEach(th => th.onclick = () => {
+    st.sortDir = st.sortKey === th.dataset.sort ? -st.sortDir : 1; st.sortKey = th.dataset.sort;
+    document.querySelectorAll('th.sortable').forEach(x => x.className = 'sortable');
+    th.className = 'sortable ' + (st.sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+    renderRows();
+  });
+  cbAll.onclick = () => {
+    const v = visible();
+    v.every(i => st.selected.has(i.id)) ? v.forEach(i => st.selected.delete(i.id)) : v.forEach(i => st.selected.add(i.id));
+    renderRows();
+  };
+  /* Validation states what happened, why, and how to fix — beside the field that caused it. */
+  function fieldError(el, msg) {
+    el.classList.toggle('err', !!msg);
+    el.setAttribute('aria-invalid', String(!!msg));
+    let m = el.parentElement.querySelector('.errmsg');
+    if (!msg) { m && m.remove(); return; }
+    if (!m) { m = document.createElement('div'); m.className = 'errmsg'; m.setAttribute('role','alert');
+              el.parentElement.appendChild(m); }
+    m.textContent = msg;
+  }
+  document.getElementById('a-go').onclick = () => {
+    const nameEl = document.getElementById('a-name'), startEl = document.getElementById('a-start'), endEl = document.getElementById('a-end');
+    const n = nameEl.value.trim();
+    fieldError(nameEl, n ? '' : 'This item needs a name before it can be staged.');
+    if (!n) { nameEl.focus(); return; }
+    const s = startEl.value || F.today;
+    const e = endEl.value || T.addDays(s, 5);
+    if (T.days(s, e) < 0) {
+      fieldError(endEl, `The end date is before the start. Pick a date on or after ${T.fmt(s)}.`);
+      endEl.focus(); return;
+    }
+    fieldError(endEl, ''); fieldError(nameEl, '');
+    addItem(document.getElementById('a-type').value, n, s, e);
+    nameEl.value = '';
+  };
+
+  /* renderStats is GONE with the stat block it drove. Its whole job was the masthead's
+   * days-left figure, which the clock has replaced - and the three long comments it carried
+   * were all about defects in that figure (the wrong deadline, the 145px label, the width
+   * cap that clipped Access). Keeping a function to describe a deleted element is how stale
+   * rationale outlives the thing it explains. What survives it is in COMPANION 16.31. */
+  function renderStats() { renderEyebrow(); }
+
+  /* ═══ THE CLOCK ═══════════════════════════════════════════════════════════════════════
+   * A countdown RUNS. Four static compositions and six paddings of a digital readout were
+   * rejected before this; the correction was one sentence - "I told you they are a
+   * countdown". The seconds place is not a planning unit, it is the proof of life.
+   *
+   * FIVE TIERS, each REMOVING something, because the old `hot = d < 3` made 4 days look
+   * like 40 days and 2 days look like 2 minutes. */
+  const sClock = document.getElementById('sClock');
+  const mhEyebrow = document.getElementById('mhEyebrow');
+  function renderClock() {
+    const ms = S.seasonMoments(st.season, F.today);
+    if (!ms.length) {
+      sClock.removeAttribute('data-tier');
+      sClock.innerHTML = `<span class="sc-none">No deadline set for this season.</span>`;
+      return;
+    }
+    const next = ms[0], rest = ms.slice(1);
+    const paint = () => {
+      const p = S.countdownParts(next.iso, F.today);
+      if (!p) return;
+      if (p.past) { renderAll(); return; }
+      sClock.dataset.tier = S.seasonTier(p.d);
+      const units = [];
+      if (p.d > 0) units.push(['d', p.d, S.plural(p.d, 'days')]);
+      if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+      units.push(['m', p.m, 'min']);
+      units.push(['s', p.s, 'sec']);
+      sClock.innerHTML =
+        `<div class="sc-face">${units.map((u, i) =>
+          `${i ? `<span class="sc-sep">:</span>` : ''}<span class="sc-u${u[0] === 's' ? ' sec' : ''}">` +
+          `<b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i></span>`).join('')}</div>` +
+        `<div class="sc-when">until <b>${T.fmt(next.iso)}</b> &middot; ${
+          next.lines.map(L => L.label.toLowerCase()).join(' &amp; ')}</div>` +
+        (rest.length ? `<div class="sc-then">then <b>${rest[0].lines.map(L => L.label).join(' ')}</b>
+           ${T.fmt(rest[0].iso)} &middot; ${T.days(F.today, rest[0].iso)} ${
+           S.plural(T.days(F.today, rest[0].iso), 'days')}</div>` : '');
+    };
+    if (!sClock.dataset.ticking) { sClock.dataset.ticking = '1'; S.tickSeconds(paint); } else paint();
+  }
+
+  /* The three figures the clock displaced. They keep their meaning and lose their rank. */
+  function renderEyebrow() {
+    const live = st.items.filter(i => lifecycle(i) === 'live').length;
+    const flags = computeFlags().length, staged = S.Store.all().length;
+    const cell = (n, k, cls) =>
+      `<span><i class="${n === 0 ? 'zero' : (cls || '')}">${n}</i>${k}</span>`;
+    mhEyebrow.innerHTML = cell(live, 'live now') + cell(staged, 'staged', 'stg') +
+                          cell(flags, 'flags', 'warn');
+  }
+
+  function syncStaged(){ renderEyebrow(); S.mountRail('season'); }
+  function renderAll(){ renderIdentity(); renderStats(); renderClock(); renderEyebrow(); renderTrack(); repositionBars(); renderRows(); syncStaged();
+    renderOneWay(); renderTakeOut(); startClock();
+    if (st.mode === 'board') renderBoard(); if (st.mode === 'repairs') renderRepairs(); }
+
+  /* The masthead states what an export would carry, so "Export…" is never a blind click —
+   * and once something has been taken out this session it says that instead, which is the
+   * same fact the one-way strip's gate reads. */
+  function renderTakeOut(){
+    S.mastheadExport({ host:'#mhAdd', scopes:exportScopes,
+      summary:() => st.items.length + ' items · ' + exportScopes().length + ' formats' });
+  }
+
+  /* ═══ VIEW 3 · REPAIRS ═══════════════════════════════════════════════════════════════
+   * Armory has had this since it was rebuilt on real documents; Season did not, and the
+   * reason is instructive rather than an oversight — a set of hand-written draws has no
+   * duplicate row, no expiring banner and no draw missing its window, so there was nothing
+   * for a Repairs view to find. Every check below fires on the REAL exported document.
+   *
+   * The split is Armory's: MECHANICAL means a machine can be certain it is wrong;
+   * JUDGEMENT means the data is defensible and only you know whether it is what you meant.
+   * Collapsing the two would make the whole panel advisory, and an advisory panel gets
+   * ignored. A check reporting ZERO stays on screen with its reason — a check that vanishes
+   * when it passes teaches nothing about what is being watched. */
+  function renderRepairs() {
+    const groups = F.seasonRepairs();
+    const total = groups.reduce((n, g) => n + g.hits.length, 0);
+    const mech = groups.filter(g => g.kind === 'mechanical');
+    const judg = groups.filter(g => g.kind === 'judgement');
+    const block = (g) => `
+      <div class="repgrp ${g.hits.length ? '' : 'clean'}">
+        <div class="reph">
+          <span class="rt-n">${g.hits.length}</span>
+          <span class="rt-l">${g.label}</span>
+          <span class="rt-k">${g.kind}</span>
+        </div>
+        <p class="repnote">${g.note}</p>
+        ${g.hits.length ? `<ul class="rephits">${g.hits.map(h => `
+          <li><button type="button" data-hit="${h.id}" aria-label="Open ${h.label} - ${h.why}"><b>${h.label}</b><span>${h.why}</span></button></li>`).join('')}</ul>`
+          : `<p class="repclean">Nothing to fix. The check still runs; it has nothing to report against this season.</p>`}
+      </div>`;
+    viewRepairs.innerHTML = `
+      <div class="repwrap">
+        <div class="rephead">
+          <b>${total}</b> finding${total === 1 ? '' : 's'} across ${groups.length} checks —
+          ${mech.reduce((n,g)=>n+g.hits.length,0)} mechanical, ${judg.reduce((n,g)=>n+g.hits.length,0)} for you to judge.
+          Every one is read off the live season document.
+        </div>
+        <h6 class="reps">Mechanical — a machine is sure</h6>
+        ${mech.map(block).join('')}
+        <h6 class="reps">Judgement — defensible, and only you know if it is meant</h6>
+        ${judg.map(block).join('')}
+      </div>`;
+    viewRepairs.querySelectorAll('[data-hit]').forEach(li => li.onclick = () => {
+      const it = st.items.find(x => x.id === li.dataset.hit);
+      if (it) { setMode('track'); openItem(it.id); }
+      else S.toast('That finding is on the season itself, not on a single item — its dates and titles are in Season identity, above.');
+    });
+  }
+
+  /* ═══ ⌘K PALETTE — every action on this page, reachable without hunting for it ═══ */
+  const PAL = [
+    { k:'Track view',            c:'patch', run:() => setMode('track') },
+    { k:'Board view',            c:'patch', run:() => setMode('board') },
+    { k:'Fit the whole season',  c:'info',  run:() => { setMode('track'); fitAll(); } },
+    { k:'Zoom in',               c:'info',  run:() => { setMode('track'); withMotion(() => zoom(0.62)); } },
+    { k:'Zoom out',              c:'info',  run:() => { setMode('track'); withMotion(() => zoom(1.6)); } },
+    { k:'Edit live season',      c:'ok',    run:() => { st.sn='live';  renderIdentity(); document.getElementById('f-title').focus(); } },
+    { k:'Edit next season',      c:'staged',run:() => { st.sn='draft'; renderIdentity(); document.getElementById('f-title').focus(); } },
+    { k:'Compare live vs next',  c:'staged',run:() => { st.sn='draft'; renderIdentity();
+        const d=document.getElementById('dDiff'); d && d.click(); } },
+    { k:'Promote draft to live', c:'del',   run:() => { const d=document.getElementById('dPromote'); d ? d.click() : S.toast('No draft staged.'); } },
+    /* The palette names the TYPES, so the keyboard path never makes you find a dropdown
+     * to discover what can be created. Six entries, one per lane, straight off LANES. */
+    /* 🔴 ALL SIX RENDERED THE SAME RED DOT — `c` was hard-coded to 'draw' for five different
+     * lanes, and `--draw` does not resolve, so the fallback painted them identically. On a page
+     * whose whole discipline is COLOUR CARRIES TOPIC. The lane's own hex IS the topic. */
+    ...F.LANES.map(l => ({ k:'New ' + ((LANE_KIT[l.key] || {}).single || l.label.toLowerCase()),
+        hex:l.bar, run:() => openComposer({ type:l.key, a:F.today }) })),
+    { k:'Search the manifest',   c:'ink3',  run:() => q.focus() },
+    { k:'Show staged only',      c:'staged',run:() => { st.stagedOnly=true; renderRows();
+        document.querySelector('[data-staged]')?.setAttribute('aria-pressed','true'); } },
+    { k:'Review staged changes', c:'ok',    run:() => location.href='review.html' },
+    { k:'Go to Armory',          c:'ret',   run:() => location.href='armory.html' },
+    { k:'Go to Broadcast',       c:'sched', run:() => location.href='broadcast.html' },
+    { k:'Sign out',              c:'del',   run:() => uMenu.querySelector('[data-m=out]').click() }
+  ];
+  /* 🔴 THE PALETTE USED TO BE A FULL-SCREEN SCRIM OVER THE PAGE, opened by a 44px chip in a
+   * header with ~700px of unused space. Two things were wrong: a launcher is not a feature, and
+   * covering the realm to search it hides the thing you are searching. It is now the header's own
+   * command bar — widest element up there, says what it does in words, and drops its results
+   * directly beneath itself with the realm still visible behind. Shell owns it, so the next realm
+   * inherits it instead of copying eighty lines. */
+  S.commandBar({
+    items: () => PAL,
+    run: c => c.run(),
+    placeholder: 'Search this season, or run a command'
+  });
+  addEventListener('keydown', e => { if (e.key === 'Escape') S.closeDrawer(); });
+
+  function setMode(m) {
+    st.mode = m;
+    document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === m)));
+    viewTrack.hidden = m !== 'track'; viewBoard.hidden = m !== 'board'; viewRepairs.hidden = m !== 'repairs';
+    zoomer.style.display = m === 'track' ? '' : 'none';
+    crumbView.textContent = { track:'Track', board:'Board', repairs:'Repairs' }[m];
+    if (m === 'board') renderBoard(); else if (m === 'repairs') renderRepairs(); else syncZoomUI();
+  }
+
+  renderAll();
+  syncZoomUI();
+
+  /* ═══ SELF-CHECK ═══
+   * The state vocabulary lives in TWO places — stateOf() emits a class name, app.css styles it.
+   * When those drifted apart (JS renamed live -> saved, CSS did not follow) every saved bar
+   * silently lost its fill and its border colour, and nothing anywhere reported it: the markup
+   * was still correct, the percentages were still correct, only the paint was gone.
+   * So assert the thing that actually failed — that a saved bar RESOLVES to a real colour —
+   * rather than trusting that the two lists still agree. */
+  /* The invariant audit lives in shell.js so every page inherits it. Pages may pass extra
+   * page-specific checks; Season passes the ones that need its own state. */
+  (window.Shell||window.S).holdTop();
+  S.audit({
+    /* Every path that opens a panel gets driven, so a contract break behind a click
+     * cannot pass as clean the way the drawer's did. */
+    interactions: () => [
+      { name:'item drawer',    run: () => openItem(st.items[0].id) },
+      { name:'deadline editor',run: () => openDeadline('bp') },
+      { name:'day view',       run: () => openDay(F.today) },
+      /* ⚠️ DRIVE THE STATE THE DATA IS ACTUALLY IN. The live document has draft.active === false,
+       * so #dPromote does not exist and this check asserted against a panel that cannot open —
+       * a green run on an authored fixture that happened to have a draft, and a red one the
+       * moment real data arrived. Whichever path exists is the one that gets driven. */
+      /* 🔴 IT HAS TO REACH THE PANEL, NOT JUST PRESS SOMETHING. This used to fall back to
+       * #mkDraft when no draft was staged — and "Start a draft" opens no drawer, it raises a
+       * toast, so rule 9 correctly reported `draft zone opened no panel` on every default run.
+       * The interesting control here is PROMOTE: it is the page's only tier-3 op and the one
+       * whose confirmation copy is worth asserting. So the path is driven end to end — stage a
+       * draft, then promote it — and the state it changed is put back, because later passes
+       * re-audit this same document and an active draft silently changes what they see. */
+      { name:'draft zone', run: () => {
+          const before = { draft: JSON.parse(JSON.stringify(st.draft)), sn: st.sn };
+          if (!document.getElementById('dPromote')) {
+            const m = document.getElementById('mkDraft');
+            /* renderDraftZone() only rebuilds the markup — wireIdentity() is what attaches the
+             * handlers, so without it #dPromote exists and does nothing when clicked. */
+            if (m) { m.click(); renderDraftZone(); wireIdentity(); }
+          }
+          const b = document.getElementById('dPromote');
+          if (b) b.click();
+          st.draft = before.draft; st.sn = before.sn; renderDraftZone(); wireIdentity();
+        } }
+      /* Repairs is NOT in this list, and the reason is a real distinction rather than an
+       * exemption: `interactions` asserts that a click opens a DRAWER, and Repairs is a view
+       * switch. Putting it here made it fail for being what it is. It is asserted in `extra`
+       * below instead — driven, then checked for content, which is the same rigour aimed at
+       * the right contract. */
+    ],
+    states: () => st.items.map(stateOf),
+    extra: () => {
+      const out = [];
+      document.querySelectorAll('#viewTrack .bar.saved').forEach(b => {
+        if (getComputedStyle(b).backgroundColor === 'rgba(0, 0, 0, 0)')
+          out.push(`saved bar "${b.textContent.trim()}" has no fill`);
+      });
+      /* Drive the Repairs view for real and assert it rendered something. A view that throws
+       * or renders empty would otherwise pass every geometric rule on this page, because
+       * nothing else ever switches to it. Restored to Track afterwards so the audit leaves the
+       * page in the state it found it. */
+      const wasMode = st.mode;
+      setMode('repairs');
+      const groups = document.querySelectorAll('#viewRepairs .repgrp').length;
+      const heads  = document.querySelectorAll('#viewRepairs .reph .rt-l').length;
+      if (viewRepairs.hidden) out.push('repairs view stayed hidden after switching to it');
+      if (groups !== 6) out.push(`repairs rendered ${groups} check groups, expected 6`);
+      if (heads !== groups) out.push('a repairs group rendered without a heading');
+      if (!document.querySelector('#viewRepairs .rephits li')) out.push('repairs found nothing at all — every check reported zero, which the live document contradicts');
+      setMode(wasMode);
+
+      document.querySelectorAll('.spark').forEach(x => {
+        /* Skip anything the breakpoint has hidden — a display:none sparkline is 0px tall
+         * by design, and flagging it makes the audit unpassable at mobile width. */
+        if (x.offsetParent === null) return;
+        if (x.getBoundingClientRect().height === 0) out.push('.spark collapsed to zero height');
+      });
+      return out;
+    }
+  });
+
+  /* One orchestrated arrival rather than scattered effects: chrome, then the
+   * lanes cascading, then the flags. Skipped entirely under reduced-motion. */
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.masthead, .identity, .panel').forEach((el, i) => {
+      el.classList.add('rise'); el.style.animationDelay = (i * 55) + 'ms';
+    });
+    const stagger = () => {
+      viewTrack.querySelectorAll('.lane').forEach((l, i) => l.style.animationDelay = (140 + i * 42) + 'ms');
+      viewTrack.querySelectorAll('.flag').forEach((f, i) => f.style.animationDelay = (420 + i * 70) + 'ms');
+    };
+    stagger();
+    const _rt = renderTrack;
+    renderTrack = function () { _rt.apply(null, arguments); stagger(); };
+  }
+  viewMeta.textContent = `${T.fmt(st.view.from)} → ${T.fmt(st.view.to)}`;
+})();
+</script>
+</body></html>

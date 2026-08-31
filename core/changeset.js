@@ -43,7 +43,8 @@ async function previewSet(ops, live) {
     return Promise.all(ops.map(async (op, index) => {
         const impl = resolveOp(op.type);
         const v = impl.validate(op);
-        return { index, ...(await impl.preview(v.normalized || op, live)) };
+        // 🔴 THE SAME `||` BUG validateSet ABOVE ALREADY FIXED, ONE FUNCTION LOWER AND STILL LIVE. Most entities' validate() returns ONLY `{ payload: {...} }` in `normalized` — the long comment on validateSet says so and merges with `{...op, ...r.normalized}` for exactly that reason. This re-ran validate() itself and passed the BARE result to preview(), so `op.target` was undefined and draw.edit's preview threw on `op.target.category` before it read anything. Found 2026-08-26 by the first automated route test: /api/review still answered 200 because it catches preview failures, so every staged draw.edit had been showing an EMPTY DIFF on the review screen — the one screen whose whole job is showing what is about to change. A fix that lands in one function and not its neighbour is how a defect survives being fixed.
+        return { index, ...(await impl.preview(v.normalized ? { ...op, ...v.normalized } : op, live)) };
     }));
 }
 

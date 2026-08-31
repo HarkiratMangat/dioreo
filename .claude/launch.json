@@ -10,6 +10,24 @@
       ],
       "port": 8899,
       "autoPort": true
+    },
+    {
+      "name": "repo-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-c",
+        "import http.server,socketserver\nclass H(http.server.SimpleHTTPRequestHandler):\n    def end_headers(self):\n        self.send_header('Cache-Control','no-store, must-revalidate')\n        self.send_header('Pragma','no-cache')\n        super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nsocketserver.TCPServer(('127.0.0.1',8900),H).serve_forever()\n"
+      ],
+      "port": 8900
+    },
+    {
+      "name": "portal-harness",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-c",
+        "import http.server,socketserver,os\nos.chdir('portal/public')\nclass H(http.server.SimpleHTTPRequestHandler):\n    def end_headers(self):\n        self.send_header('Cache-Control','no-store, must-revalidate')\n        self.send_header('Pragma','no-cache')\n        super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nsocketserver.TCPServer(('127.0.0.1',8901),H).serve_forever()\n"
+      ],
+      "port": 8901
     }
   ]
 }

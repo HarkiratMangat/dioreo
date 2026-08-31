@@ -606,25 +606,30 @@ async function buildChangesBody() {
     return body;
 }
 
-// ── Usage page — live aggregation against AnalyticsEvent (stage 2's collection); no roll-ups exist yet (stage 4), so this queries raw rows directly, matching the design's own note that recent-window questions don't need roll-ups. Product stats only (isAdmin: false). ──
-async function computeUsageStats() {
+// ── Usage page — live aggregation against AnalyticsEvent (stage 2's collection); no roll-ups exist yet (stage 4), so this queries raw rows directly, matching the design's own note that recent-window questions don't need roll-ups. Product stats only (isAdmin: false by default). ── ⚠️ THE OPTIONS BAG IS THE PORTAL'S DOING AND THE DEFAULTS ARE DISCORD'S. The portal wants every command, the Discord panel wants the eight that fit -- so the limit is an argument with the panel's own number as its default, rather than a raised constant that silently lengthens /bot analytics' text export too. Callers that pass nothing get exactly what they got before. ⚠️ `includeAdmin` DEFAULTS TO FALSE, so /bot analytics is byte-for-byte what it was. The portal offers the toggle because an admin looking at their own portal is asking a different question from a product-usage report — "did my /manage edit register" is answerable only with admin traffic in, and it is EXCLUDED from every one of these queries by default because it would otherwise dominate a small dataset.
+async function computeUsageStats({ limit = 8, includeAdmin = false } = {}) {
     const AnalyticsEvent = require('../models/AnalyticsEvent');
+    const adminMatch = includeAdmin ? {} : { isAdmin: false };
     const now = Date.now();
     const since7d = new Date(now - 7 * 86400 * 1000);
     const sincePrev7d = new Date(now - 14 * 86400 * 1000);
     const [current, previous, byCommand, byEntry, byOutcome] = await Promise.all([
-        AnalyticsEvent.countDocuments({ createdAt: { $gte: since7d }, isAdmin: false }),
-        AnalyticsEvent.countDocuments({ createdAt: { $gte: sincePrev7d, $lt: since7d }, isAdmin: false }),
+        AnalyticsEvent.countDocuments({ createdAt: { $gte: since7d }, ...adminMatch }),
+        AnalyticsEvent.countDocuments({ createdAt: { $gte: sincePrev7d, $lt: since7d }, ...adminMatch }),
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d }, isAdmin: false } },
-            { $group: { _id: '$command', c: { $sum: 1 } } }, { $sort: { c: -1 } }, { $limit: 8 },
+            { $match: { createdAt: { $gte: since7d }, ...adminMatch } },
+            // `ok` rides along in the SAME $group rather than as a second query: the split between a command that ran 40 times and a command that ran 40 times and failed 9 of them is the whole point of the portal's usage bar, and it costs one accumulator here. buildUsageBars/buildUsageExport read only `c`, so nothing on the Discord side changes. `bg` rides along for the same one-accumulator price, and it fixes a claim the page would otherwise make falsely: the busiest rows in this collection are BACKGROUND JOBS (cache warms, image renders), and a list that prefixes every row with a slash asserts a command exists that does not. A row where bg equals c never had anybody type anything.
+            { $group: { _id: '$command', c: { $sum: 1 },
+                ok: { $sum: { $cond: [{ $eq: ['$outcome', 'ok'] }, 1, 0] } },
+                bg: { $sum: { $cond: [{ $eq: ['$entry', 'background'] }, 1, 0] } } } },
+            { $sort: { c: -1 } }, { $limit: limit },
         ]),
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d }, isAdmin: false } },
+            { $match: { createdAt: { $gte: since7d }, ...adminMatch } },
             { $group: { _id: '$entry', c: { $sum: 1 } } }, { $sort: { c: -1 } },
         ]),
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d }, isAdmin: false } },
+            { $match: { createdAt: { $gte: since7d }, ...adminMatch } },
             { $group: { _id: '$outcome', c: { $sum: 1 } } }, { $sort: { c: -1 } },
         ]),
     ]);
@@ -683,8 +688,9 @@ async function buildUsageBody() {
 function fmtUtc(d) { return d ? new Date(d).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC') : '?'; }
 
 // Matches buildAlertExport()/buildChangeExport()'s downloadable-.txt shape — the fuller record beyond what fits in the panel, same convention every export button in this command uses.
-async function buildUsageExport() {
-    const { current, previous, byCommand, byEntry, byOutcome } = await computeUsageStats();
+async function buildUsageExport(stats) {
+    // accepts a precomputed stats object (the portal's /api/analytics passes one so this doesn't re-run the aggregation a second time in the same request) — falls back to computing its own when called standalone, e.g. from /bot analytics.
+    const { current, previous, byCommand, byEntry, byOutcome } = stats || await computeUsageStats();
     const lines = [
         `Dioreo — usage export`,
         `Generated: ${fmtUtc(new Date())}`,
@@ -703,13 +709,18 @@ async function buildUsageExport() {
     return lines.join('\n');
 }
 
-// ── Timing page — p50/p95 via Mongo's $percentile (MongoDB 8.0+, confirmed on this cluster). ──
-async function computeTimingStats() {
+// ── Timing page — p50/p95 via Mongo's $percentile (MongoDB 8.0+, confirmed on this cluster). ── The bucket edges a reader would choose out loud, ending ON the deadline so the overflow bucket means exactly one thing: this ack would have been thrown away. ACK_LIMIT_MS is declared below and doubles as the default-bucket key, which is why the last boundary and it are the same number.
+const ACK_BUCKETS = [0, 100, 250, 500, 1000, 2000, 3000];
+// 🔴 THIS FUNCTION HAS NEVER FILTERED ADMIN TRAFFIC AND computeUsageStats ALWAYS HAS — measured 2026-08-26, and it means the Usage panel's counts and the Timing panel's percentiles have been computed over DIFFERENT POPULATIONS on the same screen, with nothing saying so. `/manage` is the heaviest thing this bot does; a "usually 40ms" that silently includes it is answering a question nobody asked.
+//
+// ⚠️ THE DEFAULT HERE IS CONSISTENT AND THE DISCORD CALLER OVERRIDES IT, deliberately in that order. Making both functions exclude admin by default is the correct reading — both panels then answer over the same rows — but flipping it silently would change a shipped `/bot analytics` panel's numbers, which is not this branch's to do. So the Discord call site passes `includeAdmin: true` explicitly and keeps exactly the numbers it has always printed; the discrepancy is now visible at that call site instead of hidden in a missing `$match`, and closing it is one argument away.
+async function computeTimingStats({ limit = 6, includeAdmin = false } = {}) {
+    const adminMatch = includeAdmin ? {} : { isAdmin: false };
     const AnalyticsEvent = require('../models/AnalyticsEvent');
     const since7d = new Date(Date.now() - 7 * 86400 * 1000);
-    const [overallRows, byCommand, byDep] = await Promise.all([
+    const [overallRows, byCommand, byDep, ackBuckets] = await Promise.all([
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d } } },
+            { $match: { createdAt: { $gte: since7d }, ...adminMatch } },
             { $group: {
                 _id: null,
                 ackP: { $percentile: { input: '$ackMs', p: [0.5, 0.95], method: 'approximate' } },
@@ -717,18 +728,23 @@ async function computeTimingStats() {
             } },
         ]),
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d }, durationMs: { $ne: null } } },
+            { $match: { createdAt: { $gte: since7d }, durationMs: { $ne: null }, ...adminMatch } },
             { $group: { _id: '$command', p: { $percentile: { input: '$durationMs', p: [0.95], method: 'approximate' } }, n: { $sum: 1 } } },
-            { $sort: { n: -1 } }, { $limit: 6 },
+            { $sort: { n: -1 } }, { $limit: limit },
         ]),
         AnalyticsEvent.aggregate([
-            { $match: { createdAt: { $gte: since7d }, deps: { $exists: true, $ne: [] } } },
+            { $match: { createdAt: { $gte: since7d }, deps: { $exists: true, $ne: [] }, ...adminMatch } },
             { $unwind: '$deps' },
             { $group: { _id: '$deps.name', totalMs: { $sum: '$deps.ms' }, calls: { $sum: '$deps.calls' } } },
-            { $sort: { totalMs: -1 } }, { $limit: 6 },
+            { $sort: { totalMs: -1 } }, { $limit: limit },
+        ]),
+        // ── The ack DISTRIBUTION, which is a different question from the two percentiles above and not a second way of asking the same one. "Usually 40ms, slowest 1 in 20 is 180ms" cannot answer "has anything ever come near the deadline", because a percentile summarises the shape away -- and the deadline is the one number in this system with a real consequence behind it. Buckets are the reader's own units, not a log scale. ⚠️ ackMs must be $type-checked, not merely non-null: $bucket sends anything outside the boundaries to the default bucket, so a null would be counted as "over 3 seconds" -- an invented breach, which is the worst class of wrong number because it demands action.
+        AnalyticsEvent.aggregate([
+            { $match: { createdAt: { $gte: since7d }, ackMs: { $type: 'number' }, ...adminMatch } },
+            { $bucket: { groupBy: '$ackMs', boundaries: ACK_BUCKETS, default: ACK_LIMIT_MS, output: { n: { $sum: 1 } } } },
         ]),
     ]);
-    return { overall: overallRows[0] || null, byCommand, byDep };
+    return { overall: overallRows[0] || null, byCommand, byDep, ackBuckets };
 }
 
 // Discord closes the interaction window at 3,000ms. A bare "p95 2,400ms" makes a reader do that division in their head every time; stating the headroom is the page doing its own job. null is white circle, never green -- "no data" and "plenty of room" are different answers and must not share a colour. ⚠️ RETAINED ONLY AS A REGRESSION WITNESS. Nothing a reader sees calls this any more -- ackVerdict() replaced it once "headroom" turned out to be jargon its only reader could not parse. The test keeps it to prove the old path really did emit a negative percentage; do not route a panel string back through it.
@@ -768,7 +784,8 @@ function fmtDur(ms) { return ms == null ? '—' : ms < 1000 ? `${Math.round(ms)}
 const TIMING_EMPTY = '**No timings recorded yet.**\n-# Every interaction records how long it took to acknowledge and to finish. This fills in on its own as the bot gets used.';
 
 async function buildTimingBody() {
-    const { overall, byCommand } = await computeTimingStats();
+    // ⚠️ EXPLICIT, to keep the numbers this panel has always printed — see computeTimingStats' own header for why the default is the other way.
+    const { overall, byCommand } = await computeTimingStats({ includeAdmin: true });
     const ackP = overall?.ackP || [null, null];
     const durP = overall?.durP || [null, null];
     if (!overall && !byCommand.length) {
@@ -809,8 +826,9 @@ async function buildTimingBody() {
     ];
 }
 
-async function buildTimingExport() {
-    const { overall, byCommand, byDep } = await computeTimingStats();
+async function buildTimingExport(stats) {
+    // same reasoning as buildUsageExport above.
+    const { overall, byCommand, byDep } = stats || await computeTimingStats({ includeAdmin: true });
     const ackP = overall?.ackP || [null, null];
     const durP = overall?.durP || [null, null];
     const lines = [
@@ -968,6 +986,9 @@ module.exports = {
     buildChangeDetailBody,
     buildUsageExport,
     buildTimingExport,
+    // Exported for the WEB PORTAL's Analytics dashboard, which needs the numbers rather than the rendered text. ⚠️ computeHealthStats is deliberately NOT here: it takes a discord.js `client` and reads client.ws.status plus this process's RSS, and the portal is a SEPARATE systemd unit with no gateway connection -- calling it there would report the portal's own health while looking like the bot's. portal/api/analytics.js derives health from Mongo instead and says so.
+    computeUsageStats,
+    computeTimingStats,
     buildAdminListBlocks,
     buildAdminGrantModal,
     buildAdminEditPermissionsModal,

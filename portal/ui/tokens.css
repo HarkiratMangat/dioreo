@@ -1,62 +1,366 @@
-/* portal/ui/tokens.css
+/* portal/ui/tokens.css — THE design tokens, adopted whole from the interactive mockup 2026-08-25.
  *
- * The portal's palette — "blued steel" (spec §9), distinct from the public site's violet-graphite
- * (legal) and green-black (chronicle) while obviously the same house.
+ * This file used to define 24 variables; the mockup's defined 95, and the two shared only 20. That
+ * gap was the design gap in miniature — the portal was styled against a stub of its own token
+ * system, so every surface built here started from less vocabulary than the approved design had.
+ * Per docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md the design moves onto the
+ * code rather than the other way round, and tokens are the first thing to move because they are
+ * pure CSS: nothing about them depends on which paradigm renders the markup.
  *
- * ⚠️ ONE :root BLOCK, DELIBERATELY. scripts/buildLegalPages.js's contrastAudit() reads `--name: #hex`
- * declarations and has previously shipped a gate that silently matched only the FIRST :root{} block
- * in a file — 63 pairs passed while three signals sat at 1.47:1. Splitting these tokens across two
- * :root blocks would reproduce that exact defect against a different file.
+ * ⚠️ ONE :root BLOCK, DELIBERATELY — carried over from both files' own headers, which independently
+ * record the same trap. scripts/buildPortal.js's portalContrastAudit() (and buildLegalPages.js's
+ * before it) reads `--name: #hex` declarations from the FIRST :root{} block it matches; splitting
+ * these across two blocks has previously let 63 pairs pass while three signals sat at 1.47:1.
+ *
+ * ⚠️ THE FOUR LEGACY ALIASES AT THE BOTTOM ARE LOAD-BEARING. --gut/--hdr/--radius/--rail are
+ * referenced 29 times across the existing per-realm stylesheets in portal/ui/. They are kept as aliases onto the
+ * mockup's equivalents rather than find-and-replaced, because a rename touching ten stylesheets in
+ * the same change that swaps the whole palette makes any resulting defect unattributable. They
+ * retire per realm, as each realm's CSS is migrated.
  */
+/* 🔴 THE ORPHANED COMMENT TAIL THAT USED TO SIT ON THE NEXT LINE COST A WHOLE PAGE OF TEXT.
+ * Adopting this token block was scripted as `src[src.index(':root'):]`, and the mockup file's OWN
+ * header comment contains the words ":root block, deliberately" — so the slice began mid-comment
+ * and left the tail of that sentence, comment-closer and all, sitting above the real rule. A CSS parser reads that as a
+ * SELECTOR and swallows the following `{ … }` as its body, so every token here silently ceased to
+ * exist and all 335 rendered elements fell back to black on the desk surface.
+ * ⚠️ Both static gates still passed: portalContrastAudit() regex-matches `:root\s*\{([^}]*)\}`
+ * against the file's TEXT, which is present and correct — it cannot see a cascade error. Only
+ * scripts/portalContrastRendered.test.js, which measures COMPUTED style on real elements, caught it.
+ * ⚠️ AND THIS COMMENT REPRODUCED THE BUG WHILE DESCRIBING IT: quoting the stray text verbatim put
+ * a literal comment-CLOSER inside this block, which ended it early and turned the prose that
+ * followed into an invalid selector that swallowed the whole token block a second time. Chrome
+ * reported one :root rule (the aliases) and every custom property resolved empty. Never quote a
+ * comment delimiter inside a comment -- and note that `portal/ui/` plus a wildcard spells an
+ * OPENER, which is why the sentence above no longer writes it that way.
+ * Anchor a slice on `^:root\s*\{`, never on a bare substring that prose can contain. */
 :root {
-    /* surfaces */
-    --desk: #0F1418;
-    --paper: #171E24;
-    --raised: #1F272E;
-    --sunk: #0B0F12;
-    --rule: #2A343D;
+  /* surfaces */
+  --desk:#0F1418; --paper:#171E24; --raised:#1F272E; --sunk:#0B0F12; --hi:#232C34;
+  --rule:#2A343D; --rule2:#3A4752;
 
-    /* ink — text sits on --desk/--paper/--raised, never used as a fill */
-    --ink: #E8EDF1;
-    --ink2: #9DAAB4;
-    --ink3: #80909D; /* spec sect9 literally gives #6E7C87 here, which FAILS WCAG AA -- as low as
-       3.53:1 on --raised -- caught by actually running portalContrastAudit against real input
-       (Task 4 Step 4). Same blue-grey hue, scaled up (~1.16x per channel) to clear 4.5:1 against
-       every portal background with margin (4.61:1 on --raised, the worst case). Flagged as a
-       spec correction, not a silent edit -- see the portal build's audit log / final report. */
+  /* ── ink ── never used as a fill, and only THREE of these may carry text.
+   * Measured 2026-08-24 against every surface token: `--ink4` at #5C6A75 scored
+   * 3.02:1 on --paper and 2.55:1 on --hi, failing WCAG AA (4.5) in all 89 places it
+   * coloured text — across every page, including the two already reviewed. Solving for
+   * four AA-passing steps collapses two of them into each other: at this floor, on these
+   * surfaces, the scale only has room for three text tones. So it has three, stated
+   * rather than pretended:
+   *   --ink   primary        14.28:1 on --paper, 12.03 on --hi
+   *   --ink2  secondary       7.09:1 on --paper,  5.97 on --hi
+   *   --ink3  dim             5.35:1 on --paper,  4.50 on --hi  ← the floor, lifted from #80909D
+   * 🔴 --ink4 IS NOT A TEXT COLOUR. It is kept dark on purpose for the 11 places it draws
+   *    a border, a stroke or a fill, where contrast rules do not apply. Never write
+   *    `color:var(--ink4)` — use --ink3. */
+  --ink:#E8EDF1; --ink2:#9DAAB4; --ink3:#85939F; --ink4:#5C6A75;
 
-    /* signal — shape carries state, colour carries topic (spec §9); these three are the
-       state-signal exception: patch/warn/ok read as status regardless of topic accent */
-    --patch: #F2C230;
-    --warn: #FF7A45;
-    --ok: #3DDC97;
+  /* signal — state, readable regardless of topic accent */
+  --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
-    /* Season topic-accent tokens (gap audit §2.2) -- track.js's TOPIC_VAR and manifest.js's
-       row.topicVar both reference these by name; only --patch existed here before, so every
-       draw/returning/event/playlist bar fell through --topic-accent's own fallback to --raised,
-       a flat grey. Values read directly from the approved mockup (03-three-surfaces.html:10-11). */
-    --draw: #FF3430;
-    --ret: #337BA6;
-    --ev: #1F8A5E;
-    --play: #8A6BD1;
+  /* SEASON topic accents — colour carries TOPIC */
+  /* 🔴 THE MOCKUP'S SET, ADOPTED 2026-08-26 08:39 EDT (Harkirat: "Keep the mockup colors").
+   * These four had TWO sources that disagreed: this token block said red/blue/green/purple,
+   * while the mockup's own fixtures.js LANES array carried #AE72E0/#E8639B/#4A90D9/#2CC4C4 —
+   * and the mockup's Track rendered from `lane.bar`, i.e. from the FIXTURES. So every approved
+   * screenshot was painted by a fixture file while the design system said something else, and
+   * each was internally consistent, which is why nothing caught it until the two were rendered
+   * side by side. The tokens now carry the approved values and the fixture hexes agree with
+   * them exactly; production reads these, never a fixture. */
+  --draw:#AE72E0; --ret:#E8639B; --dw:#B06BA8; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
+  /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
+   * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
+   * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the
+   * fill, one lifted for ink, hue and saturation untouched because those ARE the identity.
+   * 🔴 Never write `color:var(--ev)`. Use --ev-ink. */
+  --ev-ink:#25A570;
+  /* 🔴 AND `--warn` HAS THE SAME PROBLEM ONE STEP LATER, closed 2026-08-25 16:3x EDT by
+   * measuring rather than by noticing it had stopped reporting. Broadcast's "never ends" chip
+   * painted `--warn` #FF7A45 at 9px on its own warn-tinted ground; the shipped audit reported
+   * 4.28:1 twice, stable, and then would not reproduce — because the audit's ground-walk does
+   * NOT composite a translucent background over what is beneath it, so the number it got
+   * depended on which ancestor the walk happened to land on. Composited correctly the true
+   * value is 4.53:1 — it PASSES, by 0.03, which is not a margin. Same fix as --ev-ink: one
+   * value for the fill, one lifted for ink, hue and saturation untouched. */
+  --warn-ink:#FF9E72;
 
-    /* geometry */
-    --radius: 6px;
+  /* ARMORY topic accents — the bot's real MP_CATEGORY_ACCENT values */
+  --ar:#FF3B5C; --smg:#FFD23F; --lmg:#845EC2; --mm:#3DDC97; --sn:#4361EE; --sg:#F6A93B; --sec:#3E6E8E;
 
-    /* the ink used ON TOP of a topic-accent fill -- design-system audit found 4 separate hardcoded #000/#000000 literals for this one concept across tokens.css/track.css/manifest.css/board.css */
-    --on-accent: #000000;
+  /* staged-state accent — only ever tints a shape that is ALREADY dashed/hollow */
+  --staged:#5FD4E8;
+  /* the three season deadlines are distinct TOPICS, so each gets its own hue;
+     they read as vertical dashed markers, never as lane bars */
+  --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
+
+  --dsc:#5865F2;                     /* Discord brand, door only */
+  /* ── REALM ACCENTS — one hue per realm, and the ONLY place they are written ──
+   * These existed as five hardcoded hexes inside index.html's CARDS array while four
+   * of the five were already tokens under other names (--draw, --patch, --ink2, --ev).
+   * A hex repeated across components is a token that has not been named yet — the
+   * design-system audit's own line, applied to the last place it had not reached.
+   * Three consumers now read them: the rail's hover wash, the masthead's LEAD figure,
+   * and Home's attention rows. Season is the bot's own Season End orange; Review's
+   * "topic" is the staged cyan, because the realm IS the staging area. */
+  --r-season:#F2994A; --r-armory:var(--draw); --r-broadcast:var(--patch);
+  --r-access:var(--info); --r-analytics:var(--ev); --r-review:var(--staged);
+
+
+  /* layout — the one place to override */
+  /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every
+     other size. These steps have real jumps and each has exactly one job. Tracking tightens
+     as size grows; every numeral is tabular.
+     🔴 THERE WERE TWO TYPE SCALES IN THIS FILE, BOTH IN :root, EACH UNDER A COMMENT CLAIMING TO
+     BE THE SCALE — and they COLLIDED on `--t-micro` (9.5px here, 9px below). The later one wins
+     in the cascade, so all 48 usages silently took 9px while this line said 9.5px. One quantity,
+     two authorities, at the level of the design system itself: every surface inherits it, and no
+     per-element rule could ever see it.
+     The DISPLAY end lives here (44/34/22 — the masthead figures, used 2/3/1 times) and the UI
+     end lives in the block below (9→24px, where `--t-sm` alone is used 55 times). They are one
+     scale in two ranges, not two scales, and `--t-micro` belongs to the range that uses it. The
+     three names this block no longer defines — body, label, micro — were the duplicated half. */
+  --t-display:44px; --t-figure:34px; --t-h1:22px;
+
+  /* ── THE DISPLAY VOICE — two faces, four declarations, nothing else ──
+     Until 2026-08-25 one family set both a 9px label and a 44px figure, which is a UI face
+     doing display work because there was nothing else. These are deliberately NOT applied
+     broadly: the title face touches CONTENT names only, the figure face touches the masthead
+     sites, and everything from --t-hero down stays Space Grotesk. Restraint is the design,
+     not a compromise on it — a third and fourth family appearing five times a screen.
+     🔴 BOTH FALL BACK TO --ui ON PURPOSE. If a webfont fails, the masthead degrades to
+     exactly what it looked like before this change rather than to a stranger.
+     ⚠️ `--title` ships ONE weight (400). Never write a font-weight against it. */
+  /* 🔴 THE RULE, AND IT IS SAYABLE IN ONE LINE:
+   *      THE SERIF NAMES THINGS THE BOT HOLDS. THE CONDENSED FACE NAMES THINGS THE PORTAL IS.
+   * Instrument Serif carried every realm page title until 2026-08-25 17:4x EDT. Harkirat:
+   * "it doesn't fit the vibe of the portal at all. it's an accessory/accent font only, not the
+   * main typeface." He is right, and the reason is worth writing down: a high-contrast display
+   * serif is a MAGAZINE voice, and this portal is an INSTRUMENT — a mono data grid, condensed
+   * gauge figures, a time axis, a permission matrix. The serif was a headline pretending to be
+   * a console, which is exactly why it read as borrowed.
+   * It keeps one job, and it is the job it is good at: naming CONTENT. A season is a thing with
+   * a name someone chose ("Season 7 — Terminated"); "Access" is a page. The serif gets the first
+   * and never the second, so its presence now MEANS something instead of being decoration. */
+  --title:"Instrument Serif",Georgia,"Times New Roman",serif;   /* CONTENT names only — never chrome */
+  /* The portal's own voice. Condensed grotesque reads as a gauge at 44px and as a stencil in
+   * caps at 34px, which is the CODM vernacular without costuming — and it is a face the system
+   * ALREADY had, so this change REMOVES a family from the chrome rather than adding one.
+   * ⚠️ Chrome now has one display voice in two registers: FIGURES at --t-display, weight 700,
+   * in the realm's accent · REALM TITLES at --t-figure, weight 700, uppercase, in plain ink.
+   * The figure is bigger AND coloured, so the number leads and the title labels it — which is
+   * the masthead grammar (§16.3) already applied to type instead of to colour. */
+  --display:"Big Shoulders Display",var(--ui);                  /* figures AND realm titles */
+  --tr-title:-.006em;                                           /* a serif does not want the grotesque's tight tracking */
+  --tr-fig:.004em;                                              /* condensed wants air; the one positive step in the scale */
+  --tr-display:-.028em; --tr-figure:-.02em; --tr-h1:-.015em; --tr-micro:.1em;
+
+  /* MOTION — one easing, three durations. Motion earns its place by explaining where
+     something came from; anything that is not doing that stays a colour fade. */
+  --ease:cubic-bezier(.2,.8,.3,1);
+  --dur-1:130ms;   /* state    */
+  --dur-2:180ms;   /* transition */
+  --dur-3:320ms;   /* entrance */
+  /* ── LIVELINESS — feel, expressed as four numbers rather than per-component taste ──
+   * Harkirat's definition: "breathing life into elements — subtle glows, tints,
+   * animations upon clicking, elements dynamically changing on behaviour."
+   * 🔴 The lifted card and the hover tint are ONE mechanism at two strengths, not two
+   * effects. Kept as tokens because the alternative is what the shape scale turned into:
+   * 29 values, each individually reasonable. */
+  --tint-hover:9%;    /* topic colour mixed into a surface on hover        */
+  --tint-lift:14%;    /* …and on a lifted card, where the edge also lights */
+  --lift:2px;         /* how far a card rises. Any further reads as a modal */
+  --press:1px;        /* how far a control sinks under a finger            */
+  --dur-toast-in:460ms;  /* a toast ARRIVES slowly enough to be read as motion */
+  --dur-toast-out:260ms; /* …and leaves faster than it came, or it reads as stuck */
+  --ease-soft:cubic-bezier(.22,1,.36,1);  /* long travel, no overshoot spike */
+
+  --rail-w:76px; --hdr-h:52px; --gap:14px;
+
+  /* SHAPE SCALE — the same defect as the type scale above, one level out and never checked.
+     Measured 2026-08-25: **308 `border-radius` declarations across 29 DISTINCT values** — 1px,
+     1.5px, 2px, 2.5px, 3px, 4px, 5px, 6px, 7px, 8px, 9px, 10px, 11px, 12px, 14px, 20px … — while
+     `--rad` existed and carried only 44 of them. Eight steps inside a 1–9px band is not a scale;
+     it is noise, and it is exactly what tokens.css's own type comment warns about ("a dashboard
+     fails typographically when every size is within 4px of every other size") applied to corners
+     instead of text. Nothing could see it: every audit rule asks `for each element, is P true?`,
+     and no per-element question can notice that 29 answers disagree.
+     Three steps, plus two SEMANTIC values that are not steps at all — a pill and a circle are
+     shapes, not sizes, and folding them into a scale is how a pill becomes a rounded rectangle.
+     Steps sit at the population centroids so the collapse moves most declarations by 0–1px.
+     🔴 Enforced by `.schema-gate.mjs`'s `radius-scale`, so a 30th value cannot appear. */
+  --rad-1:3px;        /* chips, ticks, tags, tiny controls — boxes under ~24px */
+  --rad-2:6px;        /* the DEFAULT: buttons, inputs, cards, panels */
+  --rad-3:10px;       /* large containers: drawers, modals, the ⌘K palette */
+  --rad-round:50%;    /* circles — avatars, dots, status beads */
+  --rad-pill:999px;   /* pills — a radius that always exceeds half the height */
+  --tap:44px;                        /* minimum touch target */
+
+
+  /* ── derived / semantic, added by the design-system audit ──────────────
+   * The audit found 5 uses of #07090A, 2 of #1C242A and a danger pair, all
+   * hardcoded. A hex repeated across components is a token that has not been
+   * named yet — naming it is what stops the sixth use drifting. */
+  --on-accent:#07090A;      /* ink ON a filled accent — never on a surface */
+  --rule3:#1C242A;          /* the faint row rule, one step under --rule */
+  --danger-ink:#FF8A85;     /* destructive TEXT — a fill would need solveOn() */
+  --danger-edge:#54322F;
+  --avatar-a:#3A4C5A;
+
+  /* ── Discord's OWN palette, deliberately foreign ───────────────────────
+   * The preview card must look like Discord, not like the portal, or it stops
+   * being a truthful preview. Namespaced --dc-* so a future reader can see
+   * these are intentionally outside the portal's system rather than leftovers. */
+  --dc-bg:#2B2D31; --dc-ink:#F2F3F5; --dc-body:#DBDEE1; --dc-mute:#B5BAC1;
+  --dc-dim:#949BA4; --dc-rule:#3A3C41; --dc-sunk:#1E1F22;
+
+  /* ── type scale, UI range ──────────────────────────────────────────────
+   * The audit found ELEVEN distinct px font-sizes and no scale. These are the
+   * same values, named, so a twelfth cannot be invented by accident.
+   * This is the range everything actually uses — `--t-sm` 55 times, `--t-micro` 48, `--t-xs` 23,
+   * `--t-md` 22. The display range (44/34/22) is declared above and used five times in total,
+   * on the mastheads. `--t-body` and `--t-label` were a THIRD set of names for 13.5px and 11px,
+   * which `--t-md` and `--t-sm` already covered; they are gone rather than aliased, because an
+   * alias is a second name for one value and that is how this collided in the first place. */
+  --t-micro:9px; --t-xs:10px; --t-sm:11.5px; --t-base:12.5px;
+  --t-md:13.5px; --t-lg:15px; --t-xl:19px; --t-hero:24px;
+
+  --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
+@media (max-width:768px){ :root{ --rail-w:0px; --hdr-h:48px; } }
+
+/* ── legacy aliases — see the header. Retire per realm as each stylesheet migrates. ── */
+:root {
+  --radius: var(--rad-2);   /* 6px, the value it always held */
+  --rail:   var(--rail-w);
+  --hdr:    var(--hdr-h);
+  --gut:    24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   THE BASE LAYER — kept verbatim from this file's previous version.
+   🔴 IT WAS DROPPED ONCE, ON 2026-08-25, by replacing this file wholesale with the mockup's
+   tokens.css. That file is tokens ONLY; this one has always been tokens PLUS a base layer, and
+   losing it left `button.dismiss` at 1.13:1 — black on the desk surface, because nothing styled a
+   bare control any more. scripts/portalContrastRendered.test.js caught it, which is the one gate
+   here that measures RENDERED elements rather than the token table, and the only one that could
+   have. The lesson generalises to the rest of the migration: a file's NAME is not its contents.
+   ───────────────────────────────────────────────────────────────────────────── */
 
 body {
     background: var(--desk);
     color: var(--ink);
     font-family: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    margin: 0;
 }
 
 /* Every date, count, id and code is mono so numerals align in columns (spec §9). */
 .mono, .track-ruler, .track-date, .board-id, .manifest-cell[data-kind="date"],
 .manifest-cell[data-kind="id"], .manifest-cell[data-kind="code"] {
     font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORM CONTROLS — the base state, which did not exist before this pass.
+   🔴 STYLED AS ELEMENTS, NEVER AS CLASSES, and that is a decision not a shortcut.
+   The gap audit's §4 completeness table recorded "Form inputs | Default ✅ | Hover not found |
+   Disabled not found". The "Default ✅" was wrong: measuring getComputedStyle on the live page
+   found #grant-discordid at background rgb(255,255,255), colour #000, border 2px inset, Arial,
+   21.5px tall -- browser chrome, a white box on a near-black page. Enumerating every rule in the
+   whole stylesheet whose selector touches input|select|textarea|button returned FIVE: .srch input,
+   td input, .bulk button, .v2-card .v2-row button, .tray-item button. Everything else was unstyled.
+   There are ~20 bare control call sites across six files; a class-based fix is one you can forget
+   at the 21st, an element selector cannot be. These also sit at LOWER specificity than the existing
+   .accent-fill/.danger/.commit modifiers, so nothing that already worked changes.
+   ⚠️ font-family is set explicitly because form controls do NOT inherit it -- that is why the one
+   search input that WAS styled still rendered in Arial. */
+input, select, textarea, button {
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    /* Tokenised for the third time and for the same reason: the design's whole button rule is
+       `cursor;background:none;border:0;color:inherit;font:inherit` — no radius at all — so this
+       reached every bare button the design leaves square, sixteen of them on Repairs alone. */
+    border-radius: var(--ctl-rad, 5px);
+    /* Tokenised for the same reason the height floor is: the design has no control reset at all, and
+       this padding reached every bare button the design sizes itself — the table's remove control among
+       them, 7px against the design's 1px on thirty-nine rows. */
+    padding: var(--ctl-pad, 7px 10px);
+    /* ⚠️ TOKENISED SO THE STAND-DOWN CAN TURN IT OFF WITHOUT MOVING ITS SPECIFICITY. This whole
+       control reset is the portal's own — the design's stylesheet has no equivalent — and its
+       32px floor silently raised every button the design sizes itself, the Track's zoom controls
+       from 26px to 32px among them. Wrapping the block in a :not() selector would fix the height
+       and break something else, because the reset deliberately sits BELOW every component rule and
+       a :root guard would lift it above them. A variable changes the value and nothing else. */
+    min-height: var(--ctl-min, 32px);   /* dense on desktop, per spec §7; 44px on phone, below */
+    box-sizing: border-box;
+}
+
+/* 🔴 `min-height` BEATS `height` REGARDLESS OF SPECIFICITY, and the reset above is what stretched the
+   Access matrix's cells — a component rule saying a height looked correct and was being overruled
+   by a property it does not compete with. The reset exists for touch targets and stays; the matrix
+   is a dense twelve-column grid where a 44px cell fits on no laptop, and the adopted stylesheet
+   sizes it deliberately. State the exception rather than raise the specificity of a rule that was
+   never losing on specificity.
+   ⚠️ `0`, NOT A NUMBER. The adopted app.css declares `.mxcell` TWICE — 26x26 inline-grid at one
+   point and 16x16 block 800 lines later, two generations of the same component in one file, with
+   the later one winning. Writing 26 here pinned the height to the LOSING declaration's value and
+   produced a 16x26 cell: a third authority over a size that already had two. Zero defers to
+   whichever of them wins, which is the only answer that stays correct if that ever changes. */
+.mxcell { min-height: 0; }
+
+/* The stand-down: under ?conform=1 the control reset's own floor goes to zero, so a button is the
+   height the design's component rules give it. Every explicit min-height in app.css still applies —
+   only the blanket floor stands down. */
+/* `auto`, not `0px`: the design has no floor at all, and zeroing it made the masthead type pills
+   report a 0px minimum where the design reports auto — a second wrong answer replacing the first. */
+/* `revert`, not `0`: with no reset the design's bare buttons take the browser's own 1px 6px, and
+   zeroing it replaced one wrong padding with another on thirty-nine remove controls. */
+/* The browser's own button padding, written out. `revert` inside a var() is invalid at computed-value
+   time and silently took the fallback, which is the value being stood down — a stand-down that quietly
+   does nothing is worse than none, because the number moves and the cause looks like something else. */
+:root { --ctl-min: auto; --ctl-pad: 1px 6px; --ctl-rad: 0; }
+button {
+    background: var(--raised);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+button:hover:not(:disabled) { background: var(--rule); border-color: var(--ink3); }
+input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: var(--ink3); }
+input:disabled, select:disabled, textarea:disabled, button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+input::placeholder, textarea::placeholder { color: var(--ink3); }
+select { padding-right: 6px; }
+
+/* The loading state the audit found nowhere. aria-busy is the accessible signal AND the styling
+   hook, so a control can never look busy without announcing it. */
+button[aria-busy="true"], [aria-busy="true"] button {
+    color: transparent;
+    pointer-events: none;
+    position: relative;
+}
+button[aria-busy="true"]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 13px; height: 13px;
+    border: 2px solid var(--ink3);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    animation: portal-spin .7s linear infinite;
+}
+@keyframes portal-spin { to { transform: rotate(360deg); } }
+
+/* Reduced motion: five of the six mockups carry this and none of it reached the build (gap audit
+   §2.1). A spinner that cannot spin still has to READ as busy, so it keeps its ring. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    button[aria-busy="true"]::after { border-top-color: var(--patch); }
 }
 
 /* SHAPE carries state — solid fill = live, hollow dashed = staged, diagonal hatch = conflict.
@@ -66,22 +370,50 @@ body {
     border: 1px solid var(--rule);
 }
 .bar.live {
-    background: var(--topic-accent, var(--raised));
+    /* 🔴 THE INK LIVES HERE NOW. It used to be track.css's `.bar.live{color:var(--on-accent)}` — a
+       cross-realm dependency nothing declared: Broadcast's Airtime rail emits `bar live/stag/exp`
+       (broadcast.js) and was silently borrowing the Track's stylesheet for its text colour. When
+       track.css was replaced with the adopted design (which keys on saved/staged/conflict), every
+       Airtime bar fell back to --ink on its own accent fill — 1.42:1 on --patch. Caught by
+       portalContrastRendered.test.js, invisible to everything else.
+       broadcast.js only stamps --topic-accent when the announcement carries a stored colour, hence
+       the --patch fallback rather than --raised under black ink. */
+    background: var(--topic-accent, var(--patch));
+    color: var(--on-accent);
     border-style: solid;
 }
 .bar.stag {
+    color: var(--ink);
     background: transparent;
     border: 1px dashed var(--topic-accent, var(--ink3));
 }
 .bar.conf {
+    color: var(--warn);
     background: repeating-linear-gradient(45deg, var(--topic-accent, var(--warn)) 0 4px, transparent 4px 8px);
     border-color: var(--warn);
+}
+.bar.exp {
+    /* MUTED, distinct from .stag's hollow dash — an expired announcement is done, not pending.
+       Flattened to --ink3 rather than the topic accent, at reduced opacity, so it reads as inert. */
+    background: var(--ink3);
+    border-style: solid;
+    border-color: var(--ink3);
+    opacity: .5;
 }
 
 /* The accent is a FILL, never a text colour (proven floor 4.58:1 with #000 ink — see the
    /commands page's own history of solving an embed hue into readable text and getting brown). */
 .accent-fill {
-    background: var(--topic-accent, var(--raised));
+    /* 🔴 THE FALLBACK IS --patch, NOT --raised, AND THAT IS THE LOGIN BUTTON'S BUG STILL LATENT.
+       This rule pairs a topic FILL with --on-accent (#000). Measured 2026-08-23 16:07 EDT: #000 ink
+       clears AA on every real topic accent (--ret 4.52:1 is the floor, --patch 12.53:1 the ceiling)
+       and fails only on a SURFACE -- 1.39:1 on --raised. So falling back to --raised produced black
+       text on dark grey on any element where nothing set --topic-accent, which is exactly what the
+       gap audit's §2.3 found on the door. Phase 2 fixed the door with its own rule and left this one
+       intact, so every Stage button in season.js/armory.js/broadcast.js (outside .mtools, so nothing
+       overrode the background) was still rendering at 1.39:1. Falling back to a real accent makes
+       the pairing safe by construction rather than by every caller remembering. */
+    background: var(--topic-accent, var(--patch));
     color: var(--on-accent);
 }
 
@@ -100,18 +432,33 @@ body {
     color: #fff;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    border: 0;
 }
+.door .door-cta:hover { background: #4752C4; }
 
 /* Accessibility review findings: no visible focus indicator anywhere, and every input relied on
    placeholder text alone (WCAG 2.4.7 / 3.3.2) -- the approved mockup HAD a focus-visible rule that
-   did not make it into this file. */
+   did not make it into this file. Confirmed keyboard-reachable with a real Tab sequence by the gap
+   audit's Phase 1 addendum, so this is a working rule and not just a present one. */
 :focus-visible {
     outline: 2px solid var(--patch);
     outline-offset: 2px;
 }
-.sr-only {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-}
+/* 🔴 `.sr-only` WAS THIS FILE'S NAME FOR `.sr`, WHICH THE ADOPTED SHEET ALREADY DECLARES — two
+   identical visually-hidden rules for one job, and the markup used the one the design does not.
+   The rule is gone rather than aliased: an alias is the duplicate with a comment on it. */
 
+/* Below 900px every control gets a 44px minimum. Measured before this rule existed: EVERY control
+   on EVERY realm was under 44px -- 48 of 48 on Season, 145 of 145 on Armory, 106 of 106 on
+   Analytics. Not "some are small"; none were big enough. One rule, not a per-component fix. */
+@media (max-width: 900px) {
+    input, select, textarea, button { min-height: 44px; }
+    /* 🔴 16px, not 15px, and only on the TEXT-ENTRY controls. iOS Safari auto-zooms the page when a
+       focused input/select/textarea has a computed font-size below 16px, and that zoom does not
+       reverse on blur -- it strands the user at a scrolled-in viewport. Buttons never trigger it,
+       so they stay at 15px and a dense bulk bar still fits four across 375px. */
+    input, select, textarea { font-size: 16px; }
+    button { font-size: 15px; }
+}

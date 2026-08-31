@@ -1,0 +1,29 @@
+# scripts/cloudflared-dev-config.yml — the DEV tunnel, installed to ~/.cloudflared/dioreo-dev.yml on
+# Harkirat's Mac. Tracked so the setup is reproducible; it holds NO secret. Run it with:
+#
+#   cloudflared tunnel --config ~/.cloudflared/dioreo-dev.yml run
+#
+# 🔴 ONE LEVEL DEEP, NOT TWO — the mistake this file exists to stop anyone repeating. The first
+# attempt used `dev.portal.dioreo.app` and every request died with an SSL handshake failure before it
+# reached anything. Cloudflare's Universal SSL certificate covers `dioreo.app` and `*.dioreo.app` and
+# NOTHING BELOW THAT, read straight off the live certificate (DNS:dioreo.app, DNS:*.dioreo.app), so a
+# third-level name has no certificate at the edge at all. A multi-level wildcard needs the paid
+# Advanced Certificate Manager, which is not worth buying for a dev hostname. `dev-portal` is one
+# label and the wildcard covers it.
+#
+# ⚠️ THE PORT IS A LITERAL, same as the prod config next to this file: cloudflared does no env-var
+# substitution, so a "${PORTAL_PORT}" here dials a host by that literal name and 502s every request.
+# Kept in sync BY HAND with PORTAL_PORT in .env.dev; nothing warns you if they drift.
+#
+# ⚠️ Two different credentials, two different jobs. `~/.cloudflared/cert.pem` is what `tunnel create`
+# and `tunnel route dns` authenticate with; the per-tunnel `<uuid>.json` named below is what `tunnel
+# run` uses. Revoking the first does not stop a running tunnel.
+#
+# Outbound only. No inbound firewall rule, no port forwarding, and the Mac's address is never named.
+tunnel: e1622a09-107f-407b-b137-94c4581400c3
+credentials-file: /Users/harkirat/.cloudflared/e1622a09-107f-407b-b137-94c4581400c3.json
+
+ingress:
+  - hostname: dev-portal.dioreo.app
+    service: http://127.0.0.1:8787
+  - service: http_status:404

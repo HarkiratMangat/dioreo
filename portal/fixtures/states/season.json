@@ -1,0 +1,267 @@
+{
+  "surface": "Season",
+  "note": "Registered while walking Season in Part 1 of the conformance pass (2026-08-28). Every `expect` here is a selector observed on the page after the steps ran, captured by diffing the document's class set before and after — never guessed, because a state that cannot name its own subject reports a clean result for the DEFAULT view. The one-way strip is exercised in both directions: with the destroy capability and without it, because `Shell.canDestroy()` is the single authority and a strip that says owner-only while leaving a button live is the defect COMPANION §15.11 names.",
+  "states": [
+    {
+      "name": "identity · expanded editor",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".idsum"
+        }
+      ],
+      "known": [],
+      "expect": ".identity:not(.collapsed) .dlines .dline"
+    },
+    {
+      "name": "identity · editing the next season",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".idsum",
+          "waitMs": 700
+        },
+        {
+          "clickText": {
+            "sel": ".lnsw button",
+            "text": "Next"
+          },
+          "waitMs": 500
+        }
+      ],
+      "known": [],
+      "expect": ".identity.editing-draft .draftnote"
+    },
+    {
+      "name": "identity · closed again from the header's dead space",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".idsum",
+          "until": ".idhead"
+        },
+        {
+          "click": ".idhead",
+          "until": ".identity.collapsed .srec-grid"
+        }
+      ],
+      "known": [],
+      "expect": ".identity.collapsed .srec-grid"
+    },
+    {
+      "name": "view · Board (the changeset pipeline)",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "[role=\"tablist\"] button",
+            "text": "Board"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".bcols .bcol-body"
+    },
+    {
+      "name": "view · Repairs",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": "[role=\"tablist\"] button",
+            "text": "Repairs"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".repwrap .repgrp .repnote"
+    },
+    {
+      "name": "Track · the window range on the view bar, and the overview scrubber",
+      "realm": "season",
+      "flags": {},
+      "known": [],
+      "expect": ".ph .sp",
+      "note": "The zoom instruction moved onto the zoomer as a tooltip rather than sitting in the chrome as a permanent sentence — it was crowding out the window range, which is what season.html puts at the far right of this bar. This state's `expect` caught that change rather than walking past it, which is the whole reason a state names its own subject."
+    },
+    {
+      "name": "Track · a lane collapsed to its summary",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".lnh"
+        }
+      ],
+      "known": [],
+      "expect": ".lane.lnc .lsum"
+    },
+    {
+      "name": "Track · a stemmed bar label",
+      "realm": "season",
+      "flags": {},
+      "known": [],
+      "expect": ".bar.stemmed .bl"
+    },
+    {
+      "name": "Track · the crosshair follows the pointer",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "hover": ".tk-inner"
+        }
+      ],
+      "known": [],
+      "expect": ".tk-inner"
+    },
+    {
+      "name": "composer · a new draw",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".mh-t",
+            "text": "Draw"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".nwhost .nw-form .nw-f-name"
+    },
+    {
+      "name": "composer · the paste box",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".mh-t",
+            "text": "Event"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".nwhost .nw-paste"
+    },
+    {
+      "name": "day drawer · what runs on one day",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".chip",
+            "text": "Open a day"
+          }
+        }
+      ],
+      "known": [],
+      "expect": ".drawer .daylist"
+    },
+    {
+      "name": "manifest · the selection bar",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mtable tbody .cb[role=checkbox]"
+        }
+      ],
+      "known": [],
+      "expect": ".selbar .selbar-a"
+    },
+    {
+      "name": "manifest · a search that matches nothing",
+      "realm": "season",
+      "flags": {},
+      "steps": [
+        {
+          "type": {
+            "sel": ".srch input",
+            "text": "zzzznomatch"
+          },
+          "waitMs": 900
+        }
+      ],
+      "known": [],
+      "expect": "main p.empty",
+      "preSettleMs": 1200,
+      "note": "preSettleMs because the manifest's search box does not exist until the realm's data has landed; typing into a selector that is not there yet is a step that silently does nothing, and `expect` is what turns that into a failure instead of a clean pass."
+    },
+    {
+      "name": "one-way · the strip with the capability",
+      "realm": "season",
+      "flags": {
+        "destroy": "1"
+      },
+      "known": [],
+      "expect": ".ow .ow-i button"
+    },
+    {
+      "name": "one-way · every row present and legible without the capability",
+      "realm": "season",
+      "flags": {
+        "owner": "0"
+      },
+      "known": [],
+      "expect": ".ow .ow-i"
+    },
+    {
+      "name": "a draft is staged",
+      "realm": "season",
+      "flags": {
+        "draft": "1"
+      },
+      "known": [],
+      "expect": ".lane[data-draft=\"1\"]",
+      "note": "A staged draft shows as its own rail below the divider, five lanes deep. `.srec-state.staged` was the first guess and is wrong: that class marks the record while you are EDITING the draft, not while one merely exists."
+    },
+    {
+      "name": "the page could not load",
+      "realm": "season",
+      "flags": {
+        "fail": "season"
+      },
+      "known": [],
+      "expect": ".failbox .fail-a",
+      "note": "`.fail-a` is the way out. A failure state that names what happened and offers nothing is the pattern COMPANION §10.6 bans, so the action is the part worth asserting."
+    },
+    {
+      "name": "offline · the network banner",
+      "realm": "season",
+      "flags": {
+        "fail": "offline"
+      },
+      "known": [],
+      "expect": ".netbar.offline[role=alert]",
+      "note": "🔴 THE FLAG IS `?fail=offline`, NOT `?offline=1`. async.js's own header and the conformance plan's flag list both name a bare `?offline=` parameter; stub.js has never read one. `?offline=1` renders the ordinary page, so a state registered under it would have walked the DEFAULT view and passed."
+    },
+    {
+      "name": "slow · the skeleton in the shape of the content",
+      "realm": "season",
+      "flags": {
+        "slow": "4000"
+      },
+      "known": [],
+      "expect": ".skel",
+      "preSettleMs": 4200,
+      "settleMs": 300,
+      "note": "`slow` delays EVERY request including the session, so at 900ms the skeleton on screen says 'Signing in…' — the door's, not the realm's. preSettleMs past the session leaves the realm's own request in flight, which is the state this is for: it reads 'Loading…'."
+    },
+    {
+      "name": "reduced motion · the Track holds still",
+      "realm": "season",
+      "flags": {},
+      "reduceMotion": true,
+      "known": [],
+      "expect": ".tk-inner"
+    }
+  ]
+}

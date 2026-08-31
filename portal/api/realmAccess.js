@@ -9,7 +9,7 @@ async function grantedPagesFor(discordId, allowedPages) {
     return pages.filter((p) => allowedPages.includes(p));
 }
 
-// Which of the 5 realms this admin can even see. Access and Analytics aren't page-scoped (Access is owner-only; Analytics gates on the 'bot' command token), so they're resolved separately from the page-based realms.
+// Which realms this admin can even see — the five places to work, plus Review, which is not one of them (see portal/ui/shell.js's Rail). Access and Analytics aren't page-scoped (Access is owner-only; Analytics gates on the 'bot' command token), so they're resolved separately from the page-based realms.
 async function visibleRealms(discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES }) {
     const owner = isOwner(discordId);
     const pages = await getManagePages(discordId);
@@ -19,7 +19,23 @@ async function visibleRealms(discordId, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_
     if (pages.some((p) => BROADCAST_PAGES.includes(p))) realms.push('broadcast');
     if (owner) realms.push('access');
     if (owner || (await hasCommandAccess(discordId, 'bot'))) realms.push('analytics');
+    // Review is not page-scoped and deliberately has no gate of its own: it shows an admin THEIR OWN staged work and nothing else, so anyone who can stage anything must be able to reach the only screen that commits it. Gating it separately would let an admin stage a change they could then never commit — the ops themselves are still checked per-op at commit time by assertOpsAccess.
+    if (realms.length) realms.splice(3, 0, 'review');
     return realms;
 }
 
-module.exports = { grantedPagesFor, visibleRealms };
+// Which realm a permission scope BELONGS to, from the same page lists visibleRealms uses — so the colour a scope wears in the Access grid is the colour of the realm it actually governs, and the two cannot drift into disagreeing about which realm owns a page.
+//
+// ⚠️ `manage` RETURNS NULL ON PURPOSE. The bare token spans every page in every realm, so tinting it with one realm's accent would state something false about the most consequential token in the model. Null is "no single realm", which the grid renders as neutral ink rather than as a colour it had to pick.
+function realmForScope(key, { SEASON_PAGES, ARMORY_PAGES, BROADCAST_PAGES }) {
+    if (key === 'bot') return 'analytics';
+    if (key === 'autobuild') return 'armory';
+    if (!key.startsWith('manage.')) return null;
+    const page = key.slice('manage.'.length);
+    if (SEASON_PAGES.includes(page)) return 'season';
+    if (ARMORY_PAGES.includes(page)) return 'armory';
+    if (BROADCAST_PAGES.includes(page)) return 'broadcast';
+    return null;
+}
+
+module.exports = { grantedPagesFor, visibleRealms, realmForScope };

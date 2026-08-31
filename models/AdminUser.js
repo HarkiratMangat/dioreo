@@ -11,7 +11,7 @@ const adminUserSchema = new mongoose.Schema({
     // owner in practice, since only ALLOWED_ADMIN_ID may grant/revoke/edit-permissions (see utils/adminAccess.js).
     grantedAt: { type: Date, default: Date.now },
     note: { type: String, default: '' }, // optional label the owner can add when granting (e.g. a name)
-    // Per-command access (added 2026-08-13) -- subset of utils/adminAccess.js's ADMIN_COMMANDS ('manage'/'bot'/'autobuild'). Always non-empty -- an admin with zero permissions should be revoked, not left in a zero-permission limbo state.
+    // Per-command access (added 2026-08-13) -- subset of utils/adminAccess.js's ADMIN_COMMANDS ('manage'/'bot'/'autobuild'/'destructive'), plus 'manage.<page>' scopes. Always non-empty -- an admin with zero permissions should be revoked, not left in a zero-permission limbo state. ⚠️ 'destructive' (2026-08-25) is the odd one: it names no surface, it grants the right to run operations that cannot be undone on ALL of them. `all` deliberately does not expand to it (see NOT_IN_ALL in utils/adminAccess.js), so it can only arrive here by being typed.
     permissions: { type: [String], required: true }
 });
 

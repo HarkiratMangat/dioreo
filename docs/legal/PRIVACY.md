@@ -7,7 +7,7 @@ published: true
 # Privacy Policy — Dioreo
 
 **Effective date:** on the Dioreo v3 release — this version is not yet in effect
-**Version:** 1.13 (pending)
+**Version:** 1.14 (pending)
 **Applies to:** the Dioreo Discord application (the "Bot") and this documentation website (the "Site")
 
 
@@ -491,7 +491,7 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 **Preferences**
 - `timezone`, `timestampStyle`
-- `loadoutVisibility`, `seasonalVisibility`, `timestampVisibility`, `settingsVisibility`
+- `loadoutVisibility`, `seasonalVisibility`, `timestampVisibility`, `settingsVisibility`, `colorsVisibility`
 - `defaultRegion`, `defaultRegionMode`
 - `calendarEventFilter`
 - `accentColorStyle`
@@ -535,6 +535,9 @@ Every field stored about a user. This mirrors the `UserPreference` schema, which
 
 
 ## Appendix B — Change history
+
+
+**1.14 — 2026-08-31.** Added `colorsVisibility` to Appendix A. `/colors` gained its own response-visibility preference, detached from `/settings`, so the schema stores a fifth per-user visibility field. No new CATEGORY of data is collected — it is one more value of a kind already described in §2 — but the appendix claims to be a complete transcription of the schema, so an unlisted field made the published policy inaccurate about live data collection. Caught by `docs-audit`'s `privacy-inventory` check after the change had already merged from a sibling branch, which is the case that check exists for.
 
 | Version | Date | Change |
 |---|---|---|
