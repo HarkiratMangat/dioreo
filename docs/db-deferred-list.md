@@ -848,6 +848,26 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Verify:** `rg -c 'conforming\(\)' portal/ui/*.js` and `rg -c 'data-conform' portal/ui/app.css` both reach zero except for deliberate (b)/(c) keeps that carry a comment naming which; the Season conform figures are unchanged from their pre-collapse values; and no doc still describes `?conform=1` as a live mode.
 
+### 🔴 A PATCH-NOTE ROW CAN NOW BE RENAMED AND REMOVED THROUGH A DRAW'S OP PATH `P0 · S · Opus5-High`
+**Introduced 2026-08-31 by me, found the same day by an adversarial pass rather than by any gate.** Removing the `dataset.conform` gate on `toManifestRows`' patch-note block was correct on composition grounds — the design lists them and excluding them made the portal contradict its own export. **But the gate was doing TWO jobs**, and the second was keeping publications out of an action surface.
+
+- `buildSeasonEditOp` branches only on `isDraw`; anything else falls through to `{ elementId: row.id }` with the whole row spread as payload.
+- `onRemove` is `(row) => row.isDraft ? null : confirmBulkDelete([row.id])` — **no lane check**.
+- The Manifest gates editing per COLUMN (`c.editable`), not per row, and `title` is editable.
+
+So a publication is inline-renameable and removable from the Season manifest. `core/` validates server-side so the likely outcome is a 4xx — **but "probably refused by a layer I did not check" is not a safety argument**, and this is the realm that also hosts seven irreversible operations. **Fix:** refuse a `patchNotes` lane in `buildSeasonEditOp`, gate `onRemove` on lane, and add a test that a patch-note row cannot produce a draw op. **Verify:** the test fails before the fix.
+
+🔴 **THE GENERAL RULE, which is worth more than the bug: a FIX row that removes a GATE, a GUARD or a CONDITION is never a triage row.** §0.7c's triage-first method deliberately suppresses investigation — right for cost, wrong for blast radius. A row that changes a colour and a row that deletes an `if` are not the same kind of thing. **Always ask what else the branch protects.**
+
+### ⚠️ BROADCAST'S 0.2% IS STALE AND I QUOTED IT AFTER INVALIDATING IT `P1 · XS · Sonnet5-Medium`
+Measured before the 2026-08-31 CSS edits, which touched `.pill .sub`, `.bar.saved`, `.stt.saved` and `.mark.stack .n` — **all shared surfaces**. §0.5b's own rule: *a change to a shared surface re-runs the closed realms' fixtures IN THE SAME COMMIT.* Not done. **Verify:** `node scripts/portalDiff.mjs --realm broadcast --portal harness` and re-record the fixture.
+
+### ⚠️ §0.7c HAS NEVER BEEN RUN AND ITS HEADLINE RATIO COMES FROM THE LEAST REPRESENTATIVE REALM `P2 · S · Sonnet5-High`
+It was written from Season, after Season, and claims it will make Armory cheap on zero evidence. **Season's triage collapsed because 83 of its rows were cited by decisions I had just made in the collapse** — Armory has no collapse behind it, so its findings will be genuinely open and the 23-of-169 ratio will not transfer. It also covers a RESTING pass while being titled *how to work a realm*; Armory earns the interaction tier, which the four-call loop does not include. **Falsifier:** Armory's resting pass in ≤10 calls, or the failure gets written into §0.7c the way it was into §0.7a.
+
+### ⚠️ THE RE-APPLY QUEUE IS A PICTURE, NOT A LIST `P2 · S · Opus5-Medium`
+The collapse deleted the stood-down redesigns — the hero clock, the context band, the one-line draft state — and the only record is a published artifact. **A photograph of deleted code is not a specification to rebuild it**, and I called that artifact "the record" repeatedly. ⚠️ Note the asymmetry nothing states: the **13 class-(b) keeps need no re-apply** (they already won); only the *deleted* redesigns do. Those are two queues and the docs treat them as one. **Verify:** a list exists naming each deleted redesign, where its code was, and what replaces it.
+
 ### ✅ SEASON'S PART-1 CLOSE — **H2b, H4 and H5 DONE 2026-08-31 11:3x EDT; H3 DROPPED by Harkirat.** The realm's remaining difference is a CITED FLOOR, not a backlog: 23 FIX rows (fixed), 83 cited, 40 advisory, 6 noise, 14 dead on both sides. `portalRealWalk` passes. ⚠️ **Its ① CASCADE and ③ WORDS report forever — that is correct, not unfinished.** **Harkirat decides when Part 1 closes.** ORIGINAL ENTRY:, AND THEY LIVE ONLY IN A GITIGNORED FILE `P1 · M · Opus5-High`
 **Filed 2026-08-31 11:2x EDT** because `local/season-finish-plan.md`'s Batch H is gitignored and a default `rg` cannot see it. Season is **not** closed and Armory must not start before these land.
 
