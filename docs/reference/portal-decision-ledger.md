@@ -5,11 +5,26 @@ status: live
 
 # Portal decision ledger — what is already settled
 
-> 🔴 **THIS FILE IS QUERIED, NOT READ.** `rg '<surface>' docs/reference/portal-decision-ledger.md` at the moment you doubt something. It exists because on 2026-08-31 I probed the season clock, the accent tokens and `dateOnly` — **three decisions whose answers were already written three lines from the code** — and re-derived all three.
+> 🔴 **THIS FILE IS QUERIED, NOT READ — AND `rg` IS THE WRONG TOOL FOR IT.**
+>
+> ```
+> ctx_search(queries: ["has <the surface> been decided", "is <X> a decision"],
+>            source: "/Applications/Claude Code/Diors-Builds/docs/reference/portal-decision-ledger.md")
+> ```
+>
+> ⚠️ **MEASURED 2026-08-31 12:5x EDT, because the first draft of this header said "rg it" and that was wrong.** Against the six selectors an audit finding actually prints — `sclock` · `span.done` · `b.t-legendary` · `countdownParts` · `mh-take` · `ow-i` — **`rg` found 1 of 6.** The same five questions asked in prose through `ctx_search` returned **5 of 5**, each landing on the right row. `b.t-legendary` misses on `rg` because this file writes `.t-legendary` and the finding prints the `b` prefix: **a ledger is prose, a finding is a literal, and `rg` cannot bridge them.**
+>
+> 🔴 **`feedback_token_conscious_tool_routing` already said this and I did not apply it: a QUESTION about prose → `ctx_search`; a known STRING → `rg`.** The memory records `rg` finding 0/4 on exactly this shape.
+>
+> ⚠️ **PRECONDITION, AND IT FAILS SILENTLY: `ctx_search` returns nothing for a file that was never indexed.** Run `ctx_index(path: "…/portal-decision-ledger.md")` once per session before trusting an empty result — **an unindexed ledger and a ledger with no matching row look identical.** Same failure shape as an untracked doc being invisible to `docs:audit`.
+>
+> **Batch it with the audit** — `ctx_batch_execute` runs the realm's audit and queries this file in one round trip, which is the moment both are needed.
+>
+> It exists because on 2026-08-31 I probed the season clock, the accent tokens and `dateOnly` — **three decisions whose answers were already written three lines from the code** — and re-derived all three. It exists because on 2026-08-31 I probed the season clock, the accent tokens and `dateOnly` — **three decisions whose answers were already written three lines from the code** — and re-derived all three.
 >
 > ⚠️ **IT ANNOTATES, IT NEVER FILTERS.** A row here means *a decision may cover this — go check it*. It never means *ignore the finding*. The triage classifier built the same day proved the hazard: it could report a false CITED on any `ow-*` row, hiding a real defect on the surface I had made the most decisions about. **A matcher that silently claims "decided" is worse than no matcher.**
 >
-> **Add a row when a decision is made, not at handoff time.** A decision that lives only in a commit message is invisible to `rg` over docs.
+> **Add a row when a decision is made, not at handoff time.** A decision that lives only in a commit message is invisible to every search over docs. ⚠️ **Write the row in PROSE, not only as a selector** — `ctx_search` matches meaning, so *"the countdown's time source"* is findable where a bare `.sclock` is not.
 
 ## How to read a row
 

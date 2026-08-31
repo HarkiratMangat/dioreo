@@ -154,6 +154,7 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 - [ ] **Step 2: Keep it under 15 lines.** A header nobody reads is the problem restated.
 - [ ] **Step 2b: 🔴 ANNOTATE EACH FINDING WITH ITS DECISION, IF ONE EXISTS.** Match the finding's selector against `portal-decision-ledger.md` and print *"a decision may cover this — check the ledger"*. **A finding is exactly the moment "has this been decided?" arises**, which is why this belongs here and not in a document somebody must remember to open.
 - [ ] **Step 2c: ⚠️ IT ANNOTATES, IT NEVER FILTERS OR SUPPRESSES.** The triage classifier proved the hazard the same day: it could report a false CITED on any `ow-*` row, hiding a real defect on the most-decided surface. **Print a pointer, never a verdict.**
+- [ ] **Step 2c-ii: ⚠️ THE AUDIT'S MATCHER IS A KEYWORD MAP AND THAT IS ITS CEILING.** A script cannot call `ctx_search`. **Measured 2026-08-31: `rg`-style literal matching found 1 of 6 real finding selectors; `ctx_search` on the same questions found 5 of 5.** So the audit's annotation is a coarse first pass — **it must say so in its own output** and point the session at `ctx_search` for the real lookup, or it becomes the false-CITED hazard in a new costume.
 - [ ] **Step 2d: Falsifier** — feed it a finding on a surface with a known decision and one without. It must annotate the first, stay silent on the second, and **suppress neither**.
 - [ ] **Step 3: Verify by running the audit and reading its first screen.**
 - [ ] **Step 4: Commit.**
