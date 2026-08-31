@@ -731,6 +731,21 @@ So any recorded value derived from *today* drifts without a code change. Measure
 **What to do:** mirror `portalDiff`'s `evaluateOnNewDocument` Date shim into `portalGeometry`, with the same `--at 2026-08-24` default so the two instruments measure under one clock. ⚠️ **It invalidates every existing fixture** — all seven were recorded unfrozen — so the change and a full `--all --write` belong in the same commit, with the before/after diffed to confirm only date-derived values moved.
 **Verify:** record a fixture, wait past a boundary the data crosses (or fake it with `--at`), re-check, and confirm it still matches. Today that check fails.
 
+### 🪞 The conformance number describes a mode that ships to nobody, and the third view Harkirat asked for does not exist `P1 · M · Opus5-High`
+*Filed 2026-08-30 22:4x EDT, from his own question: "shouldn't we just have the mockup, the conformed portal with frozen info, and then that same portal but with live dev mongo data?"*
+
+**The three views he named are the right three. The third one cannot be produced today.** `conforming()` reads `document.documentElement.dataset.conform`, and the only thing that sets it is `portal/ui/harness/stub.js` — the fixture harness. The real server has no path to conform mode at all, so "the conformed portal on live data" is unreachable.
+
+**Measured, and it has grown since it was last counted:** **57** `conforming()` call sites across `portal/ui/*.js` and **51** `data-conform` blocks in `app.css` — a hundred and eight deliberate differences between what every measurement in this pass sees and what a user actually gets. Nothing asserts the two modes differ *only* where intended.
+
+⚠️ **This is not an argument against the pivot.** Standing the redesigns down is what makes closure mechanical rather than an argument about which side is right, and the flag's own list is the re-apply list for afterwards. The gap is that the re-apply phase will bring back 108 sites that no instrument has ever compared against anything.
+
+**What to do — two parts, and the first is cheap:**
+1. Let the real server honour `?conform=1` (set `dataset.conform` from the query string at boot). ⚠️ **Weigh it first**: a comparison flag reachable in production is a footgun, so it may want a dev-only guard rather than an open query parameter.
+2. Give the re-apply phase an instrument. The obvious shape is a diff of conform-on against conform-off on the SAME build — every region it reports is a deliberate advance, and the list of regions should equal the list of stand-down sites. A site that produces no region is a stand-down that stands nothing down; a region with no site is a difference nobody registered.
+
+**Verify:** the count of regions in a conform-on/conform-off diff reconciles against `rg -c 'conforming\(\)' portal/ui/*.js` plus the `data-conform` blocks, with every discrepancy named.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
