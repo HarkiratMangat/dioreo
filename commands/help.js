@@ -28,6 +28,7 @@ const COMMAND_ALIASES = {
     '/bot access': ['access', 'admins', 'permissions'],
     '/autobuild': ['screenshot', 'scan', 'ocr', 'import'],
     '/settings': ['preferences', 'prefs', 'config', 'timezone'],
+    '/invite': ['add', 'install', 'addbot', 'share', 'link'],
     '/colors': ['color', 'accent', 'palette', 'avatar'],
     '/timestamp': ['time', 'clock', 'date'],
     '/gunsmiths': ['loadout', 'loadouts', 'gunsmith', 'gunsmiths', 'weapon', 'weapons', 'build', 'builds', 'meta', 'category', 'all', 'ar', 'smg', 'lmg', 'sniper', 'marksman', 'shotgun', 'secondaries'],
@@ -145,7 +146,7 @@ const CATEGORY_DEFS = [
         ]
     },
     {
-        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp & profile color tools',
+        key: 'utilities', label: 'Utilities', emojiKey: 'eyedropper', dropdownDescription: 'Timestamp, profile color tools & sharing Dioreo',
         staticCommands: [
             cmd('/colors', {
                 description: 'View the colors extracted from your Discord profile and pick which one accents your panels',
@@ -162,6 +163,9 @@ const CATEGORY_DEFS = [
                     { name: 'style', required: false, desc: 'Pick one format, or leave blank for all formats' },
                     { name: 'view', required: false, desc: 'Embed or plain Text, one-off only' }
                 ]
+            }),
+            cmd('/invite', {
+                description: 'Get a link to add Dioreo to a server or your own account, or a plain URL to share outside Discord'
             })
         ]
     },
