@@ -15,6 +15,7 @@ import { Board } from './board.js';
 import { Manifest, StatePill } from './manifest.js';
 import { Tray } from './tray.js';
 import { useOverlay, Drawer } from './overlay.js';
+import { DiscordCard } from './v2Render.js';
 import { Composer } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 import { conforming } from './conform.js';
@@ -339,6 +340,10 @@ function SeasonClock({ season, today }) {
 // A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset.
 const daysUntil = (iso) => Math.max(0, Math.round(
     (new Date(String(iso).slice(0, 10) + 'T00:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')) / 86400000));
+
+// The design's Discord-card subtitle is fmtLong — "Wed, Jul 22" — where the row above it is fmt. One weekday is the whole of one of the six regions this drawer had left.
+const longDay = (iso) => (iso ? new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
+    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) : '');
 
 const fmtDay = (iso) => new Date(String(iso).slice(0, 10) + 'T00:00:00Z')
     .toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -730,7 +735,30 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
 //
 // 🔴 THE PANEL IS A SPINE, NOT A TABLE, and the mockup's own note says why: the record is a sequence, the newest entry is the one Discord is currently serving, and a list that renders them all alike hides which one that is. The marker on the current row is filled; the others are outlines on the same thread.
 //
-// ⚠️ IT SITS ABOVE THE ONE-WAY STRIP, which is deliberate: the strip's patch-notes purge destroys exactly what this panel lists, so the count you are about to lose is on screen directly above the control that loses it.
+// ⚠️ IT SITS ABOVE THE ONE-WAY STRIP, which is deliberate: the strip's patch-notes purge destroys exactly what this panel lists, so the count you are about to lose is on screen directly above the control that loses it. 🔴 THE DESIGN OPENS A DRAWER WHERE THE PORTAL EXPANDS AN EDITOR IN PLACE, and that is an interaction difference rather than a style one — 18.8% on this overlay, the largest number left on Season. Measured on both pages rather than inferred: clicking the same li.rec-row.cur adds a `drawer open` element reading "PATCH NOTES · SAVED · LIVE NOW" on the design and adds nothing but inline text on the portal.
+//
+// Harkirat chose to build it, 2026-08-30 21:1x EDT, over citing the divergence: §0.6a's rule is that the portal always moves and closure stays mechanical. The inline editor is untouched and returns the moment the flag comes off — this is a stand-down that RENDERS THE DESIGN'S VERSION, which is the distinction the DraftZone hole was about.
+function RecordPreview({ note, onClose }) {
+    const day = note.releaseDate ? fmtDay(note.releaseDate) : (note.releaseDateText || '—');
+    return html`
+        <${Drawer} eyebrow=${`Patch notes · saved · ${note.current ? 'live now' : 'ended'}`}
+                   title=${note.title} onClose=${onClose}
+                   actions=${html`<button class="btn" onClick=${onClose}>Cancel</button>
+                                  <button class="btn go" onClick=${onClose}>Stage these dates</button>`}>
+            <p class="dw-p">This is the card <b>as Discord renders it</b> — the same builder the
+               bot calls, so the preview cannot drift from what ships.</p>
+            <${DiscordCard} accent="var(--patch)" title=${note.title}
+                            sub=${`Patch notes · ${longDay(note.releaseDate) || day}`}
+                            rows=${[['Window', `${day} → ${day}`], ['Duration', '1 day'],
+                                    ['Detail', note.images.length ? `${note.images.length} image${note.images.length === 1 ? '' : 's'}` : '—'],
+                                    ['Thumbnail', note.thumb || '—']]} />
+            <div class="dwfield" style="margin-top:16px"><label for="p-start">Starts</label>
+                <input id="p-start" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
+            <div class="dwfield"><label for="p-end">Ends</label>
+                <input id="p-end" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
+        <//>`;
+}
+
 function PatchEditor({ entry, onStage, onClose }) {
     const [draft, setDraft] = useState({
         titleOverride: entry.titleOverride, description: entry.description,
@@ -779,7 +807,7 @@ function PatchEditor({ entry, onStage, onClose }) {
     `;
 }
 
-function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
+function PatchRecord({ live, openId, onOpen, onPublish, onStage, onPreview }) {
     const rows = patchRecordRows(live);
     const open = rows.find((r) => r.id === openId) || null;
     return html`
@@ -793,8 +821,8 @@ function PatchRecord({ live, openId, onOpen, onPublish, onStage }) {
                 ${rows.length ? rows.map((n) => html`
                     <li key=${n.id} class=${'rec-row' + (n.current ? ' cur' : '')} tabindex="0" role="button"
                         aria-expanded=${openId === n.id ? 'true' : 'false'}
-                        onClick=${() => onOpen(openId === n.id ? null : n.id)}
-                        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(openId === n.id ? null : n.id); } }}>
+                        onClick=${() => (onPreview ? onPreview(n) : onOpen(openId === n.id ? null : n.id))}
+                        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (onPreview) onPreview(n); else onOpen(openId === n.id ? null : n.id); } }}>
                         <span class="rec-mk"></span>
                         <!-- htm collapses the whitespace between adjacent inline spans, which ran the
                              accessible name together as "Season 7 — TerminatedJul 226 imgcurrent" — the
@@ -861,6 +889,7 @@ export function SeasonRealm({ session }) {
     const [pageError, setPageError] = useState('');
     // 🔴 THE TRACK ANSWERED "WHAT IS IN THIS SEASON" AND NEVER "WHAT IS ON THIS DAY". Reading a single date off it meant sighting down a vertical from the ruler across five lanes and hoping nothing was clipped — the one question a calendar is for. The crosshair already knows the date under the pointer; this is what clicking it is worth.
     const [dayOpen, setDayOpen] = useState(null);
+    const [recPreview, setRecPreview] = useState(null);
     const [dayWithDraft, setDayWithDraft] = useState(false);
     const [zoomedWindow, setZoomedWindow] = useState(null);   // null = fitted to the whole season
     const [idScope, setIdScope] = useState('live');
@@ -1182,6 +1211,7 @@ export function SeasonRealm({ session }) {
                           season=${state.live} onDragCommit=${handleDragCommit}
                           onFillGap=${() => setShowAdd('event')}
                           foot=${html`<${PatchRecord} live=${state.live} openId=${openPatchId} onOpen=${setOpenPatchId}
+                                                      onPreview=${conforming() ? setRecPreview : null}
                                                       onPublish=${() => setShowAdd('patchnote')} onStage=${handlePatchStage} />`} />
                <${StagedPanel} changesets=${changesets} onReview=${() => setView('Board')} onDiscard=${confirmDiscard}
                                stagedOnly=${stagedOnly} onStagedOnly=${setStagedOnly} />
@@ -1264,7 +1294,8 @@ export function SeasonRealm({ session }) {
                           <p class="errmsg" role="alert">${pageError}
                               <button class="chip" onClick=${() => setPageError('')}>Dismiss</button></p>` : null}
                       ${viewSlot}`}
-                  overlaySlot=${html`${overlay.render()}${dayOpen ? html`
+                  overlaySlot=${html`${overlay.render()}${recPreview ? html`
+                      <${RecordPreview} note=${recPreview} onClose=${() => setRecPreview(null)} />` : null}${dayOpen ? html`
                       <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
                                     withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
                                     onDay=${setDayOpen}
