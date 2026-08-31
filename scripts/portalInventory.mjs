@@ -67,6 +67,18 @@ const nameOf = (k) => k;
     const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
     const grab = async (url, side) => {
         const page = await browser.newPage();
+    // 🔴 THE CLOCK IS FROZEN, for the reason portalGeometry's was on 2026-08-31: an instrument that
+    //    measures a page which moves while it is being measured reports drift as a finding. The season
+    //    countdown reads Date.now() now (the design's start-of-day source was refused as class (b)), so a
+    //    live clock changes the WIDTH of its readout between two runs. Same instant portalDiff pins.
+    await page.evaluateOnNewDocument((t) => {
+        const RealDate = Date;
+        const Frozen = function (...a) { return a.length ? new RealDate(...a) : new RealDate(t); };
+        Frozen.prototype = RealDate.prototype;
+        Frozen.now = () => t; Frozen.parse = RealDate.parse; Frozen.UTC = RealDate.UTC;
+        window.Date = Frozen;
+        try { performance.now = () => 0; } catch { /* read-only in some builds */ }
+    }, Date.parse('2026-08-24T18:41:00Z'));
         await page.setViewport({ width: VW, height: VH, deviceScaleFactor: 1 });
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 45000 });
         await page.evaluate(() => document.fonts.ready);

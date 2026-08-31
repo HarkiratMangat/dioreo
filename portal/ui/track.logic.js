@@ -235,10 +235,8 @@ function findExpiringBanners(season) {
         .map((f) => ({ ...f, url: String(season[f.key] || '').trim() }))
         .filter((f) => f.url && SIGNED_HOSTS.some((h) => f.url.includes(h)))
         .map((f) => ({ key: f.key, label: f.label, url: f.url,
-            // Under the conformance flag this is the design's shorter line; the portal's own is the one that explains WHY, and it comes back with the rest of the re-apply phase.
-            why: (typeof document !== 'undefined' && document.documentElement.dataset.conform === '1')
-                ? 'signed Discord CDN link — will expire'
-                : 'a signed Discord link — it stops resolving once its own deadline passes' }));
+            // The design's line. The portal's longer one explained WHY it expires and comes back with the re-apply phase; a Repairs note is a label, and the explanation belongs in the check's own note.
+            why: 'signed Discord CDN link — will expire' }));
 }
 
 // 🔴 THE FINDING NAMES THE ROW IT IS ABOUT, AND NOTHING CARRIED THAT BACK TO THE BAR. The design's markFlagged() strips the finding-kind prefix off the id and marks the matching bar, so a reader scanning the Track can see WHICH item the finding underneath is talking about. Every ingredient was already here — the bars emit data-id, the findings are computed in this file — and only the mapping was missing, which is why the audit reported div.bar.flagged.saved as mockup-only.

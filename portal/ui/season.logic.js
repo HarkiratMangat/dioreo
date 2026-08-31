@@ -144,7 +144,7 @@ function nowPctIn(geo, nowMs) {
 //              is deliberate bot behaviour, it is true of 11 of the 14 real draws, and it is the difference
 //              between a release that is still live and one that is history. Matched on the NORMALIZED title
 //              because a window is named after its draw and never with the same punctuation.
-// ⚠️ PATCH NOTES ARE HERE AND NOT IN THE MANIFEST, and that asymmetry is deliberate rather than an oversight: the Manifest's home for a patch note is the Season Record panel, and the Board's own lifecycle rule has a dedicated patch-note branch precisely because they belong on this axis.
+// ⚠️ UPDATED 2026-08-31 — THE MANIFEST LISTS PATCH NOTES NOW TOO, so this function passes `patchNotes:false` to keep from counting them twice. The old note read: the Manifest's home for a patch note is the Season Record panel, and the Board's own lifecycle rule has a dedicated patch-note branch precisely because they belong on this axis.
 function toBoardItems(live, changesets, draft) {
     // ⚠️ WITHOUT PATCH NOTES: this function appends them itself, just below. Once toManifestRows started adding them too (under the conformance flag) the Board counted 41 items against the design's 39 and every column pill was one too high — a duplicate that reads as a data error rather than a wiring one.
     const rows = toManifestRows(live, changesets, draft, { patchNotes: false });
@@ -159,7 +159,9 @@ function toBoardItems(live, changesets, draft) {
         return { ...r, kind: point ? 'point' : 'span',
             startDate: start,
             endDate: r.endDate || (r.isOngoing && ongoingEnd ? ongoingEnd : (point ? start : null)),
-            dateOnly: point && !windows.some((w) => w && normalizeTitle(r.title) && (w.includes(normalizeTitle(r.title)) || normalizeTitle(r.title).includes(w))) };
+            // The row already carries it — toManifestRows computes it from the same windows. Recomputing here is how the Board and the Manifest got the chance to disagree in the first place.
+            dateOnly: r.dateOnly !== undefined ? r.dateOnly
+                : (point && !windows.some((w) => w && normalizeTitle(r.title) && (w.includes(normalizeTitle(r.title)) || normalizeTitle(r.title).includes(w)))) };
     });
     for (const n of (live?.patchNotes || [])) {
         out.push({ ...n, id: String(n._id), title: n.title || 'Patch note', lane: 'patchNotes',
@@ -187,6 +189,26 @@ function toManifestRows(live, changesets, draft, opts) {
     // Forwarded so a caller that knows which day it is rendering gets a geometry that does not move.
     const geo = seasonSpanGeometry(live, (opts && opts.now) || undefined);
     const nowP = nowPctIn(geo, Date.now());
+    // 🔴 `dateOnly` IS COMPUTED HERE NOW, NOT ONLY IN toBoardItems. rowLifecycleByDate's own comment says a
+    //    manifest row "has to be told" — and it never was, so it fell back to treating every draw as
+    //    windowless, which means permanent. Measured against the design 2026-08-31: "Judgment Day - It Goes
+    //    Two" read LIVE NOW in the table and ENDED in the design, because it HAS a calendar window and its
+    //    release is history. A fact about the SET cannot be derived from one row, which is why it is here
+    //    rather than in rowLifecycle.
+    // ⚠️ DUAL RUNTIME. normalizeTitle lives in track.logic.js, which is a sibling plain script: in the
+    //    browser both are globals and this resolves, in Node this file is required alone and it does not.
+    //    toBoardItems got away with the same call because nothing in Node reaches it; toManifestRows IS
+    //    tested, and the suite caught it in one run. Same rule as the plan's R6 — a dual-runtime file needs
+    //    to work in BOTH, not in the one that happens to be exercised.
+    const normTitle = (t) => (typeof normalizeTitle === 'function' ? normalizeTitle(t)
+        : String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
+    const drawWindows = (live?.calendar || [])
+        .filter((c) => String(c.category || '').toLowerCase().startsWith('draw'))
+        .map((c) => normTitle(c.title));
+    const noWindowFor = (title) => {
+        const t = normTitle(title);
+        return !t || !drawWindows.some((w) => w && (w.includes(t) || t.includes(w)));
+    };
     const rows = [];
     for (const key of ['newDraws', 'returningDraws', 'calendar']) {
         for (const item of live[key] || []) {
@@ -194,6 +216,7 @@ function toManifestRows(live, changesets, draft, opts) {
                 // The full item ships on the row (not just the display fields below) so buildSeasonEditOp has every field draw.edit/calendar.edit's validate() needs -- an edit op built from a display-only row would silently drop items/startDate/category on every commit.
                 ...item,
                 id: item._id, title: item.title, lane: key,
+                dateOnly: (key === 'newDraws' || key === 'returningDraws') ? noWindowFor(item.title) : false,
                 // 🔴 THE ONGOING END DATE BELONGS ON THE ROW, NOT ONLY ON THE TRACK AND THE BOARD. All three read the same records and only two knew that an "all season" calendar row ends when the season does — so the table's Window column printed one date, its Span column drew a point, and its progress fill never appeared, on the same row the Board showed running.
                 endDate: item.endDate || (item.isOngoing && live.bpEnd ? String(live.bpEnd).slice(0, 10) : item.endDate),
                 state: stateForElement(item._id, changesets),
@@ -207,8 +230,14 @@ function toManifestRows(live, changesets, draft, opts) {
             });
         }
     }
-    // ⚠️ THE DESIGN'S MANIFEST LISTS PATCH NOTES AND THIS ONE DOES NOT — 37 rows against 39, and a count reading "37 of 37" beside an export strip saying 39. Keeping them out is the portal's own call (the Season Record is their home), so it stands down under the conformance flag rather than being argued about mid-pass. `window` is the release date, which is the only date a publication has.
-    if ((!opts || opts.patchNotes !== false) && typeof document !== 'undefined' && document.documentElement.dataset.conform === '1') {
+    // 🔴 THE MANIFEST LISTS PATCH NOTES. This was deferred behind the conformance flag with the note that
+    //    keeping them out was "the portal's own call"; the mode collapse is where that argument had to be
+    //    settled, and it settles for including them — not only because the design lists them, but because
+    //    excluding them made the portal CONTRADICT ITSELF: 37 rows under a count reading "37 of 37", beside
+    //    an export strip saying 39. A manifest that disagrees with its own export about how many things
+    //    exist is a defect regardless of which side the design takes.
+    //    `window` is the release date, which is the only date a publication has.
+    if (!opts || opts.patchNotes !== false) {
         for (const n of live.patchNotes || []) {
             rows.push({
                 ...n, id: n._id, title: n.titleOverride || n.title, lane: 'patchNotes',

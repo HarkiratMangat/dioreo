@@ -100,8 +100,27 @@ function Ruler({ view, onPickDay }) {
     // 🔴 A TICK UNDER THE NOW CAPTION IS TWO DATES IN ONE PLACE. The design measures the caption boxes and marks any tick overlapping one, hiding the label while keeping the tick — the mark IS the axis, so removing the whole span would leave a gap where a day is. Deleted here on the reasoning that the collision could not happen; it does, at today's position, on the default window.
     useMeasured('rulermask:' + view.from + view.to, ref, (root) => {
         // The NOW caption is not a sibling of the ruler — it lives inside the lanes, two levels down — so a parent-scoped query found nothing and every tick stayed unmasked while the code read as though it were masking. Query the document: there is one NOW on the page and it is the thing being avoided.
-        const boxes = [...document.querySelectorAll('.now')].map((n) => n.getBoundingClientRect())
-            .filter((b) => b.width > 0);
+        //
+        // 🔴 AND THE THING TO AVOID IS THE CAPTION, WHICH HAS NO NODE. `.now` is a zero-width vertical line;
+        //    its label is an ::after. The previous version measured the LINE's own rect and then filtered
+        //    `width > 0`, so the array was always empty, nothing was ever masked, and the code read as
+        //    though it worked. The design hit this too and its comment says so: the real chip is ~90px and
+        //    sits entirely to ONE side, so padding the line symmetrically is also wrong. Read the
+        //    pseudo-element's own width and build the box on the side it actually renders.
+        // ⚠️ getComputedStyle IS NOT DEFINED IN THE NODE RENDER HARNESS, which mounts these components to
+        //    assert they survive their own effects. Same dual-runtime shape as normalizeTitle, caught by the
+        //    same suite in the same run: a browser-only global reached from code that also runs in Node.
+        if (typeof getComputedStyle !== 'function') return {};
+        const boxes = [...document.querySelectorAll('.now')].map((n) => {
+            const r = n.getBoundingClientRect();
+            const cs = getComputedStyle(n, '::after');
+            const w = parseFloat(cs.width) || 70;
+            const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) || 8;
+            const total = w + pad + 4;
+            if (cs.transform && cs.transform !== 'none') return { left: r.left - total / 2, right: r.left + total / 2 };
+            if (n.classList.contains('at-edge')) return { left: r.right - total - 5, right: r.right };
+            return { left: r.left, right: r.left + total + 5 };
+        });
         for (const sp of root.querySelectorAll('span')) {
             const r = sp.getBoundingClientRect();
             sp.classList.toggle('masked', boxes.some((b) => r.right > b.left - 4 && r.left < b.right + 4));
@@ -589,7 +608,7 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
     `;
 }
 
-export function Track({ data, draft, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail, onPickDay, foot = null }) {
+export function Track({ data, draft, publications, window: visible, full, season, flags, onDragCommit, onFillGap, onWindow, ghost, rail, onPickDay, foot = null }) {
     const rootRef = useRef(null);
     const [laneCol, setLaneCol] = useState(loadLaneCol);
     const view = TL.make(visible.start, visible.end);
@@ -599,7 +618,17 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
     // Everything the season holds, flattened to {start, end, accent} for the overview strip. Draft items are included and wear their own lane's colour: the scrubber's job is to show what EXISTS, and a staged item exists — the plot above is where the difference between live and staged is drawn. 🔴 ONE ROW PER LANE, NOT ONE PILE. `.scrub .mini` is absolutely positioned with no `top`, so every bar in the season stacked at the same y and thirty-seven items rendered as one continuous stripe — an overview that shows the season has things in it and nothing else. The adopted stylesheet's own comment calls this strip a filmstrip; a filmstrip has frames. The row is the lane's index, which is also why the colours line up with the plot below.
     const scrubItems = LANES.flatMap((l, row) => [...(data[l.key] || []), ...((draft && draft[l.key]) || [])]
         .map((i) => ({ start: i.startDate || i.date, end: i.endDate || i.startDate || i.date, accent: `var(${l.topic})`, row }))
-        .filter((i) => i.start && i.end));
+        .filter((i) => i.start && i.end))
+        // 🔴 PUBLICATIONS ARE ON THE STRIP TOO. The design's overview draws every item the season holds, and
+        //    patch notes are items even though they are not a Track LANE — which is exactly why they were
+        //    missed here: the strip was built by walking lanes. Two publications, so two minis, and the
+        //    overview stops disagreeing with the manifest directly beneath it about what exists.
+        .concat((publications || [])
+            // ⚠️ THE SCHEMA FIELD IS `releaseDate`. Reading date/startDate alone produced nothing for every
+            //    publication, so the filter below silently dropped all of them and the strip stayed two short.
+            .map((n) => ({ start: n.releaseDate || n.date || n.startDate, end: n.releaseDate || n.date || n.startDate,
+                accent: 'var(--patch)', row: LANES.length }))
+            .filter((i) => i.start && i.end));
     const shown = flags || deriveFlags(data, visible, season, { onClamp: onDragCommit, onFill: onFillGap });
 
     const toggle = useCallback((lane, isDraft, alt) => {

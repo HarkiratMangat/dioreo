@@ -56,8 +56,13 @@ const SEASON_COLUMNS = [
         const sd = row.date || row.startDate, ed = row.endDate || row.date;
         // TODAY INSIDE THE WINDOW is the condition, not a lifecycle label: the two agree on most rows and disagree on exactly the ones this fill is for — a span that started before today and has not finished. Keyed on the label, twenty-one of the design's progress fills never drew.
         const today = todayIso();
-        const inside = sd && ed && ed !== sd && dd(sd, today) >= 0 && dd(today, ed) >= 0;
-        const elapsed = inside ? Math.max(0, Math.min(100, (dd(sd, today) / Math.max(1, dd(sd, ed))) * 100)) : 0;
+        // 🔴 THE CONDITION IS "IS THIS ROW LIVE", NOT "IS TODAY INSIDE A WINDOW", and the difference is
+        //    every POINT. A release and a publication have one date, so `ed === sd` excluded them and nine
+        //    live rows drew no fill at all. rowLifecycle is the same function the row's own LIVE NOW label
+        //    reads, so the fill and the label can no longer disagree about the same row — which is what the
+        //    earlier label-keyed version was corrected FOR, having keyed on the wrong label.
+        const live = rowLifecycle(row, today) === 'live';
+        const elapsed = live && sd && ed ? Math.max(0, Math.min(100, (dd(sd, today) / Math.max(1, dd(sd, ed))) * 100)) : 0;
         // ⚠️ NO WRAPPER HERE. `.sparkwrap` belongs to the BOARD CARD, where the track sits under a name and needs its own box; in the table the cell IS the box, and the extra div was thirty-nine elements the design does not have.
         return html`
                 <span class="spark" style=${`--c:var(${row.topicVar || '--ink4'})`}>
@@ -99,11 +104,6 @@ const SEASON_FILTERS = [
         { value: 'Patch notes', label: 'Patch notes', hex: 'var(--patch)' },
     ] },
     // The state filter is the portal's own second group. The design filters Season by TYPE and offers "Staged only" as the one state cut, which is the only one with an action behind it; four more chips for states the key already explains is a second vocabulary in the same row.
-    ...(typeof document !== 'undefined' && document.documentElement.dataset.conform === '1' ? [] : [
-        { key: 'state', label: 'State', options: [
-            { value: 'live', label: 'live' }, { value: 'staged', label: 'staged' }, { value: 'conflict', label: 'conflict' },
-        ] },
-    ]),
 ];
 
 
@@ -1172,7 +1172,7 @@ export function SeasonRealm({ session }) {
                     pending changes "right beside the Track" — the intent was adjacency and the execution
                     was obstruction. Below it, they are still beside it, and the instrument is the first
                     thing on the page that exists to show it. -->
-               <${Track} data=${trackData} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
+               <${Track} data=${trackData} publications=${state.live?.patchNotes || []} ghost=${showAdd ? composeGhost : null} onPickDay=${setDayOpen}
                           rail=${deadlineRail(state.live, visibleWindow.start, visibleWindow.end)}
                           draft=${draftData} window=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                           season=${state.live} onDragCommit=${handleDragCommit}
