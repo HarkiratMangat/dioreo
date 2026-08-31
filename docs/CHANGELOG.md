@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.69.0 — 2026-08-26 → 2026-08-31 (#PR) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes, and converges onto its design
+## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#PR) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
 
 > 🔴 **SCOPE, STATED PLAINLY — NOT JUST SEASON.** 281 commits, 198 files, 53,795 insertions since `v3-pre-release`: the Preact migration, six new portal instruments (`portalDiff`/`portalAudit`/`portalProbe`/`portalStatus`/`portalConverge`/`portalInventory`), the collapse of the portal's two rendering modes into one, a destructive-surface behavior change, and the Season and Broadcast conformance passes themselves. Harkirat, 2026-08-31: "it does not only contain Season Realm's work, it contains MUCH more."
 >
@@ -985,6 +985,52 @@ Three of the four pieces needed less than expected. **The data confound did not 
 **And the clauses were split across three events, because a Stop hook is a post-mortem that cannot change the turn it measures.** Asking which event each clause wants is the question the first two versions never asked. `batch-edit-guard.sh` is **PreToolUse**: it fires at the second edit to a file already edited this turn, while the rest can still be collapsed into one heredoc, and it has **no escape hatch** — unlike a read-chain, a second edit to a known file is never waiting on the first one's output, and any non-edit call resets the map by construction so edit → test → fix-what-the-test-found does not fire. `audit-think-gate.sh` is **UserPromptSubmit**, covering the one contract clause carrying the word *mandatorily*: sequential thinking on an audit or review. `turn-shape-guard.sh` keeps only what is genuinely retrospective.
 
 ⚠️ **The suites gained the case class whose absence let two broken versions ship: a replay against real transcripts**, asserting the rule fires on some turns and is silent on others. A predicate that hits 0% or 100% of real turns is broken whatever the hand-written cases say — and neither V1 nor V2 could have failed a hand-written case. On the shipped version the replay reports **38 of 40 real turns firing**, which is not a tuning failure but the measurement of how much narration these sessions actually contain.
+
+---
+
+### 2026-08-25 — eleven checks existed and CI ran none of them, and the last hand-bumped step became a gate
+
+**`portal:gate`, `portal:refs` and `portal:roundtrip` were absent from `npm test`'s chain, and CI runs `npm test`.** So the schema check, the parse and undeclared-identifier checks, a backtick lint added that morning, the cache-buster check added that morning, two COMPANION checks added an hour earlier, and the export round-trip against the real `adminParser.js` **ran only when somebody typed them by hand** — eleven checks, over two days.
+
+🔴 **`.github/workflows/ci.yml` already carried a comment about this exact failure from 2026-08-02**: *"The tests were fine. Nothing was running them. A test nobody runs is worse than no test, because it produces a documented belief that the behaviour is covered."* It happened again anyway, which is the argument for the fix being verified rather than asserted: the three gates were put in the chain and then **proven by planting a wrong permission-token count in `COMPANION.md` and watching `npm test` go red**, then restoring it and watching it go green — not by reading `package.json`.
+
+**The cache-buster was the last admitted-unenforced step.** COMPANION §15.8 said so in as many words — the `?v=` stamp is *"bumped by hand when an asset changes"* — while a stale asset had already produced three false "verified" claims in that package's history and thirty-five references had just been bumped by hand with nothing checking. The invariant needs no judgement: no asset may be newer than the `?v=` stamp of the pages referencing it. ⚠️ **It uses mtime, so a fresh clone can report a false positive** — the safe direction, since the remedy is to bump and bumping is free. ⚠️ **The two browser harnesses still cannot run in CI**; that is a limitation, not an oversight, and it is now stated wherever the "ALL CLEAN — 73 passes" figure is quoted, because that number comes from a human running it.
+
+---
+
+### 2026-08-2x — a sibling branch folds in: three PreToolUse guards, two product records, and a rule that was about a BEHAVIOUR while its guard was about a TOOL
+
+`claude/skills-tools-review-4ecca0` merged in at `898d774`. A skills-and-tools review that turned into infrastructure — **three hooks, 32/32 self-tests.**
+
+🔴 **`overwrite-guard.sh` exists because one rule was broken by three different mechanisms**: an Artifact `force:true` (2026-07-25), a shell `mv` that destroyed an unrecoverable untracked handoff (2026-08-21), and a `cat >` that was then committed (2026-08-26). **The first fix gated the Artifact TOOL, so incidents 2 and 3 walked straight past it via Bash — the rule was about a BEHAVIOUR and the guard was about a TOOL.** It now interrupts only when the destination is UNTRACKED, since a tracked file is one `git show` away, and only when the destination exists; ephemeral scratch is carved out on both the overwrite and `rm` paths, the second of which was found by live fire.
+
+**`ctx-index-refresh.sh`** re-indexes `docs/`, `.claude/rules/` and `CLAUDE.md` immediately before any `ctx_search`, because `ctx_index` is a snapshot with no change detection and **a stale index answers with last month's rules under a real heading**. **`ctx-search-nudge.sh`** fires on a multi-word `rg`/`grep` aimed at the indexed prose corpus — measured, `rg` returned **zero files for 3 of 4** natural-language questions there. Deliberately narrow, simple commands only, because a nudge that misfires gets filtered.
+
+**Two records arrived with it:** `PRODUCT.md` and `DESIGN.md`, the latter generated against the MOCKUPS rather than `portal/ui/`, **so it records the authority rather than canonising the drift**. And two portal defects the pixel overlay structurally cannot see were filed — a mockup-specified `transition:filter .12s, box-shadow .12s` absent from all 240 lines of portal CSS, and `--ink4` present in 4 of 6 mockups but absent from `tokens.css` — along with the instrument gap itself, since a property-level diff would catch the whole class. The memory-index `BUDGET` moved 25,000 → 30,000 in the same change, taken verbatim from this branch so the fold-in had nothing to resolve.
+
+---
+
+### 2026-08-30 — the second sibling branch: a parser that ate a letter, two commands, a read-only credential, and an exposed production secret
+
+`claude/outstanding-v3-items-135f3b` merged in at `5e5132e`, closing six deferred items and filing two from a real incident.
+
+**`/manage`'s calendar bulk-import was truncating titles.** `utils/adminParser.js`'s `BULLETED_ENTRY` regex had a non-greedy-lookahead ambiguity that dropped a title's last letter whenever it ended in `d/p/e/g/m` immediately before a real bullet — *"Krai BR Mode"* became *"Krai BR Mod"*. Replaced with `line.split('•')` paired two at a time; `scripts/calendarOps.test.js` carries both known repros.
+
+**`/colors` got its own `colorsVisibility`**, detached from `settingsVisibility`, as a fifth toggle row. ⚠️ **The "View Colors" button on the `/settings` panel deliberately still reads `settingsVisibility`** per the original spec, and `handlers/colors.js` carries a comment saying so, because the next session will otherwise "fix" it to match. **`/invite` folded into `/help`'s Utilities category** — Harkirat's pick over a new category or landing-page-only. ⚠️ `scripts/fixtures/captureHelpSnapshot.mjs` **only writes to stdout**; it needs `> scripts/fixtures/helpBodySnapshot.json` and does not write the file itself, a trap already hit once. **A read-only Atlas user** now backs `scripts/analytics.mjs` via `ANALYTICS_READONLY_URI`, falling back to `MONGODB_URI`, verified live to reject a write.
+
+**`img2webp` and both prod cache-channel env vars are installed on the VM** — infra only, no code. 🔴 **Do not read that as "nameplate WebP caching works now."** Checked live: the prod bot reports `guild_count: 0` and is not a member of dioreoland, so every upload still 403s until the separate, already-tracked guild-install step lands with the v3 launch.
+
+🔴 **A production secret was printed in full to a session's own transcript by an over-broad `.env` read.** It was rotated, propagated to the VM, and verified by comparing sha256 hashes without ever printing either value; the bot re-authenticated cleanly. **`dotenvx` encryption is now queued as its own session** — already installed on the machine, never adopted by this repo — so that a future broad read returns ciphertext instead of a repeat. The credential is not named here on purpose.
+
+---
+
+### 2026-08-31 16:1x EDT — a gate at the decision point was built, measured and deleted, and a merge whose "no conflicts" claim had expired
+
+**A `PreToolUse` gate on `AskUserQuestion` was built and then deleted the same hour.** Twice in one session an already-settled decision went into a popup — most visibly whether Armory's overlays were in scope, while the conformance plan's realm table already read *"Armory … earns the full overlay treatment incl. the interaction tier"* — with the query-the-ledger-first rule loaded from three separate files. Prose had demonstrably failed, so the shape that works here was tried: a check at the single act.
+
+🔴 **It failed its falsifier in both directions at once.** On the real failing question it surfaced five near-misses and **missed the line that answers it**, because the question said "overlays" and the table says "overlay". On a control question about a weapon rarity badge gradient — nothing to do with the portal — **it fired five hits anyway.** That second result is the structural one: the corpus is the decision ledger plus the deferred list plus `CLAUDE.md` plus every plan, which together mention every topic in the project, so any project question matches something. Rarity weighting fixes the ranking, not the base rate. **A lexical gate over a corpus that mentions everything cannot be precise**, and an imprecise gate at a decision point is pure friction. Filed under Decided-no with the measurement, because the motivation will recur.
+
+**And the sibling merge's headline claim had expired.** Its handoff said *zero file overlap*, true when written on 2026-08-30 23:47 and false by the time it was merged, because this branch edited `docs/db-deferred-list.md` twice that day. Neither the default nor the histogram diff algorithm could align it — both sides had inserted large blocks — and `git apply --3way` cannot run against a conflicted index, which has no stage 0. Resolved by computing base→theirs opcodes and placing each of the six hunks after the last preceding context line that is **unique** in the target, so the insert point is located rather than guessed, then verifying conservation in both directions: all 8 lines theirs added present, all 474 lines ours added present. **Verifying the claim rather than trusting it is the only reason the conflict surfaced before the merge instead of after.**
 
 ---
 

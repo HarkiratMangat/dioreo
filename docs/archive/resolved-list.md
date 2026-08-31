@@ -5,6 +5,12 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## 🔑 A read-only Atlas user for `scripts/analytics.mjs` (2026-08-30 22:05 EDT)
+
+**Closed.** The original wording: *"A read-only Atlas user for `scripts/analytics.mjs` is not yet created."* ✅ **DONE 2026-08-30 22:05 EDT.** *(Corrected: this WAS reachable from a coding session -- the MongoDB Atlas MCP tools, once loaded, can create a project DB user directly.)* `scripts/analytics.mjs` now prefers `ANALYTICS_READONLY_URI`, falling back to `MONGODB_URI` (commit `d7f9e80`, branch `claude/outstanding-v3-items-135f3b`). Atlas user `analytics-readonly` created with `read` on `diors-builds` (project `6a497e6aaba09f53578024bf`), verified live to reject a write (`AtlasError`), and its connection string added to `/Applications/Claude Code/Diors-Builds/.env` at Harkirat's explicit instruction.
+
+⚠️ **It arrived here late, and the lateness is the lesson.** The sibling branch struck the item through in place and marked it ✅ but never moved it, so `docs-audit`'s `deferred-sweep` reported it as shipped-but-still-listed after that branch had already been merged. The conservation rule is that an item leaves an active list **only** by appearing in this file — a strikethrough looks like closure and satisfies nothing.
+
 ## ☁️ Cloudflare cached the dev portal's JS for four hours, over the origin's own `no-cache` (2026-08-28 18:2x EDT)
 
 *Swept out of `docs/db-deferred-list.md` on 2026-08-28. An item leaves an active list only by appearing here.*

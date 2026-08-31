@@ -78,6 +78,16 @@ Three tracked scripts from the health/roll-up stage, all wired into `npm test` a
 
 ⚠️ **It verifies by RE-READING the target**, not by trusting `updateOne`'s result, and dies loudly if the re-read disagrees. ⚠️ **It parses both env files itself** (prod `.env` for the source, `.env.dev` for the target) because `--env-file` takes only one — and greps rather than sources them, since sourcing executes the file and exports every other secret into the process for no reason (same reasoning as `backupDb.sh`).
 
+## `handoffCheck.mjs` · `docClaimCheck.mjs` · `tdzRatchet.mjs` — the three producers behind two audits (added 2026-08-31)
+
+`npm run handoff` · `npm run doc:claims` · `npm run tdz`. Three checkers, each built against a producer that two read-only audits kept surfacing as separate findings.
+
+- **`handoffCheck.mjs`** — ends a session: the tracked pointer chain, `.remember`'s size, whether the ledger/deferred-list/changelog grew, the fast gates, uncommitted work. It exists because the producer was *edited a doc, never re-ran the system it lives in*. ⚠️ It cannot tell whether you DECIDED anything; that is the one question it puts in front of you rather than answers.
+- **`docClaimCheck.mjs`** — runs the commands live documents assert, behind a POSITIVE read-only allowlist, because the producer was *wrote a command and never ran it*. 🔴 A command that RUNS is not a command that is RIGHT — read its output against what the doc claims.
+- **`tdzRatchet.mjs`** — eslint `no-use-before-define` on a shrink-only baseline, wired into `npm test`. `node --check` does not catch a temporal dead zone; four shipped in one day, one inside the edit fixing the previous one. ⚠️ Falsified in BOTH directions: a new TDZ fails, and a fixed-but-still-listed entry also fails, so the baseline cannot rot.
+
+⚠️ **Two hand-rolled TDZ detectors were built and deleted before reaching eslint** — a static analyser (40 findings, nearly all false) and an import checker that could not evaluate the one file where the defect keeps happening. **Both had falsifiers that passed for the wrong reason**: each exited 1 on the reintroduced bug while already exiting 1 on everything. A falsifier that cannot distinguish "caught it" from "fails always" is not one.
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 
