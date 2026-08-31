@@ -848,6 +848,16 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Verify:** `rg -c 'conforming\(\)' portal/ui/*.js` and `rg -c 'data-conform' portal/ui/app.css` both reach zero except for deliberate (b)/(c) keeps that carry a comment naming which; the Season conform figures are unchanged from their pre-collapse values; and no doc still describes `?conform=1` as a live mode.
 
+### 🔴 SEASON'S PART-1 CLOSE IS FOUR STEPS SHORT, AND THEY LIVE ONLY IN A GITIGNORED FILE `P1 · M · Opus5-High`
+**Filed 2026-08-31 11:2x EDT** because `local/season-finish-plan.md`'s Batch H is gitignored and a default `rg` cannot see it. Season is **not** closed and Armory must not start before these land.
+
+- **H2b · the triage bucket does not match the reasoning.** `local/season-triage.md` reports **92 FIX rows**; three were fixed and the rest were retired in prose as cited / pairing artifact / sub-pixel noise. **Encode §0.7c's three retirement tests in the triage script so the bucket says what is actually true** — a FIX count nobody believes is worse than no count. **Verify:** the FIX bucket contains only rows a person would act on.
+- **H3 · the overlay tier and the A/B artifact both photograph DELETED code.** §L cites artifact `7943280f` (2026-08-30) and the overlay figures are 2026-08-28 — both predate the mode collapse. 🔴 **An artifact showing code that no longer exists is worse than none: it reads as evidence.** Re-measure Season's six composer kinds, the expanded identity editor and the record preview with `--open-sel`, republish, and put the new URL in §L. **Verify:** the artifact's frames show the seven-operation one-way strip and the design's clock readout.
+- **H4 · the real-server pass has not been run since the collapse.** `node scripts/portalRealWalk.mjs --realm season`. The harness and the mockup are both fixture-driven, so they agree with each other and can both disagree with production — which is where the `NaN` and the collapsed overview were found last time. **Verify:** it does not refuse at the door, and the three views report different readings (identical readings mean it never arrived).
+- **H5 · close-out.** `local/difference-ledger-season.md` · §L's Season row (still `◐ in flight`) · the changelog sub-section · the geometry fixture · one full gate run read by exit code.
+
+⚠️ **What is NOT outstanding, so nobody re-opens it:** ① CASCADE is closed as a cited +16px (Harkirat, 2026-08-31 10:5x EDT) and will report forever · ③ WORDS is 100% cited (b) · the overview strip's minis were verified correct as a SET and differ only by the cascade offset.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
