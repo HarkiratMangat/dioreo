@@ -746,6 +746,28 @@ So any recorded value derived from *today* drifts without a code change. Measure
 
 **Verify:** the count of regions in a conform-on/conform-off diff reconciles against `rg -c 'conforming\(\)' portal/ui/*.js` plus the `data-conform` blocks, with every discrepancy named.
 
+### 🧯 A TDZ lint rule — the one lesson from 2026-08-30 that must become a PROGRAM, not another paragraph `P1 · XS · Sonnet5-Medium`
+*Filed 2026-08-30 23:1x EDT, after arguing for a whole session that a checkable rule must become a gate and then almost writing this one down as prose for the fifth time.*
+
+**Four temporal-dead-zone bugs in one day**, in `portal/ui/season.js`, `portal/ui/track.js` and `scripts/portalRealWalk.mjs` — a `const` read by a branch written above its declaration. **One of them was written INSIDE the edit fixing the previous one.**
+
+🔴 **`node --check` does not catch this. It is not a syntax error — it is a runtime `ReferenceError`**, and in a Preact component it does not throw where you can see it: the section renders blank. One of the four blanked the entire Season identity editor and was found by opening the page, not by any gate.
+
+A written pre-flight — *"every `const` declared above the branch that reads it"* — sat in the run plan all session and **was read past four times**. That is the whole argument for mechanising: the rule was known, written, and in context, and it failed anyway.
+
+**What to do:** `no-use-before-define` (ESLint, or `oxlint`/`biome` if adding ESLint to this repo is unwanted — it currently has no linter). Scope it to `portal/ui/**` and `scripts/**`, error level, `{ functions: false }` so hoisted function declarations stay legal.
+**Verify:** re-introduce one of the four real bugs — move `const flaggedSet` below its first use in `track.js` — and confirm the linter FAILS. A rule that cannot be made to fail on the bug it was written for is decoration; that is this repo's own standard and it is the one this entry exists to meet.
+
+### 📋 The compact-prep read-only audit did NOT run for the 2026-08-30 handoff `P1 · XS · Sonnet5-Medium`
+*Filed 2026-08-30 23:1x EDT. An obligation, not a defect — and obligations vanish without trace, which is why it is here and not only in the handoff.*
+
+`docs/reference/session-handoff-guide.md` calls the read-only audit **the last step of compact prep, not an optional extra**, and says plainly that self-review cannot substitute: *"every rule above this line was written by an author who then violated it within the hour; this is the only check that does not depend on the author."* It found four defects on its first run and five more on its second, on a package that had already passed a full day of self-review twice.
+
+It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.md`: agents are off by standing rule and Harkirat did not ask for one. **So that package is un-audited**, and `.remember` says so too.
+
+**What to do:** dispatch it with the brief kept verbatim in the guide (§ *THE COMPACT-PREP AUDIT — COPY THIS, DO NOT RE-INVENT IT*), pointed at the 2026-08-30 handoff, and fix what it finds — then **run it a second time**, because the guide records that the first round's fixes were half-fixes both times it has been used.
+**Verify:** the audit's own question — *could you produce the next commit without asking a question?* — comes back yes, and its rating is stated rather than inferred.
+
 ### 🔴 THE TWO RENDERING MODES COLLAPSE INTO ONE — decided, unbuilt, and it reshapes the rest of the pass `P1 · L · Opus5-XHigh`
 **Approved:** ✅ Harkirat, 2026-08-30 22:45 EDT. **Built:** ❌ nothing. **Filed:** ✅ here, plus linksee `#36774` and perseus `temporary-flag-with-no-expiry-becomes-a-second-codebase`.
 
