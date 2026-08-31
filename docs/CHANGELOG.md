@@ -988,6 +988,28 @@ Three of the four pieces needed less than expected. **The data confound did not 
 
 ---
 
+### 2026-08-24 — the last three mockup surfaces are rebuilt on the bot's real schemas, and the rule meant to prevent exactly this failed
+
+**Season, Broadcast and Access were rebuilt onto the bot's real Mongoose schemas instead of hand-authored fixtures**, and doing it surfaced defects in *shipped* code, in the mockup, and in the rule written to stop this happening. Three of the five commits touch shipped code.
+
+**Season.** A draw has ONE `date` and no end at all — only a `calendar` row carries `date` + `endDate`. **So three of six lanes hold points, not bands, and the Track had been drawing a duration the schema does not have.** A draw with no explicit calendar row is served synthetic and `dateOnly`, and `isEventEnded()` returns false for it **forever** — 11 of 14 real draws are in that state. Tiers are lowercase words plus `comment`, which is not a tier at all but a subtext note.
+
+**Broadcast.** `models/Announcement.js` has **six** fields and the mockup had invented four. `title`+`body` — there is one `text`, and the header had been **removed on 2026-08-13 at Harkirat's own correction**, so the split silently re-introduced what he had deleted. `pinned` — no such field. **A drag-to-reorder priority: the page's *primary interaction* was a field that exists on no model.** And `views: 12840` — **fabricated telemetry, the worst kind of fixture error because it is indistinguishable from data.** Reach now comes only from `UserPreference.seenAnnouncementIds` and renders only when non-zero, which for all four announcements is never.
+
+**Access.** The `editor` role was **fictional, not merely unenforced** — and the deferred-list entry describing it as "visible but unenforced" was an active invitation to go and build it. Eleven permission tokens, not seven. Grants and revokes are direct writes rather than ops, with typed-Discord-ID confirmation and no staging leg.
+
+🔴 **AND THE RULE THAT FAILED IS THE REAL ENTRY HERE.** COMPANION §3.9 told a session to read four sources before designing: the model, the action registry, the parser, the renderer. **All four are bot-side.** Following it exactly still left `portal/api/*.js` and `portal/ui/*.js` unread — and those were **already built and AHEAD of the mockup on two realms.** `portal/ui/access.js` already had the permission grid with direct-vs-inherited, single-points-of-failure and typed-ID confirmation while `access.html` still showed a fictional role and 7 of 11 tokens.
+
+**A stale mockup is worse than a wrong fixture.** A wrong fixture produces a wrong render and somebody notices. A stale mockup **is the instruction** — the package is the design source of truth — so wiring it faithfully would have been a deliberate rollback of working design, executed carefully, by someone doing exactly what they were told. §3.9 now names five sources.
+
+---
+
+### 2026-08-28 — Cloudflare served four-hour-stale JS over the origin's own `no-cache`
+
+Recorded here because it cost real debugging time and the archive entry is easy to miss: the dev portal's JavaScript was cached by Cloudflare for four hours **over the origin's own `no-cache` header**, so a fix that had shipped kept reading as unfixed. The full account is in `docs/archive/resolved-list.md`. ⚠️ The general shape is the one this branch kept meeting from a different direction — **a verification that is measuring something other than what you think it is measuring** — and it is why the asset cache-buster became an enforced gate two days earlier rather than a hand-bumped stamp.
+
+---
+
 ### 2026-08-25 — eleven checks existed and CI ran none of them, and the last hand-bumped step became a gate
 
 **`portal:gate`, `portal:refs` and `portal:roundtrip` were absent from `npm test`'s chain, and CI runs `npm test`.** So the schema check, the parse and undeclared-identifier checks, a backtick lint added that morning, the cache-buster check added that morning, two COMPANION checks added an hour earlier, and the export round-trip against the real `adminParser.js` **ran only when somebody typed them by hand** — eleven checks, over two days.
