@@ -130,14 +130,6 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit-think-gate.sh\""
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/prior-run-cost.sh\""
-          }
-        ]
       }
     ],
     "PreToolUse": [
@@ -427,15 +419,6 @@
             "type": "command",
             "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/completeness-sweep.sh\"; if [ -r \"$S\" ]; then bash \"$S\" main \"$tp\" stop; else jq -n '{decision:\"block\",reason:\"COMPLETENESS SWEEP MISSING: .claude/hooks/completeness-sweep.sh is not readable, so passes 2 and 3 (conservation + angles-not-taken) did NOT run. Do not read this as a clean sweep.\"}'; fi",
             "timeout": 30
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/turn-shape-guard.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; fi",
-            "timeout": 15
           }
         ]
       }

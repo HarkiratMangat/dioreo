@@ -7,6 +7,12 @@ status: live
 
 > Task 10, `docs/superpowers/plans/2026-08-31-post-compact-remediation.md`. Season's Batches 0–H were invented ad hoc, in a gitignored file, across many sessions. This is the paste-ready version so Armory does not repeat that.
 
+## Before anything: the mode
+
+🔇 **Silent mode, per `MEMORY.md`'s `🔇 SILENT MODE` section** — auto-loaded, already in context. No narration between tool calls, one structured summary at the end, batch aggressively, `sequentialthinking` mandatory on any audit or review. The vocabulary is there too (**turn · run · prose-only turn · batch · mega-batch · checkpoint**), and it matters here specifically: this realm's budget is stated in CALLS, and a call is a turn.
+
+⚠️ **No hook enforces it.** The guards are parked on `claude/silent-mode-compliance` pending the 83-step workflow-compliance plan.
+
 ## First action — receiving, before anything else
 
 Per `docs/reference/session-handoff-guide.md`'s receiving section:

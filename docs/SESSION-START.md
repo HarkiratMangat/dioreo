@@ -33,6 +33,8 @@ status: live
 > 5. **`--portal harness` is a violation, not a convention** (§0.5 ⓪): harness and mockup are both fixture-driven, so they agree with each other and can both disagree with production. Nothing has been measured against the real server.
 >
 >
+> 🔇 **THE MODE IS SILENT MODE, and it is written out in `MEMORY.md`'s `🔇 SILENT MODE` section** — auto-loaded, so it is already in context. It carries the working style AND the vocabulary (turn · run · prose-only turn · batch · mega-batch · checkpoint), each definition paired with the mistake it prevents. ⚠️ **No hook enforces it** — the guards are parked on `claude/silent-mode-compliance` until the 83-step workflow-compliance plan owns them, so that section is the whole mechanism.
+>
 > **Cadence he has corrected repeatedly:** mega-batch — one turn carries the fix batch AND its measurement AND its verification · zero narration between tool calls, one structured summary at the end · `sequentialthinking` pre-emptively, to set method · decisions go in an `AskUserQuestion` popup, never prose · fix the CLASS, never the named instance · never write "done".
 
 **This file is auto-loaded into every session by the `SessionStart` hook** in `.claude/settings.json` — it does not need pasting. `user_working_agreement.md` points here as the single source; it is NOT mirrored there, so edit this file directly.
