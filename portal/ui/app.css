@@ -4906,6 +4906,17 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 /* The lateness warning lives on `.nodraft` now — see the note in season.js. Dashed, because a warning
    about something that does NOT exist should not be drawn as solidly as the things that do. */
 .nodraft.late{border-style:dashed;border-color:var(--warn)}
+
+/* 🔴 THE DESIGN'S NO-DRAFT BOX, FOR THE DURATION OF THE COMPARISON. season.js renders the design's
+   markup under the flag; this gives it the design's BOX, which is a padded dashed panel with a block
+   paragraph rather than the portal's one-line flex strip. Measured before writing it: the panel was
+   the whole of the expanded identity editor's 35px height gap — div.nodraft 94.75px against 60.25px,
+   with paddingTop and paddingBottom 16 against 9 — and nothing else in ④ STYLE moved by more than
+   1.5px. Copied from the design's own rule rather than retyped, so it cannot drift from its source.
+   The portal's strip is untouched and returns when the flag comes off. */
+[data-conform] .nodraft{margin-top:12px;padding:16px 14px;background:var(--sunk);border:1px dashed var(--rule2);
+  border-radius:var(--rad-2);text-align:center;display:block;align-items:normal;gap:normal;flex-wrap:nowrap;font-size:revert}
+[data-conform] .nodraft p{margin:0 0 10px;font-size:12.5px;color:var(--ink3)}
 .nd-late{color:var(--warn-ink);font-weight:500}
 
 @media (prefers-reduced-motion:reduce){
