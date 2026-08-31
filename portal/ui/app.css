@@ -670,7 +670,7 @@ input.err,select.err{border-color:var(--del);background:rgba(255,107,107,.06)}
 .dcard{background:var(--dc-bg);color:var(--dc-body)}
 .dcard h6{color:var(--dc-ink)} .dcard .sub{color:var(--dc-mute)}
 .dcard .row{border-bottom-color:var(--dc-rule)} .dcard .row b{color:var(--dc-ink)} .dcard .row span{color:var(--dc-dim)}
-.bar.saved,.stt.saved{color:var(--on-accent);background:var(--c)} .commit,.addrow .go{color:var(--on-accent);background:var(--c,var(--patch))}
+.bar.saved,.stt.saved{color:var(--on-accent)} .commit,.addrow .go{color:var(--on-accent)}
 .bulk button.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
 td,.lane{border-bottom-color:var(--rule3)}
 .who .av:not([data-src]){background:linear-gradient(140deg,var(--avatar-a),var(--raised))}
@@ -3115,7 +3115,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .pill:active{transform:none}
 .pill:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 .pill .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c,var(--ink4));flex:none}
-.pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
 .pill kbd{font:500 10.5px/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
   border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px}
 .pill.on{border-color:var(--c,var(--patch));background:color-mix(in srgb,var(--c,var(--patch)) 13%,transparent);color:var(--ink)}
@@ -3160,7 +3160,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .mark.stack::before{content:"";position:absolute;inset:0;border-radius:var(--rad-1);background:var(--c);
   opacity:.4;transform:translate(4px,-4px)}
 .mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
-  font:700 9px/1 var(--data);color:var(--on-accent,#08131A);background:var(--c,var(--patch))}
+  font:700 9px/1 var(--data);color:var(--on-accent,#08131A)}
 .mark.tier-mythic{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent),0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
 
 
@@ -3223,7 +3223,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .ptc.mark.stack::before{content:"";position:absolute;inset:0;border-radius:var(--rad-1);background:var(--c);
   opacity:.42;transform:translate(4px,-4px);z-index:-1}
 .ptc.mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
-  font:700 9px/1 var(--data);color:var(--on-accent);background:var(--c,var(--patch))}
+  font:700 9px/1 var(--data);color:var(--on-accent)}
 .ptc.mark.stack.same::after{content:"";position:absolute;inset:-3px;border-radius:var(--rad-2);
   box-shadow:0 0 0 1.5px color-mix(in srgb,var(--c) 45%,transparent)}
 .ptc.mark.stack:hover,.ptc.mark.stack:focus-visible{
@@ -5230,7 +5230,7 @@ button .ic,a .ic{pointer-events:none}
   background:var(--c);transform:rotate(45deg)}
 .dnotch i:nth-child(1){top:-3px}
 .dnotch i:nth-child(2){top:13px}
-.ruler span.masked{pointer-events:none;cursor:default}
+.ruler span.masked{opacity:0;pointer-events:none;cursor:default}
 .ruler span.masked b{display:none}
 
 /* The design fills the BAR and leaves the label inside it transparent; the portal painted the label
