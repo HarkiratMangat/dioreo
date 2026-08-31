@@ -121,7 +121,8 @@ fi
 if [ "$cadence" -eq 1 ]; then
   findings="$findings
   RUNNING COMMENTARY - $blocks turns this run produced ONLY prose, against $tools that ran a tool, so
-     keeping pace with the work rather than concluding it. One substantive checkpoint in a long
+     prose is keeping pace with the work rather than concluding it. Each of those is a round trip
+     spent talking. One substantive checkpoint in a long
      autonomous run is fine and is deliberately NOT flagged; a block after each call is the pattern.
      Save it all for one structured summary at the end."
 fi
