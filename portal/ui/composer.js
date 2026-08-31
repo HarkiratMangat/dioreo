@@ -147,8 +147,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
     // The design opens with the first date already set to today — its Track ghost reads "+ Aug 24" and the echo under the field reads it back resolved. An empty field is not the same offer: it asks the reader to supply a date the page already knows, and it is why the mockup's date column measures 151px against an empty 150.
     const todayISO = () => new Date().toISOString().slice(0, 10);
     const [state, setState] = useState({ type: initialType || null, name: '',
-        // The composer opens with today already in it, which is what makes the Track's live ghost
-        // appear the moment it mounts rather than waiting for a keystroke.
+        // The composer opens with today already in it, which is what makes the Track's live ghost appear the moment it mounts rather than waiting for a keystroke.
         aText: todayISO(), aIso: todayISO(),
         bText: '', bIso: null });
     const type = types.find((t) => t.key === state.type) || null;

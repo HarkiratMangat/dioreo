@@ -84,8 +84,7 @@ const SEASON_COLUMNS = [
     } },
     // ⚠️ THE WARNING RIDES BESIDE THE STATE, not in a column of its own: "this outlives the battle pass" is a qualification of what the row IS, and a whole column for a mark that is absent on most rows is a column of empty cells. 🔴 A PILL, NOT A WORD. COMPANION §0.0's law is SHAPE = state, and this cell rendered `live` / `staged` as bare lowercase text — the one column whose entire job is to carry state had no shape at all, while the mockup draws a filled chip on all 39 rows. The Manifest's own default renderer already emits this exact markup; supplying a custom `render` for the warnmark quietly opted out of it. `StatePill` is exported from manifest.js so the two can never drift into two vocabularies again.
     { key: 'state', label: 'State', dataKind: 'right', sortable: false,
-      // The "outlives the battle pass" mark is not lost with the warnmark: the design's own Repairs checks
-      // report it as a finding, which is where a qualification about a row belongs rather than in the row.
+      // The "outlives the battle pass" mark is not lost with the warnmark: the design's own Repairs checks report it as a finding, which is where a qualification about a row belongs rather than in the row.
       render: (row) => html`<${StatePill} state=${row.state} accent=${row.accentHex || `var(${row.topicVar || '--ink3'})`} />` },
 ];
 

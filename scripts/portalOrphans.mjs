@@ -53,17 +53,9 @@ function emittedClasses() {
     return out;
 }
 
-// 🔴 AN ORPHAN THE DESIGN ITSELF EMITS IS NOT THE SAME DEFECT, AND THIS GATE COULD NOT TELL THEM APART.
-// Added 2026-08-31, when the mode collapse deleted the portal-only rule behind `.rowlife` and this gate
-// correctly reported a new orphan. But the mockup's own season.html emits `<div class="rowmeta rowlife">`
-// on every row and its stylesheet defines no `.rowlife` either — it is a semantic hook the DESIGN carries
-// unstyled. Matching it is the conformance pass working; REMOVING it would change the element's class list,
-// which is what the audit pairs on, and desynchronise every node beneath it.
+// 🔴 AN ORPHAN THE DESIGN ITSELF EMITS IS NOT THE SAME DEFECT, AND THIS GATE COULD NOT TELL THEM APART. Added 2026-08-31, when the mode collapse deleted the portal-only rule behind `.rowlife` and this gate correctly reported a new orphan. But the mockup's own season.html emits `<div class="rowmeta rowlife">` on every row and its stylesheet defines no `.rowlife` either — it is a semantic hook the DESIGN carries unstyled. Matching it is the conformance pass working; REMOVING it would change the element's class list, which is what the audit pairs on, and desynchronise every node beneath it.
 //
-// The two cases need different verdicts and the same visibility. A class the PORTAL invented with no rule
-// still fails. A class INHERITED from the design, unstyled on both sides, is reported every run and does
-// not fail — so it can never quietly become an excuse, and it never needs a line in KNOWN_ORPHANS, whose
-// own rule is that it only ever shrinks.
+// The two cases need different verdicts and the same visibility. A class the PORTAL invented with no rule still fails. A class INHERITED from the design, unstyled on both sides, is reported every run and does not fail — so it can never quietly become an excuse, and it never needs a line in KNOWN_ORPHANS, whose own rule is that it only ever shrinks.
 const { designClasses } = createRequire(import.meta.url)('./lib/designClasses.cjs');
 const designEmits = designClasses;
 const fromDesign = designEmits();

@@ -77,6 +77,33 @@ const READ = function () {
 async function capture(realm, browser, port) {
     const page = await browser.newPage();
     await page.setViewport({ width: VIEWPORT.w, height: VIEWPORT.h });
+    // 🔴 THE CLOCK IS FROZEN, AND UNTIL 2026-08-31 IT WAS NOT — which made this the one instrument in the
+    //    suite measuring a page that moves while it is being measured. portalDiff has frozen Date on both
+    //    sides since it was written, and §0.10 already carried the consequence as a filed defect: "a geometry
+    //    failure naming a COUNT is time, not you."
+    //
+    //    It became reproducible the day the mode collapse landed. The season clock used to read from the
+    //    start of a fixture day (that was what made two captures comparable, and it was NOT a clock for a
+    //    running console, so it was refused as class (b) and now reads Date.now()). A live countdown changes
+    //    the WIDTH of its readout as digits roll, so `sizeIssues` flickered by one, and `--write` followed by
+    //    `--check` seconds later disagreed by exactly that. Re-recording would have buried it.
+    //
+    //    Same instant portalDiff pins, and for the same reason: the mockup's own fixtures hardcode
+    //    today: '2026-08-24', and a different instant desynchronises the two sides.
+    const FROZEN = Date.parse('2026-08-24T18:41:00Z');
+    await page.evaluateOnNewDocument((t) => {
+        const RealDate = Date;
+        const Frozen = function (...a) { return a.length ? new RealDate(...a) : new RealDate(t); };
+        Frozen.prototype = RealDate.prototype;
+        Frozen.now = () => t; Frozen.parse = RealDate.parse; Frozen.UTC = RealDate.UTC;
+        window.Date = Frozen;
+        try { performance.now = () => 0; } catch { /* read-only in some builds */ }
+    }, FROZEN);
+    // One page is reused across realms and views here, and the mockup persists five UI keys, so without this a toggle opened while measuring one realm silently changes what the next one measures.
+    await page.evaluateOnNewDocument(() => {
+        try { sessionStorage.clear(); } catch { /* a sandboxed context can refuse */ }
+        try { localStorage.clear(); } catch { /* same */ }
+    });
     await page.goto(`http://127.0.0.1:${port}/harness.html?b=${Date.now()}#/${realm}`, { waitUntil: 'load' });
     // 🔴 NOT rAF: it never fires in a background tab or an off-screen frame, and a pass gated on it reports `pending` forever. `document.fonts.ready` resolves regardless of visibility, and fonts are exactly what the geometry depends on.
     await page.evaluate(() => document.fonts.ready);

@@ -6,14 +6,7 @@
 
 const FIX = window.FIX;
 
-// Conformance mode: the harness renders exactly what the design renders, with every fixture flourish that exists to demonstrate a state switched off. Set by scripts/portalDiff.mjs on every harness capture.
-// 🔴 THIS USED TO BE ?conform=1 AND IT DID TWO JOBS. One is retired: it published data-conform so
-// components could render the mockup's version of a surface the portal was ahead on. The two rendering
-// modes collapsed on 2026-08-31 and there is only one rendering now. The job that REMAINS is fixtures:
-// the mockup's staging store is browser-local and empty on a fresh load, so it draws "0 staged" and no
-// staged strip, while the harness synthesises four changesets so every staged surface is reachable.
-// Renamed so the name says what it does — a parameter that keeps working while meaning something else
-// is exactly what the collapse's own step 4 warns about.
+// Conformance mode: the harness renders exactly what the design renders, with every fixture flourish that exists to demonstrate a state switched off. Set by scripts/portalDiff.mjs on every harness capture. 🔴 THIS USED TO BE ?conform=1 AND IT DID TWO JOBS. One is retired: it published data-conform so components could render the mockup's version of a surface the portal was ahead on. The two rendering modes collapsed on 2026-08-31 and there is only one rendering now. The job that REMAINS is fixtures: the mockup's staging store is browser-local and empty on a fresh load, so it draws "0 staged" and no staged strip, while the harness synthesises four changesets so every staged surface is reachable. Renamed so the name says what it does — a parameter that keeps working while meaning something else is exactly what the collapse's own step 4 warns about.
 const FRESH = new URLSearchParams(location.search).get('fresh') === '1';
 // Published on the root element so COMPONENTS can read it too, not only this stub: the register of deliberate divergences has to reach the render layer or half of them stay invisible to the overlay.
 if (FRESH) document.documentElement.dataset.fresh = '1';

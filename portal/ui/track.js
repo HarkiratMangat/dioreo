@@ -282,9 +282,7 @@ function seasonLastDeadline(season) {
 function deriveFlags(data, window, season, actions) {
     const all = Object.values(data).flat();
     const out = [];
-    // Two derivations the design runs and the portal did not: an item outliving the season's own last
-    // deadline, and two draw windows that overlap. Neither duplicates pastBp, which measures against the
-    // BATTLE-PASS end rather than the season's.
+    // Two derivations the design runs and the portal did not: an item outliving the season's own last deadline, and two draw windows that overlap. Neither duplicates pastBp, which measures against the BATTLE-PASS end rather than the season's.
     {
         const end = seasonLastDeadline(season);
         if (end) {
@@ -544,10 +542,7 @@ function DeadRail({ rail, view, todayIso, flips = {} }) {
     const next = ahead[0] || null;
     const nowP = view.pct(todayIso), nextP = next ? view.pct(next.date) : null;
     const spanOk = next && nowP >= 0 && nextP > nowP && nextP <= 100;
-    // ⚠️ THE RESERVATION HAS TO STAND DOWN WITH THE THING IT RESERVES FOR. railBox sizes the rail for a second row; suppressing only the bar left the 34px it needs, so the lanes stayed where they were and the page looked unchanged. A stand-down that hides an element and keeps its space is not one.
-    // The design's rail carries the deadline flag and the off-window pin and nothing else. The portal's
-    // time-remaining second row comes back with the rest of the re-apply queue; railBox must lose the 34px
-    // it reserves at the same moment, or the lanes stay where they were and the page looks unchanged.
+    // ⚠️ THE RESERVATION HAS TO STAND DOWN WITH THE THING IT RESERVES FOR. railBox sizes the rail for a second row; suppressing only the bar left the 34px it needs, so the lanes stayed where they were and the page looked unchanged. A stand-down that hides an element and keeps its space is not one. The design's rail carries the deadline flag and the off-window pin and nothing else. The portal's time-remaining second row comes back with the rest of the re-apply queue; railBox must lose the 34px it reserves at the same moment, or the lanes stay where they were and the page looks unchanged.
     const showSpan = false;
     const box = railBox(rail, showSpan);
     return html`

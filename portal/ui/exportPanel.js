@@ -73,9 +73,7 @@ function ExportBody({ scopes, overlay }) {
                             <button class="pill sm" onClick=${() => downloadText(r.filename, r.body)}>Take it again</button>
                         </li>`)}
                 </ul>`
-            // 🔴 REGISTERED DIVERGENCE, AND THE DECISION WAS ALREADY MADE. The mockup's empty state reads that one-way operations are held until a session export exists — which is FALSE here: the strip does not gate on a session export, the interlock is the changeset export at Review. portalExport.test.js asserts this string can never appear in this file, with a comment saying exactly why. The conformance pass stands portal-ahead surfaces down; it does not carry a claim the portal cannot honour, even behind a flag anybody can open. The overlay shows a small copy difference here on purpose.
-            // One sentence, because a three-line paragraph makes the drawer 25px taller and moves everything in
-            // it. And TRUE: the design's own line promises a session-export interlock this console does not have.
+            // 🔴 REGISTERED DIVERGENCE, AND THE DECISION WAS ALREADY MADE. The mockup's empty state reads that one-way operations are held until a session export exists — which is FALSE here: the strip does not gate on a session export, the interlock is the changeset export at Review. portalExport.test.js asserts this string can never appear in this file, with a comment saying exactly why. The conformance pass stands portal-ahead surfaces down; it does not carry a claim the portal cannot honour, even behind a flag anybody can open. The overlay shows a small copy difference here on purpose. One sentence, because a three-line paragraph makes the drawer 25px taller and moves everything in it. And TRUE: the design's own line promises a session-export interlock this console does not have.
             : html`<p class="expnone">No export taken this session. The copies kept here live until you reload.</p>`}
         </div>`;
 }
