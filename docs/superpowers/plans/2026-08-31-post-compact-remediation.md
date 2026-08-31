@@ -13,6 +13,37 @@ status: live
 
 **Spec:** none. This is remediation, derived from `docs/superpowers/plans/2026-08-27-portal-conformance.md` and the audit recorded in `docs/db-deferred-list.md`.
 
+---
+
+## 🔴 THE SHAPE OF THIS PLAN, AND WHY IT IS NOT ONE GOVERNING DOCUMENT
+
+Harkirat asked three questions on 2026-08-31 12:3x EDT — scope, depth, authority — and refused to answer any of them: *"these documents are for you, so you need to figure out these questions."* Attacking them changed all three answers away from what I had proposed.
+
+**The premise I had to break first:** all three of my options assumed the problem is what a document CONTAINS. Test that against what actually failed, and of six failure classes **a document could have prevented exactly one**:
+
+| What failed | Could a document have stopped it? |
+|---|---|
+| Three sessions dropped §0.1's precedence | **No — it was IN the document they read** |
+| Shell quoting, TDZ, backticks, dangling ternaries | No. Hooks. |
+| Batching and narration | No. I recited §0.7a while breaking it |
+| **Not knowing something was already decided** | **YES** — the clock, the accent tokens, `dateOnly`, each answered three lines from the code |
+| Not knowing an instrument's limits | Now printed by the instruments |
+| False closes | No — the close condition was written down |
+
+🔴 **And the one it could prevent is a LOOKUP problem, not a reading problem.** *"Has this been decided?"* needs an answer in one `rg` at the moment of doubt, not a section read hours earlier.
+
+**So there are two artifacts of different SHAPES, not one of larger scope:**
+- **This plan is a SEQUENCE.** Bounded, ordered, and it **dies when the tasks land**.
+- **`docs/reference/portal-decision-ledger.md` is a LOOKUP.** Durable, queried, never read start-to-finish. **It is what a realm session actually needs** — Armory has no task list, it has an audit that produces findings and a need to know which are already answered.
+
+⚠️ **Forcing both into one file makes the sequence bury the lookup** — which is precisely what happened to §0.1 inside 787 lines: a lookup buried in a narrative.
+
+**On depth, three tiers rather than one choice:** reasoning that **changes an action** goes inline at the point of use · reasoning that **prices a rule** goes as ONE CLAUSE beside it (*"three sessions dropped this; each re-opened a closed Part"* — eight words, and un-deletable because it names a cost) · pure history goes to the archive. ⚠️ **The one-clause form is not optional**: this repo's culture is that a rule whose cost is invisible gets optimised away, so a stripped rule gets deleted by a future session as noise.
+
+🔴 **On authority: the conformance plan is NOT superseded, and Task 6 is DROPPED.** Superseding buys "a shorter thing to read" and risks breaking references in `CLAUDE.md`, `.claude/rules/`, COMPANION, six instruments and `~/.config/dior` — which no in-repo search can reach. **But "shorter to read" solves none of the six failures above**; §0.1 failed inside a document that WAS read. **Its length is not the defect — its length is a symptom of being the only place anything gets written.** Stop writing to it and the growth stops, with zero references moved.
+
+⚠️ **THEREFORE, THE STANDING RULE FOR EVERY FUTURE SESSION: new discoveries go to the DECISION LEDGER or into INSTRUMENT OUTPUT. Not into the conformance plan.**
+
 ## Global Constraints
 
 - **No push, no PR, no merge without restating the approval** at the moment of the action. `push-approval-gate.sh` demands `Approved by: <who> · to: <what> · when: <the message>`.
@@ -46,6 +77,12 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 ---
 
+🔴 **EVERY TASK BELOW CARRIES A FALSIFIER, AND THAT IS NOT DECORATION.** §0.7c was written as confident prose about an untested procedure and had to be marked untested the same day. **A remediation plan with no falsifiers is that mistake one level up.** If a task's falsifier cannot be stated, the task is not understood well enough to start.
+
+**Ordered by measured expected value, not by number:** **1** (≈25 turns saved today) → **4** (unskippable, and it now carries the ledger annotation) → **5** (the compact boundary) → **2** (highest ceiling, least certain) → the rest → **11** last.
+
+---
+
 ## Task 1: The four mechanical guards
 
 **Files:** Create `.claude/hooks/edit-syntax-guard.sh` + `.test.sh` · Modify `package.json`, `eslint.config.js` (or create)
@@ -70,6 +107,8 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 - [ ] **Step 8: Commit.**
 
+**Falsifier:** each guard refused a real defect in step 2 before it was trusted. ⚠️ **A guard that has never refused anything is not evidence of clean code.**
+
 ---
 
 ## Task 2: The batching and narration hooks
@@ -89,6 +128,8 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 - [ ] **Step 5: Register in `.claude/settings.json`** — ⚠️ **tracked**, never `settings.local.json`, or the enforcement layer becomes unrecoverable on a fresh clone.
 
 - [ ] **Step 6: Commit.**
+
+**Falsifier:** it fires on a one-at-a-time turn AND **stays quiet on a correctly batched one**. ⚠️ **A hook that fires on everything becomes furniture** — that is how the `nested-worktree` warning stopped being read.
 
 ---
 
@@ -111,6 +152,9 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 - [ ] **Step 1: Print above section ①**, in ~12 lines: the four triage buckets (cited / dead-on-both / already-settled / FIX) · **"a FIX row that removes a GATE, a GUARD or a CONDITION is never a triage row"** · §0.7d's rule that the diff finds surfaces and Harkirat closes by looking.
 - [ ] **Step 2: Keep it under 15 lines.** A header nobody reads is the problem restated.
+- [ ] **Step 2b: 🔴 ANNOTATE EACH FINDING WITH ITS DECISION, IF ONE EXISTS.** Match the finding's selector against `portal-decision-ledger.md` and print *"a decision may cover this — check the ledger"*. **A finding is exactly the moment "has this been decided?" arises**, which is why this belongs here and not in a document somebody must remember to open.
+- [ ] **Step 2c: ⚠️ IT ANNOTATES, IT NEVER FILTERS OR SUPPRESSES.** The triage classifier proved the hazard the same day: it could report a false CITED on any `ow-*` row, hiding a real defect on the most-decided surface. **Print a pointer, never a verdict.**
+- [ ] **Step 2d: Falsifier** — feed it a finding on a surface with a known decision and one without. It must annotate the first, stay silent on the second, and **suppress neither**.
 - [ ] **Step 3: Verify by running the audit and reading its first screen.**
 - [ ] **Step 4: Commit.**
 
@@ -128,17 +172,12 @@ Measured on the session of 2026-08-31: **~55 of 120 turns were my own mistakes**
 
 ---
 
-## Task 6: Split the conformance plan
+## Task 6: ⊘ DROPPED — do not split the conformance plan
 
-**Files:** Create `docs/superpowers/plans/2026-08-27-portal-conformance-OPERATING.md` · Modify the 787-line original
+**Dropped 2026-08-31 12:4x EDT by the reasoning above, and it was the riskiest task on this list.** Splitting a 787-line document referenced by `CLAUDE.md`, `.claude/rules/`, COMPANION, the deferred list, six instruments and `~/.config/dior` is the `no half-measures on reorgs` hazard — and it buys only brevity, which solves none of the measured failures. **Task 4 delivers the real benefit by putting the rules where they fire.**
 
-**Why:** it grows ~50 lines per session and **three sessions still dropped its most important section.** Adding is anti-correlated with compliance.
+⚠️ **Do not re-propose this.** Splitting *feels* like progress, which is why I nearly took it.
 
-- [ ] **Step 1: Extract the ~80 operating lines** — the loop, §0.7a's batching contract, §0.7c's buckets, §0.7d's purpose, the close condition, §0.3's viewport. **Nothing explanatory.**
-- [ ] **Step 2: The original stays as the archive.** ⚠️ **Do NOT delete the reasoning** — this repo's culture is that *a rule whose cost is invisible gets optimised away*, and every §0.x section names what it cost.
-- [ ] **Step 3: ⚠️ A split means every cross-reference moves.** `no half-measures on reorgs` is a standing memory. Sweep `CLAUDE.md`, `.claude/rules/`, the deferred list, COMPANION, and `~/.config/dior/` — **that last one is invisible to every in-repo search, including `rg -uu --hidden`, because it is a different repository.**
-- [ ] **Step 4: `npm run docs:audit`** — `xref` catches a moved path that nothing updated.
-- [ ] **Step 5: Commit both files in one commit.**
 
 ---
 

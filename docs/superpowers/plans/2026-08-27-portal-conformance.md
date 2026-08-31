@@ -47,6 +47,8 @@ status: live
 - **Driving the number is what produced the waste** — three false closes, a sweep that compared the portal to itself, an instrument reading 888px of a 4,378px page, and most of one session's 55 wasted turns.
 - **Harkirat's own review order on 2026-08-28: not one of his first three objections was a conformance defect.** His eye is already the test that works; the number never was.
 
+🔴 **WHAT HE IS SHOWN, BECAUSE "HE CLOSES BY LOOKING" IS USELESS WITHOUT A DELIVERABLE.** Found by a reader test on 2026-08-31: §0.7d changed the exit condition and never said what to hand him, so its first use would have produced a percentage — the exact thing it retired. **The deliverable is: both servers running, the two URLs side by side (`:8900` the mockup, `:8901/harness.html?fresh=1#/<realm>` the portal), and the list of decisions I made with their reasons.** Not a report, not a number. **Evidence: on 2026-08-28 he found four composition defects in about two seconds from two screenshots.** ⚠️ He dropped the A/B artifact for Season, which says the ARTIFACT was never the useful part — **the looking is.**
+
 ⚠️ **THIS DOES NOT RETIRE THE INSTRUMENTS.** Run the audit, read the sections, triage per §0.7c — then **read the code around what it points at**. What changes is the exit condition: a realm closes when *he* has looked, not when a percentage is small. **Do not drive a number to zero. Do not report a percentage as an achievement.**
 
 ⛔ **AND THE FLOOR MAKES IT MOOT ANYWAY** — Season's diff can never reach zero: 13 cited differences are kept on purpose and one of them offsets the whole page by 16px.
