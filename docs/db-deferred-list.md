@@ -687,6 +687,26 @@ Conformance closed it toward the design, which is correct — §0.1b's default i
 **Fix:** walk the seven, and add a gate that can tell the two apart if one can be written — a `conforming()` branch returning `null` where the mockup's corresponding node exists is mechanically detectable from the audit's own ② SHAPE output.
 **Verify:** every site either renders the design's version or carries a comment saying the design renders nothing there.
 
+### 🔐 A real-server walk needs `portalDiff`'s session cookie — an ad-hoc puppeteer launch silently measures the DOOR `P1 · S · Sonnet5-High`
+*Found 2026-08-30 20:36 EDT by running one and believing it for a minute.*
+
+`scripts/portalDiff.mjs` carries cookie machinery (it sets a session cookie scoped to `localhost` before navigating). A hand-rolled puppeteer probe does not, so it lands on the sign-in door and reports a page that is **structurally well-formed and completely empty**: `textLen=784`, `rows=0`, **identical on Track, Board and Repairs**, with a single `401 /auth/csrf` in the console as the only tell. Every downstream check then passes vacuously — zero garbage values, zero layout defects, zero console errors beyond the 401 — because there is nothing on the page to be wrong.
+
+🔴 **This is the "a probe returning all zeroes may be measuring an empty page" trap from the plan's §0.10, in its most flattering form**: not zeroes, but a plausible small number repeated identically across three views. Three identical readings look like a stable measurement and are the signature of never having arrived.
+
+**What to do:** extract the authenticated-page setup from `portalDiff.mjs` into a small shared helper (`scripts/lib/portalSession.cjs`) that any real-server walk can call, and have it **assert it got past the door** — a realm-specific selector, the way `portalStates`' `expect` does — rather than returning a page object that may be the door.
+**Verify:** point the helper at the portal with the cookie deliberately omitted and confirm it THROWS naming the door, rather than returning a page. A helper that cannot fail this way reproduces the bug it exists to prevent.
+
+### 🕵️ There is no agent-free code-review path, and this branch has never had an independent read `P1 · M · Opus5-High`
+*Filed 2026-08-30 20:36 EDT, at the moment the substitute was chosen, so the substitution does not pass unnoticed.*
+
+Harkirat's direction is that subagents are off for the portal conformance work. Both review skills — `code-review` and `superpowers:requesting-code-review` — dispatch subagents, so both are unavailable, and the branch `feat/portal-redesign-session-b` is now **eight commits** of instrument changes, new gates and portal edits with **no independent read of any kind**.
+
+The substitute in use is `superpowers:writing-plans`' own Self-Review — spec coverage, placeholder scan, name and prop consistency — which that skill explicitly frames as *"a checklist you run yourself, not a subagent dispatch"*. ⚠️ **It is weaker in a specific, nameable way, not merely "less thorough": a checklist run by the author on the author's diff cannot surface what the author could not see while writing it.** Every defect this session found in its own instruments — the `--open` tie-break, the `PANEL_SIG` scrim, the fused-name detector's two inversions — was found by RUNNING something, never by re-reading the code.
+
+**What to do:** decide which of three this branch gets before it merges — (a) Harkirat reads the diff, (b) subagents are re-enabled for one scoped review pass, or (c) an agent-free reviewer that is a *program* rather than a reading: the branch's own gates already do this for structure, and the gap is composition and correctness.
+**Verify:** whichever is chosen, the branch does not merge until something other than the author has looked at it — and the choice is recorded here, not left as an assumption.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
