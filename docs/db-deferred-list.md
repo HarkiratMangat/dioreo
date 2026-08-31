@@ -719,6 +719,18 @@ The mockup's scrubber renders **39** `.mini` bars; the portal renders **37**. Me
 **What to do:** name the two items (log `scrubItems` before and after the filter against the fixture), then decide — either they have a date the mapping is not reading, or the design draws something specific for a dateless row and the portal should draw the same.
 **Verify:** the strip renders 39 bars, none of them at a NaN offset, and `npm run portal:audit -- --realm season` no longer reports `span.mini` as mockup-only.
 
+### ⏰ `portalGeometry` does not freeze its clock, so a fixture drifts on its own `P2 · S · Sonnet5-High`
+*Found 2026-08-30 22:0x EDT by the one full verification run, not by a gate designed to catch it.*
+
+`scripts/portalDiff.mjs` pins `Date` on both sides before any page script runs — the whole reason its residual has no unexplained floor. **`scripts/portalGeometry.mjs` does not.** It navigates with a cache-buster and reads whatever the wall clock says.
+
+So any recorded value derived from *today* drifts without a code change. Measured: Home's fixture failed with `sections: … Stops by then 7 … → … Stops by then 6 …`, and `home.js:131` renders `Stops by then <b>${ending.length}</b>` — a count of what ends before the next deadline. One item ended since the fixture was written. Nothing in the portal changed.
+
+🔴 **This is the same class as everything else this session's instruments were corrected for: a difference reported that is not a difference.** It is worse here than a false positive, because the remedy on offer is `--write`, and re-recording makes it go away without anyone learning why — the tool's own message even suggests it. §0.45 already warns that re-recording a baseline is not a gate passing; this is the case that proves it.
+
+**What to do:** mirror `portalDiff`'s `evaluateOnNewDocument` Date shim into `portalGeometry`, with the same `--at 2026-08-24` default so the two instruments measure under one clock. ⚠️ **It invalidates every existing fixture** — all seven were recorded unfrozen — so the change and a full `--all --write` belong in the same commit, with the before/after diffed to confirm only date-derived values moved.
+**Verify:** record a fixture, wait past a boundary the data crosses (or fake it with `--at`), re-check, and confirm it still matches. Today that check fails.
+
 ### 🔬 Overlays on the five realms other than Season have still never been opened `P1 · L · Sonnet5-XHigh`
 *Filed 2026-08-30 11:5x EDT, when Season's four became the first overlays ever compared.*
 
