@@ -4,8 +4,21 @@
 //
 // It also reads the REGISTRY rather than a second list: op types come from core/ops's own listOpTypes(), scopes from utils/adminAccess's MANAGE_PAGE_SCOPES/ADMIN_COMMANDS, and the human labels from portal/api/access.js's PAGE_LABELS/COMMAND_LABELS. Nothing below is retyped.
 import { createRequire } from 'node:module';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
-const REPO = '/Applications/Claude Code/Diors-Builds';
+// 🔴 REPO IS DERIVED, NEVER HARDCODED. It read `/Applications/Claude Code/Diors-Builds` until 2026-08-31 -- an absolute path to one laptop -- so this could only ever run on that machine. CI failed with `Cannot find module '/Applications/Claude Code/Diors-Builds/core/ops'` the first time the branch was pushed, and the reason it took six days to surface is that `portal:gate` joined `npm test` on 2026-08-25 while the branch was not pushed until 2026-08-31: nothing ran it anywhere but here. ⚠️ Walking up to the nearest package.json also survives the package being moved, which a fixed count of `..` would not.
+const repoRoot = () => {
+    let dir = dirname(fileURLToPath(import.meta.url));
+    while (!existsSync(join(dir, 'package.json'))) {
+        const up = dirname(dir);
+        if (up === dir) throw new Error('no package.json above the mockup package');
+        dir = up;
+    }
+    return dir;
+};
+const REPO = repoRoot();
 
 const mongoose = require(`${REPO}/node_modules/mongoose`);
 await mongoose.connect('mongodb://localhost:27017/diors-builds-dev');
