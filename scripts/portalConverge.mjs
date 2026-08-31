@@ -16,7 +16,7 @@ const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args
 const realm = flag('--realm', 'broadcast');
 const view = flag('--view', null);
 const MOCKUP = `http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive/${realm === 'home' ? 'index' : realm}.html`;
-const HARNESS = `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
+const HARNESS = `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}#/${realm}`;
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
 const PROPS = ['fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textTransform', 'color',
     'backgroundColor', 'borderRadius', 'paddingTop', 'paddingLeft', 'minHeight', 'textAlign', 'gap'];

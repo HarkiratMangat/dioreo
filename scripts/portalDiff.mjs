@@ -131,7 +131,7 @@ const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
 const mockupUrl = `${MOCKUP}/${MOCKUP_PAGE}`;
 const portalUrl = selfTest ? mockupUrl
-    : portalMode === 'harness' ? `${PORTAL_HARNESS}?conform=1&b=${Date.now()}#/${realm}`
+    : portalMode === 'harness' ? `${PORTAL_HARNESS}?fresh=1&b=${Date.now()}#/${realm}`
     : `${PORTAL_REAL}/?b=${Date.now()}#/${realm}`;
 
 // ── SIGNING THE DIFF IN ─────────────────────────────────────────────────────────────────────────────

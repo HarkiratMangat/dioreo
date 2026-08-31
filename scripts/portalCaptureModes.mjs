@@ -10,6 +10,13 @@
 //
 // This runs ONCE, before the collapse, and it is the irreversible step of that work.
 //
+// 🔴 IT HAS RUN, AND IT CANNOT RUN AGAIN. The collapse landed 2026-08-31; there is no conform-OFF
+// rendering left for this to photograph, and the parameter no longer selects one. The file is kept as the
+// PROVENANCE of the published record, not as a tool to reach for:
+//   https://claude.ai/code/artifact/48baf822-3a53-46d0-9fe9-93da8e00d104
+// Its data-conform arrival assertion will now refuse every run, which is correct: the state it was
+// written to prove reachable is gone.
+//
 // 🔴 IT CAPTURES ALL SIX REALMS, NOT THE ONE BEING WORKED. Measured 2026-08-30 23:4x EDT: the shared tail changes
 // the conform-OFF rendering of realms nobody has opened. `tokens.css:323` sets --ctl-min/--ctl-pad/--ctl-rad, which
 // is every button in the app; `app.css:5195` includes `.mh-stats .stat .v.zero`, the masthead all six inherit;

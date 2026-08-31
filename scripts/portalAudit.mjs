@@ -53,7 +53,7 @@ const CAP = has('--all') ? 1e9 : 25;
 
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const MOCKUP = `http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`;
-const HARNESS = `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
+const HARNESS = `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}#/${realm}`;
 // The mockup's fixtures hardcode this day and the freeze cannot move it — see the conformance plan §0.6.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
 

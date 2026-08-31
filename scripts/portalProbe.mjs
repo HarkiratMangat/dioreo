@@ -27,7 +27,7 @@ if (!sel) { console.error('portal:probe needs --sel "<css selector>"'); process.
 
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const MOCKUP = `http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`;
-const HARNESS = selfTest ? MOCKUP : `http://localhost:8901/harness.html?conform=1&b=${Date.now()}#/${realm}`;
+const HARNESS = selfTest ? MOCKUP : `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}#/${realm}`;
 // Same instant as every other instrument here, for the same reason: an unfrozen clock moves the countdown between two captures taken seconds apart.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
 
