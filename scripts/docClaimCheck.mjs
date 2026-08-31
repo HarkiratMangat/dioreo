@@ -1,27 +1,17 @@
 #!/usr/bin/env node
 // scripts/docClaimCheck.mjs — A COMMAND WRITTEN INTO A DOCUMENT IS A CLAIM, AND AN UNRUN CLAIM IS A GUESS.
 //
-// 🔴 WHY. Two read-only audits found the same producer four times over: I wrote a command or a check into a
-// document and never ran it. The clearest case — the remediation plan's own pre-merge drift check said
+// 🔴 WHY. Two read-only audits found the same producer four times over: I wrote a command or a check into a document and never ran it. The clearest case — the remediation plan's own pre-merge drift check said
 //
 //     git rev-list --left-right --count origin/main...origin/v3-pre-release   →  "0 0 means identical"
 //
-// which is the WRONG PAIR and is non-zero BY DESIGN during a pre-release line. It would have read red
-// forever, for the wrong reason, while never testing whether the merge target had moved — and a gate that
-// always reads red trains the reader to ignore it. Nobody ran it. It shipped. The same producer wrote a
-// ledger header telling sessions to `rg` a prose file (measured afterwards: 1 hit of 6) and a handoff
-// script pinned to a plan filename designed to be superseded.
+// which is the WRONG PAIR and is non-zero BY DESIGN during a pre-release line. It would have read red forever, for the wrong reason, while never testing whether the merge target had moved — and a gate that always reads red trains the reader to ignore it. Nobody ran it. It shipped. The same producer wrote a ledger header telling sessions to `rg` a prose file (measured afterwards: 1 hit of 6) and a handoff script pinned to a plan filename designed to be superseded.
 //
-// This runs the commands a doc asserts, and prints what they ACTUALLY return, beside what the doc claims.
-// It does not judge — judging is the reader's job. **It removes the excuse of not having looked.**
+// This runs the commands a doc asserts, and prints what they ACTUALLY return, beside what the doc claims. It does not judge — judging is the reader's job. **It removes the excuse of not having looked.**
 //
 // USAGE   node scripts/docClaimCheck.mjs [--doc <path>]
 //
-// ⚠️ WHAT IT WILL NOT DO: run anything that writes, pushes, merges, deletes, or installs. A doc full of
-// destructive commands is exactly where an over-eager checker does real damage, so the allowlist is
-// POSITIVE — a command is run only if it matches a known-read-only shape — and everything else is listed
-// as "not run, verify by hand" rather than silently skipped. **A skipped check that looks like a pass is
-// the defect this whole file exists to fight.**
+// ⚠️ WHAT IT WILL NOT DO: run anything that writes, pushes, merges, deletes, or installs. A doc full of destructive commands is exactly where an over-eager checker does real damage, so the allowlist is POSITIVE — a command is run only if it matches a known-read-only shape — and everything else is listed as "not run, verify by hand" rather than silently skipped. **A skipped check that looks like a pass is the defect this whole file exists to fight.**
 
 import fs from 'fs';
 import path from 'path';
