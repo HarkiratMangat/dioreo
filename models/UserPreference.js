@@ -10,6 +10,7 @@ const UserPreferenceSchema = new mongoose.Schema({
     seasonalVisibility: { type: String, default: 'public' },
     timestampVisibility: { type: String, default: 'public' },
     settingsVisibility: { type: String, default: 'public' },
+    colorsVisibility: { type: String, default: 'public' },
     defaultRegion: { type: String, default: 'region_10' },
     // Added 2026-07-12 alongside /settings' region toggle becoming a 3-option dropdown. `defaultRegion` above keeps auto-tracking whatever region was last actually viewed/toggled (unchanged behavior); this new field controls what /draw prices' opening view actually uses: 'last_viewed' (default) behaves exactly as before (whatever `defaultRegion` currently holds), while 'region_10'/ 'region_30' PIN the display to that region regardless of what gets toggled elsewhere -- drawprices.js's execute() checks this before falling back to defaultRegion.
     defaultRegionMode: { type: String, default: 'last_viewed' },

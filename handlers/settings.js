@@ -106,6 +106,8 @@ async function route(interaction) {
             if (action === 'timestamp_ephemeral') prefs.timestampVisibility = 'ephemeral';
             if (action === 'settings_public') prefs.settingsVisibility = 'public';
             if (action === 'settings_ephemeral') prefs.settingsVisibility = 'ephemeral';
+            if (action === 'colors_public') prefs.colorsVisibility = 'public';
+            if (action === 'colors_ephemeral') prefs.colorsVisibility = 'ephemeral';
             // Calendar's Active/All Events filter moved here from an in-page /calendar toggle (2026-07-31 14:00 EDT, per Harkirat's explicit request) -- lives on /settings' page 1 (Preferences), so the re-render below needs page 1, not the page-0 default every other toggle here uses.
             if (action === 'calfilter_active') prefs.calendarEventFilter = 'active';
             if (action === 'calfilter_all') prefs.calendarEventFilter = 'all';
