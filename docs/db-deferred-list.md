@@ -848,6 +848,23 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 **Verify:** `rg -c 'conforming\(\)' portal/ui/*.js` and `rg -c 'data-conform' portal/ui/app.css` both reach zero except for deliberate (b)/(c) keeps that carry a comment naming which; the Season conform figures are unchanged from their pre-collapse values; and no doc still describes `?conform=1` as a live mode.
 
+### 🔀 MERGE CADENCE — DECIDED 2026-08-31 12:1x EDT: MERGE THIS BRANCH, THEN ONE PR PER REALM `P1 · M · Opus5-High`
+**Harkirat:** *"sure we can merge the current branch. But note that it does not only contain Season Realm's work, it contains MUCH more. And then we can do a pr/merge per realm."*
+
+⚠️ **THE BRANCH IS NOT "SEASON".** 281 commits · 198 files · 53,795 insertions since `v3-pre-release`. It carries the Preact migration, the instrument suite, the mode collapse, Season's conformance, a destructive-surface behaviour change and the portal's whole build. **The changelog entry titled *"the portal conformance pass"* understates it and must be rewritten before the merge**, or the release record names a fraction of what shipped.
+
+**Why now:** `docs:audit` reported the unfilled `(#PR)` on every run for six days and I called it expected every time — **a gate pre-classified as noise had stopped being a gate.** At six realms this would be 400+ commits reviewed in one pass, by one person who cannot approve his own PR.
+
+🔴 **DEFERRED PAST A COMPACT** (Harkirat, 2026-08-31 12:2x EDT — ~780k context, the suites and the merge ceremony do not fit). **The steps, in order:**
+1. `npm test` · `docs:audit` · `node scripts/portalGeometry.mjs --all --check` — **read exit codes, never a piped tail.**
+2. Rewrite the changelog entry's scope line to name what the branch actually carries.
+3. Push the branch. ⚠️ **Restate the approval at the gate** — `push-approval-gate.sh` demands the sentence and an approval does not carry itself.
+4. `gh pr create --base v3-pre-release` — ⚠️ **NOT `main`.** `gh` defaults to `main` and a v3 PR merged there fails silently.
+5. Fill the `(#PR)` citation on the branch, commit, then `gh pr merge --squash --delete-branch`.
+6. **No tag** — the pre-release line mints none until `v3.0.0`.
+
+**Verify:** `git rev-list --count origin/v3-pre-release..HEAD` returns 0, and `docs:audit` no longer reports an unfilled `(#PR)`.
+
 ### 🔴 A PATCH-NOTE ROW CAN NOW BE RENAMED AND REMOVED THROUGH A DRAW'S OP PATH `P0 · S · Opus5-High`
 **Introduced 2026-08-31 by me, found the same day by an adversarial pass rather than by any gate.** Removing the `dataset.conform` gate on `toManifestRows`' patch-note block was correct on composition grounds — the design lists them and excluding them made the portal contradict its own export. **But the gate was doing TWO jobs**, and the second was keeping publications out of an action surface.
 

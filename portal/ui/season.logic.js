@@ -309,6 +309,13 @@ function toChronoDateString(value) {
 }
 
 function buildSeasonEditOp(row, columnKey, newValue) {
+    // 🔴 A PUBLICATION IS NOT A CALENDAR ENTRY, AND THIS FUNCTION ONLY KNOWS TWO SHAPES. It branches on
+    //    isDraw and everything else falls to calendar.edit — so once patch notes joined the Manifest
+    //    (2026-08-31, when the conformance collapse removed the flag that had kept them out) a row edit
+    //    on a publication built a calendar op carrying a patch-note document. Refuse it here rather than
+    //    rely on core/ to reject it: "probably refused by a layer I did not check" is not a guard.
+    //    Patch notes are edited in the Season Record panel, which is their home.
+    if (row.lane === 'patchNotes') return null;
     const isDraw = row.lane === 'newDraws' || row.lane === 'returningDraws';
     const type = isDraw ? 'draw.edit' : 'calendar.edit';
     const target = isDraw ? { category: LANE_TO_CATEGORY[row.lane], elementId: row.id } : { elementId: row.id };

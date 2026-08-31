@@ -36,7 +36,26 @@ status: live
 
 **Measured on Season's Board:** 664 reported differences → 10, in five batched passes rather than sixty single ones. Broadcast holds at 0.3% in both views throughout, which is the shared-surface regression check.
 
+## §0.7d — 🔴 WHAT A REALM PASS IS *FOR* — DECIDED BY HARKIRAT 2026-08-31 12:1x EDT. READ THIS BEFORE §0.6a OR §0.7c.
+
+**The diff finds SURFACES. I read the CODE around each. Harkirat closes the realm BY LOOKING.**
+
+🔴 **THE PERCENTAGE IS NO LONGER THE TARGET.** It is a pointer to code worth reading, and nothing else. This reverses §0.6a's *"closure stops being my opinion and becomes a number"* — that rule solved a real problem (adjudication-by-judgement, three false closes) and created a bigger one.
+
+**The evidence, measured over Season's ~700 turns:**
+- **Every real defect came from reading code around a difference, never from the number** — the ruler mask that had never applied once, `dateOnly` making a windowed draw permanently LIVE forever, `oneway.js` promising an export interlock that does not exist, a broken banner asserting *"image cached and serving"*, the patch-note rows reaching a draw's op path.
+- **Driving the number is what produced the waste** — three false closes, a sweep that compared the portal to itself, an instrument reading 888px of a 4,378px page, and most of one session's 55 wasted turns.
+- **Harkirat's own review order on 2026-08-28: not one of his first three objections was a conformance defect.** His eye is already the test that works; the number never was.
+
+⚠️ **THIS DOES NOT RETIRE THE INSTRUMENTS.** Run the audit, read the sections, triage per §0.7c — then **read the code around what it points at**. What changes is the exit condition: a realm closes when *he* has looked, not when a percentage is small. **Do not drive a number to zero. Do not report a percentage as an achievement.**
+
+⛔ **AND THE FLOOR MAKES IT MOOT ANYWAY** — Season's diff can never reach zero: 13 cited differences are kept on purpose and one of them offsets the whole page by 16px.
+
+---
+
 ## §0.7c — HOW TO WORK A REALM WITHOUT SPENDING A SESSION ON IT (written 2026-08-31 after Season cost one)
+
+⚠️ **UNTESTED, AND ITS HEADLINE RATIO DOES NOT TRANSFER.** Written from Season, after Season, and never run on anything. Season's triage collapsed to 23 FIX of 169 because **83 rows were cited by decisions made minutes earlier in the mode collapse** — Armory has no collapse behind it, so its findings will be genuinely open and that ratio will not repeat. It also covers a RESTING pass while being titled *how to work a realm*; Armory earns the interaction tier, which the four-call loop does not include. **Falsifier: Armory's resting pass in ≤10 calls, or the failure gets written in here the way it was into §0.7a.**
 
 🔴 **THIS SECTION EXISTS BECAUSE SEASON'S TAIL — five ② SHAPE findings — COST ROUGHLY TWENTY-FIVE TURNS.** Harkirat, 2026-08-31 11:0x EDT: *"I'm afraid you're going to waste multiple sessions and hundreds of turns on armory realm, and then again on analytics."* §0.7a already said ②–⑤ are each ONE BATCH; it was loaded at session start and worked against anyway. **A rule that has been ignored once needs the failure written beside it, not a louder restatement.**
 

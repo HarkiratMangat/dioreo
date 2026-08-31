@@ -1017,6 +1017,12 @@ export function SeasonRealm({ session }) {
 
     // Season's deletions STAGE, like everything else it composes — so the confirmation's job is to say that, and to name the items, because a draw and a calendar event are the same row shape here and a reader picking three of thirty needs to see which three.
     function confirmBulkDelete(ids) {
+        // 🔴 THE BULK PATH NEEDS THE SAME LANE GUARD AS THE ROW ONE. Season's table is selectable, so a
+        //    selection can include a publication — and season.delete is a calendar/draw op. Dropping them
+        //    here rather than at the server keeps the confirm dialog HONEST about what it is about to stage.
+        const dropped = rowsById(ids).filter((r) => r.lane === 'patchNotes').length;
+        ids = ids.filter((id) => (rowsById([id])[0] || {}).lane !== 'patchNotes');
+        if (!ids.length) { setPageError('Patch notes are removed from the Season Record, not the table.'); return; }
         const chosen = rowsById(ids);
         overlay.confirm({
             op: 'season.delete', tier: 2, danger: true, confirmLabel: 'Stage deletion',
@@ -1207,7 +1213,7 @@ export function SeasonRealm({ session }) {
                                             headerRight=${`${drawsLive} draws · ${(state.live?.calendar || []).length} calendar items`}
                                             bulkNote="Reversible — a staged removal is discarded, never undone"
                                             bulkTier=${2} rowNoun=${['item', 'items']}
-                                            onRemove=${(row) => (row.isDraft ? null : confirmBulkDelete([row.id]))} removeLabel="Remove"
+                                            onRemove=${(row) => (row.isDraft || row.lane === 'patchNotes' ? null : confirmBulkDelete([row.id]))} removeLabel="Remove"
                                             emptyText="This season has no draws or calendar items yet." 
                                             onAdd=${null} realm="season" csrfToken=${session.csrfToken}
                                             buildEditOp=${buildSeasonEditOp}
