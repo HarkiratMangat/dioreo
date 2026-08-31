@@ -120,7 +120,7 @@ if [ "$dup" -gt 0 ]; then
 fi
 if [ "$cadence" -eq 1 ]; then
   findings="$findings
-  RUNNING COMMENTARY - $blocks narration messages against $tools tool-carrying ones, so prose is
+  RUNNING COMMENTARY - $blocks turns this run produced ONLY prose, against $tools that ran a tool, so
      keeping pace with the work rather than concluding it. One substantive checkpoint in a long
      autonomous run is fine and is deliberately NOT flagged; a block after each call is the pattern.
      Save it all for one structured summary at the end."
@@ -133,7 +133,7 @@ if [ "$qprose" = "true" ]; then
 fi
 if [ "$run" -ge 40 ]; then
   findings="$findings
-  ONE-AT-A-TIME, SUSTAINED - $run consecutive messages each ran exactly ONE work-tool call. That is
+  ONE-AT-A-TIME, SUSTAINED - $run consecutive turns each ran exactly ONE work-tool call. That is
      the measured 85th percentile of 615 real turns, so it is not an ordinary run. Batch the rest of
      this unit: independent probes into one ctx_batch_execute, edits into one python heredoc with the
      verification chained on. If each call genuinely needed the previous one output, that is a real
