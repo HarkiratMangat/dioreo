@@ -162,6 +162,16 @@ Both resolve the same way: **change the portal, after all six realms match.** Ne
 
 ---
 
+## §0.6c — 🔴 CHEAPEST INSTRUMENT FIRST: `--triggers` BEFORE `--open`, ON EVERY REMAINING REALM (added 2026-08-31 16:0x EDT)
+
+**The overlay tier was being scoped as though every overlay had to be opened. It does not.** `--triggers` lists every openable control on BOTH sides and marks the one-sided ones, in ONE call, with nothing opened — and on Armory that single call produced thirteen real differences (keyboard hints, appended counts, a truncated label, a raw id, seven missing category chips, one fused accessible name). **None of them was an overlay finding.** They are ③ WORDS and inventory findings on the resting page, and they would otherwise have been paid for at overlay prices.
+
+**Then check the imports before budgeting the tier.** A realm that imports `useOverlay` from `overlay.js` and `Shell`/`Masthead` from `shell.js` builds no overlay chrome of its own: its scrim, panel frame, header, button row and type scale are the shell's, already conformed. **Overlay conformance is then mostly a DERIVATIVE of shell conformance**, which is why Season's overlays measured 0.2–1.2% once its shell was right. `rg -n "^import" portal/ui/<realm>.js` settles it in one call, and it is the difference between an open-ended tier and roughly three calls.
+
+⚠️ **The floor/ceiling distinction that keeps this honest:** `--triggers` filters out data rows, so an overlay reachable only from a table row never appears in it. **The listing is a FLOOR on what exists, never a ceiling** — Season needed `--open-sel` for precisely that case. And an overlay mounted inside `main` is a different component from one at the root (the trapped-scrim finding), so the first `--open` of a realm still has to be run: a reading near Season's 0.2% is what confirms the inheritance is real.
+
+---
+
 ## §0.6a — 🔴 THE OVERLAY METHOD. THIS IS HOW A REALM IS BUILT AND CLOSED NOW (Harkirat, 2026-08-28 20:1x EDT)
 
 **His proposal, and it is the right one:** stop adjudicating a 220-row difference list by judgement, and make the two pages produce the same pixels. Closure stops being my opinion and becomes a number. **Proved on Broadcast the same evening: 8.4% across 16 regions and a 274px height gap → 0.3% across 28 regions with the two pages at EXACTLY 1258px.**
