@@ -732,4 +732,51 @@ check('the rail carries a patch note inside the window and drops one outside it'
     assert.deepStrictEqual(rail.patches.map((x) => x.title), ['In view']);
 });
 
+// 🔴 THE DESIGN MARKS THE BAR THAT A REPAIRS FINDING IS ABOUT, AND THE PORTAL MARKED NOTHING. The mockup's markFlagged() strips the finding-kind prefix off the id, drops anything merely informational, and adds `flagged` to that bar — so a reader scanning the Track sees WHICH item the finding below is talking about. The portal already emits `data-id` on every bar and point and already computes the findings; the only missing piece was the mapping between them, which is why the audit reported `div.bar.flagged.saved` as mockup-only twice over.
+//
+// ⚠️ `past-bp-` IS A LONGER PREFIX THAN `past-` AND MUST BE STRIPPED FIRST. The battle-pass finding ids read `past-bp-<id>`; a regex that takes `past-` alone leaves `bp-<id>`, which matches no bar and marks nothing — the silent-miss shape the mockup's own console.warn exists to catch.
+check('flaggedIds maps a finding id back to the bar it is about, and ignores the informational ones', () => {
+    const { flaggedIds } = require('../portal/ui/track.logic');
+    const got = flaggedIds([
+        { id: 'ovl-a1', sev: 'warn' },
+        { id: 'past-b2', sev: 'warn' },
+        { id: 'gap-c3', sev: 'warn' },
+        { id: 'past-bp-d4', sev: 'warn' },
+        { id: 'dupe-e5', sev: 'warn' },
+        { id: 'ovl-f6', sev: 'info' },
+        { id: 'plain-g7', sev: 'warn' },
+    ]);
+    assert.ok(got.has('a1') && got.has('b2') && got.has('c3'), 'the three prefixes the design strips must all resolve');
+    assert.ok(got.has('d4'), 'past-bp- must strip as the longer prefix, not leave bp-d4');
+    assert.ok(got.has('e5'), 'dupe- is a finding about a specific row and marks it');
+    assert.ok(!got.has('f6'), 'an informational finding marks nothing — the design filters sev!==info');
+    assert.strictEqual(got.has('plain-g7'), true, 'an id with no known prefix is used as-is rather than dropped');
+});
+
+check('flaggedIds is silent on nothing, and never returns undefined for a caller to spread', () => {
+    const { flaggedIds } = require('../portal/ui/track.logic');
+    assert.strictEqual(flaggedIds([]).size, 0);
+    assert.strictEqual(flaggedIds(null).size, 0);
+    assert.strictEqual(flaggedIds(undefined).size, 0);
+});
+
+// 🔴 ONLY THE MECHANICAL FINDINGS MARK A ROW, and the first version of this marked THIRTEEN where the design marks two. The split the Repairs view is built on — what a machine can be SURE of, against what only a person can decide — is the same split that decides whether a bar wears the mark. A draw served without a calendar window is a judgement call about eleven perfectly valid rows; painting all eleven says "these are wrong", which is precisely the sentence the mechanical/judgement split exists to avoid making. The banner rows are excluded for a different reason: their id is a season FIELD KEY, never an item id, so it could not match a bar even if it were meant to.
+check('findingBarIds marks only what a machine can be sure of — not the judgement calls', () => {
+    const { findingBarIds } = require('../portal/ui/track.logic');
+    const data = {
+        event: [{ id: 'e1', title: 'Same Name', startDate: '2026-08-10', kind: 'span' },
+                { id: 'e2', title: 'Same Name', startDate: '2026-08-10', kind: 'span' },
+                { id: 'e3', title: 'Runs Long', startDate: '2026-08-01', endDate: '2026-09-30', kind: 'span' },
+                { id: 'e4', title: '2x CP Bonanza', startDate: '2026-08-02', kind: 'span' }],
+        draw: [{ id: 'd1', title: 'Synthetic Draw', date: '2026-08-05', dateOnly: true, kind: 'point' }],
+        drawwindow: [{ id: 'w1', title: 'Orphan Window', startDate: '2026-08-03', endDate: '2026-08-09', kind: 'span' }],
+    };
+    const ids = findingBarIds(data, { bpEnd: '2026-09-01' }, {});
+    assert.ok(ids.has('e2'), 'the duplicate row is mechanical and marks');
+    assert.ok(ids.has('e3'), 'running past the battle pass is mechanical and marks');
+    assert.ok(ids.has('w1'), 'a draw window matching no draw is mechanical and marks');
+    assert.ok(!ids.has('d1'), 'a draw served synthetic is a JUDGEMENT call and must not paint the row as wrong');
+    assert.ok(!ids.has('e4'), 'looks-like-2xCP is a judgement call and must not mark');
+});
+
 process.exit(failures ? 1 : 0);

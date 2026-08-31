@@ -241,6 +241,64 @@ function findExpiringBanners(season) {
                 : 'a signed Discord link — it stops resolving once its own deadline passes' }));
 }
 
+// 🔴 THE FINDING NAMES THE ROW IT IS ABOUT, AND NOTHING CARRIED THAT BACK TO THE BAR. The design's markFlagged() strips the finding-kind prefix off the id and marks the matching bar, so a reader scanning the Track can see WHICH item the finding underneath is talking about. Every ingredient was already here — the bars emit data-id, the findings are computed in this file — and only the mapping was missing, which is why the audit reported div.bar.flagged.saved as mockup-only.
+//
+// ⚠️ past-bp- IS STRIPPED BEFORE past-, because a regex that takes the shorter prefix first leaves bp-<id>, which matches no bar and marks nothing. That is a silent miss, and the design's own version keeps a console.warn for exactly this shape of failure.
+//
+// ⚠️ An id with no recognised prefix is used AS-IS rather than dropped: a finding kind added later should mark its row by default and be narrowed deliberately, not vanish because this list is stale.
+const FLAG_PREFIX = /^(past-bp|ovl|past|gap|dupe)-/;
+function flaggedIds(flags) {
+    const out = new Set();
+    for (const f of flags || []) {
+        if (!f || f.sev === 'info') continue;
+        out.add(String(f.id).replace(FLAG_PREFIX, ''));
+    }
+    return out;
+}
+
+// 🔴 ONE RULE, TWO CONSUMERS. Repairs computed these six inline and the Track marked nothing, so the bar a finding is ABOUT carried no sign of it — the audit reported div.bar.flagged.saved as mockup-only twice over. Extracted here so the Track can mark the rows without a second implementation of the same question: two implementations of one idea is exactly the failure this file already carries a comment about, where assignRows and the mockup's version disagreed.
+//
+// ⚠️ THE COPY STAYS IN THE COMPONENT. Only the row SELECTION moves — the notes, the labels and the conform-flag wording belong where they are read, and dragging them in here would make this file answer a question it has no business holding.
+function findingRows(data, season, opts) {
+    const o = opts || {};
+    const all = Object.values(data || {}).flat();
+    const spans = all.filter((i) => i.kind !== 'point');
+    const draws = [...((data || {}).draw || []), ...((data || {}).returning || [])];
+    const bpEnd = season && season.bpEnd ? String(season.bpEnd).slice(0, 10) : '';
+    const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+    const seen = new Map(); const dupe = [];
+    for (const e of ((data || {}).event || []).concat((data || {}).playlist || [], (data || {}).drawwindow || [])) {
+        const k = norm(e.title) + '|' + String(e.startDate || e.date || '').slice(0, 10);
+        if (seen.has(k)) dupe.push({ id: e.id, label: e.title, seenAs: seen.get(k) });
+        else seen.set(k, o.conforming ? String(e.id || '').slice(-6) : e.title);
+    }
+    const banner = findExpiringBanners(season).map((b) => ({ id: b.key, label: b.label, why: b.why }));
+    const pastBp = (bpEnd ? all.filter((i) => i.endDate && String(i.endDate).slice(0, 10) > bpEnd) : [])
+        .map((i) => ({ id: i.id, label: i.title, item: i }));
+    const orphanWindows = ((data || {}).drawwindow || [])
+        .filter((w) => !draws.some((d) => { const a = norm(d.title), b = norm(w.title); return a && b && (a.includes(b) || b.includes(a)); }))
+        .map((w) => ({ id: w.id, label: w.title }));
+    const noWindow = draws.filter((d) => d.dateOnly).map((d) => ({ id: d.id, label: d.title, item: d }));
+    // BOTH a CP token AND a doubling word: "CP Rebate Offer" is not a 2x event and neither is "2x Weapon XP".
+    const untagged2x = spans.filter((i) => !i.isDoubleCP
+            && /\b(cp|cod points?)\b/i.test(i.title || '') && /(^|\W)(2\s*[x×]|double)\b/i.test(i.title || ''))
+        .map((i) => ({ id: i.id, label: i.title }));
+    return { dupe, banner, pastBp, orphanWindows, noWindow, untagged2x, bpEnd };
+}
+
+// 🔴 ONLY THE MECHANICAL FINDINGS MARK A ROW. The first version marked THIRTEEN where the design marks two, because it included the judgement checks — and eleven of those thirteen were draws served without a calendar window, which is a question about eleven perfectly valid rows rather than a fault in them. Painting all eleven says "these are wrong", the exact sentence the mechanical/judgement split in Repairs exists to avoid making.
+//
+// ⚠️ The banner rows are excluded for a different reason and it is not severity: their id is a season FIELD KEY, never an item id, so it could not match a bar even if it were meant to.
+function findingBarIds(data, season, opts) {
+    const r = findingRows(data, season, opts);
+    const out = new Set();
+    for (const g of [r.dupe, r.pastBp, r.orphanWindows]) {
+        for (const row of g) if (row && row.id) out.add(String(row.id));
+    }
+    return out;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor, clusterPoints, railBox, CLUSTER_PX, stemLabels, findExpiringBanners };
+    module.exports = { flaggedIds, findingRows, findingBarIds, bandClass, laneFor, tierOf, barGeometry, findOverlaps, findGaps, findDuplicateTitles, normalizeTitle, assignRows, LANE_ORDER, dateFromOffset, editOpFor, clusterPoints, railBox, CLUSTER_PX, stemLabels, findExpiringBanners };
 }

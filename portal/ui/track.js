@@ -13,7 +13,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useCallback, useRef } from '../vendor/preact-hooks.mjs';
 import { Fold } from './icons.js';
 import { useMeasured } from './useMeasured.js';
-/* global inkOnTopic */
+/* global inkOnTopic, flaggedIds, findingRows, findingBarIds */
 import { conforming } from './conform.js';
 
 // 🔴 SHAPE carries state, COLOUR carries topic (spec §9). The lane's own accent is a CSS custom property the rule reads; it never appears in a class name. `point` vs `span` is the lane's KIND — models/SeasonalData.js gives a draw ONE field (`date`) and no end at all, so a draw is a RELEASE and renders as a point. Only a calendar row has both dates and can be a band.
@@ -150,7 +150,7 @@ function LaneSummary({ lane, list, kit, view }) {
            data-tip=${`${r.n} item${r.n === 1 ? '' : 's'} · ${TL.fmt(r.a)} → ${TL.fmt(r.b)}`}></i>`)}</span>`;
 }
 
-function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
+function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit, flagged }) {
     const ref = useRef(null);
     const [ghost, setGhost] = useState(null);
 
@@ -183,7 +183,7 @@ function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
     const roomForLabel = pxWide >= LABEL_MIN_PX || fit === 'lbl-out' || fit === 'lbl-out-l';
     // `stemmed` is a dotted LEFT edge — the "continues from" convention — saying the label is abbreviated rather than mis-entered. It used to be a literal "·", which read as a stray bullet. See stemLabels().
     const cls = [bandClass({ state: it.state || 'live' }), it.openEnded ? 'forever' : '', fit || '',
-                 stem && stem !== it.title ? 'stemmed' : '', ghost ? 'dragging' : '']
+                 stem && stem !== it.title ? 'stemmed' : '', ghost ? 'dragging' : '', flagged ? 'flagged' : '']
         .filter(Boolean).join(' ');
     return html`
         <div class=${cls} ref=${ref} data-id=${it.id} tabindex="0" role="button"
@@ -200,18 +200,18 @@ function Bar({ it, lane, view, top, fit, stem, plotW, onDragCommit }) {
         </div>`;
 }
 
-function Point({ it, lane, view, hid }) {
+function Point({ it, lane, view, hid, flagged }) {
     return html`
         <!-- The staging axis calls a written row SAVED, not LIVE — stateOf() in the design, and the
              stylesheet is written against .saved throughout. LIVE belongs to the CONTENT axis. -->
-        <span class=${'pt ' + (it.state === 'live' || !it.state ? 'saved' : it.state) + (hid ? ' hid' : '')} data-id=${it.id} tabindex="0" role="button"
+        <span class=${'pt ' + (it.state === 'live' || !it.state ? 'saved' : it.state) + (hid ? ' hid' : '') + (flagged ? ' flagged' : '')} data-id=${it.id} tabindex="0" role="button"
               data-tier=${it.tier || ''} data-lanekind=${lane.key}
               style=${`--c:var(${lane.topic});left:${view.pct(startOf(it))}%;--ci:${inkOnTopic(lane.topic)}`}
               aria-label=${`${it.title}, releases ${TL.fmt(startOf(it))}` + (it.dateOnly ? ', no calendar window' : '')}
               data-tip=${`${it.title} · releases ${TL.fmt(startOf(it))}`}></span>`;
 }
 
-function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost, plotW }) {
+function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragCommit, ghost, plotW, flagged }) {
     const spans = list.filter((i) => lane.kind !== 'point');
     const { row, rows } = assignRows(spans);
     // Computed from the titles, so it is stable across renders and cannot oscillate. See stemLabels().
@@ -251,10 +251,10 @@ function Lane({ lane, list, isDraft, view, collapsed, onToggle, fits, onDragComm
                 ${collapsed ? html`<${LaneSummary} lane=${lane} list=${list} kit=${kit} view=${view} />` : null}
                 ${off ? html`<span class="offwin" data-tip="Outside the current window — zoom out or drag the scrubber">${off} beyond this window</span>` : null}
                 ${collapsed ? null : list.map((it) => {
-                    if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} hid=${clustered.has(it.id)} />`;
+                    if (lane.kind === 'point') return html`<${Point} key=${it.id} it=${it} lane=${lane} view=${view} hid=${clustered.has(it.id)} flagged=${!!(flagged && flagged.has(it.id))} />`;
                     const r = row.has(it.id) ? row.get(it.id) : 0;
                     const top = rows === 1 ? null : `top:${ROW_PAD / 2 + r * ROW_H}px;transform:none;height:${ROW_H - 5}px`;
-                    return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top} plotW=${plotW}
+                    return html`<${Bar} key=${it.id} it=${it} lane=${lane} view=${view} top=${top} plotW=${plotW} flagged=${!!(flagged && flagged.has(it.id))}
                                         fit=${fits[it.id]} stem=${stems.get(it.id)} onDragCommit=${onDragCommit} />`;
                 })}
                 ${collapsed ? null : clusters.map((c) => html`
@@ -348,30 +348,17 @@ export function Repairs({ data, window: visible, season, onClamp }) {
 
     // 🔴 SIX CHECKS, IN TWO KINDS, AND THE PORTAL HAD FOUR IN ONE. The design splits them by whether a MACHINE CAN BE SURE — a duplicate row, an expiring link, a date past the battle pass, a window with no draw — from what only the person can decide: a draw served without a window never ends, and a title that looks like a 2x CP event but is not flagged. Presenting them as one list asks a reader to work out, per finding, whether they are being told a fact or asked a question.
     //
-    // ⚠️ THE TWO ZERO-FINDING CHECKS ARE THE POINT OF THE SPLIT, not filler: both CAN fire — rename any draw and its window orphans immediately — and a check that reports nothing is a different statement from a check nobody wrote.
-    const dupeRows = (() => {
-        const seen = new Map(); const out = [];
-        for (const e of (data.event || []).concat(data.playlist || [], data.drawwindow || [])) {
-            const k = norm(e.title) + '|' + String(e.startDate || e.date || '').slice(0, 10);
-            // The design names the ALREADY-SEEN row by the last six of its id, not by its title — the titles are identical by definition here, so repeating one says nothing the label has not.
-            if (seen.has(k)) out.push({ id: e.id, label: e.title, why: `identical to ${seen.get(k)} — same title, same start` });
-            else seen.set(k, conforming() ? String(e.id || '').slice(-6) : e.title);
-        }
-        return out;
-    })();
-    const bannerRows = findExpiringBanners(season).map((b) => ({ id: b.key, label: b.label, why: b.why }));
-    const pastBp = (bpEnd ? all.filter((i) => i.endDate && String(i.endDate).slice(0, 10) > bpEnd) : [])
-        .map((i) => ({ id: i.id, label: i.title, item: i,
-            why: (n => `ends ${String(i.endDate).slice(0, 10)}, ${n} day${n === 1 ? '' : 's'} past`)(TL.days(bpEnd, String(i.endDate).slice(0, 10))) }));
-    const orphanWindows = (data.drawwindow || [])
-        .filter((w) => !draws.some((d) => { const a = norm(d.title), b = norm(w.title); return a && b && (a.includes(b) || b.includes(a)); }))
-        .map((w) => ({ id: w.id, label: w.title, why: 'matches no draw by title' }));
-    const noWindow = draws.filter((d) => d.dateOnly)
-        .map((d) => ({ id: d.id, label: d.title, why: `releases ${String(d.startDate || d.date || '').slice(0, 10)}, no window, never ends` }));
-    // BOTH a CP token AND a doubling word: "CP Rebate Offer" is not a 2x event and neither is "2x Weapon XP".
-    const untagged2x = spans.filter((i) => !i.isDoubleCP
-            && /\b(cp|cod points?)\b/i.test(i.title || '') && /(^|\W)(2\s*[x×]|double)\b/i.test(i.title || ''))
-        .map((i) => ({ id: i.id, label: i.title, why: 'title matches the 2x CP pattern' }));
+    // ⚠️ THE TWO ZERO-FINDING CHECKS ARE THE POINT OF THE SPLIT, not filler: both CAN fire — rename any draw and its window orphans immediately — and a check that reports nothing is a different statement from a check nobody wrote. The SELECTION lives in track.logic.js so the Track can mark the same rows; the WHY lines stay here, because they are copy and copy belongs where it is read.
+    const rows = findingRows(data, season, { conforming: conforming() });
+    // The design names the ALREADY-SEEN row by the last six of its id, not by its title — the titles are identical by definition here, so repeating one says nothing the label has not.
+    const dupeRows = rows.dupe.map((r) => ({ id: r.id, label: r.label, why: `identical to ${r.seenAs} — same title, same start` }));
+    const bannerRows = rows.banner;
+    const pastBp = rows.pastBp.map((r) => ({ ...r,
+        why: (n => `ends ${String(r.item.endDate).slice(0, 10)}, ${n} day${n === 1 ? '' : 's'} past`)(TL.days(bpEnd, String(r.item.endDate).slice(0, 10))) }));
+    const orphanWindows = rows.orphanWindows.map((r) => ({ ...r, why: 'matches no draw by title' }));
+    const noWindow = rows.noWindow.map((r) => ({ id: r.id, label: r.label,
+        why: `releases ${String(r.item.startDate || r.item.date || '').slice(0, 10)}, no window, never ends` }));
+    const untagged2x = rows.untagged2x.map((r) => ({ ...r, why: 'title matches the 2x CP pattern' }));
 
     const CHECKS = [
         { id: 'dupe-calendar', kind: 'mechanical', label: 'Duplicate calendar rows', hits: dupeRows,
@@ -724,6 +711,8 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
     const ends = ['bpEnd', 'rankEnd', 'dmzEnd']
         .filter((k) => season && season[k] && !season[`${k}TBD`]).map((k) => String(season[k]).slice(0, 10)).sort();
     const oosPct = ends.length ? (() => { const p = view.pct(ends[ends.length - 1]); return p >= 0 && p < 100 ? p : null; })() : null;
+    // The design marks the bar a finding is ABOUT, so a reader scanning the Track can see which item the list underneath is talking about. flaggedIds is a global here, the same way bandClass and inkOnTopic are — track.logic.js loads as a plain script, so there is no import to add. 🔴 THE TRACK DERIVES ITS OWN FINDINGS — season.js passes no `flags` prop and its own comment says so — which is why the first attempt at this wired a `flagged` class to an empty set and rendered nothing. `flags` stays supported for a caller that has them; absent one, the same rule Repairs uses answers here too.
+    const flaggedSet = (flags && flags.length) ? flaggedIds(flags) : findingBarIds(data, season, { conforming: conforming() });
 
     return html`
         <!-- 🔴 THIS PANEL HAD ITS OWN HEADER AND IT SAID NOTHING THE BAR 60px ABOVE IT HAD NOT ALREADY SAID.
@@ -770,14 +759,14 @@ export function Track({ data, draft, window: visible, full, season, flags, onDra
                 <${DeadRail} rail=${rail} view=${view} todayIso=${TL.toISO(Date.now())} flips=${flips} />
                 <div class="lanes">
                     ${lanes.map((l) => html`
-                        <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view}
+                        <${Lane} key=${l.key} lane=${l} list=${data[l.key] || []} isDraft=${false} view=${view} flagged=${flaggedSet}
                                  collapsed=${collapsedFor(l, false)} onToggle=${(e) => toggle(l, false, e.altKey)}
                                  fits=${fits} onDragCommit=${onDragCommit} plotW=${plot.w || 0}
                                  ghost=${ghost && ghost.lane === l.key ? ghost : null} />`)}
                     ${draft && lanes.some((l) => (draft[l.key] || []).length) ? html`
                         <div class="divider">Next season draft — staged, not live</div>
                         ${lanes.filter((l) => (draft[l.key] || []).length).map((l) => html`
-                            <${Lane} key=${'d:' + l.key} lane=${l}
+                            <${Lane} key=${'d:' + l.key} lane=${l} flagged=${flaggedSet}
                                      list=${(draft[l.key] || []).map((i) => ({ ...i, state: 'staged' }))}
                                      isDraft=${true} view=${view} collapsed=${collapsedFor(l, true)}
                                      onToggle=${(e) => toggle(l, true, e.altKey)} fits=${fits} plotW=${plot.w || 0} />`)}
