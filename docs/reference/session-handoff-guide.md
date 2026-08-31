@@ -159,6 +159,30 @@ Agent(subagent_type: "general-purpose", model: "sonnet", run_in_background: fals
 
 ---
 
+## 🔴 REWRITING `.remember` — EVERY LINE YOU REMOVE MUST RESOLVE SOMEWHERE ELSE **FIRST** (added 2026-08-30 23:1x EDT)
+
+**The ≤20-line rule above has a precondition this file never stated, and the omission cost a whole handoff.** On 2026-08-30 a session compressed a 60-line `.remember` to 13 lines, correctly applying *"pointer and first action — never the record"*, and **deleted five facts that existed nowhere else in the repo or in memory.** Harkirat caught it; one grep settled it.
+
+🔴 **A POINTER THAT RESOLVES TO NOTHING IS WORSE THAN THE PARAGRAPH IT REPLACED.** The carrier table's model — `.remember` points, `local/handoff/` records — only holds if the record actually *contains* what the pointer drops. Compressing before verifying that is the same failure as every stale-green: applying an instrument without checking it reached its subject.
+
+**The mechanical rule, and it is one command:**
+
+```bash
+# for every distinctive phrase you are about to delete from .remember
+rg -l --hidden -uu '<phrase>' docs/ .claude/ ~/.claude/projects/<slug>/memory/ local/handoff/
+```
+
+**Anything that returns nothing gets a HOME before the deletion, not after.** The five orphans that day: *a conform CSS rule must not change an element's SIGNATURE* · *⑤ RULES is advisory, the rendered value is ground truth* · *0.1% means matches, not good* · *hooks run in parallel so a call costs the slowest not the sum* · *`overwrite-guard` interrupts a write to `.remember` and the prompt is the guard working.* Three became trap-table rows; two became a memory section.
+
+## 🔴 THE DONE TEST HAS A FIRST HALF NOBODY WROTE DOWN: COULD IT **START**? (added 2026-08-30 23:1x EDT)
+
+The test below asks whether a session could *produce the next commit*. That is the right question and it is not the first one. The 13-line rewrite passed every existing test on this page — it had a first action, an approval status, no dangling "we discussed X" — **and it had deleted the only line naming the two `preview_start` configs, without which not one measurement in this project can run.** A session reading it could have decided what to do and been unable to begin.
+
+- 🔴 **Ask "could a fresh session BRING UP the environment?" before "could it produce a commit?"** Servers, build step, credentials, which command produces the first number. An orientation document that cannot be acted on is a reading list.
+- ⚠️ **Compression pressure attacks setup lines first**, because they look like boilerplate and read as the least interesting thing on the page. They are the most load-bearing: everything else in the handoff is *unreachable* without them.
+
+---
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
