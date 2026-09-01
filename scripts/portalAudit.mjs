@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const { byReach } = require('./lib/portalStyleRank.cjs');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // ── WHAT THIS TOOL DOES NOT SEE ────────────────────────────────────────────────────────────────── 🔴 PRINTED ON EVERY RUN, BECAUSE AN INSTRUMENT THAT DOES NOT STATE ITS COVERAGE LETS EVERY READER ASSUME IT COVERS EVERYTHING. Three blind spots have been found here by somebody noticing a defect the number could not have contained — below the fold, behind a click, and under the pointer — and each time the tool had reported a confident percentage about a page it had only partly looked at. The axes are enumerated once, here, and the uncovered ones are named in the output.
@@ -96,6 +97,8 @@ const COLLECT = (props, wholeBody) => {
                 d, sig, path: trail + '>' + sig,
                 top: Math.round(r.top + scrollY), h: Math.round(r.height), w: Math.round(r.width),
                 left: Math.round(r.left),
+                // 🔴 BLAST RADIUS. How many rendered elements sit INSIDE this one, so ④ can rank a difference by what it affects instead of by how often the pairing saw it. See the sort below for the defect this exists for.
+                kids: e.querySelectorAll('*').length,
                 // Own text only — a container's textContent is every descendant's, so a single wrong word deep in a table reported as a difference on every ancestor above it.
                 text: norm([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ')),
                 all: norm(e.textContent).slice(0, 60),
@@ -421,13 +424,18 @@ const annotate = (key) => {
                 if (a.style[p] === b.style[p]) continue;
                 // A NUL here made this whole file BINARY to ripgrep, which reports no matches in it rather than an error — so the one instrument the conformance pass runs on was unsearchable by the tool everything else here is searched with. A printable sentinel that cannot occur in a selector or a computed value does the same job and stays visible.
                 const key = [a.sig, p, a.style[p], b.style[p]].join(KEY_SEP);
-                styleGroups.set(key, (styleGroups.get(key) || 0) + 1);
+                const g = styleGroups.get(key) || { n: 0, radius: 0 };
+                // The radius is the count of elements this difference is rendered THROUGH — the element itself plus everything inside it. A background on a container reaches its whole subtree; the same delta on a leaf reaches one cell.
+                g.n += 1; g.radius += 1 + (a.kids || 0);
+                styleGroups.set(key, g);
             }
         }
-        console.log(`④ STYLE (${styleGroups.size} difference(s)) — ONE BATCH.`);
-        [...styleGroups].sort((x, y) => y[1] - x[1]).slice(0, CAP).forEach(([k, n]) => {
+        console.log(`④ STYLE (${styleGroups.size} difference(s)) — ONE BATCH. Ranked by REACH, not by count.`);
+        // 🔴 THIS SORTED BY ×COUNT AND THAT IS BACKWARDS FOR CONSEQUENCE. On 2026-09-01 the manifest's rows painted --raised where the design paints --desk, on every row of a 125-row table, because one paragraph between two panels broke `.panel + .panel`. THIS SECTION REPORTED IT — `section.panel backgroundColor: rgba(0,0,0,0) → rgb(23,30,36)`, the exact value — and it sorted ~140th of 149 as a `× 1`, under a hundred-odd `×125` leaf-cell width deltas. I read past it twice and then wrote in a commit message that no instrument could have found it, which was false. The instrument was not blind; its ORDERING was. A difference on a container is rendered through everything inside it, so that is what it is ranked by now: `reach` is the number of elements the difference is drawn through, and `×n` is still shown because the two answer different questions. ⚠️ IT MAKES THE CONSEQUENTIAL ROW SORT FIRST. It cannot make anyone read it, and no ordering can.
+        [...styleGroups].sort((x, y) => byReach(x[1], y[1])).slice(0, CAP).forEach(([k, g]) => {
             const [sig, prop, mv, pv] = k.split(KEY_SEP);
-            console.log(`   ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
+            const n = g.n;
+            console.log(`   reach ${pad(g.radius, 5)}  ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
             const note = annotate(sig);
             if (note) console.log(note);
         });
