@@ -31,7 +31,8 @@
 mode="${1:-post}"
 
 payload=$(cat)
-content=$(printf '%s' "$payload" | jq -r '.tool_input.new_string // .tool_input.content // empty')
+# 🔴 `.command` IS READ BECAUSE THE BATCHING CONTRACT MANDATES `python3` HEREDOCS, AND EVERY ONE OF THEM WAS INVISIBLE HERE. This hook was registered on Edit|Write only, so a file written by a heredoc inside a Bash call never reached it -- and on 2026-09-01 four placeholder stamps landed in a tracked plan that way, in the same session that built the substitution branch below. The technique this repo tells you to use for any multi-file edit was the one path the guard did not cover.
+content=$(printf '%s' "$payload" | jq -r '.tool_input.new_string // .tool_input.content // .tool_input.command // empty')
 [ -z "$content" ] && exit 0
 
 today=$(date +%Y-%m-%d)

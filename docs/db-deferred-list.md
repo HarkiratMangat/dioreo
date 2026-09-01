@@ -565,6 +565,41 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ## 🗂️ Queued — worth its own dedicated session
 
 
+### `[P1 · S]` Analytics — 30.6% of alerts render as the no-severity tier, and the panel explaining three tiers draws one
+*Filed 2026-09-01 19:44 EDT by the Access session's reader test, which measured it against the dev database.*
+
+`portal/ui/analytics.js:127`'s `LEVEL_ROW` covers `error`/`warn`/`info`. `models/AlertLog.js:9` documents **four** levels and the live dev data is **`info 678 · caution 306 · error 16`** — `warn` never occurs at all. So the map carries a key for a dead value and misses a live one, and `LEVEL_ROW[a.level] || LEVEL_ROW.info` (`:203`) paints 306 of 1000 alerts grey. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`, so the rule is live and the **emitter** is missing; `lv-caution` sits in `portal/fixtures/reverse-orphans.json` as accepted debt. The mockup draws three level bars (`INFO 717 · CAUTION 258 · ERROR 23`); the portal draws one, under its own paragraph explaining three. Also `analytics.js:61` concatenates `lvtag lv-${r.level}` against the comment eight lines above `LEVEL_ROW` declaring the classes are literals.
+
+**Verify:** a `caution` alert renders `lv-caution`, the Health panel draws three bars on dev data, and `rg 'lv-caution' portal/fixtures/reverse-orphans.json` returns nothing.
+
+### `[P2 · S]` Analytics — `bulkTier={3}` and `tier: 2` for the same revert, twenty lines apart
+*Filed 2026-09-01 19:44 EDT.*
+
+`portal/ui/analytics.js:703` declares `bulkTier={3}` with `bulkNote="Immediate — a revert applies the inverse now"`, while `:645` opens `overlay.confirm({ op:'change.revert', tier: 2 })`. One action, two tiers, one file. The design disagrees with both in KIND: `analytics.html:577-587` stages the revert from a **per-row drawer** at tier 2 and toasts *"Inverse … staged"*, where the portal fires it immediately from a bulk selection. **The tier contradiction is a defect today; the staged-vs-immediate question is a composition fork for Part 5's one batched pop-up.**
+
+**Verify:** one tier number for `change.revert` in `analytics.js`, and the fork answered in `docs/reference/portal-decision-ledger.md`'s Analytics section.
+
+### `[P2 · S]` Analytics — `portal/fixtures/states/` has no entry for this realm, so `portal:states` certifies nothing
+*Filed 2026-09-01 19:44 EDT.*
+
+`portal/fixtures/states/` holds only `season.json` and `shell.json`. `scripts/portalStates.mjs:3` says every realm registers the states it discovers while walking — so `--realm analytics` reports "no registries", which reads as nothing-to-do and is actually an unwritten deliverable. At minimum: the four `.estate` views (Usage · Timing · Reach · Search), Health with no `lastBoot`, Health with empty `alertsByLevel`, `?empty=1`, admin-toggle-on, and async slow/failure. ⚠️ The two sides' empty states differ — the mockup's is an `hbanner`, the portal's an `.estate`.
+
+**Verify:** `ls portal/fixtures/states/` lists an `analytics` entry beside `season` and `shell`, and `node scripts/portalStates.mjs --ci` exercises it. ⚠️ The path is named this way on purpose — the docs-audit `xref` check reads a repo-shaped path as a reference that must resolve, and this entry exists BECAUSE the file does not.
+
+### `[P3 · XS]` Analytics — three carrier gaps the reader test costed
+*Filed 2026-09-01 19:44 EDT. Each is a one-sentence addition; grouped because they share a verify step.*
+
+① `scripts/portalAnalytics.test.js` and `scripts/portalExport.test.js` are this realm's own scoped gates — both read `portal/ui/analytics.js` as source — and Part 5's prompt names four gates without them, so an edit to the boot card, the admin toggle or `exportScopes` goes green until the full suite runs. ② The two export strips carry **five scopes a side and only two shared ids** (`analytics.usage`, `analytics.timing`; the design has `.search`/`.changes`/`.alerts`, the portal `.events`/`.reach`/`.searches`) and no carrier mentions the strip on this realm. ③ `outcomeKeys`/`entryKeys` are an **enum** from `models/AnalyticsRollup`, not aggregates, so the Outcomes panel renders in full on an empty database while Usage, Timing and Reach fall to `.estate` — a reader takes the populated list as evidence of data.
+
+**Verify:** all three appear in `docs/superpowers/plans/ANALYTICS-PROMPT.md`.
+
+### `[P3 · XS]` Access — three cosmetic residuals from the conformance pass
+*Filed 2026-09-01 19:44 EDT. None ships a wrong result; all three are recorded so they are not re-derived.*
+
+① `access.js:266`'s racknote hardcodes *"four commands … and eight /manage pages"* beside a dynamic `${matrix.scopes.length}` — a fifth `ADMIN_COMMANDS` entry makes it read "13 permissions: four commands". Inherited verbatim from `access.html:230`, so a faithful port. ② The export declares `count: data.admins.length` and writes `m.admins`, neither of which contains the owner, while the grid shows `admins + 1` — defensible, but "who can do what" ships without the row the screen paints as holding everything. ③ The Sessions command-palette entry went with the view tab: `shell.js:341-344` derives palette commands from `viewOptions`.
+
+**Verify:** each either fixed or carrying a row in `docs/reference/portal-decision-ledger.md`'s Access section.
+
 ### `[P2 · S]` Access — an admin's NOTE cannot be edited anywhere in the portal
 *Filed 2026-09-01 18:26 EDT by the Access conformance pass (Part 4).*
 
