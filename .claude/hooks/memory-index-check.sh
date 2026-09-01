@@ -122,17 +122,26 @@ fi
 
 # --- the PLATFORM truncates a large MEMORY.md, and this hook is the only channel round it ----------- 🔴 TWO INSTRUMENTS REPORT ON THIS FILE AND ONLY ONE OF THEM IS OURS. This hook reports bytes against BUDGET above. The PLATFORM's own memory loader separately reports "MEMORY.md is 32KB (limit: 24.4KB) -- index entries are too long. Only part of it was loaded", and that one TRUNCATES. Measured 2026-08-31 22:1x EDT: no emitter for that string exists anywhere in .claude/, ~/.claude/hooks/ or either settings.json, so it is the harness and it cannot be raised, configured or silenced from here. The loss is real and it is the TAIL: the final "## Docs & memory structure" section did not arrive in that session's context at all, while everything above it did. ⚠️ So this is a MITIGATION, not a fix. additionalContext is not subject to the memory loader's limit, so re-emitting the last few KB here puts the dropped lines back in front of the session. It is sized against the measured loss (~1.2KB) with better than 2x margin, NOT against the platform's stated 24.4KB -- that figure does not match the observed cut point, and guessing a byte offset from a number that already disagrees with behaviour is how a mitigation becomes a second wrong constant. ⚠️ Most of what it re-emits DID load. That duplication is the price of the margin, and it is cheap next to a session running without its standing instructions and nothing saying so.
 PLATFORM_CAP="${MEMCHECK_PLATFORM_CAP:-25000}"
-TAIL_BYTES="${MEMCHECK_TAIL_BYTES:-2500}"
+# 🔴 SELF-SIZING, BECAUSE THE FIXED 2500 WAS OUTGROWN AND NOTHING RE-MEASURED IT. That constant was sized 2026-08-31 against a ~1.2KB measured loss with "better than 2x margin". Measured again 2026-09-01 16:0x EDT: the file is 33,934B, so the overflow is ~8,900B and **42 index lines never reach a session** — the mitigation was covering under a third of the loss while its own comment said it had 2x margin. A margin computed once against a growing file is a constant with an expiry nobody wrote down. It is derived from the actual overflow now, so it cannot drift again. ⚠️ AND THE RE-EMIT IS NOT THE FIX. Harkirat, 2026-09-01: the truncated content is NOT lost, it is merely unloaded — so the session is TOLD to read the file, and the lines below are the fallback for a session that does not. Only INDEX LINES and headings past the cut are repeated: they are the load-bearing content, and emitting lines rather than bytes removes the margin guess entirely.
+TAIL_BYTES="${MEMCHECK_TAIL_BYTES:-0}"
 if [ "$size" -gt "$PLATFORM_CAP" ]; then
   status="$status
 
-  ⚠️ PLATFORM TRUNCATION MITIGATION -- MEMORY.md is ${size}B, past the ~${PLATFORM_CAP}B at which the
-  HARNESS's own memory loader starts dropping the END of the file (its warning says so: \"Only part of
-  it was loaded\"). That limit is NOT this hook's BUDGET and is not settable from this repo. The last
-  ${TAIL_BYTES}B of the index are repeated below so the tail is in context regardless. If the two ever
-  agree again, delete this block rather than leaving a duplicate nobody reads.
+  🔴 READ THE WHOLE MEMORY INDEX BEFORE YOU RELY ON IT -- Read(${MEM}/MEMORY.md). This is an
+  INSTRUCTION, not a warning. MEMORY.md is ${size}B and the HARNESS's memory loader stops at about
+  ${PLATFORM_CAP}B, so roughly $((size - PLATFORM_CAP))B of it -- the TAIL -- did not arrive in your
+  context. Its own message says so: \"Only part of it was loaded\". **The content is not lost; it is
+  simply unloaded, and one Read restores all of it.** That limit is not this hook's BUDGET and cannot
+  be raised from this repo.
 
-$(tail -c "$TAIL_BYTES" "$MEM/MEMORY.md")"
+  The index lines past the cut are repeated below as a FALLBACK for a session that does not read the
+  file. They are lines, not a byte count: a hand-sized margin was outgrown once already.
+
+$(MEMCHECK_CAP="$PLATFORM_CAP" python3 -c 'import os,sys,pathlib
+cap = int(os.environ["MEMCHECK_CAP"]); n = 0
+for line in pathlib.Path(sys.argv[1]).read_text().splitlines():
+    n += len(line.encode()) + 1                     # BYTES, not characters: this index is full of multi-byte emoji
+    if n > cap and (line.startswith("- [") or line.startswith("## ")): print(line)' "$MEM/MEMORY.md")"
 fi
 
 printf '%s' "$status" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'

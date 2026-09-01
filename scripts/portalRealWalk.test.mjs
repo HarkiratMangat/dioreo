@@ -32,6 +32,13 @@ assert.deepStrictEqual(resolveViews('', 'no-such-realm', FIX), ['default']);
 ok('an unrecorded realm falls back to ["default"], not to a neighbour');
 
 assert.deepStrictEqual(viewsFromFixture('no-such-realm', FIX), []);
-ok('a missing fixture is an empty list, not a throw');
+ok('a MISSING fixture is an empty list — "not recorded yet" is a fact, not a defect');
+
+// 🔴 The vacuous-absence case: a corrupt fixture must NOT be indistinguishable from an absent one.
+import fs from 'fs'; import os from 'os';
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'rwviews-'));
+fs.writeFileSync(path.join(tmp, 'broken.json'), '{ this is not json');
+assert.throws(() => viewsFromFixture('broken', tmp), /could not be read/);
+ok('a CORRUPT fixture throws — it does not read as an unrecorded realm');
 
 console.log(`\nportalRealWalk views — ${n} passed`);

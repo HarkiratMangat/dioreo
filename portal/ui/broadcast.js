@@ -366,7 +366,7 @@ export function BroadcastRealm({ session }) {
         });
     }
 
-    // 🔴 THE THIRD DEAD EXPORT BUTTON ON THIS BRANCH, and the first one nobody went looking for — `scripts/portalExport.test.js`'s source scan found it after the same defect was fixed by hand in Season and Armory. `open('data:…')` is blocked as a top-level navigation: it returns null, throws nothing, and the page does not change, so the button ran and produced no file. It writes a real one now, as TSV, because an announcement has no bulk-add format to round-trip through and a caption pretending otherwise is the other half of the same defect.
+    // 🔴 THE THIRD DEAD EXPORT BUTTON ON THIS BRANCH, and the first one nobody went looking for — `scripts/portalExport.test.js`'s source scan found it after the same defect was fixed by hand in Season and Armory. `open('data:…')` is blocked as a top-level navigation: it returns null, throws nothing, and the page does not change, so the button ran and produced no file. It writes a real one now, as TSV, because an announcement has no bulk-add format to round-trip through and a caption pretending otherwise is the other half of the same defect. ⚠️ NO CALLER SINCE 2026-09-01, KEPT DELIBERATELY. Its only caller was a `bulkActions` verb that could never be invoked (see the Manifest call below). Kept rather than deleted because the moment this realm's design gains a checkbox column the verb comes back, and because the function is the record of a real defect: the third dead export button on this branch, found by a source scan after the same `open('data:…')` bug was fixed by hand in Season and Armory.
     function handleExportSelection(ids) {
         const selected = rows.filter((r) => ids.includes(r.id));
         const header = ['Text', 'State', 'Starts', 'Expires'].join('\t');
@@ -415,9 +415,7 @@ export function BroadcastRealm({ session }) {
                                                     onAdd=${() => setShowAdd(true)} realm="broadcast" csrfToken=${session.csrfToken}
                                                     buildEditOp=${buildBroadcastEditOp}
                                                     onEditError=${(msg) => setNotice(msg)}
-                                                    bulkActions=${[
-                                                        { label: 'Export selection', onClick: handleExportSelection },
-                                                        { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
-                                                    ]} />`} />
+                                                    ${''/* 🔴 NO `bulkActions`. Two were declared — `Export selection` and `Stage deletion` — and NEITHER COULD EVER BE INVOKED: they render only in the bulk bar, the bulk bar needs a selection, and `selectable={false}` above is a deliberate conformance decision (this realm's design draws no checkbox column, and forcing one cost 38px of table width and wrapped a row). So the realm declared two verbs behind a control it had itself removed. Found 2026-09-01 by opening the delete Confirm through `--open-sel button.rmv`, the surface `--triggers` cannot see because it lives in a data row. Same class as Armory's Manifest `mode` chip: a control that could only ever fail. Per-row removal is unaffected — `onRemove` above is the reachable path and it opens the same tier-2 Confirm. Scoped export is unaffected — the masthead Export strip offers both scopes. */}
+                                                    />`} />
     `;
 }

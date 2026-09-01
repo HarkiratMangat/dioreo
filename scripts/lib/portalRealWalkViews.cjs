@@ -12,11 +12,19 @@
 const fs = require('fs');
 const path = require('path');
 
+// 🔴 A CORRUPT FIXTURE MUST NOT READ AS AN UNRECORDED REALM. The first version caught every error and
+// returned `[]`, so a malformed JSON file and a realm nobody has measured produced the identical answer
+// and the walk quietly fell back to the default view — §0.10's vacuous-absence trap, written into the
+// file whose whole subject is that trap, by the session that had just documented it. A MISSING file is a
+// fact ("not recorded yet"); an UNREADABLE one is a defect and says so.
 function viewsFromFixture(realm, fixtureDir) {
+    const f = path.join(fixtureDir, `${realm}.json`);
+    if (!fs.existsSync(f)) return [];
     try {
-        const f = path.join(fixtureDir, `${realm}.json`);
         return Object.keys(JSON.parse(fs.readFileSync(f, 'utf8')).views || {});
-    } catch { return []; }
+    } catch (e) {
+        throw new Error(`geometry fixture for "${realm}" exists but could not be read: ${e.message}`);
+    }
 }
 
 // `flagValue` is whatever `--views` carried, or '' when it was absent.

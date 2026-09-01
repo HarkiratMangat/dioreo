@@ -143,6 +143,20 @@ Access's subject is grants, scopes, sessions and admins, and its grid draws four
 - 🔴 **A CITED ① CASCADE is CLOSED, not fixed.** Access will report `b.crumb-sep +4 top / −6 height` under every `--open`, exactly as Broadcast did. Work ④ through it.
 - 🔴 **A GATE RESULT IS A FACT ABOUT A TREE, AND THE TREE MOVES.** Broadcast wrote "npm test exit 0" into §L from a run that predated its last code edit, and the suite was red on that branch's own hard-wrapped comment for two commits before a falsification pass caught it. **Re-run the machine floor at the commit you are claiming it for.**
 
+## What the previous session was CONFIDENT of and wrong about
+
+*Every carrier records what was done and what was decided. None records what the author believed at hour four that turned out false at hour six — which is the only content that tells you which kinds of confidence to distrust. Five, from Broadcast, in the order they were believed:*
+
+| Believed | Actually |
+|---|---|
+| The interaction tier "ran in full" — written into §L **and a commit message** | Two of **three** reachable surfaces. The third, the delete `Confirm`, opens from a row control that `--triggers` filters out by design |
+| `npm test` exited 0 | It exited 1 for two commits, on that session's own hard-wrapped comment. The green was measured before the last edit |
+| Close condition ① was satisfied | `portalConverge` had **never run on the realm**, and `portal:status` printed `converge · never` in the same tree while the row claimed otherwise |
+| Making `.ncell` a `<span>` would regress Season | It moved nothing — proven by stashing the changes and re-diffing, not by reasoning |
+| The seven `at*`/`tim*` selectors were "§0's central mechanism" | **Dead on both sides.** Styled in both stylesheets, emitted in neither |
+
+🔴 **Four of the five were corrected by something OTHER than the author** — three by read-only agents, one by a deliberate stash-and-remeasure. **The one thing that reliably caught them was making the claim checkable and then running the check.** Assume the same of yourself: you will be most wrong where you are most fluent.
+
 ## Two rules no document carried until a cold reader was forced to choose
 
 **`portal:states` goes red and it is the known local coin-flip.** Re-run that state **alone, once**. Passes alone but fails in-suite → the documented load-dependent non-determinism; file it with the state name, selector and timeout, and 🔴 **do not claim the machine floor green at that commit.** Fails standalone twice, or names a selector you edited → it is yours, immediately. **Never re-run until green and move on** — a red run with no defect behind it sends the next session hunting a ghost.

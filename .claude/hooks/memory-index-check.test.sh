@@ -86,5 +86,49 @@ fixture; rm "$TMP/mem/MEMORY.md"
 assert "missing MEMORY.md is FATAL"             "WRONG PATH"                         yes
 
 echo
+# ── the PLATFORM-TRUNCATION mitigation ──────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE MITIGATION SHIPPED WITH A HAND-SIZED 2500-BYTE TAIL THAT THE INDEX OUTGREW. Measured 2026-09-01 16:0x EDT: the real index was 33,934B against a ~25,000B platform cap, so ~8,900B and 42 index lines never reached a session — while the block's own comment claimed "better than 2x margin" against a 1.2KB loss measured when the file was smaller. A margin computed once against a growing file is a constant with an expiry nobody wrote down. The second case is the one that would have caught it: it asserts the re-emitted set tracks the CUT rather than a size.
+big_fixture() {
+  rm -rf "$TMP/mem" "$TMP/state"; mkdir -p "$TMP/mem/archive"
+  echo "# alpha" > "$TMP/mem/alpha.md"
+  echo "RETIRED 2026-08-02 13:05 EDT - shipped and absorbed." > "$TMP/mem/archive/gone.md"
+  : > "$TMP/mem/MEMORY.md"
+  i=0
+  while [ "$i" -lt 60 ]; do
+    printf -- '- [Alpha](alpha.md) - padding entry %02d %s\n' "$i" \
+      "$(printf 'x%.0s' $(seq 1 60))" >> "$TMP/mem/MEMORY.md"
+    i=$((i+1))
+  done
+}
+big_run() { MEMCHECK_DIR="$TMP/mem" MEMCHECK_STATE="$TMP/state" MEMCHECK_BUDGET=99999 \
+            MEMCHECK_PLATFORM_CAP="$1" bash "$CHECK"; }
+
+big_fixture
+ctx="$(big_run 1500 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')"
+case "$ctx" in
+  *"READ THE WHOLE MEMORY INDEX"*) echo "  PASS  oversized index INSTRUCTS a full read, not only a warning"; pass=$((pass+1));;
+  *) echo "  FAIL  oversized index INSTRUCTS a full read -- no read instruction emitted"; fail=$((fail+1));;
+esac
+
+n_all=$(grep -c '^- \[' "$TMP/mem/MEMORY.md")
+n_emit=$(printf '%s\n' "$ctx" | grep -c '^- \[')
+if [ "$n_emit" -gt 0 ] && [ "$n_emit" -lt "$n_all" ]; then
+  echo "  PASS  re-emits only the lines past the cut ($n_emit of $n_all), never the whole index"; pass=$((pass+1))
+else
+  echo "  FAIL  re-emits only the lines past the cut -- got $n_emit of $n_all (a fixed size, or everything)"; fail=$((fail+1))
+fi
+
+# The load-bearing case: RAISE the cap and the re-emitted set must SHRINK. A fixed-size tail cannot pass this.
+n_narrow=$(big_run 4000 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])' | grep -c '^- \[')
+if [ "$n_narrow" -lt "$n_emit" ]; then
+  echo "  PASS  the re-emitted set TRACKS the cut ($n_emit at cap 1500 -> $n_narrow at cap 4000)"; pass=$((pass+1))
+else
+  echo "  FAIL  the re-emitted set tracks the cut -- $n_emit then $n_narrow; it is not derived from the overflow"; fail=$((fail+1))
+fi
+
+case "$(big_run 999999)" in
+  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  mitigation stands down when the index fits -- it fired anyway"; fail=$((fail+1));;
+  *) echo "  PASS  mitigation stands down when the index fits under the platform cap"; pass=$((pass+1));;
+esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

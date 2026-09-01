@@ -82,3 +82,11 @@ utils/__hotpatchFixture.js
 # as a Node process on the VM and can run its own build during deploy.sh, so nothing needs this
 # tracked. Vendored preact.mjs/htm.mjs land here too, which would otherwise bloat every diff.
 portal/public/
+
+# 🔴 PERSONAL PROJECT INSTRUCTIONS — LOADED AT LAUNCH, NEVER COMMITTED. Claude Code loads
+# CLAUDE.local.md at the same priority as the reviewed project CLAUDE.md, and the vendor docs say to
+# gitignore it. It was NOT ignored here until 2026-09-01, so the first one written would have been
+# committed — a personal, unreviewed, launch-priority instruction file in everyone's tree. ⚠️ Because
+# it is ignored, NO GATE SEES IT: docs-audit, the reflow checks and the xref check all resolve their
+# file list from `git ls-files`. Highest trust, zero review. Keep POINTERS in it, never content.
+CLAUDE.local.md
