@@ -3906,6 +3906,16 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    saved one at 16px. */
 .mxcell{cursor:pointer;padding:0}
 .mxcell.inherited{cursor:help}
+/* 🔴 THE 26px CELL'S CHECKMARK RENDERS AS A BLACK BAR AT THIS SIZE, AND THIS GRID DOES NOT WANT IT.
+   `.mxcell[aria-checked=true]::after` draws a tick from two rotated borders, centred only by the 26px
+   rule's `display:inline-grid;place-items:center` — which the 16px `.mxcell` rule above REPLACES with
+   `display:block`. The ::after then lays out in normal flow, un-centred, and paints as a dark stroke
+   hanging out of the bottom of every granted cell. The mockup never trips it because access.html marks
+   its cells `aria-pressed`; this grid uses role=checkbox/aria-checked, which is the better semantics and
+   is kept. At 16px the state is already carried by SHAPE — solid fill is direct, hollow ring is
+   inherited (see the block above) — so the tick is redundant as well as broken. Scoped to `.mx` so the
+   26px cell elsewhere keeps its tick. */
+.mx .mxcell::after{content:none}
 /* Pending reads as "what it WILL be, not yet written": the fill or the emptiness is the
    future state, and the dashed --staged ring is what marks it unsaved. Same dashed-and-
    hollow language the Track already uses for staged bars, so it is learned once. */
