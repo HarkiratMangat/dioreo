@@ -23,7 +23,9 @@ a "no path named"                   silent "rg -n 'some phrase here'"
 # ── SILENT: not a search at all, and prose that merely mentions one.
 a "not a search command"            silent "node scripts/docs-audit.mjs"
 a "heredoc discussing a docs grep"  silent "$(printf 'git commit -F - <<%sEOF%s\nfixed: rg -n "a phrase" docs/ was wrong\nEOF' "'" "'")"
-# ── REGEX patterns. Found by LIVE FIRE, not reasoning: this hook fired on its own completeness sweep searching for a known alternation. A metacharacter means the author already knows the shape.
+# ── REGEX patterns. Found by LIVE FIRE, not reasoning: this hook fired on its own completeness sweep searching for a known alternation. A metacharacter means the author already knows the shape. 🔴 CONTEXT PADDING IS NOT A PATTERN. Live miss 2026-09-01 09:3x EDT: this exact shape searched docs/ for a CONCEPT and the hook stayed quiet, because `.{n}` reads as a metacharacter. Asking rg for surrounding prose IS the admission that you are looking for an idea rather than a string — the case ctx_search wins. Both halves pinned: padding around a multi-word phrase must FIRE, and padding around a single literal must stay SILENT.
+a "context-padded concept search"   fires  "rg -o '.{140}the design bar.{200}' docs/"
+a "context-padded single literal"   silent "rg -o '.{40}parseAdminDate.{60}' docs/"
 a "alternation over known literals" silent "rg -n '20,000B budget|Checks a 20' docs/x.md"
 a "anchored regex with a space"     silent "rg -c '^\\s*- \\[P[0-3]' docs/db-deferred-list.md"
 a "wildcard regex"                  silent "rg -n 'foo.*bar baz' docs/"

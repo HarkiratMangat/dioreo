@@ -34,10 +34,13 @@ printf '%s' "$cmd" | grep -qE '(^|[[:space:]"'"'"'])(\./)?(docs|\.claude/rules)(
 seg=$(printf '%s' "$cmd" | sed -E '1,/(^|[|;&(]|[[:space:]])(rg|grep|ug)[[:space:]]/ s/.*(^|[|;&(]|[[:space:]])(rg|grep|ug)[[:space:]]/rg /')
 pat=$(printf '%s' "$seg" | grep -oE "'[^']+'|\"[^\"]+\"" | head -1 | sed -E "s/^['\"]//; s/['\"]$//")
 case "$pat" in *' '*) ;; *) [ -n "$pat" ] && exit 0 ;; esac
-# A multi-word REGEX is not a question. Found by LIVE FIRE 2026-08-30 12:40 EDT: this hook fired on `rg -n '20,000B budget|Checks a \*\*20' <file>` during its own completeness sweep -- an alternation over two known literals, exactly the case where rg is right and ctx_search would be worse. Anything carrying regex metacharacters is a pattern the author already knows the shape of, not a concept they are searching for, so stay silent.
-case "$pat" in
+# A multi-word REGEX is not a question. Found by LIVE FIRE 2026-08-30 12:40 EDT: this hook fired on `rg -n '20,000B budget|Checks a \*\*20' <file>` during its own completeness sweep -- an alternation over two known literals, exactly the case where rg is right and ctx_search would be worse. Anything carrying regex metacharacters is a pattern the author already knows the shape of, not a concept they are searching for, so stay silent. 🔴 BUT CONTEXT PADDING IS NOT A PATTERN. Measured live 2026-09-01 09:3x EDT: `rg -o '.{140}[Aa]wwward.{200}'` over docs/ slipped through this carve-out, because `.{n}` counts as a metacharacter — and it is not one in the sense that matters. A `.{n}` span is asking rg to hand back SURROUNDING PROSE, which is the admission that the thing being looked for is a concept and not a literal. It is exactly the query ctx_search wins, and this hook was silent for it. Strip the padding before judging, so the decision is made on what is actually being searched FOR.
+stripped=$(printf '%s' "$pat" | sed -E 's/\.\{[0-9]+(,[0-9]*)?\}//g')
+case "$stripped" in
   *'|'*|*'^'*|*'$'*|*'\\'*|*'['*|*'('*|*'.*'*|*'+'*|*'?'*) exit 0 ;;
 esac
+# After stripping, a single word is a literal again and rg stays right.
+case "$stripped" in *' '*) ;; *) [ -n "$stripped" ] && exit 0 ;; esac
 
 printf 'CTX-SEARCH NUDGE — this searches the prose corpus that context-mode indexes (docs/ + .claude/rules/), with a multi-word pattern.\n\nMeasured on this exact corpus 2026-08-30: `rg` returned ZERO files for 3 of 4 natural-language questions, because it matches literal strings and not concepts. ctx_search answered all four, ranked by section with headings, and the raw bytes never enter context.\n\n  ctx_search({ source: "project:dioreo-docs", queries: ["...", "..."] })   # or project:dioreo-rules\n\nA PreToolUse hook re-indexes both corpora immediately before any ctx_search, so results are never stale.\n\nrg stays correct when you already know the literal string — this is a reminder of the alternative, not a verdict on this command.' \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
