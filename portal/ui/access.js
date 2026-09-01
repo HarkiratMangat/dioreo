@@ -166,7 +166,9 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                                     <th key=${sc.key}>
                                         <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
-                                              title=${`${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'}${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
+                                              title=${spofScopes.has(sc.key)
+                                                  ? `${sc.label} — single point of failure: exactly one person besides the owner holds it`
+                                                  : `${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides the owner${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
                                             <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
                                         </span>
                                     </th>`)}
@@ -458,13 +460,15 @@ export function AccessRealm({ session }) {
     const viewMeta = view === 'By admin'
         ? `${plural(matrix.admins.length, 'admin')} × ${allScopes.length} permissions`
         : `${plural(spofSet.size, 'single point')} · ${unheld.length} held by nobody but you`;
-    // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the single-point entry appears only when there is one. The lock does not: the owner-only column is always drawn, so it is always named.
-    const accessKey = html`
+    // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the single-point entry appears only when there is one. The lock does not: the owner-only column is always drawn, so it is always named. 🔴 THE WHOLE KEY GOES WHEN THE GRID GOES. With zero AdminUser documents ByAdmin replaces the entire table with one paragraph, so direct, inherited and the lock are all off screen — and this named all three anyway, under its own comment stating the rule it was breaking. The dev database cannot reach that state, which is why the pass never rendered it. The lock is additionally gated on a scope actually carrying ownerOnly, because a legend entry is a promise that the mark is somewhere on the page.
+    const anyGrid = (matrix.admins || []).length > 0;
+    const anyLock = allScopes.some((sc) => sc.ownerOnly);
+    const accessKey = !anyGrid ? null : html`
         <span class="key">
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
             ${spofSet.size ? html`<span class="l spofk" data-note><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
-            <span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>
+            ${anyLock ? html`<span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>` : null}
         </span>`;
 
     // ⚠️ THE FORM IS AT THE FOOT OF A GRID, so the masthead button has to travel rather than toggle: there is no second copy to reveal, and building one would be two grant forms that can disagree. The focus lands on the field, not merely the scroll position — a page that moves and leaves the caret behind has not actually taken you there.
