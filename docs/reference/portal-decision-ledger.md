@@ -62,6 +62,13 @@ status: live
 | `.dend` · `.pill.ghost` | **Deleted** | 2026-08-31 | **Zero elements in either page.** Dead in the design too | — |
 | The A/B artifact | **Dropped for Season** | 2026-08-31 | His call. §0.5b's published-frames exit condition is waived for this realm | — |
 
+## Armory — realm-specific decisions
+
+| Surface | Decision | Date | Why | Reopens if |
+|---|---|---|---|---|
+| `th.sortable`/`button.sortbtn` on Category, Gunsmith code, Attachments column headers | **Portal keeps sortable columns.** Class (b) | 2026-09-01 | The mockup renders these as plain static `<th>`; the portal made them clickable. Not part of the mode-collapse's stood-down redesign set (that queue is closed, Season-specific, and already done) — evaluated standalone. Harkirat: keep it | The sort feature is found to be broken or unused |
+| `Manifest`'s `removeLabel` prop, Armory's call site | **Portal keeps `"Stage deletion"`.** Class (b) | 2026-09-01 | The mockup's generic `.sr` "Remove" label is misleading here: this realm's remove button stages a deletion, it does not delete — nothing is destructive until Review commits the changeset. `portal/ui/armory.js:1163` overrides the shared `Manifest` component's default `removeLabel='Remove'` on purpose | The staging model changes and removal becomes immediate |
+
 ## Instruments — what they can and cannot do
 
 | Instrument | State | Reopens if |

@@ -79,7 +79,8 @@ function rankOf(b) {
     return String(raw).split('-')[0];
 }
 
-function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(TCLOSED_KEY)) || []); } catch { return new Set(); } }
+// The Unranked tier carries almost half the catalogue, so it starts collapsed — matching the mockup's default.
+function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(TCLOSED_KEY)) || ['null']); } catch { return new Set(['null']); } }
 function saveTClosed(set) { try { sessionStorage.setItem(TCLOSED_KEY, JSON.stringify([...set])); } catch (e) {} }
 
 // 🔴 AGE IS NOT A DEFECT. Counting staleness among the faults put a red mark on nearly every card — the mockup measured 33 of 36 siblings — so the badge stopped meaning anything. Faults get the red count; age gets a quiet dot, because it is a different fact and reads as one.
@@ -812,7 +813,7 @@ function ArmoryAddChips({ onAdd }) {
     useCreateKey(ADD_KEY.MP, () => onAdd('MP'));
     useCreateKey(ADD_KEY.DMZ, () => onAdd('DMZ'));
     return html`
-        <div class="mh-add" role="group" aria-label="Add a build">
+        <div class="mh-add" id="mhAdd" role="group" aria-label="Add a build">
             <span class="mh-add-k">Add</span>
             ${MODES.map((m) => html`
                 <button type="button" key=${m} class="pill mh-t"
@@ -1161,7 +1162,7 @@ export function ArmoryRealm({ session }) {
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
-                                   onAdd=${() => setShowAdd(true)} realm="armory" csrfToken=${session.csrfToken}
+                                   onAdd=${() => setShowAdd(true)} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onRowClick=${(row) => setEditingId(String(row.id))} selectedRowId=${editingId}
