@@ -250,6 +250,51 @@ check(
   }
 );
 
+/* --------------------------- npm-script-exists ------------------------- */
+// Added 2026-09-01 11:5x EDT, from a read-only reader test. A fresh session was handed the documents that start a realm pass and asked to work out its first ten actions. It could not run the fifth close condition, because `portal:realwalk` is named on the status board, named in the plan, named in two prompts — and **is not a script**. The file `scripts/portalRealWalk.mjs` exists; the npm entry point never did, and no document carried the raw invocation either. A condition nobody can invoke reads exactly like one nobody got round to.
+//
+// 🔴 THIS IS THE CLASS, NOT THE CASE. Of sixteen defects that reader test found, the largest group was documents asserting something about a TOOL — what a flag does, how many lists it prints, which script exists — that had drifted from the tool. Prose describing behaviour rots silently because nothing executes it. This check closes the one member of that class that is decidable from the text alone: a command either resolves in package.json or it does not.
+//
+// ⚠️ WHAT IT CANNOT SEE, said plainly so the green is not over-read: whether the script does what the doc claims. The same reader test found `--all` described as "every view in ONE batched call" when it lifts row caps on ONE view, and that sentence names a script that exists perfectly. Behaviour drift needs a human or a falsifier; only existence is mechanical.
+//
+// ⚠️ LIVE DOCS ONLY. A frozen spec naming a script that has since been renamed is a historical record and correct as written -- failing it would teach the next reader that the audit lies, the same reasoning as PLAN_AUDIT_FROM above.
+check(
+  "npm-script-exists",
+  "ERROR",
+  "every npm script named in a LIVE tracked doc actually exists in package.json",
+  () => {
+    const out = [];
+    let examined = 0;
+    // 🔴 ABSENT AND UNPARSEABLE ARE DIFFERENT STATES, and conflating them made this check fire on VALID input the first time its own falsifier ran. A fixture tree under DOCS_AUDIT_ROOT has no package.json at all — there is nothing to verify against and nothing wrong — so that SKIPS. A package.json that exists and cannot be read, or that declares no scripts, is a real refusal on the real tree. A check that cries wolf gets filtered, and then it guards nothing.
+    const pkgRaw = read("package.json");
+    if (pkgRaw === null) return { findings: [], examined: 0, skipped: "no package.json in this tree, so no npm script can be resolved" };
+    let scripts;
+    try { scripts = new Set(Object.keys(JSON.parse(pkgRaw).scripts || {})); }
+    catch { return { findings: [{ file: "package.json", msg: "exists but could not be parsed, so no npm script could be verified -- this is a REFUSAL, not a pass" }], examined: 0 }; }
+    // ⚠️ NO SPECIAL CASE FOR AN EMPTY SCRIPTS MAP, and the first version's was wrong. It refused, which fired on the fixture tree — valid input — and a finding that is wrong every run is one nobody reads. With no scripts, every `npm run` a doc names genuinely does not resolve and is reported on its own merits: screaming-obvious on a real repo, silently zero on a fixture with no doc mentions. The general path already gives the right answer, and a guard that only exists to say so is a guard that can be wrong.
+    for (const f of tracked()) {
+      if (!f.endsWith(".md")) continue;
+      const txt = read(f);
+      if (txt === null) continue;
+      // status: live only. A superseded or frozen doc is a snapshot of what was true then.
+      if (!/^status:\s*live\s*$/m.test(txt.slice(0, 400))) continue;
+      const seen = new Set();
+      for (const m of txt.matchAll(/npm run ([a-z0-9][a-z0-9:_-]*)/g)) {
+        const name = m[1];
+        if (seen.has(name)) continue;
+        seen.add(name);
+        examined++;
+        if (!scripts.has(name)) {
+          out.push({ file: f, msg: `names \`npm run ${name}\`, which is not a script in package.json. Either add the script or write the raw invocation -- a command a reader cannot run is worse than no command, because it reads as one somebody verified.` });
+        }
+      }
+    }
+    // ⚠️ A CORPUS NAMING NO SCRIPT IS A SKIP, NOT A PASS. The fixture tree has no live doc mentioning `npm run`, so this examines 0 there — and the framework rightly calls a 0-item pass vacuous. Saying "skipped" is the honest word for "there was nothing here to verify", and it keeps the vacuous-pass detector meaningful for the checks where a 0 really would mean a broken matcher. On the real tree this examines ~100 mentions.
+    if (!examined) return { findings: [], examined: 0, skipped: "no live tracked doc names an npm script in this tree" };
+    return { findings: out, examined };
+  }
+);
+
 /* --------------------------- plan-audit-log ------------------------- */
 // Added 2026-08-20 12:00 EDT. A plan is approved once and then executed by someone (or some session) with none of the context that produced it, so the moment to find its defects is BEFORE approval -- and "review the plan" does not find them. Asked to REVIEW its own hotpatch plan, a session found polish; asked to FALSIFY it, the same session found ten defects, two of which would have shipped a silent wrong result (a baseline commit that made the whole feature a no-op, and a command that never reached Discord under a success message). Neither was visible from the plan text -- both came from going and checking a claim the plan had accepted.
 //

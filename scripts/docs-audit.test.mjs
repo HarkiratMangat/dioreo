@@ -120,7 +120,7 @@ const makeFixture = () => {
   write(
     root,
     "package.json",
-    JSON.stringify({ name: "fixture", version: "2.33.0", dependencies: { widget: "^1.2.3" } }, null, 2)
+    JSON.stringify({ name: "fixture", version: "2.33.0", scripts: { test: "node --version" }, dependencies: { widget: "^1.2.3" } }, null, 2)
   );
   write(
     root,
@@ -352,6 +352,17 @@ if (__mine()) provesBaselineClean();
 
 proves("a tracked docs/ file nothing in the README names", "readme-map", (root) => {
   write(root, "docs/orphan-record.md", "# Nobody maps me\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+proves("a live doc naming an npm script that does not exist", "npm-script-exists", (root) => {
+  write(root, "docs/reference/made-up.md", "---\nkind: reference\nstatus: live\n---\n\n# Made up\n\nRun `npm run portal:definitely-not-a-script` to do the thing.\n");
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
+// The baseline needs a LIVE doc naming a REAL script, or npm-script-exists examines 0 items and its clean run is a vacuous pass — which the framework correctly reports. This is the valid half of the pair the broken fixture above completes.
+provesSilent("a live doc naming an npm script that DOES exist", "npm-script-exists", (root) => {
+  write(root, "docs/reference/runs-a-real-one.md", "---\nkind: reference\nstatus: live\n---\n\n# Runs a real one\n\nRun `npm run test` before opening a PR.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });
 });
 
