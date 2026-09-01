@@ -34,11 +34,19 @@ status: live
 
 **`v3-pre-release` is at `94a70f0`**, the squash of PR #178, `package.json` **`3.71.0-pre`**, working tree clean, local identical to origin. No tag — none is minted on the pre-release line until `v3.0.0`. Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through, so the shared surfaces under you are the post-Broadcast ones.
 
-🔴 **YOU ARE ON A BRANCH THAT ALREADY HAS ONE COMMIT ON IT, AND IT IS NOT YOURS.** Harkirat's instruction, 2026-09-01 17:16 EDT: **rename this branch to your own `feat/…` name and fold its commit into your work.** It is `6c6f3ad`, a one-paragraph correction to `docs/db-deferred-list.md`, unpushed and never PR'd.
+🔴 **YOU ARE ON A BRANCH THAT ALREADY CARRIES SIX COMMITS, AND NONE OF THEM IS PART 4.** Harkirat's instruction, 2026-09-01 17:16 EDT: fold them into your work rather than branching afresh. ✅ **Already renamed for you — the branch IS `feat/access-portal-conformance`**, done after confirming `gh pr list --head` returned 0, because `CLAUDE.md` forbids renaming a branch **with an open PR** (GitHub auto-closes it, unreopenable). You need do nothing about the name.
 
-- ✅ **Already renamed for you — the branch IS `feat/access-portal-conformance`.** Done 2026-09-01 17:17 EDT, after confirming `gh pr list --head docs/states-flake-standalone-correction` returned **0**: `CLAUDE.md` forbids renaming a branch **that has an open PR**, because GitHub auto-closes it and it cannot be reopened. No PR existed, so the rule did not bite. **You need do nothing about the name.**
-- **Then verify what you inherited rather than trusting this paragraph:** `git log --oneline v3-pre-release..HEAD` should show exactly one commit, and `git diff v3-pre-release..HEAD --stat` exactly one file.
-- **What that commit says, so you can defend it in your own PR body:** `portal:states` is a coin flip — ~1 in 2 in-suite, ~1 in 5 standalone. An earlier version of the entry claimed it was standalone-green, which would let a session read a standalone pass as proof its change is innocent, or a standalone failure as proof it is guilty. Neither follows. **The sound test is whether the failing selector belongs to anything you edited.**
+**Verify what you inherited rather than trusting this paragraph** — `git rev-list --count v3-pre-release..HEAD` should be **6**, and `git diff v3-pre-release..HEAD --name-only` should list **4** files, all records:
+
+| Commit | What it is |
+|---|---|
+| `6c6f3ad` | `portal:states` is a coin flip — ~1 in 2 in-suite, ~1 in 5 standalone. An earlier claim that it was standalone-green would let you read a standalone pass as proof your change is innocent. **The sound test is whether the failing selector belongs to anything you edited.** |
+| `9d33f2d` · `992e51e` | this prompt's branch-state block, and the rename |
+| `bc2a14e` | `SESSION-START` gains the `<!-- MEMORY-INDEX-END -->` sentinel, and its worktree count was wrong |
+| `ed6b0b9` | two worktrees retired — see below |
+| `2c1dad1` | three surfaces still named a branch deleted minutes earlier |
+
+⚠️ **THE WORKTREE AND BRANCH LANDSCAPE CHANGED UNDER THIS PROMPT, so `git branch -a` will not match older notes.** **One** worktree is live — `draw-calculator-breakdown-146641`, Harkirat's active peer session, never touch it. Two were retired on evidence: `outstanding-v3-items-135f3b` (absorbed into #176 — ⚠️ `git cherry` called its commits unmerged and was wrong, because the work was squashed and patch-id cannot see through a squash; **compare content, never the commit list**) and `silent-mode-compliance`. **`chore/silent-mode-guards-parked` is new and pushed** — three parked silent-mode hooks awaiting Tasks 7–9 of the 83-step workflow-compliance plan, registered in no settings file, inert. **Not your work; do not fold it in, do not merge it.**
 
 ⚠️ **You will meet that flake yourself.** `npm test` was red on `portal:states` three times across the previous session, on a different state each time, with no defect behind any of them. The rule for handling it is in this file under *Two rules no document carried*.
 
