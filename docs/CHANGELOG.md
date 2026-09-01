@@ -28,6 +28,34 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.70.0 — 2026-08-31 22:0x EDT — Armory's tier board had four dead CSS rules, two view headers and an export strip missing half its scopes; plus a gate for the backtick that keeps eating HTML comments
+
+### The realm
+
+**All four Armory views were audited for the first time.** The previous pass recorded *resting pass closed* in the conformance plan's live ledger having only ever run the default view — Repairs, Compare and Bulk & export had never been measured. They are now: Tier board +532px, Repairs +546px, Compare −491px, Bulk & export +504px against the mockup, at 1282×888.
+
+**The largest defect was live CSS behind a dead selector, and no gate had ever reported it as a defect.** `RANK_KEY` emitted `t-t3` / `t-t4` / `t-t5` / `t-none` while both stylesheets key the Armory tier block on `.trow.t-top3` / `.t-top4` / `.t-top5` / `.t-unranked`. Four of the five tier rules had therefore never applied once, taking with them the graded 20/17/15/14/13px tier marks and the `--bc-dim` card fade — which is the entire reason the board reads as tiered, in the words of the stylesheet's own section comment. It is the same shape as the missing `id="mhAdd"` the previous pass found. `portalReverseOrphans` had it recorded as accepted debt (shape ④, `t-t4` against `.t-top4`); the baseline is re-recorded and five entries left it.
+
+**Seven more, each verified against the design's own markup rather than by eye:**
+
+- **Two view headers where every design draws one.** Rack, Coverage and Compare each rendered their own `.ph` beneath the Shell's. The Shell has carried a `meta` slot since Broadcast needed one and Armory never passed it; the per-view count now lives there, which is where `armory.html`'s `#viewMeta` puts it. `portal:probe --sel .ph` reports `w=1160 h=59 x=99 y=274` on both sides with every property agreeing.
+- **The export strip offered two of the four scopes `/manage` has.** `This view`, `Category` and `First five in this filter` are built, reusing the `ids=` and `category=` shapes `armoryExportQuery` already spoke. The strip's own summary line now reads *4 formats*, exactly like the design's. Two divergences are deliberate and cited: both armouries keep a whole-catalogue scope, and the Category row appears only once a chip is on rather than offering a Download that hands you an empty file.
+- **A Manifest filter chip that could only ever empty the table.** Rows reach the Manifest already filtered to the active armoury, so every non-default value of its `mode` chip was guaranteed to render nothing — and it produced the `MP ×2` / `DMZ ×2` / `All ×2` duplication the trigger listing reported.
+- **The Manifest count divided by the rows handed in, not the catalogue** — "125 of 125" over 133 builds, a count that can never say something is being withheld.
+- **The tier rows' accessible name fused** to *Best in category18one weapon per category*. htm drops a whitespace-only text node that spans a newline, so the separator has to sit on the same line as its neighbours.
+- **The masthead's lead stat said "MP builds"** where the design says *MP builds shown*, which is the scope ambiguity the mockup's own comment was written to fix; and **need-repair used the alarm tone** where `armory.html` uses `warn`.
+- **`portalAudit --triggers` printed `season` as a hardcoded literal**, so every run on every other realm named the wrong subject above a correct listing.
+
+`--triggers`' one-sided lists went from six and six to three and three. The three survivors are the identity chip, which is a privacy decision, and the two create-button shortcut hints, which are deliberate and commented in the code — all three now carry a row in the decision ledger with a falsifier. Broadcast stays height-identical at +0px and Season at its cited +16px, after changes to the shared Manifest.
+
+### The gate
+
+**`npm run portal:template-comments`** — a backtick inside an HTML comment inside a tagged template ends the template. An odd number breaks the parse and `node --check` catches it; **an even number closes and reopens it**, so the file parses, every gate goes green, and the page renders wrong. No off-the-shelf tool can see it, because a template literal is one leaf token to every JS parser. This is a hand-written lexer over `portal/ui`, with 16 self-test cases split between what must fire and what must stay quiet, and it refuses to certify a scan that found no templates. Its own end-to-end case caught the gate silently never running, because this repo's path contains a space and `file://` + `process.argv[1]` does not equal a percent-encoded `import.meta.url`.
+
+### Records
+
+Twelve fabricated timestamps were corrected. The previous session wrote every date as **2026-09-01**, three hours into the future, across two plans, the decision ledger and the deferred list; git dates its commits 2026-08-31 20:40–21:19 EDT. The conformance plan's §0.7c carries a second measurement of its own four-call falsifier, the decision ledger gains twelve Armory rows, and the `--ink4` row that had been filed as a bare stub now carries the reason that was sitting three lines from the code: `--ink4` measures 3.46:1, so it stands on non-text and `--ink3` replaces it on anything a person reads.
+
 ## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#176) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
 
 > 🔴 **SCOPE, STATED PLAINLY — NOT JUST SEASON.** 281 commits, 198 files, 53,795 insertions since `v3-pre-release`: the Preact migration, six new portal instruments (`portalDiff`/`portalAudit`/`portalProbe`/`portalStatus`/`portalConverge`/`portalInventory`), the collapse of the portal's two rendering modes into one, a destructive-surface behavior change, and the Season and Broadcast conformance passes themselves. Harkirat, 2026-08-31: "it does not only contain Season Realm's work, it contains MUCH more."

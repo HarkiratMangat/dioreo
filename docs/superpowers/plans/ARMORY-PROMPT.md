@@ -50,7 +50,7 @@ Season's real batches, stripped to the shape that mattered, per batch:
 
 **The budget, stated so it can fail:** `--triggers` (spent) · one `--open` per distinct surface · one re-run. **If the overlay tier exceeds 4 calls, the derivative claim above was WRONG and that gets written into this file**, exactly as a resting pass over 10 gets written into §0.7c.
 
-🔴 **FALSIFIED 2026-09-01 00:4x EDT.** `--triggers` (1 call) + one `--open "+ Add build"` + one `--probe` to check its own new ① CASCADE line = 3 calls to characterize a SINGLE overlay surface, and the derivative claim's own "2-3 distinct surfaces" means the edit-drawer and the bulk-delete Confirm dialog are still unopened — the real total is well past 4. What the one opened surface showed: mostly resting-page findings already triaged (same span.k/span.v/mh-take-n pattern), the crumb-separator "cascade" turned out to be the ALREADY-CITED cross-realm SVG-vs-text-glyph decision showing up as the first offset (not a new defect), plus two genuinely new items — the breadcrumb doesn't update to name the open view ("Armory" vs mockup's "Armory Tier board"), and the identity chip (`button.whobtn`) renders empty instead of a name. The Add-build form's ~30 "ONLY IN MOCKUP" field-level SHAPE rows were NOT individually re-verified as pairing artifacts vs real gaps — every other SHAPE finding this realm turned out to be a class-rename pairing artifact, and that pattern is the working assumption here too, but it is an assumption, not a check. **The derivative claim held for the SHELL (the crumb/masthead chrome came for free); it did not hold for CALL COUNT, because each surface still needs its own diagnose-and-triage pass, same as a fresh cascade would.**
+🔴 **FALSIFIED 2026-08-31 20:50 EDT.** `--triggers` (1 call) + one `--open "+ Add build"` + one `--probe` to check its own new ① CASCADE line = 3 calls to characterize a SINGLE overlay surface, and the derivative claim's own "2-3 distinct surfaces" means the edit-drawer and the bulk-delete Confirm dialog are still unopened — the real total is well past 4. What the one opened surface showed: mostly resting-page findings already triaged (same span.k/span.v/mh-take-n pattern), the crumb-separator "cascade" turned out to be the ALREADY-CITED cross-realm SVG-vs-text-glyph decision showing up as the first offset (not a new defect), plus two genuinely new items — the breadcrumb doesn't update to name the open view ("Armory" vs mockup's "Armory Tier board"), and the identity chip (`button.whobtn`) renders empty instead of a name. The Add-build form's ~30 "ONLY IN MOCKUP" field-level SHAPE rows were NOT individually re-verified as pairing artifacts vs real gaps — every other SHAPE finding this realm turned out to be a class-rename pairing artifact, and that pattern is the working assumption here too, but it is an assumption, not a check. **The derivative claim held for the SHELL (the crumb/masthead chrome came for free); it did not hold for CALL COUNT, because each surface still needs its own diagnose-and-triage pass, same as a fresh cascade would.**
 
 ⚠️ **Three ways the derivative claim could still break, in order of likelihood:**
 1. **`--triggers` filters out data rows**, so an overlay reachable only from a build row will not appear. The inventory is a FLOOR on what exists, never a ceiling — Season needed `--open-sel` for exactly this.
@@ -74,3 +74,26 @@ Query `docs/reference/portal-decision-ledger.md` with `ctx_search`, batched with
 ## What is NOT in scope for Armory yet
 
 Redesigns stay stood down until **all six realms** match (Season, Armory, Broadcast, Access, Analytics, Review) — this is re-affirmed in `CLAUDE.md`, do not re-derive it. The re-apply list for what the mode collapse deleted lives in `docs/db-deferred-list.md`'s "RE-APPLY QUEUE" entry and is Armory's business only once its own resting pass closes.
+
+
+---
+
+## 🔴 OUTCOME — the second pass, 2026-08-31 22:0x EDT. Read this before treating anything above as current.
+
+**The first pass read the conformance plan at the END of its work.** It audited only the DEFAULT view and recorded *resting pass closed* in §L while Repairs, Compare and Bulk & export had never been looked at — and it wrote every date as **2026-09-01**, three hours in the future, into two plans, the decision ledger and the deferred list. Git dates its five commits 2026-08-31 20:40–21:19 EDT. All of those stamps are corrected; the lesson is `feedback_never_estimate_timestamps`, and the damage was that a ledger whose whole purpose is to be trusted by a later session carried twelve fabricated dates.
+
+**What the second pass found, in one line each, in the order they matter:**
+
+| Finding | Class |
+|---|---|
+| `RANK_KEY` emitted `t-t3`/`t-t4`/`t-t5`/`t-none` while BOTH stylesheets key on `.trow.t-top3`/`.t-top4`/`.t-top5`/`.t-unranked` — **four of the five Armory tier rules had never applied once**, so the graded marks and the `--bc-dim` card fade that make the board read as tiered were dead | live CSS, dead selector — the `id="mhAdd"` class again |
+| Rack, Coverage and Compare each drew their own `.ph`, so the page had two view headers. `Shell` has carried a `meta` slot since Broadcast needed one; Armory never passed it | the design has one header |
+| The export strip offered 2 of the 4 scopes `/manage` has | a capability gap, now built |
+| A Manifest `mode` chip over rows already filtered by armoury — every non-default value guaranteed an empty table | a control that could only ever fail |
+| The Manifest count divided by the rows handed in, not the catalogue | "125 of 125" over 133 builds |
+| The tier rows' accessible name fused — htm drops a whitespace-only text node that spans a newline | PASS 6's class |
+| `portalAudit --triggers` printed `season` as a literal on every realm | §0.5a R1, in the tool that enforces it |
+
+⚠️ **The trigger table earlier in this file is now STALE in the good direction and is kept as the before-picture.** `+ Add build`, the seven category chips, `MP`/`DMZ`/`All ×2` and the fused accessible names are all closed; the ONLY-IN lists went **6+6 → 3+3**. The three survivors are the identity chip (a privacy decision) and the two `ADD_KEY` hints (deliberate, commented) — cited, not open.
+
+⚠️ **The `≤4 calls` overlay budget is settled and should not be re-argued.** It failed for both passes and §0.6c already carries why. What this pass adds: **Armory's build editor and Add form are INLINE panels in `.bed`, not overlays** — which is what made the first pass's `--open-sel` result look "inconclusive". Clicking a row REPLACES the rack, so a shorter page is the correct answer. Only the bulk-delete `Confirm` is genuinely an unopened overlay, and it needs a row selected first.
