@@ -5,7 +5,25 @@ status: live
 
 # Part 4 — Access. Paste this in.
 
-> Written 2026-09-01 14:45 EDT by the Broadcast session, per §0.0, and **corrected 2026-09-01 15:01 EDT after the §0.5c reader test found fifteen defects in it** — including that its first fenced block would have died on line 2, and that it gave no route at all to the real server its own body calls "the first artifact you open". Every number below now names the command that produces it.
+> Written 2026-09-01 by the Broadcast session (§0.0), corrected the same day by three cold readers. **Every number below names the command that produces it; where a figure and a tool disagree, the tool wins.**
+
+## 🔴 ORDER OF OPERATIONS — this block supersedes every competing instruction, and nothing else needs opening to start
+
+*Added 2026-09-01 15:50 EDT because two cold readers, given every document, could not resolve five procedural questions without reading 880 lines — and one of them named this block as the single highest-value change available. `SESSION-START.md` defers to the realm prompt explicitly, so this is the authority.*
+
+**1 · Order.** `git log --oneline -3 v3-pre-release` → build → the two `preview_start` calls → `portal:status` → the audits. 🔴 **Five places claim to be "the first call of every realm"** — §0.7a says `portal:audit`, §0.5b's ⓪ says `portal:diff`, §0.5b again says two screenshots, §0.2 says the real server, `SESSION-START` says a realm audit is not first any more. **Each is first WITHIN ITS PHASE. This list is the ordering. Stop looking.**
+
+**2 · Tool per question.** Prose question (is this settled?) → `ctx_search`. Symbol or callers → `codebase-memory`. A string you already know exists → `rg`. The comment beside the code → `Read` with `offset`/`limit`. ⛔ No browser and no probe during triage. §0.4's Reading row said "Grep" until today; ignore any copy of it that still does.
+
+**3 · Browser.** §0.4 says 🔴 *NOT the in-app browser* — **that governs MEASUREMENT, not servers.** `preview_start` starts a launch-config server and is required here; measurement goes through `chrome-devtools-mcp`, and the portal instruments drive their own headless browser and need neither.
+
+**4 · Turns, and what a "unit" is.** Target **≤35 tool calls** for the resting pass — Broadcast's took ~30 with two unanticipated fixes, and §0.7c's honest shape is `3 + (1 per independent root-cause group) + 1 regression + the interaction tier`. **A UNIT is one independent root-cause group plus its re-audit** — that is the thing you never stop in the middle of. At a turn-budget warning: finish the current unit *including* its verification, then report. **Cut the report, never the band captures** — capture at least three bands down the page before you claim you have looked. ⚠️ **A Part may span sessions** (§L: *"Season alone is several sessions"*); §0.0's one-Part-per-session is the intended shape, not a promise you can keep.
+
+**5 · What you may do without asking.** 🟢 **Commit on the branch freely — do not ask, and do not batch a session's work into one commit** (commits are per coherent fix). 🟢 Run every instrument. 🟢 Dispatch the §L ⑥ reader agents. ⛔ **Never** push, open a PR, merge, or ask about any of them.
+
+**6 · What ends Part 4** — copied out of §L so you need not open it: ① `portal:converge` flat *(run the named tool, never `portal:audit`'s ① section)* · ② `portalDiff` reports exactly the cited region set on all three views · ③ `portalInventory`'s six lists empty or dated-cited · ④ machine floor green **re-run at the commit you claim it for** · ⑤ a real-server pass · ⑥ the reader test on Part 5's carriers, everything it finds fixed · ⑦ Harkirat has looked. **The changelog paragraph and the A/B artifact are NOT yours** — see §L's status-vocabulary note.
+
+---
 
 ## The two lines §0.0 requires before any task content
 
@@ -52,6 +70,14 @@ npm run portal:converge -- --realm access
 
 🔴 **RUN `portal:converge`, AND DO NOT SUBSTITUTE `portal:audit`'s ① CASCADE FOR IT.** §L's close condition ① names `portalConverge` by name. The Broadcast session wrote ① into its §L row from the audit's ① section, and `portal:status`'s receipt board read `converge · never` for that realm at the same moment — the reader test caught it. When converge was actually run it reported eight RHYTHM rows and thirteen WORDS rows the audit had not: most were shallow-walk artifacts, one was a real cited row, and none of that was knowable in advance. **The instruments are not interchangeable because their sections have similar names.**
 
+## The two phases a realm prompt keeps dropping — both have a named artifact
+
+🔴 **Neither appeared in this prompt until 2026-09-01, and the plan already records that one of them has been missed TWICE for exactly this reason.** §0.5b's phase order is `① ② ③ ④ ⑥ ⑤` and it calls the ordering load-bearing; a prompt that lists instruments and not phases quietly deletes two of them.
+
+**① LOCATE → `local/locate-access.md`.** For every item this surface owns: does the fix live in the mockup only / the portal only / both / neither — **with a citation**. One row per item: item · verdict · citation · what it implies for the work. §0.5b: *"🔴 IT PRODUCES A NAMED ARTIFACT, or it did not happen"* — it was the plan's self-declared most valuable step and the only one with no deliverable, so a session could claim it with no way to check. **It is what stops a diff becoming a rollback**, and it is the input to ③ and ⑤.
+
+**⑥ UX-COPY → every row applied or answered in the difference ledger.** Work Access's rows from `local/handoff/2026-08-25-portal-ux-copy-audit.md` — ⚠️ **gitignored, so no `rg` will surface it; open it by path.** Its sections A–G are realm-shaped and its **vocabulary table** is cross-realm, so a word changed here must change everywhere it appears. 🔴 **§0.5b's audit log entry 25 is this exact failure**: *"The UX-copy audit was assigned by a sentence that bound nothing"* and was missed a third time undetectably. ⑥ runs **before** ⑤ CLOSE, because a word change is a visual change.
+
 ## The real-server pass — §L condition ⑤, and the first draft of this prompt omitted it entirely
 
 ⧗ is unreachable (§L), so a Part that wants to close **must** run one. It needs a third server the harness block above does not start:
@@ -85,30 +111,43 @@ Then `Read /tmp/band.png`. **Of Armory's seventeen closed defects seven came fro
 | | The command that produces it |
 |---|---|
 | **46KB · 8 handlers** | `npm run portal:status`. ⚠️ §L row 4 says *"47.7KB · 7 handlers · 15 data-attrs"* and **all three disagree with a measurement**: the tool prints 46KB/8h, and `rg -o 'addEventListener\|onclick=' access.html \| wc -l` returns **8** |
-| **19 `onX` prop sites · 9 distinct handlers** | `rg -o '\son[A-Z][A-Za-z]*=' portal/ui/access.js` → 19; adding `\| sort -u` → 9. ⚠️ An earlier draft said "17", which reproduces under no counting method — §0.5a R1 |
+| **19 `onX` prop sites · 9 distinct handlers** | `rg -o '\son[A-Z][A-Za-z]*=' portal/ui/access.js` → 19; adding `\| sort -u` → 9 |
 | **12 distinct `data-*` names / 30 occurrences in `access.html`, 0 in `access.js`** | `rg -o 'data-[a-z-]+' <file>`. **Nothing in `scripts/` prints a per-realm data-attribute count**, so §L row 4's "15" has no producing instrument at all |
 | **Never instrumented** | `portal:status`'s close-condition board reads `· never` across all five columns for this realm |
 | ⚠️ **The drift counter is not a failure signal** | `portal:status` shows access `🔴 N — RE-MEASURE`; that counts `portal/ui` commits since the fixture, not a mismatch. `node scripts/portalGeometry.mjs --realm access --check` returns `✅ matches its fixture` |
 
 ## Two things already settled for you, both measured
 
-1. 🔴 **`mxrole`/`mxrow` are DEAD ON BOTH SIDES — this is done, do not re-investigate it.** Measured 2026-09-01: **8** matches in the mockup's `assets/app.css`, **8** in `portal/ui/app.css`, and **zero emissions** in `access.html`, `assets/shell.js` or `portal/ui/access.js`. Identical disposition to Broadcast's `atbar`/`atrow`/`atruler`/`atnow`/`timax`/`timb`/`timleg`, which PART 4's neighbour recorded the same way and which turned out to be §0.7c bucket 2. **File a ledger row and move on.** ⚠️ **An earlier draft told you to settle it with `portal:reverse-orphans`, which structurally cannot.** That script's own header states its scope: *"Emitters: `portal/ui/*.js` only. Rules: `portal/ui/app.css` and `portal/ui/tokens.css` only."* It never reads `access.html`, so it can only ever answer the portal half of a dead-on-both-sides question. Two `rg` calls settled it.
+1. 🔴 **`mxrole`/`mxrow` are DEAD ON BOTH SIDES — this is done, do not re-investigate it.** Measured 2026-09-01: **8** matches in the mockup's `assets/app.css`, **8** in `portal/ui/app.css`, and **zero emissions** in `access.html`, `assets/shell.js` or `portal/ui/access.js`. Identical disposition to Broadcast's `atbar`/`atrow`/`atruler`/`atnow`/`timax`/`timb`/`timleg`, which PART 4's neighbour recorded the same way and which turned out to be §0.7c bucket 2. **File a ledger row and move on.** ⚠️ **`portal:reverse-orphans` cannot answer a dead-on-both-sides question** — its scope is `portal/ui/*.js` emitters and `portal/ui/*.css` rules and it never reads a mockup page, so it sees only the portal half. `rg -c 'mxrole|mxrow'` over the four files settles it.
 2. ⚠️ **§0.9: Access's grant inputs "having no label" is NOT a defect** — they are `<label for=…><span>…</span><input id=…>`, and a probe reading only `innerText`/`aria-label` reports them as nameless. Do not "fix" it.
 
 ## What Part 3 leaves you that is not in any instrument
 
-1. 🔴 **THE SHARED `Manifest` HAS NOW HAD TWO CLASS-NAME DEFECTS AND BOTH SAT IN ITS RATCHET BASELINE.** Armory's `RANK_KEY` emitted `t-t3` against `.t-top3`; Broadcast found `PILL` emitting `stag`/`sched`/`exp`/`conf` against stylesheets defining only `.stt.saved`/`.stt.staged`/`.stt.conflict`, so every staged and every conflict row on Season had been rendering with no state shape at all. **Access builds `mxcell` state through a class expression too** (`access.js:187-190`). **Read `portal/fixtures/reverse-orphans.json` itself, not just the exit code** — a ratchet's baseline is by construction a list of things already agreed to live with, which is exactly why both survived weeks.
+1. 🔴 **THE SHARED `Manifest` HAS NOW HAD TWO CLASS-NAME DEFECTS AND BOTH SAT IN ITS RATCHET BASELINE.** Armory's `RANK_KEY` emitted `t-t3` against `.t-top3`; Broadcast found `PILL` emitting `stag`/`sched`/`exp`/`conf` against stylesheets defining only `.stt.saved`/`.stt.staged`/`.stt.conflict`, so every staged and every conflict row on Season had been rendering with no state shape at all. **Access builds `mxcell` state through a class expression too** (`access.js:187-190`). ⚠️ **READ ITEM 2 BELOW BEFORE ACTING ON THIS ONE — the imperative and its antidote were in the wrong order and a cold reader said the ordering alone would produce the deletion.** Then: **read `portal/fixtures/reverse-orphans.json` itself, not just the exit code** — a ratchet's baseline is by construction a list of things already agreed to live with, which is exactly why both survived weeks. 🔴 **But four of its entries for THIS realm are scanner artefacts, not debt, and deleting their rules would delete live CSS.**
 2. 🔴 **BUT `--why` CANNOT RESOLVE THE EXPRESSION THAT BUILDS THOSE CLASSES, AND IT SAYS SO ONLY BY REPORTING THEM AS DEAD.** Measured 2026-09-01: `--why` reports `.pend` (3 rules), `.inherited` (1) and `.locked` (4) as *"emitted by — nothing"*, while `access.js:189-190` demonstrably emits `' pend'`, `' pend off'`, `' inh inherited'` and `' locked'`. The evaluator resolves `'mxcell'` and `' on'` and gives up at the nested parenthesised ternary. **`pend` and `locked` are already in the baseline as accepted debt and they are SCANNER ARTEFACTS, not debt.** A session following instruction 1 literally would delete live rules. Read `access.js:187-190` before believing any `--why` answer about the grid.
 3. 🔴 **`.mxgrp th`'s two group headers span four `ADMIN_COMMANDS` and eight `MANAGE_PAGE_SCOPES` while the COLUMNS come from `accessScopes` order** — so appending a command silently mis-groups the grid. Both counts verified. The overlay cannot see it (the fixture happens to line up), which is exactly why the real-server pass above is not optional.
 4. 🔴 **The decision ledger has no `## Access` section — create it empty before triage.** The Broadcast section's own preamble is the convention and the reason: *"An empty section is not the same as an unexamined realm — this table exists so a Part 4 finding has somewhere to land and so `ctx_search` against this ledger returns a HEADING rather than nothing."* §0.7c call 2 sends you to `ctx_search` this file first, where an empty return reads as "never decided".
 
+## 🔴 BEFORE YOU TRUST A CLEAN REAL-SERVER WALK: can the dev data REACH this realm's states?
+
+*No document acknowledged this question until 2026-09-01; a cold reader found it by asking what Access is actually FOR.*
+
+Access's subject is grants, scopes, sessions and admins, and its grid draws four states through a class expression — `pend`, `pend off`, `inh inherited`, `locked`. **`portal:realwalk` mints a dev session and walks the page; it does not tell you whether any of those states exists in the dev database.** If none does, the grid renders without them, the walk reports clean, and the clean reading is worth nothing — it is §0.10's *identical readings across variants that must differ = never arrived*, one level up: **a clean walk over an empty state space is not evidence.**
+
+**So count before you conclude.** Against `.env.dev`'s localhost Mongo: how many admins, how many grants, how many with an inherited or pending or locked disposition, how many live sessions. If a state the realm exists to draw cannot be reached, say so in the summary as a **coverage limit of the pass**, exactly as `portalDiff` prints the axes it does not cover — do not let its absence read as its correctness. Seeding is out of scope; **naming the gap is not.**
+
 ## The rules that were added or earned in the last two days
 
-- **R10** — a claim that no instrument can see something is a claim ABOUT the instruments and needs their output.
-- **R11** — before ADDING an instrument, name the existing one that should have caught it and say why it did not. Broadcast's `portalRealWalk` fix came from this: it defaulted to **Season's** view names on every realm, and the instrument that already knew each realm's views was `portal:status`, reading the same fixtures. It reads them now.
+- **R1–R11 live in §0.5a — read them there, not here.** The two that fired on Broadcast: **R10** (a claim that no instrument can see something needs their output) and **R11** (before adding an instrument, name the one that should have caught it — which is how `portalRealWalk`'s Season-hardcoded view names were found, since `portal:status` already knew each realm's).
 - **§0.7c's triage buckets** — CITED / DEAD-ON-BOTH / ALREADY-SETTLED / FIX, sorted from the audit's own output plus the comment beside the code, **before any probe**. Broadcast's `button.chip "All"` looked like a missing control; `--triggers` showed 17 · 17 on both sides. **Check the page before closing a SHAPE finding.**
 - 🔴 **A CITED ① CASCADE is CLOSED, not fixed.** Access will report `b.crumb-sep +4 top / −6 height` under every `--open`, exactly as Broadcast did. Work ④ through it.
 - 🔴 **A GATE RESULT IS A FACT ABOUT A TREE, AND THE TREE MOVES.** Broadcast wrote "npm test exit 0" into §L from a run that predated its last code edit, and the suite was red on that branch's own hard-wrapped comment for two commits before a falsification pass caught it. **Re-run the machine floor at the commit you are claiming it for.**
+
+## Two rules no document carried until a cold reader was forced to choose
+
+**`portal:states` goes red and it is the known local coin-flip.** Re-run that state **alone, once**. Passes alone but fails in-suite → the documented load-dependent non-determinism; file it with the state name, selector and timeout, and 🔴 **do not claim the machine floor green at that commit.** Fails standalone twice, or names a selector you edited → it is yours, immediately. **Never re-run until green and move on** — a red run with no defect behind it sends the next session hunting a ghost.
+
+**A defect in a CLOSED realm, found while working this one.** Renders through a shared surface (`shell.js`, `manifest.js`, `app.css`) → **fix it now**, and re-run that realm's geometry fixture in the same commit (§0.5b). Lives in the closed realm's own file → **file it**; §0.8 froze Season's coverage and a later finding is a §L row 7 sweep item, never a reason to reopen. **Either way, do not ask.**
 
 ## How to decide whether a difference is worth a pop-up
 
@@ -122,7 +161,7 @@ Redesigns wait for **all six realms** (`CLAUDE.md`, re-affirmed 2026-08-31 again
 
 ## Before you hand this on
 
-🔴 **§L condition ⑥ — run the READER TEST on whatever you write for Part 5, and fix everything it finds.** Two read-only agents with no transcript: one asked to start the next Part and to list every place it cannot, one asked to falsify every checkable claim. **On this document they found fifteen and eight respectively**, including that `npm test` was red while §L said green, and that this file's first fenced block would have failed on line 2. Neither is visible from the inside — the author knows what the words meant.
+🔴 **§L condition ⑥ — run the READER TEST on Part 5's carriers and fix everything it finds.** Three agents, no transcript: one starts the next Part and lists every place it cannot · one falsifies every checkable claim · one gets **forced choices under the contradictions, a 15-call execution plan and an adversarial pass**. 🔴 **The third shape found what the first two could not** — a reader can quote a document correctly and still do the wrong work, so ask what it would DO, and refuse "the documents disagree" as an answer. On this document the three found 15, 8 and 17. ⚠️ **The read guard will tell your agents they have already read files they have not** (it inherits your read-state; the harness sends no agent field) — tell them to override with `offset: 0`.
 
 ## Closing
 

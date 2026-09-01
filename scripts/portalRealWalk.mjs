@@ -12,24 +12,16 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
-const fs = require('fs');
 const { findChrome } = require('./lib/chromePath.cjs');
+const { resolveViews } = require('./lib/portalRealWalkViews.cjs');
 const { mintSession, assertPastDoor } = require('./lib/portalSession.cjs');
 
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
 const flag = (f, d) => { const i = args.indexOf(f); return i >= 0 && args[i + 1] ? args[i + 1] : d; };
 const realm = flag('--realm', 'season');
-// 🔴 THE VIEW NAMES COME FROM THE REALM, NOT FROM SEASON. This defaulted to `Track,Board,Repairs` on every realm, so a Broadcast walk reported `❌ no control reading "Board"` twice and passed on one view — a failure that names a control the realm has never had. Identical shape to `--triggers` printing `season` as a literal on every realm until 2026-09-01, in the same instrument family, and the ⚠️ instrument that should have caught it already knew the answer: `portal:status` prints each realm's views by reading these same fixtures. So this reads them too, and falls back to the default view alone rather than to another realm's tabs — a walk that checks one real view beats one that fails on three imaginary ones. `--views` still overrides for a realm with no fixture recorded yet.
-const viewsFromFixture = (r) => {
-    try {
-        const f = path.join(ROOT, 'portal', 'fixtures', 'geometry', `${r}.json`);
-        return Object.keys(JSON.parse(fs.readFileSync(f, 'utf8')).views || {});
-    } catch { return []; }
-};
-const views = flag('--views', '').split(',').filter(Boolean).length
-    ? flag('--views', '').split(',').filter(Boolean)
-    : (viewsFromFixture(realm).length ? viewsFromFixture(realm) : ['default']);
+// 🔴 THE VIEW NAMES COME FROM THE REALM, NOT FROM SEASON. This defaulted to `Track,Board,Repairs` on every realm, so a Broadcast walk reported `❌ no control reading "Board"` twice and passed on one view — a failure naming a control the realm has never had. Identical shape to `--triggers` printing `season` as a literal on every realm until 2026-09-01, in the same instrument family, and R11's question answers itself: the instrument that should have caught it is `portal:status`, which already prints each realm's views by reading these same fixtures. The resolution is a pure function in `lib/` with its own test — this was the only portal instrument of twenty-eight carrying none.
+const views = resolveViews(flag('--views', ''), realm, path.join(ROOT, 'portal', 'fixtures', 'geometry'));
 const noAuth = has('--no-auth');           // the falsifier: proves the door assertion can fire
 
 // What a rendered page must never say to a reader. `null` and `undefined` are included as WORDS because that is how they reach a screen — a template that interpolated a missing field.
