@@ -1,9 +1,6 @@
 // scripts/portalTemplateComments.test.mjs — proves the gate can FIRE, and proves each thing it must stay quiet about.
 //
-// 🔴 THE FALSE-NEGATIVE HALF IS THE POINT. A checker that never matches anything passes every run and certifies nothing, and
-// this repo has shipped two of those (see `eslint.config.mjs`'s note on the import-based TDZ checker whose falsifier passed
-// for the wrong reason twice). So the fixtures below come in pairs: one that MUST fire and one that MUST NOT, for every
-// distinction the lexer draws.
+// 🔴 THE FALSE-NEGATIVE HALF IS THE POINT. A checker that never matches anything passes every run and certifies nothing, and this repo has shipped two of those (see `eslint.config.mjs`'s note on the import-based TDZ checker whose falsifier passed for the wrong reason twice). So the fixtures below come in pairs: one that MUST fire and one that MUST NOT, for every distinction the lexer draws.
 import assert from 'assert';
 import fs from 'fs';
 import os from 'os';
@@ -17,8 +14,7 @@ const B = '`';                                            // written as a variab
 let n = 0;
 const ok = (name) => { n++; console.log(`  ✓ ${name}`); };
 
-// ── MUST FIRE ────────────────────────────────────────────────────────────────
-// The EVEN case: parses cleanly, node --check is silent, the page renders wrong. This is the whole reason the gate exists.
+// ── MUST FIRE ──────────────────────────────────────────────────────────────── The EVEN case: parses cleanly, node --check is silent, the page renders wrong. This is the whole reason the gate exists.
 {
     const src = `const x = html${B}<div><!-- the ${B}foo${B} prop is read here --></div>${B};`;
     const f = scanSource(src, 'even.js');
@@ -84,8 +80,7 @@ const ok = (name) => { n++; console.log(`  ✓ ${name}`); };
     ok('HTML comment + backtick inside a quoted string — silent');
 }
 {
-    // An interpolation slot legitimately contains a nested template. The comment is in the OUTER template and clean; the
-    // backticks belong to the inner one and must not be attributed to it.
+    // An interpolation slot legitimately contains a nested template. The comment is in the OUTER template and clean; the backticks belong to the inner one and must not be attributed to it.
     const src = `const x = html${B}<div><!-- clean --> \${cond ? html${B}<b>y</b>${B} : null}</div>${B};`;
     assert.strictEqual(scanSource(src, 'nested.js').length, 0);
     ok('nested template inside ${} beside a clean comment — silent');
