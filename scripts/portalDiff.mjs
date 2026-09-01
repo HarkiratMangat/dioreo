@@ -31,6 +31,7 @@ import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
@@ -519,5 +520,6 @@ async function label(page, url, regions) {
                 : '  ❌ NOT EMPTY. Identical input produced regions, so this is reporting noise and every region list\n     it has printed is suspect. Widen CHANGE_TOL / CELL_SHARE until this comes back clean.');
             if (!ok) process.exitCode = 1;
         }
+        recordRun('diff', realm);
     } finally { await browser.close(); }
 })().catch((e) => { console.error(e); process.exit(1); });

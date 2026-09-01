@@ -7,12 +7,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIX = path.join(ROOT, 'portal', 'fixtures', 'geometry');
 const PKG = path.join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interactive');
 
 const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return ''; } };
+// 🔴 THE OTHER FIVE CONDITIONS. §L closes a Part on six things and four of them are "did you run X against the current code". The geometry fixture was already immune — it is a FILE with a commit stamp, which is why this board could always report it stale. The instruments that print to stdout and write nothing had no memory at all, so on the next morning "never run" and "ran clean" were the same picture. On 2026-09-01 a Part came one summary away from being reported closed with `portal:inventory` — the plan's own named close condition — never having been run on that realm once, because another instrument's output RESEMBLED it. They leave receipts now and this reports them.
+const { readAll } = createRequire(import.meta.url)('./lib/portalReceipt.cjs');
+const TOOLS = ['audit', 'inventory', 'diff', 'converge', 'realwalk'];
 const head = sh('git rev-parse --short HEAD');
 
 // The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype and Review's is a static composition a tenth its size, so one target across seven pages was never right.
@@ -57,3 +61,20 @@ console.log(`
   was written — never that the realm matches its design. The number comes from portal:diff, and the
   diff is a FLOOR: see the plan's §0.1. Realms with no fixture have never been through the pass.
 `);
+
+// ── the close-condition board ────────────────────────────────────────────────────────────────────
+console.log('\n  close conditions — has each instrument RUN against the current portal/ui?\n');
+console.log('  realm       ' + TOOLS.map((t) => t.padEnd(11)).join(''));
+for (const r of rows) {
+    const seen = new Map(readAll(r.realm).map((x) => [x.tool, x]));
+    const cells = TOOLS.map((t) => {
+        const x = seen.get(t);
+        if (!x) return '· never'.padEnd(11);
+        return (x.stale ? '🔴 stale' : '✅ ' + x.at.slice(5, 10)).padEnd(11);
+    });
+    console.log('  ' + r.realm.padEnd(12) + cells.join(''));
+}
+// ⚠️ STATED HERE RATHER THAN LEFT IMPLIED, because the failure this closes is only half the failure. A receipt records that a command executed at a commit. It cannot know what the command REPORTED, and it cannot know whether anyone read it — and the mistake it is aimed at was believing a near-neighbour instrument had already answered the question, which is a reading failure no timestamp can see. A row of ticks is not a closed Part; §L's sixth condition is a person looking, and that one has no instrument at all.
+console.log('\n  ⚠️ a receipt says an instrument RAN, never what it found and never that anyone read it. Receipts are');
+console.log('     gitignored and local to this working tree, so a fresh clone correctly reports everything as never-run.');
+

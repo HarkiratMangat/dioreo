@@ -224,6 +224,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-30 21:13 EDT — five differences that were not differences, and an instrument reading its own residue (v3.69.0)
 - 2026-08-31 16:20 EDT — the two rendering modes collapse, a guard is rebuilt three times, and a no-conflict claim expires (v3.69.0)
 - 2026-08-31 22:09 EDT — the tier board's ranking had never rendered, and the gate that knew it was in the baseline (v3.70.0)
+- 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3945,6 +3946,32 @@ I found it the long way, by diffing computed font sizes and noticing that four o
 There is no tool for it. A template literal is one leaf token to eslint, prettier, ast-grep and every AST tool underneath them — they cannot see inside it by design. So it is a hand-written lexer, sixteen cases, half of them proving it stays quiet: a backtick in a JS block comment, in a quoted string, in a nested template inside an interpolation slot. And then the case that mattered: pointed at a deliberately broken fixture, the CLI printed nothing and exited zero. The entrypoint guard compared `import.meta.url` against `file://` plus `process.argv[1]`, and this repo lives under a path containing a space, where that space percent-encodes on one side and not the other. **The gate written to catch a silent failure had one, and only its own falsifier found it.**
 
 Harkirat's framing of why it should exist at all is better than mine. The standing rule for scripted edits is an anchor assert before each replacement — and that assert passed cleanly on every single edit that produced this bug, because it checks that you are editing the right PLACE and says nothing about whether the PAYLOAD is valid where it lands. The gap is real. The answer is not another sentence in the memory index; it is a mechanism, which is this repo's own rule about rules.
+
+## 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
+
+Armory's tier board grades its rows — 20px for Best, then 17, 15, 14, 13, with the lower tiers' cards faded. The stylesheet says so in a section header someone wrote while fixing it: *the one thing the board exists to express was the one thing it did not show.*
+
+It had never rendered. A lookup table mapped the schema's rank vocabulary onto class names and produced `t-t3`, `t-t4`, `t-t5`, `t-none` against a sheet keyed on `t-top3`, `t-top4`, `t-top5`, `t-unranked`. Four of five rules matched nothing.
+
+**The repo already knew.** `portalReverseOrphans.mjs` exists to ask the one question no other gate asks — does this RULE have an ELEMENT — and its header names this exact case: *"④ MISMATCH — `t-t4` emitted against `.t-top4` styled."* It sat in the committed baseline. Which is precisely why nobody read it: **a ratchet's baseline is, by construction, a list of things you have already agreed to live with.** The mechanism that makes a debt list safe to ignore is the mechanism that makes a real defect invisible inside one.
+
+That is worth generalising before starting a surface: **read the ratchet baselines for that surface's names first.** They are the cheapest existing record of what is known-broken, and they are unread by design.
+
+**Then Harkirat looked at the A/B on his phone and asked what was different about the rows' background.**
+
+Both stylesheets carry `.panel + .panel{background:transparent}`, byte for byte. The design's manifest panel is the adjacent sibling of its view panel, so the table sits on the desk colour and reads as a well cut into the page. The portal rendered one paragraph between the two panels. The adjacency broke, the rule matched nothing, and every row of a 125-row table painted one step too light.
+
+I wrote in the commit message that no instrument could have found it. **That was false and I want it recorded as false.** ④ STYLE had printed it — the exact value — in output I had read twice that morning. It sorted around 140th of 149 as a single occurrence, buried under a hundred-odd leaf-cell width deltas repeated 125 times each. The section ranked by how OFTEN the pairing saw a difference and presented that as how much it mattered.
+
+So the defect class was never "relational selectors break." It was **an ordering that treats a container and a leaf as equally consequential.** ④ ranks by reach now — how many elements a difference is drawn through — and it refuses to claim that ordering if the walk stops supplying descendant counts, because the version I first shipped would have degraded silently back to count-order under a header still announcing reach.
+
+**My first response was to build a fifth instrument.** A sweep over every relational selector that resolves in the design and not the portal. I wrote it, its collector returned zero on its first run, its own test contradicted a comment two lines below it, and its BROKEN bucket would have fired on every conditionally-structural rule. Then I deleted it, because the fourth instrument had answered the question all along. That is now R11: before adding an instrument, name the existing one that should have caught it and say why it did not. Writing the sentence is what forces the discovery.
+
+**The tally, which is the part I did not expect.** Seventeen defects closed. Three came from an instrument section read correctly. Four from reading the code around a difference. **Seven from cropping the two captures into aligned bands and looking at them.** One from a person on a phone. Two from chasing why the previous one was missed. **None from the percentage** — which moved 9.6 to 8.7 across the whole session and never once pointed at anything.
+
+Listing my own sixteen mistakes at the end and grouping them produced one shape rather than sixteen: **reaching for the thing that resembles the requirement.** An instrument that resembles the named one. A rule applied outside its scope. A new check instead of a reread. One member instead of the class. A number that moved instead of an observation. Every one of them felt like doing the work, which is the entire difficulty — the substitute is genuinely related and genuinely produces output.
+
+Only half of that is mechanisable, and saying which half is the honest part. A status board can now report that a named instrument has never run against the current code. Nothing can report that I believed a different one had already answered.
 
 # Part B — Lessons Ledger (thematic)
 

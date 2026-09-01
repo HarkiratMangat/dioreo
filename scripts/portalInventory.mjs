@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const args = process.argv.slice(2);
@@ -134,5 +135,7 @@ const nameOf = (k) => k;
         console.log(H(`DIFFERENT STYLE (${style.length})`));
         style.forEach((s) => console.log(`  ${nameOf(s.k)}\n      ` + s.diffs.join('\n      ')));
         console.log('\n  A difference is not a defect. Adjudicate each against COMPANION.md before it becomes an edit.\n');
+        // The run reached its end and printed a report — record that, so portalStatus can tell an UNRUN instrument from one that ran clean. A receipt is not a result; see lib/portalReceipt.cjs.
+        recordRun('inventory', realm);
     } finally { await browser.close(); }
 })();

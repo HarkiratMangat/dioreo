@@ -1,9 +1,12 @@
 ---
 kind: plan
-status: live
+status: superseded
+superseded_by: docs/superpowers/plans/BROADCAST-PROMPT.md
 ---
 
-# Armory's first prompt — paste this in, don't re-derive it
+# Armory's first prompt — SUPERSEDED, kept as the worked example
+
+> 🔴 **DO NOT PASTE THIS. Armory is done and this file's first half is the BEFORE-PICTURE.** Its trigger table lists findings that are closed, its call budget was falsified twice, and it opens by citing a remediation plan that has since finished. It is kept because the OUTCOME section at the foot is the most useful record of what a realm pass actually costs, and because §0.0 requires each session to leave the next one a prompt — this is what Armory's looked like, not what Broadcast's should. **The live prompt is `docs/superpowers/plans/BROADCAST-PROMPT.md`.**
 
 > Task 10, `docs/superpowers/plans/2026-08-31-post-compact-remediation.md`. Season's Batches 0–H were invented ad hoc, in a gitignored file, across many sessions. This is the paste-ready version so Armory does not repeat that.
 

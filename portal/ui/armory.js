@@ -30,7 +30,7 @@ const ARMORY_COLUMNS = [
     // 🔴 CATEGORY BEFORE BUILD, which is armory.html's own order (Weapon · Category · Build · …). The portal had them the other way round, and the audit reported it as a SYMMETRIC pair — Category→Build and Build→Category — which §0.7c's own rule classifies as a pairing artifact. It was not one: a genuine column swap is exactly what a real reorder looks like to an LCS alignment. Caught only by opening the two captures and reading the header row. The rule needs the boundary: symmetry is evidence of an artifact ONLY when the two elements are interchangeable; two NAMED columns are not. 🔴 THIS COLUMN PRINTED THE STORED ENUM — "AR", "SNIPER", "SECONDARIES" — while a filter chip 200px above it read "Assault 35". One field, two vocabularies, one screen. armory.html prints the label. `editable` comes OFF with the fix and that is deliberate rather than a loss: a free-text cell over an enum could write "Assault" into a field whose only legal values are the keys, and display-vs-edit would have disagreed the moment the label rendered. Category is edited where it has always had a real control — the row editor's own <select>, one click away.
     { key: 'category', label: 'Category', col: 'c-type', render: (r) => CATEGORY_CHIP_LABEL[r.category] || r.category },
     { key: 'buildName', label: 'Build', editable: true },
-    { key: 'shareCode', label: 'Gunsmith code', dataKind: 'date',
+    { key: 'shareCode', label: 'Gunsmith code', dataKind: 'code',
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`
           : (r.shareCode ? html`<span class="code">${r.shareCode}</span>` : html`<span class="none">not set</span>`)) },
@@ -46,8 +46,8 @@ const ARMORY_COLUMNS = [
                 <span class=${'thumb ' + (r.imageKey ? 'ok' : 'no')}>${r.imageKey ? 'image' : 'no image'}</span>
             </div>`;
     } },
-    // ⚠️ THE DEFECT COUNT IS A CHIP WITH THE NAMES ON IT, not a comma-joined list of internal flag keys. `wrong-attachment-count, near-duplicate` is the shape of the data; "2 problems" with the names on hover is the shape of the question. Age is excluded here for the same reason the Rack excludes it — it is not a fault.
-    { key: 'coverage', label: 'Badges', dataKind: 'right', render: (r) => {
+    // ⚠️ THE DEFECT COUNT IS A CHIP WITH THE NAMES ON IT, not a comma-joined list of internal flag keys. `wrong-attachment-count, near-duplicate` is the shape of the data; "2 problems" with the names on hover is the shape of the question. Age is excluded here for the same reason the Rack excludes it — it is not a fault. `col: 'c-state'` is armory.html's own column width for this slot — the Manifest's fallback derives `c-detail` from `dataKind: 'right'`, which is why the portal emitted c-detail twice and the design's `col.c-state` matched nothing. A column class is the design's call, so the realm states it rather than letting a default guess.
+    { key: 'coverage', label: 'Badges', dataKind: 'right', col: 'c-state', render: (r) => {
         const faults = (r.coverage || []).filter((f) => f !== 'stale-90d');
         const chips = [];
         if (r.isMeta) chips.push(html`<b class="bdg" key="m">META</b>`);
@@ -531,8 +531,12 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
                         </div>
                         <div class="bed-g3">
                             <label class="dwfield"><span>Category</span>
-                                <select value=${draft.category} onChange=${(e) => set({ category: e.target.value })}>
-                                    ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c}</option>`)}
+                <select value=${draft.category} onChange=${(e) => set({ category: e.target.value })}>
+                                    <!-- The PRECISE label, matching the Add form. These two dropdowns edit the same field
+                                         and disagreed: the Add form read "AR — Assault Rifle" and this one read "AR". The
+                                         column beside them now reads "Assault". Three spellings for one field, which is
+                                         the defect the column fix closed in ONE of its three places. -->
+                                    ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c} — ${CATEGORY_LABEL[c] || c}</option>`)}
                                 </select></label>
                             <label class="dwfield"><span>Mode</span>
                                 <select value=${draft.mode} onChange=${(e) => set({ mode: e.target.value })}>

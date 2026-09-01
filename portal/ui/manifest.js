@@ -200,7 +200,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                              state pill have no order a reader would ask for, and a button that sorts
                              nothing useful is a control that has to be tried before it can be dismissed. -->
                         <th key=${c.key} class=${(c.sortable === false ? '' : 'sortable') + (c.dataKind === 'right' ? ' ta-r' : '') + (sort.column === c.key ? (sort.direction === 'asc' ? ' sorted-asc' : ' sorted-desc') : '')
-                                + (i > 0 && (c.dropSm || c.dataKind === 'date') ? ' drop-sm' : '')}
+                                + (i > 0 && (c.dropSm || c.dataKind === 'date' || c.dataKind === 'code') ? ' drop-sm' : '')}
                             aria-sort=${sort.column === c.key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                             ${c.sortable === false ? html`${c.label}` : html`
                             <button type="button" class="sortbtn"
@@ -256,6 +256,8 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                                 //
                                 // ⚠️ `detail` MUST stay a table-cell. The mockup's own comment records the fix: `display:block` on the td broke row layout thirty-nine times, once per row, and only the inner box needs the ellipsis. That is why `.det` carries `min-width:0` and the truncation lives on `.detcell`/`.dsub`.
                                 const kind = ci === 0 ? 'n'
+                                    // 🔴 `code` IS ITS OWN KIND. Armory's Gunsmith-code column was declared `date` purely to inherit `drop-sm`, so the cell rendered `.d` — the DATE cell, in the mono data face — where armory.html writes `td.code.drop-sm`. Visible where it matters least and reads worst: the "DMZ — no code" placeholder came out in JetBrains Mono against the design's Space Grotesk. Borrowing a kind for its side effect is how a cell ends up lying about what it holds.
+                                    : c.dataKind === 'code' ? 'code drop-sm'
                                     : c.dataKind === 'date' ? 'd drop-sm'
                                     : c.dropSm ? 'drop-sm'
                                     : c.dataKind === 'detail' ? 'det'

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { findChrome } = require('./lib/chromePath.cjs');
 const { mintSession, assertPastDoor } = require('./lib/portalSession.cjs');
@@ -104,4 +105,6 @@ try {
 } finally {
     await browser.close();
 }
+// Only a walk that got past the door and through every view is worth recording.
+if (!failed) recordRun('realwalk', realm);
 process.exit(failed ? 1 : 0);

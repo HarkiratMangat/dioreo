@@ -1,8 +1,6 @@
 // scripts/portalStyleRank.test.mjs — proves ④ STYLE's ordering surfaces the row that was buried.
 //
-// 🔴 THE FIGURES ARE THE REAL ONES, taken from the Armory run on 2026-09-01. Under the old ×count ordering the first row
-// was a leaf-cell width delta repeated 125 times and `section.panel` sat ~140th of 149. A test written with invented
-// numbers would pass under either ordering and prove nothing; these two rows are the ones that actually disagreed.
+// 🔴 THE FIGURES ARE THE REAL ONES, taken from the Armory run on 2026-09-01. Under the old ×count ordering the first row was a leaf-cell width delta repeated 125 times and `section.panel` sat ~140th of 149. A test written with invented numbers would pass under either ordering and prove nothing; these two rows are the ones that actually disagreed.
 import assert from 'assert';
 import { createRequire } from 'node:module';
 const { reachOf, byReach } = createRequire(import.meta.url)('./lib/portalStyleRank.cjs');
