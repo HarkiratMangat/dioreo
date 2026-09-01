@@ -24,8 +24,9 @@ const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECOND
 const ARMORY_COLUMNS = [
     { key: 'weaponName', label: 'Weapon', editable: true,
       meta: (r) => `${r.mode} · ${(r.attachments || []).length} attachment${(r.attachments || []).length === 1 ? '' : 's'}` },
-    { key: 'buildName', label: 'Build', editable: true },
+    // 🔴 CATEGORY BEFORE BUILD, which is armory.html's own order (Weapon · Category · Build · …). The portal had them the other way round, and the audit reported it as a SYMMETRIC pair — Category→Build and Build→Category — which §0.7c's own rule classifies as a pairing artifact. It was not one: a genuine column swap is exactly what a real reorder looks like to an LCS alignment. Caught only by opening the two captures and reading the header row. The rule needs the boundary: symmetry is evidence of an artifact ONLY when the two elements are interchangeable; two NAMED columns are not.
     { key: 'category', label: 'Category', col: 'c-type', editable: true },
+    { key: 'buildName', label: 'Build', editable: true },
     { key: 'shareCode', label: 'Gunsmith code', dataKind: 'date',
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`

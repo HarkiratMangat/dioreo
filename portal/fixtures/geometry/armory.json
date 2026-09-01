@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-01T02:12:28.275Z",
-  "commit": "b6d448e",
+  "recordedAt": "2026-09-01T02:58:59.771Z",
+  "commit": "f371d90",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -26,8 +26,8 @@
         "cols": [
           "",
           "Weapon",
-          "Build",
           "Category",
+          "Build",
           "Gunsmith code",
           "Attachments",
           "Badges",
@@ -55,8 +55,8 @@
         "cols": [
           "",
           "Weapon",
-          "Build",
           "Category",
+          "Build",
           "Gunsmith code",
           "Attachments",
           "Badges",
@@ -84,8 +84,8 @@
         "cols": [
           "",
           "Weapon",
-          "Build",
           "Category",
+          "Build",
           "Gunsmith code",
           "Attachments",
           "Badges",
@@ -113,8 +113,8 @@
         "cols": [
           "",
           "Weapon",
-          "Build",
           "Category",
+          "Build",
           "Gunsmith code",
           "Attachments",
           "Badges",
