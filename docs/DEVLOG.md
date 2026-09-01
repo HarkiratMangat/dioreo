@@ -225,6 +225,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-31 16:20 EDT — the two rendering modes collapse, a guard is rebuilt three times, and a no-conflict claim expires (v3.69.0)
 - 2026-08-31 22:09 EDT — the tier board's ranking had never rendered, and the gate that knew it was in the baseline (v3.70.0)
 - 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
+- 2026-09-01 16:56 EDT — Broadcast conforms, and every defect that mattered was found by a person looking rather than by a gate (v3.71.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3972,6 +3973,41 @@ So the defect class was never "relational selectors break." It was **an ordering
 Listing my own sixteen mistakes at the end and grouping them produced one shape rather than sixteen: **reaching for the thing that resembles the requirement.** An instrument that resembles the named one. A rule applied outside its scope. A new check instead of a reread. One member instead of the class. A number that moved instead of an observation. Every one of them felt like doing the work, which is the entire difficulty — the substitute is genuinely related and genuinely produces output.
 
 Only half of that is mechanisable, and saying which half is the honest part. A status board can now report that a named instrument has never run against the current code. Nothing can report that I believed a different one had already answered.
+
+## 2026-09-01 16:56 EDT — Broadcast conforms, and every defect that mattered was found by a person looking rather than by a gate (v3.71.0-pre)
+
+Broadcast's conformance pass, and then a much longer argument about why the apparatus around it kept failing to prevent the things it was built to prevent.
+
+**Not one defect this session was found by a gate.** The suite was green over `SAVED` rendering at 1.34:1. It was green over four of the shared Manifest's six state shapes never applying, so every staged and every conflict row on Season had been drawn with no shape at all. It was green over two bulk verbs that could not be invoked, and over a realm prompt whose first fenced block would have died on line 2. The largest defect of the day came from cropping two screenshots into an aligned band and looking at them — the same habit that produced seven of Armory's seventeen. The percentage found nothing, again, on the third realm running.
+
+### The readers, and why the third one was different in kind
+
+Two read-only agents were given the carriers cold and asked what they could not do. They found 15 and 8 defects. Harkirat's response was that the questions were too easy — that they were recall questions dressed as hard ones — and he was right: a reader can quote a document correctly and still do the wrong work. The third agent got forced choices under the contradictions, a fifteen-call execution plan, and an adversarial pass, with hedging refused. It found 17, including that a claim in the previous commit message was false and that no document acknowledged whether the dev database can even reach the four states the Access grid exists to draw.
+
+Between them they surfaced twelve outright contradictions. Five different things each declared itself "the first call of every realm". The section titled *the tooling contract* said to use `Grep` for a question another section had already measured `ctx_search` answering 5-of-5 against `rg`'s 1-of-6. A rule file forbade the very subagent that a close condition mandates. `§0.7c`'s heading still read "four calls" seven lines under the block that falsified it twice.
+
+### The thing that reached every session
+
+`docs/SESSION-START.md` is injected into every session in this repo, and it carried a directive — *a realm audit is not the first command any more* — that was true for about a day and then became actively wrong when the merge it pointed at landed. It sat **below** the amendment correcting it, so a reader arriving in file order met the correction first and the absolute last. The block even says *"delete this when the pass ends"*: an instruction addressed to somebody with no way to know the pass ended and no reason to check.
+
+And `MEMORY.md` had been losing its tail. 33,934 bytes against a documented 25,000-byte loader cap means 42 index lines reached no session — and the harness had been announcing it at startup, in every session, for weeks. **The information was printed and nobody read it.** That is the same shape as the day's other three biggest findings: `portal:status` printed `converge · never` while a ledger row claimed that condition satisfied; the reverse-orphan baseline held the `PILL` defect; ④ STYLE printed the `.stt.saved` colour, the exact rgb values, in output that had been read twice.
+
+### What that means about instruments
+
+The reflex on this project when something is missed has been to add an instrument. There are now eight, and twenty-odd gates. The evidence says the constraint is not detection: it is that **output is produced and not read**, and the mechanisable form of that is to make an instrument *refuse* rather than *print*. `portalStatus` already knows which close-condition tools have run against the current tree; nothing consults it before a row is ticked. That one change would have caught two of this week's false closes.
+
+### The uncomfortable half
+
+Asked directly whether the session had fixed classes or instances, the honest count was **three classes against forty instances**, with five more classes named and left open. That ratio is exactly the failure the plan itself predicts — the legible work gets done and the structural work gets filed — and being able to describe it fluently turned out to be no protection at all. The session wrote the rule about substituting a near-neighbour into three documents on the same day it committed the substitution, and reached for an `@import` when the repo had thirteen path-scoped rule files sitting there for exactly that purpose.
+
+Two measurements are worth keeping. **The documents were present and did not govern:** the silent-mode section was auto-loaded all day and Harkirat still had to say "batch harder" twice, while the push gate and the reflow gate stopped work cold. Anthropic's own docs say it plainly — *"Claude treats them as context, not enforced configuration"*. And **`portal:states` is a coin flip in-suite**: four consecutive runs on one unchanged tree gave red, standalone-green, green, and red on a different state. A gate that is wrong half the time trains a session to re-run until green and then believe the green, which is worse than no gate.
+
+### Process lessons
+
+- **A gate result is a fact about a tree, and the tree moves.** "npm test exit 0" went into a ledger row from a run that predated the last edit; the suite was red for two commits on that same branch's own hard-wrapped comment.
+- **The close condition names an instrument by name.** Substituting the one whose section shares a numeral is how a realm gets recorded closed with a tool never run on it — twice now.
+- **Record what you were confident of and wrong about.** Every carrier records what was done and decided; none records the beliefs that died. Five of them from this Part are now written into the next Part's prompt, because that is the only content that says which kinds of confidence to distrust.
+- **A margin computed once against a growing file is a constant with an expiry nobody wrote down.** The memory mitigation covered under a third of the loss while its own comment claimed twice the margin.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -226,15 +226,15 @@ Two read-only audits found 19 things. They are not 19 problems; they are **four 
 
 ---
 
-## Task 8: Re-measure Broadcast
+## Task 8: Re-measure Broadcast — ✅ ALL THREE STEPS DONE 2026-09-01 15:40 EDT
 
 **Files:** `portal/fixtures/geometry/broadcast.json`
 
 **Why:** its 0.2% was measured **before** the 2026-08-31 CSS edits, which touched `.pill .sub`, `.bar.saved`, `.stt.saved` and `.mark.stack .n` — **all shared surfaces**. §0.5b: *a change to a shared surface re-runs the closed realms' fixtures IN THE SAME COMMIT.* I skipped that rule and then quoted the stale number in a summary.
 
-- [ ] **Step 1: `node scripts/portalDiff.mjs --realm broadcast --portal harness`.**
-- [ ] **Step 2: If it moved, find out why before re-recording.** ⚠️ **Re-recording a baseline is not a gate passing** (§0.45) — that rule was met in the wild on 2026-08-31 when a `--write` would have buried the geometry clock bug.
-- [ ] **Step 3: Re-record the fixture and commit in the same commit as any fix.**
+- [x] **Step 1: `node scripts/portalDiff.mjs --realm broadcast --portal harness`.** Run 2026-09-01: **0.2%, 21 regions, both pages 1258px.**
+- [x] **Step 2: If it moved, find out why before re-recording.** 🔴 **IT HAD NOT MOVED — and that was PROVEN rather than assumed.** The four shared selectors were re-measured with the Broadcast branch's own changes `git stash`ed and then restored: season read 12.0% / 135 regions / +224px and armory 8.6% / 893 / +508px **both times**, and broadcast held at 0.2%. So the 2026-08-31 CSS edits moved nothing here. ⚠️ **Re-recording a baseline is not a gate passing** (§0.45) — that rule was met in the wild on 2026-08-31 when a `--write` would have buried the geometry clock bug.
+- [x] **Step 3: Re-record the fixture and commit in the same commit as any fix.** `portal/fixtures/geometry/broadcast.json` re-recorded in `804fa8b`, together with season's and armory's — §0.5b requires a shared-surface change to re-run the CLOSED realms' fixtures too, and this pass changed `app.css` and `manifest.js`. ⚠️ **That re-record has a consequence worth stating**: it turned `portal:status`'s board green for season, whose diff is five thousandths of what its §L row claims. Filed in `docs/db-deferred-list.md`.
 
 ---
 
@@ -264,7 +264,7 @@ Two read-only audits found 19 things. They are not 19 problems; they are **four 
 
 ---
 
-## Task 11: THE MERGE
+## Task 11: THE MERGE — ✅ DONE. `gh pr view 177` returns **MERGED 2026-09-01 12:54 EDT**; `v3-pre-release` carries it as `484b846`
 
 **Why now:** `docs:audit` reported the unfilled `(#PR)` on every run for six days and I called it *expected* every time. **A gate pre-classified as noise had stopped being a gate.**
 

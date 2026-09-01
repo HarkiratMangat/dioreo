@@ -1,7 +1,7 @@
 {
   "realm": "broadcast",
-  "recordedAt": "2026-08-31T15:11:57.185Z",
-  "commit": "56ff4cc",
+  "recordedAt": "2026-09-01T20:17:50.225Z",
+  "commit": "55fc1fe",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -32,7 +32,7 @@
     },
     "Airtime": {
       "grid": {
-        "examined": 223,
+        "examined": 221,
         "nearMisses": 4,
         "sizeIssues": 7
       },

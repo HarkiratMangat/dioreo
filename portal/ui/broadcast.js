@@ -11,7 +11,7 @@ import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
-import { useOverlay } from './overlay.js';
+import { useOverlay, Drawer } from './overlay.js';
 
 // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
 const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
@@ -19,18 +19,20 @@ const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0
 const BROADCAST_COLUMNS = [
     // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state. ownDot: this column draws `.sev` itself — the design's ONE swatch, which is a severity mark rather than a topic dot. Without the flag the row carried both, and the extra 17px wrapped a 46-character title onto a second line on every long row.
     { key: 'text', label: 'Announcement', editable: true,
-      dotClass: (r) => 'sev' + (r.state === 'live' && !r.expiresAt ? ' warn' : ''),
+      // ⚠️ NO `.warn` MODIFIER. `.sev.warn{background:var(--warn)}` exists in both stylesheets and could never win here: `dotStyle` sets `background` INLINE on the same element and an inline declaration beats a class rule, so the orange it promised had never rendered once. The never-expires finding is carried where it is actually visible -- the warn-coloured `never` in the Ends column, and HeadsUp naming the announcement in words underneath.
+      dotClass: () => 'sev',
       dotStyle: (r) => `background:${accentOf(r)}`,
       // The design truncates at 46 and puts the age under the title as row meta. Left whole, a long announcement wrapped to three lines and made its row 23px taller than the design's — four rows of that is the last of the height difference between the two pages.
       render: (r) => html`<b>${String(r.text || '').replace(/^#{1,3}\s+/, '').slice(0, 46)}</b>`,
       meta: (r) => `up ${daysBetween(r.createdAt, Date.now())}d` },
     // ⚠️ `col` AND `dataKind` ARE TWO DIFFERENT DECISIONS and the colgroup only reads the first. dataKind names
-// the CELL (tabular figures here); col names the COLUMN WIDTH. Switching these to nums for the cell silently dropped them out of the c-win width class, and Posted went from the design's 100px to 284 — every date in the table then sat under a different heading than the design's.
-{ key: 'createdAt', label: 'Posted', col: 'c-type', dataKind: 'date', render: (r) => fmtDay(r.createdAt) },
+// the CELL (tabular figures here); col names the COLUMN WIDTH. Switching these to nums for the cell silently dropped them out of the c-win width class, and Posted went from the design's 100px to 284 — every date in the table then sat under a different heading than the design's. 🔴 `nums`, NOT `date`. broadcast.html writes `td.nums.drop-sm` here, and `td.d` is a DIFFERENT cell:
+    // `td.d` paints --ink3 (5.89:1) where `.mtable .nums` paints --ink2 (7.80:1), so declaring the date kind for its `drop-sm` side effect dimmed every Posted date one ink tier below the design's. `dropSm` now carries the responsive drop on its own, so cell kind and drop behaviour stay separable.
+    { key: 'createdAt', label: 'Posted', col: 'c-type', dataKind: 'nums', dropSm: true, render: (r) => fmtDay(r.createdAt) },
     // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
     { key: 'startsAt', label: 'Starts', col: 'c-win', dataKind: 'nums', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
     // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
-    { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<span style="color:var(--warn)">never</span>`) },
+    { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<b style="color:var(--warn)">never</b>`) },
     // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
     { key: 'state', label: 'State', dataKind: 'right',
       render: (r) => html`<span class=${'stt ' + (r.state === 'staged' ? 'staged' : 'saved')}>${r.state === 'staged' ? 'STAGED' : 'SAVED'}</span>
@@ -175,12 +177,13 @@ function Airtime({ all }) {
     const rows = all.slice().sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
     const shared = commonPrefix(rows.map((a) => bareText(a.text))).length;
 
-    // 🔴 THE RAIL IS A SHARED COMPONENT, AND THIS MARKUP IS THE CONTRACT FOR IT. `.tk-wrap` is what portal/ui/rail.css scopes on — not `#airtime`, and not the Season Track's id. Airtime draws the same object the Track does (lanes, bars, a ruler, a now-line), and it used to get that for free by sharing global class names with whatever the Track's stylesheet happened to define. That is exactly what broke when track.css was first scoped to `#track`: bars fell to position:static, lanes collapsed to 30px and the two ruler dates printed on top of each other. Rendering the wrapper is what earns the styles now.
+    // 🔴 THE RAIL IS A SHARED COMPONENT, AND THIS MARKUP IS THE CONTRACT FOR IT. `.tk-wrap` is what the rail's rules in portal/ui/app.css scope on — not `#airtime`, and not the Season Track's id. Airtime draws the same object the Track does (lanes, bars, a ruler, a now-line), and it used to get that for free by sharing global class names with whatever the Track's stylesheet happened to define. That is exactly what broke when track.css was first scoped to `#track`: bars fell to position:static, lanes collapsed to 30px and the two ruler dates printed on top of each other. Rendering the wrapper is what earns the styles now.
     return html`
         <div class="tk-wrap"><div class="tk-inner">
             <div class="ruler">
-                <span style="left:0%"><b>${TL.fmt(window.start)}</b></span>
-                <span style="left:100%;transform:translateX(-100%)"><b>${TL.fmt(window.end)}</b></span>
+                ${''/* NO <b> HERE. broadcast.html's ruler writes the date straight into the span; the Track's writes a <b>, which is why app.css carries `.ruler span b{font-weight:inherit}` to undo the bold it would otherwise add. Borrowing the Track's markup made the audit report this span's text as empty and the <b> as a portal-only element -- a difference that renders identically and reads, to every text comparison, as a missing date. */}
+                <span style="left:0%">${TL.fmt(window.start)}</span>
+                <span style="left:100%;transform:translateX(-100%)">${TL.fmt(window.end)}</span>
             </div>
             <div class="lanes">
                 ${rows.map((a) => {
@@ -256,30 +259,29 @@ function PostForm({ onSubmit, onCancel }) {
         }));
     }
 
+    // 🔴 A DRAWER, NOT AN INLINE PANEL. `broadcast.html:415` opens this through `S.drawer` — scrim, `dw-h` header with the `announcement.post · tier 1` eyebrow, `dwbody`, and a `dw-f` footer — and the portal pushed the whole page down with a `div.panel` above the view instead. Measured 2026-09-01 with `portal:audit --open "+ Post announcement"`: every drawer element read ONLY IN MOCKUP and the view panel came out 291px taller. The machinery was already imported for the bulk-delete confirmation. ⚠️ THE COPY IS THE PORTAL'S AND STAYS. The design labels these `Text` / `Starts (blank = immediately)` / `Expires in` and carries its guidance in `p.dw-p`; this form's own note records why the two deciding facts — a blank start means live on commit, a blank expiry means SIXTY DAYS rather than never — have to be on screen. So: the design's container and its `dw-p` placement, this file's sentences inside them. ⚠️ `Expires in` is a TEXT field in the design ("blank, days, or never") and a date input here. That is a payload-shape question for `core/ops/announcements.js`, which §0.6b puts out of this pass — filed, not silently kept: a date input cannot express "never", which is the state this whole realm is about.
     return html`
-        <div class="panel" style="margin-bottom:14px">
-            <div class="ph"><span class="t">Post an announcement</span></div>
-            <p class="chint" style="margin:12px 14px 0">Every live announcement is attached to the bot's next reply to a
-                player, in the order it was written — so this is not a broadcast to a channel, it is a note added to
-                whatever they were already doing.</p>
-            <!-- 🔴 THREE CONTROLS WITH THEIR LAYOUT WRITTEN INTO THE JSX AND THEIR LABELS HIDDEN. This is
-                 the last form in the portal still doing both — the build editor and the grant form are both
-                 on the sheet own dwfield class now — and the hidden labels carried the two facts that decide
-                 what this form DOES: a blank start means live on commit, a blank expiry means sixty days,
-                 not never. Neither was visible to anyone filling it in. -->
-            <div style="padding:12px 14px">
-                <label class="dwfield" for="post-text"><span>Announcement text <i>players read this verbatim</i></span>
-                    <textarea id="post-text" value=${text} onInput=${(e) => setText(e.target.value)} rows="3"></textarea></label>
+        <${Drawer} eyebrow="announcement.post · tier 1" title="Post an announcement" onClose=${onCancel}
+                   actions=${html`
+                       <button class="btn" onClick=${onCancel}>Cancel</button>
+                       <button class="btn go" disabled=${!ready} onClick=${submit}>Stage post</button>`}>
+            <div class="dwbody">
+                <div class="dwfield"><label for="post-text">Text</label>
+                    <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
+                              value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="dwfield"><label for="post-starts">Starts (blank = immediately)</label>
+                        <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></div>
+                    <div class="dwfield"><label for="post-expires">Ends</label>
+                        <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} /></div>
+                </div>
+                <p class="dw-p">A blank start shows it the moment you commit. A blank end takes the server's
+                    60-day default, not never.</p>
+                <p class="dw-p">Every live announcement is attached to the bot's next reply to a player, in the
+                    order it was written — so this is not a broadcast to a channel, it is a note added to whatever
+                    they were already doing.</p>
             </div>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;padding:0 14px 12px;align-items:flex-end">
-                <label class="dwfield" for="post-starts"><span>Starts <i>blank shows it the moment you commit</i></span>
-                    <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></label>
-                <label class="dwfield" for="post-expires"><span>Ends <i>blank takes the server's 60-day default, not never</i></span>
-                    <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} /></label>
-                <button class="accent-fill" disabled=${!ready} onClick=${submit}>Stage</button>
-                <button onClick=${onCancel}>Cancel</button>
-            </div>
-        </div>
+        <//>
     `;
 }
 
@@ -311,7 +313,8 @@ export function BroadcastRealm({ session }) {
     // 🔴 THIS REALM HAD NO EXPORT AND IS THE ONE THAT NEEDS ONE MOST. An announcement's TEXT is the whole artifact -- written once, stored nowhere else, and not derivable from any other record. ⚠️ Each scope states its own shape, and neither is re-importable: there is no bulk-add flow for announcements, so a note promising a round trip would be a false claim about the file.
     const exportToday = new Date().toISOString().slice(0, 10);
     const exportScopes = [
-        { id: 'broadcast.live', label: 'Delivery queue', unit: 'announcements', subsetOf: 'broadcast.all',
+        // ⚠️ `What is live now`, the design's label (broadcast.html:543) — NOT the view tab's name. A scope says what is IN the file; naming it after the tab says where you were standing when you asked for it.
+        { id: 'broadcast.live', label: 'What is live now', unit: 'announcements', subsetOf: 'broadcast.all',
           count: data.live.length, url: '/api/broadcast/export?scope=live',
           filename: `dioreo-announcements-live-${exportToday}.txt`,
           note: 'Only what a player would see right now, in the order Discord sends it.' },
@@ -363,7 +366,7 @@ export function BroadcastRealm({ session }) {
         });
     }
 
-    // 🔴 THE THIRD DEAD EXPORT BUTTON ON THIS BRANCH, and the first one nobody went looking for — `scripts/portalExport.test.js`'s source scan found it after the same defect was fixed by hand in Season and Armory. `open('data:…')` is blocked as a top-level navigation: it returns null, throws nothing, and the page does not change, so the button ran and produced no file. It writes a real one now, as TSV, because an announcement has no bulk-add format to round-trip through and a caption pretending otherwise is the other half of the same defect.
+    // 🔴 THE THIRD DEAD EXPORT BUTTON ON THIS BRANCH, and the first one nobody went looking for — `scripts/portalExport.test.js`'s source scan found it after the same defect was fixed by hand in Season and Armory. `open('data:…')` is blocked as a top-level navigation: it returns null, throws nothing, and the page does not change, so the button ran and produced no file. It writes a real one now, as TSV, because an announcement has no bulk-add format to round-trip through and a caption pretending otherwise is the other half of the same defect. ⚠️ NO CALLER SINCE 2026-09-01, KEPT DELIBERATELY. Its only caller was a `bulkActions` verb that could never be invoked (see the Manifest call below). Kept rather than deleted because the moment this realm's design gains a checkbox column the verb comes back, and because the function is the record of a real defect: the third dead export button on this branch, found by a source scan after the same `open('data:…')` bug was fixed by hand in Season and Armory.
     function handleExportSelection(ids) {
         const selected = rows.filter((r) => ids.includes(r.id));
         const header = ['Text', 'State', 'Starts', 'Expires'].join('\t');
@@ -377,7 +380,7 @@ export function BroadcastRealm({ session }) {
     return html`
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
-                  overlaySlot=${overlay.render()}
+                  overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}`}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
                         keywords: ['new', 'write', 'say', 'announce'], run: () => setShowAdd(true) },
@@ -394,7 +397,6 @@ export function BroadcastRealm({ session }) {
                                                                               onClick=${() => setShowAdd(true)} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
-                      ${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                       ${view === 'Delivery queue' ? html`<${NowShowing} live=${data.live} counts=${counts} cap=${data.maxPerMessage} />` : html`<${Airtime} all=${data.all} />`}
                   `}
                   
@@ -413,9 +415,7 @@ export function BroadcastRealm({ session }) {
                                                     onAdd=${() => setShowAdd(true)} realm="broadcast" csrfToken=${session.csrfToken}
                                                     buildEditOp=${buildBroadcastEditOp}
                                                     onEditError=${(msg) => setNotice(msg)}
-                                                    bulkActions=${[
-                                                        { label: 'Export selection', onClick: handleExportSelection },
-                                                        { label: 'Stage deletion', danger: true, onClick: confirmBulkDelete },
-                                                    ]} />`} />
+                                                    ${''/* 🔴 NO `bulkActions`. Two were declared — `Export selection` and `Stage deletion` — and NEITHER COULD EVER BE INVOKED: they render only in the bulk bar, the bulk bar needs a selection, and `selectable={false}` above is a deliberate conformance decision (this realm's design draws no checkbox column, and forcing one cost 38px of table width and wrapped a row). So the realm declared two verbs behind a control it had itself removed. Found 2026-09-01 by opening the delete Confirm through `--open-sel button.rmv`, the surface `--triggers` cannot see because it lives in a data row. Same class as Armory's Manifest `mode` chip: a control that could only ever fail. Per-row removal is unaffected — `onRemove` above is the reachable path and it opens the same tier-2 Confirm. Scoped export is unaffected — the masthead Export strip offers both scopes. */}
+                                                    />`} />
     `;
 }
