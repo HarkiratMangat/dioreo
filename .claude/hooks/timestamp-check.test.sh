@@ -104,8 +104,7 @@ a "explicit LOCAL tz still denied"  pre "deny:" yes "Measured $FUTSTAMP $LOCALTZ
 a "no timezone at all still denied" pre "deny:" yes "Measured $FUTSTAMP during the run."
 
 echo "  -- placeholder time: a date paired with a fake HH:MM (2026-08-03 mishap) --"
-# The actual incident: a real date, but "xx" standing in for the minute, meant to be filled in later.
-# 🔴 THESE THREE ASSERTED "deny:" AND WOULD HAVE PASSED EITHER WAY until run() learned to print the real verb, one line up. They assert the SUBSTITUTION now: the write is allowed, and the content that reaches disk carries the current clock instead of the digit slot.
+# The actual incident: a real date, but "xx" standing in for the minute, meant to be filled in later. 🔴 THESE THREE ASSERTED "deny:" AND WOULD HAVE PASSED EITHER WAY until run() learned to print the real verb, one line up. They assert the SUBSTITUTION now: the write is allowed, and the content that reaches disk carries the current clock instead of the digit slot.
 a "'HH:xx' placeholder fixed"       pre "allow:"       yes "root-caused live $TODAY 18:xx EDT the glitch"
 a "'XX:XX' placeholder fixed"       pre "allow:"       yes "filed $TODAY XX:XX EDT for review"
 a "'??:??' placeholder fixed"       pre "allow:"       yes "queued $TODAY ??:?? EDT pending confirmation"
