@@ -27,3 +27,16 @@ paths:
 
 - 🔴 **A conform CSS rule must NEVER change an element's class SIGNATURE** — the audit's LCS walk pairs on tag+classes, so an added class desynchronises every node beneath it and the instrument reports differences it created. Use a data attribute (`main[data-modal]`).
 - ⚠️ **`portal/public/` is BUILD OUTPUT and is gitignored.** Sources are `portal/ui/`. Nothing in `portal/public` is ever edited, and it does not exist in a fresh clone until `node -e "require('./scripts/buildPortal').build()"` runs — which is why the build precedes starting the harness server, not the other way round.
+
+## 🔴 THE WRITE GOES IN THE LOOP, NOT AFTER IT (measured twice, 2026-09-01)
+
+The batching contract mandates one `python3` heredoc for N edits, with `assert <anchor> in s` before each replacement and a `print()` per edit. **Written the obvious way it silently discards work:**
+
+```python
+for each edit:  assert anchor;  s = s.replace(...);  print(label)
+io.open(p,'w').write(s)          # ← ONE call, AFTER the loop
+```
+
+An assert on edit 5 raises before that write, so edits 1–4 are lost **after printing that they landed**. It happened twice in one session on `portal/ui/access.js` and `ANALYTICS-PROMPT.md`; the first time the built asset still carried the old markup two instrument runs later, which reads as *"the build is not picking up my change"* rather than *"the edit never landed"*.
+
+**Write inside the helper, once per edit** — read, assert, replace, write, print. It costs nothing, and it makes a partial batch a partial success instead of a total loss reported as a success. If you keep a single trailing write, the `print()`s are not the receipt: `rg` the new anchor in the source **and** in `portal/public/ui/<realm>.js` before believing them.
