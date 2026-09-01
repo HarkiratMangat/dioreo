@@ -27,8 +27,9 @@ status: live
 
 ## The two lines §0.0 requires before any task content
 
-- `/rename Sonnet5-High · Analytics conformance · <Mon DD>`
-- `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites. Escalate on events only.
+- `/rename <YourModel>-High · Analytics conformance · <Mon DD>` — 🔴 **name the model you are ACTUALLY running on, which is in your environment block.** Part 4 opened with `Sonnet5-High`, ran the whole session on Opus 5, and stamped `Co-Authored-By: Claude Sonnet 5` into six commit trailers before Harkirat caught it: *"sir... you are on opus 5, not sonnet 5."* The trailers were rewritten with `git filter-branch` on the unpushed branch. **The rename string and the trailer are statements of fact about the runtime; the grid below is a recommendation about the work. They are different things and only one of them is yours to choose.**
+- `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites.
+- ⚠️ **AND THE ESCALATION EVENTS ARE PREDICTABLE ON THIS PASS, so watch for them rather than pre-empting them.** The gate's rule is Sonnet→Opus at the same effort when *a premise turns out false* or *a silent-failure surface appears*. Part 4 fired both and never re-derived: the plan's `.mxgrp` colspan warning did not reproduce, and two silent-failure surfaces showed up (a `python3` batch that printed six successes and wrote nothing; a hook self-test whose harness could not express the difference it was checking). **If either happens here, re-derive in the `Premise <X> · Delib <Y> -> <Cell>` shape and say so — do not just keep going.**
 
 ## Branch state
 
