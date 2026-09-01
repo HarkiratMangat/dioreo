@@ -34,7 +34,9 @@ run() { # $1 = mode, $2 = content -> "deny:<reason>" | "<advisory text>" | "SILE
   local o; o=$(printf '{"tool_input":{"content":%s}}' "$(printf '%s' "$2" | jq -Rs .)" | bash "$HOOK" "$1")
   [ -z "$o" ] && { echo SILENT; return; }
   local d; d=$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecision // empty')
-  if [ -n "$d" ]; then printf 'deny:%s' "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')"
+  # ⚠️ THIS PRINTED 'deny:' FOR *ANY* DECISION UNTIL 2026-09-01 19:24 EDT, so a branch that switched from deny to allow would have kept every one of its tests green. That is a vacuous pass by construction: the harness could not express the difference it was being asked to check. It prints the real verb now, and appends the corrected content when the hook returns an updatedInput.
+  if [ -n "$d" ]; then printf '%s:%s%s' "$d" "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')" \
+       "$(printf '%s' "$o" | jq -r 'if .hookSpecificOutput.updatedInput then " FIXED<" + (.hookSpecificOutput.updatedInput.content // .hookSpecificOutput.updatedInput.new_string // "") + ">" else "" end')"
   else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
 a() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run "$mode" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
@@ -103,9 +105,17 @@ a "no timezone at all still denied" pre "deny:" yes "Measured $FUTSTAMP during t
 
 echo "  -- placeholder time: a date paired with a fake HH:MM (2026-08-03 mishap) --"
 # The actual incident: a real date, but "xx" standing in for the minute, meant to be filled in later.
-a "'HH:xx' placeholder denied"      pre "deny:"        yes "root-caused live $TODAY 18:xx EDT the glitch"
-a "'XX:XX' placeholder denied"      pre "deny:"        yes "filed $TODAY XX:XX EDT for review"
-a "'??:??' placeholder denied"      pre "deny:"        yes "queued $TODAY ??:?? EDT pending confirmation"
+# 🔴 THESE THREE ASSERTED "deny:" AND WOULD HAVE PASSED EITHER WAY until run() learned to print the real verb, one line up. They assert the SUBSTITUTION now: the write is allowed, and the content that reaches disk carries the current clock instead of the digit slot.
+a "'HH:xx' placeholder fixed"       pre "allow:"       yes "root-caused live $TODAY 18:xx EDT the glitch"
+a "'XX:XX' placeholder fixed"       pre "allow:"       yes "filed $TODAY XX:XX EDT for review"
+a "'??:??' placeholder fixed"       pre "allow:"       yes "queued $TODAY ??:?? EDT pending confirmation"
+# The value substituted is the REAL current time, not merely *a* time — without this the branch could write a constant and still pass every case above.
+a "substitution uses the clock"     pre "FIXED<root-caused live $TODAY $(date "+%H:%M") EDT the glitch>" yes "root-caused live $TODAY 18:xx EDT the glitch"
+# 🔴 THE FALLBACK MUST STAY REACHABLE, and no CONTENT can reach it — the detector and the substitution share one pattern, so every placeholder that is found is one that can be repaired. My first attempt at this case used a second, weirder placeholder and it was simply fixed too. The deny path exists for the day `updatedInput` stops being honoured, so the seam that simulates that day is what the test drives. A branch no test can enter is a branch that rots.
+fb=$(printf '{"tool_input":{"content":%s}}' "$(printf 'shipped %s 18:xx EDT' "$TODAY" | jq -Rs .)" \
+     | TS_NO_AUTOFIX=1 bash "$HOOK" pre | jq -r '.hookSpecificOutput.permissionDecision')
+if [ "$fb" = "deny" ]; then echo "  PASS  fallback denies when updatedInput is unavailable"; pass=$((pass+1))
+else echo "  FAIL  fallback denies when updatedInput is unavailable (got '$fb')"; fail=$((fail+1)); fi
 a "a REAL timestamp is not caught"  pre "deny:"        no  "filed $PASTSTAMP $LOCALTZ for review"
 # The project's own literal format spec must never be flagged as a fake instance -- h/H is deliberately excluded from the placeholder character set for exactly this reason.
 a "'HH:MM' format spec not caught" pre "deny:"        no  "dated content carries YYYY-MM-DD HH:MM TZ"
