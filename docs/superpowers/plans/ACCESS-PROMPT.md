@@ -86,6 +86,8 @@ npm run portal:converge -- --realm access
 
 ## The two phases a realm prompt keeps dropping — both have a named artifact
 
+> 🔴 **SUPERSEDED 2026-09-01 19:55 EDT — THIS SECTION IS TWO FILES AND THE ANSWER IS THREE.** A reader test measured the result: `ls local/` shows a triage file AND a difference ledger for season, armory and broadcast, and for Access only `locate-access.md`. **One of three, because this section named two.** The corrected version is `ANALYTICS-PROMPT.md`'s *THREE FILES, AND THE PASS DID NOT HAPPEN WITHOUT THEM* — locate · triage (which is also where every band capture's reading goes, and nothing else holds it) · difference ledger. This heading is left standing rather than rewritten because Part 4 is finished and its record should say what it actually instructed; **do not follow it.**
+
 🔴 **Neither appeared in this prompt until 2026-09-01, and the plan already records that one of them has been missed TWICE for exactly this reason.** §0.5b's phase order is `① ② ③ ④ ⑥ ⑤` and it calls the ordering load-bearing; a prompt that lists instruments and not phases quietly deletes two of them.
 
 **① LOCATE → `local/locate-access.md`.** For every item this surface owns: does the fix live in the mockup only / the portal only / both / neither — **with a citation**. One row per item: item · verdict · citation · what it implies for the work. §0.5b: *"🔴 IT PRODUCES A NAMED ARTIFACT, or it did not happen"* — it was the plan's self-declared most valuable step and the only one with no deliverable, so a session could claim it with no way to check. **It is what stops a diff becoming a rollback**, and it is the input to ③ and ⑤.
