@@ -161,7 +161,7 @@ GRID="${GRID/@@TABLE@@/$TABLE}"
 
 read -r -d '' SHORT <<'EOF' || true
 [model-gate] Derivation on record for this session -- grid withheld to stop re-paying for a decision already made. Still live:
-  !! Escalate on EVENTS, never pre-emptively: two hypotheses wrong -> +1 effort; a premise turned out false, or a silent-failure surface appeared -> Sonnet->Opus at the same effort; scope turned out mechanical -> STEP DOWN. Re-derive in the `Premise · Delib -> Cell` shape whenever you move.
+  !! Escalate on EVENTS, never pre-emptively: two hypotheses wrong -> +1 effort; a premise turned out false, or a silent-failure surface appeared -> Sonnet->Opus at the same effort; scope turned out mechanical -> STEP DOWN. 🔴 AN EVENT CHANGES HOW YOU WORK, NOT WHAT YOU PRINT: verify harder, falsify more, widen the sweep. DO NOT emit a cell mid-session. Harkirat, 2026-09-01 19:37 EDT at ~590k of cached context: \"im not changing models or efforts at this point and burning 590k cached tokens. idek why youre giving me model recommendations mid session.\" A recommendation he cannot act on without discarding the cache is noise, and the escalation is yours to absorb. A CELL is printed at SESSION START and after a COMPACT -- nowhere else. Writing one into a doc or a handoff is different and stays fine.
   !! Off-grid, only by naming the trigger: Sonnet5-Max (exhaustive sweep, a MISS costly, a misjudgement not -- usually beaten by writing a script) · Opus5-Low (downshift: many independent snap judgements, one wrong call costly, nothing to work out).
 EOF
 
