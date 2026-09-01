@@ -70,7 +70,7 @@ for (const r of rows) {
     const cells = TOOLS.map((t) => {
         const x = seen.get(t);
         if (!x) return '· never'.padEnd(11);
-        return (x.stale ? '🔴 stale' : '✅ ' + x.at.slice(5, 10)).padEnd(11);
+        return (x.stale ? `🔴 ${x.since} ahead` : '✅ ' + x.at.slice(5, 10)).padEnd(11);
     });
     console.log('  ' + r.realm.padEnd(12) + cells.join(''));
 }

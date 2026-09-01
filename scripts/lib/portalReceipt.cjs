@@ -35,11 +35,19 @@ function record(tool, realm, note = '') {
 // Every receipt for one realm, newest first, with whether portal/ui has moved since each was written.
 function readAll(realm) {
     let files = []; try { files = fs.readdirSync(DIR); } catch { return []; }
-    let lastUi = 0;
-    try { lastUi = Number(execSync('git log -1 --format=%ct -- portal/ui portal/vendor', { cwd: ROOT, encoding: 'utf8' }).trim()) * 1000; } catch { /* ignore */ }
+    // 🔴 COUNT COMMITS SINCE THE RECEIPT'S OWN SHA — DO NOT COMPARE ITS WALL CLOCK AGAINST THE LAST portal/ui COMMIT.
+    // `portalStatus`'s geometry check carries this exact warning three lines from where this was first written, and it
+    // was written wrong anyway: a receipt is recorded BEFORE the commit that carries the work, so a timestamp compare
+    // reports every instrument stale the moment you commit — all five went red on a realm whose instruments had just
+    // been run. A gate that cries wolf gets filtered, and then it is not guarding anything. Same defect, same file,
+    // same day as the R11 lesson: read the neighbour before writing the sibling.
     return files.filter((f) => f.startsWith(realm + '.') && f.endsWith('.json')).map((f) => {
         const j = JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8'));
-        return { ...j, stale: lastUi > 0 && Date.parse(j.at) < lastUi };
+        let since = 0;
+        if (j.commit) {
+            try { since = Number(execSync(`git rev-list --count ${j.commit}..HEAD -- portal/ui portal/vendor`, { cwd: ROOT, encoding: 'utf8' }).trim()) || 0; } catch { since = 0; }
+        }
+        return { ...j, since, stale: since > 0 };
     }).sort((a, b) => b.at.localeCompare(a.at));
 }
 
