@@ -61,12 +61,7 @@ function GrantForm({ onGrant, scopes }) {
 //
 // 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The row's state was the literal string `'live'` for every session in the table — and a browser session has no logout event unless somebody clicks one, so "signed in now" is DERIVED or it is a guess. Fifteen minutes is the mockup's own window and it is the honest one: a tab left open pings; a closed one stops.
 //
-// ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces.
-// The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`.
-// UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in
-// the reader's zone can name a day the record does not.
-// A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every
-// scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
+// ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
 const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
 
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -262,14 +257,12 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                          access.html's own comment records fixing when it moved the ring key out of this foot. The
                          design's foot has two sentences for the same reason. -->
                 </div>
-                <p class="racknote">${(matrix.scopes || []).length} permissions: four commands (<code>manage</code>, <code>autobuild</code>, <code>bot</code>, <code>destructive</code>)
-                    and eight <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and
-                    <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is
-                    the opposite of one. An admin must always hold at least one permission — an admin with nothing
-                    granted should be revoked, not parked in limbo.
-                    <b>🔒 <code>destructive</code> is a real permission in the bot</b>, and the only one the
-                    <code>all</code> shorthand never includes — it can arrive only by being typed deliberately,
-                    because a convenience that quietly hands out irreversibility is not one.</p>
+                <!-- ⚠️ THE COMMAND LIST IS SEPARATED BY MIDDOTS, NOT COMMAS, AND THE SENTENCES DO NOT WRAP MID-PHRASE.
+                     An inline code chip carries horizontal padding, so a comma set straight after one lands a chip's
+                     width from the word it belongs to (portalUi.test.js's own gate, and the Analytics callout that
+                     earned it). And htm drops a whitespace-only text node across a newline, so a line ending in a word
+                     whose next line opens with a tag renders as one run-on word. Both gates fired on this paragraph. -->
+                <p class="racknote">${(matrix.scopes || []).length} permissions: four commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and eight <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo. <b>🔒 <code>destructive</code> is a real permission in the bot</b> and the only one the <code>all</code> shorthand never includes — it can arrive only by being typed deliberately.</p>
             `}
             <${GrantForm} onGrant=${onGrant} scopes=${matrix.scopes} />
         </div>
@@ -456,21 +449,15 @@ export function AccessRealm({ session }) {
     const matrix = data.matrix || { admins: [], scopes: [] };
     const allScopes = matrix.scopes || [];
     const spofSet = new Set((data.singlePointsOfFailure || []).map((x) => x.scope));
-    // "held by nobody but you" is the owner's own reach minus everyone else's: a scope no granted
-    // admin holds is one where you are the single point, which is the fact the By-permission view exists
-    // to surface. Derived from the SAME matrix the grid renders, never a second query that could disagree.
+    // "held by nobody but you" is the owner's own reach minus everyone else's: a scope no granted admin holds is one where you are the single point, which is the fact the By-permission view exists to surface. Derived from the SAME matrix the grid renders, never a second query that could disagree.
     const unheld = allScopes.filter((sc) => !(matrix.admins || []).some((a) => (a.grants[sc.key] || {}).held));
-    // The design's own stat: the number of permission TOKENS handed out, which is not the number of
-    // cells lit — a bare `manage` is one token covering eight pages. Counting cells would answer a
-    // different question and quietly disagree with what an export of the same data says.
+    // The design's own stat: the number of permission TOKENS handed out, which is not the number of cells lit — a bare `manage` is one token covering eight pages. Counting cells would answer a different question and quietly disagree with what an export of the same data says.
     const permissionsGranted = (matrix.admins || []).reduce((n, a) => n + (a.permissions || []).length, 0);
     const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
     const viewMeta = view === 'By admin'
         ? `${plural(matrix.admins.length, 'admin')} × ${allScopes.length} permissions`
         : `${plural(spofSet.size, 'single point')} · ${unheld.length} held by nobody but you`;
-    // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the
-    // single-point entry appears only when there is one. The lock does not: the owner-only column is
-    // always drawn, so it is always named.
+    // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the single-point entry appears only when there is one. The lock does not: the owner-only column is always drawn, so it is always named.
     const accessKey = html`
         <span class="key">
             <span class="l"><i></i>direct</span>
@@ -497,11 +484,7 @@ export function AccessRealm({ session }) {
                                                stats=${[
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
                                                    { value: permissionsGranted, label: 'permissions' },
-                                                   // 🔴 `hot` AND `bad` WERE CLASSES WITH NO RULE. `.stat.warn .v` and `.stat.stg .v` are the
-                                                   // only two tones either stylesheet defines, so a single-points count that was meant to read
-                                                   // as a warning painted in ordinary ink and a warning became a number. Same defect home.js
-                                                   // records for a `tone: 'live'` that styled nothing. The signed-in figure takes no tone at
-                                                   // all, which is what the design gives it — being signed in is not a warning.
+                                                   // 🔴 `hot` AND `bad` WERE CLASSES WITH NO RULE. `.stat.warn .v` and `.stat.stg .v` are the only two tones either stylesheet defines, so a single-points count that was meant to read as a warning painted in ordinary ink and a warning became a number. Same defect home.js records for a `tone: 'live'` that styled nothing. The signed-in figure takes no tone at all, which is what the design gives it — being signed in is not a warning.
                                                    { value: activeSessions, label: 'signed in' },
                                                    { value: (data.singlePointsOfFailure || []).length, label: 'single points',
                                                      tone: (data.singlePointsOfFailure || []).length ? 'warn' : undefined },
