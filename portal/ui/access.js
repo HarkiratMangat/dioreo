@@ -164,10 +164,10 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
                                 ${ordered.map((sc) => html`
                                     <th key=${sc.key}>
-                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '')}
+                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
                                               title=${`${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'}${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
-                                            <i></i>${sc.label}<em class="mxn2">${holdersOf(sc)}</em>
+                                            <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
                                         </span>
                                     </th>`)}
                                 <th><span class="mxs">Action</span></th>
@@ -213,10 +213,11 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                                             const g = a.grants[sc.key] || {};
                                             const pend = rp[sc.key];
                                             const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
-                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry.
+                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry. 🔴 AN INHERITED CELL MUST NOT ALSO WEAR `.on`, EVEN THOUGH IT RENDERED CORRECTLY. `.mxcell.on` fills with the accent and `.mxcell.inh` resets the background to transparent — so the ring survived only because `.inh` is declared LATER in the stylesheet. Reorder those two rules and every inherited cell in the grid fills solid, which is the one thing the ring exists to distinguish. The design's inherited cell carries no `.on` at all. `aria-checked` stays true: an inherited permission IS held, and that is the semantics, not the paint.
+                                            const inheritedOnly = pend === undefined && g.inherited && !g.direct;
                                             const cls = 'mxcell'
-                                                + (on ? ' on' : '')
-                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (g.inherited && !g.direct ? ' inh inherited' : ''))
+                                                + (on && !inheritedOnly ? ' on' : '')
+                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (inheritedOnly ? ' inh inherited' : ''))
                                                 + (owner ? ' locked' : '');
                                             const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
                                             const willBe = pend === true ? ' — pending: will be granted'
