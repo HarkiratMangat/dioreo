@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.70.0 — 2026-08-31 → 2026-09-01 — Armory's tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down
+## Pre-Release v3.70.0 — 2026-08-31 → 2026-09-01 (#177) — Armory's tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down
 
 Three bodies of work: the Armory conformance pass, two new gates, and a correction to the instruments themselves. No figures are frozen into this entry — they moved four times while it was being written; `portal:status`, `portal:audit` and the decision ledger are the live sources.
 
@@ -64,7 +64,7 @@ All four Armory views were audited for the first time; the previous pass had onl
 
 Twelve fabricated timestamps corrected — the previous session dated every note **2026-09-01** while git dated its commits 2026-08-31 20:40–21:19 EDT. `ARMORY-PROMPT.md` is demoted to `superseded`: it is the before-picture and was the first thing a Part 3 session would have opened. `BROADCAST-PROMPT.md` is written in its place, deliberately a third the length, and it leads with the trap Armory proved — **a small percentage is not evidence of a small job.**
 
-## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#176) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
+## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#176 · `e71f9a9`) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
 
 > 🔴 **SCOPE, STATED PLAINLY — NOT JUST SEASON.** 281 commits, 198 files, 53,795 insertions since `v3-pre-release`: the Preact migration, six new portal instruments (`portalDiff`/`portalAudit`/`portalProbe`/`portalStatus`/`portalConverge`/`portalInventory`), the collapse of the portal's two rendering modes into one, a destructive-surface behavior change, and the Season and Broadcast conformance passes themselves. Harkirat, 2026-08-31: "it does not only contain Season Realm's work, it contains MUCH more."
 >
