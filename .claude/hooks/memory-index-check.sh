@@ -120,4 +120,19 @@ else
   status="MEMORY INDEX: ok - ${n_active} active + ${n_arch} archived, ${n_links} links resolve, MEMORY.md ${size}B/${BUDGET}B."
 fi
 
+# --- the PLATFORM truncates a large MEMORY.md, and this hook is the only channel round it ----------- 🔴 TWO INSTRUMENTS REPORT ON THIS FILE AND ONLY ONE OF THEM IS OURS. This hook reports bytes against BUDGET above. The PLATFORM's own memory loader separately reports "MEMORY.md is 32KB (limit: 24.4KB) -- index entries are too long. Only part of it was loaded", and that one TRUNCATES. Measured 2026-08-31 22:1x EDT: no emitter for that string exists anywhere in .claude/, ~/.claude/hooks/ or either settings.json, so it is the harness and it cannot be raised, configured or silenced from here. The loss is real and it is the TAIL: the final "## Docs & memory structure" section did not arrive in that session's context at all, while everything above it did. ⚠️ So this is a MITIGATION, not a fix. additionalContext is not subject to the memory loader's limit, so re-emitting the last few KB here puts the dropped lines back in front of the session. It is sized against the measured loss (~1.2KB) with better than 2x margin, NOT against the platform's stated 24.4KB -- that figure does not match the observed cut point, and guessing a byte offset from a number that already disagrees with behaviour is how a mitigation becomes a second wrong constant. ⚠️ Most of what it re-emits DID load. That duplication is the price of the margin, and it is cheap next to a session running without its standing instructions and nothing saying so.
+PLATFORM_CAP="${MEMCHECK_PLATFORM_CAP:-25000}"
+TAIL_BYTES="${MEMCHECK_TAIL_BYTES:-2500}"
+if [ "$size" -gt "$PLATFORM_CAP" ]; then
+  status="$status
+
+  ⚠️ PLATFORM TRUNCATION MITIGATION -- MEMORY.md is ${size}B, past the ~${PLATFORM_CAP}B at which the
+  HARNESS's own memory loader starts dropping the END of the file (its warning says so: \"Only part of
+  it was loaded\"). That limit is NOT this hook's BUDGET and is not settable from this repo. The last
+  ${TAIL_BYTES}B of the index are repeated below so the tail is in context regardless. If the two ever
+  agree again, delete this block rather than leaving a duplicate nobody reads.
+
+$(tail -c "$TAIL_BYTES" "$MEM/MEMORY.md")"
+fi
+
 printf '%s' "$status" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'
