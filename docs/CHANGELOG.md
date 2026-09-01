@@ -28,7 +28,37 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.70.0 — 2026-08-31 → 2026-09-01 (#177) — Armory's tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down
+## Pre-Release v3.71.0 — 2026-09-01 (#178) — Broadcast's SAVED badge was pale grey on a bright green fill, four of the Manifest's six state shapes had never rendered, and the memory index had been losing its tail to a platform limit nobody had acted on
+
+Part 3 of the conformance pass, and the carrier work three read-only auditors turned up while checking it. Two numbers frame the realm: ② SHAPE went **20 and 22 → 6 and 6** across its two views, and the pixel diff went **21 regions → 16** with both pages height-identical at 1258px. Every region that remains is cited, and the ten decisions behind them are in `docs/reference/portal-decision-ledger.md` with a falsifier apiece.
+
+### The realm — and the largest defect came from looking, not from a number
+
+🔴 **`SAVED` rendered at 1.34:1.** The state badge painted `--ink2` (`#9DAAB4`) on `--ok` (`#3DDC97`) where the design draws near-black at **11.29:1**. The cause sits 17 lines apart in one stylesheet: a rule guaranteeing the chip a fill was added *above* a colour fallback still written for the unfilled case, so the guard stopped protecting anything and started painting light-on-light. The design escapes it only because `assets/shell.js` derives the ink from each chip's *computed* background at runtime — **the two stylesheets read identically and rendered differently**, which is why the audit's ⑤ RULES section reported nothing. It was found by cropping the two captures into an aligned band and looking at them, which is where seven of Armory's seventeen also came from.
+
+🔴 **Four of the shared `Manifest`'s six state shapes had never applied.** `PILL` emitted `stag` / `sched` / `exp` / `conf` against stylesheets that define only `.stt.saved`, `.stt.staged` and `.stt.conflict`, and `season.logic.js` returns exactly `live | staged | conflict` — so **every staged and every conflict row on Season had been rendering its state chip with no shape at all**, against the design law that shape carries state. This is Armory's `RANK_KEY` defect, in the same component, carried in the same ratchet baseline: *a ratchet's baseline is by construction a list of things already agreed to live with.*
+
+**The interaction tier ran on all three reachable surfaces**, and "in full" had been written into a commit message when only two were open. The third — the delete `Confirm` — opens from a row control that `--triggers` filters out by design, needed `--open-sel`, and measures every row cited or sub-pixel. Opening it found two `bulkActions` verbs that could never be invoked, because this realm's design draws no checkbox column and the bulk bar needs a selection.
+
+Also closed: the Post form ported from an inline panel to the design's drawer (49 mockup-only pieces → 21, the page 291px shorter); the Airtime ruler's Track-borrowed `<b>`; the `never` cell's missing bold; Posted's cell kind, which took `--ink3` where the design writes `--ink2`; `.ncell` as a `<span>`, which three of four mockup pages write; an inert `.sev.warn` an inline background could never lose to; and the export scope label.
+
+### The carriers, and one of them reached every session
+
+🔴 **`docs/SESSION-START.md` is injected into every session** and told each one that a realm audit must not be its first command and that the merge was in flight as PR #177 — which had merged. The directive was true for about a day, and it sat *below* the amendment correcting it, so a reader arriving in file order met the correction first and the absolute last.
+
+🔴 **`MEMORY.md` is 33,934 B against a documented 25,000 B loader cap, so 42 index lines — the whole tail — reached no session.** The harness had been saying so at startup for weeks. `CLAUDE.md` now imports the index whole, with a sentinel that makes "the import works" checkable and an explicit removal condition: the ceiling is a forcing function whose documented remedy is to *shrink* the index, and making 34.5 KB loadable removes that pressure. The repo's own mitigation was re-emitting a hand-sized 2,500 B tail against an ~8,900 B overflow — it is derived from the actual cut now, emits lines rather than bytes, and its four new self-tests include one a fixed-size tail cannot pass.
+
+🔴 **`usage-guard.mjs` claimed to isolate subagents and never did.** Every state file is `<uuid>-<the same uuid>`, because the transcript basename *is* the session id — and the payload carries no agent field, so the isolation cannot be built from it at all. Both auditors hit it and both had to override.
+
+**No `.claude/rules` file scoped to the portal**, so its five editing traps lived only in an 880-line plan and were re-learned in session after session. `portal-editing.md` carries them, and carries its own caveat: a path-scoped rule fires on a `Read`, the batching contract mandates `python3` heredocs, and a heredoc opens files in a subprocess.
+
+### Instruments and records
+
+`portalRealWalk` defaulted to **Season's** view names on every realm, so Broadcast's first real-server walk failed on two views it has never had; the resolver is a pure function in `lib/` now, with six cases, one of which fails under the retired default. It was the only one of twenty-eight portal instruments with no self-test. `§0.4b` is new: eight instructions a session could fail while believing it complied now each state their observable — including the one nothing held at all, *what a band capture showed*.
+
+⚠️ **`portal:states` is non-deterministic in-suite** — measured over four consecutive runs on one unchanged tree: red, standalone green, green, red on a *different* state. Tracked, and the machine floor is claimed on the standalone result rather than papered over. Season and Armory were diffed **before and after with the changes stashed**, 12.0% and 8.6% both times, so the shared-surface edits moved no pixels on either.
+
+## Pre-Release v3.70.0 — 2026-08-31 → 2026-09-01 (#177 · `484b846`) — Armory's tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down
 
 Three bodies of work: the Armory conformance pass, two new gates, and a correction to the instruments themselves. No figures are frozen into this entry — they moved four times while it was being written; `portal:status`, `portal:audit` and the decision ledger are the live sources.
 
