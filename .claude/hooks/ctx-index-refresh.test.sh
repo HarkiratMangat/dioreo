@@ -43,7 +43,20 @@ code(){ grep -v '^[[:space:]]*#' "$HOOK"; }
 code | grep -q 'CLAUDE_PROJECT_DIR' && { echo "  FAIL  still reads CLAUDE_PROJECT_DIR (worktree-unsafe)"; fail=$((fail+1)); } || { echo "  PASS  does not read CLAUDE_PROJECT_DIR in code"; pass=$((pass+1)); }
 n_index=$(grep -cE "index [^ ]+ +--source" "$HOOK"); n_proj=$(grep -c -- '--project "\$ROOT"' "$HOOK")
 ok "every index call pins --project" "$n_proj" "$n_index"
-ok "indexes all three corpora" "$n_index" "3"
+# 🔴 BY NAME, NEVER BY COUNT. This asserted `n_index == 3` and broke the moment the hook grew to seven corpora on 2026-09-01 — a count assertion fails on correct growth and, worse, PASSES if one corpus is swapped for another. Naming each is stable under growth and catches a silent drop, which is the defect that actually matters here: an unindexed corpus answers a search with nothing and looks like "no hits".
+for src in dioreo-docs dioreo-rules dioreo-claudemd dioreo-memory dioreo-meta-deferred dioreo-compliance-plan dioreo-tooling; do
+  grep -q -- "--source project:$src" "$HOOK" \
+    && { echo "  PASS  indexes corpus $src"; pass=$((pass+1)); } \
+    || { echo "  FAIL  corpus $src is not indexed — a search over it returns nothing and looks like no hits"; fail=$((fail+1)); }
+done
+
+# 🔴 THE THREE OUTSIDE $ROOT MUST BE DERIVED, NOT HARDCODED. A literal slug re-creates the 2026-07-28 migration, where the memory store sat at a path nothing read and only a note bridged it.
+code | grep -q "projects/\$(printf" \
+  && { echo "  PASS  the memory slug is DERIVED from \$ROOT, not hardcoded"; pass=$((pass+1)); } \
+  || { echo "  FAIL  the memory path looks hardcoded — it must be derived from \$ROOT"; fail=$((fail+1)); }
+code | grep -q 'EXT_STAMP' \
+  && { echo "  PASS  external sources carry their OWN stamp (a memory write must not re-index docs/)"; pass=$((pass+1)); } \
+  || { echo "  FAIL  one stamp for both — every auto-memory write would re-index all of docs/"; fail=$((fail+1)); }
 
 # ── 🔴 A FAILURE MUST BE VISIBLE. v1 swallowed its own fatal error for its entire life.
 grep -q 'CTX INDEX REFRESH FAILED' "$HOOK" && { echo "  PASS  reports an indexing failure instead of hiding it"; pass=$((pass+1)); } || { echo "  FAIL  an index failure would be silent"; fail=$((fail+1)); }

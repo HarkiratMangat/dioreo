@@ -32,17 +32,47 @@ STAMP="$HOME/.claude/context-mode/.dioreo-prose-stamp-$ROOTKEY"
 # 🔴 HASH EVERY FILE, NOT JUST *.md. Measured 2026-08-30 13:00 EDT: ctx_index ingests .js and .py too — docs/superpowers/mockups/ contributes .grid.js, .serve.py, .proto-glyph.js — so a hash limited to .md/.json would leave the index STALE while the stamp reported it FRESH, which is the exact silent-staleness this hook exists to prevent, one level down. Over-invalidating costs 3s; under-invalidating costs correctness, so hash everything and sort for a stable order.
 HASH=$(cd "$ROOT" && find docs .claude/rules CLAUDE.md -type f -exec shasum {} + 2>/dev/null | sort | shasum | cut -d' ' -f1)
 [ -z "$HASH" ] && exit 0
-[ -f "$STAMP" ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$HASH" ] && exit 0   # unchanged -> no-op
+
+# 🔴 THE THREE SURFACES NO IN-REPO SEARCH CAN REACH, ADDED 2026-09-01 17:43 EDT. The completeness sweep names them every run as "invisible by construction, not by oversight", and `ctx_search` could not see them either for the same reason: everything above resolves inside $ROOT. Measured the same day — four memory assertions, a cross-project worktree list and the 83-step plan's own pointer were all wrong at once, and every one was found with `rg` because the index did not carry them. ⚠️ **DERIVED, NEVER HARDCODED.** The memory slug is $ROOT with `/` and space folded to `-`; hardcoding it would re-create the 2026-07-28 slug-migration fragility, where the store was stranded at a path nothing read and only a note bridged it. The cross-project docs sit in $ROOT's PARENT. ⚠️ **SECOND STAMP ON PURPOSE.** Auto-memory writes far more often than `docs/` changes, so sharing one hash would re-index all of docs/ on every memory write. Two hashes, two stamps, each invalidating only its own sources.
+MEMDIR="$HOME/.claude/projects/$(printf '%s' "$ROOT" | tr '/ ' '--')/memory"
+XDIR="$(dirname "$ROOT")"
+EXT_STAMP="${STAMP}.ext"
+EXT_PATHS=""
+[ -d "$MEMDIR" ] && EXT_PATHS="$EXT_PATHS $MEMDIR"
+for f in "$XDIR/meta-deferred-list.md" "$XDIR/2026-08-23-workflow-compliance-plan.md" "$HOME/.claude/TOOLING.md"; do
+  [ -f "$f" ] && EXT_PATHS="$EXT_PATHS $f"
+done
+
+EXT_HASH=""
+if [ -n "$EXT_PATHS" ]; then
+  # shellcheck disable=SC2086
+  EXT_HASH=$(find $EXT_PATHS -type f -exec shasum {} + 2>/dev/null | sort | shasum | cut -d' ' -f1)
+fi
+
+REPO_FRESH=0; EXT_FRESH=0
+[ -f "$STAMP" ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$HASH" ] && REPO_FRESH=1
+[ -z "$EXT_HASH" ] && EXT_FRESH=1
+[ -f "$EXT_STAMP" ] && [ "$(cat "$EXT_STAMP" 2>/dev/null)" = "$EXT_HASH" ] && EXT_FRESH=1
+[ "$REPO_FRESH" = 1 ] && [ "$EXT_FRESH" = 1 ] && exit 0   # both unchanged -> no-op
 
 err=$(cd "$ROOT" && {
-  node "$CLI" index docs           --source project:dioreo-docs     --project "$ROOT" 2>&1 >/dev/null
-  node "$CLI" index .claude/rules  --source project:dioreo-rules    --project "$ROOT" 2>&1 >/dev/null
-  node "$CLI" index CLAUDE.md      --source project:dioreo-claudemd --project "$ROOT" 2>&1 >/dev/null
+  if [ "$REPO_FRESH" = 0 ]; then
+    node "$CLI" index docs           --source project:dioreo-docs     --project "$ROOT" 2>&1 >/dev/null
+    node "$CLI" index .claude/rules  --source project:dioreo-rules    --project "$ROOT" 2>&1 >/dev/null
+    node "$CLI" index CLAUDE.md      --source project:dioreo-claudemd --project "$ROOT" 2>&1 >/dev/null
+  fi
+  if [ "$EXT_FRESH" = 0 ]; then
+    [ -d "$MEMDIR" ] && node "$CLI" index "$MEMDIR" --source project:dioreo-memory --project "$ROOT" 2>&1 >/dev/null
+    [ -f "$XDIR/meta-deferred-list.md" ] && node "$CLI" index "$XDIR/meta-deferred-list.md" --source project:dioreo-meta-deferred --project "$ROOT" 2>&1 >/dev/null
+    [ -f "$XDIR/2026-08-23-workflow-compliance-plan.md" ] && node "$CLI" index "$XDIR/2026-08-23-workflow-compliance-plan.md" --source project:dioreo-compliance-plan --project "$ROOT" 2>&1 >/dev/null
+    [ -f "$HOME/.claude/TOOLING.md" ] && node "$CLI" index "$HOME/.claude/TOOLING.md" --source project:dioreo-tooling --project "$ROOT" 2>&1 >/dev/null
+  fi
 })
 if [ -n "$err" ]; then
   printf 'CTX INDEX REFRESH FAILED — the prose index was NOT updated, so ctx_search results may be STALE. Treat what comes back as possibly out of date, or fall back to rg.\n\n%s' "$err" \
     | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
   exit 0
 fi
-printf '%s' "$HASH" > "$STAMP" 2>/dev/null
+[ "$REPO_FRESH" = 0 ] && printf '%s' "$HASH" > "$STAMP" 2>/dev/null
+[ "$EXT_FRESH" = 0 ] && [ -n "$EXT_HASH" ] && printf '%s' "$EXT_HASH" > "$EXT_STAMP" 2>/dev/null
 exit 0
