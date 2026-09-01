@@ -30,11 +30,17 @@ status: live
 - `/rename Sonnet5-High · Access conformance · <Mon DD>`
 - `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites. Escalate on events only: a premise turning out false, or two hypotheses wrong.
 
-## Branch state
+## Branch state — Broadcast is MERGED; you are starting clean
 
-`feat/broadcast-portal-conformance`. **HEAD is `fa003c6`** (the commit carrying this prompt); `804fa8b` is its parent and holds the realm work. **Unpushed, no PR** — Harkirat had not approved a push. `package.json` is still `3.70.0-pre`: the changelog paragraph and the bump are the pre-merge checkpoint and cannot be written until the PR number exists, which is why `docs/CHANGELOG.md`'s newest entry is still Armory's `v3.70.0`.
+**`v3-pre-release` is at `94a70f0`**, the squash of PR #178, `package.json` **`3.71.0-pre`**, working tree clean, local identical to origin. No tag — none is minted on the pre-release line until `v3.0.0`. Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through, so the shared surfaces under you are the post-Broadcast ones.
 
-🔴 **Check whether it merged before you start** — `git log --oneline -3 v3-pre-release` — because Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through.
+🔴 **YOU ARE ON A BRANCH THAT ALREADY HAS ONE COMMIT ON IT, AND IT IS NOT YOURS.** Harkirat's instruction, 2026-09-01 17:16 EDT: **rename this branch to your own `feat/…` name and fold its commit into your work.** It is `6c6f3ad`, a one-paragraph correction to `docs/db-deferred-list.md`, unpushed and never PR'd.
+
+- **Rename it first, before anything else**, so nothing later has to move: `git branch -m feat/access-portal-conformance`. ✅ Safe here — `CLAUDE.md` forbids renaming a branch **that has an open PR**, because GitHub auto-closes it and it cannot be reopened. This branch has no PR, so the rule does not bite. Confirm with `gh pr list --head docs/states-flake-standalone-correction` returning nothing before you rename.
+- **Then verify what you inherited rather than trusting this paragraph:** `git log --oneline v3-pre-release..HEAD` should show exactly one commit, and `git diff v3-pre-release..HEAD --stat` exactly one file.
+- **What that commit says, so you can defend it in your own PR body:** `portal:states` is a coin flip — ~1 in 2 in-suite, ~1 in 5 standalone. An earlier version of the entry claimed it was standalone-green, which would let a session read a standalone pass as proof its change is innocent, or a standalone failure as proof it is guilty. Neither follows. **The sound test is whether the failing selector belongs to anything you edited.**
+
+⚠️ **You will meet that flake yourself.** `npm test` was red on `portal:states` three times across the previous session, on a different state each time, with no defect behind any of them. The rule for handling it is in this file under *Two rules no document carried*.
 
 ## The mode
 
