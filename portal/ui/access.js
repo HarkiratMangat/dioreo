@@ -65,6 +65,10 @@ function GrantForm({ onGrant, scopes }) {
 // The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`.
 // UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in
 // the reader's zone can name a day the record does not.
+// A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every
+// scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
+const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
+
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 function Sessions({ sessions, onEnd }) {
@@ -120,7 +124,6 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
     const pages = scopes.filter((s) => s.kind === 'page');
     const ordered = [...commands, ...pages];
     const spofScopes = new Set((spof || []).map((x) => x.scope));
-    const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
     const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).length;
 
     const rowPending = (id) => Object.fromEntries(Object.entries(pending)
@@ -283,31 +286,41 @@ function ByScope({ matrix, spof, ownerId }) {
                  would be two authorities for one mark, which is the defect access.html's own comment records
                  fixing when it moved the ring key out of the grid foot. It still appears only when there IS
                  one, because a legend for an absent mark is noise. -->
-            <!-- ⚠️ THE VOCABULARY IS ELEVEN TOKENS AND FOUR OF THEM ARE COMMANDS. Nothing on this screen
-                 said that the manage token silently covers eight of the others — which is the single fact that makes
-                 a hand-typed grant dangerous, and the reason the chips above exist. -->
-            <p class="racknote">${(matrix.scopes || []).length} permissions in all. A command token grants the
-                whole command; <code>manage</code> covers every page under it, so granting it is not one
-                permission but eight. A scope with no realm is Discord-only and does nothing in this portal.</p>
+            <!-- ⚠️ THE RACKNOTE THAT USED TO SIT HERE MOVED, it did not vanish. It said the manage token
+                 silently covers eight of the others; the design draws that note once, under the grid, and the
+                 By-admin view now carries the fuller version of it. Two notes making the same point on two
+                 tabs of one screen is the duplicate-authority defect this realm's own comments keep recording.
+                 What this view needed instead was for each ROW to say which realm it reaches — which it now
+                 does, in words, rather than in a title attribute you have to hover to read. -->
             <div class="scopes">
                 ${(matrix.scopes || []).map((sc) => {
                     const holders = matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);
                     const alone = spofScopes.has(sc.key);
+                    const lone = !alone && !holders.length;
                     return html`
-                        <div class=${'scope' + (alone ? ' spof' : '')}>
-                            <span class="nm">${sc.key}</span>
+                        <div class=${'scope' + (alone ? ' spof' : lone ? ' lone' : '')} style=${`--c:${accentOf(sc)}`}>
+                            <!-- The name is the LABEL with the raw token beside it, not the token alone: the token
+                                 is what you type into a grant and the label is what it means, and a list showing
+                                 only the token asks the reader to translate twelve of them. -->
+                            <span class="nm"><i></i>${sc.label || sc.key}<em>${sc.key}</em></span>
                             <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
-                            <span class="rl">${sc.realm ? `portal realm: ${sc.realm}` : 'Discord only'}</span>
+                            <span class="rl">${sc.realm ? html`reaches <b>${sc.realm}</b>` : html`<span class="none">Discord only</span>`}</span>
                             <span class="hs">
-                                ${ownerId ? html`<span class="holder owner">owner</span>` : null}
-                                ${holders.map((h) => html`<span class="holder" key=${h}>${h.slice(-6)}</span>`)}
+                                ${ownerId ? html`<span class="holder owner" title="The owner holds every permission implicitly">owner</span>` : null}
+                                ${holders.map((h) => html`<span class="holder" key=${h}>…${h.slice(-6)}</span>`)}
                             </span>
                             <!-- ⚠️ "nobody but you" IS QUIET, and "single point" IS NOT. Sole ownership by the owner is the resting state of a solo-maintained bot; one OTHER person holding it alone is the thing that goes wrong when they leave. Painting both in warning colour would make the common case shout and teach the reader to skip the mark. -->
-                            ${alone ? html`<span class="flag">⚠ single point</span>`
-                                : !holders.length ? html`<span class="flag quiet">nobody but you</span>` : null}
+                            ${alone ? html`<span class="flag">single point — only ${String(holders[0] || '').slice(-6)} besides you</span>`
+                                : lone ? html`<span class="flag quiet">nobody but you</span>` : null}
                         </div>
                     `;
                 })}
+            </div>
+            <!-- The two flags this list draws, named where the list ends. Same rule as the grid's foot: a mark
+                 that is on screen is named on screen, and only the marks that ARE on screen. -->
+            <div class="mxfoot">
+                <span><b style="color:var(--warn)">Single point</b> — exactly one non-owner holds it. If they go, you are the only one left who can do it.</span>
+                <span><b>Nobody but you</b> — zero non-owner holders. Safe, and also the reason you are still doing it yourself.</span>
             </div>
         </div>
     `;
