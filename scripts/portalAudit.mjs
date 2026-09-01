@@ -302,7 +302,8 @@ const annotate = (key) => {
             const mkBy = new Map(mk.triggers.map((t) => [bare(t), t]));
             const ptBy = new Map(pt.triggers.map((t) => [bare(t), t]));
             const both = [...mkBy.entries()].filter(([k]) => ptBy.has(k));
-            console.log(`\nTRIGGERS — season · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
+            // ⚠️ THIS LINE SAID `season` AS A LITERAL, so every --triggers run on every other realm printed the wrong subject above a correct listing. §0.5a R1: an instrument states what it examined, or its reading is not a reading — and a header naming the wrong realm is worse than none, because it reads as a statement of fact.
+            console.log(`\nTRIGGERS — ${realm} · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
             console.log('  BOTH SIDES (openable with --open "<text>")');
             for (const [k, t] of both) {
                 const other = ptBy.get(k);

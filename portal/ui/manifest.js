@@ -80,7 +80,11 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
 // 🔴 THE CONFORMANCE REGISTER, AND EVERY ENTRY IS A DELIBERATE ADVANCE PAST THE DESIGN. Broadcast's mockup draws no checkbox column at all; the portal grew one because Broadcast gained bulk actions the design never specified. That is a real capability and it is NOT reverted — but in an overlay run it shifts every column of a four-column table by 40px, which reads as a page of differences rather than as one decision. Reading a dataset flag rather than a build define, so nothing about this can ship enabled: only a page that asks for conformance in its URL ever sets it, and the server never serves that page.
 
 
-export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' , searchLabel = '', searchPlaceholder = '', countSuffix = '', extraChips = null, defaultSort = null, footRow = null, selectable: selectableProp = null}) {
+export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' , searchLabel = '', searchPlaceholder = '', countSuffix = '', extraChips = null, defaultSort = null, footRow = null, selectable: selectableProp = null,
+    // A realm that scopes something ELSE by the chips — Armory's export strip offers "this view" and "category" — needs to know what they are set to. Reported from the chip's own click rather than an effect, so there is no render loop to guard: the component still owns the state, the realm just gets told when it changes.
+    onFiltersChange = null,
+    // The size of the collection this table is a view OF, when the realm narrowed it before handing it over.
+    totalRows = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
@@ -139,7 +143,8 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
                     <label class="sr" for="manifest-search">${searchLabel || `Search ${(rowNoun[1] || 'rows').toLowerCase()}`}</label>
                     <input id="manifest-search" value=${query} placeholder=${searchPlaceholder || 'Search…'} onInput=${(e) => setQuery(e.target.value)} /></span>
-                ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters} onChange=${setFilters} /></span>` : null}
+                ${filterGroups.length ? html`<span class="chipset" role="group" aria-label="Filters"><${FilterChips} groups=${filterGroups} filters=${filters}
+                    onChange=${(f) => { setFilters(f); onFiltersChange?.(f); }} /></span>` : null}
                 <!-- 🔴 A REALM'S OWN FILTER CHIP, AND SEASON'S LIVED SOMEWHERE ELSE. The design draws
                      "Staged only" here, beside the type chips, because it IS a filter over these rows;
                      the portal put it inside the staged-changes panel, which meant it disappeared with
@@ -150,7 +155,14 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                      count is a readout at the end of the row and the verb is a control among the other controls.
                      Measured 256px apart when they were the other way round. -->
                 ${onAdd ? html`<button class="chip go" onClick=${onAdd}>${addLabel}</button>` : null}
-                <span class="rt">${visible.length} of ${rows.length}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
+                <!-- ⚠️ THE DENOMINATOR IS THE CATALOGUE, NOT THE ROWS HANDED IN. Armory pre-filters by armoury before
+                     the Manifest ever sees a row, so dividing by the handed-in rows read "125 of 125" over a
+                     133-build collection — a count that can never tell you something is being withheld. The design's
+                     own count element divides by the whole set ("125 of 133"). Defaults to the handed-in rows, so a
+                     realm that gives the Manifest everything is unchanged.
+                     (No backticks in this comment: an EVEN number of them inside an html template closes and reopens
+                      it, which parses as prose-turned-expressions — this exact comment did it twice.) -->
+                <span class="rt">${visible.length} of ${totalRows == null ? rows.length : totalRows}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
             <div class="mscroll">
             <table class="mtable">

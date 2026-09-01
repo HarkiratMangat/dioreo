@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-08-30T17:00:36.480Z",
+  "recordedAt": "2026-09-01T02:07:40.029Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [
     "kind",
@@ -90,9 +90,7 @@
     "staged-pulse",
     "stemmed",
     "t-S",
-    "t-top4",
-    "t-top5",
-    "t-unranked",
+    "t-none",
     "tbcat",
     "timax",
     "timb",
@@ -107,9 +105,6 @@
   ],
   "mismatch": [
     "preview-sel",
-    "sched",
-    "t-t3",
-    "t-t4",
-    "t-t5"
+    "sched"
   ]
 }
