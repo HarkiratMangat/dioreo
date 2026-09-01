@@ -93,6 +93,14 @@ status: live
 | `span.ok.thumb` on all 125 rows, beside the BADGES column | **Portal keeps it.** Class (b) | 2026-09-01 | Supersedes and sharpens the earlier row: `.thumb` IS defined in the design's own stylesheet, and image presence is the defect this realm exists to repair. ⚠️ **Seeing it rendered, a green chip repeated 125 times competes with BADGES, which is the column that actually signals** — the affordance is right and its WEIGHT is arguable. Left as drawn rather than quietly restyled | The badge column stops being the row's primary signal, or the indicator is redesigned deliberately |
 | The bulk-delete `Confirm`: `loadout.bulkDelete · tier 2` where the design shows `loadout.delete · tier 1`, and the title and `ul.dw-l` that follow | **Portal keeps the bulk op for a single row.** Class (b) — and it was already adjudicated in code before this pass looked | 2026-08-31 | `scripts/portalOpsReach.test.js:35` carries the equivalence and its reason as a CHECKED claim: *"the Manifest stages `loadout.bulkDelete` with a one-element id list, so one delete and many are one code path and one changeset row"*. The tier, the plural title and the named-builds list are all downstream of that one shape. ⚠️ **The diff makes this look like an over-gated destructive action and it is not a gate to lower on a diff's say-so** — CLAUDE.md's own rule: a FIX row that removes a gate is never a triage row | The Manifest gains a single-row delete path of its own, at which point `loadout.delete` needs its own reachability |
 
+## Broadcast — realm-specific decisions
+
+*Created empty 2026-09-01 by the Armory session. **An empty section is not the same as an unexamined realm** — this table exists so a Part 3 finding has somewhere to land and so `ctx_search` against this ledger returns a HEADING rather than nothing. "Returned nothing" would otherwise read as "never decided" when it means "never sectioned".*
+
+| Surface | Decision | Date | Why | Reopens if |
+|---|---|---|---|---|
+| — | *(no Broadcast decision recorded yet)* | — | — | — |
+
 ## Instruments — what they can and cannot do
 
 | Instrument | State | Reopens if |

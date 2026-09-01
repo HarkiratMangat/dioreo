@@ -140,12 +140,11 @@
       "flags": {},
       "steps": [
         {
-          "click": ".mh-take button",
-          "until": ".exs"
+          "click": ".mh-take button"
         }
       ],
       "known": [],
-      "note": "the masthead Export strip \u2014 each scope states its OWN shape, because only some of them re-import \u26a0\ufe0f the step carries `until` because a bare click can land before the masthead mounts under a loaded suite: it passed alone and failed inside a full npm test, which is the same race already fixed once on the identity state.",
+      "note": "the masthead Export strip \u2014 each scope states its OWN shape, because only some of them re-import \u26a0\ufe0f THE STEP DELIBERATELY CARRIES NO `until`. One was added 2026-09-01 to fix a load race and became the race: `until` waits on its own 5000ms settle deadline while `expect` waits 45000ms for the SAME selector, so the redundant, tighter one failed first. A wait duplicated at two deadlines is worse than one wait, and the shorter number wins in exactly the conditions the longer one was raised for.",
       "expect": ".exs"
     },
     {

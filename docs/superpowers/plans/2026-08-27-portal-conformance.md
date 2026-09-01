@@ -75,7 +75,7 @@ status: live
 
 | | Call | Tool — this column is part of the procedure, not a preference | What it does |
 |---|---|---|---|
-| **1** | `npm run portal:audit -- --realm <r> --all`, every view in ONE batched Bash call | Capture. Nothing else. |
+| **1** | **ONE Bash call carrying one `npm run portal:audit -- --realm <r> --view "<tab>"` per view**, each with `--all` for row depth. 🔴 **`--all` DOES NOT WALK VIEWS — it lifts the per-section 25-row caps on ONE view**, and reading it as "every view" is how Armory came to be recorded as closed with three of its four views never looked at. `portal:status` prints each realm's view names | Capture. Nothing else. |
 | **2** | **`ctx_search` for the ledger and the plans · `codebase-memory` (`search_graph` / `get_code_snippet`) for a symbol · `Read` with `offset`/`limit` for the comment beside the code.** ⛔ **Not `rg`, and not a browser or a probe** | Sort **every** ③/④/⑤ row into four buckets from the audit's own output plus that comment. Write `local/<realm>-triage.md`. |
 | **3** | **ONE `python3` heredoc** — an `assert <anchor> in s` per change — with `node --check`, the build and the re-audit of all views **chained into the same call** | The FIX bucket, applied. |
 | **4** | `ctx_search` again to place each new row, then the ordinary editors | Close: ledger · §L · changelog · fixture · gates. |
@@ -104,7 +104,7 @@ status: live
 - **Fix the first ① CASCADE offset alone — unless it is CITED**, in which case close it and work ④ through it. A kept difference cannot be driven to zero, and Season's ① will report its +16px forever (Harkirat, 2026-08-31 10:5x EDT).
 - **A realm's number has a FLOOR made of its cited rows.** Grade on the enumeration — are the regions exactly the cited set — never on the percentage.
 
-⚠️ **Armory is the second-densest reference (99.6KB, 13 handlers) and earns the full treatment including the interaction tier. It must not earn a second discovery of this method.**
+⚠️ **Armory is the second-densest reference (96KB, 14 handlers per `portal:status` — this read 99.6/13, the unlabelled second measurement §0.6a already deleted once) and earns the full treatment including the interaction tier. It must not earn a second discovery of this method.**
 
 ---
 
@@ -137,7 +137,7 @@ status: live
 | **7** | The sweep, the misc, and the double-check | ☐ open | | |
 | **—** | Closing DEVLOG narrative entry | ☐ open | | one story, after all the rest |
 
-🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST, AND IT IS HARKIRAT'S TO MAKE.** The old four conditions were activities; a realm satisfied all four three times without matching its design. **A row closes when, in this order:** ① `portalConverge` reports a flat rhythm — no mismatch above a few px; ② `portalDiff --portal harness` reports **zero regions above the noise floor**, on every view and at both widths, with the two pages the same height; ③ `portalInventory`'s four lists are empty or adjudicated with a **dated** citation; ④ the machine floor is green; ⑤ a real-server pass has run, because the overlay is fixture-driven and cannot see correctness; ⑥ **Harkirat has looked and said so.** Never write done — §0.5 R5.
+🔴 **☑ IS A CLAIM ABOUT THE SURFACE, NOT ABOUT THE CHECKLIST, AND IT IS HARKIRAT'S TO MAKE.** The old four conditions were activities; a realm satisfied all four three times without matching its design. **A row closes when, in this order:** ① `portalConverge` reports a flat rhythm — no mismatch above a few px; ② `portalDiff` reports **exactly the CITED set of regions and no others** — 🔴 **this said "zero regions above the noise floor, on every view and at BOTH WIDTHS" until 2026-09-01 and every clause of that was wrong by then**: §0.7d retired the percentage as a target, §0.6a records that a realm has a permanent cited FLOOR so zero is unreachable, §L's own Season row says 375×812 is **deliberately not run**, and "noise floor" was never given a number because `--selftest` returns 0.000% and there is no inherent noise to budget for. Grade on the ENUMERATION, at 1282×888, on every view the realm has. ⚠️ **`--portal harness` compares DESIGN; the real-server pass in ⑤ is a separate obligation and neither substitutes for the other** — SESSION-START calls a harness-only reading a violation, and it is one only when it is offered as the whole answer; ③ `portalInventory`'s **six** lists are empty or adjudicated with a **dated** citation; ④ the machine floor is green; ⑤ a real-server pass has run, because the overlay is fixture-driven and cannot see correctness; ⑥ **Harkirat has looked and said so.** Never write done — §0.5 R5.
 
 **Status vocabulary, so a tick means one thing:** ☐ open · ◐ in flight *(name the sub-state in Note)* · ☑ closed *(gates green · committed · changelog paragraph written · A/B artifact published)* · **⧗ owed** *(everything done except the real-server pass, which is blocked on Harkirat's OAuth sign-in)* · ⊘ dropped *(with the reason, never silently)*.
 
@@ -236,7 +236,7 @@ Board was closed as portal-correct on spec §F3, which exists and says exactly w
 The §F3 adjudication was written into `COMPANION.md` by the session that reached it, and then read back as though COMPANION were a second witness. §16.31a records this in its own words — *"Two documents downstream of one commit are not two witnesses"* — and one AUTHOR is not two either. **If you wrote it this session, it is your claim. Mark it as yours.**
 
 ### R4 · The close condition is an ENUMERATION, not a checklist
-A Part closes when `npm run portal:inventory -- --realm <r>` reports its four lists — **ONLY IN THE MOCKUP · ONLY IN THE PORTAL · DIFFERENT WORDS · DIFFERENT STYLE** — and every row in each is either closed or adjudicated with a **dated** citation. Gates green, a ledger written and a fixture recorded are ACTIVITIES; they were all true when Part 1 was closed the first time.
+A Part closes when `npm run portal:inventory -- --realm <r>` reports its **six** lists — **ONLY IN THE MOCKUP · ONLY IN THE PORTAL · DIFFERENT WORDS · DIFFERENT COUNT · DIFFERENT PAGE · DIFFERENT STYLE** ⚠️ **this said FOUR until 2026-09-01 and the tool has printed six for longer**, so a reader closing on the letter of this rule skipped two lists — Armory's DIFFERENT COUNT alone held seven rows — and every row in each is either closed or adjudicated with a **dated** citation. Gates green, a ledger written and a fixture recorded are ACTIVITIES; they were all true when Part 1 was closed the first time.
 
 ### R5 · Never write "done", "complete" or "fixed, all N"
 Harkirat decides when a Part is finished. *"Part 1 doesn't end until I'm satisfied."* Report what changed and what was measured; do not report completion. Two of this Part's three false closes were a sentence, not a mistake in the work.
@@ -250,14 +250,15 @@ The first full-page capture printed `captured mk- 888px · pt- 888px` — the ol
 ### R8 · When Harkirat names an example, fix the CLASS
 *"Don't narrow your fixes to my mentioned items. There were merely examples. Awwwards worthy websites are not narrow scoped in their audits."* Two named items produced a two-item fix list; the enumeration that should have preceded it found **29 absent · 60 extra · 25 different words · 38 counts · 68 styles**. Enumerate the class before touching the instance.
 
+### R9 · A refusal guards a flag's EFFECT, not its ARRIVAL
+`--view` refuses a missing tab and a click that changed nothing — and cannot refuse a flag that never reached the process. In zsh an unquoted `$v` does not word-split, so a loop passing `"--view Board"` sent one argument and three default-view runs printed plausible percentages. **Read the tool's own statement of what it did — the header line and the output filenames — never the result alone.**
+
 ### R10 · A claim that NO INSTRUMENT can see something is a claim about the INSTRUMENTS, and it needs their output
 Written 2026-09-01, retracting a commit message from the same day. The manifest rows painted the wrong ground and the commit said *"no instrument could have found this."* **④ STYLE had printed it** — `section.panel backgroundColor: rgba(0,0,0,0) → rgb(23,30,36)`, the exact value, in output already read twice. It sorted ~140th of 149 because the section ranked by repetition. **Before writing that nothing could catch a defect, grep the last run's output for the value.** One command. The rule is the sibling of R2 and R3: all three are about the PROVENANCE of a claim, and none of them is enforced by anything except being short and absolute.
 
 ### R11 · Before ADDING an instrument, name the existing one that should have caught it — and say why it did not
 Same day, same defect. The first response was a fifth browser-backed instrument sweeping every relational selector. It was written, its collector returned zero on its first run, its own test contradicted a comment two lines below it, and its BROKEN bucket would have fired on every conditionally-structural rule — then it was deleted, because ④ had answered the question all along. **Writing the sentence "X should have caught this" is what forces the discovery.** If the answer is *it did, and I misread it*, the fix is the reading. This repo has eight instruments and twenty-odd gates; the reflex to add a ninth is the one to distrust.
 
-### R9 · A refusal guards a flag's EFFECT, not its ARRIVAL
-`--view` refuses a missing tab and a click that changed nothing — and cannot refuse a flag that never reached the process. In zsh an unquoted `$v` does not word-split, so a loop passing `"--view Board"` sent one argument and three default-view runs printed plausible percentages. **Read the tool's own statement of what it did — the header line and the output filenames — never the result alone.**
 
 ---
 
@@ -485,7 +486,7 @@ The incentive is legible and backwards: **a screenshot is one visibly expensive 
 
 🔴 **AND THE DIFF IS RE-RUN AT ⑤.** ⓪ seeds the ledger; ⑤ proves every region is closed or carries a citation. A Part cannot close without the second run, and §L's ☑ requires it.
 
-**Machine floor (necessary, never sufficient):** `__grid.all()` near-miss and size counts no worse than the mockup's · inventory diff with zero unexplained rows · reverse-orphan clean for this surface · `npm test` **0**, `portal:orphans`/`coverage`/`refs` **0**, `docs:audit` **1** (the expected `(#PR)`) · **`portal:diff` re-run with every region closed or cited**. ⚠️ **Three of these are movement detectors whose remedy is `--write` — see §0.45.** Re-recording a baseline is not a gate passing.
+**Machine floor (necessary, never sufficient):** `__grid.all()` near-miss and size counts no worse than the mockup's · inventory diff with zero unexplained rows · reverse-orphan clean for this surface · `npm test` **0**, `portal:orphans`/`coverage`/`refs` **0**, `docs:audit` **0 ERRORS** — warnings never block, and the count moves; read the exit code, never a remembered number (it read "1 (the expected `(#PR)`)" until 2026-09-01, by which time the real run had 0 errors and 7 unrelated warnings) · **`portal:diff` re-run with every region closed or cited**. ⚠️ **Three of these are movement detectors whose remedy is `--write` — see §0.45.** Re-recording a baseline is not a gate passing.
 
 ⚠️ **`__grid.all()` TRUNCATES** to 22 near-misses and 18 size issues. Read `nearMisses`/`sizeIssues` as **the count**; the arrays are a sample. ⚠️ **`__grid` reports geometry, not identity** — two elements can be perfectly on-grid and be the wrong two. That is why the inventory diff sits beside it, not under it.
 

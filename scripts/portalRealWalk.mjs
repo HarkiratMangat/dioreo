@@ -3,7 +3,7 @@
 //
 // 🔴 IT RUNS BEFORE THE WORK, NOT AS A VICTORY LAP AFTER IT. The mockup and the harness are BOTH fixture-driven, so they agree with each other automatically and everything they corroborate about data shape, they corroborate vacuously. `TL.days` returned NaN for every real record — "ends NaN days after the battle pass" — and no fixture could ever have shown it.
 //
-// ⚠️ THIS IS NOT A CONFORMANCE CHECK. The real portal carries no `?conform=1`, so every stand-down is ON and a pixel comparison against the mockup measures the redesigns rather than the gap. What only this can see: real data volumes, the door, genuine empty and error states, the 401/409 paths, and whether any of it works.
+// ⚠️ THIS IS NOT A CONFORMANCE CHECK. The real portal carries no `?conform=1`, so every stand-down is ON and a pixel comparison against the mockup measures the redesigns rather than the gap. What only this can see: real data volumes, the door, genuine empty and error states, the 401/409 paths, and whether any of it works. ⚠️ STALE COMMENT, corrected 2026-09-01: `?conform=1` no longer exists — the two rendering modes collapsed 2026-08-31 and the flag was renamed `?fresh=1`, which does FIXTURES ONLY. There is no stand-down switch; do not add one back.
 import puppeteer from 'puppeteer-core';
 import path from 'path';
 import { fileURLToPath } from 'url';

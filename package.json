@@ -42,7 +42,8 @@
     "test:tz": "node scripts/tzIndependence.test.mjs",
     "portal:template-comments": "node scripts/portalTemplateComments.mjs",
     "portal:template-comments:test": "node scripts/portalTemplateComments.test.mjs",
-    "portal:stylerank:test": "node scripts/portalStyleRank.test.mjs"
+    "portal:stylerank:test": "node scripts/portalStyleRank.test.mjs",
+    "portal:realwalk": "node scripts/portalRealWalk.mjs"
   },
   "engines": {
     "node": ">=24"
