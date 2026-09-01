@@ -84,7 +84,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     // A realm that scopes something ELSE by the chips — Armory's export strip offers "this view" and "category" — needs to know what they are set to. Reported from the chip's own click rather than an effect, so there is no render loop to guard: the component still owns the state, the realm just gets told when it changes.
     onFiltersChange = null,
     // The size of the collection this table is a view OF, when the realm narrowed it before handing it over.
-    totalRows = null}) {
+    totalRows = null,
+    // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
+    caption = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
@@ -164,6 +166,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                       it, which parses as prose-turned-expressions — this exact comment did it twice.) -->
                 <span class="rt">${visible.length} of ${totalRows == null ? rows.length : totalRows}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
+            ${caption ? html`<p class="hint">${caption}</p>` : null}
             <div class="mscroll">
             <table class="mtable">
                 <!-- 🔴 table-layout:fixed NEEDS A COLGROUP OR EVERY COLUMN IS EQUAL. A realm supplies its

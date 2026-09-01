@@ -1215,7 +1215,13 @@ export function ArmoryRealm({ session }) {
                       `)}
                   `}
                   manifestSlot=${html`
-                      ${editingId || showAdd ? null : html`<p class="hint">Click a row to open it.</p>`}
+                      <!-- 🔴 THE HINT USED TO RENDER HERE, AND IT COST THE WHOLE TABLE ITS DEPTH. Both stylesheets carry
+                           .panel + .panel with background:transparent — the design's manifest is the ADJACENT SIBLING of
+                           its view panel, so the table sits on the desk colour and reads as a well cut into the page. One
+                           paragraph between the two panels breaks that selector, and the portal's rows painted --raised
+                           instead: measured #171E24 against the design's #0F1418, on every row of a 125-row table, with
+                           both stylesheets carrying the identical rule. The hint is a caption for the Manifest, so it
+                           renders INSIDE it now. FilterBar returns null at rest and never broke anything. -->
                       <${FilterBar} weapon=${weaponFilter} flag=${coverageFilter && coverageFilter.flag}
                                     shown=${rows.length} total=${builds.length}
                                     onClear=${() => { setWeaponFilter(null); setCoverageFilter(null); }} />
@@ -1230,6 +1236,7 @@ export function ArmoryRealm({ session }) {
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onFiltersChange=${setManifestFilters}
+                                   caption=${editingId || showAdd ? null : 'Click a row to open it.'}
                                    totalRows=${builds.length}
                                    onRowClick=${(row) => setEditingId(String(row.id))} selectedRowId=${editingId}
                                    bulkActions=${[
