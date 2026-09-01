@@ -288,6 +288,10 @@ const CATEGORY_LABEL = {
     SHOTGUN: 'Shotgun', MARKSMAN: 'Marksman', SECONDARIES: 'Secondary', MELEE: 'Melee',
 };
 
+// The mockup's filter chips use short labels and its own display order (armory.html's `renderCatChips`) — distinct from CATEGORY_LABEL above, which is precise on purpose for the edit form's dropdown. Only categories with at least one build in the current mode get a chip, matching the mockup's own comment: offering an empty category would advertise a result nothing can fill.
+const CATEGORY_CHIP_LABEL = { AR: 'Assault', SMG: 'SMG', LMG: 'LMG', MARKSMAN: 'Marksman', SNIPER: 'Sniper', SHOTGUN: 'Shotgun', SECONDARIES: 'Secondaries' };
+const CATEGORY_CHIP_ORDER = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
+
 // ⚠️ FIVE ROWS BECAUSE FIVE IS WHAT THE DATA HAS, not because five is a rule. 123 of 133 real builds carry exactly five attachments, and coverageFlags treats anything else as a defect for MP — but the field is free text with no slot typing, because `attachmentSlots` is empty on every stored document and only /autobuild's vision pass has ever written one.
 const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
     'Stock — e.g. No Stock', 'Ammunition — e.g. 48 Round Extended Mag', 'Rear grip — e.g. Granulated Grip Tape'];
@@ -993,6 +997,15 @@ export function ArmoryRealm({ session }) {
     // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page. Every derived figure below reads from `inMode`, never from `builds`, so the masthead cannot describe a population the views are not showing. `builds` survives only where BOTH armories are genuinely in scope: the export strip, which offers each mode as its own scope.
     const inMode = builds.filter((b) => b.mode === armMode);
     const weapons = new Set(inMode.map((b) => b.weaponName));
+    // Ported from the mockup's renderCatChips: one chip per category PRESENT in this mode, each carrying its own count and accent — reusing Manifest's existing filterGroups mechanism (matchesFilters does a plain row[field]===value check, so 'category' just needs to match the build's own stored field), not a new filter system.
+    const categoryCounts = new Map();
+    for (const b of inMode) {
+        const c = categoryCounts.get(b.category);
+        if (c) c.count += 1; else categoryCounts.set(b.category, { count: 1, hex: b.accent });
+    }
+    const categoryOptions = CATEGORY_CHIP_ORDER
+        .filter((c) => categoryCounts.has(c))
+        .map((c) => ({ value: c, label: `${CATEGORY_CHIP_LABEL[c]} ${categoryCounts.get(c).count}`, hex: categoryCounts.get(c).hex }));
     // 🔴 FAULTS AND AGE ARE COUNTED SEPARATELY HERE FOR THE SAME REASON splitCoverage EXISTS, and the masthead was the one surface still conflating them. A single `flagged` read 117 of 133 — a number so close to the total that it says nothing — because it counted "not touched in 90 days" as a defect. Coverage's own headline has always made the distinction in words ("66 builds have something actually wrong with them, and 106 more are merely old"); the figures above it now make it too, and both read from splitCoverage so they cannot disagree.
     const split = inMode.map(splitCoverage);
     const needRepair = split.filter((c) => c.faults.length).length;
@@ -1156,7 +1169,7 @@ export function ArmoryRealm({ session }) {
                                     shown=${rows.length} total=${builds.length}
                                     onClear=${() => { setWeaponFilter(null); setCoverageFilter(null); }} />
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
-                                   title="Every build" filterGroups=${ARMORY_FILTERS}
+                                   title="Every build" filterGroups=${[...ARMORY_FILTERS, { key: 'category', label: 'Category', topic: true, options: categoryOptions }]}
                                    headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}
                                    bulkNote="Reversible — a staged deletion is discarded, never undone"
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
