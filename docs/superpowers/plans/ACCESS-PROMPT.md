@@ -34,9 +34,9 @@ status: live
 
 **`v3-pre-release` is at `94a70f0`**, the squash of PR #178, `package.json` **`3.71.0-pre`**, working tree clean, local identical to origin. No tag — none is minted on the pre-release line until `v3.0.0`. Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through, so the shared surfaces under you are the post-Broadcast ones.
 
-🔴 **YOU ARE ON A BRANCH THAT ALREADY CARRIES SIX COMMITS, AND NONE OF THEM IS PART 4.** Harkirat's instruction, 2026-09-01 17:16 EDT: fold them into your work rather than branching afresh. ✅ **Already renamed for you — the branch IS `feat/access-portal-conformance`**, done after confirming `gh pr list --head` returned 0, because `CLAUDE.md` forbids renaming a branch **with an open PR** (GitHub auto-closes it, unreopenable). You need do nothing about the name.
+🔴 **YOU ARE ON A BRANCH THAT ALREADY CARRIES SEVERAL COMMITS, AND NONE OF THEM IS PART 4.** Harkirat's instruction, 2026-09-01 17:16 EDT: fold them into your work rather than branching afresh. ✅ **Already renamed for you — the branch IS `feat/access-portal-conformance`**, done after confirming `gh pr list --head` returned 0, because `CLAUDE.md` forbids renaming a branch **with an open PR** (GitHub auto-closes it, unreopenable). You need do nothing about the name.
 
-**Verify what you inherited rather than trusting this paragraph** — `git rev-list --count v3-pre-release..HEAD` should be **6**, and `git diff v3-pre-release..HEAD --name-only` should list **4** files, all records:
+**Verify what you inherited by RUNNING this, not by trusting a number here** — `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`. 🔴 **This paragraph deliberately quotes no count.** It said "exactly one commit, exactly one file" an hour ago and was wrong by five; the correction then said "six" and was wrong by one, because **the commit that writes a count changes the count.** What is stable is the SUBJECTS below and the property they share: **every one is a records change, and none touches `portal/`.** If you see a commit that does, it is not from this list and something else has happened.
 
 | Commit | What it is |
 |---|---|
