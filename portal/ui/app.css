@@ -3697,15 +3697,22 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    instance; this fixes the CLASS, so no future page can reintroduce it by forgetting. */
 .stt.saved{background:var(--c,var(--ok))}
 
-/* 🔴 THE FALLBACK WAS THE BUG, AND IT TOOK FIVE ATTEMPTS TO SEE IT. `var(--ci, var(--on-accent))`
-   defaults a state badge to near-black — correct ON A FILL, catastrophic without one, and
-   Broadcast renders it without one because there the state is TEXT in a cell, not a chip. Chasing
-   it as "the fill is missing" was chasing the wrong half: Harkirat's original report was "how did
-   that SAVED text pass accessibility, I can barely see it" — TEXT, which is exactly what it is
-   there and what it should stay. So the default becomes a colour that is readable on the PAGE,
-   and `--ci` takes over only where a fill actually exists. A fallback should be safe in the
-   absence of the thing it falls back from; this one assumed its presence. */
-.stt.saved{color:var(--ci,var(--ink2))}
+/* 🔴 THE FALLBACK WAS THE BUG — AND THEN THE FIX ABOVE RETIRED THE CASE IT GUARDED, THREE LINES UP.
+   The original defect: `var(--ci, var(--on-accent))` defaults a state badge to near-black, correct
+   ON A FILL and catastrophic without one, and Broadcast rendered it without one. So the default
+   became `--ink2`, readable on the page. ⚠️ BUT `.stt.saved` above now says
+   `background:var(--c,var(--ok))` — an UNFILLED `.stt.saved` can no longer exist, so the
+   safe-on-the-page default stopped protecting anything and started painting `--ink2` #9DAAB4 on
+   `--ok` #3DDC97 at **1.34:1**. Measured on Broadcast 2026-09-01 by cropping the two captures: the
+   design draws SAVED near-black on green at **11.29:1**, the portal drew it pale grey on the same
+   green. The design reaches that value at RUNTIME — `assets/shell.js`'s ink pass reads each
+   `.stt`'s COMPUTED background and sets `--ci` from it — which is why its stylesheet reads
+   identically to this one and renders differently. This file has no such pass, so the fallback has
+   to be right on its own: the fill is guaranteed, therefore the ink for a fill is the correct
+   default. `--ci` still wins wherever a realm supplies one.
+   🔴 The lesson cuts both ways: a fallback must be safe in the ABSENCE of what it falls back from —
+   and when a later rule removes that absence, the fallback has to move with it. */
+.stt.saved{color:var(--ci,var(--on-accent))}
 /* a filled state badge (Season passes --c) still takes the ink its fill can carry */
 .stt.saved[style*="--c"]{color:var(--ci,var(--on-accent));background:var(--c,var(--patch))}
 
