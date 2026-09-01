@@ -167,7 +167,8 @@ async function walk(page, state, port) {
     let expected = true;
     if (state.expect) {
         try {
-            await page.waitForSelector(state.expect, { timeout: 12000 });
+            // 🔴 RAISED 12000 → 45000 on 2026-09-01, and the argument is this file's own: "A deadline costs nothing while it passes, since waitForSelector returns the instant the node appears, so the only argument for a small number is impatience." 4000 was too tight, then 12000 was — measured 2026-09-01 inside a full `npm test`, where "export strip open" and then "command bar open" each timed out on a machine running several puppeteer instances, and both passed immediately when the walk was run alone. Those two names are already in this file's own flake list, so the remedy was known and the number was simply still low. ⚠️ THE FAILURE MEANING IS UNCHANGED: a state that never reaches its subject still fails, 45s later.
+            await page.waitForSelector(state.expect, { timeout: 45000 });
         } catch {
             expected = false;
         }

@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
@@ -101,5 +102,7 @@ const COLLECT = (props) => {
         }
         console.log(`WORDS (${words.length})`); words.slice(0, 40).forEach((x) => console.log(x));
         console.log(`\nSTYLE (${styles.length})`); styles.slice(0, 40).forEach((x) => console.log(x));
+        // The run reached its end and printed a report — record that, so portalStatus can tell an UNRUN instrument from one that ran clean. A receipt is not a result; see lib/portalReceipt.cjs.
+        recordRun('converge', realm);
     } finally { await browser.close(); }
 })();

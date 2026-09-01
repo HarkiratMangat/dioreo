@@ -92,10 +92,17 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
     update_memory -> remember({memory_id}) · consolidate -> auto-runs at startup, never call it.
     Deliberate remember() writes have source=NULL so the Stop-hook sync never wipes them; only
     auto-captured session rows are wiped+reinserted.
-  · codebase-memory-mcp DOES index this JS repo — try search_graph BEFORE rg for
+  · [UNMEASURED — said so on purpose; see the ctx_search line below for what a measured rule looks like]
+    codebase-memory-mcp DOES index this JS repo — try search_graph BEFORE rg for
     "where is X / what calls it". If head_sha lags, run detect_changes (a docs-only lag is harmless).
+  · [MEASURED, but on PAYLOAD not on hit rate: a 300-line file cost 5,632 tokens on first Read and
+    ~150 on a read_smart re-read, 97% saved, 2026-07-24 23:02 EDT. No hit-rate figure exists.]
   · context-mode ctx_execute/ctx_batch_execute/ctx_execute_file for anything whose output you
     PROCESS; Bash only to observe short fixed output or mutate state.
+  · [MEASURED 2026-08-31 12:5x EDT, and this is the strongest routing figure in the system:
+    against the six selectors a portal audit finding actually prints, `rg` found 1 of 6 and
+    `ctx_search` found 5 of 5 — a ledger row is PROSE and a finding is a LITERAL. Ask a prose
+    QUESTION through ctx_search; reach for rg only when you already know the literal string.]
   · perseus-vault for durable cross-session decisions; linksee for project/file-scoped caveats.
   · Write to the memory layer at the real moments: a decision, a failure, a correction. An entire
     session once passed with zero writes because nothing forced them.

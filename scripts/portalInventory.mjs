@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const args = process.argv.slice(2);
@@ -22,7 +23,7 @@ const realm = flag('--realm', 'season');
 const view = flag('--view', null);
 const asJson = args.includes('--json');
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
-// 🔴 THE THIRD INSTRUMENT WAS READING A DIFFERENT PAGE FROM THE OTHER TWO. portalDiff and portalConverge both load the harness with ?conform=1, which stands pending redesigns down so the comparison is against the design; this loaded it WITHOUT, so every stood-down surface came back as a divergence and every fix already made still showed as unfixed. Two instruments agreeing and a third disagreeing is worse than one instrument, because the disagreement looks like a finding. The cache-buster is here for the same reason it is there: the module map survives a reload.
+// 🔴 THE THIRD INSTRUMENT WAS READING A DIFFERENT PAGE FROM THE OTHER TWO. portalDiff and portalConverge both load the harness with ?conform=1, which stands pending redesigns down so the comparison is against the design; this loaded it WITHOUT, so every stood-down surface came back as a divergence and every fix already made still showed as unfixed. Two instruments agreeing and a third disagreeing is worse than one instrument, because the disagreement looks like a finding. The cache-buster is here for the same reason it is there: the module map survives a reload. ⚠️ STALE COMMENT, corrected 2026-09-01: `?conform=1` no longer exists — the two rendering modes collapsed 2026-08-31 and the flag was renamed `?fresh=1`, which does FIXTURES ONLY. There is no stand-down switch; do not add one back.
 const HARNESS = `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}`;
 const VW = 1282, VH = 888;
 
@@ -134,5 +135,7 @@ const nameOf = (k) => k;
         console.log(H(`DIFFERENT STYLE (${style.length})`));
         style.forEach((s) => console.log(`  ${nameOf(s.k)}\n      ` + s.diffs.join('\n      ')));
         console.log('\n  A difference is not a defect. Adjudicate each against COMPANION.md before it becomes an edit.\n');
+        // The run reached its end and printed a report — record that, so portalStatus can tell an UNRUN instrument from one that ran clean. A receipt is not a result; see lib/portalReceipt.cjs.
+        recordRun('inventory', realm);
     } finally { await browser.close(); }
 })();

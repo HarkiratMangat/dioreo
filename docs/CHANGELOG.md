@@ -28,7 +28,43 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#176) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
+## Pre-Release v3.70.0 — 2026-08-31 → 2026-09-01 (#177) — Armory's tier board had never rendered its ranking, one paragraph between two panels cost a 125-row table its ground, and the instrument that reported both had its ordering upside down
+
+Three bodies of work: the Armory conformance pass, two new gates, and a correction to the instruments themselves. No figures are frozen into this entry — they moved four times while it was being written; `portal:status`, `portal:audit` and the decision ledger are the live sources.
+
+### The realm — seventeen defects, and where they actually came from
+
+All four Armory views were audited for the first time; the previous pass had only ever run the default one while recording the resting pass as closed. **The source distribution is the finding: three defects came from an instrument section read correctly, four from reading the code around a difference, seven from cropping the two captures into aligned bands and looking at them, one from Harkirat on a phone, and two from chasing why the previous one was missed. Zero were located by the pixel percentage.**
+
+🔴 **The largest was live CSS behind a dead selector.** `RANK_KEY` emitted `t-t3` / `t-t4` / `t-t5` / `t-none` while both stylesheets key the Armory tier block on `.trow.t-top3` / `.t-top4` / `.t-top5` / `.t-unranked`. Four of the five rules had never applied once, taking the graded 20/17/15/14/13px tier marks and the `--bc-dim` card fade with them — which the stylesheet's own section comment calls the entire reason the board reads as tiered. `portalReverseOrphans` carried it in its committed baseline as accepted debt, which is why nobody read it: **a ratchet's baseline is by construction a list of things already agreed to live with.**
+
+🔴 **The subtlest was a relationship, not a rule.** Both stylesheets carry `.panel + .panel{background:transparent}` byte for byte. The design's manifest panel is the adjacent sibling of its view panel, so its table sits on `--desk` and reads as a well cut into the page. One `p.hint` between the two panels broke the adjacency, and every row of a 125-row table painted `--raised`. The hint moved inside the Manifest, which gained a `caption` slot in the position `armory.html` uses for its own under-toolbar line.
+
+**The rest:** two view headers where every design draws one (the Shell has carried a `meta` slot since Broadcast needed one; Armory never passed it) · a panel inside a panel costing `.rack` 46px of width and 23px of origin · the export strip offering two of the four scopes `/manage` has, so `This view`, `Category` and `First five` were built on the `ids=` and `category=` shapes the route already spoke · a Manifest `mode` chip over rows already filtered by armoury, so every non-default value was guaranteed to render an empty table · the row count dividing by the rows handed in rather than the catalogue · a fused accessible name, because htm drops a whitespace-only text node that spans a newline · Build and Category in the wrong column order · the Category column printing the stored enum `AR` beside a chip reading `Assault 35` — **and the same enum spelled three ways across the column and two dropdowns, which is the class the column fix closed only one member of** · a `code` cell kind that had been borrowed from `date` purely to inherit `drop-sm`, so a placeholder rendered in the mono data face · the Badges column taking a derived width where the design states one · and the stat row ending on `staged` instead of on the two figures that need attention.
+
+**Every §L close condition has now been run and recorded except the sixth, which is Harkirat's.** `portal:inventory` — §0.5a R4's own named close condition — was run on this realm for the first time and surfaced four rows nothing else had, three of which became fixes. The real-server walk was re-run rather than inherited: four views, 126 rows each, one favicon 404.
+
+### The gates
+
+**`npm run portal:template-comments`** — a backtick inside an HTML comment inside a tagged template ends the template. An odd number breaks the parse and `node --check` catches it; an **even** number closes and reopens it, so the file parses, every gate goes green and the page renders wrong. No off-the-shelf tool can see it, because a template literal is one leaf token to every JS parser. A hand-written lexer, 16 cases split between what must fire and what must stay quiet, refusing to certify a scan that found no templates. It caught its author within the day, on a real defect rather than a fixture.
+
+**`.claude/hooks/codebase-memory-nudge.sh`** — the code sibling of the existing prose nudge, exact by construction and advisory. Its own message says UNMEASURED, because the only measured routing rule here is `ctx_search` versus `rg`, and borrowing that number for a different claim would be worse than having none. The prose nudge also gained a carve-out fix: a `.{n}`-padded pattern is a search for a CONCEPT, and it was slipping through as though it were a literal.
+
+### The instruments, and a retraction
+
+🔴 **④ STYLE ranked by repetition, and that is backwards for consequence.** It reported the panel-adjacency defect exactly — `section.panel backgroundColor: rgba(0,0,0,0) → rgb(23,30,36)` — and sorted it ~140th of 149 as a `× 1`, under a hundred-odd `×125` leaf-cell deltas. **A commit message in this release claims no instrument could have found it. That is false, and this is the retraction.** ④ now ranks by **reach** — the number of elements a difference is drawn through — and refuses to claim that ordering if the walk stops supplying descendant counts.
+
+**`portal:status` gained a close-condition board.** Per realm, whether each of `audit · inventory · diff · converge · realwalk` has run against the current `portal/ui`. It exists because a Part came one summary away from being reported closed with its own named close condition never having been run, and it states its own limit in its output: a receipt says an instrument RAN, never what it found and never that anyone read it.
+
+**`portalAudit --triggers` printed `season` as a hardcoded literal**, so every run on every other realm named the wrong subject above a correct listing.
+
+**§0.5a gains R10 and R11**, both written from mistakes in this release: a claim that no instrument can see something is a claim about the instruments and needs their output; and before adding an instrument, name the existing one that should have caught it. A fifth instrument was built and deleted the same day under R11's own test.
+
+### Records
+
+Twelve fabricated timestamps corrected — the previous session dated every note **2026-09-01** while git dated its commits 2026-08-31 20:40–21:19 EDT. `ARMORY-PROMPT.md` is demoted to `superseded`: it is the before-picture and was the first thing a Part 3 session would have opened. `BROADCAST-PROMPT.md` is written in its place, deliberately a third the length, and it leads with the trap Armory proved — **a small percentage is not evidence of a small job.**
+
+## Pre-Release v3.69.0 — 2026-08-23 → 2026-08-31 (#176 · `e71f9a9`) — the portal migrates to Preact, builds its own instrument suite, collapses its two rendering modes and converges onto its design; two sibling branches fold in, bringing four PreToolUse guards, a bot-side batch, and eleven CI checks nothing was running
 
 > 🔴 **SCOPE, STATED PLAINLY — NOT JUST SEASON.** 281 commits, 198 files, 53,795 insertions since `v3-pre-release`: the Preact migration, six new portal instruments (`portalDiff`/`portalAudit`/`portalProbe`/`portalStatus`/`portalConverge`/`portalInventory`), the collapse of the portal's two rendering modes into one, a destructive-surface behavior change, and the Season and Broadcast conformance passes themselves. Harkirat, 2026-08-31: "it does not only contain Season Realm's work, it contains MUCH more."
 >

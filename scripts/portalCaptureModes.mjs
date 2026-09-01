@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scripts/portalCaptureModes.mjs — THE RECORD OF THE RENDERING THAT IS ABOUT TO BE DELETED.
 //
-// 🔴 WHY THIS EXISTS. Harkirat decided 2026-08-30 22:45 EDT that the portal's two rendering modes collapse into one: the "ahead" rendering is scrapped, the conformed rendering survives, and redesigns get rebuilt fresh on it. The conformed side is photographed everywhere — portalDiff writes `pt-` on every run and an A/B artifact is published per Part. The AHEAD side is photographed NOWHERE. `?conform=1` is set only by the harness reading its own query string (portal/ui/harness/stub.js), so the moment the 57 `conforming()` sites and 51 `data-conform` blocks are deleted, the only record of what those 108 forks were protecting is prose plus git archaeology.
+// 🔴 WHY THIS EXISTS. Harkirat decided 2026-08-30 22:45 EDT that the portal's two rendering modes collapse into one: the "ahead" rendering is scrapped, the conformed rendering survives, and redesigns get rebuilt fresh on it. The conformed side is photographed everywhere — portalDiff writes `pt-` on every run and an A/B artifact is published per Part. The AHEAD side is photographed NOWHERE. `?conform=1` is set only by the harness reading its own query string (portal/ui/harness/stub.js), so the moment the 57 `conforming()` sites and 51 `data-conform` blocks are deleted, the only record of what those 108 forks were protecting is prose plus git archaeology. ⚠️ STALE COMMENT, corrected 2026-09-01: `?conform=1` no longer exists — the two rendering modes collapsed 2026-08-31 and the flag was renamed `?fresh=1`, which does FIXTURES ONLY. There is no stand-down switch; do not add one back.
 //
 // This runs ONCE, before the collapse, and it is the irreversible step of that work.
 //
@@ -17,7 +17,7 @@
 //   node scripts/portalCaptureModes.mjs --selftest      prove the flag actually arrives (see below)
 //
 // OUTPUT  local/conform-capture/<realm>[-<view>]-{on,off}.png  plus index.json
-//   `-on` is `?conform=1`, the rendering that SURVIVES. `-off` is the ahead rendering, the one being deleted.
+//   `-on` is `?conform=1`, the rendering that SURVIVES. `-off` is the ahead rendering, the one being deleted. ⚠️ STALE COMMENT, corrected 2026-09-01: `?conform=1` no longer exists — the two rendering modes collapsed 2026-08-31 and the flag was renamed `?fresh=1`, which does FIXTURES ONLY. There is no stand-down switch; do not add one back.
 //
 // 🔴 THE FALSIFIER, and it is the trap table's own. §0.10: "IDENTICAL READINGS ACROSS VARIANTS THAT MUST DIFFER = NEVER ARRIVED" — an unauthenticated walk once reported the same reading on three views and that read as a stable measurement when it was the signature of measuring the door. A capture pair whose two sides are identical looks exactly like "this realm has no stand-downs" and is indistinguishable from "the query parameter never arrived". So the arrival of the flag is asserted DIRECTLY, on the root element's `data-conform` attribute, independent of any pixel: present in ON, absent in OFF, on every single page. A run where that assertion fails writes nothing. With arrival proven, identical pixels become a real finding about the realm rather than an instrument failure.
 

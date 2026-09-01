@@ -20,13 +20,17 @@ const CATEGORIES = ['AR', 'SMG', 'SNIPER', 'LMG', 'SHOTGUN', 'MARKSMAN', 'SECOND
 
 // 🔴 THE MANIFEST NAMED EVERY BUILD AND SHOWED WHAT WAS IN NONE OF THEM. Weapon, build, category, mode and a comma-joined list of defect keys — so the one question you open a build list to answer, *what does this build actually run*, needed a click per row. The attachments peek and the badge chips are what the adopted table was styled for.
 //
-// ⚠️ THE PEEK SHOWS TWO AND COUNTS THE REST. Five attachment names is a paragraph in a table cell; two plus "+3" is the shape of the thing, and the editor is one click away for the rest.
+// ⚠️ THE PEEK SHOWS TWO AND COUNTS THE REST. Five attachment names is a paragraph in a table cell; two plus "+3" is the shape of the thing, and the editor is one click away for the rest. The mockup's filter chips use short labels and its own display order (armory.html's `renderCatChips`) — distinct from CATEGORY_LABEL above, which is precise on purpose for the edit form's dropdown. Only categories with at least one build in the current mode get a chip, matching the mockup's own comment: offering an empty category would advertise a result nothing can fill.
+const CATEGORY_CHIP_LABEL = { AR: 'Assault', SMG: 'SMG', LMG: 'LMG', MARKSMAN: 'Marksman', SNIPER: 'Sniper', SHOTGUN: 'Shotgun', SECONDARIES: 'Secondaries' };
+const CATEGORY_CHIP_ORDER = ['AR', 'SMG', 'LMG', 'MARKSMAN', 'SNIPER', 'SHOTGUN', 'SECONDARIES'];
+
 const ARMORY_COLUMNS = [
     { key: 'weaponName', label: 'Weapon', editable: true,
       meta: (r) => `${r.mode} · ${(r.attachments || []).length} attachment${(r.attachments || []).length === 1 ? '' : 's'}` },
+    // 🔴 CATEGORY BEFORE BUILD, which is armory.html's own order (Weapon · Category · Build · …). The portal had them the other way round, and the audit reported it as a SYMMETRIC pair — Category→Build and Build→Category — which §0.7c's own rule classifies as a pairing artifact. It was not one: a genuine column swap is exactly what a real reorder looks like to an LCS alignment. Caught only by opening the two captures and reading the header row. The rule needs the boundary: symmetry is evidence of an artifact ONLY when the two elements are interchangeable; two NAMED columns are not. 🔴 THIS COLUMN PRINTED THE STORED ENUM — "AR", "SNIPER", "SECONDARIES" — while a filter chip 200px above it read "Assault 35". One field, two vocabularies, one screen. armory.html prints the label. `editable` comes OFF with the fix and that is deliberate rather than a loss: a free-text cell over an enum could write "Assault" into a field whose only legal values are the keys, and display-vs-edit would have disagreed the moment the label rendered. Category is edited where it has always had a real control — the row editor's own <select>, one click away.
+    { key: 'category', label: 'Category', col: 'c-type', render: (r) => CATEGORY_CHIP_LABEL[r.category] || r.category },
     { key: 'buildName', label: 'Build', editable: true },
-    { key: 'category', label: 'Category', col: 'c-type', editable: true },
-    { key: 'shareCode', label: 'Gunsmith code', dataKind: 'date',
+    { key: 'shareCode', label: 'Gunsmith code', dataKind: 'code',
       render: (r) => (r.mode === 'DMZ'
           ? html`<span class="none">DMZ — no code</span>`
           : (r.shareCode ? html`<span class="code">${r.shareCode}</span>` : html`<span class="none">not set</span>`)) },
@@ -42,8 +46,8 @@ const ARMORY_COLUMNS = [
                 <span class=${'thumb ' + (r.imageKey ? 'ok' : 'no')}>${r.imageKey ? 'image' : 'no image'}</span>
             </div>`;
     } },
-    // ⚠️ THE DEFECT COUNT IS A CHIP WITH THE NAMES ON IT, not a comma-joined list of internal flag keys. `wrong-attachment-count, near-duplicate` is the shape of the data; "2 problems" with the names on hover is the shape of the question. Age is excluded here for the same reason the Rack excludes it — it is not a fault.
-    { key: 'coverage', label: 'Badges', dataKind: 'right', render: (r) => {
+    // ⚠️ THE DEFECT COUNT IS A CHIP WITH THE NAMES ON IT, not a comma-joined list of internal flag keys. `wrong-attachment-count, near-duplicate` is the shape of the data; "2 problems" with the names on hover is the shape of the question. Age is excluded here for the same reason the Rack excludes it — it is not a fault. `col: 'c-state'` is armory.html's own column width for this slot — the Manifest's fallback derives `c-detail` from `dataKind: 'right'`, which is why the portal emitted c-detail twice and the design's `col.c-state` matched nothing. A column class is the design's call, so the realm states it rather than letting a default guess.
+    { key: 'coverage', label: 'Badges', dataKind: 'right', col: 'c-state', render: (r) => {
         const faults = (r.coverage || []).filter((f) => f !== 'stale-90d');
         const chips = [];
         if (r.isMeta) chips.push(html`<b class="bdg" key="m">META</b>`);
@@ -55,9 +59,8 @@ const ARMORY_COLUMNS = [
     } },
 ];
 
-const ARMORY_FILTERS = [
-    { key: 'mode', label: 'Mode', topic: true, options: [{ value: 'MP', label: 'MP' }, { value: 'DMZ', label: 'DMZ' }] },
-];
+// 🔴 THE MODE CHIP WAS A DEAD END, and --triggers is what surfaced it: the portal offered `MP ×2`, `DMZ ×2` and `All ×2` where the design offers one of each, because the Manifest carried a Mode filter ON TOP OF the masthead's mode switch. The rows handed to the Manifest are already `inMode`, so picking the OTHER mode in that chip could only ever produce an empty table — a control whose every non-default value is guaranteed to show nothing. The mode switch above owns this question; the chipset now carries only Category, which is what armory.html's chip row is.
+const ARMORY_FILTERS = [];
 
 const COVERAGE_LABEL = {
     'missing-image': 'Missing image', 'no-badges': 'No badges', 'wrong-attachment-count': 'Wrong attachment count',
@@ -69,7 +72,8 @@ const COVERAGE_LABEL = {
 // `accent` is real DATA (portal/api/armory.js stamps it from getMpCategoryAccent), not a CSS token. That is the correct mechanism and deliberately unlike Season's --topic-accent tokens: the bot owns these hues, so reading them from the payload means the two can never drift apart. 🔴 THE RACK IS ORGANISED BY RANK TIER, NOT BY CATEGORY — rebuilt 2026-08-26 onto the adopted design. The previous version grouped by category, which answers "what is in the armory"; the rack in the approved mockup answers "what is ranked where", which is the question the badges exist for and the only one a rack can answer that the Manifest below cannot. Category has not been lost — it is the accent every card carries, so the two facts occupy colour and position rather than competing for the same structure.
 const RANK_ORDER = ['best', 'top3', 'top4', 'top5', null];
 const RANK_LABEL = { best: 'Best in category', top3: 'Top 3', top4: 'Top 4', top5: 'Top 5', null: 'Unranked' };
-const RANK_KEY = { best: 'best', top3: 't3', top4: 't4', top5: 't5', null: 'none' };
+// 🔴 THESE STRINGS ARE CSS CLASS NAMES, AND FOUR OF THE FIVE USED TO NAME NOTHING. app.css's Armory block (`.trow.t-best/.t-top3/.t-top4/.t-top5/.t-unranked`) is the one thing that makes the board read as tiered — graded 20/17/15/14/13px marks and a `--bc-dim` that fades the lower tiers' cards. This map emitted `t-t3`, `t-t4`, `t-t5` and `t-none`, so only the Best row ever matched: every other tier rendered at the fallback 19px with `--bc-dim` unset, and `t-none` additionally collided with an unrelated `.t-none` rule 1,800 lines away. Same defect class as the missing `id="mhAdd"`: live CSS, dead selector, nothing reports it.
+const RANK_KEY = { best: 'best', top3: 'top3', top4: 'top4', top5: 'top5', null: 'unranked' };
 const TCLOSED_KEY = 'dioreo-armory-tclosed';
 
 // A DMZ build ranks on dmzRangeRank, which also encodes a combat range (`best-close`, `best-midlong`) — the tier is the part before the hyphen. An MP build ranks on categoryRank. Reading the wrong field is how DMZ builds all pile into Unranked while looking correct.
@@ -79,7 +83,8 @@ function rankOf(b) {
     return String(raw).split('-')[0];
 }
 
-function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(TCLOSED_KEY)) || []); } catch { return new Set(); } }
+// The Unranked tier carries almost half the catalogue, so it starts collapsed — matching the mockup's default.
+function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(TCLOSED_KEY)) || ['null']); } catch { return new Set(['null']); } }
 function saveTClosed(set) { try { sessionStorage.setItem(TCLOSED_KEY, JSON.stringify([...set])); } catch (e) {} }
 
 // 🔴 AGE IS NOT A DEFECT. Counting staleness among the faults put a red mark on nearly every card — the mockup measured 33 of 36 siblings — so the badge stopped meaning anything. Faults get the red count; age gets a quiet dot, because it is a different fact and reads as one.
@@ -138,6 +143,7 @@ function WeaponGroup({ weapon, group, onPick }) {
         </div>`;
 }
 
+// 🔴 THE VIEW PANELS USED TO CARRY THEIR OWN `.ph`, so the page drew TWO view headers where every design draws one: the Shell's bar (mode · views · legend) and then a second strip repeating the view's name and its count. The design puts that count in the Shell bar's own right-aligned `.sp` meta line (armory.html's `#viewMeta`), and the Shell has had a `meta` prop for it since Broadcast needed one — Armory simply never passed it. RackNote/RepairNote survive as the derivations behind that line, which is the point of them: the panel and the masthead cannot disagree.
 function Rack({ builds, onPick }) {
     const [tclosed, setTClosed] = useState(loadTClosed);
     const toggle = (k) => setTClosed((prev) => {
@@ -148,11 +154,11 @@ function Rack({ builds, onPick }) {
     });
 
     return html`
-        <div class="panel" id="rack">
-            <div class="ph">
-                <span class="t">${VIEWS.rack} — by rank</span>
-                <${RackNote} builds=${builds} />
-            </div>
+        <!-- 🔴 NO .panel HERE. Shell already draws section.panel around the view slot, so a view that opened its own
+             was a panel inside a panel: measured .rack at 1114px starting at x=122, against the design's 1160 at x=99,
+             because the outer panel's 23px of padding applied twice. The design has ONE panel per view, holding the
+             header bar and the board together. -->
+        <div id="rack">
             ${builds.length === 0 ? html`<p class="empty">No builds in this catalogue yet.</p>` : null}
             <div class="rack">
                 ${RANK_ORDER.map((r) => {
@@ -174,9 +180,11 @@ function Rack({ builds, onPick }) {
                                      The mark is a star for best and an em dash for unranked, the two rows whose
                                      meaning is not already in their label. -->
                                 <span class="trow-k" aria-hidden="true">${r === null ? '—' : r === 'best' ? html`<${Icon} name="star" cls="sm" />` : ''}</span>
-                                <span class="trow-t">${RANK_LABEL[key]}</span>
-                                <span class="trow-n">${list.length}</span>
-                                ${r === 'best' ? html`<span class="trow-note">one <b>weapon</b> per category</span>`
+                                <!-- The separating spaces are LOAD-BEARING, not formatting: without them the row's accessible
+                                     name fuses to "Best in category18one weapon per category", which is what a screen reader
+                                     reads out and what --triggers reports. The design's markup has whitespace between these
+                                     spans because it is HTML; a JSX-ish template drops it unless it is asked for. -->
+                                <span class="trow-t">${RANK_LABEL[key]}</span> <span class="trow-n">${list.length}</span> ${r === 'best' ? html`<span class="trow-note">one <b>weapon</b> per category</span>`
                                     : r === null ? html`<span class="trow-note">no rank set; these render with no tier badge</span>` : null}
                                 <${Fold} open=${!closed} cls="sm trow-i" />
                             </div>
@@ -213,11 +221,7 @@ function Coverage({ builds, active, onFilter }) {
     const total = Math.max(1, builds.length);
     const hitsFor = (f) => builds.filter((b) => (b.coverage || []).includes(f));
     return html`
-        <div class="panel" id="coverage">
-            <div class="ph">
-                <span class="t">${VIEWS.coverage}</span>
-                <${RepairNote} builds=${builds} />
-            </div>
+        <div id="coverage">
             <!-- 🔴 THE CARDS GO INSIDE .cols, NOT DIRECTLY INSIDE .cov, and the adopted sheet says so in its
                  own comment: .cov is declared TWICE in that file — a grid first, then display:block eight
                  hundred lines later — so the later one wins and .cov is the BLOCK, .cov .cols is the grid.
@@ -286,6 +290,7 @@ const CATEGORY_LABEL = {
     AR: 'Assault Rifle', SMG: 'Submachine Gun', SNIPER: 'Sniper', LMG: 'Light Machine Gun',
     SHOTGUN: 'Shotgun', MARKSMAN: 'Marksman', SECONDARIES: 'Secondary', MELEE: 'Melee',
 };
+
 
 // ⚠️ FIVE ROWS BECAUSE FIVE IS WHAT THE DATA HAS, not because five is a rule. 123 of 133 real builds carry exactly five attachments, and coverageFlags treats anything else as a defect for MP — but the field is free text with no slot typing, because `attachmentSlots` is empty on every stored document and only /autobuild's vision pass has ever written one.
 const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
@@ -526,8 +531,12 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
                         </div>
                         <div class="bed-g3">
                             <label class="dwfield"><span>Category</span>
-                                <select value=${draft.category} onChange=${(e) => set({ category: e.target.value })}>
-                                    ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c}</option>`)}
+                <select value=${draft.category} onChange=${(e) => set({ category: e.target.value })}>
+                                    <!-- The PRECISE label, matching the Add form. These two dropdowns edit the same field
+                                         and disagreed: the Add form read "AR — Assault Rifle" and this one read "AR". The
+                                         column beside them now reads "Assault". Three spellings for one field, which is
+                                         the defect the column fix closed in ONE of its three places. -->
+                                    ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c} — ${CATEGORY_LABEL[c] || c}</option>`)}
                                 </select></label>
                             <label class="dwfield"><span>Mode</span>
                                 <select value=${draft.mode} onChange=${(e) => set({ mode: e.target.value })}>
@@ -688,11 +697,7 @@ function Compare({ builds, picked, onPick }) {
     const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
 
     return html`
-        <div class="panel" id="compare">
-            <div class="ph">
-                <span class="t">Compare</span>
-                <span class="rt">${chosen.length} of ${MAX_COMPARE} picked</span>
-            </div>
+        <div id="compare">
             <div class="cmpbar">
                 ${builds.slice(0, 40).map((b) => {
                     const id = String(b._id);
@@ -812,7 +817,7 @@ function ArmoryAddChips({ onAdd }) {
     useCreateKey(ADD_KEY.MP, () => onAdd('MP'));
     useCreateKey(ADD_KEY.DMZ, () => onAdd('DMZ'));
     return html`
-        <div class="mh-add" role="group" aria-label="Add a build">
+        <div class="mh-add" id="mhAdd" role="group" aria-label="Add a build">
             <span class="mh-add-k">Add</span>
             ${MODES.map((m) => html`
                 <button type="button" key=${m} class="pill mh-t"
@@ -971,7 +976,13 @@ export function ArmoryRealm({ session }) {
     // ⚠️ THE VIEW NAMES ARE THE MOCKUP'S, chosen at Harkirat's call on 2026-08-27 after seeing both bars rendered side by side. `Repairs` is the one that earns it outright: `Coverage` named a measurement, `Repairs` names what you came to do, and Season already calls the same idea by the same word -- so the two realms finally agree.
     const [view, setView] = useState(VIEWS.rack);
     const [compared, setCompared] = useState([]);
+    // What the Manifest's own filter chips are set to. Owned here only because the EXPORT strip scopes by them; the Manifest still owns the filtering itself.
+    const [manifestFilters, setManifestFilters] = useState({});
     const [editingId, setEditingId] = useState(null);
+    // The side column exists only while something is being edited, so the grid that reserves room for it does too.
+    const editing = Boolean(showAdd || editingId);
+    // The grid is applied around the body rather than by swapping the tag, because htm has no dynamic-tag-with-spread form and the attempt to write one parses as an unterminated expression — node --check caught it, loudly. ⚠️ AND IT SITS BELOW editingId ON PURPOSE. The first placement was four lines ABOVE that useState, which is a temporal dead zone: the file parses, node --check is silent, and the realm renders NOTHING. Caught because portal:probe reported .rack as MISSING ON THE PORTAL — the same class eslint.config.mjs was installed for.
+    const wrapBed = (body) => (editing ? html`<div class="bed" id="armory"><div>${body}</div></div>` : body);
     // 🔴 THE MODE IS A PROPERTY OF THE REALM, NOT OF ONE PANEL. It began as BulkView's private state, so the Rack, Repairs and Compare all showed MP and DMZ mixed together while a fourth view quietly filtered to one of them. MP and DMZ are two armories with different rules -- DMZ has no share code and ranks by combat range -- and every figure on this page is a count of one population or the other, so a masthead that totals both answers a question nobody asked.
     const [armMode, setArmMode] = useState('MP');
     const overlay = useOverlay();
@@ -992,6 +1003,15 @@ export function ArmoryRealm({ session }) {
     // Spec §8.2: Armory has no dates, so no Track -- Rack and Coverage are its two view layers. They shipped stacked on top of each other, which meant the Manifest (the thing you actually work in) started roughly a screen and a half down the page. Every derived figure below reads from `inMode`, never from `builds`, so the masthead cannot describe a population the views are not showing. `builds` survives only where BOTH armories are genuinely in scope: the export strip, which offers each mode as its own scope.
     const inMode = builds.filter((b) => b.mode === armMode);
     const weapons = new Set(inMode.map((b) => b.weaponName));
+    // Ported from the mockup's renderCatChips: one chip per category PRESENT in this mode, each carrying its own count and accent — reusing Manifest's existing filterGroups mechanism (matchesFilters does a plain row[field]===value check, so 'category' just needs to match the build's own stored field), not a new filter system.
+    const categoryCounts = new Map();
+    for (const b of inMode) {
+        const c = categoryCounts.get(b.category);
+        if (c) c.count += 1; else categoryCounts.set(b.category, { count: 1, hex: b.accent });
+    }
+    const categoryOptions = CATEGORY_CHIP_ORDER
+        .filter((c) => categoryCounts.has(c))
+        .map((c) => ({ value: c, label: CATEGORY_CHIP_LABEL[c], count: categoryCounts.get(c).count, hex: categoryCounts.get(c).hex }));
     // 🔴 FAULTS AND AGE ARE COUNTED SEPARATELY HERE FOR THE SAME REASON splitCoverage EXISTS, and the masthead was the one surface still conflating them. A single `flagged` read 117 of 133 — a number so close to the total that it says nothing — because it counted "not touched in 90 days" as a defect. Coverage's own headline has always made the distinction in words ("66 builds have something actually wrong with them, and 106 more are merely old"); the figures above it now make it too, and both read from splitCoverage so they cannot disagree.
     const split = inMode.map(splitCoverage);
     const needRepair = split.filter((c) => c.faults.length).length;
@@ -1001,12 +1021,15 @@ export function ArmoryRealm({ session }) {
         : (load.data.stagedOps || []).filter((o) => (o.realm || 'season') === 'armory').length;
     // ⚠️ THE LEAD FIGURE WAS ALSO A STAT — `builds` appeared twice in the same row, as the hero number and again three columns to its right, reading as two different measurements that happened to agree. The mockup's Armory masthead has no repetition in it: a lead, then four figures that each say something the lead does not.
     const armoryStats = [
-        { value: inMode.length, label: `${armMode} build${inMode.length === 1 ? '' : 's'}`, lead: true, accent: 'var(--r-armory)' },
+        // "MP builds" is the ambiguity the design's own comment names: this figure counts the ACTIVE MODE, while Home's card counts the whole collection, and both used the bare word. The label carries the scope — armory.html's `kBuilds`.
+        { value: inMode.length, label: `${armMode} build${inMode.length === 1 ? '' : 's'} shown`, lead: true, accent: 'var(--r-armory)' },
         { value: weapons.size, label: 'weapons' },
-        { value: needRepair, label: 'need repair', tone: needRepair ? 'bad' : undefined },
+        // `warn`, not `bad` — armory.html:21 is `<span class="stat warn">`. Builds needing repair are still being served correctly; the alarm tone belongs to something that is failing now.
+        { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
+        { value: needRepair, label: 'need repair', tone: needRepair ? 'warn' : undefined },
         { value: stale, label: 'stale' },
         // The realm's own staged count, in the staged voice — every other realm's masthead says how much of what you are looking at is not live yet, and the Armory's did not.
-        { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
+
     ];
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
@@ -1068,16 +1091,56 @@ export function ArmoryRealm({ session }) {
     }
 
     const exportToday = new Date().toISOString().slice(0, 10);
-    const exportScopes = MODES.map((m) => ({
-        id: `armory.${m}`, label: `${m} builds`, unit: 'builds',
-        count: builds.filter((b) => b.mode === m).length,
-        url: `/api/armory/export?${armoryExportQuery({ scope: 'mode', mode: m })}`,
-        filename: `dioreo-${m.toLowerCase()}-builds-${exportToday}.txt`,
-        note: 'Blocks in the same grammar the Bulk view\'s paste box accepts, so a round trip is lossless.',
-    }));
+    // 🔴 THE STRIP OFFERED TWO SCOPES AND /manage OFFERS FOUR. armory.html's `armoryScopes` names them and says where they come from: "exportupto5, exportcategory, exportall per mode, plus the one only a portal can: what you are currently looking at". The portal had only the per-mode one, so narrowing a 125-build catalogue to the nine rows you were actually working on meant selecting them by hand. `armoryExportQuery` already speaks `category` and `ids`; nothing new was needed server-side.
+    //
+    // ⚠️ TWO DELIBERATE DIVERGENCES FROM THE DESIGN'S FOUR, both because copying it exactly would ship a worse strip. (1) BOTH modes keep a whole-catalogue scope. The design scopes the entire strip to the active mode, so backing up
+    //     DMZ means switching to it first; this file's own comment above already reserves the export strip as the one
+    //     surface where both armories are legitimately in scope. That makes the summary line count 133 where the design
+    //     counts 125, and say five formats where it says four — a cited consequence, not drift.
+    // (2) The category scope appears only once a category chip is ON. The design keeps it visible reading "pick one
+    //     first" with a `build()` that returns the empty string, so its Download hands you a 0-byte file. A control that
+    //     is present and lies is worse than one that arrives when it can do something.
+    // armory.html's `#viewMeta`, which the design writes on every view. The rack line drops the design's trailing "· N MP builds live": that clause exists because the mockup ships a SAMPLE of the collection and has to say so, and here the figure beside it is already the live count — restating it would be the same number twice.
+    const rankedNow = inMode.filter((b) => b.categoryRank || b.dmzRangeRank).length;
+    const viewMeta = view === VIEWS.rack ? `${rankedNow} of ${inMode.length} ranked`
+        : view === VIEWS.coverage ? `${Object.keys(COVERAGE_LABEL).filter((f) => inMode.some((b) => (b.coverage || []).includes(f))).length} of ${Object.keys(COVERAGE_LABEL).length} checks failing`
+        : view === VIEWS.compare ? `${compared.length} of ${MAX_COMPARE} picked`
+        : `${inMode.length} ${armMode} builds · pipe format, lossless round trip`;
+
+    const tag = armMode.toLowerCase();
+    const exportCategory = manifestFilters.category && manifestFilters.category !== 'all' ? manifestFilters.category : null;
+    const viewRows = exportCategory ? rows.filter((b) => b.category === exportCategory) : rows;
+    const idsUrl = (list) => `/api/armory/export?${armoryExportQuery({ scope: 'selection', ids: list.map((b) => b.id) })}`;
+    // A 125-id query string is ~3KB of URL for a request the mode scope already answers in 12 characters. When the view IS the whole mode, ask for the mode.
+    const viewUrl = (viewRows.length === inMode.length
+        ? `/api/armory/export?${armoryExportQuery({ scope: 'mode', mode: armMode })}` : idsUrl(viewRows));
+    const exportScopes = [
+        ...MODES.map((m) => ({
+            id: `armory.${m}`, label: `${m} builds`, unit: 'builds',
+            count: builds.filter((b) => b.mode === m).length,
+            url: `/api/armory/export?${armoryExportQuery({ scope: 'mode', mode: m })}`,
+            filename: `dioreo-${m.toLowerCase()}-builds-${exportToday}.txt`,
+            note: 'Blocks in the same grammar the Bulk view\'s paste box accepts, so a round trip is lossless.',
+        })),
+        { id: `armory.${tag}.view`, label: 'This view', unit: 'builds', subsetOf: `armory.${armMode}`,
+          count: viewRows.length, url: viewUrl,
+          filename: `dioreo-${tag}-view-${exportToday}.txt`,
+          note: 'Exactly the rows the rack, repair and category filters leave standing — not the Manifest\'s own search box, which narrows the table below rather than this.' },
+        ...(exportCategory ? [{ id: `armory.${tag}.cat`, unit: 'builds', subsetOf: `armory.${armMode}`,
+          label: `Category — ${CATEGORY_CHIP_LABEL[exportCategory] || exportCategory}`,
+          count: inMode.filter((b) => b.category === exportCategory).length,
+          url: `/api/armory/export?${armoryExportQuery({ scope: 'category', mode: armMode, category: exportCategory })}`,
+          filename: `dioreo-${tag}-${exportCategory.toLowerCase()}-${exportToday}.txt`,
+          note: 'Matches /manage loadouts\' export-by-category.' }] : []),
+        { id: `armory.${tag}.five`, label: 'First five in this filter', unit: 'builds', subsetOf: `armory.${armMode}`,
+          count: Math.min(5, viewRows.length), url: idsUrl(viewRows.slice(0, 5)),
+          filename: `dioreo-${tag}-five-${exportToday}.txt`,
+          note: 'Matches /manage loadouts\' "Up To 5".' },
+    ];
 
     return html`
-        <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView} stateKey
+        <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView}
+                  meta=${viewMeta}
                   modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
@@ -1109,8 +1172,15 @@ export function ArmoryRealm({ session }) {
                            it. (No backticks in this comment: an EVEN number of them inside an html template closes and
                            reopens it, which parses fine and turns the prose into expressions — this exact comment did
                            that, and the page rendered blank with "Cannot read properties of null (reading 'bed')".) -->
-                      <div class="bed" id="armory">
-                          <div>
+                      <!-- 🔴 THE BED WRAPPER IS FOR EDITING, AND IT WAS WRAPPED ROUND THE RESTING PAGE TOO. The id
+                           armory does not exist on the mockup at all: the design puts the view panel straight into the
+                           view slot, and .bed is the main-plus-side split the EDITOR needs. Wrapping the rack in it cost
+                           23px of inset on each side — measured .rack at 1114px against the design's 1160, starting at
+                           x=122 against x=99 — so the tier board ran narrow and the board's right-hand gutter read as
+                           dead space. It renders only when there is a side column to hold.
+                           (No backticks in this comment. The first draft had five and broke the parse; portal:template-comments,
+                            written earlier in this same session for exactly this, named the file and the line.) -->
+                      ${wrapBed(html`
                               ${showAdd ? html`<${AddBuildForm} mode=${armMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${editingId ? html`
                                   <${BuildEditor} build=${builds.find((b) => String(b._id) === editingId)}
@@ -1136,7 +1206,6 @@ export function ArmoryRealm({ session }) {
                                                               refresh();
                                                           }} />`
                                       : html`<${Coverage} builds=${inMode} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
-                          </div>
                           <!-- 🔴 THE STANDALONE LIVE PREVIEW PANEL IS GONE. It showed the card for whichever row was
                                last clicked, beside a table you were not editing — a preview with nothing to preview
                                against. The build editor carries it in .bed-side, where the card and the fields that
@@ -1147,23 +1216,32 @@ export function ArmoryRealm({ session }) {
                                caption for the MANIFEST, which is where the clickable rows actually are, so it belongs
                                in the flow under the board rather than in a column of its own. A :has-only-child rule
                                on .bed drops the empty cell, and the board gets the width the mockup gives it. -->
-                      </div>
+                      `)}
                   `}
                   manifestSlot=${html`
-                      ${editingId || showAdd ? null : html`<p class="hint">Click a row to open it.</p>`}
+                      <!-- 🔴 THE HINT USED TO RENDER HERE, AND IT COST THE WHOLE TABLE ITS DEPTH. Both stylesheets carry
+                           .panel + .panel with background:transparent — the design's manifest is the ADJACENT SIBLING of
+                           its view panel, so the table sits on the desk colour and reads as a well cut into the page. One
+                           paragraph between the two panels breaks that selector, and the portal's rows painted --raised
+                           instead: measured #171E24 against the design's #0F1418, on every row of a 125-row table, with
+                           both stylesheets carrying the identical rule. The hint is a caption for the Manifest, so it
+                           renders INSIDE it now. FilterBar returns null at rest and never broke anything. -->
                       <${FilterBar} weapon=${weaponFilter} flag=${coverageFilter && coverageFilter.flag}
                                     shown=${rows.length} total=${builds.length}
                                     onClear=${() => { setWeaponFilter(null); setCoverageFilter(null); }} />
                       <${Manifest} rows=${rows} columns=${ARMORY_COLUMNS} searchableFields=${['weaponName', 'buildName']}
-                                   title="Every build" filterGroups=${ARMORY_FILTERS}
+                                   label="Manifest" filterGroups=${[...ARMORY_FILTERS, { key: 'category', label: 'Category', topic: true, options: categoryOptions }]}
                                    headerRight=${weaponFilter || (coverageFilter ? COVERAGE_LABEL[coverageFilter.flag] : '')}
                                    bulkNote="Reversible — a staged deletion is discarded, never undone"
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
-                                   onAdd=${() => setShowAdd(true)} realm="armory" csrfToken=${session.csrfToken}
+                                   onAdd=${() => setShowAdd(true)} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
+                                   onFiltersChange=${setManifestFilters}
+                                   caption=${editingId || showAdd ? null : 'Click a row to open it.'}
+                                   totalRows=${builds.length}
                                    onRowClick=${(row) => setEditingId(String(row.id))} selectedRowId=${editingId}
                                    bulkActions=${[
                                        { label: 'Set badges…', onClick: (ids) => setBulkBadgesIds(ids) },

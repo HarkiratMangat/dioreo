@@ -223,6 +223,8 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-27 21:35 EDT — the pass had been comparing the portal to itself (v3.69.0)
 - 2026-08-30 21:13 EDT — five differences that were not differences, and an instrument reading its own residue (v3.69.0)
 - 2026-08-31 16:20 EDT — the two rendering modes collapse, a guard is rebuilt three times, and a no-conflict claim expires (v3.69.0)
+- 2026-08-31 22:09 EDT — the tier board's ranking had never rendered, and the gate that knew it was in the baseline (v3.70.0)
+- 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -3924,6 +3926,52 @@ The same branch measured PreToolUse hook cost rather than assuming it — 54–6
 **And a lexical gate built the same hour was deleted the same hour.** A `PreToolUse` check on `AskUserQuestion` searched the settled-decision corpus. On the real failing question it surfaced five near-misses and missed the line that answers it; on a control question about a weapon rarity badge it fired five hits anyway. **A lexical gate over a corpus that mentions every topic in the project cannot be precise.** Filed under Decided-no with the measurement, because the motivation will recur.
 
 **Two sibling branches folded in, and the second one's headline claim had expired.** Its handoff said *zero file overlap* — true when written at 23:47 the previous night, false by the time it merged, because this branch had edited the same tracker twice that day. Neither the default nor the histogram diff algorithm could align it, and `git apply --3way` cannot run against a conflicted index. Resolved by placing each hunk after the last preceding context line that is **unique** in the target, then verifying conservation both ways. 🔴 **Running `docs:audit` after the merge then caught two defects that arrived with it** — a `UserPreference` field added without the required Privacy Policy update, and a closed item struck through but never swept to the archive. **Verifying a claim rather than trusting it is the only reason any of that surfaced before the merge instead of after.**
+
+## 2026-08-31 22:09 EDT — the tier board's ranking had never rendered, and the gate that knew it was in the baseline (v3.70.0)
+
+Armory's tier board grades its rows — the Best row's mark at 20px, Top 3 at 17, Top 4 at 15, Top 5 at 14, Unranked at 13, with the lower tiers' cards faded through a `--bc-dim` custom property. The stylesheet says so in its own section header: *"Best · T3 · T4 · T5 · unranked had identical visual weight, so the one thing the board exists to express — the ranking — was the one thing it did not show."* Someone wrote that comment while fixing it.
+
+It had never rendered. `RANK_KEY` maps the schema's rank vocabulary onto class names and it produced `t-t3`, `t-t4`, `t-t5`, `t-none` — against a stylesheet keyed on `t-top3`, `t-top4`, `t-top5`, `t-unranked`. Four of the five rules matched nothing, so every tier below Best fell through to a generic 19px and every card rendered at full opacity. The board looked deliberate. It was flat.
+
+**What makes this worth writing down is that the repo already knew.** `portalReverseOrphans.mjs` exists to ask the one question no other gate here asks — does this RULE have an ELEMENT — and its fourth shape is called MISMATCH, *"emitted, but no rule matches it."* Its header names the example in full: `t-t4` emitted against `.t-top4` styled. It is in the committed baseline. It has been failing-by-being-known for as long as the baseline has existed.
+
+So the finding was not hidden. It was **filed as accepted debt**, in a fixture file, three words long, in a list of ninety class names — and the thing about a ratchet is that everything on it is, by construction, something you have already agreed to live with. Reading it as a list of open defects is not a habit anybody has, because the whole point of the mechanism is that it stops you having to.
+
+I found it the long way, by diffing computed font sizes and noticing that four of them collapsed to one number. That took most of an hour. A single `ctx_search` over the scripts' prose would have surfaced the header paragraph that names the defect exactly, and Harkirat said so at the time, which is the correction I am recording here rather than the bug.
+
+**Two smaller things fell out of the same pass, and both are the same species.** The Shell has carried a `meta` slot for a view's own summary line since Broadcast needed one — Armory never passed it, and drew a second header instead, so the page had two where every design has one. And `portalAudit --triggers` printed the word `season` as a string literal, so every run on every other realm named the wrong subject above a perfectly correct listing. A capability nobody wired, and an instrument mislabelling itself. Neither is exotic; both are invisible to any check shaped *for each element, assert something about that element*.
+
+**The one I want to remember, though, is the backtick.** A backtick inside an HTML comment inside a tagged template ends the template — the parser has no idea there is a comment there, only text. An odd number breaks the parse and `node --check` says so. An **even** number closes the template and reopens it, so the prose in between becomes expression context, the file parses, the whole suite goes green, and the page renders blank. It has now cost turns three times in this codebase, every time in a comment written to explain a fix, which is a small joke at my expense.
+
+There is no tool for it. A template literal is one leaf token to eslint, prettier, ast-grep and every AST tool underneath them — they cannot see inside it by design. So it is a hand-written lexer, sixteen cases, half of them proving it stays quiet: a backtick in a JS block comment, in a quoted string, in a nested template inside an interpolation slot. And then the case that mattered: pointed at a deliberately broken fixture, the CLI printed nothing and exited zero. The entrypoint guard compared `import.meta.url` against `file://` plus `process.argv[1]`, and this repo lives under a path containing a space, where that space percent-encodes on one side and not the other. **The gate written to catch a silent failure had one, and only its own falsifier found it.**
+
+Harkirat's framing of why it should exist at all is better than mine. The standing rule for scripted edits is an anchor assert before each replacement — and that assert passed cleanly on every single edit that produced this bug, because it checks that you are editing the right PLACE and says nothing about whether the PAYLOAD is valid where it lands. The gap is real. The answer is not another sentence in the memory index; it is a mechanism, which is this repo's own rule about rules.
+
+## 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
+
+Armory's tier board grades its rows — 20px for Best, then 17, 15, 14, 13, with the lower tiers' cards faded. The stylesheet says so in a section header someone wrote while fixing it: *the one thing the board exists to express was the one thing it did not show.*
+
+It had never rendered. A lookup table mapped the schema's rank vocabulary onto class names and produced `t-t3`, `t-t4`, `t-t5`, `t-none` against a sheet keyed on `t-top3`, `t-top4`, `t-top5`, `t-unranked`. Four of five rules matched nothing.
+
+**The repo already knew.** `portalReverseOrphans.mjs` exists to ask the one question no other gate asks — does this RULE have an ELEMENT — and its header names this exact case: *"④ MISMATCH — `t-t4` emitted against `.t-top4` styled."* It sat in the committed baseline. Which is precisely why nobody read it: **a ratchet's baseline is, by construction, a list of things you have already agreed to live with.** The mechanism that makes a debt list safe to ignore is the mechanism that makes a real defect invisible inside one.
+
+That is worth generalising before starting a surface: **read the ratchet baselines for that surface's names first.** They are the cheapest existing record of what is known-broken, and they are unread by design.
+
+**Then Harkirat looked at the A/B on his phone and asked what was different about the rows' background.**
+
+Both stylesheets carry `.panel + .panel{background:transparent}`, byte for byte. The design's manifest panel is the adjacent sibling of its view panel, so the table sits on the desk colour and reads as a well cut into the page. The portal rendered one paragraph between the two panels. The adjacency broke, the rule matched nothing, and every row of a 125-row table painted one step too light.
+
+I wrote in the commit message that no instrument could have found it. **That was false and I want it recorded as false.** ④ STYLE had printed it — the exact value — in output I had read twice that morning. It sorted around 140th of 149 as a single occurrence, buried under a hundred-odd leaf-cell width deltas repeated 125 times each. The section ranked by how OFTEN the pairing saw a difference and presented that as how much it mattered.
+
+So the defect class was never "relational selectors break." It was **an ordering that treats a container and a leaf as equally consequential.** ④ ranks by reach now — how many elements a difference is drawn through — and it refuses to claim that ordering if the walk stops supplying descendant counts, because the version I first shipped would have degraded silently back to count-order under a header still announcing reach.
+
+**My first response was to build a fifth instrument.** A sweep over every relational selector that resolves in the design and not the portal. I wrote it, its collector returned zero on its first run, its own test contradicted a comment two lines below it, and its BROKEN bucket would have fired on every conditionally-structural rule. Then I deleted it, because the fourth instrument had answered the question all along. That is now R11: before adding an instrument, name the existing one that should have caught it and say why it did not. Writing the sentence is what forces the discovery.
+
+**The tally, which is the part I did not expect.** Seventeen defects closed. Three came from an instrument section read correctly. Four from reading the code around a difference. **Seven from cropping the two captures into aligned bands and looking at them.** One from a person on a phone. Two from chasing why the previous one was missed. **None from the percentage** — which moved 9.6 to 8.7 across the whole session and never once pointed at anything.
+
+Listing my own sixteen mistakes at the end and grouping them produced one shape rather than sixteen: **reaching for the thing that resembles the requirement.** An instrument that resembles the named one. A rule applied outside its scope. A new check instead of a reread. One member instead of the class. A number that moved instead of an observation. Every one of them felt like doing the work, which is the entire difficulty — the substitute is genuinely related and genuinely produces output.
+
+Only half of that is mechanisable, and saying which half is the honest part. A status board can now report that a named instrument has never run against the current code. Nothing can report that I believed a different one had already answered.
 
 # Part B — Lessons Ledger (thematic)
 

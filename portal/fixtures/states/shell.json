@@ -1,16 +1,16 @@
 {
   "surface": "shell",
-  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file — this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope — there is no ?empty=; an empty state is reached by narrowing). ⚠️ TWO OF async.js's SIX REQUEST STATES ARE NOT REGISTERED HERE, and the reason is not that nobody tried: `refreshing` and `progress` were registered, walked, and REFUSED to appear — see docs/db-deferred-list.md. An `expect` selector is what turned that from a passing state into a question.",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file \u2014 this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope \u2014 there is no ?empty=; an empty state is reached by narrowing). \u26a0\ufe0f TWO OF async.js's SIX REQUEST STATES ARE NOT REGISTERED HERE, and the reason is not that nobody tried: `refreshing` and `progress` were registered, walked, and REFUSED to appear \u2014 see docs/db-deferred-list.md. An `expect` selector is what turned that from a passing state into a question.",
   "states": [
     {
-      "name": "default · home",
+      "name": "default \u00b7 home",
       "realm": "home",
       "flags": {},
       "known": [],
       "expect": "main h1"
     },
     {
-      "name": "default · season",
+      "name": "default \u00b7 season",
       "realm": "season",
       "flags": {},
       "known": [],
@@ -30,7 +30,7 @@
       "expect": ".cmdbar.on"
     },
     {
-      "name": "command bar · typed query",
+      "name": "command bar \u00b7 typed query",
       "realm": "season",
       "flags": {},
       "steps": [
@@ -95,7 +95,7 @@
       },
       "known": [],
       "settleMs": 900,
-      "note": "walked WHILE the request is still out — the skeleton and the is-slow note are the state",
+      "note": "walked WHILE the request is still out \u2014 the skeleton and the is-slow note are the state",
       "expect": ".is-slow, .skeleton, [class*=skel], main"
     },
     {
@@ -108,14 +108,14 @@
       "expect": "main .panel"
     },
     {
-      "name": "review · staged work",
+      "name": "review \u00b7 staged work",
       "realm": "review",
       "flags": {},
       "known": [],
       "expect": ".rounds, .board, main .panel"
     },
     {
-      "name": "the door · signed out",
+      "name": "the door \u00b7 signed out",
       "realm": "home",
       "flags": {
         "fail": "expired"
@@ -125,13 +125,13 @@
       "expect": "main.door .dbtn"
     },
     {
-      "name": "the door · not an admin",
+      "name": "the door \u00b7 not an admin",
       "realm": "home",
       "flags": {
         "fail": "forbidden"
       },
       "known": [],
-      "note": "spec §10 — a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
+      "note": "spec \u00a710 \u2014 a stranger, a never-granted account and a revoked admin all read identically; forbidden adds ONE line",
       "expect": "main.door .dfail"
     },
     {
@@ -144,7 +144,7 @@
         }
       ],
       "known": [],
-      "note": "the masthead Export strip — each scope states its OWN shape, because only some of them re-import",
+      "note": "the masthead Export strip \u2014 each scope states its OWN shape, because only some of them re-import \u26a0\ufe0f THE STEP DELIBERATELY CARRIES NO `until`. One was added 2026-09-01 to fix a load race and became the race: `until` waits on its own 5000ms settle deadline while `expect` waits 45000ms for the SAME selector, so the redundant, tighter one failed first. A wait duplicated at two deadlines is worse than one wait, and the shorter number wins in exactly the conditions the longer one was raised for.",
       "expect": ".exs"
     },
     {
@@ -176,7 +176,7 @@
         }
       ],
       "known": [],
-      "note": "the toast layer, reached the way a reader reaches it — and the state that found Copy ID acknowledging nothing at all",
+      "note": "the toast layer, reached the way a reader reaches it \u2014 and the state that found Copy ID acknowledging nothing at all",
       "expect": ".toast"
     },
     {
@@ -189,11 +189,11 @@
         }
       ],
       "known": [],
-      "note": "selecting a row mounts .selbar and sets body.has-selbar — a shell surface a realm switches on",
+      "note": "selecting a row mounts .selbar and sets body.has-selbar \u2014 a shell surface a realm switches on",
       "expect": ".selbar.on"
     },
     {
-      "name": "one-way panel · tier 3",
+      "name": "one-way panel \u00b7 tier 3",
       "realm": "season",
       "flags": {
         "destroy": "1"
@@ -203,13 +203,13 @@
       "expect": ".ow"
     },
     {
-      "name": "reduced motion · season",
+      "name": "reduced motion \u00b7 season",
       "realm": "season",
       "flags": {},
       "reduceMotion": true,
       "expect": ".mtable",
       "known": [],
-      "note": "PASS 5 — the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
+      "note": "PASS 5 \u2014 the media query is emulated and the page is made to confirm it applied, then what is still RUNNING is read. A source scan can see that app.css declares reduced-motion rules; only this can see whether the animation on screen is covered by them."
     }
   ]
 }

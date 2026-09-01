@@ -25,6 +25,8 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
+const { record: recordRun } = require('./lib/portalReceipt.cjs');
+const { byReach } = require('./lib/portalStyleRank.cjs');
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // ── WHAT THIS TOOL DOES NOT SEE ────────────────────────────────────────────────────────────────── 🔴 PRINTED ON EVERY RUN, BECAUSE AN INSTRUMENT THAT DOES NOT STATE ITS COVERAGE LETS EVERY READER ASSUME IT COVERS EVERYTHING. Three blind spots have been found here by somebody noticing a defect the number could not have contained — below the fold, behind a click, and under the pointer — and each time the tool had reported a confident percentage about a page it had only partly looked at. The axes are enumerated once, here, and the uncovered ones are named in the output.
@@ -77,6 +79,7 @@ const COLLECT = (props, wholeBody) => {
     const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
     // 🔴 SCOPING TO `main` HID THE OVERLAY TIER ENTIRELY. The design's export panel renders into the page's `aside.tray`, a SIBLING of the wrapper — so with --open the walk compared the portal's inline panel against nothing at all and reported eighteen "only in portal" pieces that were an artefact of where the tool was looking. When something has been opened, the root is the body.
     const ms = [...document.querySelectorAll('main')];
+    // 🔴 THE FRAME IS PART OF THE READING (§0.5a R1). This walks the INNERMOST `main`; portalDiff takes the LARGEST content height across `main`, the scroll container and `document.body`. On Armory that is a systematic 44px apart on BOTH sides — the two are consistent under a transform and neither said so, so a reader comparing a fresh audit against a diff-derived figure in the ledger chases a difference that means nothing.
     const root = wholeBody ? document.body : (ms[ms.length - 1] || document.body);
     const out = [];
     const sigOf = (e) => {
@@ -96,6 +99,8 @@ const COLLECT = (props, wholeBody) => {
                 d, sig, path: trail + '>' + sig,
                 top: Math.round(r.top + scrollY), h: Math.round(r.height), w: Math.round(r.width),
                 left: Math.round(r.left),
+                // 🔴 BLAST RADIUS. How many rendered elements sit INSIDE this one, so ④ can rank a difference by what it affects instead of by how often the pairing saw it. See the sort below for the defect this exists for.
+                kids: e.querySelectorAll('*').length,
                 // Own text only — a container's textContent is every descendant's, so a single wrong word deep in a table reported as a difference on every ancestor above it.
                 text: norm([...e.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ')),
                 all: norm(e.textContent).slice(0, 60),
@@ -302,7 +307,8 @@ const annotate = (key) => {
             const mkBy = new Map(mk.triggers.map((t) => [bare(t), t]));
             const ptBy = new Map(pt.triggers.map((t) => [bare(t), t]));
             const both = [...mkBy.entries()].filter(([k]) => ptBy.has(k));
-            console.log(`\nTRIGGERS — season · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
+            // ⚠️ THIS LINE SAID `season` AS A LITERAL, so every --triggers run on every other realm printed the wrong subject above a correct listing. §0.5a R1: an instrument states what it examined, or its reading is not a reading — and a header naming the wrong realm is worse than none, because it reads as a statement of fact.
+            console.log(`\nTRIGGERS — ${realm} · ${view || 'default view'}    mk ${mk.triggers.length} · pt ${pt.triggers.length}\n`);
             console.log('  BOTH SIDES (openable with --open "<text>")');
             for (const [k, t] of both) {
                 const other = ptBy.get(k);
@@ -420,13 +426,23 @@ const annotate = (key) => {
                 if (a.style[p] === b.style[p]) continue;
                 // A NUL here made this whole file BINARY to ripgrep, which reports no matches in it rather than an error — so the one instrument the conformance pass runs on was unsearchable by the tool everything else here is searched with. A printable sentinel that cannot occur in a selector or a computed value does the same job and stays visible.
                 const key = [a.sig, p, a.style[p], b.style[p]].join(KEY_SEP);
-                styleGroups.set(key, (styleGroups.get(key) || 0) + 1);
+                const g = styleGroups.get(key) || { n: 0, radius: 0 };
+                // The radius is the count of elements this difference is rendered THROUGH — the element itself plus everything inside it. A background on a container reaches its whole subtree; the same delta on a leaf reaches one cell.
+                g.n += 1; g.radius += 1 + (a.kids || 0);
+                styleGroups.set(key, g);
             }
         }
-        console.log(`④ STYLE (${styleGroups.size} difference(s)) — ONE BATCH.`);
-        [...styleGroups].sort((x, y) => y[1] - x[1]).slice(0, CAP).forEach(([k, n]) => {
+        // 🔴 A CONSERVATION CHECK, BECAUSE THIS HEADER CAN LIE. `reach` comes from a `kids` count the walk supplies. If that field ever stops arriving, `reachOf` degrades to 1, every radius collapses to the member count, and `byReach` ties then break on count — which is EXACTLY the retired ×count ordering, restored silently, under a header still announcing REACH. That is the same shape as `data-bare` emitted by nothing and the inert `flags` prop, committed by the change that was written to retract one. So: if no group is deeper than its own member count, the walk is not supplying descendants and this section says so instead of claiming an ordering.
+        const ranked = [...styleGroups].sort((x, y) => byReach(x[1], y[1]));
+        const reachLive = ranked.some(([, g]) => g.radius > g.n);
+        console.log(`④ STYLE (${styleGroups.size} difference(s)) — ONE BATCH. ${reachLive
+            ? 'Ranked by REACH, not by count.'
+            : '⚠️ REACH IS FLAT — every group scored its own member count, so the walk is not supplying descendants and this is COUNT ORDER wearing the reach label. Treat the ordering as untrustworthy and fix the walk.'}`);
+        // 🔴 THIS SORTED BY ×COUNT AND THAT IS BACKWARDS FOR CONSEQUENCE. On 2026-09-01 the manifest's rows painted --raised where the design paints --desk, on every row of a 125-row table, because one paragraph between two panels broke `.panel + .panel`. THIS SECTION REPORTED IT — `section.panel backgroundColor: rgba(0,0,0,0) → rgb(23,30,36)`, the exact value — and it sorted ~140th of 149 as a `× 1`, under a hundred-odd `×125` leaf-cell width deltas. I read past it twice and then wrote in a commit message that no instrument could have found it, which was false. The instrument was not blind; its ORDERING was. A difference on a container is rendered through everything inside it, so that is what it is ranked by now: `reach` is the number of elements the difference is drawn through, and `×n` is still shown because the two answer different questions. ⚠️ IT MAKES THE CONSEQUENTIAL ROW SORT FIRST. It cannot make anyone read it, and no ordering can.
+        ranked.slice(0, CAP).forEach(([k, g]) => {
             const [sig, prop, mv, pv] = k.split(KEY_SEP);
-            console.log(`   ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
+            const n = g.n;
+            console.log(`   reach ${pad(g.radius, 5)}  ×${pad(n, 3)}  ${sig}   ${prop}: ${mv} → ${pv}`);
             const note = annotate(sig);
             if (note) console.log(note);
         });
@@ -448,5 +464,7 @@ const annotate = (key) => {
         });
         if (css.differ.length > CAP) console.log(`   … ${css.differ.length - CAP} more — re-run with --all`);
         console.log('');
+        // The run reached its end and printed a report — record that, so portalStatus can tell an UNRUN instrument from one that ran clean. A receipt is not a result; see lib/portalReceipt.cjs.
+        recordRun('audit', realm);
     } finally { await browser.close(); }
 })();
