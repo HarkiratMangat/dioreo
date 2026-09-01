@@ -82,13 +82,14 @@ function register(route) {
     const { requireAdmin } = require('../auth');
 
     route('GET', /^\/api\/access$/, requireAdmin(ownerOnly(async (req, res) => {
-        const admins = await AdminUser.find({}).lean();
+        // 🔴 THE OWNER IS NEVER A ROW, AND EVERY FIGURE ON THE SCREEN HAS TO AGREE ABOUT THAT. The grid draws a synthetic owner row and filters the owner out of the real ones, so an owner who also held an AdminUser document would vanish from the table while still being counted by the masthead, the view meta, every column header, the export and singlePointsOfFailure -- which would then report the OWNER as the sole holder and render "single point — only …2283 besides you", naming you as somebody besides you. One filter at the source is what keeps the six numbers in step; six filters at the call sites is how they drift.
+        const admins = (await AdminUser.find({}).lean()).filter((a) => !isOwner(a.discordId));
         const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
-        sendJson(res, 200, { admins, sessions, singlePointsOfFailure: singlePointsOfFailure(admins) });
+        sendJson(res, 200, { admins, sessions, sessionTtlHours: PortalSession.SESSION_TTL_SECONDS / 3600, singlePointsOfFailure: singlePointsOfFailure(admins) });
     })));
 
     route('GET', /^\/api\/access\/matrix$/, requireAdmin(ownerOnly(async (req, res) => {
-        const admins = await AdminUser.find({}).lean();
+        const admins = (await AdminUser.find({}).lean()).filter((a) => !isOwner(a.discordId));
         sendJson(res, 200, buildPermissionMatrix(admins));
     })));
 
@@ -137,6 +138,10 @@ function register(route) {
         const body = await readJsonBody(req);
         const permissions = parsePermissionsInput((body.permissions || []).join(','));
         if (!permissions) return sendJson(res, 400, { error: 'One or more permission tokens were not recognized.' });
+        // Granting to the owner is a no-op the screen cannot represent: they short-circuit every check already, and the grid has no row for them because the owner row is synthetic. Refusing is simpler than rendering a state that means nothing, and it stops the filter above from ever having to hide a document somebody just wrote.
+        if (isOwner(body.discordId)) {
+            return sendJson(res, 409, { ok: false, reason: 'The owner already holds every permission — there is nothing to grant.' });
+        }
         if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
             return sendJson(res, 409, { ok: false, reason: 'Type the exact Discord ID being granted to confirm.' });
         }

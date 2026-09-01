@@ -1873,7 +1873,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    whatever the element above happened to contribute — on Broadcast a spacer div that had been added
    for the purpose, and on a realm with nothing between the view panel and the Manifest, none at all.
    A margin that belongs to a component does not belong to its neighbours. */
-#manifest{margin-top:16px}
+#manifest,#sessions{margin-top:16px}
 
 .panel + .panel{border-color:var(--rule);background:transparent}
 .panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}

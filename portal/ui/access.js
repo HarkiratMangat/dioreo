@@ -66,10 +66,15 @@ const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
 
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-function Sessions({ sessions, onEnd }) {
+function Sessions({ sessions, onEnd, ttlHours }) {
     const now = Date.now();
     return html`
-        <div class="panel" id="sessions">
+        <!-- ⚠️ A section WITH A LANDMARK NAME, and an id the stylesheet can reach. access.html declares
+             aria-label="Live portal sessions" and an inline margin-top:16px; the portal had a bare div, and the rule
+             that would have spaced it is #manifest{margin-top:16px} rather than a .panel+.panel one, so moving this
+             into footSlot silently closed the gap. The visible title correctly became "Signed in right now", which
+             is why the landmark keeps the longer phrase: it is the only place the surface names itself. -->
+        <section class="panel" id="sessions" aria-label="Live portal sessions">
             <div class="ph">
                 <span class="t">Signed in right now</span>
                 <span class="rt">${sessionSummary(sessions, now)}</span>
@@ -86,15 +91,22 @@ function Sessions({ sessions, onEnd }) {
                             </span>
                             <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
                         </div>`)}
+                </div>
+                <!-- The two sentences access.html closes this list with, and the second is the only place the portal
+                     says that ending a session does NOT stage. On a realm where every other write waits for Review,
+                     a reader who has learned the tray will assume this one does too. -->
+                <div class="mxfoot">
+                    <span>Sessions expire after <b>${ttlHours} hours</b> on their own — nothing has to be cleaned up.</span>
+                    <span>Ending one is immediate and unstaged — a security action that waits in a tray is not one.</span>
                 </div>`
             : html`
                 <div class="estate">
                     <span class="eicon" aria-hidden="true">◍</span>
                     <h4>Nobody is signed in to the portal</h4>
                     <p>Your own session should always be in this list, so an empty list means it failed to load rather than that nobody is here. Reload the page.</p>
-                    <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves their tab working until it expires — ending it here is the only thing that closes that window.</p>
+                    <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves their tab working until it expires ${ttlHours} hours after sign-in — ending it here is the only thing that closes that window.</p>
                 </div>`}
-        </div>
+        </section>
     `;
 }
 
@@ -518,7 +530,7 @@ export function AccessRealm({ session }) {
                           The owner is <code>…${String(session.discordId || '').slice(-6)}</code> and holds everything
                           regardless of this list.
                       </div></div></div>`}
-                  footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} />`}
+                  footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} ttlHours=${data.sessionTtlHours ?? 12} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'
