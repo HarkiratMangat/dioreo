@@ -509,6 +509,9 @@ function Timing({ stats }) {
 function Reach({ rows = [] }) {
     const total = rows.reduce((a, r) => a + r.n, 0);
     const byCtx = ['guild', 'dm'].map((c) => ({ c, n: rows.filter((r) => r.context === c).reduce((a, r) => a + r.n, 0) }));
+    const lead = byCtx.slice().sort((x, y) => y.n - x.n)[0] || { c: 'dm', n: 0 };
+    const leadShare = total ? (lead.n / total) * 100 : 0;
+    const leadLabel = lead.c === 'dm' ? 'DMs' : 'servers';
     const byInstall = [
         { key: 'guild', label: 'Guild install', note: 'the app is added to a server; everyone there can use it' },
         { key: 'user', label: 'User install', note: 'the app travels with one person, into any server and any DM' },
@@ -547,13 +550,16 @@ function Reach({ rows = [] }) {
                                 <span class="dsub">${x.n.toLocaleString()} interaction${x.n === 1 ? '' : 's'}</span>
                             </div>`)}
                     </div>
-                    <p class="hp">A bot answering privately, one screenful at a time, is a different product from one
-                        answering in a channel — and it is not the place to audit a season or bulk-edit an armory.
-                        That split is the argument for this portal existing at all.</p>
+                    <!-- ⚠️ THE CAPTION NAMES WHAT THE CHART SHOWS BEFORE IT ARGUES FROM IT. The design leads on the measurement (analytics.html:428, "More than half of all use is in DMs") and this led on the principle, so a reader got the conclusion without the number standing directly above it. The closing line is the portal's own and is kept — the design has no equivalent. ⚠️ It reads the split rather than asserting one: the design's sentence assumes DMs lead, which is true of its fixtures and is not a fact about the data.
+                         "privately" is dropped for the same reason — it is only true of one of the two answers this sentence can now give.
+                         ⚠️ AND IT STATES THE PERCENTAGE RATHER THAN "MORE THAN HALF", which was the first attempt and which the fixtures immediately falsified: 51% against 49% is more than half and reads as a decisive majority. A phrase that renders 51% and 80% identically has stopped carrying information, which is the same objection this file already makes to a tile that is orange whatever the numbers are. -->
+                    <p class="hp">${Math.round(leadShare)}% of all use is in${' '}
+                        <b>${leadLabel}</b> — a bot answering one screenful at a time, which is not the place to audit
+                        a season or bulk-edit an armory. That split is the argument for this portal existing at all.</p>
                 </section>
                 <section class="hpanel">
                     <h4>How the app was installed</h4>
-                    <p class="hp">Whether each interaction came from a server that added the app, or from a person who
+                    <p class="hp">Whether each interaction came from a server that added the app or from a person who
                         did. The v3 line made every public command guild-installable while the admin commands stayed
                         user-only — this is the measurement that says whether that landed.</p>
                     ${byInstall.map((x) => html`
@@ -602,7 +608,7 @@ function Search({ rows = [] }) {
                     </div>
                     <div class=${'tile ' + (zero.length ? 'warn' : 'ok')}>
                         <span class="tl-k">Returned nothing</span><span class="tl-v">${zero.length}</span>
-                        <span class="tl-s">somebody wanted this and did not get it</span>
+                        <span class="tl-s">someone wanted this and did not get it</span>
                     </div>
                     <div class="tile">
                         <span class="tl-k">Picked a result</span><span class="tl-v">${picked}</span>
