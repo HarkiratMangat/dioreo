@@ -115,12 +115,7 @@ prun /nonexistent/cc.json /nonexistent/desktop.json >/dev/null 2>&1 \
 
 echo
 
-# ── the SERVER probe ─────────────────────────────────────────────────────────
-# 🔴 THESE EXIST BECAUSE THE BANNER REPORTED THE DATABASE AND WAS READ AS REPORTING THE SERVER.
-# On 2026-09-02 `claude mcp list` said linksee had failed to connect while this hook printed healthy
-# counts, because the counts come from the sqlite file -- which is readable whether or not the
-# server is up. The load-bearing case is the third one: a REACHABLE and an UNREACHABLE server must
-# produce visibly different output, or the probe is decoration.
+# ── the SERVER probe ───────────────────────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE BANNER REPORTED THE DATABASE AND WAS READ AS REPORTING THE SERVER. On 2026-09-02 `claude mcp list` said linksee had failed to connect while this hook printed healthy counts, because the counts come from the sqlite file -- which is readable whether or not the server is up. The load-bearing case is the third one: a REACHABLE and an UNREACHABLE server must produce visibly different output, or the probe is decoration.
 ctx_of() { python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])'; }
 ok_json='{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}'
 

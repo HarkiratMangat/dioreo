@@ -20,23 +20,11 @@ FRAG_WARN="${MCPCHECK_FRAG_WARN:-25}"   # warn if more than N memories sit off t
 warn=""
 frag_line="linksee: db not found (memory layer unavailable)"
 
-# --- IS THE SERVER ACTUALLY ANSWERING? -----------------------------------------------------------
-# 🔴 ADDED 2026-09-02 15:44 EDT. Everything below this point reads the sqlite file directly, so the counts
-# line described the DATABASE and was silently taken as a statement about the SERVER. Measured this
-# morning: `claude mcp list` reported `linksee: ✘ Failed to connect -- CONNECTION_CLOSED` while this
-# banner printed a confident "linksee: 536 on 'Diors-Builds', 55 misfiled elsewhere, 134 awaiting
-# distil". Both were true and only one was relevant: a session starting during that failure has NO
-# memory layer and is told a healthy-looking number instead.
+# --- IS THE SERVER ACTUALLY ANSWERING? ----------------------------------------------------------- 🔴 ADDED 2026-09-02 15:44 EDT. Everything below this point reads the sqlite file directly, so the counts line described the DATABASE and was silently taken as a statement about the SERVER. Measured this morning: `claude mcp list` reported `linksee: ✘ Failed to connect -- CONNECTION_CLOSED` while this banner printed a confident "linksee: 536 on 'Diors-Builds', 55 misfiled elsewhere, 134 awaiting distil". Both were true and only one was relevant: a session starting during that failure has NO memory layer and is told a healthy-looking number instead.
 #
-# The failure is INTERMITTENT, which is what makes reporting it worth 3s at SessionStart -- it was
-# reachable again ~30min later with nothing changed. Ruled out as causes before writing this: stdout
-# pollution (npm notices go to stderr; stdout is clean JSON-RPC and initialize answers correctly) and
-# npx overhead (3.34s via npx vs 3.15s for the global binary already on PATH -- not a timeout cliff).
-# So there is no fix to apply at the config level; the honest remedy is to stop hiding it.
+# The failure is INTERMITTENT, which is what makes reporting it worth 3s at SessionStart -- it was reachable again ~30min later with nothing changed. Ruled out as causes before writing this: stdout pollution (npm notices go to stderr; stdout is clean JSON-RPC and initialize answers correctly) and npx overhead (3.34s via npx vs 3.15s for the global binary already on PATH -- not a timeout cliff). So there is no fix to apply at the config level; the honest remedy is to stop hiding it.
 #
-# ⚠️ IT PROBES THE COMMAND THE CONFIG ACTUALLY REGISTERS, never a hardcoded one. A probe of a
-# different command than Claude Code launches would be a green light for something nobody runs --
-# the same class of error as the counts line it replaces.
+# ⚠️ IT PROBES THE COMMAND THE CONFIG ACTUALLY REGISTERS, never a hardcoded one. A probe of a different command than Claude Code launches would be a green light for something nobody runs -- the same class of error as the counts line it replaces.
 CC_CONFIG_EARLY="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
 TO=$(command -v gtimeout || command -v timeout || true)
 probe_linksee() {
@@ -160,9 +148,7 @@ window="
    Use it on judgement, no permission needed, no observation log required. Do NOT restore the old
    ask-first rule; the measurement that would justify it was already run and came out the other way."
 
-# The server verdict goes FIRST and the db counts are labelled as db counts, so the two claims can
-# never again be read as one. An unreachable server is stated as loudly as an error, because from
-# inside a session an absent tool and a forgotten tool look identical.
+# The server verdict goes FIRST and the db counts are labelled as db counts, so the two claims can never again be read as one. An unreachable server is stated as loudly as an error, because from inside a session an absent tool and a forgotten tool look identical.
 case "$probe" in
   reachable)    probe_line="linksee MCP: reachable (initialize answered)";;
   unreachable)  probe_line="🔴 linksee MCP: UNREACHABLE THIS SESSION -- initialize got no result. Every linksee tool call will fail, and the db counts on the next line say NOTHING about that: they are read straight from the sqlite file, which is readable whether or not the server is up. This failure is INTERMITTENT (measured 2026-09-02: failed, then reachable ~30min later with no config change), so retrying is reasonable -- but do not assume the memory layer is live, and say so if a recall comes back empty.";;

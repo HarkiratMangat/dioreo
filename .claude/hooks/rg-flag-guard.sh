@@ -15,8 +15,7 @@
 
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0
-# $cmd is mutated below (heredoc bodies stripped, then narrowed to the rg segment), so the substitution
-# needs the ORIGINAL bytes -- rewriting the stripped copy would hand back a command missing its heredoc.
+# $cmd is mutated below (heredoc bodies stripped, then narrowed to the rg segment), so the substitution needs the ORIGINAL bytes -- rewriting the stripped copy would hand back a command missing its heredoc.
 payload_cmd="$cmd"
 
 # Strip HEREDOC BODIES first. A commit message or a `cat > f <<'EOF'` block that merely DISCUSSES rg is prose, not an invocation — this guard's own commit message tripped it 2026-08-02 15:15 EDT by quoting `rg -n` in the body. Third false-positive class fixed on this pattern in one session; each one matters because a guard that cries wolf is how the true warning gets dismissed.
@@ -49,26 +48,11 @@ printf '%s' "$shorts" | grep -qE 'r|R' && findings="${findings}
 
 [ -z "$findings" ] && exit 0
 
-# --- SUBSTITUTION -------------------------------------------------------------------------------
-# ONLY MULTI-LETTER CLUSTERS, and that narrowness is the whole design. The test for promoting a gate
-# from advisory to correcting is whether it knows the ONE right value with no judgement left. For a
-# cluster it does: -rn can only ever be grep's "recursive + line numbers", because rg's -r takes a
-# value and would swallow the n, so dropping the r is the single correct reading. A LONE -r, -h or -E
-# fails that test outright -- rg -r foo is a legitimate --replace, rg -h is a legitimate request for
-# help, rg -E utf8 is a legitimate encoding -- so those stay advisory. A substitution that guesses is
-# strictly worse than a refusal: a refusal is visible, a wrong rewrite produces a plausible command
-# with no author.
+# --- SUBSTITUTION ------------------------------------------------------------------------------- ONLY MULTI-LETTER CLUSTERS, and that narrowness is the whole design. The test for promoting a gate from advisory to correcting is whether it knows the ONE right value with no judgement left. For a cluster it does: -rn can only ever be grep's "recursive + line numbers", because rg's -r takes a value and would swallow the n, so dropping the r is the single correct reading. A LONE -r, -h or -E fails that test outright -- rg -r foo is a legitimate --replace, rg -h is a legitimate request for help, rg -E utf8 is a legitimate encoding -- so those stay advisory. A substitution that guesses is strictly worse than a refusal: a refusal is visible, a wrong rewrite produces a plausible command with no author.
 #
-# A COMMAND CARRYING A HEREDOC IS NEVER REWRITTEN. This guard already learned five separate
-# false-positive classes, every one of them text that merely LOOKED like a flag, and a heredoc body
-# is the largest such surface there is. Quote state is tracked in the parser below so a pattern like
-# rg -n 'jq -rn .x' is untouched, but a heredoc is left alone wholesale rather than parsed.
+# A COMMAND CARRYING A HEREDOC IS NEVER REWRITTEN. This guard already learned five separate false-positive classes, every one of them text that merely LOOKED like a flag, and a heredoc body is the largest such surface there is. Quote state is tracked in the parser below so a pattern like rg -n 'jq -rn .x' is untouched, but a heredoc is left alone wholesale rather than parsed.
 #
-# THE VALIDATION LIVES IN THE PYTHON, NOT IN THE SHELL. A first version re-scanned the fixed command
-# with a second pair of seds in bash; three attempts at escaping a sed that strips double-quoted
-# spans inside a double-quoted string failed three different ways, and a looser second check is also
-# how a half-fixed command gets shipped as a clean one. The parser that made the edit is the thing
-# that should certify it.
+# THE VALIDATION LIVES IN THE PYTHON, NOT IN THE SHELL. A first version re-scanned the fixed command with a second pair of seds in bash; three attempts at escaping a sed that strips double-quoted spans inside a double-quoted string failed three different ways, and a looser second check is also how a half-fixed command gets shipped as a clean one. The parser that made the edit is the thing that should certify it.
 case "$cmd" in *'<<'*) has_heredoc=1;; *) has_heredoc=0;; esac
 if [ -z "${RG_NO_AUTOFIX:-}" ] && [ "$has_heredoc" = "0" ]; then
   fixed=$(RGCMD="$payload_cmd" python3 - <<'PY'

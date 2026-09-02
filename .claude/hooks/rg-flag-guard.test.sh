@@ -33,10 +33,7 @@ a "real -oh with quoted pattern"  fires  "rg -oh 'ordinary text' dir"
 a "grep -rn is not rg"            silent "grep -rn 'pat' ."
 a "curl -H is not rg"             silent "curl -H 'X: y' https://x.dev"
 echo; # ── the SUBSTITUTION tier ────────────────────────────────────────────────────
-# Added 2026-09-02 15:50 EDT. The promotion test is that the hook knows the ONE right value; a cluster
-# satisfies it and a lone flag does not. Both halves are asserted, because a substitution tier that
-# quietly widened to lone flags would rewrite legitimate commands (rg -r IS --replace) and nothing
-# else in this suite would notice.
+# Added 2026-09-02 15:50 EDT. The promotion test is that the hook knows the ONE right value; a cluster satisfies it and a lone flag does not. Both halves are asserted, because a substitution tier that quietly widened to lone flags would rewrite legitimate commands (rg -r IS --replace) and nothing else in this suite would notice.
 fixof() { printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK" \
           | jq -r '.hookSpecificOutput.updatedInput.command // ""' 2>/dev/null; }
 kind()  { local raw; raw="$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$1" | jq -Rs .)" | bash "$HOOK")"

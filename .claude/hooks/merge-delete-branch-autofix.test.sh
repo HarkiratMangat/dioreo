@@ -1,10 +1,7 @@
 #!/bin/bash
 # Proofs for merge-delete-branch-autofix.sh.
 #
-# The property that matters most is the NEGATIVE one: this hook sees every Bash command in the
-# session, so anything that is not a gh pr merge must pass through in complete silence. A guard that
-# speaks on ordinary commands is how the real warning gets filtered out -- the lesson rg-flag-guard
-# paid for five times.
+# The property that matters most is the NEGATIVE one: this hook sees every Bash command in the session, so anything that is not a gh pr merge must pass through in complete silence. A guard that speaks on ordinary commands is how the real warning gets filtered out -- the lesson rg-flag-guard paid for five times.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/merge-delete-branch-autofix.sh"
 pass=0; fail=0
@@ -18,8 +15,7 @@ chk "a merge without the flag is corrected" "$(printf '%s' "$out" | jq -e '.hook
 chk "the rest of the command survives"      "$(printf '%s' "$out" | jq -e '.hookSpecificOutput.updatedInput.command | startswith("gh pr merge 42 --squash")' >/dev/null 2>&1 && echo ok)"
 chk "it asks rather than allows"            "$(printf '%s' "$out" | jq -e '.hookSpecificOutput.permissionDecision=="ask"' >/dev/null 2>&1 && echo ok)"
 
-# The rtk prefix is the spelling the rewrite layer actually produces, and missing it is a defect
-# this repo has already shipped once in main-push-guard.
+# The rtk prefix is the spelling the rewrite layer actually produces, and missing it is a defect this repo has already shipped once in main-push-guard.
 out2=$(run 'rtk gh pr merge 7 --squash --body "y"')
 chk "the rtk-prefixed spelling is matched"  "$(printf '%s' "$out2" | jq -e '.hookSpecificOutput.updatedInput' >/dev/null 2>&1 && echo ok)"
 

@@ -28,6 +28,28 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
+## Pre-Release v3.74.0 — 2026-09-02 — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
+
+Not a bot change. This is the layer that decides what a session knows before it does anything, and none of it had been measured.
+
+### What was actually happening
+
+🔴 **`MEMORY.md` was losing its tail every session and a hook reported `ok`.** The loader takes the first 200 lines OR 25,000 B, whichever comes first; the index was 35,147 B, so the cut landed at line 127 and **58 lines never loaded** — including the entire "Working with Harkirat" section that root `CLAUDE.md` tells every session to read first. `memory-index-check.sh` had only ever counted BYTES, against six locally-invented budgets, so the line limit was invisible to it. That matters most at the moment it would have been trusted: the remedy for the byte ceiling is shortening entries, and shortening entries walks the file TOWARD the line ceiling.
+
+🔴 **The `@`-import meant to route around that had never run.** It spent its whole life inside the YAML frontmatter, consumed as YAML; moved below it, it still failed, because `@~/…` uses a shell convention and the docs sanction relative and absolute paths only. The sentinel at the foot of the file is the only reason either failure was detectable.
+
+🔴 **`.claude/rules/` was 651,223 B with no budget and no gate — seven times the root `CLAUDE.md`.** A path-scoped rule is INJECTED IN FULL the moment you read any matching file: median 72,420 B, worst 187,237 B across three rules on one file. A new hook on the `InstructionsLoaded` event measured the rest: a `Read` with `limit: 12` pulls the whole rule, a rule loads once per session, and — the finding that started this — **`rg`, a `python3` heredoc read and a `python3` heredoc write load nothing at all.** The batching contract mandates heredocs and the routing rules push reads through `rg`, so the mandated workflow was bypassing the entire tier.
+
+🔴 **The session banner reported linksee's DATABASE and was read as reporting its SERVER.** `claude mcp list` said `CONNECTION_CLOSED` while the banner printed confident counts read straight from the sqlite file, which is readable whether or not the server is up.
+
+### What changed
+
+The index is **22,230 B over 151 lines**, inside both limits with headroom, and **nothing was deleted**: `SILENT MODE` moved to `.claude/rules/silent-mode.md` (it is an instruction, and auto memory is for what Claude writes about you), and 79 over-long index-line tails moved into the topic files they already point at. The import was then removed on its own stated condition, and the budget lowered to 25,000 — the platform's own number, and the first value in that hook's history that is not a housekeeping choice.
+
+`accent-and-colors.md` went from 144,650 B to 27,319: the "View Colors" encyclopedia is now `docs/reference/colors-panel.md`, byte-for-byte, already indexed for `ctx_search`. The tier as a whole is 533,892 B and is now held by a RATCHET rather than a ceiling — every rule pinned at its current size, allowed only to shrink, with a 30,000 B line for anything new that 14 of the 20 already meet. A ceiling would have failed four files on arrival, and a gate that fails on arrival gets switched off.
+
+Three gates were promoted from reporting to CORRECTING, on one test: does the hook already know the ONE right value? The timestamp autofix now reaches `python3` heredocs — the gap four placeholder stamps came through — after the stated reason for not doing so turned out to be false; `rtk` has rewritten every Bash command via the same mechanism for months. `rg -rn` is corrected to `-n` because a cluster has exactly one reading, while a lone `-r` stays advisory because it is a legitimate `--replace`. `--delete-branch` is appended BEFORE a merge rather than lamented after one. **`typos-check` was considered and deliberately excluded**: a typo has several plausible corrections, and a silent wrong substitution is worse than a refusal.
+
 ## Pre-Release v3.73.0 — 2026-09-02 (#180) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
 
 Part 5 of the conformance pass. Two of the three headline defects were **live wrong renders on real data**, not spacing.
