@@ -844,7 +844,7 @@ export function AnalyticsRealm({ session }) {
                                                     bulkActions=${[{ label: 'Reverse', danger: true, onClick: confirmRevert }]}
                                                     onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
                                                     ${''/* The river is capped at 100 server-side, so without a total the count divides by the page and reads 11 of 11 over a collection holding thousands -- a number that can never say something is being withheld. */}
-                                                    totalRows=${data.riverTotal ?? rows.length} countSuffix=" events"
+                                                    totalRows=${data.riverTotal ?? rows.length} pageCap=${100} countSuffix=" events"
                                                     filterSignal=${riverFilter} />`} />
     `;
 }

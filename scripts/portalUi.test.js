@@ -776,6 +776,33 @@ function toneLiterals(src) {
     return out;
 }
 
+// 🔴 AN ARIA ROLE THAT CONTRADICTS THE ELEMENT'S IMPLICIT ONE IS WORSE THAN NO ROLE. This branch put `role="button"` on a `<tr>` inside a real `<table>`, which replaces the row's implicit `row` role and orphans every `<td>` -- whose required parent IS a row. It came from porting a note written about the design's DIV-based event table onto real table markup. ⚠️ FIVE ELEMENT NAMES, ENUMERATED, NOT A PATTERN. These are the table elements whose implicit roles carry structural meaning that a `role=` overrides; anything else is a judgement call this check does not make.
+check('no table element in portal/ui carries a role= that overrides its implicit one', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    let scanned = 0;
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8');
+        const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+        scanned++;
+        for (const m of code.matchAll(/<(tr|td|th|tbody|thead|table)\b([^>]*)>/g)) {
+            if (/\brole=/.test(m[2])) offenders.push(`portal/ui/${f}  <${m[1]} … role=…>`);
+        }
+    }
+    assert.ok(scanned >= 5, `scanned ${scanned} portal/ui files -- the directory shape changed and this check has gone blind`);
+    assert.deepStrictEqual(offenders, [], 'a role= here replaces the implicit table role and orphans the cells beneath it');
+});
+
+check('THE TABLE-ROLE GATE CAN FAIL: the real markup, with the real regression put back', () => {
+    const real = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'manifest.js'), 'utf8');
+    // The anchor is the multi-line row tag at manifest.js:221, matched on its class expression rather than on a key= this file does not use. The assertion below is what caught the first version's wrong guess -- a proof whose anchor has moved must FAIL, not pass over nothing.
+    const broken = real.replace("<tr class=${(selected.has(row.id)", '<tr role="button" class=${(selected.has(row.id)');
+    assert.notStrictEqual(broken, real, 'the row tag moved -- this proof no longer reintroduces anything');
+    const code = broken.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const hits = [...code.matchAll(/<(tr|td|th|tbody|thead|table)\b([^>]*)>/g)].filter((m) => /\brole=/.test(m[2]));
+    assert.ok(hits.length >= 1, 'the scanner did not see a role= on a reintroduced <tr role="button">');
+});
+
 check('every tone a realm emits has a rule in the stylesheet', () => {
     const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
     const styled = new Set([...css.matchAll(/\.(?:stat|tile)\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]));
