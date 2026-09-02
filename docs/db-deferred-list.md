@@ -58,6 +58,8 @@ Both selectors are emitted by `portal/ui/season.js` and `portal/ui/composer.js`,
 
 **What to do:** make the failure attributable rather than chasing the timeout. Either (a) have `portalStates` retry a stalled subject once and report `FLAKED` distinctly from `FAILED`, so a suite result separates the two, or (b) find the shared cause — both failures are a subject that never appears after its steps ran, which points at the step sequence racing the render rather than at the two states.
 
+🔴 **AND IT MASKED A REAL FAILURE, WHICH IS THE PART THAT ACTUALLY COSTS.** `npm test` is one `&&` chain: `portalStates` runs before `portalHarness.test.js`, so the local suite died at the flake and **never reached** a genuine defect this branch had introduced — `/api/access` promised a `sessionTtlHours` key the harness stub did not serve. CI found it, because CI ran the same chain against a tree where the flake happened not to fire. **So the cost is not a wasted re-run: a non-deterministic early gate silently truncates every gate after it, and the suite reports the flake's name rather than the defect's.** That is why the fix must classify rather than retry.
+
 **Verify:** five consecutive `node scripts/portalStates.mjs --ci` runs on one unchanged tree, all green — or a `FLAKED` classification that a suite can pass through while still naming what stalled.
 
 

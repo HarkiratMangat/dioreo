@@ -440,7 +440,7 @@ const ROUTES = [
     })],
     // 🔴 THE FIXTURE HAS NO SESSIONS, so the sessions view could only ever show its empty state — and a surface a reviewer cannot see is one nobody reviews. The live/stale distinction is the whole point of this panel (a browser session has no logout event, so "signed in now" is derived from lastSeenAt inside fifteen minutes), and it takes two rows on opposite sides of that line to show it at all. ⚠️ Synthesised relative to NOW rather than pinned to a date: a fixture timestamp from last week would read as stale forever and the live half would never render.
     [/^\/api\/access$/, () => ({
-        admins: FIX.accessAdmins || [], sessions: (FIX.sessions && FIX.sessions.length) ? FIX.sessions : [
+        admins: FIX.accessAdmins || [], sessionTtlHours: 12, sessions: (FIX.sessions && FIX.sessions.length) ? FIX.sessions : [
             { sessionHash: 'harness-live', discordId: '1139845545754632283', userAgent: 'Chrome on macOS',
               lastSeenAt: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
             { sessionHash: 'harness-stale', discordId: '310361322000000000', userAgent: 'Safari on iPhone',
