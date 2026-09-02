@@ -325,6 +325,19 @@ Both selectors are emitted by `portal/ui/season.js` and `portal/ui/composer.js`,
 
 ## 🔔 Reminders / watch-for
 
+### Before promoting any gate to AUTO-CORRECTING, check these three `[P2 · XS]`
+*Filed 2026-09-02 18:28 EDT from a `/code-review` medium pass that found seven defects on a green suite — three of them auto-corrections that corrupted the exact thing they existed to protect.*
+
+The one-right-value test is necessary and **not sufficient**. Every one of the three knew the right value and still did damage, each in the same shape: **the defect was described twice, and the two descriptions drifted.**
+
+1. **Does the SUBSTITUTION match exactly what the DETECTOR matched?** `timestamp-check`'s detector was narrowed to today; its `gsub` still matched any date, with a class that also matched real digits — so a line carrying today's placeholder beside a correct historical stamp had the *historical* one rewritten. **Check:** feed one input containing both a target and a near-miss, and assert the near-miss is untouched.
+2. **Does the fix land on the right COMMAND?** `merge-delete-branch-autofix` appended its flag to the end of the line while its detector matched after `;`/`&&`/`|` — so the flag landed on the next program. **Check:** feed a chained and a piped form. If the hook cannot place it precisely, fall back to advisory; do not grow a shell parser inside a hook.
+3. **Does any post-processing reach past the edit site?** `rg-flag-guard` spliced correctly and then ran a tidy-up `replace("  ", " ")` over the *whole* command, collapsing a double space inside a quoted search pattern. **Check:** put the character you tidy inside a quoted span and assert it survives. Splice precisely; never tidy afterwards.
+
+⚠️ **And check the budget against the caller's.** `mcp-layer-check`'s probe timeout equalled its own hook `timeout`, so in the exact hang it was written to report it would be killed before speaking.
+
+**Verify:** each of the four has a named regression case in its `.test.sh`; `rg -c 'code review' .claude/hooks/*.test.sh` finds them.
+
 ### A capability that reads as ABSENT early in a session may simply not have surfaced yet `[P3 · XS]`
 *Filed 2026-09-02 10:59 EDT.*
 
