@@ -45,16 +45,28 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 ## 🐞 Active Bugs
 
 
-### `[P2 · S]` `codebase-memory-mcp` cannot re-index this repo — the worker crashes on a file
-*Filed 2026-09-01 20:36 EDT after the v3.72.0-pre merge.*
+### `[P2 · S]` `codebase-memory-mcp`'s MCP layer drops the parameter its worker requires, and reports it as a crash
+*Filed 2026-09-01 20:47 EDT. ⚠️ The first version of this entry said "the indexing worker crashes on a file" and told the next session to bisect the tree for it. **That was the tool's own error message repeated as a diagnosis, and it is wrong** — the bisect would have found nothing, because a different repo entirely fails the same way.*
 
-`index_repository` returns `{"status":"error","outcome":"exit_nonzero","hint":"Indexing worker crashed on a file. The crash was contained (the server survived). Re-run to retry"}` — twice, deterministically, so it is not transient. **Meanwhile `list_projects` reports a healthy-looking index** (9,762 nodes, 20,763 edges, `head_sha` equal to the current merge commit) while `detect_changes` reports **620 changed files and 8,810 impacted symbols**, i.e. the whole tree. So the index records the right sha against stale content, and every symptom of that is indistinguishable from a fresh index.
+**The MCP tool `index_repository` takes `project_path`. The worker requires `repo_path`, and the parameter is never forwarded.** The worker exits 1 with the one line `repo_path is required`, and the MCP layer turns that into `{"status":"error","outcome":"exit_nonzero","hint":"Indexing worker crashed on a file. The crash was contained… a future release isolates the culprit file."}` — a message describing a completely different failure.
 
-⚠️ **This is the second time this server has failed in a way that looks like success** — the first was `list_projects` returning `{"projects":[]}` with a friendly "call index_repository first" hint, indistinguishable from never-indexed. The routing rule that says to try `search_graph` before `rg` is only sound while the graph is current, and nothing surfaces when it is not.
+🔴 **THE COST IS THE MESSAGE, NOT THE BUG.** Chasing it cost a bisect by subtree (every subtree fails, because the parameter is missing regardless), a `pragma integrity_check` (ok), the disk (37 GB free), five stale server processes (killed, irrelevant), the SQLite database (moved aside; the crash predates and outlives it), and a real `.ips` crash report whose stack — `getCellInfo ← sqlite3VdbeExec ← cbm_store_exec ← run_post_extraction` — belongs to an OLDER failure and pointed at SQLite. **Every one of those was a plausible reading of the hint.** A wrong error message is more expensive than a silent one, because it is actionable.
 
-**What to do:** the hint says a future release isolates the culprit file; until then, bisect it by indexing subtrees (`portal/`, `scripts/`, `commands/`, `utils/`) to find which one crashes the worker, and report it upstream with that file. **Until it indexes, treat `search_graph` results as a stale snapshot and prefer `rg`/`ctx_search`.**
+**The workaround, which works today:**
 
-**Verify:** `index_repository` exits cleanly, and `detect_changes` immediately afterwards reports `changed_count` in single digits rather than 620.
+```bash
+~/.local/bin/codebase-memory-mcp cli index_repository --repo_path "/Applications/Claude Code/Diors-Builds"
+```
+
+Verified 2026-09-01 20:45 EDT: exit 0, `skipped_count: 0`, **9,763 nodes / 20,764 edges**, and `search_graph` then answers for `isStall`, a function written an hour earlier, with `in_degree: 2`. ⚠️ Note the tool ALSO renamed its argument between layers — `cli` takes `--repo_path`, the MCP tool takes `project_path`, and `detect_changes`/`search_graph` take `project` (a NAME, not a path). Three spellings for one idea.
+
+⚠️ **`detect_changes` after a fresh index reports EVERY file as changed** (620 here) because the rebuild leaves `base_sha` empty. That is not staleness, and reading it as staleness is how this entry got its first wrong diagnosis. Check `list_projects`'s `base_sha` before believing a change count.
+
+⚠️ **Two artifacts left on disk deliberately, not cleaned up**: `~/.cache/codebase-memory-mcp/*.moved-1788309827` (the previous database and a `.db.corrupt` the server had already rotated) are kept so the state is recoverable. Delete them once a week of clean indexing has passed.
+
+**Report upstream:** the MCP handler should forward `project_path` as the worker's `repo_path`, and `index.supervisor.worker_failed` should surface the worker log's last line — it already writes the path (`~/.cache/codebase-memory-mcp/logs/.worker-<pid>.log`) into its own `warn` line and then discards the content.
+
+**Verify:** `index_repository` succeeds through the MCP tool with `project_path`, without the CLI workaround.
 
 ### `[P2 · M]` `portal:states` is non-deterministic, and it now blocks a §L ④ claim
 *Filed 2026-09-01 20:01 EDT by the Access session, which could not claim its machine floor because of it.*
