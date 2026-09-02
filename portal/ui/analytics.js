@@ -36,7 +36,11 @@ const ACK_BUCKET_LABEL = { 0: 'under 100ms', 100: '100–250ms', 250: '250–500
 const LONG_WAIT_MS = 10000;
 
 const pct = (n, d) => (d ? (n / d) * 100 : 0);
-const fmtMs = (ms) => (ms == null ? '—' : ms >= 1000 ? `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s` : `${Math.round(ms)}ms`);
+// ⚠️ A SUB-MILLISECOND FIGURE ROUNDED TO "0ms", WHICH READS AS BROKEN RATHER THAN AS FAST. The dependency rows divide a total by a call count, so Atlas at 52ms across 437 calls printed "0ms each" — a real measurement rendered as the absence of one. Zero itself still prints 0ms; only a value that exists and is under half a millisecond becomes the bound.
+const fmtMs = (ms) => (ms == null ? '—'
+    : ms >= 1000 ? `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s`
+    : ms > 0 && Math.round(ms) === 0 ? '<1ms'
+    : `${Math.round(ms)}ms`);
 
 // Where the event came from, which is the column that makes "one history, two front doors" true rather than asserted: a ChangeLog row written by the portal and one written by /manage are the same kind of thing from different surfaces, and you can only see that if the surface is a column.
 function sourceOf(row) {
@@ -469,6 +473,31 @@ function Timing({ stats }) {
                                     </div>`;
                             })}
                         </div>
+                        <!-- The design closes this panel by NAMING the outlier and saying what it costs; the portal drew the bars and stopped, so the one row a reader needs to act on had to be found by eye every time. Carried across with the panel when it moved to Timing, and the banner was the half that did not come with it.
+                             ⚠️ IT RANKS BY PER-CALL AVERAGE, NOT BY TOTAL, because the panel's own colour rule two comments above says a total is not a speed — 52ms across 447 calls and 3.6s across one call are opposite facts. A banner ranking by total would name a different row than the one painted slow, directly beneath it. -->
+                        ${(() => {
+                            const worst = byDep.map((d) => ({ name: d._id, calls: d.calls || 0, per: d.calls ? d.totalMs / d.calls : d.totalMs }))
+                                .sort((x, y) => y.per - x.per)[0];
+                            if (!worst) return null;
+                            const over = worst.per >= ACK_LIMIT_MS;
+                            const atlas = byDep.find((d) => d._id === 'atlas');
+                            return html`
+                                <div class=${'hbanner' + (over ? ' warn' : '')}>
+                                    <span class="hbi"><${Icon} name=${over ? 'triangle-alert' : 'check'} cls="sm" /></span>
+                                    <div>
+                                        <h4>${worst.name} is the slowest per call, at ${fmtMs(worst.per)}</h4>
+                                        <!-- ⚠️ THE ATLAS LINE IS A TOTAL WHERE THE HEADLINE IS AN AVERAGE, and that is deliberate rather than an inconsistency. The headline ranks by per-call speed because that is what the panel's colour means; this sentence answers a different question — how much of the week's cost the database accounts for — which is a total by definition. Written as an average it read "Atlas answers in 0ms", a real 52ms across 437 calls rendered as nothing at all. -->
+                                        <p>${atlas
+                                            ? html`Atlas costs ${' '}<b>${fmtMs(atlas.totalMs)}</b>${' '}
+                                                across <b>${(atlas.calls || 0).toLocaleString()}</b> calls this week, so the database is not the cost. `
+                                            : html`Atlas has not been called in this window, so the database is not in this picture at all. `}
+                                            ${over
+                                                ? html`At ${fmtMs(worst.per)} it exceeds Discord's ${ACK_LIMIT_MS / 1000}s acknowledgement deadline
+                                                    on its own, which is survivable only where it runs as a background job rather than inside an interaction.`
+                                                : html`It stays inside the interaction budget.`}</p>
+                                    </div>
+                                </div>`;
+                        })()}
                     </section>
                 </div>` : null}
         </div>`;
