@@ -31,11 +31,25 @@ status: live
 - `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites.
 - ⚠️ **AND THE ESCALATION EVENTS ARE PREDICTABLE ON THIS PASS, so watch for them rather than pre-empting them.** The gate's rule is Sonnet→Opus at the same effort when *a premise turns out false* or *a silent-failure surface appears*. Part 4 fired both and never re-derived: the plan's `.mxgrp` colspan warning did not reproduce, and two silent-failure surfaces showed up (a `python3` batch that printed six successes and wrote nothing; a hook self-test whose harness could not express the difference it was checking). **If either happens here, re-derive in the `Premise <X> · Delib <Y> -> <Cell>` shape and say so — do not just keep going.**
 
-## Branch state
+## Branch state — YOU ARE ALREADY ON YOUR BRANCH, AND IT CARRIES WORK THAT IS NOT PART 5
 
-Part 4 (Access) landed on **`feat/access-portal-conformance`**, unpushed and unmerged as of this writing. **Verify what you inherited by RUNNING `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`, not by trusting a count here** — this paragraph deliberately quotes none, because the commit that writes a count changes it. What is stable: Part 4's commits touch `portal/ui/access.js`, `portal/ui/app.css`, `portal/fixtures/**`, `docs/reference/portal-decision-ledger.md`, `docs/db-deferred-list.md` and the plan; **anything touching `portal/ui/analytics.js` is not from Part 4.**
+**Part 4 (Access) is MERGED** — PR #179, squash `442e8a1` on `v3-pre-release`, `package.json` at **3.72.0-pre**, no tag (none is minted on the pre-release line until `v3.0.0`), branch deleted local and remote.
+
+🔴 **`feat/analytics-portal-conformance` already exists, is checked out, and carries three commits that are NOT Part 5.** Harkirat's instruction, 2026-09-01 20:52 EDT: **fold them into your work and push once, at the end** — do not branch afresh, do not push them separately.
+
+**Verify what you inherited by RUNNING `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`, not by trusting a count here** — this paragraph deliberately quotes none, because the commit that writes a count changes it. What is stable is the SUBJECTS and the property they share: **all three are records or workflow changes, and none touches `portal/`.**
+
+| Commit | What it is |
+|---|---|
+| `c433e1b` | the FIRST, WRONG diagnosis of a `codebase-memory-mcp` failure. Kept rather than amended, because the commit after it is the correction and the pair is the lesson |
+| `84d3f34` | the real cause — `index_repository` takes `project_path`, the worker requires `repo_path`, and the mismatch is reported as *"Indexing worker crashed on a file"* |
+| `042b732` | the merge close-out in `CLAUDE.md` and in the git-workflow memory now re-syncs BOTH indexes, because a merge is what makes them stale and neither says so |
+
+⚠️ **A commit in that range touching `portal/` means something other than this handoff happened.** Check before assuming it is yours.
 
 ⚠️ **One worktree is live — `draw-calculator-breakdown-146641`, Harkirat's peer session. Never touch it.** `chore/silent-mode-guards-parked` is pushed, inert, registered in no settings file, and **is not your work.**
+
+🔴 **THE PUSH IS STILL ONE APPROVAL, AT THE END.** Three unpushed commits do not become pre-approved by being inherited — an approval has a scope, and the one that covered Part 4 was consumed by the merge of #179. When Part 5 is ready, ask once for the whole branch.
 
 ## The mode
 
