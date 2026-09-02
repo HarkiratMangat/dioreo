@@ -19,12 +19,14 @@ const { readAll } = createRequire(import.meta.url)('./lib/portalReceipt.cjs');
 const TOOLS = ['audit', 'inventory', 'diff', 'converge', 'realwalk'];
 const head = sh('git rev-parse --short HEAD');
 
-// The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype and Review's is a static composition a tenth its size, so one target across seven pages was never right.
+// The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype and Review's is a tenth its size, so one target across seven pages was never right. ⚠️ "Smaller" is not "nothing to open": see the handler comment below.
 const fidelity = (realm) => {
     const f = path.join(PKG, `${realm === 'home' ? 'index' : realm}.html`);
     if (!fs.existsSync(f)) return null;
     const src = fs.readFileSync(f, 'utf8');
-    return { kb: Math.round(src.length / 1024), handlers: (src.match(/addEventListener|onclick=/g) || []).length };
+    // 🔴 THIS METRIC WAS BLIND TO PROPERTY-ASSIGNED HANDLERS AND IT MISLED TWO PARTS. It counted only `addEventListener` and inline `onclick=`, so a page that wires everything with `b.onclick = fn` reported ZERO — and the sentence this number feeds ("static compositions with ZERO handlers, so an interaction tier has nothing to open") is a strong claim about interactivity, printed as fact. Measured 2026-09-01 23:07 EDT: analytics.html reported 1 and wires 12; review.html reported 0 and wires 7; index.html reported 0 and wires 2. Part 5 diagnosed this in prose and left the tool alone, so Part 6's own plan rows inherited the same falsehood. ⚠️ AN EXPLICIT EVENT LIST, NOT `\.on[a-z]+`. A loose pattern matches `.online =` or any property whose name happens to start with "on", and a metric that OVER-counts is the same defect as the lookup table that UNDER-covered: both are a pattern standing in for an enumeration. Add a name here when a page starts using it.
+    const ON = /addEventListener|onclick=|\.on(?:click|input|change|submit|keydown|keyup|focus|blur|mouseenter|mouseleave|pointerdown|pointerup)\s*=/g;
+    return { kb: Math.round(src.length / 1024), handlers: (src.match(ON) || []).length };
 };
 
 const rows = [];
@@ -52,10 +54,18 @@ for (const r of rows.sort((a, b) => a.realm.localeCompare(b.realm))) {
     const drift = r.at ? (r.drift ? `🔴 ${r.drift} — RE-MEASURE` : '✅ fresh — portal/ui unchanged since') : '—';
     console.log(`  ${r.realm.padEnd(11)} ${fid}   ${at}   ${drift.padEnd(24)} ${r.views.join(' · ')}`);
 }
+const HS = rows.map((r) => (r.fid && typeof r.fid.handlers === 'number' ? r.fid.handlers : null)).filter((x) => x !== null);
+const MIN_H = HS.length ? Math.min(...HS) : 0;
+const MIN_R = (rows.find((r) => r.fid && r.fid.handlers === MIN_H) || {}).realm || '?';
 console.log(`
-  reference fidelity is bytes + event handlers in the mockup page. Season is a realised interactive
-  prototype; review and home are static compositions with ZERO handlers, so an interaction tier has
-  nothing to open on them and a percentage chase there manufactures precision the source lacks.
+  reference fidelity is bytes + event handlers in the mockup page, and the handler count now sees
+  PROPERTY ASSIGNMENT (\`b.onclick = fn\`) as well as addEventListener. ${MIN_H === 0
+    ? 'One or more pages still report zero.'
+    : `No page here reports zero — the smallest is ${MIN_H}, on ${MIN_R}.`} This footer used to assert that
+  review and home were "static compositions with ZERO handlers, so an interaction tier has nothing to
+  open on them", which was an artifact of the old regex and not a fact about those pages. Season is a
+  realised prototype and the smaller pages are compositions, so the TARGET follows the reference —
+  but smaller is not empty, and an interaction tier exists wherever handlers do.
 
   🔴 THIS IS NOT A QUALITY REPORT. A recorded fixture says the page's geometry has not moved since it
   was written — never that the realm matches its design. The number comes from portal:diff, and the
