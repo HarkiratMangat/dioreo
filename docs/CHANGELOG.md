@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.73.0 — 2026-09-01 — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
+## Pre-Release v3.73.0 — 2026-09-02 (#180) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
 
 Part 5 of the conformance pass. Two of the three headline defects were **live wrong renders on real data**, not spacing.
 
@@ -60,7 +60,7 @@ Also: `role="button"` on a real `<tr>` (it replaces the row role and orphans the
 
 Six composition forks went to Harkirat in one pop-up at the start. "Where the milliseconds go" stays on Timing, the river keeps its Source column, Usage keeps share, the export scopes stay, the admin switch moves. The Usage rows keep their unprefixed names against the design's leading slash, because the busiest of them are background jobs and `/webp_nameplate` is not something a person can type.
 
-## Pre-Release v3.72.0 — 2026-09-01 (#179) — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct
+## Pre-Release v3.72.0 — 2026-09-01 (#179, `442e8a1`) — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct
 
 Part 4 of the conformance pass. The headline is not the realm: it is that **every defect below the first three was found by an audit run against work already committed, verified and reported as finished** — and that the audit's two agents which went and CHECKED reality found eight defects, while the two that read the documents found none in the code.
 
