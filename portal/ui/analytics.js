@@ -211,7 +211,6 @@ function Health({ health, onOpenTiming, onFilterLevel }) {
         <div class="panel" id="health">
             <div class="ph">
                 <span class="t">Health</span>
-                <span class="rt">${health.commands24h ?? '—'} commands · ${health.rssSampleCount ?? 0} memory samples · ${health.restarts7d ?? '—'} boots in 7 days</span>
             </div>
             <!-- 🔴 THE TILES SAID WHAT THE MASTHEAD HAD JUST SAID. Measured 2026-08-27: the masthead read
                  uptime 1h 30m · errors 24h 23 · commands 24h 496, and three of the four tiles beneath it
@@ -358,7 +357,6 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Usage — last 7 days</span>
-                <span class="rt">${current.toLocaleString()} this week · ${previous.toLocaleString()} the week before</span>
             </div>
             <!-- ⚠️ INSIDE THIS PANEL, NOT BESIDE IT. Built first as a standalone box below — three numbers
                  the bars underneath already carry, in a second container, which is two places answering one
@@ -452,7 +450,6 @@ function Timing({ stats }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Timing — last 7 days</span>
-                <span class="rt">your own admin commands are counted here, unlike Usage</span>
             </div>
             <div class="tim2">
                 <section class="hpanel">
@@ -587,7 +584,6 @@ function Reach({ rows = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Reach — last 7 days</span>
-                <span class="rt">${total.toLocaleString()} public interactions</span>
             </div>
             <div class="reach">
                 <section class="hpanel">
@@ -650,7 +646,6 @@ function Search({ rows = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Search — last 30 days</span>
-                <span class="rt">autocomplete sessions only</span>
             </div>
             <div class="srchview">
                 <div class="tiles" style="padding:0">
@@ -797,11 +792,21 @@ export function AnalyticsRealm({ session }) {
         Reach: () => html`<${Reach} rows=${data.reach} />`,
         Search: () => html`<${Search} rows=${data.searches} />`,
     };
+    // 🔴 THE DESIGN PUTS A PER-VIEW SUMMARY IN THE ONE PANEL HEADER AND THIS REALM HAD NONE THERE. analytics.html:40 draws a `span.sp` and :601 fills it per view, and Shell has carried a `meta` slot for exactly this since Broadcast had to hand-roll one -- access, armory, season and broadcast all use it and Analytics was the only realm that did not, which is what converge reported as `ABSENT mk span.sp`. ⚠️ THE LINES ARE MOVED, NOT ADDED. Each view already drew this sentence inside its OWN panel header, a second `.ph` nested in the Shell's -- so writing a meta line without removing those would be the two-layers-saying-the-same-thing defect this file keeps finding, four inches apart on the same screen.
+    const reachTotal = (data.reach || []).reduce((a, r) => a + (r.n || 0), 0);
+    const usage = data.usageStats || {};
+    const viewMeta = view === 'Health'
+        ? `${data.health.commands24h ?? '—'} commands · ${data.health.rssSampleCount ?? 0} memory samples · ${data.health.restarts7d ?? '—'} boots in 7 days`
+        : view === 'Usage' ? `${(usage.current ?? 0).toLocaleString()} this week · ${(usage.previous ?? 0).toLocaleString()} the week before`
+        : view === 'Timing' ? 'your own admin commands are counted here, unlike Usage'
+        : view === 'Reach' ? `${reachTotal.toLocaleString()} public interactions`
+        : 'autocomplete sessions only';
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
+                  meta=${viewMeta}
                   tools=${html`
                       <label class="adminsw">
                           <input type="checkbox" checked=${includeAdmin}
