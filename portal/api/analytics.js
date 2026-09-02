@@ -12,6 +12,16 @@ const { sendJson, forbidden } = require('./httpUtil');
 
 const DAY_MS = 86400000;
 
+// 🔴 THE RIVER IS A CAPPED WINDOW AND THE TABLE SAID "11 of 11". eventRiver takes the newest `limit` of each collection and slices to `limit`, so the Manifest -- which divides by the rows it was handed when no total is given -- reported the collection as exactly the size of the page it was showing, over a database holding thousands. That is the identical defect manifest.js:163 already records for Armory ("125 of 125" over a 133-build collection), in the one component that carries the comment about it, on a realm whose whole subject is counting. The design states both numbers too: "12 shown · 1323 recorded".
+//
+// ⚠️ SEPARATE FROM eventRiver RATHER THAN FOLDED INTO IT: the export route calls eventRiver too and wants the rows alone, and changing a shared return shape to serve one caller is how the next reader gets a surprise. estimatedDocumentCount rather than countDocuments -- it reads collection metadata instead of scanning, and a count line does not need to be exact to the row.
+async function riverTotal() {
+    const [changes, alerts, boots] = await Promise.all([
+        ChangeLog.estimatedDocumentCount(), AlertLog.estimatedDocumentCount(), BootRecord.estimatedDocumentCount(),
+    ]);
+    return changes + alerts + boots;
+}
+
 async function eventRiver({ limit = 100 } = {}) {
     const [changes, alerts, boots] = await Promise.all([
         ChangeLog.find({}).sort({ createdAt: -1 }).limit(limit).lean(),
@@ -190,17 +200,18 @@ function register(route) {
         const includeAdmin = url.searchParams.get('admin') === '1';
         const { OUTCOME_KEYS, ENTRY_KEYS } = require('../../models/AnalyticsRollup');
         // 🔴 THE LIMITS ARE RAISED HERE, NOT IN THE SHARED FUNCTION. 8 and 6 are the numbers that fit a Discord panel; the portal has a scrolling page and the reason it exists is depth. Passing the limit keeps both true at once -- see the options bag on computeUsageStats.
-        const [river, health, usageStats, timingStats, reach, searches, events7d] = await Promise.all([
+        const [river, health, usageStats, timingStats, reach, searches, events7d, riverCount] = await Promise.all([
             eventRiver({}), healthStats(),
             computeUsageStats({ limit: 25, includeAdmin }), computeTimingStats({ limit: 25, includeAdmin }),
             reachStats(), searchTerms(),
             AnalyticsEvent.find({ createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) } }).select('createdAt').lean(),
+            riverTotal(),
         ]);
         health.spark.commands = bucketByDay(events7d, 7);
         // 🔴 THE THREE TEXT EXPORTS ARE GONE FROM THIS PAYLOAD, AND DELETING THEM IS THE POINT. buildUsageExport/buildTimingExport/buildAlertExport produce the Discord command's own downloadable .txt, and the portal was rendering all three verbatim inside <pre> blocks — the fallback that stood in for a dashboard until there was one. Now that Usage and Timing are real panels, keeping the text beside them is two layers saying the same thing, which is the defect this branch has spent its life finding rather than a harmless extra. The alert export's own facts (level, detail) were never lost: eventRiver already returns full AlertLog documents, so the river carries them as columns and filters instead of prose. Three text builds per page load go with them. The exports remain exactly where they belong — attached to /bot analytics, in Discord.
         //
         // OUTCOME_KEYS/ENTRY_KEYS ride in the payload because the browser cannot require a Mongoose model and the six outcomes are an ENUM, not a display list: the Outcomes panel's whole reading is which ones have NEVER occurred, so it has to know the ones the data does not contain. models/AnalyticsRollup is their single source (its own header records the bug from when two copies existed), and the UI holds only the prose labels.
-        sendJson(res, 200, { river, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
+        sendJson(res, 200, { river, riverTotal: riverCount, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
     }));
 
     // ⚠️ EACH SCOPE RE-QUERIES ITS OWN TABLE rather than reusing a cached page payload: an export taken ten minutes after the page loaded should be the data as it is NOW, not a snapshot of what the tab happened to render. The cost is one query per download, which is the right trade for a button somebody presses occasionally.
@@ -221,4 +232,4 @@ function register(route) {
     }));
 }
 
-module.exports = { register, eventRiver, healthStats, bucketByDay, reachStats, searchTerms, CSV_TABLES, toCsv };
+module.exports = { register, eventRiver, riverTotal, healthStats, bucketByDay, reachStats, searchTerms, CSV_TABLES, toCsv };

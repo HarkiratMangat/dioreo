@@ -323,7 +323,11 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </tbody>
             </table>
             </div>
-            ${visible.length === 0 ? html`<p class="empty">${rows.length ? 'No rows match this search or filter.' : emptyText}</p>` : null}
+            ${''/* ⚠️ A NO-MATCH STATE THAT NAMES NEITHER THE ACTION NOR THE TOTAL. It read "No rows match this search or filter." on every realm -- true, and it leaves the reader to work out that a filter is still set somewhere above and that the collection is not empty. The UX-copy audit calls this out (E2) and names the design's own template: `season.html:2431` says "Nothing matches that. Clear the search or a filter -- N alerts, N changes and N deploys are recorded in total." The rewrite keeps that shape generically: what to do, then how much is behind the filter, using the realm's own row noun. ⚠️ The two states stay DISTINCT -- an empty collection is not a filtered-out one, and collapsing them tells a reader with no data that their search is wrong. */}
+            ${visible.length === 0 ? html`<p class="empty">${rows.length
+                ? html`<b>Nothing matches that.</b> Clear the search or a filter — ${rows.length.toLocaleString()}${' '}
+                    ${rows.length === 1 ? rowNoun[0] : rowNoun[1]} in total.`
+                : emptyText}</p>` : null}
             <!-- The foot row: a realm's own quick-add strip, under the table it adds to. The design puts
                  one here on Season — a name, a type, two dates and a button — as the fast path beside the
                  composer above, and the portal had only the composer. -->

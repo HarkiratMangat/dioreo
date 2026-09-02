@@ -748,10 +748,10 @@ export function AnalyticsRealm({ session }) {
           note: 'What people searched for, and what returned nothing — the only export here that names a gap rather than a total.' },
     ];
 
-    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again.
+    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again. ⚠️ ONE WORD FOR THE COMMITTED SENSE, AND IT IS "REVERSE". The UX-copy audit's vocabulary table (`local/handoff/2026-08-25-portal-ux-copy-audit.md`, gitignored -- state the path when citing it) reserves Undo for taking a STAGED change back and Reverse for undoing a COMMITTED one, because one word for two operations at different tiers is how a reader learns the wrong consequence. This realm carried both: the bulk bar and its confirm said Revert while the event drawer said Reverse, four inches apart. The op id stays `change.revert` -- an internal identifier is not a reader-facing word, and renaming it would break the route, the ChangeLog rows already written, and every custom_id in a panel someone still has open.
     async function revert(changeId) {
         const res = await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
-        if (await reportFailure(overlay, res, 'That change was not reverted')) return false;
+        if (await reportFailure(overlay, res, 'That change was not reversed')) return false;
         load.reload();
         return true;
     }
@@ -764,11 +764,11 @@ export function AnalyticsRealm({ session }) {
         const revertable = chosen.filter((r) => r.kind === 'change');
         overlay.confirm({
             op: 'change.revert', tier: 2, danger: true,
-            confirmLabel: revertable.length === 1 ? 'Revert it' : `Revert ${revertable.length} changes`,
-            title: revertable.length === 1 ? 'Revert this change?' : `Revert ${revertable.length} changes?`,
+            confirmLabel: revertable.length === 1 ? 'Reverse it' : `Reverse ${revertable.length} changes`,
+            title: revertable.length === 1 ? 'Reverse this change?' : `Reverse ${revertable.length} changes?`,
             body: html`
                 <p class="dw-p">This applies each change's recorded inverse <b>immediately</b> — it does not stage, and
-                    the Review screen never sees it. The revert is itself recorded here, so it can be reverted in turn.</p>
+                    the Review screen never sees it. The reversal is itself recorded here, so it can be reversed in turn.</p>
                 ${chosen.length !== revertable.length ? html`
                     <p class="dw-p"><b>${chosen.length - revertable.length}</b> of the selected rows${' '}
                         ${chosen.length - revertable.length === 1 ? 'is an alert or a restart' : 'are alerts or restarts'},
@@ -825,8 +825,10 @@ export function AnalyticsRealm({ session }) {
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
                                                     bulkTier=${3} rowNoun=${['event', 'events']}
-                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]}
+                                                    bulkActions=${[{ label: 'Reverse', danger: true, onClick: confirmRevert }]}
                                                     onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
+                                                    ${''/* The river is capped at 100 server-side, so without a total the count divides by the page and reads 11 of 11 over a collection holding thousands -- a number that can never say something is being withheld. */}
+                                                    totalRows=${data.riverTotal ?? rows.length} countSuffix=" events"
                                                     filterSignal=${riverFilter} />`} />
     `;
 }

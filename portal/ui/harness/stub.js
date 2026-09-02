@@ -78,6 +78,8 @@ function analyticsPayload() {
     const spark = (n, peak) => Array.from({ length: 7 }, (_, i) => Math.round(peak * (0.4 + 0.6 * Math.abs(Math.sin(i + n)))));
     return {
         river,
+        // Mirrors the real route: the fixtures own recorded totals, never the sample length, or the harness teaches that the river shows everything there is.
+        riverTotal: ((F_.alertStats || []).reduce((n, a) => n + (a.n || 0), 0) + changeRows.length + (totals.boots || 0)) || river.length,
         health: {
             uptimeSince: new Date(Date.now() - (boot.uptimeSec || 5400) * 1000).toISOString(),
             lastBootKind: boot.kind, lastBootVersion: boot.lastVersion,
