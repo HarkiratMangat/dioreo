@@ -1,7 +1,7 @@
 {
   "name": "dioreo",
-  "version": "3.71.0-pre",
-  "description": "Discord bot for Call of Duty: Mobile \u2014 loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
+  "version": "3.72.0-pre",
+  "description": "Discord bot for Call of Duty: Mobile — loadouts, lucky draws, CP pricing, patch notes, seasonal calendars, and countdowns.",
   "main": "index.js",
   "private": true,
   "scripts": {

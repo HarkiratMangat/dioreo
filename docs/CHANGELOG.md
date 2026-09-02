@@ -28,7 +28,51 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.71.0 — 2026-09-01 (#178) — Broadcast's SAVED badge was pale grey on a bright green fill, four of the Manifest's six state shapes had never rendered, and the memory index had been losing its tail to a platform limit nobody had acted on
+## Pre-Release v3.72.0 — 2026-09-01 (#179) — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct
+
+Part 4 of the conformance pass. The headline is not the realm: it is that **every defect below the first three was found by an audit run against work already committed, verified and reported as finished** — and that the audit's two agents which went and CHECKED reality found eight defects, while the two that read the documents found none in the code.
+
+### The realm
+
+🔴 **A black bar hung out of the bottom of every granted cell in the permission grid.** `.mxcell[aria-checked=true]::after` draws its checkmark from two rotated borders, centred only by the 26px rule's `place-items:center` — which a later 16px rule replaces with `display:block`. The mockup never trips it, because it marks its cells `aria-pressed` where the portal marks them `aria-checked`: **two sides running different code paths through byte-identical CSS.** Invisible to all five audit sections and to a fully green suite, and obvious the moment two crops sat side by side. That is the third consecutive realm whose largest defect came from looking rather than from a number.
+
+🔴 **The owner row had never rendered once.** The row markup carried an `owner ? locked` branch keyed on a `discordId` match against a matrix built from `AdminUser` documents — and the owner is not one, so the branch was unreachable. The grid said *"owner is not editable"* about a row it did not draw, and `.ownerrow` and `.locked` sat with no emitter in either stylesheet.
+
+🔴 **Two masthead tones styled nothing.** `tone:'hot'` and `tone:'bad'` produce `.stat.hot` and `.stat.bad`; the only tones either sheet defines are `.stat.warn` and `.stat.stg`. A single-points-of-failure count meant to read as a warning painted in ordinary ink — the same defect `home.js` already carried a comment about, for a `tone:'live'` that styled nothing.
+
+Also closed: the `permissions` stat the design draws and the portal omitted · the owner-only callout, which is the one thing a reader cannot work out from the grid · the racknote · the mark legend and the view meta line, moved into `Shell`'s `realmKey` and `meta` slots, **both of which already existed and this realm used neither** · the grant shortcut, `G` → the `n` every other realm binds · and the By-permission list, which showed twelve raw tokens with grey dots and explained neither flag it drew.
+
+**Sessions** stopped being a third view tab and became the design's second always-visible panel; the **inline grant composer** was kept over the design's drawer. Both were Harkirat's calls, put to him in one batched pop-up at the start of the pass rather than discovered as forks at the end.
+
+### What the reader test broke
+
+🔴 **The 🔒 the legend names rendered only in the harness.** `buildPermissionMatrix` has never emitted `ownerOnly`; the only source of that field is the mockup's fixtures, which the build copies into the harness. **Every instrument in this pass reads the harness**, so all of them reported the mark as present — and the commit that "fixed" the legend was titled after a defect it did not fix. It is derived from `NOT_IN_ALL` now, so the mark and the rule that makes `destructive` owner-only cannot drift.
+
+🔴 **The inherited ring still survived on stylesheet source order.** An inherited cell keeps `aria-checked=true`, so `.mxcell[aria-checked=true]` and `.mxcell.inh` match it at identical specificity and the hollow ring won only because `.inh` is declared later. Dropping the `.on` class removed one fill source and left the other, while the commit message said the dependency was gone.
+
+🔴 **The owner could be counted six ways and drawn none.** Nothing stopped a grant to the owner, and the grid filters them out of its rows — so their grants became invisible and un-revokable from the one screen that manages them, while the masthead, the view meta, every column header, the export and `singlePointsOfFailure` all still counted them. That last would have rendered *"single point — only …2283 besides you"*, naming the owner as somebody besides you.
+
+Also: column headers off by one, and the design's own copy carried the fix (*"besides the owner"*) · the sessions panel ported without the two sentences that are the only statement of the TTL and of the fact that ending a session does **not** stage · its 16px margin and its landmark name, both lost in the move to `footSlot` and both below the fold where the instruments cannot see them · and a realm key naming three marks on a page that, with zero admins, draws none of them.
+
+### The guards, and one that had a hole the shape of the working practice
+
+The placeholder-timestamp branch **corrects the write instead of refusing it**. `updatedInput` is honoured by this build — measured, not assumed. ⚠️ **But the hook was registered on `Edit|Write`, and every multi-file edit in this repo goes through a `python3` heredoc inside `Bash`**, which it never saw: four placeholder stamps reached a tracked plan that way, in the same session that built the fix. `PostToolUse` covers `Bash` now; `PreToolUse` deliberately does not, because rewriting a shell command mangles the search pattern of any command trying to find placeholders — which it did, on the run that added it.
+
+Building it surfaced two more: a probe branch referencing **two variables that do not exist**, which 47 self-tests passed because a branch gated off is a branch no suite enters; and a `run()` helper that printed `deny:` for **any** decision, so switching a branch from deny to allow would have kept every case green. **The harness could not express the difference it was being asked to check.**
+
+And the escalation rule now changes how you work rather than what you print — a model recommendation mid-session is one Harkirat cannot act on without discarding the cache.
+
+### Records
+
+`docs/reference/portal-decision-ledger.md` gains a `## Access` section: sixteen rows, each with a falsifier, plus a dev-data reachability note. Two of them retire claims the conformance plan itself carried — the `.mxgrp` colspan warning does not reproduce on either side, and `.locked` was a scanner artefact **and** genuinely unreachable, two causes for one symptom.
+
+`docs/superpowers/plans/ANALYTICS-PROMPT.md` is Part 5's carrier, and it was rewritten from what the reader agents measured rather than from what this session assumed: Analytics is **not** the near-static realm §L calls it (that figure counts `/addEventListener|onclick=/` and the page wires twelve handlers by property assignment, one of them a drawer opened from a table row), and **30.6% of its alerts render as the grey no-severity tier** because `LEVEL_ROW` cannot emit `caution` while the level it *does* carry never occurs.
+
+The reader test itself is now **two agents, not seven**, gated on Harkirat's approval and run last — and `.claude/rules/plan-drafting.md`'s standing carve-out that let them be dispatched unasked is retired.
+
+⚠️ **The machine floor is NOT claimed for this release.** `npm test` exits 1 on `portal:states`, and the test that distinguishes a flake from a defect returned neither answer: in-suite it failed on one Season state, standalone immediately after on a different one. Filed `[P2 · M]` with both measurements. Every other gate is green.
+
+## Pre-Release v3.71.0 — 2026-09-01 (#178 · `94a70f0`) — Broadcast's SAVED badge was pale grey on a bright green fill, four of the Manifest's six state shapes had never rendered, and the memory index had been losing its tail to a platform limit nobody had acted on
 
 Part 3 of the conformance pass, and the carrier work three read-only auditors turned up while checking it. Two numbers frame the realm: ② SHAPE went **20 and 22 → 6 and 6** across its two views, and the pixel diff went **21 regions → 16** with both pages height-identical at 1258px. Every region that remains is cited, and the ten decisions behind them are in `docs/reference/portal-decision-ledger.md` with a falsifier apiece.
 
