@@ -201,12 +201,14 @@ export const PORTAL_TOUCHED = [
     (f) => f.startsWith('portal/'),
     (f) => f.startsWith('scripts/portal'),
     (f) => f.startsWith('docs/superpowers/mockups/'),
-    // A dependency bump can move puppeteer or Chrome under the walk without any portal file changing. ⚠️ But a VERSION BUMP is not a dependency change, and treating it as one made this filter useless on the first PR it met: every release touches package.json and package-lock.json, so the walk would have run on every diff regardless. `depsChanged` below reads the actual diff and keeps these two only when something other than the version field moved.
+    // A dependency bump can move puppeteer or Chrome under the walk without any portal file changing. ⚠️ But a VERSION BUMP is not a dependency change, and treating it as one made this filter useless on the first PR it met: every release touches package.json and package-lock.json, so the walk would have run on every diff regardless. `manifestChangedBeyondVersion` below reads the actual diff and keeps these two only when something other than the version field moved.
     (f) => f === 'package.json' || f === 'package-lock.json',
 ];
 
-// Exported for the test: a package.json diff that only moves `"version"` cannot affect a browser walk, and counting it as if it could is how a narrowing filter quietly widens back to everything.
-export function depsChanged(diffText) {
+// Exported for the test. A package.json diff that only moves `"version"` cannot affect a browser walk, and counting it as if it could is how a narrowing filter quietly widens back to everything — every release touches that file.
+//
+// ⚠️ IT IS DELIBERATELY BROADER THAN ITS OLD NAME (`depsChanged`) CLAIMED, and the name was the half that was wrong — renamed 2026-09-02 18:23 EDT by a code review. ANY non-version change here re-arms the walk, a `scripts` edit included, because `scripts` decides what actually runs. That is conservative on purpose: this branch edits `scripts` and therefore correctly does NOT skip its own walk. Narrowing until my own PR went green would be the "tune the gate until it passes" failure this repo has receipts for.
+export function manifestChangedBeyondVersion(diffText) {
     if (!diffText) return false;
     return diffText
         .split('\n')
@@ -230,10 +232,11 @@ function changedAgainstBase() {
             const manifests = files.filter((f) => f === 'package.json' || f === 'package-lock.json');
             if (manifests.length) {
                 const d = execFileSync('git', ['diff', `${base}...HEAD`, '--', ...manifests], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-                if (!depsChanged(d)) files = files.filter((f) => !manifests.includes(f));
+                if (!manifestChangedBeyondVersion(d)) files = files.filter((f) => !manifests.includes(f));
             }
-            if (files.length) return { base, files };
-        } catch { /* try the next base */ }
+            // 🔴 RETURN ON THE FIRST BASE THAT RESOLVED, not the first that survives filtering -- corrected 2026-09-02 18:23 EDT by a code review. When the version-only filter emptied `files`, the loop fell through and tried the NEXT base, so a PR branched from v3-pre-release could end up judged against origin/main. An empty post-filter list is a real answer ("nothing here concerns the walk"), not a failed lookup to retry elsewhere.
+            return { base, files };
+        } catch { /* this base is unreachable -- try the next */ }
     }
     return null;
 }

@@ -29,6 +29,8 @@ CC_CONFIG_EARLY="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
 TO=$(command -v gtimeout || command -v timeout || true)
 probe_linksee() {
   [ "${MCPCHECK_PROBE:-1}" = "0" ] && { echo skipped; return; }
+  # 🔴 NO TIMEOUT BINARY MEANS NO PROBE — corrected 2026-09-02 18:21 EDT by a code review. The first version used `${TO:+...}`, so with neither gtimeout nor timeout on PATH the prefix vanished and the probe ran UNBOUNDED: in the exact hang it exists to report, it would block until the hook was killed and the whole banner -- probe line, db counts, every MCP routing rule -- would be lost. And its own budget was 8s against this hook's `"timeout": 8` in settings.json, so even WITH the binary a real hang killed the hook a moment before it could speak. 4s now, and no binary means say so.
+  [ -z "$TO" ] && { echo notimeout; return; }
   local cmdline out
   cmdline="${MCPCHECK_PROBE_CMD:-}"
   if [ -z "$cmdline" ]; then
@@ -37,7 +39,7 @@ probe_linksee() {
   fi
   case "$cmdline" in ''|' ') echo unregistered; return;; esac
   out=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"mcp-layer-check","version":"1"}}}' \
-        | ${TO:+$TO "${MCPCHECK_PROBE_TIMEOUT:-8}"} sh -c "$cmdline" 2>/dev/null | head -c 4000)
+        | $TO "${MCPCHECK_PROBE_TIMEOUT:-4}" sh -c "$cmdline" 2>/dev/null | head -c 4000)
   case "$out" in *'"result"'*) echo reachable;; *) echo unreachable;; esac
 }
 probe=$(probe_linksee)
@@ -154,6 +156,7 @@ case "$probe" in
   unreachable)  probe_line="🔴 linksee MCP: UNREACHABLE THIS SESSION -- initialize got no result. Every linksee tool call will fail, and the db counts on the next line say NOTHING about that: they are read straight from the sqlite file, which is readable whether or not the server is up. This failure is INTERMITTENT (measured 2026-09-02: failed, then reachable ~30min later with no config change), so retrying is reasonable -- but do not assume the memory layer is live, and say so if a recall comes back empty.";;
   unregistered) probe_line="🔴 linksee MCP: NOT REGISTERED in the Claude Code config -- see the server-presence block below.";;
   skipped)      probe_line="linksee MCP: probe skipped (MCPCHECK_PROBE=0)";;
+  notimeout)    probe_line="linksee MCP: probe SKIPPED -- no gtimeout or timeout on PATH, and an unbounded probe would hang this hook and lose the whole banner. Treat the db counts below as unverified.";;
   *)            probe_line="linksee MCP: probe could not run (no readable config or no jq) -- treat the db counts below as unverified.";;
 esac
 

@@ -29,6 +29,17 @@ if [ -n "${MERGE_NO_AUTOFIX:-}" ]; then
   exit 0
 fi
 
+# 🔴 ONLY WHEN THE MERGE IS THE LAST COMMAND ON THE LINE — corrected 2026-09-02 18:21 EDT by a code review. The first version appended to the end of the whole command string while the detector deliberately matches `gh pr merge` after `;`, `&&` and `|`. Reproduced: `gh pr merge ... && git fetch origin main:main` put the flag on `git fetch`, which leaves the merge unfixed AND breaks the fetch; piping into `tail -5` made it a filename. A flag on the wrong command is worse than a missing flag.
+#
+# Inserting it into the right SEGMENT means parsing shell quoting to find where that segment ends, and this hook is not the place to grow a shell parser -- rg-flag-guard already paid five false-positive classes learning what "text that merely looks like syntax" costs. So a chained command falls back to the advisory: it still reports, it just does not rewrite. Same boundary that file draws around a heredoc, for the same reason.
+rest=$(printf '%s' "$cmd" | sed -E "s/'[^']*'//g" | sed -E 's/\"[^\"]*\"//g' | sed -E 's/.*gh pr merge//')
+case "$rest" in
+  *";"*|*"&"*|*"|"*)
+    printf '%s\n\n⚠️ NOT rewritten: this command chains something after the merge, and appending the flag to the end of the line would put it on the WRONG command. Add --delete-branch to the merge yourself, or run the merge on its own.' "$msg" \
+      | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
+    exit 0;;
+esac
+
 fixed="$cmd --delete-branch"
 jq -n --arg c "$fixed" --arg r "$msg" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",updatedInput:{command:$c},permissionDecisionReason:$r}}'

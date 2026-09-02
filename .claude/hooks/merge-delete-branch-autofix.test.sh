@@ -24,6 +24,15 @@ chk "an unrelated command is silent"              "$([ -z "$(run 'git status --p
 chk "a command merely MENTIONING the flag is silent" "$([ -z "$(run 'echo remember --delete-branch')" ] && echo ok)"
 chk "empty input is silent"                       "$([ -z "$(printf '{}' | bash "$HOOK")" ] && echo ok)"
 
+# Found 2026-09-02 18:24 EDT by a code review: the flag was appended to the end of the LINE while the detector matches a merge after `;`, `&&` and `|`, so a chained command got the flag on the wrong program -- the merge stayed unfixed AND the following command broke.
+chained=$(run 'gh pr merge 42 --squash --body "x" && git fetch origin main:main')
+chk "a CHAINED merge is reported, never rewritten" "$(printf '%s' "$chained" | jq -e '.hookSpecificOutput.additionalContext and (.hookSpecificOutput.updatedInput | not)' >/dev/null 2>&1 && echo ok)"
+piped=$(run 'gh pr merge 42 --squash --body "x" | tail -5')
+chk "a PIPED merge is reported, never rewritten"   "$(printf '%s' "$piped" | jq -e '.hookSpecificOutput.updatedInput | not' >/dev/null 2>&1 && echo ok)"
+# ...and a separator inside a quoted string is not a chain.
+quoted=$(run 'gh pr merge 42 --squash --body "fixes a && b"')
+chk "a separator inside quotes is not a chain"     "$(printf '%s' "$quoted" | jq -e '.hookSpecificOutput.updatedInput.command | endswith("--delete-branch")' >/dev/null 2>&1 && echo ok)"
+
 seam=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' 'gh pr merge 42 --squash --body x' | jq -Rs .)" | MERGE_NO_AUTOFIX=1 bash "$HOOK")
 chk "MERGE_NO_AUTOFIX falls back to an advisory" "$(printf '%s' "$seam" | jq -e '.hookSpecificOutput.additionalContext and (.hookSpecificOutput.updatedInput | not)' >/dev/null 2>&1 && echo ok)"
 

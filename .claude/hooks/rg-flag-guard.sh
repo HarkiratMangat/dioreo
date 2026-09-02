@@ -88,11 +88,18 @@ for (a, b, tok) in spans:
     letters = list(tok[1:])
     new = [("I" if ch == "h" else ch) for ch in letters if ch not in ("r", "R", "E")]
     if new != letters:
-        edits.append((a, b, "-" + "".join(new) if new else ""))
+        # When the whole token goes, take one preceding space with it. A post-hoc
+        # out.replace("  ", " ") looked equivalent and was not: it ran over the WHOLE command,
+        # including the quoted spans this tokenizer exists to protect, so `rg -rn "foo  bar" docs/`
+        # was auto-allowed as `rg -n "foo bar" docs/` -- a silently altered regex, from the guard
+        # whose entire purpose is preventing silently-wrong searches. Corrected 2026-09-02 18:21 EDT by a
+        # code review. Splice precisely; never tidy the result afterwards.
+        start = a - 1 if (not new and a > 0 and cmd[a - 1] == " ") else a
+        edits.append((start, b, "-" + "".join(new) if new else ""))
 if edits:
     for (a, b, rep) in reversed(edits):
         out = out[:a] + rep + out[b:]
-    out = out.replace("  ", " ").strip()
+    out = out.strip()
     seen, still = False, False
     for tok in out.replace("|", " ").replace(";", " ").replace("&", " ").split():
         if tok == "rg": seen = True; continue

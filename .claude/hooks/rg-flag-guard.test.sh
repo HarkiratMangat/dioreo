@@ -43,6 +43,8 @@ c() { local n="$1" got="$2" want="$3"
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1));
   else echo "  FAIL  $n -- wanted [$want] got [$got]"; fail=$((fail+1)); fi; }
 
+# Found 2026-09-02 18:24 EDT by a code review: a post-hoc out.replace("  ", " ") ran over the WHOLE command, including the quoted spans the tokenizer exists to protect, so a double space inside a search pattern was silently collapsed -- a rewritten regex, from the guard whose purpose is preventing silently-wrong searches.
+c "a double space inside the pattern survives" "$(fixof 'rg -rn "foo  bar" docs/')" 'rg -n "foo  bar" docs/'
 c "-rn is corrected to -n"            "$(fixof 'rg -rn foo utils/')" 'rg -n foo utils/'
 c "-oh is corrected to -oI"           "$(fixof 'rg -oh pat dir')"    'rg -oI pat dir'
 c "a lone -r stays ADVISORY"          "$(kind 'rg -r foo utils/')"   advisory
