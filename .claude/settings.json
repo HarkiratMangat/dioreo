@@ -317,6 +317,16 @@
           }
         ],
         "matcher": "Edit|Write|MultiEdit|NotebookEdit"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/merge-delete-branch-autofix.sh\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [

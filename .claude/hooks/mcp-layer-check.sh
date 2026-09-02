@@ -20,6 +20,40 @@ FRAG_WARN="${MCPCHECK_FRAG_WARN:-25}"   # warn if more than N memories sit off t
 warn=""
 frag_line="linksee: db not found (memory layer unavailable)"
 
+# --- IS THE SERVER ACTUALLY ANSWERING? -----------------------------------------------------------
+# 🔴 ADDED 2026-09-02 15:44 EDT. Everything below this point reads the sqlite file directly, so the counts
+# line described the DATABASE and was silently taken as a statement about the SERVER. Measured this
+# morning: `claude mcp list` reported `linksee: ✘ Failed to connect -- CONNECTION_CLOSED` while this
+# banner printed a confident "linksee: 536 on 'Diors-Builds', 55 misfiled elsewhere, 134 awaiting
+# distil". Both were true and only one was relevant: a session starting during that failure has NO
+# memory layer and is told a healthy-looking number instead.
+#
+# The failure is INTERMITTENT, which is what makes reporting it worth 3s at SessionStart -- it was
+# reachable again ~30min later with nothing changed. Ruled out as causes before writing this: stdout
+# pollution (npm notices go to stderr; stdout is clean JSON-RPC and initialize answers correctly) and
+# npx overhead (3.34s via npx vs 3.15s for the global binary already on PATH -- not a timeout cliff).
+# So there is no fix to apply at the config level; the honest remedy is to stop hiding it.
+#
+# ⚠️ IT PROBES THE COMMAND THE CONFIG ACTUALLY REGISTERS, never a hardcoded one. A probe of a
+# different command than Claude Code launches would be a green light for something nobody runs --
+# the same class of error as the counts line it replaces.
+CC_CONFIG_EARLY="${MCPCHECK_CC_CONFIG:-$HOME/.claude.json}"
+TO=$(command -v gtimeout || command -v timeout || true)
+probe_linksee() {
+  [ "${MCPCHECK_PROBE:-1}" = "0" ] && { echo skipped; return; }
+  local cmdline out
+  cmdline="${MCPCHECK_PROBE_CMD:-}"
+  if [ -z "$cmdline" ]; then
+    [ -r "$CC_CONFIG_EARLY" ] && command -v jq >/dev/null 2>&1 || { echo unknown; return; }
+    cmdline=$(jq -r '(.mcpServers.linksee // empty) | ((.command // "") + " " + ((.args // []) | join(" ")))' "$CC_CONFIG_EARLY" 2>/dev/null)
+  fi
+  case "$cmdline" in ''|' ') echo unregistered; return;; esac
+  out=$(printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"mcp-layer-check","version":"1"}}}' \
+        | ${TO:+$TO "${MCPCHECK_PROBE_TIMEOUT:-8}"} sh -c "$cmdline" 2>/dev/null | head -c 4000)
+  case "$out" in *'"result"'*) echo reachable;; *) echo unreachable;; esac
+}
+probe=$(probe_linksee)
+
 if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
   # Junk entities are PATH-DERIVED (folder names), so anything that is not the canonical project and not a known real sibling project is a fragment. `dior` is a REAL separate repo - never count it.
   frag=$(sqlite3 "$LINKSEE_DB" "
@@ -34,7 +68,7 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
   # Auto-capture files RAW USER UTTERANCES as learnings/caveats (no LLM in the Stop-hook path), so a future session recalling "learnings" gets served Harkirat's to-do list. Nothing PREVENTS this upstream; distilling is the only remedy, so the backlog has to at least be VISIBLE. Count the flag directly: dream() returns a BATCH of up to 8, which is not the total.
   distill=$(sqlite3 "$LINKSEE_DB" "SELECT COUNT(*) FROM memories WHERE content LIKE '%needs_distill%' AND COALESCE(json_extract(content,'\$.distilled'),0)!=1;" 2>/dev/null)
   distill=${distill:-0}
-  frag_line="linksee: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere, ${distill} awaiting distil"
+  frag_line="linksee db: ${canon} on '${CANON_ENTITY}', ${frag} misfiled elsewhere, ${distill} awaiting distil"
   if [ "$distill" -gt 12 ] 2>/dev/null; then
     warn="$warn
   ⚠️ ${distill} auto-captured memories are still RAW user utterances filed as learnings/caveats.
@@ -126,5 +160,16 @@ window="
    Use it on judgement, no permission needed, no observation log required. Do NOT restore the old
    ask-first rule; the measurement that would justify it was already run and came out the other way."
 
-printf '%s\n%s%s%s' "$frag_line" "$RULES" "$warn" "$window" \
+# The server verdict goes FIRST and the db counts are labelled as db counts, so the two claims can
+# never again be read as one. An unreachable server is stated as loudly as an error, because from
+# inside a session an absent tool and a forgotten tool look identical.
+case "$probe" in
+  reachable)    probe_line="linksee MCP: reachable (initialize answered)";;
+  unreachable)  probe_line="🔴 linksee MCP: UNREACHABLE THIS SESSION -- initialize got no result. Every linksee tool call will fail, and the db counts on the next line say NOTHING about that: they are read straight from the sqlite file, which is readable whether or not the server is up. This failure is INTERMITTENT (measured 2026-09-02: failed, then reachable ~30min later with no config change), so retrying is reasonable -- but do not assume the memory layer is live, and say so if a recall comes back empty.";;
+  unregistered) probe_line="🔴 linksee MCP: NOT REGISTERED in the Claude Code config -- see the server-presence block below.";;
+  skipped)      probe_line="linksee MCP: probe skipped (MCPCHECK_PROBE=0)";;
+  *)            probe_line="linksee MCP: probe could not run (no readable config or no jq) -- treat the db counts below as unverified.";;
+esac
+
+printf '%s\n%s\n%s%s%s' "$probe_line" "$frag_line" "$RULES" "$warn" "$window" \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'

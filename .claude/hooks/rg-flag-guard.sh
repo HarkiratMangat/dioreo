@@ -15,6 +15,9 @@
 
 cmd=$(jq -r '.tool_input.command // empty')
 [ -z "$cmd" ] && exit 0
+# $cmd is mutated below (heredoc bodies stripped, then narrowed to the rg segment), so the substitution
+# needs the ORIGINAL bytes -- rewriting the stripped copy would hand back a command missing its heredoc.
+payload_cmd="$cmd"
 
 # Strip HEREDOC BODIES first. A commit message or a `cat > f <<'EOF'` block that merely DISCUSSES rg is prose, not an invocation — this guard's own commit message tripped it 2026-08-02 15:15 EDT by quoting `rg -n` in the body. Third false-positive class fixed on this pattern in one session; each one matters because a guard that cries wolf is how the true warning gets dismissed.
 cmd=$(printf '%s' "$cmd" | awk '
@@ -30,7 +33,7 @@ findings=""
 # Scope to the rg SEGMENT only. The first version scanned the whole command string, so a pipeline containing both `jq -r` and `rg -n` reported a bogus -r finding — caught live 2026-08-02 15:15 EDT by the guard firing on the very command inspecting it. A guard that cries wolf is how the real warning gets waved through, which is the lesson the timestamp hook already paid for. SELECT the rg-bearing lines FIRST. sed rewrites per line but PASSES NON-MATCHING LINES THROUGH, so a multi-line command whose other line carried `jq -r` leaked that -r into the flag scan. Fourth false-positive class on this guard, and the one that finally earned it a test file.
 seg=$(printf '%s' "$cmd" | grep -E '(^|[|;&(]|[[:space:]])rg[[:space:]]' | sed -E 's/.*(^|[|;&(]|[[:space:]])rg[[:space:]]/rg /' | sed -E 's/[|;&].*//')
 # Then drop QUOTED SPANS — the search PATTERN is not a flag list. `rg -n 'jq -r .foo'` was reported as a `-r` finding because the pattern contains the characters `-r`; the command was correct and the guard was wrong. Fifth false-positive class on this one guard, all the same shape: text that merely LOOKS like a flag. Caught live 2026-08-02 16:41 EDT by this guard firing on a command being run to audit it.
-seg=$(printf '%s' "$seg" | sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
+seg=$(printf '%s' "$seg" | sed -E "s/'[^']*'//g" | sed -E 's/"[^"]*"//g')
 # Short-flag clusters only (single dash). Long forms are explicit and intentional, so they pass.
 shorts=$(printf '%s' "$seg" | grep -oE '(^|[[:space:]])-[A-Za-z]+' | tr -d ' ' | grep -v '^--' || true)
 
@@ -45,5 +48,87 @@ printf '%s' "$shorts" | grep -qE 'r|R' && findings="${findings}
     replacement, spell out --replace so the intent is unambiguous."
 
 [ -z "$findings" ] && exit 0
+
+# --- SUBSTITUTION -------------------------------------------------------------------------------
+# ONLY MULTI-LETTER CLUSTERS, and that narrowness is the whole design. The test for promoting a gate
+# from advisory to correcting is whether it knows the ONE right value with no judgement left. For a
+# cluster it does: -rn can only ever be grep's "recursive + line numbers", because rg's -r takes a
+# value and would swallow the n, so dropping the r is the single correct reading. A LONE -r, -h or -E
+# fails that test outright -- rg -r foo is a legitimate --replace, rg -h is a legitimate request for
+# help, rg -E utf8 is a legitimate encoding -- so those stay advisory. A substitution that guesses is
+# strictly worse than a refusal: a refusal is visible, a wrong rewrite produces a plausible command
+# with no author.
+#
+# A COMMAND CARRYING A HEREDOC IS NEVER REWRITTEN. This guard already learned five separate
+# false-positive classes, every one of them text that merely LOOKED like a flag, and a heredoc body
+# is the largest such surface there is. Quote state is tracked in the parser below so a pattern like
+# rg -n 'jq -rn .x' is untouched, but a heredoc is left alone wholesale rather than parsed.
+#
+# THE VALIDATION LIVES IN THE PYTHON, NOT IN THE SHELL. A first version re-scanned the fixed command
+# with a second pair of seds in bash; three attempts at escaping a sed that strips double-quoted
+# spans inside a double-quoted string failed three different ways, and a looser second check is also
+# how a half-fixed command gets shipped as a clean one. The parser that made the edit is the thing
+# that should certify it.
+case "$cmd" in *'<<'*) has_heredoc=1;; *) has_heredoc=0;; esac
+if [ -z "${RG_NO_AUTOFIX:-}" ] && [ "$has_heredoc" = "0" ]; then
+  fixed=$(RGCMD="$payload_cmd" python3 - <<'PY'
+import os, sys
+cmd = os.environ.get("RGCMD", "")
+spans, i, n, q, start = [], 0, len(cmd), None, None
+def flush(end):
+    global start
+    if start is not None:
+        spans.append((start, end, cmd[start:end]))
+        start = None
+while i < n:
+    c = cmd[i]
+    if q:
+        if c == q: q = None
+        i += 1; continue
+    if c == "'" or c == '"':
+        q = c; flush(i); i += 1; continue
+    if c in " \t\n":
+        flush(i); i += 1; continue
+    if c in "|;&(":
+        flush(i); spans.append((i, i, "|")); i += 1; continue
+    if start is None: start = i
+    i += 1
+flush(n)
+out, edits, in_rg = cmd, [], False
+for (a, b, tok) in spans:
+    if tok == "|": in_rg = False; continue
+    if tok == "rg": in_rg = True; continue
+    if not in_rg: continue
+    if not (tok.startswith("-") and not tok.startswith("--") and len(tok) >= 3 and tok[1:].isalpha()):
+        continue
+    letters = list(tok[1:])
+    new = [("I" if ch == "h" else ch) for ch in letters if ch not in ("r", "R", "E")]
+    if new != letters:
+        edits.append((a, b, "-" + "".join(new) if new else ""))
+if edits:
+    for (a, b, rep) in reversed(edits):
+        out = out[:a] + rep + out[b:]
+    out = out.replace("  ", " ").strip()
+    seen, still = False, False
+    for tok in out.replace("|", " ").replace(";", " ").replace("&", " ").split():
+        if tok == "rg": seen = True; continue
+        if seen and tok.startswith("-") and not tok.startswith("--") and len(tok) >= 3 \
+           and tok[1:].isalpha() and any(ch in "rREh" for ch in tok[1:]):
+            still = True
+    if not still:
+        sys.stdout.write(out)
+PY
+)
+  if [ -n "$fixed" ]; then
+    read -r -d '' FIXMSG <<'MSG'
+RG FLAG GUARD - CORRECTED a grep-habit flag cluster instead of refusing the command.
+rg recurses by default (-r is --replace, and it swallows the next cluster letter as its value, so -rn replaces every match with n), it is extended-regexp by default (-E is --encoding), and -h is --help (use -I).
+A LONE -r, -h or -E is deliberately left alone: each has a legitimate rg meaning, so only a multi-letter cluster is unambiguous enough to rewrite.
+MSG
+    jq -n --arg c "$fixed" --arg m "$FIXMSG" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"allow",updatedInput:{command:$c},permissionDecisionReason:($m + "\nIt now reads: " + $c)}}'
+    exit 0
+  fi
+fi
+
 printf 'RG FLAG GUARD — grep-habit short flag(s) detected in an rg command:%s\n\nAll three of these produced silent garbage on 2026-08-02 (the -r one was already documented in prose and still got typed). Re-check the flags before trusting this output — especially before concluding "not found".' "$findings" \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:.}}'
