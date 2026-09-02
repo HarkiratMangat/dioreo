@@ -129,75 +129,7 @@ function Tile({ label, value, unit, sub, tone, onClick = null }) {
     `;
 }
 
-// The masthead's fourth stat, and the one piece of the design's stat set the portal never carried. It answers a question nothing else on this page answers at a glance: is anything approaching Discord's 3-second acknowledgement deadline. Read from the SAME ackBuckets the Timing view draws rather than a second aggregate, so the two can never disagree, and stated as the worst band's upper bound because a band is what the data actually has — quoting a single millisecond figure would invent a precision the buckets do not carry. ⚠️ A BOUND, WRITTEN AS TIGHTLY AS A MEASUREMENT. The other three stats are a number and a unit read at a glance, and "under 500ms" spelled out is a phrase sitting where they put a figure — it reads as a caption and it widens .mh-stats against the design's. The comparison glyph carries the same fact in two characters and keeps the number leading, which is what the eye is scanning the row for.
-const ACK_BOUND_LABEL = { 0: '<100ms', 100: '<250ms', 250: '<500ms', 500: '<1s',
-    1000: '<2s', 2000: '<3s', 3000: '>3s' };
-function worstAck(timingStats) {
-    const buckets = (timingStats || {}).ackBuckets || [];
-    const hit = buckets.filter((b) => b && b.n > 0).map((b) => b._id);
-    if (!hit.length) return null;
-    const worst = Math.max(...hit);
-    // 🔴 A THRESHOLD ON THE RATE, NOT "IS THERE AT LEAST ONE". `worst >= ACK_LIMIT_MS` is true the moment a single ack in seven days crosses the deadline, so the masthead would sit orange permanently -- which is verbatim the defect this file already rules against for the success-rate tile ("in production there is always at least one, so the tile would have been orange forever"). One percent is the same line that tile draws.
-    const over = buckets.filter((b) => b && b._id >= ACK_LIMIT_MS).reduce((n, b) => n + (b.n || 0), 0);
-    const all = buckets.reduce((n, b) => n + (b.n || 0), 0);
-    return { value: ACK_BOUND_LABEL[worst] || String(worst), tone: all && (over / all) > 0.01 ? 'warn' : undefined };
-}
-
-// The event drawer. ⚠️ ITS ROWS ARE DECLARED, NOT DERIVED FROM THE OBJECT: an alert and a change and a restart store different fields, and a generic key-value dump would print `_id`, `__v` and every null the schema allows, which is how a detail view becomes unreadable the moment a model grows a field. Each kind names what it carries.
-function eventRows(r) {
-    const out = [['Kind', KIND_LABEL[r.kind] || r.kind]];
-    if (r.kind === 'alert') {
-        out.push(['Level', r.level || '—']);
-        out.push(['Pinged a human', r.pinged ? 'yes' : 'no']);
-        // ⚠️ `silent` is not the opposite of `pinged`. An alert can be stored and never posted to Discord at all, which is a third state, and the level panel already says so in its own sub-line.
-        if (r.silent) out.push(['Posted to Discord', 'no — recorded only']);
-        if (typeof r.rssMb === 'number') out.push(['Memory at the time', `${r.rssMb} MB`]);
-        if (r.host) out.push(['Host', r.host]);
-    }
-    if (r.kind === 'change') {
-        out.push(['Page', r.page || '—']);
-        out.push(['Action', r.action || '—']);
-        out.push(['Model', r.model || '—']);
-        out.push(['Undone', r.undone ? 'yes' : 'no']);
-    }
-    if (r.kind === 'boot') {
-        if (r.version) out.push(['Version', r.version]);
-        if (r.commit) out.push(['Commit', r.commit]);
-        if (r.bootKind || r.kind_) out.push(['Restart kind', r.bootKind || r.kind_]);
-    }
-    out.push(['Who', r.actorId ? String(r.actorId) : 'system']);
-    if (r.detail) out.push(['Detail', r.detail]);
-    return out;
-}
-
-// One sentence per kind, saying what the row IS rather than restating the fields above it — an alert has no inverse and a restart is not something anyone did, and neither fact is visible from the table.
-const EVENT_NOTE = {
-    change: 'Every portal and /manage write is recorded with the step that reverses it, so this row can be put back from either surface, and it survives a restart.',
-    alert: 'Alerts come from the bot itself and mirror to the alert webhook. They carry no inverse — an alert is a record of something that happened, not an operation.',
-    boot: 'Restart records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that says what is actually running.',
-};
-
-// ⚠️ A ROW WITH NO USABLE DATE MUST NOT TAKE THE REALM DOWN. `new Date(x).toISOString()` throws a RangeError on an unparseable value, and this renders inside the page rather than beside it -- one malformed `createdAt` in one of three collections would blank Analytics entirely, mid-render, with no error state.
-function EventDrawer({ row, onClose, onRevert }) {
-    const at = new Date(row.at);
-    const atText = Number.isNaN(at.getTime()) ? 'not recorded' : at.toISOString().slice(0, 16).replace('T', ' ');
-    const revertable = row.kind === 'change' && !row.undone;
-    return html`
-        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${atText}`}
-                   title=${summaryOf(row)} onClose=${onClose}
-                   actions=${html`
-                       <button class="btn" onClick=${onClose}>Close</button>
-                       ${revertable ? html`<button class="btn dang" onClick=${onRevert}>Reverse this change</button>` : null}`}>
-            <div class="dwbody">
-                <div class="diff">
-                    ${eventRows(row).map(([k, v]) => html`
-                        <div class="diff-r" key=${k}><span class="dk">${k}</span><span>${v}</span></div>`)}
-                </div>
-                <p class="dw-p" style="margin-top:16px">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
-            </div>
-        <//>`;
-}
-
+// ⚠️ THE MASTHEAD HAS THREE STATS AND NOT THE DESIGN'S FOUR, AND THAT IS A DECISION. Harkirat, 2026-09-02 10:43 EDT: the `include admin traffic` toggle governs the VIEW only. A `worst ack` stat read `timingStats`, which takes `includeAdmin`, while `uptime`, `errors 24h` and `commands 24h` read `healthStats()`, which takes no arguments -- so flipping the toggle moved one figure and froze three, and this branch had just moved the toggle out of the masthead into the panel header, further from the stats it silently governed. Uptime and errors are facts about the PROCESS; filtering them by admin traffic is not a meaningful operation. So the odd one out was the per-interaction stat sitting among bot-wide ones, and it is gone rather than made to lie quietly. 🔵 The ack figures are not lost: Timing draws the full bucket distribution, where the toggle legitimately applies to every number on the view.
 function fmtUptime(since) {
     if (!since) return '—';
     const secs = Math.max(0, Math.round((Date.now() - new Date(since).getTime()) / 1000));
@@ -832,7 +764,6 @@ export function AnalyticsRealm({ session }) {
                                                    { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h', lead: true, accent: 'var(--r-analytics)' },
                                                    { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'warn' : undefined },
                                                    { value: fmtUptime(h.uptimeSince), label: 'uptime' },
-                                                   ...(() => { const w = worstAck(data.timingStats); return w ? [{ value: w.value, label: 'worst ack', tone: w.tone }] : []; })(),
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}

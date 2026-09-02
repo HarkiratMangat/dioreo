@@ -45,6 +45,23 @@ npm run portal:converge -- --realm review
 
 **Review is the commit screen** — the only place staged work becomes real. `--triggers` gives **mk 11 · pt 15**. ⚠️ **But do not read the portal-only count as eight surfaces.** Four of them are `Discard <name>`, which is **one control repeated per staged row**, and `…2283` is the shell account chip, already adjudicated as a cited privacy row on three realms (`docs/reference/portal-decision-ledger.md`). **Query the ledger before investigating any one-sided row** — the first version of this file did not do that to its own evidence.
 
+## 🔴 §1.5 — THE PRIMARY OBJECTIVE IS THAT REVIEW DEMONSTRABLY WORKS, NOT THAT IT MATCHES
+
+**Scope set by Harkirat, 2026-09-02 10:46 EDT**, on reading that the design page is a stub: *"seems like review needs a proper overhaul to actually be functional… why not just fix it as part of next session's work so it's actually a working review realm?"*
+
+⚠️ **First, the correction that prompted it, because the framing that produced the question was wrong.** The PORTAL's Review is not fake. `review.js:115` calls `/api/review`; `:154` and `:173` call `/api/changeset/<id>/discard` and `/commit`; those routes live in `portal/api/review.js` and are registered in `portal/server.js`; and `core/changeset.js`'s `commitSet` opens a real `mongoose.startSession()`, runs `session.withTransaction()`, and writes its audit row through `recordChangeIn`. It is real code against a real database. **The MOCKUP is the stub, deliberately** — §2.
+
+🔴 **BUT `portal:status`'s receipt board reads `review … realwalk · never`.** The only screen where staged work becomes real, carrying the highest-consequence action in the portal, **has never been exercised by any instrument on either side.** Not one commit, not one discard, not one gate refusal. Part 0 confirmed `/api/review` returns 200 once, in August, and nothing has driven it since.
+
+**So Part 6a's first deliverable is a functional pass, and the pixel work is second:**
+1. Stage something real from another realm — Season's identity editor or an Armory edit — and confirm it appears on Review with the right tier, diff and gate.
+2. **Commit it, and verify the database actually changed AND a `ChangeLog` row exists.** `commitSet` is transactional; prove the transaction lands and the audit is written inside it.
+3. Discard another, and prove nothing moved.
+4. Drive a REFUSAL: a tier-3 op with no export, which `gateCommit` must block — and check the screen says why.
+5. Only then the conformance comparison in §2 and §3.
+
+⚠️ **This is not scope creep, it is the missing evidence.** A realm can be pixel-perfect against its design and still not commit; Review is the one realm where that distinction is the whole point.
+
 ## 🔴 §2 — THE TWO SIDES CANNOT BE COMPARED AT REST, AND NO INSTRUMENT CAN FIX THAT
 
 `review.html:109` reads `if (!list.length) { renderEmpty(); renderFoot(); return; }`, and the staged-ops store is empty on every fresh load. The populated board is **not missing** — it is fully drawn between that guard and `renderEmpty()` at `:235`, seeded from `F.sampleOps` — it is behind `:245`'s `<button class="chip go" id="seed" data-demo-only>Load a sample changeset</button>`. The harness populates four changesets. **So every resting number in §3 measures an empty page against a populated one.**
