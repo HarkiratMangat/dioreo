@@ -45,6 +45,17 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 ## 🐞 Active Bugs
 
 
+### `[P2 · S]` `codebase-memory-mcp` cannot re-index this repo — the worker crashes on a file
+*Filed 2026-09-01 20:36 EDT after the v3.72.0-pre merge.*
+
+`index_repository` returns `{"status":"error","outcome":"exit_nonzero","hint":"Indexing worker crashed on a file. The crash was contained (the server survived). Re-run to retry"}` — twice, deterministically, so it is not transient. **Meanwhile `list_projects` reports a healthy-looking index** (9,762 nodes, 20,763 edges, `head_sha` equal to the current merge commit) while `detect_changes` reports **620 changed files and 8,810 impacted symbols**, i.e. the whole tree. So the index records the right sha against stale content, and every symptom of that is indistinguishable from a fresh index.
+
+⚠️ **This is the second time this server has failed in a way that looks like success** — the first was `list_projects` returning `{"projects":[]}` with a friendly "call index_repository first" hint, indistinguishable from never-indexed. The routing rule that says to try `search_graph` before `rg` is only sound while the graph is current, and nothing surfaces when it is not.
+
+**What to do:** the hint says a future release isolates the culprit file; until then, bisect it by indexing subtrees (`portal/`, `scripts/`, `commands/`, `utils/`) to find which one crashes the worker, and report it upstream with that file. **Until it indexes, treat `search_graph` results as a stale snapshot and prefer `rg`/`ctx_search`.**
+
+**Verify:** `index_repository` exits cleanly, and `detect_changes` immediately afterwards reports `changed_count` in single digits rather than 620.
+
 ### `[P2 · M]` `portal:states` is non-deterministic, and it now blocks a §L ④ claim
 *Filed 2026-09-01 20:01 EDT by the Access session, which could not claim its machine floor because of it.*
 
