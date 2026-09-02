@@ -157,11 +157,16 @@ ok("a clean body still passes the gates", run(fresh("g3"), "2026-08-10 00:00 EDT
   ok("--desc writes a REAL stamp, not a placeholder",
      /^## \d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]{2,5} — Stamped by the script \(v9\.9\.9\)$/.test(line),
      `status=${r.status} line=${line.slice(0, 90)} err=${(r.stderr || "").slice(0, 120)}`);
-  // The stamp has to be NOW, or it is a different bug wearing the fix's clothes: a hardcoded date would pass the regex above forever.
-  const stamped = new Date((line.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/) || [""])[0].replace(" ", "T"));
+
+  // 🔴 COMPARED AS A STRING IN THE SCRIPT'S OWN ZONE, NEVER PARSED INTO AN INSTANT. The first version did `new Date("2026-09-02T13:22")`, which JavaScript reads as LOCAL time — so on a machine already in America/New_York it matched, and on GitHub's UTC runner the same correct stamp looked four hours stale and this proof FAILED. A test that passes because the developer's clock happens to agree with the code's clock is testing the developer's clock. This repo ships `npm run test:tz` for that exact class and this check was violating it. Both sides are now formatted through the same America/New_York formatter, so the comparison holds in any zone; a small window absorbs the minute rolling over between the write and the read.
+  const stampNow = (offsetMs) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric",
+    month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })
+    .format(new Date(Date.now() - offsetMs)).replace(",", "");
+  const seen = (line.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/) || [""])[0];
+  const acceptable = [0, 60e3, 120e3].map(stampNow);
   ok("--desc's stamp is the CURRENT time, not a constant that happens to parse",
-     Math.abs(Date.now() - stamped.getTime()) < 36e5,
-     `stamped=${stamped.toISOString?.() || "unparsed"}`);
+     acceptable.some((x) => x === seen),
+     `stamped="${seen}" · expected one of ${JSON.stringify(acceptable)}`);
 }
 {
   const f = fresh("desc2");
