@@ -3,7 +3,7 @@
 // Access realm \u2014 owner-only, exactly like /bot access (spec §8.2: "no column, no grantable scope"). NOT part of the core operation algebra: admin grants/revokes are direct AdminUser writes, same as they always have been through /bot access, and a live PortalSession end is a direct write too. gateCommit is still used for grant/revoke (tier 3 \u2014 irreversible in effect, since a grant is a real privilege change) so the same typed-confirmation control governs every tier-3 action.
 const AdminUser = require('../../models/AdminUser');
 const PortalSession = require('../../models/PortalSession');
-const { isOwner, parsePermissionsInput, invalidateAdminCache, MANAGE_PAGE_SCOPES, ADMIN_COMMANDS } = require('../../utils/adminAccess');
+const { isOwner, parsePermissionsInput, invalidateAdminCache, MANAGE_PAGE_SCOPES, ADMIN_COMMANDS, NOT_IN_ALL } = require('../../utils/adminAccess');
 const { readJsonBody, sendJson, forbidden } = require('./httpUtil');
 
 // Access grant/revoke reuses ONLY the typed-confirmation half of the tier-3 model, never the export leg -- gateCommit's exportedAt check has no meaning for a permission change (there is no data to export), and this review pass caught that the original code accepted `body.exportedAt` straight from the client, which would have let any caller satisfy that half of the gate by just sending a timestamp. A permission change has exactly one real safeguard: the admin must type the target's own Discord ID before it takes effect.
@@ -56,8 +56,9 @@ function buildPermissionMatrix(admins) {
         BROADCAST_PAGES: require('./broadcast').BROADCAST_PAGES,
     };
     const scopes = [
-        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command', realm: realmForScope(key, pageLists) })),
-        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page', realm: realmForScope(`manage.${page}`, pageLists) })),
+        // 🔴 `ownerOnly` WAS NEVER EMITTED HERE, SO THE GRID'S LOCK EXISTED ONLY IN THE HARNESS. Three sites in access.js gate the 🔒 on this field and the realm key names it unconditionally -- against a scope list that has never carried it. The fixture does (`assets/fixtures.js` sets it on `destructive`), which is exactly why every instrument in the conformance pass reported the mark as present: they all read the harness. On the real server the legend named a mark the page could not draw. ⚠️ IT IS DERIVED FROM `NOT_IN_ALL`, NOT RESTATED. That constant is what makes `destructive` owner-only in the bot -- the one token the `all` shorthand refuses to expand into -- so the mark and the rule cannot drift apart. Hardcoding `key === 'destructive'` here would be a second source of truth for a list that already exists.
+        ...ADMIN_COMMANDS.map((key) => ({ key, label: COMMAND_LABELS[key] || key, kind: 'command', ownerOnly: NOT_IN_ALL.includes(key), realm: realmForScope(key, pageLists) })),
+        ...MANAGE_PAGE_SCOPES.map((page) => ({ key: `manage.${page}`, label: PAGE_LABELS[page] || page, kind: 'page', ownerOnly: false, realm: realmForScope(`manage.${page}`, pageLists) })),
     ];
     const rows = admins.map((admin) => {
         const perms = admin.permissions || [];
@@ -81,13 +82,14 @@ function register(route) {
     const { requireAdmin } = require('../auth');
 
     route('GET', /^\/api\/access$/, requireAdmin(ownerOnly(async (req, res) => {
-        const admins = await AdminUser.find({}).lean();
+        // 🔴 THE OWNER IS NEVER A ROW, AND EVERY FIGURE ON THE SCREEN HAS TO AGREE ABOUT THAT. The grid draws a synthetic owner row and filters the owner out of the real ones, so an owner who also held an AdminUser document would vanish from the table while still being counted by the masthead, the view meta, every column header, the export and singlePointsOfFailure -- which would then report the OWNER as the sole holder and render "single point — only …2283 besides you", naming you as somebody besides you. One filter at the source is what keeps the six numbers in step; six filters at the call sites is how they drift.
+        const admins = (await AdminUser.find({}).lean()).filter((a) => !isOwner(a.discordId));
         const sessions = await PortalSession.find({ revokedAt: null }).sort({ lastSeenAt: -1 }).lean();
-        sendJson(res, 200, { admins, sessions, singlePointsOfFailure: singlePointsOfFailure(admins) });
+        sendJson(res, 200, { admins, sessions, sessionTtlHours: PortalSession.SESSION_TTL_SECONDS / 3600, singlePointsOfFailure: singlePointsOfFailure(admins) });
     })));
 
     route('GET', /^\/api\/access\/matrix$/, requireAdmin(ownerOnly(async (req, res) => {
-        const admins = await AdminUser.find({}).lean();
+        const admins = (await AdminUser.find({}).lean()).filter((a) => !isOwner(a.discordId));
         sendJson(res, 200, buildPermissionMatrix(admins));
     })));
 
@@ -136,6 +138,10 @@ function register(route) {
         const body = await readJsonBody(req);
         const permissions = parsePermissionsInput((body.permissions || []).join(','));
         if (!permissions) return sendJson(res, 400, { error: 'One or more permission tokens were not recognized.' });
+        // Granting to the owner is a no-op the screen cannot represent: they short-circuit every check already, and the grid has no row for them because the owner row is synthetic. Refusing is simpler than rendering a state that means nothing, and it stops the filter above from ever having to hide a document somebody just wrote.
+        if (isOwner(body.discordId)) {
+            return sendJson(res, 409, { ok: false, reason: 'The owner already holds every permission — there is nothing to grant.' });
+        }
         if (!confirmMatchesTarget(body.confirmText, body.discordId)) {
             return sendJson(res, 409, { ok: false, reason: 'Type the exact Discord ID being granted to confirm.' });
         }

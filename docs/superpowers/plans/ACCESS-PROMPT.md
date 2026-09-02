@@ -13,13 +13,13 @@ status: live
 
 **1 · Order.** `git log --oneline -3 v3-pre-release` → build → the two `preview_start` calls → `portal:status` → the audits. 🔴 **Five places claim to be "the first call of every realm"** — §0.7a says `portal:audit`, §0.5b's ⓪ says `portal:diff`, §0.5b again says two screenshots, §0.2 says the real server, `SESSION-START` says a realm audit is not first any more. **Each is first WITHIN ITS PHASE. This list is the ordering. Stop looking.**
 
-**2 · Tool per question.** Prose question (is this settled?) → `ctx_search`. Symbol or callers → `codebase-memory`. A string you already know exists → `rg`. The comment beside the code → `Read` with `offset`/`limit`. ⛔ No browser and no probe during triage. §0.4's Reading row said "Grep" until today; ignore any copy of it that still does.
+**2 · Tool per question.** Prose question (is this settled?) → `ctx_search`. 🔴 **Its reach grew on 2026-09-01: it now covers the MEMORY STORE, `meta-deferred-list.md`, the 83-step `2026-08-23-workflow-compliance-plan.md` and `~/.claude/TOOLING.md` — four surfaces outside the repo root that no in-repo `rg` can reach and that the completeness sweep names every run as invisible by construction.** So a question like *"has this already been decided"* or *"is there a memory about X"* is now one `ctx_search`, not an `rg` over a path you have to remember. A `PreToolUse` hook rehashes and re-indexes before every search, so results are current by construction rather than by anyone remembering to index. Symbol or callers → `codebase-memory`. A string you already know exists → `rg`. The comment beside the code → `Read` with `offset`/`limit`. ⛔ No browser and no probe during triage. §0.4's Reading row said "Grep" until today; ignore any copy of it that still does.
 
 **3 · Browser.** §0.4 says 🔴 *NOT the in-app browser* — **that governs MEASUREMENT, not servers.** `preview_start` starts a launch-config server and is required here; measurement goes through `chrome-devtools-mcp`, and the portal instruments drive their own headless browser and need neither.
 
 **4 · Turns, and what a "unit" is.** Target **≤35 tool calls** for the resting pass — Broadcast's took ~30 with two unanticipated fixes, and §0.7c's honest shape is `3 + (1 per independent root-cause group) + 1 regression + the interaction tier`. **A UNIT is one independent root-cause group plus its re-audit** — that is the thing you never stop in the middle of. At a turn-budget warning: finish the current unit *including* its verification, then report. **Cut the report, never the band captures** — capture at least three bands down the page before you claim you have looked. ⚠️ **A Part may span sessions** (§L: *"Season alone is several sessions"*); §0.0's one-Part-per-session is the intended shape, not a promise you can keep.
 
-**5 · What you may do without asking.** 🟢 **Commit on the branch freely — do not ask, and do not batch a session's work into one commit** (commits are per coherent fix). 🟢 Run every instrument. 🟢 Dispatch the §L ⑥ reader agents. ⛔ **Never** push, open a PR, merge, or ask about any of them.
+**5 · What you may do without asking.** 🟢 **Commit on the branch freely — do not ask, and do not batch a session's work into one commit** (commits are per coherent fix). 🟢 Run every instrument. ⛔ **The §L ⑥ reader agents need Harkirat's approval and run LAST, once everything else is push-ready** — reversed 2026-09-01 19:27 EDT; this line used to green-light them and that licence produced seven agents in one session. ⛔ **Never** push, open a PR, merge, or ask about any of them.
 
 **6 · What ends Part 4** — copied out of §L so you need not open it: ① `portal:converge` flat *(run the named tool, never `portal:audit`'s ① section)* · ② `portalDiff` reports exactly the cited region set on all three views · ③ `portalInventory`'s six lists empty or dated-cited · ④ machine floor green **re-run at the commit you claim it for** · ⑤ a real-server pass · ⑥ the reader test on Part 5's carriers, everything it finds fixed · ⑦ Harkirat has looked. **The changelog paragraph and the A/B artifact are NOT yours** — see §L's status-vocabulary note.
 
@@ -30,11 +30,25 @@ status: live
 - `/rename Sonnet5-High · Access conformance · <Mon DD>`
 - `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites. Escalate on events only: a premise turning out false, or two hypotheses wrong.
 
-## Branch state
+## Branch state — Broadcast is MERGED; you are starting clean
 
-`feat/broadcast-portal-conformance`. **HEAD is `fa003c6`** (the commit carrying this prompt); `804fa8b` is its parent and holds the realm work. **Unpushed, no PR** — Harkirat had not approved a push. `package.json` is still `3.70.0-pre`: the changelog paragraph and the bump are the pre-merge checkpoint and cannot be written until the PR number exists, which is why `docs/CHANGELOG.md`'s newest entry is still Armory's `v3.70.0`.
+**`v3-pre-release` is at `94a70f0`**, the squash of PR #178, `package.json` **`3.71.0-pre`**, working tree clean, local identical to origin. No tag — none is minted on the pre-release line until `v3.0.0`. Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through, so the shared surfaces under you are the post-Broadcast ones.
 
-🔴 **Check whether it merged before you start** — `git log --oneline -3 v3-pre-release` — because Broadcast's pass changed `manifest.js` and `app.css`, which Access renders through.
+🔴 **YOU ARE ON A BRANCH THAT ALREADY CARRIES SEVERAL COMMITS, AND NONE OF THEM IS PART 4.** Harkirat's instruction, 2026-09-01 17:16 EDT: fold them into your work rather than branching afresh. ✅ **Already renamed for you — the branch IS `feat/access-portal-conformance`**, done after confirming `gh pr list --head` returned 0, because `CLAUDE.md` forbids renaming a branch **with an open PR** (GitHub auto-closes it, unreopenable). You need do nothing about the name.
+
+**Verify what you inherited by RUNNING this, not by trusting a number here** — `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`. 🔴 **This paragraph deliberately quotes no count.** It said "exactly one commit, exactly one file" an hour ago and was wrong by five; the correction then said "six" and was wrong by one, because **the commit that writes a count changes the count.** What is stable is the SUBJECTS below and the property they share: **every one is a records change, and none touches `portal/`.** If you see a commit that does, it is not from this list and something else has happened.
+
+| Commit | What it is |
+|---|---|
+| `6c6f3ad` | `portal:states` is a coin flip — ~1 in 2 in-suite, ~1 in 5 standalone. An earlier claim that it was standalone-green would let you read a standalone pass as proof your change is innocent. **The sound test is whether the failing selector belongs to anything you edited.** |
+| `9d33f2d` · `992e51e` | this prompt's branch-state block, and the rename |
+| `bc2a14e` | `SESSION-START` gains the `<!-- MEMORY-INDEX-END -->` sentinel, and its worktree count was wrong |
+| `ed6b0b9` | two worktrees retired — see below |
+| `2c1dad1` | three surfaces still named a branch deleted minutes earlier |
+
+⚠️ **THE WORKTREE AND BRANCH LANDSCAPE CHANGED UNDER THIS PROMPT, so `git branch -a` will not match older notes.** **One** worktree is live — `draw-calculator-breakdown-146641`, Harkirat's active peer session, never touch it. Two were retired on evidence: `outstanding-v3-items-135f3b` (absorbed into #176 — ⚠️ `git cherry` called its commits unmerged and was wrong, because the work was squashed and patch-id cannot see through a squash; **compare content, never the commit list**) and `silent-mode-compliance`. **`chore/silent-mode-guards-parked` is new and pushed** — three parked silent-mode hooks awaiting Tasks 7–9 of the 83-step workflow-compliance plan, registered in no settings file, inert. **Not your work; do not fold it in, do not merge it.**
+
+⚠️ **You will meet that flake yourself.** `npm test` was red on `portal:states` three times across the previous session, on a different state each time, with no defect behind any of them. The rule for handling it is in this file under *Two rules no document carried*.
 
 ## The mode
 
@@ -71,6 +85,8 @@ npm run portal:converge -- --realm access
 🔴 **RUN `portal:converge`, AND DO NOT SUBSTITUTE `portal:audit`'s ① CASCADE FOR IT.** §L's close condition ① names `portalConverge` by name. The Broadcast session wrote ① into its §L row from the audit's ① section, and `portal:status`'s receipt board read `converge · never` for that realm at the same moment — the reader test caught it. When converge was actually run it reported eight RHYTHM rows and thirteen WORDS rows the audit had not: most were shallow-walk artifacts, one was a real cited row, and none of that was knowable in advance. **The instruments are not interchangeable because their sections have similar names.**
 
 ## The two phases a realm prompt keeps dropping — both have a named artifact
+
+> 🔴 **SUPERSEDED 2026-09-01 19:55 EDT — THIS SECTION IS TWO FILES AND THE ANSWER IS THREE.** A reader test measured the result: `ls local/` shows a triage file AND a difference ledger for season, armory and broadcast, and for Access only `locate-access.md`. **One of three, because this section named two.** The corrected version is `ANALYTICS-PROMPT.md`'s *THREE FILES, AND THE PASS DID NOT HAPPEN WITHOUT THEM* — locate · triage (which is also where every band capture's reading goes, and nothing else holds it) · difference ledger. This heading is left standing rather than rewritten because Part 4 is finished and its record should say what it actually instructed; **do not follow it.**
 
 🔴 **Neither appeared in this prompt until 2026-09-01, and the plan already records that one of them has been missed TWICE for exactly this reason.** §0.5b's phase order is `① ② ③ ④ ⑥ ⑤` and it calls the ordering load-bearing; a prompt that lists instruments and not phases quietly deletes two of them.
 

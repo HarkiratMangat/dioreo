@@ -3,6 +3,7 @@
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
 import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, pass6Names, diffAgainstKnown, stepSettle } from './lib/portalStatePasses.cjs';
+import { isStall } from './portalStates.mjs';
 
 let passed = 0;
 const check = (label, fn) => { fn(); passed++; console.log(`  ✓ ${label}`); };
@@ -107,5 +108,13 @@ check('the registry diff reports a new finding AND a recorded one that has been 
     assert.deepStrictEqual(fresh.map((f) => f.id), ['input.a']);
     assert.deepStrictEqual(fixed, ['1:input.b']);
 });
+
+// 🔴 THE RETRY'S PREDICATE, AND THE CASE THAT MATTERS IS THE SILENT ONE. A stalled state is now re-walked once and classified, because a bigger deadline was tried three times (4000 → 12000 → 45000) and still failed on four different states across four runs. The danger of a retry is not the retry: it is retrying a GENUINE CRASH, which would then be run twice, might pass the second time, and would be reported as a race. So this predicate has to match the two sentences this file throws for an unreached subject and NOTHING else.
+check('isStall names a subject that never appeared', () => assert.ok(isStall('state "manifest selection bar" did not reach its own subject — nothing matches .selbar.on within 45s after its steps ran')));
+check('isStall names a step whose settle never landed', () => assert.ok(isStall('state "identity · closed again" stalled: nothing matched .identity.collapsed .srec-grid within 5000ms after its step ran')));
+check('isStall is SILENT on a real crash, so a TypeError is never retried', () => assert.ok(!isStall("TypeError: Cannot read properties of undefined (reading 'getBoundingClientRect')")));
+check('isStall is SILENT on a navigation failure', () => assert.ok(!isStall('net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8901/harness.html')));
+check('isStall is SILENT on a pass finding, which must fail the run rather than be re-walked', () => assert.ok(!isStall('PASS 1  cmdbar-input-composite  a 44px input inside a 34px wrapper')));
+check('isStall tolerates a null message rather than throwing inside the catch', () => assert.ok(!isStall(null)));
 
 console.log(`\n✅ ${passed} cases — every pass proven able to name its own defect, and proven silent on the correct version of the same shape.`);

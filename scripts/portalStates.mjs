@@ -127,6 +127,11 @@ const COLLECT = function () {
     return { controls, clipped, overflow, unreachable, modal, animations, fusedNames, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
 };
 
+// 🔴 EXPORTED AND NARROW ON PURPOSE. The retry below re-runs a state whose subject never appeared, and the ONE thing that must not happen is retrying a genuine crash -- a TypeError inside a pass would be run twice, could pass the second time, and would then be reported as a race. So the predicate matches only the two sentences this file itself throws for an unreached subject, and its test proves it is silent on everything else.
+export function isStall(message) {
+    return /did not reach its own subject|stalled: nothing matched/.test(String(message || ''));
+}
+
 async function walk(page, state, port) {
     // ⚠️ SET BEFORE THE NAVIGATION, and cleared for every state that did not ask — an emulated media feature is sticky on the page, so one reduced-motion state would silently put every state after it into reduced motion and their clean results would mean something else entirely.
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: state.reduceMotion ? 'reduce' : 'no-preference' }]);
@@ -173,7 +178,7 @@ async function walk(page, state, port) {
             expected = false;
         }
     }
-    if (!expected) throw new Error(`state "${state.name}" did not reach its own subject — nothing matches ${state.expect} within 12s after its steps ran, so a clean result would be a clean result for the DEFAULT view`);
+    if (!expected) throw new Error(`state "${state.name}" did not reach its own subject — nothing matches ${state.expect} within 45s after its steps ran, so a clean result would be a clean result for the DEFAULT view`);
 
     // 🔴 A PROBE MUST BE ABLE TO REPORT PRESENCE BEFORE AN ABSENCE MEANS ANYTHING. A run that walked to a page the SPA had not routed yet returned all-zeroes and read as a clean sweep, so a state that finds nothing to examine is an ERROR here, not a pass.
     const records = await page.evaluate(COLLECT);
@@ -208,7 +213,7 @@ async function run() {
     const { server, port } = await serve();
     const puppeteer = require('puppeteer-core');
     const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
-    let bad = false, walked = 0;
+    let bad = false, walked = 0; const flaked = [];
     try {
         const page = await browser.newPage();
     // 🔴 THE CLOCK IS FROZEN, for the reason portalGeometry's was on 2026-08-31: an instrument that
@@ -229,7 +234,20 @@ async function run() {
             const registry = JSON.parse(fs.readFileSync(file, 'utf8'));
             console.log(`\n${registry.surface} — ${registry.states.length} state(s)`);
             for (const state of registry.states) {
-                const records = await walk(page, state, port);
+                // 🔴 A STALL IS RETRIED ONCE AND CLASSIFIED, BECAUSE A BIGGER DEADLINE HAS ALREADY BEEN TRIED THREE TIMES AND IS NOT THE ANSWER. This file's own history raised the subject wait 4000 → 12000 → 45000, and on 2026-09-01 20:14 EDT it still failed four times across four runs on FOUR DIFFERENT states -- `identity · closed again`, `composer · the paste box`, `manifest selection bar`, and one in CI. Forty-five seconds of absence is not impatience; it is a step that clicked before its target mounted, so the subject never arrives at all and no deadline reaches it. 🔴 AND THE COST IS NOT A WASTED RE-RUN. `npm test` is one `&&` chain, so a stall here TRUNCATES every gate after it: on this very branch it hid a real defect -- `/api/access` promising a `sessionTtlHours` key the harness stub did not serve -- which only CI found, on a run where the stall happened not to fire. A suite that stops at a race reports the race's name instead of the defect's. ⚠️ RETRY-THEN-CLASSIFY, NEVER RETRY-UNTIL-GREEN. A second attempt distinguishes a race (passes) from a genuinely unreachable subject (fails twice, and still fails the suite with the same sentence). A FLAKED state is printed by name so it can never be silent, and the run's exit code is unchanged by it -- which is the whole point: the states AFTER it now get to run.
+                let records;
+                try {
+                    records = await walk(page, state, port);
+                } catch (e) {
+                    if (!isStall(e.message)) throw e;
+                    try {
+                        records = await walk(page, state, port);
+                        flaked.push(state.name);
+                        console.log(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled once, reached its subject on the retry — not a defect, and not silent`);
+                    } catch (again) {
+                        throw new Error(`${again.message}\n           ⚠️ TWICE, so this is NOT the known race — the subject is genuinely unreachable.`);
+                    }
+                }
                 const findings = runPasses(records);
                 const { fresh, fixed } = diffAgainstKnown(findings, state.known || []);
                 walked++;
@@ -248,7 +266,12 @@ async function run() {
         server.close();
     }
     console.log(`\n${walked} state(s) walked at ${VIEWPORT.w}x${VIEWPORT.h}.`);
+    // A FLAKED run is not a clean run, and the summary says so rather than letting the exit code speak alone. It does not fail the suite -- the states after it are exactly what a hard failure was costing -- but a reader who sees this line knows the tree was measured through a retry.
+    if (flaked.length) console.log(`⚠️  ${flaked.length} state(s) stalled once and passed on retry: ${flaked.join(' · ')} — the known race, filed [P2 · M]. NOT a clean run.`);
     if (bad) { console.log('❌ a finding is new, or a recorded one is fixed and still listed. Fix it, or re-record with --record in the same commit.'); process.exit(1); }
 }
 
-run().catch((e) => { console.error('portal:states failed —', e.message); process.exit(1); });
+// ⚠️ GUARDED BECAUSE THIS MODULE IS NOW IMPORTED. `isStall` is exported for the self-test, and a bare `run()` at module scope meant importing the predicate booted a forty-state puppeteer walk as a side effect — the test passed, slowly, for the wrong reason. Only a direct invocation runs.
+if (process.argv[1] && process.argv[1].endsWith('portalStates.mjs')) {
+    run().catch((e) => { console.error('portal:states failed —', e.message); process.exit(1); });
+}

@@ -61,14 +61,24 @@ function GrantForm({ onGrant, scopes }) {
 //
 // 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The row's state was the literal string `'live'` for every session in the table — and a browser session has no logout event unless somebody clicks one, so "signed in now" is DERIVED or it is a guess. Fifteen minutes is the mockup's own window and it is the honest one: a tab left open pings; a closed one stops.
 //
-// ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces.
-function Sessions({ sessions, onEnd }) {
+// ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
+const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
+
+const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
+function Sessions({ sessions, onEnd, ttlHours }) {
     const now = Date.now();
     return html`
-        <div class="panel" id="sessions">
+        <!-- ⚠️ A section WITH A LANDMARK NAME, and an id the stylesheet can reach. access.html declares
+             aria-label="Live portal sessions" and an inline margin-top:16px; the portal had a bare div, and the rule
+             that would have spaced it is #manifest{margin-top:16px} rather than a .panel+.panel one, so moving this
+             into footSlot silently closed the gap. The visible title correctly became "Signed in right now", which
+             is why the landmark keeps the longer phrase: it is the only place the surface names itself. -->
+        <section class="panel" id="sessions" aria-label="Live portal sessions">
             <div class="ph">
-                <span class="t">Live portal sessions</span>
+                <span class="t">Signed in right now</span>
                 <span class="rt">${sessionSummary(sessions, now)}</span>
+                <span class="sp">Revoking an admin in Discord does not end their browser session. This does.</span>
             </div>
             ${sessions.length ? html`
                 <div class="sesslist">
@@ -81,14 +91,22 @@ function Sessions({ sessions, onEnd }) {
                             </span>
                             <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
                         </div>`)}
+                </div>
+                <!-- The two sentences access.html closes this list with, and the second is the only place the portal
+                     says that ending a session does NOT stage. On a realm where every other write waits for Review,
+                     a reader who has learned the tray will assume this one does too. -->
+                <div class="mxfoot">
+                    <span>Sessions expire after <b>${ttlHours} hours</b> on their own — nothing has to be cleaned up.</span>
+                    <span>Ending one is immediate and unstaged — a security action that waits in a tray is not one.</span>
                 </div>`
             : html`
                 <div class="estate">
-                    <span class="eicon" aria-hidden="true">◎</span>
-                    <h4>Nobody is signed in to the portal.</h4>
-                    <p>Revoking an admin in Discord does not end a browser session that is already open — this is where that happens.</p>
+                    <span class="eicon" aria-hidden="true">◍</span>
+                    <h4>Nobody is signed in to the portal</h4>
+                    <p>Your own session should always be in this list, so an empty list means it failed to load rather than that nobody is here. Reload the page.</p>
+                    <p>A session is a <b>browser</b>, not a Discord account. Revoking someone in Discord leaves their tab working until it expires ${ttlHours} hours after sign-in — ending it here is the only thing that closes that window.</p>
                 </div>`}
-        </div>
+        </section>
     `;
 }
 
@@ -113,7 +131,6 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
     const pages = scopes.filter((s) => s.kind === 'page');
     const ordered = [...commands, ...pages];
     const spofScopes = new Set((spof || []).map((x) => x.scope));
-    const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
     const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).length;
 
     const rowPending = (id) => Object.fromEntries(Object.entries(pending)
@@ -137,11 +154,14 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
         Object.entries(prev).filter(([k]) => !k.startsWith(id + '|'))));
 
     return html`
-        <div class="panel" id="by-admin">
-            <div class="ph">
-                <span class="t">By admin</span>
-                <span class="rt">${matrix.admins.length} admin${matrix.admins.length === 1 ? '' : 's'} × ${matrix.scopes.length} permissions · owner is not editable</span>
-            </div>
+        <!-- ⚠️ NO PANEL AND NO HEADER OF ITS OWN. access.html draws ONE .ph — the Shell's view bar — carrying
+             the title, the tabs, the key and a right-aligned meta line; a second header inside the view repeated
+             the view name the tabs already say, and nested a .panel inside the Shell's .panel, which breaks the
+             .panel + .panel{background:transparent} chain Armory already paid for. The meta line moved to the
+             Shell's meta prop and the key to realmKey; both slots already existed and this realm used neither.
+             ⚠️ NO BACKTICKS IN THIS COMMENT ON PURPOSE — it sits inside a template literal, where even a MATCHED
+             pair closes and reopens the literal and the text between them is parsed as JavaScript. -->
+        <div id="by-admin">
             ${matrix.admins.length === 0 ? html`<p class="empty">Nobody else has been granted access. You are the only admin.</p>` : html`
                 <div class="mxwrap">
                     <table class="mx">
@@ -156,18 +176,42 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
                                 ${ordered.map((sc) => html`
                                     <th key=${sc.key}>
-                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '')}
+                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
-                                              title=${`${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'}${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
-                                            <i></i>${sc.label}<em class="mxn2">${holdersOf(sc)}</em>
+                                              title=${spofScopes.has(sc.key)
+                                                  ? `${sc.label} — single point of failure: exactly one person besides the owner holds it`
+                                                  : `${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides the owner${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
+                                            <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
                                         </span>
                                     </th>`)}
                                 <th><span class="mxs">Action</span></th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${matrix.admins.map((a) => {
-                                const owner = a.discordId === isOwnerId;
+                            <!-- 🔴 THE OWNER ROW NEVER RENDERED ONCE, AND THE HEADER PROMISED IT. The row markup below
+                                 carried an owner ? locked branch keyed on a discordId match against the matrix, but the
+                                 owner is NOT an AdminUser document — buildPermissionMatrix reads that collection, so the
+                                 owner is never in it and the branch was unreachable. The grid therefore said "owner is not
+                                 editable" about a row it did not draw, and every .locked and .ownerrow rule in both
+                                 stylesheets sat with no emitter. access.html draws the owner as a STATIC first row for the
+                                 same reason: the owner is built in, not granted. -->
+                            <!-- ⚠️ NO BACKTICKS ABOVE ON PURPOSE — this comment is inside a template literal, where
+                                 even a MATCHED pair closes and reopens the literal and the text between is parsed
+                                 as JavaScript. It is the trap portal-editing.md names first, and it has now cost
+                                 two turns in one session. -->
+                            <tr class="ownerrow">
+                                <td class="mxwho"><span class="mxid">
+                                    <span class="mxav" aria-hidden="true"><${Icon} name="user" cls="sm" /></span>
+                                    <span class="mxn"><b>Owner</b><span>…${String(isOwnerId || '').slice(-6)} · built in</span></span>
+                                </span></td>
+                                ${ordered.map((sc) => html`
+                                    <td key=${sc.key}><span class="mxcell on locked" style=${`--c:${accentOf(sc)}`}
+                                        role="img" aria-label=${`${sc.label}: held by the owner, not editable`}
+                                        title="The owner short-circuits every check"></span></td>`)}
+                                <td class="mxact"><span class="mxacts"><span class="holder">locked</span></span></td>
+                            </tr>
+                            ${matrix.admins.filter((a) => a.discordId !== isOwnerId).map((a) => {
+                                const owner = false;
                                 const rp = rowPending(a.discordId);
                                 const changes = Object.keys(rp).length;
                                 return html`
@@ -176,17 +220,18 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                                             <span class="mxav" aria-hidden="true">${(a.note ? a.note[0] : a.discordId.slice(-1)).toUpperCase()}</span>
                                             <span class="mxn">
                                                 <b>…${a.discordId.slice(-6)}</b>
-                                                <span>${a.note || 'no label'}${a.grantedAt ? ' · granted ' + new Date(a.grantedAt).toISOString().slice(0, 10) : ''}</span>
+                                                <span>${a.note || 'no label'}${a.grantedAt ? ' · granted ' + shortDate(a.grantedAt) : ''}</span>
                                             </span>
                                         </span></td>
                                         ${ordered.map((sc) => {
                                             const g = a.grants[sc.key] || {};
                                             const pend = rp[sc.key];
                                             const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
-                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry.
+                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry. 🔴 AN INHERITED CELL MUST NOT ALSO WEAR `.on`, EVEN THOUGH IT RENDERED CORRECTLY. `.mxcell.on` fills with the accent and `.mxcell.inh` resets the background to transparent — so the ring survived only because `.inh` is declared LATER in the stylesheet. Reorder those two rules and every inherited cell in the grid fills solid, which is the one thing the ring exists to distinguish. The design's inherited cell carries no `.on` at all. `aria-checked` stays true: an inherited permission IS held, and that is the semantics, not the paint.
+                                            const inheritedOnly = pend === undefined && g.inherited && !g.direct;
                                             const cls = 'mxcell'
-                                                + (on ? ' on' : '')
-                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (g.inherited && !g.direct ? ' inh inherited' : ''))
+                                                + (on && !inheritedOnly ? ' on' : '')
+                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (inheritedOnly ? ' inh inherited' : ''))
                                                 + (owner ? ' locked' : '');
                                             const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
                                             const willBe = pend === true ? ' — pending: will be granted'
@@ -221,8 +266,18 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
                 <div class="mxfoot">
                     <span><span class="mxlegend on"></span>granted <b>directly</b> — revoking it removes exactly this.</span>
                     <span><span class="mxlegend inh"></span><b>inherited</b> — holding <code>manage</code> covers every page at once, so these cells cannot be turned off one at a time.</span>
-                    <span>The owner has everything and cannot be edited.</span>
+                    <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
+                         removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
+                         states with a locked chip on every cell — two authorities for one fact, which is the defect
+                         access.html's own comment records fixing when it moved the ring key out of this foot. The
+                         design's foot has two sentences for the same reason. -->
                 </div>
+                <!-- ⚠️ THE COMMAND LIST IS SEPARATED BY MIDDOTS, NOT COMMAS, AND THE SENTENCES DO NOT WRAP MID-PHRASE.
+                     An inline code chip carries horizontal padding, so a comma set straight after one lands a chip's
+                     width from the word it belongs to (portalUi.test.js's own gate, and the Analytics callout that
+                     earned it). And htm drops a whitespace-only text node across a newline, so a line ending in a word
+                     whose next line opens with a tag renders as one run-on word. Both gates fired on this paragraph. -->
+                <p class="racknote">${(matrix.scopes || []).length} permissions: four commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and eight <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo. <b>🔒 <code>destructive</code> is a real permission in the bot</b> and the only one the <code>all</code> shorthand never includes — it can arrive only by being typed deliberately.</p>
             `}
             <${GrantForm} onGrant=${onGrant} scopes=${matrix.scopes} />
         </div>
@@ -233,42 +288,47 @@ function ByAdmin({ matrix, spof, onGrant, onSave, onRevoke, onExplain, isOwnerId
 function ByScope({ matrix, spof, ownerId }) {
     const spofScopes = new Set((spof || []).map((s) => s.scope));
     return html`
-        <div class="panel" id="by-scope">
-            <div class="ph">
-                <span class="t">By scope</span>
-                <span class="rt">${spofScopes.size ? `${spofScopes.size} single point${spofScopes.size === 1 ? '' : 's'} of failure` : 'no single points of failure'}</span>
-            </div>
-            <!-- ⚠️ THE MARK WAS DRAWN AND NEVER EXPLAINED. The spof class underlines a column in the grid above and
-                 flags a row here, and nothing said what the underline meant — a mark whose legend is missing
-                 is a mark the reader learns to ignore. It appears only when there IS one, because a legend
-                 for an absent mark is noise. -->
-            ${spofScopes.size ? html`
-                <span class="klg spofk"><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
-            <!-- ⚠️ THE VOCABULARY IS ELEVEN TOKENS AND FOUR OF THEM ARE COMMANDS. Nothing on this screen
-                 said that the manage token silently covers eight of the others — which is the single fact that makes
-                 a hand-typed grant dangerous, and the reason the chips above exist. -->
-            <p class="racknote">${(matrix.scopes || []).length} permissions in all. A command token grants the
-                whole command; <code>manage</code> covers every page under it, so granting it is not one
-                permission but eight. A scope with no realm is Discord-only and does nothing in this portal.</p>
+        <div id="by-scope">
+            <!-- ⚠️ THE SPOF LEGEND MOVED UP INTO THE VIEW BAR and is deliberately not repeated here. The mark
+                 appears on BOTH views — it underlines a column in the grid and flags a row here — so two copies
+                 would be two authorities for one mark, which is the defect access.html's own comment records
+                 fixing when it moved the ring key out of the grid foot. It still appears only when there IS
+                 one, because a legend for an absent mark is noise. -->
+            <!-- ⚠️ THE RACKNOTE THAT USED TO SIT HERE MOVED, it did not vanish. It said the manage token
+                 silently covers eight of the others; the design draws that note once, under the grid, and the
+                 By-admin view now carries the fuller version of it. Two notes making the same point on two
+                 tabs of one screen is the duplicate-authority defect this realm's own comments keep recording.
+                 What this view needed instead was for each ROW to say which realm it reaches — which it now
+                 does, in words, rather than in a title attribute you have to hover to read. -->
             <div class="scopes">
                 ${(matrix.scopes || []).map((sc) => {
                     const holders = matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);
                     const alone = spofScopes.has(sc.key);
+                    const lone = !alone && !holders.length;
                     return html`
-                        <div class=${'scope' + (alone ? ' spof' : '')}>
-                            <span class="nm">${sc.key}</span>
+                        <div class=${'scope' + (alone ? ' spof' : lone ? ' lone' : '')} style=${`--c:${accentOf(sc)}`}>
+                            <!-- The name is the LABEL with the raw token beside it, not the token alone: the token
+                                 is what you type into a grant and the label is what it means, and a list showing
+                                 only the token asks the reader to translate twelve of them. -->
+                            <span class="nm"><i></i>${sc.label || sc.key}<em>${sc.key}</em></span>
                             <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
-                            <span class="rl">${sc.realm ? `portal realm: ${sc.realm}` : 'Discord only'}</span>
+                            <span class="rl">${sc.realm ? html`reaches <b>${sc.realm}</b>` : html`<span class="none">Discord only</span>`}</span>
                             <span class="hs">
-                                ${ownerId ? html`<span class="holder owner">owner</span>` : null}
-                                ${holders.map((h) => html`<span class="holder" key=${h}>${h.slice(-6)}</span>`)}
+                                ${ownerId ? html`<span class="holder owner" title="The owner holds every permission implicitly">owner</span>` : null}
+                                ${holders.map((h) => html`<span class="holder" key=${h}>…${h.slice(-6)}</span>`)}
                             </span>
                             <!-- ⚠️ "nobody but you" IS QUIET, and "single point" IS NOT. Sole ownership by the owner is the resting state of a solo-maintained bot; one OTHER person holding it alone is the thing that goes wrong when they leave. Painting both in warning colour would make the common case shout and teach the reader to skip the mark. -->
-                            ${alone ? html`<span class="flag">⚠ single point</span>`
-                                : !holders.length ? html`<span class="flag quiet">nobody but you</span>` : null}
+                            ${alone ? html`<span class="flag">single point — only ${String(holders[0] || '').slice(-6)} besides you</span>`
+                                : lone ? html`<span class="flag quiet">nobody but you</span>` : null}
                         </div>
                     `;
                 })}
+            </div>
+            <!-- The two flags this list draws, named where the list ends. Same rule as the grid's foot: a mark
+                 that is on screen is named on screen, and only the marks that ARE on screen. -->
+            <div class="mxfoot">
+                <span><b style="color:var(--warn)">Single point</b> — exactly one non-owner holds it. If they go, you are the only one left who can do it.</span>
+                <span><b>Nobody but you</b> — zero non-owner holders. Safe, and also the reason you are still doing it yourself.</span>
             </div>
         </div>
     `;
@@ -402,6 +462,26 @@ export function AccessRealm({ session }) {
           note: 'Who is signed in right now, when they signed in, and when it expires.' },
     ];
     const matrix = data.matrix || { admins: [], scopes: [] };
+    const allScopes = matrix.scopes || [];
+    const spofSet = new Set((data.singlePointsOfFailure || []).map((x) => x.scope));
+    // "held by nobody but you" is the owner's own reach minus everyone else's: a scope no granted admin holds is one where you are the single point, which is the fact the By-permission view exists to surface. Derived from the SAME matrix the grid renders, never a second query that could disagree.
+    const unheld = allScopes.filter((sc) => !(matrix.admins || []).some((a) => (a.grants[sc.key] || {}).held));
+    // The design's own stat: the number of permission TOKENS handed out, which is not the number of cells lit — a bare `manage` is one token covering eight pages. Counting cells would answer a different question and quietly disagree with what an export of the same data says.
+    const permissionsGranted = (matrix.admins || []).reduce((n, a) => n + (a.permissions || []).length, 0);
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    const viewMeta = view === 'By admin'
+        ? `${plural(matrix.admins.length, 'admin')} × ${allScopes.length} permissions`
+        : `${plural(spofSet.size, 'single point')} · ${unheld.length} held by nobody but you`;
+    // ⚠️ A REALM KEY NAMES ONLY MARKS THAT ARE ON SCREEN (the Shell's own rule beside `realmKey`), so the single-point entry appears only when there is one. The lock does not: the owner-only column is always drawn, so it is always named. 🔴 THE WHOLE KEY GOES WHEN THE GRID GOES. With zero AdminUser documents ByAdmin replaces the entire table with one paragraph, so direct, inherited and the lock are all off screen — and this named all three anyway, under its own comment stating the rule it was breaking. The dev database cannot reach that state, which is why the pass never rendered it. The lock is additionally gated on a scope actually carrying ownerOnly, because a legend entry is a promise that the mark is somewhere on the page.
+    const anyGrid = (matrix.admins || []).length > 0;
+    const anyLock = allScopes.some((sc) => sc.ownerOnly);
+    const accessKey = !anyGrid ? null : html`
+        <span class="key">
+            <span class="l"><i></i>direct</span>
+            <span class="s"><i></i>inherited</span>
+            ${spofSet.size ? html`<span class="l spofk" data-note><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
+            ${anyLock ? html`<span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>` : null}
+        </span>`;
 
     // ⚠️ THE FORM IS AT THE FOOT OF A GRID, so the masthead button has to travel rather than toggle: there is no second copy to reveal, and building one would be two grant forms that can disagree. The focus lands on the field, not merely the scroll position — a page that moves and leaves the caret behind has not actually taken you there.
     const scrollToGrant = () => requestAnimationFrame(() => {
@@ -413,27 +493,51 @@ export function AccessRealm({ session }) {
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;
 
     return html`
-        <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By scope', 'Sessions']} onSetView=${setView}
+        <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By permission']} onSetView=${setView}
+                  meta=${viewMeta} realmKey=${accessKey}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
-                                                   { value: activeSessions, label: 'signed in now', tone: activeSessions ? 'hot' : undefined },
-                                                   { value: (data.singlePointsOfFailure || []).length, label: 'single points', tone: (data.singlePointsOfFailure || []).length ? 'bad' : undefined },
+                                                   { value: permissionsGranted, label: 'permissions' },
+                                                   // 🔴 `hot` AND `bad` WERE CLASSES WITH NO RULE. `.stat.warn .v` and `.stat.stg .v` are the only two tones either stylesheet defines, so a single-points count that was meant to read as a warning painted in ordinary ink and a warning became a number. Same defect home.js records for a `tone: 'live'` that styled nothing. The signed-in figure takes no tone at all, which is what the design gives it — being signed in is not a warning.
+                                                   { value: activeSessions, label: 'signed in' },
+                                                   { value: (data.singlePointsOfFailure || []).length, label: 'single points',
+                                                     tone: (data.singlePointsOfFailure || []).length ? 'warn' : undefined },
                                                ]}
-                                               actions=${html`<${MastheadNew} label="Grant access" hint="g"
+                                               actions=${html`<${MastheadNew} label="Grant access" hint="n"
                                                                               tip="Jump to the grant form"
                                                                               onClick=${() => { setView('By admin'); scrollToGrant(); }} />`} />`}
+                  contextSlot=${html`
+                      <!-- The design opens the page with this, and it is the one thing a reader cannot work out
+                           from the grid: this realm has no grantable permission at all. portal/api/realmAccess.js
+                           pushes 'access' onto the visible list only if owner, and every route in
+                           portal/api/access.js is wrapped in ownerOnly() — so the page is not merely restricted,
+                           there is no token that would open it. Without the note the empty ACCESS column reads
+                           as an oversight. -->
+                      <!-- 🔴 THE PLAIN OUTER DIV IS LOAD-BEARING, NOT TIDINESS. Both stylesheets carry
+                           .panel + .panel{background:transparent}, so a bare .panel here would make the view
+                           panel below it recessive — the exact defect Armory paid for with a stray paragraph,
+                           measured then as a 125-row table painting #171E24 against the design's #0F1418.
+                           access.html wraps its own note in a plain #ownerNote div for the same reason, and
+                           the converge run that introduced this caught it as a section.panel backgroundColor
+                           row within one pass. -->
+                      <div id="owner-note"><div class="panel" style="margin-bottom:16px"><div class="callout">
+                          <b>Owner-only, and not by choice.</b> Access has <b>no grantable permission</b> — there is
+                          nothing here you could hand out if you wanted to, and the rail hides this page entirely for
+                          anyone else, exactly like <code>/bot access</code> in Discord.
+                          The owner is <code>…${String(session.discordId || '').slice(-6)}</code> and holds everything
+                          regardless of this list.
+                      </div></div></div>`}
+                  footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} ttlHours=${data.sessionTtlHours ?? 12} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'
                           ? html`<${ByAdmin} matrix=${matrix} spof=${data.singlePointsOfFailure}
                                              onGrant=${grant} onRevoke=${confirmRevoke} onSave=${confirmSave}
                                              onExplain=${explainInherited} isOwnerId=${session.discordId} />`
-                          : view === 'Sessions'
-                              ? html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} />`
-                              : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
+                          : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
                   `} />
     `;
 }

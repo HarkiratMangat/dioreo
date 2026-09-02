@@ -27,3 +27,22 @@ paths:
 
 - 🔴 **A conform CSS rule must NEVER change an element's class SIGNATURE** — the audit's LCS walk pairs on tag+classes, so an added class desynchronises every node beneath it and the instrument reports differences it created. Use a data attribute (`main[data-modal]`).
 - ⚠️ **`portal/public/` is BUILD OUTPUT and is gitignored.** Sources are `portal/ui/`. Nothing in `portal/public` is ever edited, and it does not exist in a fresh clone until `node -e "require('./scripts/buildPortal').build()"` runs — which is why the build precedes starting the harness server, not the other way round.
+
+## 🔴 BOTH SIDES READ THE SAME FIXTURE FILE — so a data difference is NOT the default explanation
+
+`portal/ui/harness/stub.js:67` is `const F_ = window.FIX` — **the mockup's own `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/fixtures.js`**. The harness does not carry a second copy of the data; it reads the design's. So when a number differs between the two pages, "the fixtures disagree" is usually the wrong first hypothesis, and the render is the right one.
+
+**The exception is real and it is documented in the stub itself:** `foldByCommand()` folds command+subcommand rows to production's `$group by command`, which the mockup's `cmds()` does not do. That makes a per-command COUNT divergence **correct** on Analytics — `.ub2`, `.durrow` and every per-command signature — and "fixing" the stub to stop folding reintroduces the >100%-share defect its own comment records. ⚠️ Same shape as the announcement cap `?fresh=1` exists for: a deliberate demo override, not a bug.
+
+## 🔴 THE WRITE GOES IN THE LOOP, NOT AFTER IT (measured twice, 2026-09-01)
+
+The batching contract mandates one `python3` heredoc for N edits, with `assert <anchor> in s` before each replacement and a `print()` per edit. **Written the obvious way it silently discards work:**
+
+```python
+for each edit:  assert anchor;  s = s.replace(...);  print(label)
+io.open(p,'w').write(s)          # ← ONE call, AFTER the loop
+```
+
+An assert on edit 5 raises before that write, so edits 1–4 are lost **after printing that they landed**. It happened twice in one session on `portal/ui/access.js` and `ANALYTICS-PROMPT.md`; the first time the built asset still carried the old markup two instrument runs later, which reads as *"the build is not picking up my change"* rather than *"the edit never landed"*.
+
+**Write inside the helper, once per edit** — read, assert, replace, write, print. It costs nothing, and it makes a partial batch a partial success instead of a total loss reported as a success. If you keep a single trailing write, the `print()`s are not the receipt: `rg` the new anchor in the source **and** in `portal/public/ui/<realm>.js` before believing them.

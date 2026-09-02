@@ -1873,7 +1873,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    whatever the element above happened to contribute — on Broadcast a spacer div that had been added
    for the purpose, and on a realm with nothing between the view panel and the Manifest, none at all.
    A margin that belongs to a component does not belong to its neighbours. */
-#manifest{margin-top:16px}
+#manifest,#sessions{margin-top:16px}
 
 .panel + .panel{border-color:var(--rule);background:transparent}
 .panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}
@@ -2024,7 +2024,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
 .mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
 .mxcell:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
-.mxcell[aria-checked=true]{background:var(--c);border-color:var(--c)}
+/* 🔴 `:not(.inh)` IS LOAD-BEARING, AND ITS ABSENCE SURVIVED THE FIX THAT CLAIMED TO REMOVE IT. An inherited cell keeps `aria-checked=true` -- an inherited permission IS held -- so this rule and `.mxcell.inh` below both match it at IDENTICAL specificity (0,2,0), and the hollow ring won only because `.inh` is declared later in the file. Dropping the `.on` class removed one fill source and left this one, while the commit message said the source-order dependency was gone. Moving these two rules apart would have filled every inherited cell solid. */
+.mxcell[aria-checked=true]:not(.inh){background:var(--c);border-color:var(--c)}
 .mxcell[aria-checked=true]::after{content:"";width:9px;height:5px;border-left:2px solid var(--on-accent);
   border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
 .mxcell.staged{background:transparent;border:1.5px dashed var(--c)}
@@ -3906,6 +3907,22 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    saved one at 16px. */
 .mxcell{cursor:pointer;padding:0}
 .mxcell.inherited{cursor:help}
+/* 🔴 THE 26px CELL'S CHECKMARK RENDERS AS A BLACK BAR AT THIS SIZE, AND THIS GRID DOES NOT WANT IT.
+   `.mxcell[aria-checked=true]::after` draws a tick from two rotated borders, centred only by the 26px
+   rule's `display:inline-grid;place-items:center` — which the 16px `.mxcell` rule above REPLACES with
+   `display:block`. The ::after then lays out in normal flow, un-centred, and paints as a dark stroke
+   hanging out of the bottom of every granted cell. The mockup never trips it because access.html marks
+   its cells `aria-pressed`; this grid uses role=checkbox/aria-checked, which is the better semantics and
+   is kept. At 16px the state is already carried by SHAPE — solid fill is direct, hollow ring is
+   inherited (see the block above) — so the tick is redundant as well as broken. ⚠️ THE `.mx` SCOPING DOES NOTHING AND THE FIRST VERSION OF THIS COMMENT
+   CLAIMED IT PROTECTED A 26px CELL ELSEWHERE. There is no cell elsewhere: `.mxcell` is emitted six times, all in
+   access.js, all inside `.mx`, and the 16px rule is a bare single-class selector that overrides the 26px one
+   everywhere. The scope is harmless and honest about intent, but it guards nothing -- so do not reason from it.
+   🔵 A REAL ARGUMENT AGAINST THIS RULE IS FILED, NOT DISMISSED: with no tick, held-vs-not-held is carried by border
+   WIDTH and HUE (1px --rule2 against 2px --c), and access.js's own §4.1 note says colour must not be the only
+   carrier. The design draws no tick either, so matching it is the conformance answer and the critique is a redesign
+   one -- docs/db-deferred-list.md. */
+.mx .mxcell::after{content:none}
 /* Pending reads as "what it WILL be, not yet written": the fill or the emptiness is the
    future state, and the dashed --staged ring is what marks it unsaved. Same dashed-and-
    hollow language the Track already uses for staged bars, so it is learned once. */

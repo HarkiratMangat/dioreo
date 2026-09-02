@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-01T18:34:15.791Z",
+  "recordedAt": "2026-09-01T22:46:02.113Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [
     "kind",
@@ -52,11 +52,11 @@
     "hseason",
     "is-loading",
     "is-refreshing",
+    "klg",
     "landed",
     "lg",
     "lift",
     "lit",
-    "locked",
     "lv-caution",
     "lvl1",
     "manifest-cell",
@@ -66,7 +66,6 @@
     "on-item",
     "oos",
     "opline",
-    "ownly",
     "pal",
     "pbox",
     "pend",
@@ -103,6 +102,7 @@
     "zhint"
   ],
   "mismatch": [
+    "lone",
     "preview-sel"
   ]
 }

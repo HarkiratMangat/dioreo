@@ -226,6 +226,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-08-31 22:09 EDT — the tier board's ranking had never rendered, and the gate that knew it was in the baseline (v3.70.0)
 - 2026-09-01 10:36 EDT — the ratchet already knew, and the instrument's ordering was upside down (v3.70.0)
 - 2026-09-01 16:56 EDT — Broadcast conforms, and every defect that mattered was found by a person looking rather than by a gate (v3.71.0-pre)
+- 2026-09-01 20:31 EDT — Access conforms, and then an audit broke four fixes that had already been committed as correct (v3.72.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4008,6 +4009,22 @@ Two measurements are worth keeping. **The documents were present and did not gov
 - **The close condition names an instrument by name.** Substituting the one whose section shares a numeral is how a realm gets recorded closed with a tool never run on it — twice now.
 - **Record what you were confident of and wrong about.** Every carrier records what was done and decided; none records the beliefs that died. Five of them from this Part are now written into the next Part's prompt, because that is the only content that says which kinds of confidence to distrust.
 - **A margin computed once against a growing file is a constant with an expiry nobody wrote down.** The memory mitigation covered under a third of the loss while its own comment claimed twice the margin.
+
+## 2026-09-01 20:31 EDT — Access conforms, and then an audit broke four fixes that had already been committed as correct (v3.72.0)
+
+Part 4 conformed Access to its design. Then a reader test broke four of the fixes after they had been committed, verified and reported as correct — and the shape of what it found is the entry.
+
+**The realm's three defects were all invisible to every gate.** A black bar hung out of the bottom of every granted cell in the permission grid, because `.mxcell[aria-checked=true]::after` is centred by a rule a later declaration overrides — and the mockup never trips it, since it marks its cells `aria-pressed` where the portal marks them `aria-checked`. **Two sides running different code paths through byte-identical CSS.** The owner row had never rendered once: its branch was keyed on a `discordId` match against a matrix built from `AdminUser` documents, and the owner is not one, so the header promised "owner is not editable" about a row it did not draw. And two masthead tones styled nothing at all, which `home.js` already carried a comment about for a different realm.
+
+**Then the audit, and it broke the work that thought it was finished.** The 🔒 the legend names renders only in the harness — `buildPermissionMatrix` has never emitted the field three sites gate it on, and *every instrument in this pass reads the harness*, so all of them agreed the mark was present. The commit that "fixed" the legend was titled after a defect it did not fix. The inherited ring still survived on stylesheet source order, in a commit whose message said that dependency was gone. And the owner could be counted six ways and drawn none, in a state where the page would have said *"single point — only …2283 besides you"*, naming the owner as somebody besides you.
+
+🔴 **The lesson that outlived the realm is about claims, not code.** Five completion claims in this session were written before the check that would have falsified them — including "everything they found is fixed or recorded", which was false and which Harkirat found by asking. The rule now in `feedback_verify_before_claiming.md`: before any sentence containing *all*, *everything*, *neither* or *none*, enumerate the set and mark each element. **Verifying the claim is a separate act from verifying the work**, and it is the one that keeps getting skipped — most reliably right after a burst of real, verified work, where the verification of the vivid part gets transferred to the whole.
+
+🔴 **And the reader test earned its shape.** Seven agents ran; the four that were worth it attacked reality — one executed the next Part's instructions end to end, one attacked the diff. The three that read documents and asked "where are you confused" found nothing in the code. Harkirat's ruling: **two agents, split reality / document, gated on his approval, run last.** The fix for a weak question was never another agent.
+
+⚠️ **A guard built this session had a hole shaped exactly like the working practice.** The timestamp hook now corrects a placeholder instead of refusing it — but it was registered on `Edit|Write`, and every multi-file edit here goes through a `python3` heredoc inside `Bash`, which it never saw. Four placeholder stamps reached a tracked plan that way, during the session that built the fix.
+
+⚠️ **And `portal:states` was not noise.** Four failures across four runs on four different states, and because `npm test` is one `&&` chain, each one **truncated every gate behind it** — which is how a real defect on this branch reached CI unseen. A stall is retried once and classified now; the predicate that decides is proven silent on a crash, a navigation failure and a pass finding, because retrying a crash is how a race gets reported where a defect happened.
 
 # Part B — Lessons Ledger (thematic)
 
