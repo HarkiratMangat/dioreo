@@ -50,7 +50,7 @@ The index is **22,230 B over 151 lines**, inside both limits with headroom, and 
 
 Three gates were promoted from reporting to CORRECTING, on one test: does the hook already know the ONE right value? The timestamp autofix now reaches `python3` heredocs — the gap four placeholder stamps came through — after the stated reason for not doing so turned out to be false; `rtk` has rewritten every Bash command via the same mechanism for months. `rg -rn` is corrected to `-n` because a cluster has exactly one reading, while a lone `-r` stays advisory because it is a legitimate `--replace`. `--delete-branch` is appended BEFORE a merge rather than lamented after one. **`typos-check` was considered and deliberately excluded**: a typo has several plausible corrections, and a silent wrong substitution is worse than a refusal.
 
-## Pre-Release v3.73.0 — 2026-09-02 (#180) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
+## Pre-Release v3.73.0 — 2026-09-02 (#180 · `44b2f54`) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
 
 Part 5 of the conformance pass. Two of the three headline defects were **live wrong renders on real data**, not spacing.
 
