@@ -147,6 +147,38 @@ ok("timestamp-check (post) WARNS on a bare date WITHOUT blocking",
 // A clean body must still pass, or the gates would just block everything and get removed.
 ok("a clean body still passes the gates", run(fresh("g3"), "2026-08-10 00:00 EDT — Clean body (v2.63.1)").okRun);
 
+// 🔴 THE STAMP IS THE SCRIPT'S JOB NOW. --desc is the preferred form precisely because a hand-typed stamp is the one input TITLE_RE could only refuse rather than fix, and a refusal costs a turn every time. These four assert that it stamps, that the stamp is REAL rather than a placeholder, that --title still overrides it, and that asking for both is refused — two stamps cannot both be the one that is true.
+{
+  const f = fresh("desc1");
+  const r = spawnSync(process.execPath, [SCRIPT, "--desc", "Stamped by the script (v9.9.9)", "--body-file", bodyFile, "--devlog", f],
+                      { encoding: "utf8" });
+  const txt = r.status === 0 ? readFileSync(f, "utf8") : "";
+  const line = txt.split("\n").find((l) => l.startsWith("## ") && l.includes("Stamped by the script")) || "";
+  ok("--desc writes a REAL stamp, not a placeholder",
+     /^## \d{4}-\d{2}-\d{2} \d{2}:\d{2} [A-Z]{2,5} — Stamped by the script \(v9\.9\.9\)$/.test(line),
+     `status=${r.status} line=${line.slice(0, 90)} err=${(r.stderr || "").slice(0, 120)}`);
+  // The stamp has to be NOW, or it is a different bug wearing the fix's clothes: a hardcoded date would pass the regex above forever.
+  const stamped = new Date((line.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/) || [""])[0].replace(" ", "T"));
+  ok("--desc's stamp is the CURRENT time, not a constant that happens to parse",
+     Math.abs(Date.now() - stamped.getTime()) < 36e5,
+     `stamped=${stamped.toISOString?.() || "unparsed"}`);
+}
+{
+  const f = fresh("desc2");
+  const r = spawnSync(process.execPath, [SCRIPT, "--desc", "d (v9.9.9)", "--title", "2026-08-10 00:00 EDT — t (v9.9.9)",
+                                         "--body-file", bodyFile, "--devlog", f], { encoding: "utf8" });
+  ok("--desc together with --title is REFUSED", r.status !== 0 && /never both/i.test(r.stderr || ""),
+     `status=${r.status} err=${(r.stderr || "").slice(0, 120)}`);
+}
+{
+  const f = fresh("desc3");
+  const r = spawnSync(process.execPath, [SCRIPT, "--title", "2026-08-10 00:00 EDT — Explicit stamp wins (v9.9.9)",
+                                         "--body-file", bodyFile, "--devlog", f], { encoding: "utf8" });
+  ok("--title still sets the stamp itself, so a backfill can carry its real date",
+     r.status === 0 && readFileSync(f, "utf8").includes("## 2026-08-10 00:00 EDT — Explicit stamp wins"),
+     `status=${r.status} err=${(r.stderr || "").slice(0, 120)}`);
+}
+
 rmSync(dir, { recursive: true, force: true });
 // Skips are printed in the verdict, never folded into the pass count — a proof that did not run is not a proof that succeeded, and hiding that is how a gate stays dead for weeks.
 console.log(`\n  ${pass} passed, ${fail} failed${skipped ? `, ${skipped} SKIPPED (gate inert here — see lines above)` : ""}`);

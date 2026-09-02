@@ -7,6 +7,7 @@
 // Neither failure requires judgement — the insertion points are structural. A gate that fires after the fact is documentation; this is the mechanism. `devlog-toc` and `record-structure` stay as the backstop, and now they should never actually trip.
 //
 // Usage:
+//   node scripts/devlog-add.mjs --desc  "<description> (vX.Y.Z)" --body-file <path>   # PREFERRED — stamps itself
 //   node scripts/devlog-add.mjs --title "<TITLE>" --body-file <path>
 //   node scripts/devlog-add.mjs --title "<TITLE>" --body-file -      # body on stdin
 //   ...--devlog <path>   # override target (tests only)
@@ -31,11 +32,24 @@ const arg = (name) => {
 
 const die = (msg) => { console.error(`devlog-add: ${msg}`); process.exit(1); };
 
-const title = arg("--title");
+// 🔴 THE THIRD FAILURE THIS SCRIPT EXISTS TO REMOVE, AND IT WAS THE ONE LEFT TO THE AUTHOR. The header above says the two known failures "require no judgement — the insertion points are structural" and that a gate firing after the fact is documentation while this is the mechanism. A TIMESTAMP IS EXACTLY AS STRUCTURAL, and it was the one thing still hand-typed into --title — where TITLE_RE could only REFUSE it, one turn after the fact, which is the documentation half of that same sentence.
+// Harkirat, 2026-09-01 22:19 EDT: *"IMAGINE there was a script in the repo which already did it for you for the devlog"* — said after this script rejected a hand-typed title in the very session that had just written a rule about computing stamps rather than typing them. It did not, in fact, already do it. Now it does.
+// `--title` stays for an explicit stamp: the tests need to write entries dated in the past, and a backfill has a real date that is not now.
+const descArg = arg("--desc");
+const nowStamp = () => {
+  // en-CA gives YYYY-MM-DD; the short timeZoneName gives EDT/EST without a table to maintain. America/New_York because every stamp in these records is Harkirat's local time.
+  const d = new Date();
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false, timeZoneName: "short" })
+    .formatToParts(d).reduce((o, x) => (o[x.type] = x.value, o), {});
+  return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute} ${p.timeZoneName}`;
+};
+const title = arg("--title") ?? (descArg ? `${nowStamp()} — ${descArg}` : null);
 const bodyFile = arg("--body-file");
 const devlogPath = arg("--devlog") ?? "docs/DEVLOG.md";
 
-if (!title) die('missing --title "<TITLE>"');
+if (arg("--title") && descArg) die("pass --desc OR --title, never both — two stamps cannot both be the one that is true");
+if (!title) die('missing --desc "<description> (vX.Y.Z)"  (or --title "<FULL TITLE>" to set the stamp yourself)');
 if (!bodyFile) die("missing --body-file <path> (use - for stdin)");
 if (!TITLE_RE.test(title)) {
   die(`title must read "YYYY-MM-DD HH:MM TZ — description (vX.Y.Z)" and carry a TIME, not a bare date.\n  got: ${title}`);
