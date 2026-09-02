@@ -3,7 +3,7 @@
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
 import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, pass6Names, diffAgainstKnown, stepSettle } from './lib/portalStatePasses.cjs';
-import { isStall } from './portalStates.mjs';
+import { isStall, portalTouched, depsChanged } from './portalStates.mjs';
 
 let passed = 0;
 const check = (label, fn) => { fn(); passed++; console.log(`  ✓ ${label}`); };
@@ -116,5 +116,36 @@ check('isStall is SILENT on a real crash, so a TypeError is never retried', () =
 check('isStall is SILENT on a navigation failure', () => assert.ok(!isStall('net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8901/harness.html')));
 check('isStall is SILENT on a pass finding, which must fail the run rather than be re-walked', () => assert.ok(!isStall('PASS 1  cmdbar-input-composite  a 44px input inside a 34px wrapper')));
 check('isStall tolerates a null message rather than throwing inside the catch', () => assert.ok(!isStall(null)));
+
+// ── the --ci skip, added 2026-09-02 18:07 EDT ──────────────────────────────────────── The dangerous direction here is skipping on UNCERTAINTY: that turns a real portal change into a silent pass. Three of these five cases exist to pin the fail-closed behaviour rather than the skip.
+check('a portal file means RUN', () => {
+    assert.strictEqual(portalTouched(['docs/CHANGELOG.md', 'portal/ui/season.js']), true);
+});
+check('a scripts/portal* or mockup change means RUN', () => {
+    assert.strictEqual(portalTouched(['scripts/portalDiff.mjs']), true);
+    assert.strictEqual(portalTouched(['docs/superpowers/mockups/2026-08-20-portal/season.html']), true);
+});
+check('a dependency bump means RUN — it can move puppeteer under the walk', () => {
+    assert.strictEqual(portalTouched(['package-lock.json']), true);
+});
+check('THE SKIP CAN HAPPEN: a docs-and-hooks diff means SKIP', () => {
+    assert.strictEqual(portalTouched(['docs/CHANGELOG.md', '.claude/hooks/timestamp-check.sh', 'scripts/docs-audit.mjs', 'CLAUDE.md']), false);
+});
+check('a VERSION-only manifest bump is not a dependency change', () => {
+    // Every release touches these two files. Counting that as a dependency change made the filter match everything, which is the same as having no filter -- caught on the first PR it met.
+    assert.strictEqual(depsChanged('--- a/package.json\n+++ b/package.json\n-  "version": "3.73.0-pre",\n+  "version": "3.74.0-pre",'), false);
+});
+check('a REAL dependency change still counts', () => {
+    assert.strictEqual(depsChanged('--- a/package.json\n+++ b/package.json\n-    "puppeteer-core": "^22.0.0",\n+    "puppeteer-core": "^23.0.0",'), true);
+});
+check('depsChanged fails closed on an empty diff', () => {
+    assert.strictEqual(depsChanged(''), false);   // no manifest lines to keep => the files drop out, other files still decide
+});
+
+check('FAILS CLOSED: an empty or unknown file list means RUN, never skip', () => {
+    assert.strictEqual(portalTouched([]), true);
+    assert.strictEqual(portalTouched(null), true);
+    assert.strictEqual(portalTouched(undefined), true);
+});
 
 console.log(`\n✅ ${passed} cases — every pass proven able to name its own defect, and proven silent on the correct version of the same shape.`);
