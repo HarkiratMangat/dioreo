@@ -98,7 +98,7 @@ Measured 2026-09-02. ⚠️ **Read §2 first: these compare an empty mockup to a
 
 ## §5 — THE CONTRACT, RESTATED BECAUSE IT DOES NOT SURVIVE A SESSION BOUNDARY
 
-- **Branch `feat/analytics-portal-conformance`**, 22+ commits ahead of `v3-pre-release`, `3.73.0-pre`, **unpushed**. Do not branch fresh off `v3-pre-release` — you would orphan the lot. Part 5's §L conditions ⑥ and ⑦ may still be owed; check §L row 5.
+- **Branch `feat/analytics-portal-conformance`**, **31 commits** ahead of `v3-pre-release`, `3.73.0-pre`, **PUSHED 2026-09-02 11:43 EDT at `a8c6f6e`** — and NOT merged, no PR, no tag. Do not branch fresh off `v3-pre-release` — you would orphan the lot. ⚠️ This line read *"22+ commits … unpushed"* until the push made it false; a branch-state sentence goes stale the moment the branch moves, so re-derive it with `git log --oneline v3-pre-release..HEAD` rather than trusting it. §L row 5 has all seven conditions: ④ is claimed at `a8c6f6e`, ② is 34% enumerated rather than closed, ⑥ ran, ⑦ is Harkirat's.
 - ⛔ **Never push, open a PR, merge, or ask about any of them.** Approval is restated at the moment of the action.
 - ⚠️ **Scoped tests only until a push is approved** — Harkirat, 2026-09-01 19:04, and the push has not happened. Run the gates that cover what you touched; the full suite waits. **§L ④ is a CLAIM: if the full suite did not run, do not claim it at all.**
 - 🔇 **Silent mode** per `MEMORY.md` — no prose between the first call and the final summary, one structured summary, tables not prose for 4+ items, `sequentialthinking` before any audit or review.
