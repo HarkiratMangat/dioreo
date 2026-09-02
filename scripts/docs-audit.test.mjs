@@ -702,6 +702,15 @@ proves("a record file with its top-level heading spliced in twice", "record-stru
   write(root, "docs/CHANGELOG.md", c + "\n# Changelog\n\nspliced in again\n");
 });
 
+// 🔴 THE GUARD IS THE ONLY HALF THAT IS ON DISK. The opener lives in a chat message and no check can see it, so this proves the document-side guard is required — which is what lets a skimming reader catch itself.
+proves("a realm prompt with no anti-skim guard", "prompt-antiskim", (root) => {
+  write(root, "docs/superpowers/plans/ZZTEST-PROMPT.md", "---\nkind: plan\nstatus: live\n---\n\n# Part 9 — ZZTest. Paste this in.\n\nSome content with no guard anywhere near the top.\n");
+});
+
+provesSilent("a realm prompt that carries the guard", "prompt-antiskim", (root) => {
+  write(root, "docs/superpowers/plans/ZZOK-PROMPT.md", "---\nkind: plan\nstatus: live\n---\n\n# Part 9 — ZZOk. Paste this in.\n\n> 🔴 IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE. It carries the batching contract and the three files, which an opener cannot.\n");
+});
+
 proves("a changelog entry left citing an unfilled PR placeholder", "changelog-pr-cite", (root) => {
   // The real incident: the v3.55.0 entry shipped with a literal `(#PR)`, because the PR number does not exist yet when the pre-merge entry is composed on the branch. Every other check passed — version coverage, hash chain, structure — none of them read whether the citation is a number.
   const c = readFileSync(join(root, "docs/CHANGELOG.md"), "utf8");

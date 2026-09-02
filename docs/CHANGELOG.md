@@ -28,7 +28,39 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.72.0 — 2026-09-01 (#179) — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct
+## Pre-Release v3.73.0 — 2026-09-02 (#180) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
+
+Part 5 of the conformance pass. Two of the three headline defects were **live wrong renders on real data**, not spacing.
+
+### The realm
+
+🔴 **30.6% of every alert painted as the grey no-severity tier.** `utils/alertWebhook.js` writes four levels and pings on two of them; `LEVEL_ROW` carried a key for `warn` and none for `caution`. Measured against the dev database: **info 678 · caution 306 · error 16 · warn zero**, out of 1,000 rows — a table holding a key for the value that never occurs and missing the one that is nearly a third of the data. `LEVEL_ROW[level] || LEVEL_ROW.info` then painted all 306 as info, **under a paragraph on the same page naming three tiers and drawing one bar**. Both stylesheets already defined `.lvlb.lv-caution`, so the rule was live and only the emitter was missing, which is precisely the shape an orphan scan cannot see. The api's `levelOrder` had the same gap, where `indexOf` returning −1 sorted the second-largest tier below `info`.
+
+🔴 **The harness could not reach the bug.** `stub.js` folded the river's five-row sample and called it the week's distribution, so the panel drew ONE bar reading 5 beside a masthead saying 498 alerts. Production folds every alert in the window; the river is a sample by construction. With only `info` present, **no fixture-driven instrument could reach the caution path at all** — the mirror image of Part 4's lock defect, which rendered only in the harness. Both directions of the same trap, one Part apart.
+
+🔴 **The interaction tier was the largest surface no instrument could see.** The four Health tiles and the three Alerts-by-level rows are `<button>` in the design and were static `<div>` here — the tiles jump to Timing, the level rows scope the river to that level and scroll it into view. A div and a button with the same class are the same pixels until you try to press one, so the page diff, all four comparison sections and a green suite agreed they were fine. `portal:inventory` is the only instrument that found it, as `button.tile` and `button.lv-*.lvlb` present on one side only. It also closed three ④ STYLE rows that were never a rule difference at all: `text-align: left` against `start` is what a button and a div compute.
+
+**The masthead is four stats now — commands 24h, errors 24h, uptime, worst ack — Harkirat's call to keep a hybrid of whatever is useful at a glance.** Its error count had been carrying `tone:'bad'`, which styles nothing in either sheet, so 23 errors rendered in ordinary white; the same class of defect Access shipped a fix for one release earlier. Putting the lead stat first also dissolved the ① CASCADE that had been reported on all five views.
+
+Also: the `include admin traffic` switch moves to the panel header where the design puts it, through a `Shell` slot that already rendered exactly there · the dependency panel gets back the outlier banner that did not travel with it to Timing · `fmtMs` stops printing a real sub-millisecond figure as `0ms`, which had Atlas reading "0ms each" across 437 calls · the river's third kind becomes RESTART, because the design's "Deploy" is false of its own fixtures and BOOT is the dialect this file already rules against · the level filter chips stop carrying two vocabularies in one group · and every filter chip in every realm loses a duplicated `aria-pressed`.
+
+**A gate that would have caught the first defect.** `portalAnalytics.test.js` now conserves the two class tables and the sort order against `alertWebhook`'s own `LEVEL_COLOR` map. The writer is the enumeration; a table checked against itself can only confirm what it already contains.
+
+### What the reader test broke
+
+🔴 **A BLOCK DELETION HAD TAKEN THREE FUNCTIONS WITH IT AND SHIPPED THROUGH A GREEN SUITE.** Removing the masthead's `worst ack` sliced from its own comment to the next function, and `EventDrawer`, `eventRows` and `EVENT_NOTE` sat inside that range — **71 lines went where about 15 were intended**, so the river's rows silently opened nothing for five commits. The guards asserted that the intended things WERE gone and never that nothing else was. `node --check` cannot see it (a call to a missing function is not a syntax error), the build cannot, ten scoped gates cannot, and a full green `npm test` did not — **nothing in the suite opens a drawer.** Found from a `ReferenceError` in a browser console while registering this realm's interactive states.
+
+**Making the tiles reachable is what made them unreadable.** As divs they had no accessible name; as buttons they take one from their contents, and htm drops the whitespace across a newline — so screen readers announced "Restarts 7d3030 in the last 24 hours" and "caution258never pinged". `portal:audit --triggers` had printed those exact fused strings hours earlier.
+
+**The count line stated one population and meant three.** The level bars fold every alert in seven days, the river is the newest 100 of three collections, and the total was every row all time — so pressing "caution 258" showed a handful headed "2 of 1,307". A realm now declares its source is a window and the line states all three separately: "0 shown · newest 11 of 1,323 events".
+
+Also: `role="button"` on a real `<tr>` (it replaces the row role and orphans the cells); a keyboard handler that swallowed the space bar inside **Armory's** rename fields; a tone that styled nothing on Review's blocker count, the fourth realm to ship that defect and the first caught by a gate; two can-fail proofs that never ran the scanner they claimed to prove; and `portalGeometry` recording Review's four changeset rows as VIEWS.
+
+### Decided rather than asked
+
+Six composition forks went to Harkirat in one pop-up at the start. "Where the milliseconds go" stays on Timing, the river keeps its Source column, Usage keeps share, the export scopes stay, the admin switch moves. The Usage rows keep their unprefixed names against the design's leading slash, because the busiest of them are background jobs and `/webp_nameplate` is not something a person can type.
+
+## Pre-Release v3.72.0 — 2026-09-01 (#179, `442e8a1`) — Access drew a black bar through every granted cell, the owner row had never rendered once, and the reader test then broke four fixes that had already been committed as correct
 
 Part 4 of the conformance pass. The headline is not the realm: it is that **every defect below the first three was found by an audit run against work already committed, verified and reported as finished** — and that the audit's two agents which went and CHECKED reality found eight defects, while the two that read the documents found none in the code.
 

@@ -5,6 +5,11 @@ status: live
 
 # Part 5 — Analytics. Paste this in.
 
+> 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE AND IT IS NOT SUFFICIENT.** It is a pointer with a gate on it, written that way deliberately: Part 4's handoff summarised its own findings, and a summary is a SUBSTITUTE — a session reads three bullets, feels oriented, and never opens the document where the work is. **Everything below is what an opener cannot carry**: the five-section batching contract that took one view from 664 differences to 10, the three files without which the pass did not happen, the six composition forks that are Harkirat's and not yours, the five mechanical traps that each cost real turns, the five contradictions between carriers already resolved with the cost of choosing wrong, and the table of what the previous session was CONFIDENT of and wrong about.
+>
+> **The falsifiable version:** this document names **two** measured findings and **one** cleared non-defect. If your working belief is "there are three suspects to fix", you are holding Part 4's superseded wording and you have not read §*TWO FINDINGS*. If you cannot name the three files §*THREE FILES* requires, you will produce one of three, exactly as Part 4 did — **measured, not predicted**: `ls local/` shows a triage file and a difference ledger for season, armory and broadcast, and for Access only `locate-access.md`.
+
+
 > Written 2026-09-01 19:08 EDT by the Access session (§0.0). **Every number below names the command that produces it; where a figure and a tool disagree, the tool wins.** That sentence is not decoration — Part 4's prompt inherited three wrong figures for its own realm from §L, and the same row had already been corrected once.
 
 ## 🔴 ORDER OF OPERATIONS — this block supersedes every competing instruction, and nothing else needs opening to start
@@ -31,11 +36,25 @@ status: live
 - `Premise Low · Delib High -> Sonnet5-High` — the audit produces the findings, so the facts are given and checkable; the load is breadth across sites.
 - ⚠️ **AND THE ESCALATION EVENTS ARE PREDICTABLE ON THIS PASS, so watch for them rather than pre-empting them.** The gate's rule is Sonnet→Opus at the same effort when *a premise turns out false* or *a silent-failure surface appears*. Part 4 fired both and never re-derived: the plan's `.mxgrp` colspan warning did not reproduce, and two silent-failure surfaces showed up (a `python3` batch that printed six successes and wrote nothing; a hook self-test whose harness could not express the difference it was checking). **If either happens here, re-derive in the `Premise <X> · Delib <Y> -> <Cell>` shape and say so — do not just keep going.**
 
-## Branch state
+## Branch state — YOU ARE ALREADY ON YOUR BRANCH, AND IT CARRIES WORK THAT IS NOT PART 5
 
-Part 4 (Access) landed on **`feat/access-portal-conformance`**, unpushed and unmerged as of this writing. **Verify what you inherited by RUNNING `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`, not by trusting a count here** — this paragraph deliberately quotes none, because the commit that writes a count changes it. What is stable: Part 4's commits touch `portal/ui/access.js`, `portal/ui/app.css`, `portal/fixtures/**`, `docs/reference/portal-decision-ledger.md`, `docs/db-deferred-list.md` and the plan; **anything touching `portal/ui/analytics.js` is not from Part 4.**
+**Part 4 (Access) is MERGED** — PR #179, squash `442e8a1` on `v3-pre-release`, `package.json` at **3.72.0-pre**, no tag (none is minted on the pre-release line until `v3.0.0`), branch deleted local and remote.
+
+🔴 **`feat/analytics-portal-conformance` already exists, is checked out, and carries three commits that are NOT Part 5.** Harkirat's instruction, 2026-09-01 20:52 EDT: **fold them into your work and push once, at the end** — do not branch afresh, do not push them separately.
+
+**Verify what you inherited by RUNNING `git log --oneline v3-pre-release..HEAD` and `git diff v3-pre-release..HEAD --name-only`, not by trusting a count here** — this paragraph deliberately quotes none, because the commit that writes a count changes it. What is stable is the SUBJECTS and the property they share: **all three are records or workflow changes, and none touches `portal/`.**
+
+| Commit | What it is |
+|---|---|
+| `c433e1b` | the FIRST, WRONG diagnosis of a `codebase-memory-mcp` failure. Kept rather than amended, because the commit after it is the correction and the pair is the lesson |
+| `84d3f34` | the real cause — `index_repository` takes `project_path`, the worker requires `repo_path`, and the mismatch is reported as *"Indexing worker crashed on a file"* |
+| `042b732` | the merge close-out in `CLAUDE.md` and in the git-workflow memory now re-syncs BOTH indexes, because a merge is what makes them stale and neither says so |
+
+⚠️ **A commit in that range touching `portal/` means something other than this handoff happened.** Check before assuming it is yours.
 
 ⚠️ **One worktree is live — `draw-calculator-breakdown-146641`, Harkirat's peer session. Never touch it.** `chore/silent-mode-guards-parked` is pushed, inert, registered in no settings file, and **is not your work.**
+
+🔴 **THE PUSH IS STILL ONE APPROVAL, AT THE END.** Three unpushed commits do not become pre-approved by being inherited — an approval has a scope, and the one that covered Part 4 was consumed by the merge of #179. When Part 5 is ready, ask once for the whole branch.
 
 ## The mode
 
@@ -149,7 +168,7 @@ Then `Read /tmp/band.png`, at **at least three bands down the page** — and the
 | **44KB, and the byte count** | `npm run portal:status` prints 44KB; **`wc -c`** gives 46,107 — ⚠️ **not `ls -l`, which is rtk-wrapped here and prints `45.0K`**, so an earlier version of this row named a command that does not produce its own number |
 | **Five views: Health · Usage · Timing · Reach · Search** | `npm run portal:status`, and they match `analytics.html:33-37` exactly |
 | **9 distinct `data-*` names / 32 occurrences** in `analytics.html` | `rg -o 'data-[a-z-]+' <file>`. ⚠️ **Nothing in `scripts/` prints a per-realm data-attribute count**, so any such figure in §L has no producing instrument and is a hand count — this one included, and it was hand-counted 2026-09-01 19:00 EDT |
-| **`portal/ui/analytics.js` is 706 lines with 3 `onX` prop sites, 3 distinct** | `wc -l` and `rg -o '\son[A-Z][A-Za-z]*='`. **A near-static reference, not an interaction realm** — §L's own row says so, and the interaction tier is correspondingly small |
+| 🔴 **STALE AS OF 2026-09-01 22:28 EDT — THIS ROW NOW ASSERTS THE OPPOSITE OF WHAT IS TRUE, AND IT SAYS SO RATHER THAN BEING DELETED.** It read *"706 lines with 3 `onX` prop sites, 3 distinct — a near-static reference, not an interaction realm, and the interaction tier is correspondingly small"*. Part 5 BUILT that tier: **832 lines, 11 `onX` prop sites, 6 distinct.** The four Health tiles jump to Timing, the three level rows scope the river, and every river row opens an event drawer — all three are things the design draws and the portal did not. ⚠️ **The row's own cell two lines above already corrected the mockup half of this framing** (`portalStatus` counts `/addEventListener\|onclick=/` and cannot see twelve property-assigned handlers), and the portal half stayed wrong beside it. **The measurement was never the problem — the INFERENCE from it was**, in both halves and in the same row. | `wc -l` and `rg -o '\son[A-Z][A-Za-z]*='`, re-run 2026-09-01 22:28 EDT |
 | **Four of five instruments have run** | `portal:status`'s receipt board reads `audit ✅ 09-01 · inventory never · diff never · converge never · realwalk never` — an earlier version of this row said `· never` across all five, which was already false when it was written. ⚠️ Receipts are gitignored, so this is true of THIS tree and not of a fresh clone |
 | 🔴 **The resting numbers, measured 2026-09-01 19:44 EDT so you can tell progress from noise** | ② SHAPE by view: **Health 141 · Usage 93 · Timing 106 · Reach 85 · Search 80**. ③ WORDS 17/11/14/8/9. ④ STYLE 135/110/114/99/117. ⑤ RULES is 2011/40/40 on every view — **identical across all five, so it is cross-realm and not this realm's work**. `portalDiff --portal harness` **12.7%, 43 regions, the portal 403px TALLER**; converge **69 mismatches of 62 design nodes**, WORDS 31, STYLE 9. `--triggers` mk 28 · pt 22, with **13 mockup-only** (the four Health tiles and the three level rows among them) |
 | ⚠️ **① CASCADE is the same row on all five views** | `span.v top 126→104 (-22) h 22→44 (+22)` at `>div.masthead>div.mh-stats>span.stat>span.v`, with 123–200 offsets below it. **It is the masthead stat block, and it is finding 1 below.** Fix it alone, then re-run |

@@ -1,0 +1,59 @@
+{
+  "surface": "Analytics",
+  "note": "Registered while walking Analytics in Part 5 (2026-09-02). Every state here was reached by hand in a browser during that pass and is written down so the reaching is repeatable rather than remembered — the four interactive surfaces this Part ADDED are exactly the ones no instrument could see before it, because a div and a button with the same class are identical to a page diff until you press one. Each `expect` is a selector observed on the page after the steps ran, never guessed: a state that cannot name its own subject reports a clean result for the default view.",
+  "states": [
+    {
+      "name": "level row · scopes the river to that level",
+      "realm": "analytics",
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".lvlbars .lvlb",
+            "text": "caution"
+          }
+        }
+      ],
+      "expect": "#manifest .chipset button[aria-pressed=\"true\"]"
+    },
+    {
+      "name": "health tile · navigates to what answers it",
+      "realm": "analytics",
+      "steps": [
+        {
+          "clickText": {
+            "sel": ".tiles .tile",
+            "text": "RAM at last alert"
+          }
+        }
+      ],
+      "expect": ".seg button[aria-selected=\"true\"]"
+    },
+    {
+      "name": "event drawer · a river row opens with its fields",
+      "realm": "analytics",
+      "steps": [
+        {
+          "clickText": {
+            "sel": "#manifest tbody td",
+            "text": "Bot online"
+          }
+        }
+      ],
+      "expect": ".diff .diff-r",
+      "note": "Addressed by the CELL and by its words, not the row: a coordinate click on a <tr> lands wherever its centre falls, and the checkbox cell stops propagation. The row handler is what opens the drawer, and it fires from any cell that does not."
+    },
+    {
+      "name": "manifest · nothing matches the search",
+      "realm": "analytics",
+      "steps": [
+        {
+          "type": {
+            "sel": "#manifest input",
+            "text": "zzzznomatchzzzz"
+          }
+        }
+      ],
+      "expect": "#manifest .empty"
+    }
+  ]
+}

@@ -145,7 +145,8 @@ export function ReviewRealm({ session }) {
     const stats = [
         { value: ops.length, label: ops.length === 1 ? 'change' : 'changes', lead: true, tone: ops.length ? 'stg' : undefined, accent: 'var(--r-review)' },
         { value: new Set(ops.map((o) => o.realm)).size, label: 'realms' },
-        { value: blockers.length, label: blockers.length === 1 ? 'blocker' : 'blockers', tone: blockers.length ? 'bad' : undefined },
+        // 🔴 THIS WAS `tone: 'bad'` AND `.stat.bad` HAS NO RULE IN EITHER STYLESHEET, so the one number that says WHY you cannot commit rendered in ordinary ink. Fourth realm to ship this exact defect -- home, access and analytics preceded it -- and the FIRST found by a gate rather than by eye. The design paints this figure in the warn colour (`review.html:20` renders the same count from `blockers()` in warn), which is what `.stat.warn .v` gives it.
+        { value: blockers.length, label: blockers.length === 1 ? 'blocker' : 'blockers', tone: blockers.length ? 'warn' : undefined },
     ];
 
     async function discardChangeset(op) {

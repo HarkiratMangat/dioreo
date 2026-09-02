@@ -11,9 +11,10 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell, reportFailure } from './async.js';
-import { useOverlay } from './overlay.js';
+import { useOverlay, Drawer } from './overlay.js';
 
-const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'BOOT' };
+// ⚠️ NEITHER SIDE'S WORD FOR THE THIRD KIND WAS RIGHT, so this is a deliberate third choice rather than a port. The design says "Deploy" (analytics.html:521) and the fixtures it ships contain rows reading "automatic/unattended restart" — an unattended crash-recovery is not a deploy, so the design's word is factually wrong about its own data. The portal said "BOOT", which is accurate and is exactly the dialect Harkirat ruled against eight lines below this ("literally no clue what p50, p95 even mean… they look like jargon"). RESTART is the one word that is both true of every row and plain. summaryOf() already writes "restarted — …" in the What column, so the chip and the sentence now agree.
+const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'RESTART' };
 
 // 🔴 NO "p50", "p95" OR "HEADROOM" REACHES A READER ON THIS PAGE, AND THAT IS A RULING, NOT A STYLE PREFERENCE. Harkirat, on the version of the Discord panel that shipped an hour before he read it: "literally no clue what p50, p95, 99% headroom even mean. they look like jargon to me. not intuitive." He is the only person who will ever open this screen, so a page fluent in a dialect its sole reader does not speak is a broken page. commands/bot.js already carries the translations and the portal inherits them rather than inventing a second set: the median becomes "usually", and the 95th percentile becomes "slowest 1 in 20" — which is NOT the worst case, a simplification that is tempting and false.
 const USUALLY = 'usually';
@@ -35,7 +36,12 @@ const ACK_BUCKET_LABEL = { 0: 'under 100ms', 100: '100–250ms', 250: '250–500
 const LONG_WAIT_MS = 10000;
 
 const pct = (n, d) => (d ? (n / d) * 100 : 0);
-const fmtMs = (ms) => (ms == null ? '—' : ms >= 1000 ? `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s` : `${Math.round(ms)}ms`);
+// ⚠️ A SUB-MILLISECOND FIGURE ROUNDED TO "0ms", WHICH READS AS BROKEN RATHER THAN AS FAST. The dependency rows divide a total by a call count, so Atlas at 52ms across 437 calls printed "0ms each" — a real measurement rendered as the absence of one. Zero itself still prints 0ms; only a value that exists and is under half a millisecond becomes the bound.
+const fmtMs = (ms) => (ms == null || Number.isNaN(ms) ? '—'
+    : ms < 0 ? '—'
+    : ms >= 1000 ? `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s`
+    : ms > 0 && Math.round(ms) === 0 ? '<1ms'
+    : `${Math.round(ms)}ms`);
 
 // Where the event came from, which is the column that makes "one history, two front doors" true rather than asserted: a ChangeLog row written by the portal and one written by /manage are the same kind of thing from different surfaces, and you can only see that if the surface is a column.
 function sourceOf(row) {
@@ -49,6 +55,12 @@ function summaryOf(row) {
     return row.summary || row.target || row.action || 'Change';
 }
 
+// ⚠️ DECLARED ABOVE `RIVER_COLUMNS`, WHICH READS `LEVEL_TAG`, AND THAT ORDER IS LOAD-BEARING. These sat BELOW it until 2026-09-02 10:52 EDT, on my own reasoning that a render closure always runs after module evaluation — true at runtime, and `npm run tdz` flagged it anyway, correctly. The ratchet exists to stop the PATTERN spreading rather than to adjudicate whether one instance happens to be reachable, and a temporal dead zone throws at EVALUATION where `node --check` cannot see it. ⚠️ The comment I had written arguing it was safe is the exact shape this branch spent the day finding: a rule stated confidently one line above the code that breaks it. 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one. 🔴 `caution` WAS MISSING AND IT IS 30.6% OF THE DATA. Measured against the dev database 2026-09-01 21:34 EDT: info 678 · caution 306 · error 16 · warn ZERO, out of 1,000 AlertLog rows. This table carried a key for `warn` (which never occurs) and none for `caution` (the second-largest tier), so `LEVEL_ROW[a.level] || LEVEL_ROW.info` painted 306 alerts as the grey no-severity tier — directly beneath a paragraph this file writes naming three tiers. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`; the rule was never dead, the emitter was. utils/alertWebhook.js is the writer and treats all four as first-class (LEVEL_COLOR/LEVEL_ICON at :22-23), with `warn` and `error` pinging by default and `info` and `caution` staying quiet (:61) — so `caution` is a tier with its own interrupt semantics, NOT a display alias for `warn`, which is what the old code assumed.
+const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb lv-caution', info: 'lvlb lv-info' };
+
+// The river's inline tag, same literal rule, read by `RIVER_COLUMNS` BELOW. ⚠️ This said "above" until 2026-09-02 11:18 EDT and carried the argument that came with it — "a module-scope const, so the closure that reads it always runs after this line" — which was the exact reasoning `npm run tdz` refuted when it flagged the read as a temporal dead zone. The block moved to fix that and its comment described the old position for two commits: moved text keeps asserting what was true where it used to be. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
+const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
+
 const RIVER_COLUMNS = [
     { key: 'at', label: 'When', dataKind: 'date', render: (r) => new Date(r.at).toISOString().slice(5, 16).replace('T', ' ') },
     { key: 'kind', label: 'Kind', col: 'c-type', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
@@ -57,19 +69,21 @@ const RIVER_COLUMNS = [
     // 🔴 THE LEVEL WAS A FILTER AND NEVER A MARK. An error and a routine change read identically down the column, so the one thing you scan a log for — which rows are bad — needed the filter to be touched first. The dot carries severity, the tag names it, and both are absent on rows that have no level rather than defaulting to a reassuring one.
     { key: 'summary', label: 'What', render: (r) => {
         const sev = r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : r.level ? 'info' : '';
-        return html`<span class="sev ${sev}"></span>${summaryOf(r)}${r.kind === 'alert' && r.level
-            ? html`<span class=${`lvtag lv-${r.level}`}>${r.level}</span>` : null}`;
+        // ⚠️ THE ${' '} BEFORE THE TAG, for the same reason the tiles needed theirs: htm drops the whitespace across the newline, so the cell read "Bot onlineinfo" — and now that the row is focusable, that string is part of its accessible name.
+        return html`<span class="sev ${sev}"></span>${summaryOf(r)}${' '}${r.kind === 'alert' && r.level
+            ? html`<span class=${LEVEL_TAG[r.level] || 'lvtag'}>${r.level}</span>` : null}`;
     } },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
 
 const RIVER_FILTERS = [
     { key: 'kind', label: 'Kind', options: [
-        { value: 'change', label: 'changes' }, { value: 'alert', label: 'alerts' }, { value: 'boot', label: 'boots' },
+        { value: 'change', label: 'changes' }, { value: 'alert', label: 'alerts' }, { value: 'boot', label: 'restarts' },
     ] },
     // 🔴 THIS FILTER IS WHERE THE DELETED ALERT EXPORT WENT. The Alerts pre block held the level and the describe() detail of every alert, and the river was already fetching whole AlertLog documents and throwing both away. Deleting a redundant layer is right; deleting the facts it carried is not — so level becomes a filter and detail becomes searchable, which is strictly more useful than the prose block was, because both compose with the kind filter and the search box.
     { key: 'level', label: 'Level', options: [
-        { value: 'error', label: 'errors' }, { value: 'warn', label: 'warnings' },
+        // ⚠️ THE LEVEL'S OWN NAME, not a pluralisation, because this group carried TWO vocabularies: "errors" and "warnings" plural beside "caution" and "info" singular, inside one chip that cycles between them. The panel above writes the bare words (info is a record, caution is a look-when-convenient, error pings a human) and the design builds its own chips from the level values, so agreeing with the sentence above is what makes the chip readable.
+        { value: 'error', label: 'error' }, { value: 'warn', label: 'warn' },
         { value: 'caution', label: 'caution' }, { value: 'info', label: 'info' },
     ] },
 ];
@@ -105,16 +119,79 @@ function DailyBars({ series = [], label }) {
 
 // A tile is the adopted design's KPI: a label, a figure with its unit set smaller inside it, and one line of context.
 //
-// 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem.
-function Tile({ label, value, unit, sub, tone }) {
+// 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem. ⚠️ A BUTTON ONLY WHEN IT DOES SOMETHING, WHICH IS THE DESIGN'S OWN RULE AND NOT A BLANKET CONVERSION. analytics.html:147 draws the four HEALTH tiles as `<button data-tile>` wired to jump to Timing, and its Timing and Search tiles (`:290`, `:462`) as plain divs -- so the tag IS the affordance, and converting Tile globally would promise a click on eight tiles that answer four. The overlay saw this as `button.tile` mockup-only against `div.tile` portal-only, and nothing else could: a div and a button with the same class are the same pixels until you try to press one.
+function Tile({ label, value, unit, sub, tone, onClick = null }) {
+    const cls = 'tile' + (tone ? ' ' + tone : '');
+    // 🔴 THE ${' '} SEAMS ARE WHY A BUTTON NEEDS THEM AND A DIV DID NOT. A button takes its accessible name FROM ITS CONTENTS, and htm drops the whitespace-only node across a newline -- so the moment these became buttons they began announcing "Restarts 7d3030 in the last 24 hours" and "RAM at last alert174MBhighest of 5 samples in 7d". As divs they had no accessible name at all, so making them reachable is what created the defect. ⚠️ `portal:audit --triggers` printed the fused strings hours before `portal:states` failed on them, and I read past it.
+    const body = html`
+            <span class="tl-k">${label}</span>${' '}
+            <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>${' '}
+            ${sub ? html`<span class="tl-s">${sub}</span>` : null}`;
+    if (onClick) return html`<button class=${cls} onClick=${onClick}>${body}</button>`;
     return html`
-        <div class=${'tile' + (tone ? ' ' + tone : '')}>
+        <div class=${cls}>
             <span class="tl-k">${label}</span>
             <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>
             ${sub ? html`<span class="tl-s">${sub}</span>` : null}
         </div>
     `;
 }
+
+// ⚠️ THE MASTHEAD HAS THREE STATS AND NOT THE DESIGN'S FOUR, AND THAT IS A DECISION. Harkirat, 2026-09-02 10:43 EDT: the `include admin traffic` toggle governs the VIEW only. A `worst ack` stat read `timingStats`, which takes `includeAdmin`, while `uptime`, `errors 24h` and `commands 24h` read `healthStats()`, which takes no arguments -- so flipping the toggle moved one figure and froze three, and this branch had just moved the toggle out of the masthead into the panel header, further from the stats it silently governed. Uptime and errors are facts about the PROCESS; filtering them by admin traffic is not a meaningful operation. So the odd one out was the per-interaction stat sitting among bot-wide ones, and it is gone rather than made to lie quietly. 🔵 The ack figures are not lost: Timing draws the full bucket distribution, where the toggle legitimately applies to every number on the view. 🔴 RESTORED 2026-09-02 11:03 EDT AFTER A BLOCK DELETION TOOK THEM AS COLLATERAL. Removing `worstAck` sliced from its own comment to `function fmtUptime`, and these three sat inside that range: 71 lines went where about 15 were intended. The asserts guarding it checked that `worstAck` and `ACK_BOUND_LABEL` WERE gone and never that nothing else was — an assertion that can confirm a removal but cannot see over-reach. ⚠️ IT SHIPPED THROUGH EVERYTHING. `node --check` passes (a call to a missing function is not a syntax error), the build passes, every scoped gate passes, and a full green `npm test` passed over it — because nothing in the suite OPENS the drawer. It surfaced only while registering this realm's interactive states, from a `ReferenceError: EventDrawer is not defined` in the browser console. A deletion is the one edit whose damage is invisible to a syntax check.
+function eventRows(r) {
+    const out = [['Kind', KIND_LABEL[r.kind] || r.kind]];
+    if (r.kind === 'alert') {
+        out.push(['Level', r.level || '—']);
+        out.push(['Pinged a human', r.pinged ? 'yes' : 'no']);
+        // ⚠️ `silent` is not the opposite of `pinged`. An alert can be stored and never posted to Discord at all, which is a third state, and the level panel already says so in its own sub-line.
+        if (r.silent) out.push(['Posted to Discord', 'no — recorded only']);
+        if (typeof r.rssMb === 'number') out.push(['Memory at the time', `${r.rssMb} MB`]);
+        if (r.host) out.push(['Host', r.host]);
+    }
+    if (r.kind === 'change') {
+        out.push(['Page', r.page || '—']);
+        out.push(['Action', r.action || '—']);
+        out.push(['Model', r.model || '—']);
+        out.push(['Undone', r.undone ? 'yes' : 'no']);
+    }
+    if (r.kind === 'boot') {
+        if (r.version) out.push(['Version', r.version]);
+        if (r.commit) out.push(['Commit', r.commit]);
+        if (r.bootKind || r.kind_) out.push(['Restart kind', r.bootKind || r.kind_]);
+    }
+    out.push(['Who', r.actorId ? String(r.actorId) : 'system']);
+    if (r.detail) out.push(['Detail', r.detail]);
+    return out;
+}
+
+// One sentence per kind, saying what the row IS rather than restating the fields above it — an alert has no inverse and a restart is not something anyone did, and neither fact is visible from the table.
+const EVENT_NOTE = {
+    change: 'Every portal and /manage write is recorded with the step that reverses it, so this row can be put back from either surface, and it survives a restart.',
+    alert: 'Alerts come from the bot itself and mirror to the alert webhook. They carry no inverse — an alert is a record of something that happened, not an operation.',
+    boot: 'Restart records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that says what is actually running.',
+};
+
+// ⚠️ A ROW WITH NO USABLE DATE MUST NOT TAKE THE REALM DOWN. `new Date(x).toISOString()` throws a RangeError on an unparseable value, and this renders inside the page rather than beside it -- one malformed `createdAt` in one of three collections would blank Analytics entirely, mid-render, with no error state.
+function EventDrawer({ row, onClose, onRevert }) {
+    const at = new Date(row.at);
+    const atText = Number.isNaN(at.getTime()) ? 'not recorded' : at.toISOString().slice(0, 16).replace('T', ' ');
+    const revertable = row.kind === 'change' && !row.undone;
+    return html`
+        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${atText}`}
+                   title=${summaryOf(row)} onClose=${onClose}
+                   actions=${html`
+                       <button class="btn" onClick=${onClose}>Close</button>
+                       ${revertable ? html`<button class="btn dang" onClick=${onRevert}>Reverse this change</button>` : null}`}>
+            <div class="dwbody">
+                <div class="diff">
+                    ${eventRows(row).map(([k, v]) => html`
+                        <div class="diff-r" key=${k}><span class="dk">${k}</span><span>${v}</span></div>`)}
+                </div>
+                <p class="dw-p" style="margin-top:16px">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
+            </div>
+        <//>`;
+}
+
 
 function fmtUptime(since) {
     if (!since) return '—';
@@ -123,17 +200,14 @@ function fmtUptime(since) {
     return d ? `${d}d ${hrs}h` : `${hrs}h ${Math.floor((secs % 3600) / 60)}m`;
 }
 
-// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one.
-const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', info: 'lvlb lv-info' };
 
-function Health({ health }) {
+function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRiver }) {
     const h = health || {};
     const errors = h.errors24h ?? 0;
     return html`
         <div class="panel" id="health">
             <div class="ph">
                 <span class="t">Health</span>
-                <span class="rt">${health.commands24h ?? '—'} commands · ${health.rssSampleCount ?? 0} memory samples · ${health.restarts7d ?? '—'} boots in 7 days</span>
             </div>
             <!-- 🔴 THE TILES SAID WHAT THE MASTHEAD HAD JUST SAID. Measured 2026-08-27: the masthead read
                  uptime 1h 30m · errors 24h 23 · commands 24h 496, and three of the four tiles beneath it
@@ -148,16 +222,19 @@ function Health({ health }) {
                  quiet count is deliberately its OWN figure rather than a footnote to errors: this repo's
                  three-tier error model must never collapse into one number, and a caution that only exists
                  as small print under a red count has collapsed. -->
+            <!-- ⚠️ EACH TILE GOES WHERE ITS OWN FIGURE IS ANSWERED, WHICH IS NOT ONE PLACE. The first version wired all four to Timing because the DESIGN wires its four there -- and the design's four are timing figures (interactions, success rate, restarts, memory) while these are not. "Distinct users 24h" and "Quiet alerts 24h" jumped to a view containing neither. Four buttons that all go somewhere irrelevant are worse than four divs, because the affordance promises an answer. -->
             <div class="tiles">
-                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0}
+                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0} onClick=${() => onFilterRiver({ kind: 'boot' })}
                          tone=${(h.restarts7d ?? 0) > 20 ? 'warn' : ''}
                          sub=${`${h.restarts24h ?? 0} in the last 24 hours`} />
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
-                         tone=${h.rssPeakMb > 400 ? 'warn' : ''}
+                         onClick=${onOpenTiming} tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
                 <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
+                         onClick=${onOpenReach}
                          sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
                 <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
+                         onClick=${() => onFilterRiver({ kind: 'alert' })}
                          sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
@@ -200,15 +277,16 @@ function Health({ health }) {
                         <b>error</b> pings a human. Seven days.</p>
                     <div class="lvlbars">
                         ${h.alertsByLevel.map((a) => html`
-                            <div class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}>
-                                <span class="ln">${a.level === 'warn' ? 'caution' : a.level}</span>
-                                <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>
-                                <span class="lv2">${a.n}</span>
+                            <button class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}
+                                    onClick=${() => onFilterLevel(a.level)}>
+                                <span class="ln">${a.level}</span>${' '}
+                                <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>${' '}
+                                <span class="lv2">${a.n}</span>${' '}
                                 <!-- ⚠️ "never pings" is a FACT about this level in this window, not a rule:
                                      sendAlert can ping on request, so a level that usually stays quiet can
                                      still have pinged once, and stating the rule would hide that. -->
                                 <span class="lp">${a.pinged ? `${a.pinged} pinged` : 'never pinged'}${a.silent ? ` · ${a.silent} not posted` : ''}</span>
-                            </div>`)}
+                            </button>`)}
                     </div>
                 </section>` : null}
             <div class="hsplit">
@@ -277,7 +355,6 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Usage — last 7 days</span>
-                <span class="rt">${current.toLocaleString()} this week · ${previous.toLocaleString()} the week before</span>
             </div>
             <!-- ⚠️ INSIDE THIS PANEL, NOT BESIDE IT. Built first as a standalone box below — three numbers
                  the bars underneath already carry, in a second container, which is two places answering one
@@ -371,7 +448,6 @@ function Timing({ stats }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Timing — last 7 days</span>
-                <span class="rt">your own admin commands are counted here, unlike Usage</span>
             </div>
             <div class="tim2">
                 <section class="hpanel">
@@ -444,6 +520,31 @@ function Timing({ stats }) {
                                     </div>`;
                             })}
                         </div>
+                        <!-- The design closes this panel by NAMING the outlier and saying what it costs; the portal drew the bars and stopped, so the one row a reader needs to act on had to be found by eye every time. Carried across with the panel when it moved to Timing, and the banner was the half that did not come with it.
+                             ⚠️ IT RANKS BY PER-CALL AVERAGE, NOT BY TOTAL, because the panel's own colour rule two comments above says a total is not a speed — 52ms across 447 calls and 3.6s across one call are opposite facts. A banner ranking by total would name a different row than the one painted slow, directly beneath it. -->
+                        ${(() => {
+                            const worst = byDep.map((d) => ({ name: d._id, calls: d.calls || 0, per: d.calls ? d.totalMs / d.calls : d.totalMs }))
+                                .sort((x, y) => y.per - x.per)[0];
+                            if (!worst) return null;
+                            const over = worst.per >= ACK_LIMIT_MS;
+                            const atlas = byDep.find((d) => d._id === 'atlas');
+                            return html`
+                                <div class=${'hbanner' + (over ? ' warn' : '')}>
+                                    <span class="hbi"><${Icon} name=${over ? 'triangle-alert' : 'check'} cls="sm" /></span>
+                                    <div>
+                                        <h4>${worst.name} is the slowest per call, at ${fmtMs(worst.per)}</h4>
+                                        <!-- ⚠️ THE ATLAS LINE IS A TOTAL WHERE THE HEADLINE IS AN AVERAGE, and that is deliberate rather than an inconsistency. The headline ranks by per-call speed because that is what the panel's colour means; this sentence answers a different question — how much of the week's cost the database accounts for — which is a total by definition. Written as an average it read "Atlas answers in 0ms", a real 52ms across 437 calls rendered as nothing at all. -->
+                                        <p>${atlas
+                                            ? html`Atlas costs ${' '}<b>${fmtMs(atlas.totalMs)}</b>${' '}
+                                                across <b>${(atlas.calls || 0).toLocaleString()}</b> calls this week, so the database is not the cost. `
+                                            : html`Atlas has not been called in this window, so the database is not in this picture at all. `}
+                                            ${over
+                                                ? html`At ${fmtMs(worst.per)} it exceeds Discord's ${ACK_LIMIT_MS / 1000}s acknowledgement deadline
+                                                    on its own, which is survivable only where it runs as a background job rather than inside an interaction.`
+                                                : html`It stays inside the interaction budget.`}</p>
+                                    </div>
+                                </div>`;
+                        })()}
                     </section>
                 </div>` : null}
         </div>`;
@@ -455,6 +556,11 @@ function Timing({ stats }) {
 function Reach({ rows = [] }) {
     const total = rows.reduce((a, r) => a + r.n, 0);
     const byCtx = ['guild', 'dm'].map((c) => ({ c, n: rows.filter((r) => r.context === c).reduce((a, r) => a + r.n, 0) }));
+    const lead = byCtx.slice().sort((x, y) => y.n - x.n)[0] || { c: 'dm', n: 0 };
+    const leadShare = total ? (lead.n / total) * 100 : 0;
+    // ⚠️ AN EMPTY WINDOW MUST NOT ARGUE FROM ZERO. With no interactions this rendered "0% of all use is in DMs" as the case for the portal existing -- a finding stated over an absence of data, which is the same defect as a colour that is on regardless.
+    const haveSplit = total > 0;
+    const leadLabel = lead.c === 'dm' ? 'DMs' : 'servers';
     const byInstall = [
         { key: 'guild', label: 'Guild install', note: 'the app is added to a server; everyone there can use it' },
         { key: 'user', label: 'User install', note: 'the app travels with one person, into any server and any DM' },
@@ -478,7 +584,6 @@ function Reach({ rows = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Reach — last 7 days</span>
-                <span class="rt">${total.toLocaleString()} public interactions</span>
             </div>
             <div class="reach">
                 <section class="hpanel">
@@ -493,13 +598,17 @@ function Reach({ rows = [] }) {
                                 <span class="dsub">${x.n.toLocaleString()} interaction${x.n === 1 ? '' : 's'}</span>
                             </div>`)}
                     </div>
-                    <p class="hp">A bot answering privately, one screenful at a time, is a different product from one
-                        answering in a channel — and it is not the place to audit a season or bulk-edit an armory.
-                        That split is the argument for this portal existing at all.</p>
+                    <!-- ⚠️ THE CAPTION NAMES WHAT THE CHART SHOWS BEFORE IT ARGUES FROM IT. The design leads on the measurement (analytics.html:428, "More than half of all use is in DMs") and this led on the principle, so a reader got the conclusion without the number standing directly above it. The closing line is the portal's own and is kept — the design has no equivalent. ⚠️ It reads the split rather than asserting one: the design's sentence assumes DMs lead, which is true of its fixtures and is not a fact about the data.
+                         "privately" is dropped for the same reason — it is only true of one of the two answers this sentence can now give.
+                         ⚠️ AND IT STATES THE PERCENTAGE RATHER THAN "MORE THAN HALF", which was the first attempt and which the fixtures immediately falsified: 51% against 49% is more than half and reads as a decisive majority. A phrase that renders 51% and 80% identically has stopped carrying information, which is the same objection this file already makes to a tile that is orange whatever the numbers are. -->
+                    <p class="hp">${haveSplit
+                        ? html`${Math.round(leadShare)}% of all use is in <b>${leadLabel}</b> — a`
+                        : html`Nothing has been recorded in this window, so there is no split to read yet. A`} bot answering one screenful at a time, which is not the place to audit
+                        a season or bulk-edit an armory. That split is the argument for this portal existing at all.</p>
                 </section>
                 <section class="hpanel">
                     <h4>How the app was installed</h4>
-                    <p class="hp">Whether each interaction came from a server that added the app, or from a person who
+                    <p class="hp">Whether each interaction came from a server that added the app or from a person who
                         did. The v3 line made every public command guild-installable while the admin commands stayed
                         user-only — this is the measurement that says whether that landed.</p>
                     ${byInstall.map((x) => html`
@@ -538,7 +647,6 @@ function Search({ rows = [] }) {
         <div class="panel">
             <div class="ph">
                 <span class="t">Search — last 30 days</span>
-                <span class="rt">autocomplete sessions only</span>
             </div>
             <div class="srchview">
                 <div class="tiles" style="padding:0">
@@ -548,7 +656,7 @@ function Search({ rows = [] }) {
                     </div>
                     <div class=${'tile ' + (zero.length ? 'warn' : 'ok')}>
                         <span class="tl-k">Returned nothing</span><span class="tl-v">${zero.length}</span>
-                        <span class="tl-s">somebody wanted this and did not get it</span>
+                        <span class="tl-s">someone wanted this and did not get it</span>
                     </div>
                     <div class="tile">
                         <span class="tl-k">Picked a result</span><span class="tl-v">${picked}</span>
@@ -596,6 +704,15 @@ export function AnalyticsRealm({ session }) {
     const [includeAdmin, setIncludeAdmin] = useState(false);
     const load = useAsync(() => fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), [includeAdmin]);
     const [view, setView] = useState('Health');
+    // 🔴 THE DESIGN'S LEVEL ROWS ARE A FILTER CONTROL AND THE PORTAL DREW THEM AS TEXT. analytics.html:228 sets the river to kind=alert plus that level and scrolls it into view, so the distribution and the log are one surface: you read that 258 alerts were cautions and press the row to see them. The portal had the same three rows as inert divs and the same filters sitting unreachable in the Manifest's own chipset. `seq` rather than the filters object is what Manifest keys its effect on -- see its comment.
+    const [riverFilter, setRiverFilter] = useState(null);
+    // 🔴 THE RIVER'S ROWS OPENED NOTHING, AND THE DESIGN OPENS A DRAWER FROM EVERY ONE. analytics.html:545 makes each row a role=button that calls openEvent, and `--triggers` structurally cannot list a handler bound to a table row, so this was the last piece of the interaction tier and the one no instrument reported. The row carries the columns the table has space for; everything the collection actually stores -- the level, whether it pinged, the memory reading, the page and action behind a change -- had nowhere to be read.
+    const [openEvent, setOpenEvent] = useState(null);
+    function filterRiver(filters) {
+        setRiverFilter((prev) => ({ seq: (prev ? prev.seq : 0) + 1, filters }));
+        // After the render that applies the filter, not before it -- scrolling to a table that has not re-rendered lands on the old row count.
+        requestAnimationFrame(() => document.getElementById('manifest')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
     const overlay = useOverlay();
 
     if (!load.data) return html`<${RealmShell} realm="analytics" session=${session} error=${load.error} slow=${load.slow}
@@ -627,10 +744,10 @@ export function AnalyticsRealm({ session }) {
           note: 'What people searched for, and what returned nothing — the only export here that names a gap rather than a total.' },
     ];
 
-    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again.
+    // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again. ⚠️ ONE WORD FOR THE COMMITTED SENSE, AND IT IS "REVERSE". The UX-copy audit's vocabulary table (`local/handoff/2026-08-25-portal-ux-copy-audit.md`, gitignored -- state the path when citing it) reserves Undo for taking a STAGED change back and Reverse for undoing a COMMITTED one, because one word for two operations at different tiers is how a reader learns the wrong consequence. This realm carried both: the bulk bar and its confirm said Revert while the event drawer said Reverse, four inches apart. The op id stays `change.revert` -- an internal identifier is not a reader-facing word, and renaming it would break the route, the ChangeLog rows already written, and every custom_id in a panel someone still has open.
     async function revert(changeId) {
         const res = await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
-        if (await reportFailure(overlay, res, 'That change was not reverted')) return false;
+        if (await reportFailure(overlay, res, 'That change was not reversed')) return false;
         load.reload();
         return true;
     }
@@ -643,11 +760,11 @@ export function AnalyticsRealm({ session }) {
         const revertable = chosen.filter((r) => r.kind === 'change');
         overlay.confirm({
             op: 'change.revert', tier: 2, danger: true,
-            confirmLabel: revertable.length === 1 ? 'Revert it' : `Revert ${revertable.length} changes`,
-            title: revertable.length === 1 ? 'Revert this change?' : `Revert ${revertable.length} changes?`,
+            confirmLabel: revertable.length === 1 ? 'Reverse it' : `Reverse ${revertable.length} changes`,
+            title: revertable.length === 1 ? 'Reverse this change?' : `Reverse ${revertable.length} changes?`,
             body: html`
                 <p class="dw-p">This applies each change's recorded inverse <b>immediately</b> — it does not stage, and
-                    the Review screen never sees it. The revert is itself recorded here, so it can be reverted in turn.</p>
+                    the Review screen never sees it. The reversal is itself recorded here, so it can be reversed in turn.</p>
                 ${chosen.length !== revertable.length ? html`
                     <p class="dw-p"><b>${chosen.length - revertable.length}</b> of the selected rows${' '}
                         ${chosen.length - revertable.length === 1 ? 'is an alert or a restart' : 'are alerts or restarts'},
@@ -670,29 +787,41 @@ export function AnalyticsRealm({ session }) {
 
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
     const VIEWS = {
-        Health: () => html`<${Health} health=${data.health} />`,
+        Health: () => html`<${Health} health=${data.health} onOpenTiming=${() => setView('Timing')} onFilterLevel=${(level) => filterRiver({ kind: 'alert', level })} onOpenReach=${() => setView('Reach')} onFilterRiver=${filterRiver} />`,
         Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />`,
         Timing: () => html`<${Timing} stats=${data.timingStats} />`,
         Reach: () => html`<${Reach} rows=${data.reach} />`,
         Search: () => html`<${Search} rows=${data.searches} />`,
     };
+    // 🔴 THE DESIGN PUTS A PER-VIEW SUMMARY IN THE ONE PANEL HEADER AND THIS REALM HAD NONE THERE. analytics.html:40 draws a `span.sp` and :601 fills it per view, and Shell has carried a `meta` slot for exactly this since Broadcast had to hand-roll one -- access, armory, season and broadcast all use it and Analytics was the only realm that did not, which is what converge reported as `ABSENT mk span.sp`. ⚠️ THE LINES ARE MOVED, NOT ADDED. Each view already drew this sentence inside its OWN panel header, a second `.ph` nested in the Shell's -- so writing a meta line without removing those would be the two-layers-saying-the-same-thing defect this file keeps finding, four inches apart on the same screen.
+    const reachTotal = (data.reach || []).reduce((a, r) => a + (r.n || 0), 0);
+    const usage = data.usageStats || {};
+    const viewMeta = view === 'Health'
+        ? `${data.health.commands24h ?? '—'} commands · ${data.health.rssSampleCount ?? 0} memory samples · ${data.health.restarts7d ?? '—'} boots in 7 days`
+        : view === 'Usage' ? `${(usage.current ?? 0).toLocaleString()} this week · ${(usage.previous ?? 0).toLocaleString()} the week before`
+        : view === 'Timing' ? 'your own admin commands are counted here, unlike Usage'
+        : view === 'Reach' ? `${reachTotal.toLocaleString()} public interactions`
+        : 'autocomplete sessions only';
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
-                  overlaySlot=${overlay.render()}
+                  meta=${viewMeta}
+                  tools=${html`
+                      <label class="adminsw">
+                          <input type="checkbox" checked=${includeAdmin}
+                                 onChange=${(e) => setIncludeAdmin(e.target.checked)} />
+                          include admin traffic
+                      </label>`}
+                  overlaySlot=${html`${overlay.render()}${openEvent ? html`<${EventDrawer} row=${openEvent}
+                                     onClose=${() => setOpenEvent(null)}
+                                     onRevert=${() => { const r = openEvent; setOpenEvent(null); confirmRevert([r.id]); }} />` : null}`}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
-                                               actions=${html`
-                                                   <label class="adminsw">
-                                                       <input type="checkbox" checked=${includeAdmin}
-                                                              onChange=${(e) => setIncludeAdmin(e.target.checked)} />
-                                                       include admin traffic
-                                                   </label>`}
                                                stats=${[
-                                                   { value: fmtUptime(h.uptimeSince), label: 'uptime' },
-                                                   { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'bad' : undefined },
                                                    { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h', lead: true, accent: 'var(--r-analytics)' },
+                                                   { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'warn' : undefined },
+                                                   { value: fmtUptime(h.uptimeSince), label: 'uptime' },
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}
@@ -701,6 +830,10 @@ export function AnalyticsRealm({ session }) {
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
                                                     bulkTier=${3} rowNoun=${['event', 'events']}
-                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]} />`} />
+                                                    bulkActions=${[{ label: 'Reverse', danger: true, onClick: confirmRevert }]}
+                                                    onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
+                                                    ${''/* The river is capped at 100 server-side, so without a total the count divides by the page and reads 11 of 11 over a collection holding thousands -- a number that can never say something is being withheld. */}
+                                                    totalRows=${data.riverTotal ?? rows.length} pageCap=${100} countSuffix=" events"
+                                                    filterSignal=${riverFilter} />`} />
     `;
 }

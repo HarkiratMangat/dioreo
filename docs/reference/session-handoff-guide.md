@@ -132,6 +132,22 @@ A handoff is not one artifact. It is three, and **the most detailed one is the l
 
 🔴 **The rule that falls out:** the exhaustive file must be *pointed at* from at least one carrier that reaches on its own — `/remember`'s note, or a deferred-list item that cites its path. **A handoff nobody is told about is a handoff nobody reads.**
 
+## 🔴 THE OPENER AND THE DOCUMENT ARE ONE ARTIFACT, AND THE OPENER MUST BE INSUFFICIENT ON PURPOSE (added 2026-09-01 21:02 EDT)
+
+A handoff is two things: a document on disk, and a short **opener** pasted into the next session's chat. **The opener is where the handoff fails**, and it fails the same way every time.
+
+Harkirat, 2026-09-01 20:57 EDT, on an opener written an hour earlier: *"A fresh session will read this and conclude on it and won't bother looking at the actually detailed stuff."*
+
+⚠️ **THE PRINCIPLE WAS ALREADY IN THIS FILE AND DID NOT HOLD.** *"JUDGEMENT DOES NOT COMPRESS — CARRY A POINTER, NEVER A PARAPHRASE"* has been here since 2026-08-30, and the opener was a paraphrase anyway. **The reason is not carelessness: the person writing the opener is the person who knows the content, and summarising it feels like service.** So the remedy is a check, not a better sentence — the same conclusion the timestamp placeholder reached.
+
+**The rule, in three parts:**
+
+1. **The opener carries ZERO findings.** Not a shortened list, not "the three big ones" — none. A finding in the opener is a finding the reader acts on *instead of* reading. What it may carry is only what the document cannot know at paste time: the branch, the merge state, the version, what is inherited, which worktree is live.
+2. **The opener carries a GATE the reader cannot pass without having opened the file** — name N items from a named section, and state a number the document gives and the opener withholds. A gate that can be answered from the opener is decoration.
+3. **The document carries the reciprocal guard in its first 40 lines**: *an opener is not a summary of this file*, plus at least one thing only the file holds. 🔒 **Enforced by `docs-audit`'s `prompt-antiskim` (ERROR)** on every `docs/superpowers/plans/*-PROMPT.md`. It found three prompts missing it on its first run.
+
+⚠️ **The check can only see the half that is on disk.** The opener lives in a chat message and nothing can inspect it — which is exactly why the document-side guard is mandatory: it is the only mechanism that lets a skimming reader catch itself.
+
 ## 🔴 JUDGEMENT DOES NOT COMPRESS — CARRY A POINTER, NEVER A PARAPHRASE (added 2026-08-30 15:1x EDT)
 
 **The mechanism, paid for over three sessions:** every handoff keeps the LOOP — commands, thresholds, traps — because mechanics compress cleanly. Every handoff drops the PRECEDENCE — which artifact is the design, which way a difference gets closed, what a number does and does not mean — because judgement does not survive compression. The next session inherits a procedure with no arbitration, runs it faithfully, and produces the failure the authoritative document already warned about. **Part 1 of the portal conformance pass was declared finished three times by exactly this route.**

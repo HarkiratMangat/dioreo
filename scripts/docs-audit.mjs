@@ -181,6 +181,36 @@ const checks = [];
 const check = (id, severity, title, run, opts = {}) =>
   checks.push({ id, severity, title, run, vacuousOk: !!opts.vacuousOk });
 
+/* ----------------------- prompt-antiskim ---------------------------- */
+// Born 2026-09-01 21:00 EDT, from a defect that is structural rather than careless. A realm prompt is handed to the next session with a short OPENER pasted into chat. Writing that opener, the natural, helpful thing to do is summarise the document's findings -- and a summary is a SUBSTITUTE: the reader gets three bullets, feels oriented, and never opens the file. Harkirat, on exactly that: "A fresh session will read this and conclude on it and won't bother looking at the actually detailed stuff."
+//
+// ⚠️ THE PRINCIPLE WAS ALREADY WRITTEN DOWN AND STILL FAILED. `docs/reference/session-handoff-guide.md` has carried "JUDGEMENT DOES NOT COMPRESS -- CARRY A POINTER, NEVER A PARAPHRASE" since 2026-08-30, and the opener was summarised anyway, because the person writing it is the person who knows the content and summarising feels like service. That is the same shape as the timestamp placeholder: a rule everyone agrees with, violated at the moment of writing, so the remedy has to be a check rather than a better sentence.
+//
+// Deliberately narrow: it asserts only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
+check(
+  "prompt-antiskim",
+  "ERROR",
+  "every realm prompt tells its reader that a short opener is not a summary of it",
+  () => {
+    const out = [];
+    let examined = 0;
+    const dir = "docs/superpowers/plans";
+    const GUARD = /not a summary of (this|that) file|IF YOU WERE HANDED A SHORT OPENER/i;
+    for (const f of (existsSync(join(REPO, dir)) ? readdirSync(join(REPO, dir)) : []).filter((n) => /-PROMPT\.md$/.test(n))) {
+      const txt = read(`${dir}/${f}`);
+      if (txt === null) continue;
+      examined++;
+      // Only the opening of the file counts. A guard buried at line 400 is read by somebody who already did not skim.
+      if (!GUARD.test(txt.split("\n").slice(0, 40).join("\n"))) {
+        out.push({ msg: `${dir}/${f} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
+      }
+    }
+    return { findings: out, examined };
+  },
+  // A repo with no realm prompts has nothing to examine, and that is legitimate rather than a silent pass — this suite's own test fixture is exactly that case, which is how the vacuity was caught.
+  { vacuousOk: true },
+);
+
 /* ----------------------- changelog-pr-cite -------------------------- */
 // Born 2026-08-20 from a defect that shipped through a fully green audit: the v3.55.0 entry was written with a literal `(#PR)` placeholder, because the PR number does not exist yet at the moment the pre-merge changelog entry is composed on the branch. Every check passed — the version was covered, the hash chain was intact, the structure was sound — because none of them look at whether the citation is a real number or a note-to-self. It reached `main` and needed a follow-up release to correct, which is exactly what this suite exists to prevent.
 //

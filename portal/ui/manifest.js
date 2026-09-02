@@ -35,7 +35,6 @@ function FilterChips({ groups, filters, onChange }) {
                     ${'' /* The design carries the pressed state on aria-pressed alone; the extra on class is the portal's and shows up as a different element to anything comparing the two. */}
                     aria-pressed=${o.value === current}
                     class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '')}
-                    aria-pressed=${o.value === current}
                     style=${o.hex ? `--c:${o.hex}` : null}
                     title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
                     onClick=${() => onChange({ ...filters, [g.key]: o.value })}><!-- The design's topic chip carries the topic's own swatch; without it the chip is a word in a box and the colour vocabulary the whole console is built on stops at the table's edge. The COUNT is its own em, which is armory.html's renderCatChips markup — folded into the label string it is the same words in a wider box, and eight of them wrapped the toolbar so the primary action dropped to a row of its own. -->${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.label}${o.count == null ? null : html` <em>${o.count}</em>`}</button>`);
@@ -83,12 +82,17 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
 export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' , searchLabel = '', searchPlaceholder = '', countSuffix = '', extraChips = null, defaultSort = null, footRow = null, selectable: selectableProp = null,
     // A realm that scopes something ELSE by the chips — Armory's export strip offers "this view" and "category" — needs to know what they are set to. Reported from the chip's own click rather than an effect, so there is no render loop to guard: the component still owns the state, the realm just gets told when it changes.
     onFiltersChange = null,
+    // The inbound twin of onFiltersChange, for a realm whose OWN surface is a filter control -- Analytics' Alerts-by-level rows are buttons in the design that set the river to that level, and there was no way to drive these chips from outside. ⚠️ SHAPED SO IT CANNOT LOOP. The comment above records that reporting OUT was done from the click rather than an effect precisely to avoid a render loop, and an inbound effect reintroduces that hazard -- so this one is keyed on `seq` ALONE, a counter that only ever changes on a user action. The effect calls setFilters, the component re-renders, `seq` is unchanged, the effect does not run again. Keying it on the filters object instead would re-run on every render, which is the loop.
+    filterSignal = null,
     // The size of the collection this table is a view OF, when the realm narrowed it before handing it over.
     totalRows = null,
+    // 🔴 THE ROWS ARE A WINDOW AND EVERY NUMBER BESIDE THEM WAS NOT. Analytics' river is the newest 100 of each of three collections; `totalRows` is all of them, all time. So the count read "2 of 1,307" under a filter -- a numerator drawn from a population the denominator does not describe -- and at the cap it read "100 of 100", which is indistinguishable from "you are seeing everything" and is the precise lie `totalRows` was added to prevent. A realm that hands over a WINDOW says so, and the line states the window instead of implying its absence. A realm that hands over a WINDOW says so, and the line then states three separate quantities instead of implying they are one: how many you can see, how big the window is, and how big the collection is. Left null, nothing changes. ⚠️ AND IT ALWAYS SAYS IT, NOT ONLY AT THE CAP -- the first version triggered on `rows.length >= pageCap`, which is the same lie one state over: an eleven-row window out of 1,323 reads "11 of 1,323" and invites the reader to scroll for the rest. The shape it lands on, `N shown · newest M of T`, is the design's own ("12 shown · 1323 recorded").
+    pageCap = null,
     // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
     caption = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
+    useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
     const [sort, setSort] = useState({ column: defaultSort || null, direction: 'asc' });
     const [selected, setSelected] = useState(new Set());
@@ -164,7 +168,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                      realm that gives the Manifest everything is unchanged.
                      (No backticks in this comment: an EVEN number of them inside an html template closes and reopens
                       it, which parses as prose-turned-expressions — this exact comment did it twice.) -->
-                <span class="rt">${visible.length} of ${totalRows == null ? rows.length : totalRows}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
+                <span class="rt">${pageCap != null
+                    ? `${visible.length.toLocaleString()} shown · newest ${rows.length.toLocaleString()} of ${(totalRows == null ? rows.length : totalRows).toLocaleString()}`
+                    : `${visible.length} of ${(totalRows == null ? rows.length : totalRows).toLocaleString()}`}${countSuffix || ''}${selected.size ? ` · ${selected.size} selected` : ''}</span>
             </div>
             ${caption ? html`<p class="hint">${caption}</p>` : null}
             <div class="mscroll">
@@ -213,6 +219,14 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 <tbody>
                     ${visible.map(row => html`
                         <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId === row.id ? ' preview-sel' : '')}
+                            ${''/* 🔴 A CLICKABLE ROW WITH NO ROLE AND NO TABINDEX IS MOUSE-ONLY, ON EVERY REALM THAT PASSES onRowClick. The design caught this on its own event tables and says so in analytics.html:540: "THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS -- mouse-only... Season's and Armory's rows escaped the same fault only because they happen to contain a rename input; these hold plain text, so the row itself is the control and has to say so. Enter and Space, because a role=button must answer both." That reasoning is about the SHARED component, not about one realm: Armory's rows have been reachable only by accident, through an input that happens to sit inside them. The attributes appear only when there is something to activate, so a table with no row action does not grow a focus stop that does nothing. */}
+                            ${''/* 🔴 NO `role` ON A REAL TABLE ROW, AND THE KEY HANDLER MUST IGNORE ITS OWN CONTENTS. The first version of this copied `analytics.html:540` wholesale, and that note is about the design's DIV-based event table. This is a real `<table>`: `role="button"` on a `<tr>` replaces its implicit `row` role and orphans every `<td>`, whose required parent is a row. `tabIndex` + `onKeyDown` gives the same keyboard reach with no ARIA damage.
+                                 🔴 AND THE GUARD IS NOT COSMETIC -- IT WAS BREAKING A SHIPPED REALM. Armory passes `onRowClick` (armory.js:1245) and declares `weaponName`/`buildName` editable, so its rows contain `<input class="edit">`. The `<td>` stops `onClick` and NOT `onKeyDown`, so this handler's `preventDefault()` on Space swallowed the space bar inside every Armory rename field -- on names that contain spaces on essentially every row -- and Enter both committed the edit and re-opened the row editor behind it. The checkbox cell got this right at :240 and the row handler did not. */}
+                            tabIndex=${onRowClick ? 0 : null}
+                            onKeyDown=${onRowClick ? ((e) => {
+                                if (e.target !== e.currentTarget) return;
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row); }
+                            }) : null}
                             onClick=${onRowClick ? () => onRowClick(row) : null} style=${onRowClick ? 'cursor:pointer' : ''}>
                             <!-- 🔴 THE ONLY BROWSER-DEFAULT CONTROL LEFT IN THE PORTAL, on the row of every table.
                                  The adopted sheet has drawn a checkbox since it was adopted — a 16px sunk square that
@@ -318,7 +332,12 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </tbody>
             </table>
             </div>
-            ${visible.length === 0 ? html`<p class="empty">${rows.length ? 'No rows match this search or filter.' : emptyText}</p>` : null}
+            ${''/* ⚠️ A NO-MATCH STATE THAT NAMES NEITHER THE ACTION NOR THE TOTAL. It read "No rows match this search or filter." on every realm -- true, and it leaves the reader to work out that a filter is still set somewhere above and that the collection is not empty. The UX-copy audit calls this out (E2) and names the design's own template: `season.html:2431` says "Nothing matches that. Clear the search or a filter -- N alerts, N changes and N deploys are recorded in total." The rewrite keeps that shape generically: what to do, then how much is behind the filter, using the realm's own row noun. ⚠️ The two states stay DISTINCT -- an empty collection is not a filtered-out one, and collapsing them tells a reader with no data that their search is wrong. */}
+            ${''/* ⚠️ AND IT DIVIDES BY THE SAME TOTAL THE HEADER USES, or the panel contradicts itself. This branch's first version divided by `rows` while the count line at :169 divides by `totalRows`, so a filtered-to-nothing Analytics read "0 of 1,307 events" at the top and "100 events in total" in the body -- and the body's whole job is to say how much sits behind the filter. */}
+            ${visible.length === 0 ? html`<p class="empty">${rows.length
+                ? html`<b>Nothing matches that.</b> Clear the search or a filter — ${pageCap != null && rows.length >= pageCap ? html`the newest ${rows.length.toLocaleString()} of ` : null}${(totalRows == null ? rows.length : totalRows).toLocaleString()}${' '}
+                    ${(totalRows == null ? rows.length : totalRows) === 1 ? rowNoun[0] : rowNoun[1]} in total.`
+                : emptyText}</p>` : null}
             <!-- The foot row: a realm's own quick-add strip, under the table it adds to. The design puts
                  one here on Season — a name, a type, two dates and a button — as the fast path beside the
                  composer above, and the portal had only the composer. -->

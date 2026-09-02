@@ -760,7 +760,74 @@ check('flaggedIds is silent on nothing, and never returns undefined for a caller
     assert.strictEqual(flaggedIds(undefined).size, 0);
 });
 
-// 🔴 ONLY THE MECHANICAL FINDINGS MARK A ROW, and the first version of this marked THIRTEEN where the design marks two. The split the Repairs view is built on — what a machine can be SURE of, against what only a person can decide — is the same split that decides whether a bar wears the mark. A draw served without a calendar window is a judgement call about eleven perfectly valid rows; painting all eleven says "these are wrong", which is precisely the sentence the mechanical/judgement split exists to avoid making. The banner rows are excluded for a different reason: their id is a season FIELD KEY, never an item id, so it could not match a bar even if it were meant to.
+// 🔴 ONLY THE MECHANICAL FINDINGS MARK A ROW, and the first version of this marked THIRTEEN where the design marks two. The split the Repairs view is built on — what a machine can be SURE of, against what only a person can decide — is the same split that decides whether a bar wears the mark. A draw served without a calendar window is a judgement call about eleven perfectly valid rows; painting all eleven says "these are wrong", which is precisely the sentence the mechanical/judgement split exists to avoid making. The banner rows are excluded for a different reason: their id is a season FIELD KEY, never an item id, so it could not match a bar even if it were meant to. 🔴 THREE REALMS HAVE NOW SHIPPED A TONE THAT STYLES NOTHING, AND NOBODY WROTE THE CHECK. `home.js` carries a comment about a `tone:'live'` that styled nothing; Access shipped a fix for `tone:'hot'` and `tone:'bad'`; Analytics shipped `tone:'bad'` on its error count, so 23 errors rendered in ordinary ink where the design paints them orange. Each time the INSTANCE was fixed and the CLASS was left open. A tone is a class name in a data literal -- exactly the shape an orphan scan cannot follow -- so the only thing that can see it is a conservation check between the literals and the stylesheet. 🔴 A TONE IS A CLASS NAME IN A DATA LITERAL, WHICH IS THE ONE SHAPE AN ORPHAN SCAN CANNOT FOLLOW. Four realms shipped a tone that styles nothing -- home's `live`, access's `hot` and `bad`, analytics' `bad`, and review's `bad` on the BLOCKER COUNT, the number that says why you cannot commit. Each instance was fixed and the class left open until this check.
+//
+// ⚠️ TWO PREFIXES, NOT ONE. `Masthead` stats build `.stat.<tone>` and `Tile` builds `.tile.<tone>`, and the stylesheet defines different sets for each (`.stat.warn` exists, `.tile.ok` exists, `.stat.ok` does not). The first version checked `.stat` only and passed by luck, because every Tile in the tree happens to use `warn` -- a correct `tone: 'ok'` on a Tile would have failed it with the claim that a styled class styles nothing. That is a pattern standing in for an enumeration, which is the exact defect the sibling fix to `portalStatus` was about.
+function toneLiterals(src) {
+    // Comments are stripped FIRST: the first run of this check flagged `access.js:live` and `home.js:live`, and both matches were inside comments that exist to record those tones' REMOVAL. A check that reads its own documentation as evidence reports the opposite of the truth, confidently.
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const out = [];
+    for (const m of code.matchAll(/\btone\s*[:=]/g)) {
+        let seg = code.slice(m.index + m[0].length, m.index + m[0].length + 140);
+        const nl = seg.indexOf('\n'); if (nl !== -1) seg = seg.slice(0, nl);
+        const nextProp = seg.search(/,\s*[A-Za-z_$][\w$]*\s*:/); if (nextProp !== -1) seg = seg.slice(0, nextProp);
+        for (const lit of seg.matchAll(/'([a-z][a-z0-9-]*)'/g)) out.push(lit[1]);
+    }
+    return out;
+}
+
+// 🔴 AN ARIA ROLE THAT CONTRADICTS THE ELEMENT'S IMPLICIT ONE IS WORSE THAN NO ROLE. This branch put `role="button"` on a `<tr>` inside a real `<table>`, which replaces the row's implicit `row` role and orphans every `<td>` -- whose required parent IS a row. It came from porting a note written about the design's DIV-based event table onto real table markup. ⚠️ FIVE ELEMENT NAMES, ENUMERATED, NOT A PATTERN. These are the table elements whose implicit roles carry structural meaning that a `role=` overrides; anything else is a judgement call this check does not make.
+check('no table element in portal/ui carries a role= that overrides its implicit one', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    let scanned = 0;
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        const src = fs.readFileSync(path.join(dir, f), 'utf8');
+        const code = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+        scanned++;
+        for (const m of code.matchAll(/<(tr|td|th|tbody|thead|table)\b([^>]*)>/g)) {
+            if (/\brole=/.test(m[2])) offenders.push(`portal/ui/${f}  <${m[1]} … role=…>`);
+        }
+    }
+    assert.ok(scanned >= 5, `scanned ${scanned} portal/ui files -- the directory shape changed and this check has gone blind`);
+    assert.deepStrictEqual(offenders, [], 'a role= here replaces the implicit table role and orphans the cells beneath it');
+});
+
+check('THE TABLE-ROLE GATE CAN FAIL: the real markup, with the real regression put back', () => {
+    const real = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'manifest.js'), 'utf8');
+    // The anchor is the multi-line row tag at manifest.js:221, matched on its class expression rather than on a key= this file does not use. The assertion below is what caught the first version's wrong guess -- a proof whose anchor has moved must FAIL, not pass over nothing.
+    const broken = real.replace("<tr class=${(selected.has(row.id)", '<tr role="button" class=${(selected.has(row.id)');
+    assert.notStrictEqual(broken, real, 'the row tag moved -- this proof no longer reintroduces anything');
+    const code = broken.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const hits = [...code.matchAll(/<(tr|td|th|tbody|thead|table)\b([^>]*)>/g)].filter((m) => /\brole=/.test(m[2]));
+    assert.ok(hits.length >= 1, 'the scanner did not see a role= on a reintroduced <tr role="button">');
+});
+
+check('every tone a realm emits has a rule in the stylesheet', () => {
+    const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
+    const styled = new Set([...css.matchAll(/\.(?:stat|tile)\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]));
+    assert.ok(styled.size >= 3, `parsed ${styled.size} .stat/.tile tone rules -- the stylesheet's shape changed and this check has gone blind`);
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const emitted = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+        for (const t of toneLiterals(fs.readFileSync(path.join(dir, f), 'utf8'))) emitted.push({ f, tone: t });
+    }
+    assert.ok(emitted.length >= 3, `found ${emitted.length} literal tones across portal/ui -- too few for this check to mean anything`);
+    const dead = emitted.filter((e) => !styled.has(e.tone));
+    assert.deepStrictEqual(dead.map((d) => `${d.f}:${d.tone}`), [],
+        'these tones have no .stat/.tile rule, so they style NOTHING and the figure renders in ordinary ink');
+});
+
+// 🔴 THE PROOF RUNS THE REAL SCANNER OVER REAL SOURCE, because the previous one did not. It rebuilt one `filter` inline from a hand-made array, so it never exercised the comment stripping, the 140-char window, the next-property cut or the ternary collection -- break any of those and it stayed green. It was committed one function below a comment reading "a gate proven only against a fixture you designed is not proven."
+check('THE TONE GATE CAN FAIL: the real scanner, over real source, with the real shipped bug put back', () => {
+    const real = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'analytics.js'), 'utf8');
+    const broken = real.replace("tone: h.errors24h ? 'warn' : undefined", "tone: h.errors24h ? 'bad' : undefined");
+    assert.notStrictEqual(broken, real, 'the masthead tone line moved -- this proof no longer reintroduces anything');
+    const styled = new Set(['lead', 'stg', 'warn', 'ok', 'err']);
+    assert.ok(toneLiterals(broken).includes('bad'), 'the scanner cannot see a tone inside a ternary, which is how every conditional tone is written');
+    assert.deepStrictEqual(toneLiterals(real).filter((t) => !styled.has(t)), [], 'the unmodified tree must be clean');
+});
+
 check('findingBarIds marks only what a machine can be sure of — not the judgement calls', () => {
     const { findingBarIds } = require('../portal/ui/track.logic');
     const data = {

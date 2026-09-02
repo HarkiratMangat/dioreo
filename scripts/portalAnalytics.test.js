@@ -108,5 +108,34 @@ check('a missing-emoji count is explained, not just counted', () => {
     assert.match(ui, /render as raw ids in Discord/, 'the card counts missing emoji without saying what that does');
 });
 
+// 🔴 CONSERVATION AGAINST THE WRITER, BECAUSE THE READER SILENTLY INVENTED A VOCABULARY. utils/alertWebhook.js is the only thing that writes AlertLog.level and its LEVEL_COLOR map is the enumeration. The portal carried a key for `warn` (zero rows in the dev database) and none for `caution` (306 of 1,000, measured 2026-09-01 21:34 EDT), so a third of every alert fell through `|| LEVEL_ROW.info` and painted as the grey no-severity tier — under a paragraph on the same page naming three tiers. Nothing failed: both stylesheets already define `.lvlb.lv-caution`, so the rule was live and only the emitter was missing, which is invisible to an orphan scan. A table checked against the writer is the only shape that catches this; a table checked against itself cannot.
+check('every alert level the writer can emit is one the portal can render', () => {
+    const writer = read('utils/alertWebhook.js');
+    const map = writer.slice(writer.indexOf('const LEVEL_COLOR'), writer.indexOf('};', writer.indexOf('const LEVEL_COLOR')));
+    const levels = [...map.matchAll(/(\w+):\s*0x[0-9a-fA-F]+/g)].map((m) => m[1]);
+    assert.ok(levels.length >= 4, `parsed ${levels.length} levels from alertWebhook's LEVEL_COLOR — the writer's shape changed and this check has gone blind`);
+    for (const table of ['LEVEL_ROW', 'LEVEL_TAG']) {
+        const decl = ui.slice(ui.indexOf(`const ${table} = {`), ui.indexOf('};', ui.indexOf(`const ${table} = {`)));
+        assert.ok(decl.length > 20, `${table} is not declared as an object literal any more`);
+        const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
+        assert.deepStrictEqual(missing, [], `${table} has no key for ${missing.join(', ')} — those alerts render as the fallback tier with nothing complaining`);
+    }
+    // Comments stripped before slicing, per this file's own header rule -- the comments here habitually quote code, so an unstripped slice can land inside prose that names the same literal.
+    const apiCode = api.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const order = apiCode.slice(apiCode.indexOf('const levelOrder = ['), apiCode.indexOf('];', apiCode.indexOf('const levelOrder = [')));
+    const unordered = levels.filter((l) => !order.includes(`'${l}'`));
+    assert.deepStrictEqual(unordered, [], `levelOrder omits ${unordered.join(', ')} — indexOf returns -1, the comparator maps it to 99, and that tier sorts below every named one`);
+});
+
+check('THE LEVEL GATE CAN FAIL: the real tables, with the real missing key put back', () => {
+    // 🔴 THE PREVIOUS PROOF NEVER TOUCHED THE SOURCE. It rebuilt one `filter` from a hardcoded array and a hardcoded declaration string, so the extraction under test -- the slice bounds, the comment stripping, the word-boundary match -- was never exercised, and breaking any of it left this green. It sat one check below a comment about gates proven against fixtures you designed. This one deletes the real `caution` key from the real file and runs the real extraction.
+    const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const broken = ui.replace("caution: 'lvlb lv-caution', ", '');
+    assert.notStrictEqual(broken, ui, 'LEVEL_ROW no longer contains the caution key in the form this proof removes');
+    const decl = strip(broken).slice(strip(broken).indexOf('const LEVEL_ROW = {'), strip(broken).indexOf('};', strip(broken).indexOf('const LEVEL_ROW = {')));
+    const missing = ['info', 'caution', 'warn', 'error'].filter((l) => !new RegExp(`\\b${l}:`).test(decl));
+    assert.deepStrictEqual(missing, ['caution'], `the extraction did not notice the deleted key -- it reported ${JSON.stringify(missing)}`);
+});
+
 say(failures ? `\n✗ ${failures} failed` : '\n✅ portalAnalytics: both panels count the same rows, and the boot record is read against the model that writes it');
 process.exit(failures ? 1 : 0);

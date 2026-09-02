@@ -5,6 +5,9 @@ status: live
 
 # Part 4 — Access. Paste this in.
 
+> 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE.** An opener is a pointer with a gate on it. The natural thing to write in one is a digest of the findings — and a digest is a SUBSTITUTE: the reader gets three bullets, feels oriented, and never opens the document. **This Part is closed**; what is still live in here is the method, the traps and the decisions, none of which an opener can carry. Read it before assuming a later Part's prompt supersedes it.
+
+
 > Written 2026-09-01 by the Broadcast session (§0.0), corrected the same day by three cold readers. **Every number below names the command that produces it; where a figure and a tool disagree, the tool wins.**
 
 ## 🔴 ORDER OF OPERATIONS — this block supersedes every competing instruction, and nothing else needs opening to start
