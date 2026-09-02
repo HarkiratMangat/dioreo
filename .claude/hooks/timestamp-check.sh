@@ -89,10 +89,10 @@ if [ -n "$future" ]; then
   fi
 fi
 
-# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance.
+# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance. 🔴 TODAY ONLY, AND THIS NARROWING IS LOAD-BEARING — added 2026-09-02 16:58 EDT. This branch exists for ONE mishap: writing a stamp for NOW, meaning to fill the minute in later, and never doing it. A placeholder on a PAST date is the opposite thing — a deliberately imprecise historical reference (`2026-09-01 16:58 EDT`), and there are many of them in this repo's own records and hook comments. Substituting there does not repair anything: it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix rather than the author. Found by the completeness sweep asking whether this check fires on its OWN artifacts — feeding `memory-index-check.sh` (which carries four such stamps) through it returned an `updatedInput` rewriting them to the current minute.
 placeholder=$(printf '%s' "$joined" \
   | grep -v 'TS-EXAMPLE' \
-  | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}' \
+  | grep -oE "${today}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}" \
   | grep -E '[xX?]' | sort -u | tr '\n' ' ')
 
 if [ -n "$placeholder" ]; then

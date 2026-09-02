@@ -141,6 +141,13 @@ a "wrapped stamp in prose too"       post "BARE DATE" no "$(printf 'filed %s\n%s
 # …and a wrapped FUTURE stamp must still be caught, not hidden by the rejoin.
 a "wrapped future stamp still denied" pre "deny:" yes "$(printf '# filed %s\n# %s %s\n' "${FUTSTAMP%% *}" "${FUTSTAMP##* }" "$LOCALTZ")"
 
+# ── a placeholder on a PAST date is DELIBERATE, not forgotten ──────────────── Added 2026-09-02 16:58 EDT. The suite passed 57/57 with this narrowing already in place, which is precisely the problem: nothing exercised it, so the branch was a claim rather than a check. A stamp like `2026-09-01 16:0x EDT` is an intentionally imprecise historical reference and this repo is full of them -- four in memory-index-check.sh alone. Substituting there does not repair anything; it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix instead of the author.
+YESTERDAY=$(when '-1d' | cut -d' ' -f1)
+a "a placeholder on a PAST date is left alone"  pre "SILENT" yes "filed ${YESTERDAY} 16:0x ${LOCALTZ}"
+a "a placeholder on TODAY is still corrected"   pre "allow:" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
+# And the correction must still put a real minute in, or the branch above is passing for the wrong reason.
+a "the today correction carries a real minute"  pre "FIXED<filed ${TODAY} $(date '+%H:%M')" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
+
 # ── the Bash / heredoc path ────────────────────────────────────────────────── The gap that leaked four placeholder stamps into a tracked plan on 2026-09-01: PostToolUse carried Bash and PreToolUse did not, so a heredoc write was DETECTED and never CORRECTED.
 HEREDOC="python3 - <<'EOF'
 open('x.md','w').write('filed ${TODAY} 19:xx EDT')
