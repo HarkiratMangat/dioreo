@@ -5,6 +5,11 @@ status: live
 
 # Part 5 — Analytics. Paste this in.
 
+> 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE AND IT IS NOT SUFFICIENT.** It is a pointer with a gate on it, written that way deliberately: Part 4's handoff summarised its own findings, and a summary is a SUBSTITUTE — a session reads three bullets, feels oriented, and never opens the document where the work is. **Everything below is what an opener cannot carry**: the five-section batching contract that took one view from 664 differences to 10, the three files without which the pass did not happen, the six composition forks that are Harkirat's and not yours, the five mechanical traps that each cost real turns, the five contradictions between carriers already resolved with the cost of choosing wrong, and the table of what the previous session was CONFIDENT of and wrong about.
+>
+> **The falsifiable version:** this document names **two** measured findings and **one** cleared non-defect. If your working belief is "there are three suspects to fix", you are holding Part 4's superseded wording and you have not read §*TWO FINDINGS*. If you cannot name the three files §*THREE FILES* requires, you will produce one of three, exactly as Part 4 did — **measured, not predicted**: `ls local/` shows a triage file and a difference ledger for season, armory and broadcast, and for Access only `locate-access.md`.
+
+
 > Written 2026-09-01 19:08 EDT by the Access session (§0.0). **Every number below names the command that produces it; where a figure and a tool disagree, the tool wins.** That sentence is not decoration — Part 4's prompt inherited three wrong figures for its own realm from §L, and the same row had already been corrected once.
 
 ## 🔴 ORDER OF OPERATIONS — this block supersedes every competing instruction, and nothing else needs opening to start
