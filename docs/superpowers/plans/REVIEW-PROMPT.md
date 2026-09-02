@@ -67,10 +67,10 @@ Measured 2026-09-02. ⚠️ **Read §2 first: these compare an empty mockup to a
 
 | Reading | Value | ⚠️ |
 |---|---|---|
-| `npm run portal:converge -- --realm review` | **40 mismatches of 25 design nodes** · WORDS 5 · STYLE 1 · mk 25 nodes (530px) · pt 40 (740px) | 🔴 **40 > 25 is NOT a ratio and not 160% wrong.** EXTRA and ABSENT rows count alongside paired ones. Read it as "25 design nodes, 40 findings" |
+| `npm run portal:converge -- --realm review` | **40 mismatches of 25 design nodes** · WORDS 5 · STYLE 1 · mk 25 nodes (530px) · pt 40 (740px) | 🔴 **40 > 25 is NOT a ratio and not 160% wrong.** EXTRA and ABSENT rows count alongside paired ones — read it as "25 design nodes, 40 findings". ⚠️ **AND `pt 40` IS NOT A NODE COUNT** — it is the mismatch figure reprinted in the node column. `portal:audit` reads the same page as **pt 94 / 760px** against **mk 28 / 531px**. The two tools count different things and neither figure is comparable to the other |
 | `npm run portal:inventory -- --realm review` | mk **32** signatures · pt **55** · ONLY-IN-MOCKUP 7 · ONLY-IN-PORTAL **30** | The portal has nearly double the elements — because it is populated and the mockup is not |
 | `node scripts/portalDiff.mjs --realm review --portal harness` | **4.7%, 15 regions** · mk 888px · pt 984px | 🔴 **4.7% reads as "nearly done" and is the tell.** §0.7d retired the percentage as a target; it is reported, never driven |
-| `npm run portal:audit -- --realm review --all` | ② SHAPE 59 · ③ WORDS 2 · ④ STYLE 8 · ⑤ RULES 2011/41/40 | ⑤ RULES is identical on every realm — cross-realm, not this realm's work |
+| `npm run portal:audit -- --realm review --all` | ② SHAPE 60 · ③ WORDS 2 · ④ STYLE 8 · ⑤ RULES 2011/41/40 | ⑤ RULES is identical on every realm — cross-realm, not this realm's work |
 | `wc -c` / `awk 'END{print NR}'` / `rg -o 'on[A-Z][a-zA-Z]*='` | `portal/ui/review.js` **19.5KB · 284 lines · 12 onX sites** | ⚠️ **Not comparable to the mockup's `7h`** — that is `portalStatus`'s regex over HTML, a different metric. The first version of this file said 283 lines |
 | Views | 🔴 **NONE.** `review.html` has zero `data-view`; `review.js` passes no `viewOptions` | `--view` does not apply and Part 5's five-view rhythm does not transfer |
 

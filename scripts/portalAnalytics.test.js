@@ -120,18 +120,21 @@ check('every alert level the writer can emit is one the portal can render', () =
         const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
         assert.deepStrictEqual(missing, [], `${table} has no key for ${missing.join(', ')} — those alerts render as the fallback tier with nothing complaining`);
     }
-    const order = api.slice(api.indexOf('const levelOrder = ['), api.indexOf('];', api.indexOf('const levelOrder = [')));
+    // Comments stripped before slicing, per this file's own header rule -- the comments here habitually quote code, so an unstripped slice can land inside prose that names the same literal.
+    const apiCode = api.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const order = apiCode.slice(apiCode.indexOf('const levelOrder = ['), apiCode.indexOf('];', apiCode.indexOf('const levelOrder = [')));
     const unordered = levels.filter((l) => !order.includes(`'${l}'`));
     assert.deepStrictEqual(unordered, [], `levelOrder omits ${unordered.join(', ')} — indexOf returns -1, the comparator maps it to 99, and that tier sorts below every named one`);
 });
 
-check('THE LEVEL CONSERVATION CHECK CAN FAIL: a level the portal cannot render is caught', () => {
-    assert.throws(() => {
-        const levels = ['info', 'caution', 'warn', 'error'];
-        const decl = "const LEVEL_ROW = { error: 'a', warn: 'b', info: 'c' };";
-        const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
-        assert.deepStrictEqual(missing, [], `LEVEL_ROW has no key for ${missing.join(', ')}`);
-    }, /no key for caution/);
+check('THE LEVEL GATE CAN FAIL: the real tables, with the real missing key put back', () => {
+    // 🔴 THE PREVIOUS PROOF NEVER TOUCHED THE SOURCE. It rebuilt one `filter` from a hardcoded array and a hardcoded declaration string, so the extraction under test -- the slice bounds, the comment stripping, the word-boundary match -- was never exercised, and breaking any of it left this green. It sat one check below a comment about gates proven against fixtures you designed. This one deletes the real `caution` key from the real file and runs the real extraction.
+    const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
+    const broken = ui.replace("caution: 'lvlb lv-caution', ", '');
+    assert.notStrictEqual(broken, ui, 'LEVEL_ROW no longer contains the caution key in the form this proof removes');
+    const decl = strip(broken).slice(strip(broken).indexOf('const LEVEL_ROW = {'), strip(broken).indexOf('};', strip(broken).indexOf('const LEVEL_ROW = {')));
+    const missing = ['info', 'caution', 'warn', 'error'].filter((l) => !new RegExp(`\\b${l}:`).test(decl));
+    assert.deepStrictEqual(missing, ['caution'], `the extraction did not notice the deleted key -- it reported ${JSON.stringify(missing)}`);
 });
 
 say(failures ? `\n✗ ${failures} failed` : '\n✅ portalAnalytics: both panels count the same rows, and the boot record is read against the model that writes it');

@@ -216,8 +216,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                     ${visible.map(row => html`
                         <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId === row.id ? ' preview-sel' : '')}
                             ${''/* 🔴 A CLICKABLE ROW WITH NO ROLE AND NO TABINDEX IS MOUSE-ONLY, ON EVERY REALM THAT PASSES onRowClick. The design caught this on its own event tables and says so in analytics.html:540: "THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS -- mouse-only... Season's and Armory's rows escaped the same fault only because they happen to contain a rename input; these hold plain text, so the row itself is the control and has to say so. Enter and Space, because a role=button must answer both." That reasoning is about the SHARED component, not about one realm: Armory's rows have been reachable only by accident, through an input that happens to sit inside them. The attributes appear only when there is something to activate, so a table with no row action does not grow a focus stop that does nothing. */}
-                            role=${onRowClick ? 'button' : null} tabIndex=${onRowClick ? 0 : null}
-                            onKeyDown=${onRowClick ? ((e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row); } }) : null}
+                            ${''/* 🔴 NO `role` ON A REAL TABLE ROW, AND THE KEY HANDLER MUST IGNORE ITS OWN CONTENTS. The first version of this copied `analytics.html:540` wholesale, and that note is about the design's DIV-based event table. This is a real `<table>`: `role="button"` on a `<tr>` replaces its implicit `row` role and orphans every `<td>`, whose required parent is a row. `tabIndex` + `onKeyDown` gives the same keyboard reach with no ARIA damage.
+                                 🔴 AND THE GUARD IS NOT COSMETIC -- IT WAS BREAKING A SHIPPED REALM. Armory passes `onRowClick` (armory.js:1245) and declares `weaponName`/`buildName` editable, so its rows contain `<input class="edit">`. The `<td>` stops `onClick` and NOT `onKeyDown`, so this handler's `preventDefault()` on Space swallowed the space bar inside every Armory rename field -- on names that contain spaces on essentially every row -- and Enter both committed the edit and re-opened the row editor behind it. The checkbox cell got this right at :240 and the row handler did not. */}
+                            tabIndex=${onRowClick ? 0 : null}
+                            onKeyDown=${onRowClick ? ((e) => {
+                                if (e.target !== e.currentTarget) return;
+                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row); }
+                            }) : null}
                             onClick=${onRowClick ? () => onRowClick(row) : null} style=${onRowClick ? 'cursor:pointer' : ''}>
                             <!-- 🔴 THE ONLY BROWSER-DEFAULT CONTROL LEFT IN THE PORTAL, on the row of every table.
                                  The adopted sheet has drawn a checkbox since it was adopted — a 16px sunk square that
@@ -324,9 +329,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
             </table>
             </div>
             ${''/* ⚠️ A NO-MATCH STATE THAT NAMES NEITHER THE ACTION NOR THE TOTAL. It read "No rows match this search or filter." on every realm -- true, and it leaves the reader to work out that a filter is still set somewhere above and that the collection is not empty. The UX-copy audit calls this out (E2) and names the design's own template: `season.html:2431` says "Nothing matches that. Clear the search or a filter -- N alerts, N changes and N deploys are recorded in total." The rewrite keeps that shape generically: what to do, then how much is behind the filter, using the realm's own row noun. ⚠️ The two states stay DISTINCT -- an empty collection is not a filtered-out one, and collapsing them tells a reader with no data that their search is wrong. */}
+            ${''/* ⚠️ AND IT DIVIDES BY THE SAME TOTAL THE HEADER USES, or the panel contradicts itself. This branch's first version divided by `rows` while the count line at :169 divides by `totalRows`, so a filtered-to-nothing Analytics read "0 of 1,307 events" at the top and "100 events in total" in the body -- and the body's whole job is to say how much sits behind the filter. */}
             ${visible.length === 0 ? html`<p class="empty">${rows.length
-                ? html`<b>Nothing matches that.</b> Clear the search or a filter — ${rows.length.toLocaleString()}${' '}
-                    ${rows.length === 1 ? rowNoun[0] : rowNoun[1]} in total.`
+                ? html`<b>Nothing matches that.</b> Clear the search or a filter — ${(totalRows == null ? rows.length : totalRows).toLocaleString()}${' '}
+                    ${(totalRows == null ? rows.length : totalRows) === 1 ? rowNoun[0] : rowNoun[1]} in total.`
                 : emptyText}</p>` : null}
             <!-- The foot row: a realm's own quick-add strip, under the table it adds to. The design puts
                  one here on Season — a name, a type, two dates and a button — as the fast path beside the

@@ -37,7 +37,8 @@ const LONG_WAIT_MS = 10000;
 
 const pct = (n, d) => (d ? (n / d) * 100 : 0);
 // ⚠️ A SUB-MILLISECOND FIGURE ROUNDED TO "0ms", WHICH READS AS BROKEN RATHER THAN AS FAST. The dependency rows divide a total by a call count, so Atlas at 52ms across 437 calls printed "0ms each" — a real measurement rendered as the absence of one. Zero itself still prints 0ms; only a value that exists and is under half a millisecond becomes the bound.
-const fmtMs = (ms) => (ms == null ? '—'
+const fmtMs = (ms) => (ms == null || Number.isNaN(ms) ? '—'
+    : ms < 0 ? '—'
     : ms >= 1000 ? `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)}s`
     : ms > 0 && Math.round(ms) === 0 ? '<1ms'
     : `${Math.round(ms)}ms`);
@@ -136,7 +137,10 @@ function worstAck(timingStats) {
     const hit = buckets.filter((b) => b && b.n > 0).map((b) => b._id);
     if (!hit.length) return null;
     const worst = Math.max(...hit);
-    return { value: ACK_BOUND_LABEL[worst] || String(worst), tone: worst >= ACK_LIMIT_MS ? 'warn' : undefined };
+    // 🔴 A THRESHOLD ON THE RATE, NOT "IS THERE AT LEAST ONE". `worst >= ACK_LIMIT_MS` is true the moment a single ack in seven days crosses the deadline, so the masthead would sit orange permanently -- which is verbatim the defect this file already rules against for the success-rate tile ("in production there is always at least one, so the tile would have been orange forever"). One percent is the same line that tile draws.
+    const over = buckets.filter((b) => b && b._id >= ACK_LIMIT_MS).reduce((n, b) => n + (b.n || 0), 0);
+    const all = buckets.reduce((n, b) => n + (b.n || 0), 0);
+    return { value: ACK_BOUND_LABEL[worst] || String(worst), tone: all && (over / all) > 0.01 ? 'warn' : undefined };
 }
 
 // The event drawer. ⚠️ ITS ROWS ARE DECLARED, NOT DERIVED FROM THE OBJECT: an alert and a change and a restart store different fields, and a generic key-value dump would print `_id`, `__v` and every null the schema allows, which is how a detail view becomes unreadable the moment a model grows a field. Each kind names what it carries.
@@ -173,10 +177,13 @@ const EVENT_NOTE = {
     boot: 'Restart records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that says what is actually running.',
 };
 
+// ⚠️ A ROW WITH NO USABLE DATE MUST NOT TAKE THE REALM DOWN. `new Date(x).toISOString()` throws a RangeError on an unparseable value, and this renders inside the page rather than beside it -- one malformed `createdAt` in one of three collections would blank Analytics entirely, mid-render, with no error state.
 function EventDrawer({ row, onClose, onRevert }) {
+    const at = new Date(row.at);
+    const atText = Number.isNaN(at.getTime()) ? 'not recorded' : at.toISOString().slice(0, 16).replace('T', ' ');
     const revertable = row.kind === 'change' && !row.undone;
     return html`
-        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${new Date(row.at).toISOString().slice(0, 16).replace('T', ' ')}`}
+        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${atText}`}
                    title=${summaryOf(row)} onClose=${onClose}
                    actions=${html`
                        <button class="btn" onClick=${onClose}>Close</button>
@@ -204,7 +211,7 @@ const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb
 // The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
 const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
 
-function Health({ health, onOpenTiming, onFilterLevel }) {
+function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRiver }) {
     const h = health || {};
     const errors = h.errors24h ?? 0;
     return html`
@@ -225,18 +232,19 @@ function Health({ health, onOpenTiming, onFilterLevel }) {
                  quiet count is deliberately its OWN figure rather than a footnote to errors: this repo's
                  three-tier error model must never collapse into one number, and a caution that only exists
                  as small print under a red count has collapsed. -->
+            <!-- ⚠️ EACH TILE GOES WHERE ITS OWN FIGURE IS ANSWERED, WHICH IS NOT ONE PLACE. The first version wired all four to Timing because the DESIGN wires its four there -- and the design's four are timing figures (interactions, success rate, restarts, memory) while these are not. "Distinct users 24h" and "Quiet alerts 24h" jumped to a view containing neither. Four buttons that all go somewhere irrelevant are worse than four divs, because the affordance promises an answer. -->
             <div class="tiles">
-                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0} onClick=${onOpenTiming}
+                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0} onClick=${() => onFilterRiver({ kind: 'boot' })}
                          tone=${(h.restarts7d ?? 0) > 20 ? 'warn' : ''}
                          sub=${`${h.restarts24h ?? 0} in the last 24 hours`} />
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
                          onClick=${onOpenTiming} tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
                 <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
-                         onClick=${onOpenTiming}
+                         onClick=${onOpenReach}
                          sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
                 <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
-                         onClick=${onOpenTiming}
+                         onClick=${() => onFilterRiver({ kind: 'alert' })}
                          sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
@@ -560,6 +568,8 @@ function Reach({ rows = [] }) {
     const byCtx = ['guild', 'dm'].map((c) => ({ c, n: rows.filter((r) => r.context === c).reduce((a, r) => a + r.n, 0) }));
     const lead = byCtx.slice().sort((x, y) => y.n - x.n)[0] || { c: 'dm', n: 0 };
     const leadShare = total ? (lead.n / total) * 100 : 0;
+    // ⚠️ AN EMPTY WINDOW MUST NOT ARGUE FROM ZERO. With no interactions this rendered "0% of all use is in DMs" as the case for the portal existing -- a finding stated over an absence of data, which is the same defect as a colour that is on regardless.
+    const haveSplit = total > 0;
     const leadLabel = lead.c === 'dm' ? 'DMs' : 'servers';
     const byInstall = [
         { key: 'guild', label: 'Guild install', note: 'the app is added to a server; everyone there can use it' },
@@ -601,8 +611,9 @@ function Reach({ rows = [] }) {
                     <!-- ⚠️ THE CAPTION NAMES WHAT THE CHART SHOWS BEFORE IT ARGUES FROM IT. The design leads on the measurement (analytics.html:428, "More than half of all use is in DMs") and this led on the principle, so a reader got the conclusion without the number standing directly above it. The closing line is the portal's own and is kept — the design has no equivalent. ⚠️ It reads the split rather than asserting one: the design's sentence assumes DMs lead, which is true of its fixtures and is not a fact about the data.
                          "privately" is dropped for the same reason — it is only true of one of the two answers this sentence can now give.
                          ⚠️ AND IT STATES THE PERCENTAGE RATHER THAN "MORE THAN HALF", which was the first attempt and which the fixtures immediately falsified: 51% against 49% is more than half and reads as a decisive majority. A phrase that renders 51% and 80% identically has stopped carrying information, which is the same objection this file already makes to a tile that is orange whatever the numbers are. -->
-                    <p class="hp">${Math.round(leadShare)}% of all use is in${' '}
-                        <b>${leadLabel}</b> — a bot answering one screenful at a time, which is not the place to audit
+                    <p class="hp">${haveSplit
+                        ? html`${Math.round(leadShare)}% of all use is in <b>${leadLabel}</b> — a`
+                        : html`Nothing has been recorded in this window, so there is no split to read yet. A`} bot answering one screenful at a time, which is not the place to audit
                         a season or bulk-edit an armory. That split is the argument for this portal existing at all.</p>
                 </section>
                 <section class="hpanel">
@@ -707,8 +718,8 @@ export function AnalyticsRealm({ session }) {
     const [riverFilter, setRiverFilter] = useState(null);
     // 🔴 THE RIVER'S ROWS OPENED NOTHING, AND THE DESIGN OPENS A DRAWER FROM EVERY ONE. analytics.html:545 makes each row a role=button that calls openEvent, and `--triggers` structurally cannot list a handler bound to a table row, so this was the last piece of the interaction tier and the one no instrument reported. The row carries the columns the table has space for; everything the collection actually stores -- the level, whether it pinged, the memory reading, the page and action behind a change -- had nowhere to be read.
     const [openEvent, setOpenEvent] = useState(null);
-    function filterRiverByLevel(level) {
-        setRiverFilter((prev) => ({ seq: (prev ? prev.seq : 0) + 1, filters: { kind: 'alert', level } }));
+    function filterRiver(filters) {
+        setRiverFilter((prev) => ({ seq: (prev ? prev.seq : 0) + 1, filters }));
         // After the render that applies the filter, not before it -- scrolling to a table that has not re-rendered lands on the old row count.
         requestAnimationFrame(() => document.getElementById('manifest')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     }
@@ -786,7 +797,7 @@ export function AnalyticsRealm({ session }) {
 
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
     const VIEWS = {
-        Health: () => html`<${Health} health=${data.health} onOpenTiming=${() => setView('Timing')} onFilterLevel=${filterRiverByLevel} />`,
+        Health: () => html`<${Health} health=${data.health} onOpenTiming=${() => setView('Timing')} onFilterLevel=${(level) => filterRiver({ kind: 'alert', level })} onOpenReach=${() => setView('Reach')} onFilterRiver=${filterRiver} />`,
         Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />`,
         Timing: () => html`<${Timing} stats=${data.timingStats} />`,
         Reach: () => html`<${Reach} rows=${data.reach} />`,

@@ -126,7 +126,8 @@ async function capture(realm, browser, port) {
     };
 
     const views = {};
-    const tabNames = await page.evaluate(() => [...document.querySelectorAll('main [role="tab"]:not([data-arm])')].map((b) => b.textContent.trim()));
+    // 🔴 SCOPED TO THE SHELL'S VIEW SEGMENT, BECAUSE `main [role=tab]` IS NOT A VIEW TAB. It matched ANY tab in the page, and `review.js:213` declares its staged-change list a `role="tablist"` with a `role="tab"` per changeset -- a legitimate widget that is not a view axis. So this recorded Review's FOUR CHANGESET ROWS as views ("T1 Season identity season.setTitlesDeadlines · season", and three more), `portal:status` printed them as fact, and `--check` returned green over a view axis that does not exist. A realm with one view was reported as stable across four. ⚠️ The `:not([data-arm])` exclusion is gone with it: it existed to skip the mode switcher, and `.seg` already excludes `.modesw`. Naming the container is the enumeration; excluding the one counter-example you happened to know about is the pattern.
+    const tabNames = await page.evaluate(() => [...document.querySelectorAll('main .seg [role="tab"]')].map((b) => b.textContent.trim()));
     const labels = tabNames.length ? tabNames : ['(single view)'];
     for (const label of labels) {
         if (tabNames.length) {
