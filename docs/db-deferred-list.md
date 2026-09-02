@@ -319,6 +319,11 @@ Both selectors are emitted by `portal/ui/season.js` and `portal/ui/composer.js`,
 
 ## 🔔 Reminders / watch-for
 
+### A capability that reads as ABSENT early in a session may simply not have surfaced yet `[P3 · XS]`
+*Filed 2026-09-02 10:59 EDT.*
+
+Context7's tools were missing from the tool surface at session start and arrived part-way through, with **Harkirat changing nothing** and the connector connected throughout. Two traps for any capability audit: `claude.ai` connector tools are namespaced by an **opaque UUID** (`mcp__c7d99128-…__resolve-library-id`, never `mcp__context7__*`), so presence must be probed by a TOOL name and never the server name; and an early absence must be **re-probed late** before it is recorded as a fact about configuration. A confident root cause was written from a clean-looking correlation (`enabledMcpServers: ["computer-use"]`) and was wrong.
+
 - **⏳ THE REAL-SERVER PROOF OF THE ANALYTICS LEVEL FIX EXPIRES AROUND 2026-09-04, AND §L QUOTES IT AS EVIDENCE** `[P2 · XS · Sonnet5-Medium]` *Filed 2026-09-01 23:14 EDT.* Part 5's §L row 5 cites "CAUTION 52 orange above INFO 90 grey" on the real server as proof that `LEVEL_ROW` now emits `caution`. That reading came from a **rolling seven-day aggregate**, and the newest `AlertLog` row in the dev database is **2026-08-28**. From roughly 2026-09-04 the window contains nothing, `alertsByLevel` returns empty, and the panel does not render at all — `${(h.alertsByLevel || []).length ? … : null}`. **A session re-verifying that claim will see an empty panel and may conclude the fix regressed.** `portal:realwalk` will still report five green ticks, because it certifies reachability rather than populated state. **Do:** nothing to the code — the durable proof is the HARNESS, whose stub was fixed in the same Part to carry all three levels, so it demonstrates the fix with no expiry. **Verify by:** loading `harness.html?fresh=1#/analytics` and seeing ERROR / CAUTION / INFO drawn as three bars; if the real server shows an empty panel and the harness shows three, nothing has regressed and the dev data has simply aged out.
 - **🧾 `portalGeometry --all --write` rewrites `recordedAt` and `commit` on EVERY realm, including ones whose geometry did not move** `[P3 · XS · Sonnet5-Medium]` *Filed 2026-09-01 23:14 EDT.* Running it after changing one realm produced a seven-file diff in which six files differed only in those two metadata fields. Those fields are the record of **when a realm was last genuinely verified**, which is the fixture's whole value, so the churn quietly erases provenance across the board. This Part reverted the six by hand. **Do:** either write only the realms whose measured geometry changed, or keep `recordedAt`/`commit` per-realm and untouched when nothing moved. **Verify by:** `--all --write` on a tree where one realm changed produces a ONE-file diff.
 
@@ -605,6 +610,37 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+### `[P1 · M · Opus5-High]` Context architecture — the INJECTED tier has no budget, and the workflow this repo mandates bypasses the rules layer
+*Filed 2026-09-02 10:59 EDT. Measured this session with `.claude/hooks/instructions-loaded-audit.sh`, built the same day. Full audit (measurements, refutations, falsifiers) is at `~/.claude/plans/worktree-session-ready-await-vivid-naur.md` — **outside the repo**, so this entry is the reachable copy.*
+
+**Measured.** Always-injected before any work: root `CLAUDE.md` **90,040 B** · global `CLAUDE.md`+`RTK.md` 37,718 · `docs/SESSION-START.md` 30,901 · the loaded slice of `MEMORY.md` 25,000 · `self-check.sh` 3,798 **per prompt** ≈ **185 KB / ~46k tokens**. `.claude/rules/` totals **651,223 B** (`accent-and-colors.md` alone 144,650) and injects a median **72,420 B**, worst **187,237 B**, when a read triggers it. Only `MEMORY.md` has a budget or a gate — and it is the smallest of them.
+
+**Three things the instrument settled, none of which was knowable by reading.** ① Path-scoped rules fire on `Read`/`Edit` only: `rg`, a `python3` heredoc read, and a `python3` heredoc write all produced **zero** loads against a positive control that fired. The batching contract's own mandated tools bypass the layer. ② `Read` with `limit: 12` injected the **entire** 9,256 B rule — cost is not proportional to how much you read. ③ A rule loads **once per session**, not per read (`bot/lifecycle.js` matches two rules; only the un-loaded one logged), so 651 KB is a cumulative ceiling rather than a per-access bill.
+
+**Do.** (a) `memory-index-check.sh` gates **bytes only** against a locally-invented 40,000 while the platform's law is *"first 200 lines OR first 25KB, whichever comes first"* — make it gate both, at 25,000. Today bytes bind at line 127 (185 lines), so a shrink that shortens lines could cross the LINE limit silently with the gate still green. (b) Trim the 124 index entries to the ~150-char target `anthropic-skills:consolidate-memory` itself specifies (median is 199, max 686) = **−8,499 B**, and move `SILENT MODE` (~5,400 B) to the instruction tier where an instruction belongs — **13,899 B recovered against a 10,147 B overage, nothing deleted** — then delete the `@`-import per its own stated removal condition. (c) Give `.claude/rules/` a per-file byte budget and a gate, and split the four oversized rules into a small injected TRAP plus a reference doc under `docs/reference/`, which `ctx-index-refresh.sh` already indexes.
+
+**Verify:** `<!-- MEMORY-INDEX-END -->` is visible in a fresh session **with the import removed**; a 201-line index under 25 KB **fails** `npm test`; `bash .claude/hooks/instructions-loaded-audit.sh --report` shows no single rule over the new per-file budget; and the `docs-audit` conservation rule confirms every moved paragraph appears at its destination.
+
+### `[P2 · S · Sonnet5-High]` Six hooks are blind to the `python3` heredoc the batching contract mandates
+*Filed 2026-09-02 10:59 EDT.*
+
+Registered on `Edit|Write` only, so a heredoc write never reaches them: `clock-inject` · `defer-in-place-guard` · `batch-edit-guard` · `spec-handoff-coauthor-nudge` · `typos-check`, plus one inline hook. Sharpest case: `timestamp-check` is `PreToolUse: Edit|Write` but `PostToolUse: Edit|Write|Bash`, so **the placeholder autofix cannot fire on a heredoc at all** — only the after-the-fact advisory does. That is the hole the four placeholder stamps came through on 2026-09-01, and it is still open.
+
+🔴 **The stated reason for not covering Bash is false, and this was proven rather than argued.** Root `CLAUDE.md` says the autofix is *"deliberately not registered `PreToolUse` on `Bash` (rewriting a shell command mangles it)"*. Piping a synthetic payload into `rtk hook claude` returns `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecisionReason":"RTK auto-rewrite","updatedInput":{"command":"rtk git status"}}}` — **every Bash call on this machine already has its command rewritten via `updatedInput`, and has for months.** Correct that sentence in `CLAUDE.md` in the same change.
+
+**Do.** Extend the timestamp autofix to `PreToolUse: Bash`; add `FileChanged` (a filesystem watcher, fires regardless of what wrote the file) for the other five. Then promote only the hooks that know the **one** right value: `rg-flag-guard` (deleting a grep-habit `-r`/`-E` is deterministic), `notes-hardwrap-check` (`scripts/reflow-prose.mjs` **is** the corrected value), `gh pr merge --delete-branch` and the co-author trailer block (fixed literals). **`typos-check` is excluded on purpose** — more than one plausible correction, and a silent wrong substitution is worse than a deny. Each ships a `TS_NO_AUTOFIX`-style seam so the fallback branch stays reachable by a test.
+
+**Verify:** a `python3` heredoc writing `HH:xx` comes back **corrected**, not reported; `bash .claude/hooks/run-all-tests.sh` stays green with coverage for every new script.
+
+### `[P2 · XS · Sonnet5-Medium]` The SessionStart banner reports linksee's CLI, not the MCP server, and linksee fails intermittently
+*Filed 2026-09-02 10:59 EDT.*
+
+`linksee` reported `✘ CONNECTION_CLOSED` and then `✔ Connected` ~30 min later with no config change. Ruled out: stdout pollution (npm notices go to **stderr**; stdout is clean JSON-RPC and `initialize` answers) and npx latency (3.34s vs 3.15s for the global binary already on PATH — not a timeout cliff). So it is a **flaky launch**. The problem is that it is invisible: the banner prints a confident `linksee: 536 on 'Diors-Builds', 55 misfiled, 134 awaiting distil` from the **CLI**, which cannot see the MCP server's state in either direction — so a session that starts during a failure silently has no memory layer.
+
+**Do.** Have the banner send one `initialize` round-trip to the server and report THAT, falling back to a loud "MCP server unreachable this session" line. Same defect shape as the corrupt `codebase-memory` index already recorded in the global `CLAUDE.md`.
+
+**Verify:** with the server forced to fail, the banner says so instead of printing counts.
 
 
 ### `[P1 · S]` Analytics — 30.6% of alerts render as the no-severity tier, and the panel explaining three tiers draws one

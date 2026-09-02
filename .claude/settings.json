@@ -424,6 +424,17 @@
           }
         ]
       }
+    ],
+    "InstructionsLoaded": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/instructions-loaded-audit.sh\""
+          }
+        ]
+      }
     ]
   }
 }

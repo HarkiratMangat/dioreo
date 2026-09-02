@@ -55,6 +55,12 @@ function summaryOf(row) {
     return row.summary || row.target || row.action || 'Change';
 }
 
+// ⚠️ DECLARED ABOVE `RIVER_COLUMNS`, WHICH READS `LEVEL_TAG`, AND THAT ORDER IS LOAD-BEARING. These sat BELOW it until 2026-09-02 10:52 EDT, on my own reasoning that a render closure always runs after module evaluation — true at runtime, and `npm run tdz` flagged it anyway, correctly. The ratchet exists to stop the PATTERN spreading rather than to adjudicate whether one instance happens to be reachable, and a temporal dead zone throws at EVALUATION where `node --check` cannot see it. ⚠️ The comment I had written arguing it was safe is the exact shape this branch spent the day finding: a rule stated confidently one line above the code that breaks it. 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one. 🔴 `caution` WAS MISSING AND IT IS 30.6% OF THE DATA. Measured against the dev database 2026-09-01 21:34 EDT: info 678 · caution 306 · error 16 · warn ZERO, out of 1,000 AlertLog rows. This table carried a key for `warn` (which never occurs) and none for `caution` (the second-largest tier), so `LEVEL_ROW[a.level] || LEVEL_ROW.info` painted 306 alerts as the grey no-severity tier — directly beneath a paragraph this file writes naming three tiers. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`; the rule was never dead, the emitter was. utils/alertWebhook.js is the writer and treats all four as first-class (LEVEL_COLOR/LEVEL_ICON at :22-23), with `warn` and `error` pinging by default and `info` and `caution` staying quiet (:61) — so `caution` is a tier with its own interrupt semantics, NOT a display alias for `warn`, which is what the old code assumed.
+const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb lv-caution', info: 'lvlb lv-info' };
+
+// The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
+const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
+
 const RIVER_COLUMNS = [
     { key: 'at', label: 'When', dataKind: 'date', render: (r) => new Date(r.at).toISOString().slice(5, 16).replace('T', ' ') },
     { key: 'kind', label: 'Kind', col: 'c-type', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
@@ -63,7 +69,8 @@ const RIVER_COLUMNS = [
     // 🔴 THE LEVEL WAS A FILTER AND NEVER A MARK. An error and a routine change read identically down the column, so the one thing you scan a log for — which rows are bad — needed the filter to be touched first. The dot carries severity, the tag names it, and both are absent on rows that have no level rather than defaulting to a reassuring one.
     { key: 'summary', label: 'What', render: (r) => {
         const sev = r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : r.level ? 'info' : '';
-        return html`<span class="sev ${sev}"></span>${summaryOf(r)}${r.kind === 'alert' && r.level
+        // ⚠️ THE ${' '} BEFORE THE TAG, for the same reason the tiles needed theirs: htm drops the whitespace across the newline, so the cell read "Bot onlineinfo" — and now that the row is focusable, that string is part of its accessible name.
+        return html`<span class="sev ${sev}"></span>${summaryOf(r)}${' '}${r.kind === 'alert' && r.level
             ? html`<span class=${LEVEL_TAG[r.level] || 'lvtag'}>${r.level}</span>` : null}`;
     } },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
@@ -115,9 +122,10 @@ function DailyBars({ series = [], label }) {
 // 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem. ⚠️ A BUTTON ONLY WHEN IT DOES SOMETHING, WHICH IS THE DESIGN'S OWN RULE AND NOT A BLANKET CONVERSION. analytics.html:147 draws the four HEALTH tiles as `<button data-tile>` wired to jump to Timing, and its Timing and Search tiles (`:290`, `:462`) as plain divs -- so the tag IS the affordance, and converting Tile globally would promise a click on eight tiles that answer four. The overlay saw this as `button.tile` mockup-only against `div.tile` portal-only, and nothing else could: a div and a button with the same class are the same pixels until you try to press one.
 function Tile({ label, value, unit, sub, tone, onClick = null }) {
     const cls = 'tile' + (tone ? ' ' + tone : '');
+    // 🔴 THE ${' '} SEAMS ARE WHY A BUTTON NEEDS THEM AND A DIV DID NOT. A button takes its accessible name FROM ITS CONTENTS, and htm drops the whitespace-only node across a newline -- so the moment these became buttons they began announcing "Restarts 7d3030 in the last 24 hours" and "RAM at last alert174MBhighest of 5 samples in 7d". As divs they had no accessible name at all, so making them reachable is what created the defect. ⚠️ `portal:audit --triggers` printed the fused strings hours before `portal:states` failed on them, and I read past it.
     const body = html`
-            <span class="tl-k">${label}</span>
-            <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>
+            <span class="tl-k">${label}</span>${' '}
+            <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>${' '}
             ${sub ? html`<span class="tl-s">${sub}</span>` : null}`;
     if (onClick) return html`<button class=${cls} onClick=${onClick}>${body}</button>`;
     return html`
@@ -129,7 +137,62 @@ function Tile({ label, value, unit, sub, tone, onClick = null }) {
     `;
 }
 
-// ⚠️ THE MASTHEAD HAS THREE STATS AND NOT THE DESIGN'S FOUR, AND THAT IS A DECISION. Harkirat, 2026-09-02 10:43 EDT: the `include admin traffic` toggle governs the VIEW only. A `worst ack` stat read `timingStats`, which takes `includeAdmin`, while `uptime`, `errors 24h` and `commands 24h` read `healthStats()`, which takes no arguments -- so flipping the toggle moved one figure and froze three, and this branch had just moved the toggle out of the masthead into the panel header, further from the stats it silently governed. Uptime and errors are facts about the PROCESS; filtering them by admin traffic is not a meaningful operation. So the odd one out was the per-interaction stat sitting among bot-wide ones, and it is gone rather than made to lie quietly. 🔵 The ack figures are not lost: Timing draws the full bucket distribution, where the toggle legitimately applies to every number on the view.
+// ⚠️ THE MASTHEAD HAS THREE STATS AND NOT THE DESIGN'S FOUR, AND THAT IS A DECISION. Harkirat, 2026-09-02 10:43 EDT: the `include admin traffic` toggle governs the VIEW only. A `worst ack` stat read `timingStats`, which takes `includeAdmin`, while `uptime`, `errors 24h` and `commands 24h` read `healthStats()`, which takes no arguments -- so flipping the toggle moved one figure and froze three, and this branch had just moved the toggle out of the masthead into the panel header, further from the stats it silently governed. Uptime and errors are facts about the PROCESS; filtering them by admin traffic is not a meaningful operation. So the odd one out was the per-interaction stat sitting among bot-wide ones, and it is gone rather than made to lie quietly. 🔵 The ack figures are not lost: Timing draws the full bucket distribution, where the toggle legitimately applies to every number on the view. 🔴 RESTORED 2026-09-02 11:03 EDT AFTER A BLOCK DELETION TOOK THEM AS COLLATERAL. Removing `worstAck` sliced from its own comment to `function fmtUptime`, and these three sat inside that range: 71 lines went where about 15 were intended. The asserts guarding it checked that `worstAck` and `ACK_BOUND_LABEL` WERE gone and never that nothing else was — an assertion that can confirm a removal but cannot see over-reach. ⚠️ IT SHIPPED THROUGH EVERYTHING. `node --check` passes (a call to a missing function is not a syntax error), the build passes, every scoped gate passes, and a full green `npm test` passed over it — because nothing in the suite OPENS the drawer. It surfaced only while registering this realm's interactive states, from a `ReferenceError: EventDrawer is not defined` in the browser console. A deletion is the one edit whose damage is invisible to a syntax check.
+function eventRows(r) {
+    const out = [['Kind', KIND_LABEL[r.kind] || r.kind]];
+    if (r.kind === 'alert') {
+        out.push(['Level', r.level || '—']);
+        out.push(['Pinged a human', r.pinged ? 'yes' : 'no']);
+        // ⚠️ `silent` is not the opposite of `pinged`. An alert can be stored and never posted to Discord at all, which is a third state, and the level panel already says so in its own sub-line.
+        if (r.silent) out.push(['Posted to Discord', 'no — recorded only']);
+        if (typeof r.rssMb === 'number') out.push(['Memory at the time', `${r.rssMb} MB`]);
+        if (r.host) out.push(['Host', r.host]);
+    }
+    if (r.kind === 'change') {
+        out.push(['Page', r.page || '—']);
+        out.push(['Action', r.action || '—']);
+        out.push(['Model', r.model || '—']);
+        out.push(['Undone', r.undone ? 'yes' : 'no']);
+    }
+    if (r.kind === 'boot') {
+        if (r.version) out.push(['Version', r.version]);
+        if (r.commit) out.push(['Commit', r.commit]);
+        if (r.bootKind || r.kind_) out.push(['Restart kind', r.bootKind || r.kind_]);
+    }
+    out.push(['Who', r.actorId ? String(r.actorId) : 'system']);
+    if (r.detail) out.push(['Detail', r.detail]);
+    return out;
+}
+
+// One sentence per kind, saying what the row IS rather than restating the fields above it — an alert has no inverse and a restart is not something anyone did, and neither fact is visible from the table.
+const EVENT_NOTE = {
+    change: 'Every portal and /manage write is recorded with the step that reverses it, so this row can be put back from either surface, and it survives a restart.',
+    alert: 'Alerts come from the bot itself and mirror to the alert webhook. They carry no inverse — an alert is a record of something that happened, not an operation.',
+    boot: 'Restart records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that says what is actually running.',
+};
+
+// ⚠️ A ROW WITH NO USABLE DATE MUST NOT TAKE THE REALM DOWN. `new Date(x).toISOString()` throws a RangeError on an unparseable value, and this renders inside the page rather than beside it -- one malformed `createdAt` in one of three collections would blank Analytics entirely, mid-render, with no error state.
+function EventDrawer({ row, onClose, onRevert }) {
+    const at = new Date(row.at);
+    const atText = Number.isNaN(at.getTime()) ? 'not recorded' : at.toISOString().slice(0, 16).replace('T', ' ');
+    const revertable = row.kind === 'change' && !row.undone;
+    return html`
+        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${atText}`}
+                   title=${summaryOf(row)} onClose=${onClose}
+                   actions=${html`
+                       <button class="btn" onClick=${onClose}>Close</button>
+                       ${revertable ? html`<button class="btn dang" onClick=${onRevert}>Reverse this change</button>` : null}`}>
+            <div class="dwbody">
+                <div class="diff">
+                    ${eventRows(row).map(([k, v]) => html`
+                        <div class="diff-r" key=${k}><span class="dk">${k}</span><span>${v}</span></div>`)}
+                </div>
+                <p class="dw-p" style="margin-top:16px">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
+            </div>
+        <//>`;
+}
+
+
 function fmtUptime(since) {
     if (!since) return '—';
     const secs = Math.max(0, Math.round((Date.now() - new Date(since).getTime()) / 1000));
@@ -137,11 +200,6 @@ function fmtUptime(since) {
     return d ? `${d}d ${hrs}h` : `${hrs}h ${Math.floor((secs % 3600) / 60)}m`;
 }
 
-// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one. 🔴 `caution` WAS MISSING AND IT IS 30.6% OF THE DATA. Measured against the dev database 2026-09-01 21:34 EDT: info 678 · caution 306 · error 16 · warn ZERO, out of 1,000 AlertLog rows. This table carried a key for `warn` (which never occurs) and none for `caution` (the second-largest tier), so `LEVEL_ROW[a.level] || LEVEL_ROW.info` painted 306 alerts as the grey no-severity tier — directly beneath a paragraph this file writes naming three tiers. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`; the rule was never dead, the emitter was. utils/alertWebhook.js is the writer and treats all four as first-class (LEVEL_COLOR/LEVEL_ICON at :22-23), with `warn` and `error` pinging by default and `info` and `caution` staying quiet (:61) — so `caution` is a tier with its own interrupt semantics, NOT a display alias for `warn`, which is what the old code assumed.
-const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb lv-caution', info: 'lvlb lv-info' };
-
-// The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
-const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
 
 function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRiver }) {
     const h = health || {};
@@ -221,9 +279,9 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                         ${h.alertsByLevel.map((a) => html`
                             <button class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}
                                     onClick=${() => onFilterLevel(a.level)}>
-                                <span class="ln">${a.level}</span>
-                                <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>
-                                <span class="lv2">${a.n}</span>
+                                <span class="ln">${a.level}</span>${' '}
+                                <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>${' '}
+                                <span class="lv2">${a.n}</span>${' '}
                                 <!-- ⚠️ "never pings" is a FACT about this level in this window, not a rule:
                                      sendAlert can ping on request, so a level that usually stays quiet can
                                      still have pinged once, and stating the rule would hide that. -->
