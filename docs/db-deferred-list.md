@@ -45,6 +45,21 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 ## 🐞 Active Bugs
 
 
+### `[P2 · M]` `portal:states` is non-deterministic, and it now blocks a §L ④ claim
+*Filed 2026-09-01 20:01 EDT by the Access session, which could not claim its machine floor because of it.*
+
+Measured on `feat/access-portal-conformance` at `c41e8e0`, a tree whose only portal changes are Access-scoped:
+- **In-suite**: failed on `identity · closed again from the header's dead space` — *"nothing matched `.identity.collapsed .srec-grid` within 5000ms"*.
+- **Standalone, immediately after**: failed on a **different** state, `composer · the paste box` — *"nothing matches `.nwhost .nw-paste` within 12s"*.
+
+Both selectors are emitted by `portal/ui/season.js` and `portal/ui/composer.js`, neither of which this branch touches; its five changed files are `portal/api/access.js`, `portal/ui/access.js`, `portal/ui/app.css` and two fixtures, and its three CSS selector changes (`.mx .mxcell`, `.mxcell[aria-checked=true]:not(.inh)`, `#manifest,#sessions`) are unreachable from Season. **This matches the signature §L already records** — *"red, standalone green, green, red on a different state"* over four runs on one unchanged tree.
+
+🔴 **The consequence is not cosmetic: §L condition ④ cannot honestly be claimed on any branch while this holds**, because the rule is that a standalone pass is what distinguishes the flake from a real defect, and a standalone FAILURE on a different state distinguishes nothing. Two realms have now shipped with ④ measured against a run that did not correspond to their final tree.
+
+**What to do:** make the failure attributable rather than chasing the timeout. Either (a) have `portalStates` retry a stalled subject once and report `FLAKED` distinctly from `FAILED`, so a suite result separates the two, or (b) find the shared cause — both failures are a subject that never appears after its steps ran, which points at the step sequence racing the render rather than at the two states.
+
+**Verify:** five consecutive `node scripts/portalStates.mjs --ci` runs on one unchanged tree, all green — or a `FLAKED` classification that a suite can pass through while still naming what stalled.
+
 
 
 
