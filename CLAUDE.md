@@ -1,4 +1,8 @@
 ---
+kind: guide
+status: live
+---
+
 @~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md
 
 > 🔴 **THAT IMPORT EXISTS BECAUSE THE MEMORY LOADER TRUNCATES AND AN IMPORT DOES NOT.** Harkirat, 2026-09-01: *"why don't you use file imports?"* — and he is right that an import beats an instruction, because an instruction has to be obeyed and an import does not. Measured the same day: `MEMORY.md` is 33,934B, the harness's memory loader stops at about 25,000B, and **42 index lines — the whole tail — reached no session at all** while its own startup message said *"Only part of it was loaded"*. The content was never lost, only unloaded.
@@ -7,9 +11,7 @@
 > ⚠️ **AND THE FILE MAY NOW LOAD TWICE** — once truncated by the memory loader, once whole by this import. That is ~25KB of duplication per session, which is a real cost and is why this is worth measuring rather than assuming: if the sentinel arrives, the truncated copy is redundant and the honest next step is to shrink the index, not to keep paying for both.
 > 🔵 **WHAT IS DELIBERATELY *NOT* IMPORTED, so nobody adds it later thinking it was an oversight:** `docs/superpowers/plans/2026-08-27-portal-conformance.md` is **163,574B** and would be paid by every session including the ones that never open the portal — it is read on demand, by the realm prompt's pointer. And a realm prompt (`ACCESS-PROMPT.md`, 22KB) is **handed over, not imported**: it is transient by design and importing it would outlive its own Part. **The rule: import what EVERY session needs in FULL; hand over what THIS session needs.**
 
-kind: guide
-status: live
----
+> 🔴 **THE IMPORT AND THESE NOTES SAT INSIDE THE FRONTMATTER UNTIL 2026-09-02 09:51 EDT, WHICH MEANT THE IMPORT NEVER RAN.** The block opened on line 1 and closed on line 12; the `@` was on line 2, so it was consumed as YAML rather than processed as an import — and every session since read this file from line 14 onward, never seeing the import OR the notes explaining it. **Measured that morning: `MEMORY-INDEX-END` was absent from context, `MEMORY.md` arrived truncated at index line 132 of 184, and 52 lines across FOUR sections never loaded.** An import below the frontmatter is the fix. ⚠️ **If a session still cannot see the sentinel, the next suspect is the `~` in the path** — replace it with the full absolute path and re-test. One variable at a time.
 
 # Dioreo — CODM Discord Bot
 
