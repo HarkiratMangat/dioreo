@@ -35,7 +35,6 @@ function FilterChips({ groups, filters, onChange }) {
                     ${'' /* The design carries the pressed state on aria-pressed alone; the extra on class is the portal's and shows up as a different element to anything comparing the two. */}
                     aria-pressed=${o.value === current}
                     class=${'chip' + (g.topic && o.value !== 'all' ? ' topic' : '')}
-                    aria-pressed=${o.value === current}
                     style=${o.hex ? `--c:${o.hex}` : null}
                     title=${o.value === 'all' ? `All ${g.label.toLowerCase()}` : `Only ${o.label}`}
                     onClick=${() => onChange({ ...filters, [g.key]: o.value })}><!-- The design's topic chip carries the topic's own swatch; without it the chip is a word in a box and the colour vocabulary the whole console is built on stops at the table's edge. The COUNT is its own em, which is armory.html's renderCatChips markup — folded into the label string it is the same words in a wider box, and eight of them wrapped the toolbar so the primary action dropped to a row of its own. -->${g.topic && o.value !== 'all' ? html`<i></i>` : null}${o.label}${o.count == null ? null : html` <em>${o.count}</em>`}</button>`);
@@ -83,12 +82,15 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
 export function Manifest({ label = null, rows, columns, searchableFields, bulkActions = [], filterGroups = [], bulkNote, bulkTier, stateOf = (r) => r.state, onAdd, addLabel = '+ Add', realm, buildEditOp, csrfToken, onEditError, onRowClick, selectedRowId, title, headerRight, emptyText = 'Nothing here yet.', rowNoun = ['selected', 'selected'], onRemove, removeLabel = 'Remove' , searchLabel = '', searchPlaceholder = '', countSuffix = '', extraChips = null, defaultSort = null, footRow = null, selectable: selectableProp = null,
     // A realm that scopes something ELSE by the chips — Armory's export strip offers "this view" and "category" — needs to know what they are set to. Reported from the chip's own click rather than an effect, so there is no render loop to guard: the component still owns the state, the realm just gets told when it changes.
     onFiltersChange = null,
+    // The inbound twin of onFiltersChange, for a realm whose OWN surface is a filter control -- Analytics' Alerts-by-level rows are buttons in the design that set the river to that level, and there was no way to drive these chips from outside. ⚠️ SHAPED SO IT CANNOT LOOP. The comment above records that reporting OUT was done from the click rather than an effect precisely to avoid a render loop, and an inbound effect reintroduces that hazard -- so this one is keyed on `seq` ALONE, a counter that only ever changes on a user action. The effect calls setFilters, the component re-renders, `seq` is unchanged, the effect does not run again. Keying it on the filters object instead would re-run on every render, which is the loop.
+    filterSignal = null,
     // The size of the collection this table is a view OF, when the realm narrowed it before handing it over.
     totalRows = null,
     // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
     caption = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
+    useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
     const [sort, setSort] = useState({ column: defaultSort || null, direction: 'asc' });
     const [selected, setSelected] = useState(new Set());

@@ -70,7 +70,8 @@ const RIVER_FILTERS = [
     ] },
     // 🔴 THIS FILTER IS WHERE THE DELETED ALERT EXPORT WENT. The Alerts pre block held the level and the describe() detail of every alert, and the river was already fetching whole AlertLog documents and throwing both away. Deleting a redundant layer is right; deleting the facts it carried is not — so level becomes a filter and detail becomes searchable, which is strictly more useful than the prose block was, because both compose with the kind filter and the search box.
     { key: 'level', label: 'Level', options: [
-        { value: 'error', label: 'errors' }, { value: 'warn', label: 'warnings' },
+        // ⚠️ THE LEVEL'S OWN NAME, not a pluralisation, because this group carried TWO vocabularies: "errors" and "warnings" plural beside "caution" and "info" singular, inside one chip that cycles between them. The panel above writes the bare words (info is a record, caution is a look-when-convenient, error pings a human) and the design builds its own chips from the level values, so agreeing with the sentence above is what makes the chip readable.
+        { value: 'error', label: 'error' }, { value: 'warn', label: 'warn' },
         { value: 'caution', label: 'caution' }, { value: 'info', label: 'info' },
     ] },
 ];
@@ -106,10 +107,16 @@ function DailyBars({ series = [], label }) {
 
 // A tile is the adopted design's KPI: a label, a figure with its unit set smaller inside it, and one line of context.
 //
-// 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem.
-function Tile({ label, value, unit, sub, tone }) {
+// 🔴 THE TONE IS A THRESHOLD, NOT "IS THIS NON-ZERO". The mockup's own note records why: `errors ? 'warn' : 'ok'` painted a 99.0% success rate in alarm orange because five events out of 496 failed — and in production there is always at least one, so the tile would have been orange forever. A colour that is on regardless stops carrying information. Green is reserved for a figure with NOTHING against it; everything else is neutral until it is actually a problem. ⚠️ A BUTTON ONLY WHEN IT DOES SOMETHING, WHICH IS THE DESIGN'S OWN RULE AND NOT A BLANKET CONVERSION. analytics.html:147 draws the four HEALTH tiles as `<button data-tile>` wired to jump to Timing, and its Timing and Search tiles (`:290`, `:462`) as plain divs -- so the tag IS the affordance, and converting Tile globally would promise a click on eight tiles that answer four. The overlay saw this as `button.tile` mockup-only against `div.tile` portal-only, and nothing else could: a div and a button with the same class are the same pixels until you try to press one.
+function Tile({ label, value, unit, sub, tone, onClick = null }) {
+    const cls = 'tile' + (tone ? ' ' + tone : '');
+    const body = html`
+            <span class="tl-k">${label}</span>
+            <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>
+            ${sub ? html`<span class="tl-s">${sub}</span>` : null}`;
+    if (onClick) return html`<button class=${cls} onClick=${onClick}>${body}</button>`;
     return html`
-        <div class=${'tile' + (tone ? ' ' + tone : '')}>
+        <div class=${cls}>
             <span class="tl-k">${label}</span>
             <span class="tl-v">${value}${unit ? html`<i>${unit}</i>` : null}</span>
             ${sub ? html`<span class="tl-s">${sub}</span>` : null}
@@ -138,10 +145,10 @@ function fmtUptime(since) {
 // 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one. 🔴 `caution` WAS MISSING AND IT IS 30.6% OF THE DATA. Measured against the dev database 2026-09-01 21:34 EDT: info 678 · caution 306 · error 16 · warn ZERO, out of 1,000 AlertLog rows. This table carried a key for `warn` (which never occurs) and none for `caution` (the second-largest tier), so `LEVEL_ROW[a.level] || LEVEL_ROW.info` painted 306 alerts as the grey no-severity tier — directly beneath a paragraph this file writes naming three tiers. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`; the rule was never dead, the emitter was. utils/alertWebhook.js is the writer and treats all four as first-class (LEVEL_COLOR/LEVEL_ICON at :22-23), with `warn` and `error` pinging by default and `info` and `caution` staying quiet (:61) — so `caution` is a tier with its own interrupt semantics, NOT a display alias for `warn`, which is what the old code assumed.
 const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb lv-caution', info: 'lvlb lv-info' };
 
-// The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` takes the bare base class, exactly as both sheets style it.
-const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag' };
+// The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
+const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
 
-function Health({ health }) {
+function Health({ health, onOpenTiming, onFilterLevel }) {
     const h = health || {};
     const errors = h.errors24h ?? 0;
     return html`
@@ -164,15 +171,17 @@ function Health({ health }) {
                  three-tier error model must never collapse into one number, and a caution that only exists
                  as small print under a red count has collapsed. -->
             <div class="tiles">
-                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0}
+                <${Tile} label="Restarts 7d" value=${h.restarts7d ?? 0} onClick=${onOpenTiming}
                          tone=${(h.restarts7d ?? 0) > 20 ? 'warn' : ''}
                          sub=${`${h.restarts24h ?? 0} in the last 24 hours`} />
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
-                         tone=${h.rssPeakMb > 400 ? 'warn' : ''}
+                         onClick=${onOpenTiming} tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
                 <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
+                         onClick=${onOpenTiming}
                          sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
                 <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
+                         onClick=${onOpenTiming}
                          sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
@@ -215,7 +224,8 @@ function Health({ health }) {
                         <b>error</b> pings a human. Seven days.</p>
                     <div class="lvlbars">
                         ${h.alertsByLevel.map((a) => html`
-                            <div class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}>
+                            <button class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}
+                                    onClick=${() => onFilterLevel(a.level)}>
                                 <span class="ln">${a.level}</span>
                                 <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>
                                 <span class="lv2">${a.n}</span>
@@ -223,7 +233,7 @@ function Health({ health }) {
                                      sendAlert can ping on request, so a level that usually stays quiet can
                                      still have pinged once, and stating the rule would hide that. -->
                                 <span class="lp">${a.pinged ? `${a.pinged} pinged` : 'never pinged'}${a.silent ? ` · ${a.silent} not posted` : ''}</span>
-                            </div>`)}
+                            </button>`)}
                     </div>
                 </section>` : null}
             <div class="hsplit">
@@ -611,6 +621,13 @@ export function AnalyticsRealm({ session }) {
     const [includeAdmin, setIncludeAdmin] = useState(false);
     const load = useAsync(() => fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), [includeAdmin]);
     const [view, setView] = useState('Health');
+    // 🔴 THE DESIGN'S LEVEL ROWS ARE A FILTER CONTROL AND THE PORTAL DREW THEM AS TEXT. analytics.html:228 sets the river to kind=alert plus that level and scrolls it into view, so the distribution and the log are one surface: you read that 258 alerts were cautions and press the row to see them. The portal had the same three rows as inert divs and the same filters sitting unreachable in the Manifest's own chipset. `seq` rather than the filters object is what Manifest keys its effect on -- see its comment.
+    const [riverFilter, setRiverFilter] = useState(null);
+    function filterRiverByLevel(level) {
+        setRiverFilter((prev) => ({ seq: (prev ? prev.seq : 0) + 1, filters: { kind: 'alert', level } }));
+        // After the render that applies the filter, not before it -- scrolling to a table that has not re-rendered lands on the old row count.
+        requestAnimationFrame(() => document.getElementById('manifest')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
     const overlay = useOverlay();
 
     if (!load.data) return html`<${RealmShell} realm="analytics" session=${session} error=${load.error} slow=${load.slow}
@@ -685,7 +702,7 @@ export function AnalyticsRealm({ session }) {
 
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
     const VIEWS = {
-        Health: () => html`<${Health} health=${data.health} />`,
+        Health: () => html`<${Health} health=${data.health} onOpenTiming=${() => setView('Timing')} onFilterLevel=${filterRiverByLevel} />`,
         Usage: () => html`<${Usage} stats=${data.usageStats} outcomeKeys=${data.outcomeKeys} entryKeys=${data.entryKeys} />`,
         Timing: () => html`<${Timing} stats=${data.timingStats} />`,
         Reach: () => html`<${Reach} rows=${data.reach} />`,
@@ -717,6 +734,7 @@ export function AnalyticsRealm({ session }) {
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
                                                     bulkTier=${3} rowNoun=${['event', 'events']}
-                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]} />`} />
+                                                    bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]}
+                                                    filterSignal=${riverFilter} />`} />
     `;
 }
