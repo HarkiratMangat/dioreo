@@ -1,12 +1,7 @@
 #!/bin/bash
 # Proofs for instructions-loaded-audit.sh.
 #
-# This hook's only job is to OBSERVE, so the properties that matter are the boring ones: it must never
-# fail a session, it must never print to stdout (InstructionsLoaded discards output, and stray stdout
-# is noise at best), and the line it writes must actually carry the two fields the whole measurement
-# depends on — `load_reason` and `trigger_file_path`. A logger that silently drops those would produce
-# a full-looking log that answers neither question, which is the exact vacuous-pass shape this repo
-# keeps paying for.
+# This hook's only job is to OBSERVE, so the properties that matter are the boring ones: it must never fail a session, it must never print to stdout (InstructionsLoaded discards output, and stray stdout is noise at best), and the line it writes must actually carry the two fields the whole measurement depends on — `load_reason` and `trigger_file_path`. A logger that silently drops those would produce a full-looking log that answers neither question, which is the exact vacuous-pass shape this repo keeps paying for.
 
 HOOK="$(cd "$(dirname "$0")" && pwd)/instructions-loaded-audit.sh"
 pass=0; fail=0
@@ -54,8 +49,7 @@ printf '{"file_path":"/nope/missing.md","load_reason":"session_start"}' | bash "
 chk "missing file exits 0"          "$([ $? -eq 0 ] && echo ok)"
 chk "missing file records bytes 0"  "$(tail -1 "$LOG" | jq -e '.bytes==0' >/dev/null 2>&1 && echo ok)"
 
-# --report must actually read the fields back. A reporter that renders an empty table on a full log is
-# the failure this repo calls a vacuous pass, so assert real content, not merely exit 0.
+# --report must actually read the fields back. A reporter that renders an empty table on a full log is the failure this repo calls a vacuous pass, so assert real content, not merely exit 0.
 rep=$(bash "$HOOK" --report 2>&1); rrc=$?
 chk "--report exits 0"              "$([ "$rrc" -eq 0 ] && echo ok)"
 case "$rep" in *path_glob_match*) r1=ok;; *) r1=no;; esac
