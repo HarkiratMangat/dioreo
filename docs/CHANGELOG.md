@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.74.0 — 2026-09-02 — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
+## Pre-Release v3.74.0 — 2026-09-02 (#181) — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
 
 Not a bot change. This is the layer that decides what a session knows before it does anything, and none of it had been measured.
 
