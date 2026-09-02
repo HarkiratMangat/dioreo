@@ -46,6 +46,16 @@ Also: the `include admin traffic` switch moves to the panel header where the des
 
 **A gate that would have caught the first defect.** `portalAnalytics.test.js` now conserves the two class tables and the sort order against `alertWebhook`'s own `LEVEL_COLOR` map. The writer is the enumeration; a table checked against itself can only confirm what it already contains.
 
+### What the reader test broke
+
+🔴 **A BLOCK DELETION HAD TAKEN THREE FUNCTIONS WITH IT AND SHIPPED THROUGH A GREEN SUITE.** Removing the masthead's `worst ack` sliced from its own comment to the next function, and `EventDrawer`, `eventRows` and `EVENT_NOTE` sat inside that range — **71 lines went where about 15 were intended**, so the river's rows silently opened nothing for five commits. The guards asserted that the intended things WERE gone and never that nothing else was. `node --check` cannot see it (a call to a missing function is not a syntax error), the build cannot, ten scoped gates cannot, and a full green `npm test` did not — **nothing in the suite opens a drawer.** Found from a `ReferenceError` in a browser console while registering this realm's interactive states.
+
+**Making the tiles reachable is what made them unreadable.** As divs they had no accessible name; as buttons they take one from their contents, and htm drops the whitespace across a newline — so screen readers announced "Restarts 7d3030 in the last 24 hours" and "caution258never pinged". `portal:audit --triggers` had printed those exact fused strings hours earlier.
+
+**The count line stated one population and meant three.** The level bars fold every alert in seven days, the river is the newest 100 of three collections, and the total was every row all time — so pressing "caution 258" showed a handful headed "2 of 1,307". A realm now declares its source is a window and the line states all three separately: "0 shown · newest 11 of 1,323 events".
+
+Also: `role="button"` on a real `<tr>` (it replaces the row role and orphans the cells); a keyboard handler that swallowed the space bar inside **Armory's** rename fields; a tone that styled nothing on Review's blocker count, the fourth realm to ship that defect and the first caught by a gate; two can-fail proofs that never ran the scanner they claimed to prove; and `portalGeometry` recording Review's four changeset rows as VIEWS.
+
 ### Decided rather than asked
 
 Six composition forks went to Harkirat in one pop-up at the start. "Where the milliseconds go" stays on Timing, the river keeps its Source column, Usage keeps share, the export scopes stay, the admin switch moves. The Usage rows keep their unprefixed names against the design's leading slash, because the busiest of them are background jobs and `/webp_nameplate` is not something a person can type.
