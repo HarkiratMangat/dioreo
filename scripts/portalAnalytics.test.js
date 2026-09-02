@@ -108,5 +108,31 @@ check('a missing-emoji count is explained, not just counted', () => {
     assert.match(ui, /render as raw ids in Discord/, 'the card counts missing emoji without saying what that does');
 });
 
+// 🔴 CONSERVATION AGAINST THE WRITER, BECAUSE THE READER SILENTLY INVENTED A VOCABULARY. utils/alertWebhook.js is the only thing that writes AlertLog.level and its LEVEL_COLOR map is the enumeration. The portal carried a key for `warn` (zero rows in the dev database) and none for `caution` (306 of 1,000, measured 2026-09-01 21:34 EDT), so a third of every alert fell through `|| LEVEL_ROW.info` and painted as the grey no-severity tier — under a paragraph on the same page naming three tiers. Nothing failed: both stylesheets already define `.lvlb.lv-caution`, so the rule was live and only the emitter was missing, which is invisible to an orphan scan. A table checked against the writer is the only shape that catches this; a table checked against itself cannot.
+check('every alert level the writer can emit is one the portal can render', () => {
+    const writer = read('utils/alertWebhook.js');
+    const map = writer.slice(writer.indexOf('const LEVEL_COLOR'), writer.indexOf('};', writer.indexOf('const LEVEL_COLOR')));
+    const levels = [...map.matchAll(/(\w+):\s*0x[0-9a-fA-F]+/g)].map((m) => m[1]);
+    assert.ok(levels.length >= 4, `parsed ${levels.length} levels from alertWebhook's LEVEL_COLOR — the writer's shape changed and this check has gone blind`);
+    for (const table of ['LEVEL_ROW', 'LEVEL_TAG']) {
+        const decl = ui.slice(ui.indexOf(`const ${table} = {`), ui.indexOf('};', ui.indexOf(`const ${table} = {`)));
+        assert.ok(decl.length > 20, `${table} is not declared as an object literal any more`);
+        const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
+        assert.deepStrictEqual(missing, [], `${table} has no key for ${missing.join(', ')} — those alerts render as the fallback tier with nothing complaining`);
+    }
+    const order = api.slice(api.indexOf('const levelOrder = ['), api.indexOf('];', api.indexOf('const levelOrder = [')));
+    const unordered = levels.filter((l) => !order.includes(`'${l}'`));
+    assert.deepStrictEqual(unordered, [], `levelOrder omits ${unordered.join(', ')} — indexOf returns -1, the comparator maps it to 99, and that tier sorts below every named one`);
+});
+
+check('THE LEVEL CONSERVATION CHECK CAN FAIL: a level the portal cannot render is caught', () => {
+    assert.throws(() => {
+        const levels = ['info', 'caution', 'warn', 'error'];
+        const decl = "const LEVEL_ROW = { error: 'a', warn: 'b', info: 'c' };";
+        const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
+        assert.deepStrictEqual(missing, [], `LEVEL_ROW has no key for ${missing.join(', ')}`);
+    }, /no key for caution/);
+});
+
 say(failures ? `\n✗ ${failures} failed` : '\n✅ portalAnalytics: both panels count the same rows, and the boot record is read against the model that writes it');
 process.exit(failures ? 1 : 0);

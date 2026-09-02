@@ -13,7 +13,8 @@ import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell, reportFailure } from './async.js';
 import { useOverlay } from './overlay.js';
 
-const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'BOOT' };
+// ⚠️ NEITHER SIDE'S WORD FOR THE THIRD KIND WAS RIGHT, so this is a deliberate third choice rather than a port. The design says "Deploy" (analytics.html:521) and the fixtures it ships contain rows reading "automatic/unattended restart" — an unattended crash-recovery is not a deploy, so the design's word is factually wrong about its own data. The portal said "BOOT", which is accurate and is exactly the dialect Harkirat ruled against eight lines below this ("literally no clue what p50, p95 even mean… they look like jargon"). RESTART is the one word that is both true of every row and plain. summaryOf() already writes "restarted — …" in the What column, so the chip and the sentence now agree.
+const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'RESTART' };
 
 // 🔴 NO "p50", "p95" OR "HEADROOM" REACHES A READER ON THIS PAGE, AND THAT IS A RULING, NOT A STYLE PREFERENCE. Harkirat, on the version of the Discord panel that shipped an hour before he read it: "literally no clue what p50, p95, 99% headroom even mean. they look like jargon to me. not intuitive." He is the only person who will ever open this screen, so a page fluent in a dialect its sole reader does not speak is a broken page. commands/bot.js already carries the translations and the portal inherits them rather than inventing a second set: the median becomes "usually", and the 95th percentile becomes "slowest 1 in 20" — which is NOT the worst case, a simplification that is tempting and false.
 const USUALLY = 'usually';
@@ -58,14 +59,14 @@ const RIVER_COLUMNS = [
     { key: 'summary', label: 'What', render: (r) => {
         const sev = r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : r.level ? 'info' : '';
         return html`<span class="sev ${sev}"></span>${summaryOf(r)}${r.kind === 'alert' && r.level
-            ? html`<span class=${`lvtag lv-${r.level}`}>${r.level}</span>` : null}`;
+            ? html`<span class=${LEVEL_TAG[r.level] || 'lvtag'}>${r.level}</span>` : null}`;
     } },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
 
 const RIVER_FILTERS = [
     { key: 'kind', label: 'Kind', options: [
-        { value: 'change', label: 'changes' }, { value: 'alert', label: 'alerts' }, { value: 'boot', label: 'boots' },
+        { value: 'change', label: 'changes' }, { value: 'alert', label: 'alerts' }, { value: 'boot', label: 'restarts' },
     ] },
     // 🔴 THIS FILTER IS WHERE THE DELETED ALERT EXPORT WENT. The Alerts pre block held the level and the describe() detail of every alert, and the river was already fetching whole AlertLog documents and throwing both away. Deleting a redundant layer is right; deleting the facts it carried is not — so level becomes a filter and detail becomes searchable, which is strictly more useful than the prose block was, because both compose with the kind filter and the search box.
     { key: 'level', label: 'Level', options: [
@@ -116,6 +117,17 @@ function Tile({ label, value, unit, sub, tone }) {
     `;
 }
 
+// The masthead's fourth stat, and the one piece of the design's stat set the portal never carried. It answers a question nothing else on this page answers at a glance: is anything approaching Discord's 3-second acknowledgement deadline. Read from the SAME ackBuckets the Timing view draws rather than a second aggregate, so the two can never disagree, and stated as the worst band's upper bound because a band is what the data actually has — quoting a single millisecond figure would invent a precision the buckets do not carry. ⚠️ A BOUND, WRITTEN AS TIGHTLY AS A MEASUREMENT. The other three stats are a number and a unit read at a glance, and "under 500ms" spelled out is a phrase sitting where they put a figure — it reads as a caption and it widens .mh-stats against the design's. The comparison glyph carries the same fact in two characters and keeps the number leading, which is what the eye is scanning the row for.
+const ACK_BOUND_LABEL = { 0: '<100ms', 100: '<250ms', 250: '<500ms', 500: '<1s',
+    1000: '<2s', 2000: '<3s', 3000: '>3s' };
+function worstAck(timingStats) {
+    const buckets = (timingStats || {}).ackBuckets || [];
+    const hit = buckets.filter((b) => b && b.n > 0).map((b) => b._id);
+    if (!hit.length) return null;
+    const worst = Math.max(...hit);
+    return { value: ACK_BOUND_LABEL[worst] || String(worst), tone: worst >= ACK_LIMIT_MS ? 'warn' : undefined };
+}
+
 function fmtUptime(since) {
     if (!since) return '—';
     const secs = Math.max(0, Math.round((Date.now() - new Date(since).getTime()) / 1000));
@@ -123,8 +135,11 @@ function fmtUptime(since) {
     return d ? `${d}d ${hrs}h` : `${hrs}h ${Math.floor((secs % 3600) / 60)}m`;
 }
 
-// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one.
-const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', info: 'lvlb lv-info' };
+// 🔴 REBUILT ON THE ADOPTED DESIGN, AND THE OLD MARKUP HAD NO STYLING AT ALL. `.kpi`, `.kpis`, `.srcline` and `.metrics` were defined in a portal-authored stylesheet that adopting the mockup's app.css deleted, so the whole Health view had been rendering with no rules — four bare stacks of text where the design specifies a tile grid, a split panel and a banner. Nothing errored and every gate passed; `npm run portal:orphans` is the check that can see it. ⚠️ THE CLASSES ARE LITERALS, NOT CONCATENATED. `'lvlb lv-' + a.level` emits a class portal:orphans can only see as `lv-`, so it reports an orphan and -- worse -- a level the stylesheet has no rule for would render unstyled with nothing complaining. A table makes every emitted class visible to the gate and makes an unknown level fall back to a real one. 🔴 `caution` WAS MISSING AND IT IS 30.6% OF THE DATA. Measured against the dev database 2026-09-01 21:34 EDT: info 678 · caution 306 · error 16 · warn ZERO, out of 1,000 AlertLog rows. This table carried a key for `warn` (which never occurs) and none for `caution` (the second-largest tier), so `LEVEL_ROW[a.level] || LEVEL_ROW.info` painted 306 alerts as the grey no-severity tier — directly beneath a paragraph this file writes naming three tiers. Both stylesheets already define `.lvlb.lv-caution` and `.lvtag.lv-caution`; the rule was never dead, the emitter was. utils/alertWebhook.js is the writer and treats all four as first-class (LEVEL_COLOR/LEVEL_ICON at :22-23), with `warn` and `error` pinging by default and `info` and `caution` staying quiet (:61) — so `caution` is a tier with its own interrupt semantics, NOT a display alias for `warn`, which is what the old code assumed.
+const LEVEL_ROW = { error: 'lvlb lv-error', warn: 'lvlb lv-warn', caution: 'lvlb lv-caution', info: 'lvlb lv-info' };
+
+// The river's inline tag, same literal rule, read by RIVER_COLUMNS above — a module-scope const, so the closure that reads it always runs after this line. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` takes the bare base class, exactly as both sheets style it.
+const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag' };
 
 function Health({ health }) {
     const h = health || {};
@@ -201,7 +216,7 @@ function Health({ health }) {
                     <div class="lvlbars">
                         ${h.alertsByLevel.map((a) => html`
                             <div class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}>
-                                <span class="ln">${a.level === 'warn' ? 'caution' : a.level}</span>
+                                <span class="ln">${a.level}</span>
                                 <span class="lt"><i style=${`width:${Math.max(1, Math.round((a.n / Math.max(1, h.alerts7d || 1)) * 100))}%`}></i></span>
                                 <span class="lv2">${a.n}</span>
                                 <!-- ⚠️ "never pings" is a FACT about this level in this window, not a rule:
@@ -681,18 +696,19 @@ export function AnalyticsRealm({ session }) {
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
+                  tools=${html`
+                      <label class="adminsw">
+                          <input type="checkbox" checked=${includeAdmin}
+                                 onChange=${(e) => setIncludeAdmin(e.target.checked)} />
+                          include admin traffic
+                      </label>`}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
-                                               actions=${html`
-                                                   <label class="adminsw">
-                                                       <input type="checkbox" checked=${includeAdmin}
-                                                              onChange=${(e) => setIncludeAdmin(e.target.checked)} />
-                                                       include admin traffic
-                                                   </label>`}
                                                stats=${[
-                                                   { value: fmtUptime(h.uptimeSince), label: 'uptime' },
-                                                   { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'bad' : undefined },
                                                    { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h', lead: true, accent: 'var(--r-analytics)' },
+                                                   { value: h.errors24h ?? 0, label: 'errors 24h', tone: h.errors24h ? 'warn' : undefined },
+                                                   { value: fmtUptime(h.uptimeSince), label: 'uptime' },
+                                                   ...(() => { const w = worstAck(data.timingStats); return w ? [{ value: w.value, label: 'worst ack', tone: w.tone }] : []; })(),
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}

@@ -84,20 +84,29 @@ function analyticsPayload() {
             errors24h: (bySeverity.error || 0) + (bySeverity.critical || 0),
             noise24h: bySeverity.info || 0,
             rssPeakMb: (F_.memStats || {}).maxMb, rssSampleCount: alertRows.length,
-            // ⚠️ DERIVED FROM THE SAME ROWS THE RIVER DRAWS, never a hand-written distribution: a fixture whose panel and whose table disagree teaches a defect that is not there. Only levels PRESENT are emitted, which is what the panel itself promises.
-            alerts7d: alertRows.length,
+            // 🔴 THIS READ THE RIVER'S 5-ROW SAMPLE AND CALLED IT THE WEEK'S DISTRIBUTION. It folded `alertSample` -- the handful of rows the river table draws -- so the Alerts-by-level panel showed ONE bar reading 5 while the masthead beside it said 498 alerts, and the mockup drew three. Its old comment defended this as "the same rows the river draws", but production's alertsByLevel is folded from alerts7d, every alert in the window, and the river is a sample BY CONSTRUCTION -- so the two legitimately differ and matching them was matching the wrong thing. The consequence was not cosmetic: with only `info` present, no fixture-driven instrument could reach the caution tier at all, which is exactly where the emitter was broken.
+            //
+            // ⚠️ `alertStats` is the fixture's OWN aggregate over its full alert set, which is what computeHealth produces from the collection -- not a hand-written distribution. Only levels PRESENT are emitted, which is what the panel itself promises.
+            alerts7d: (F_.alertStats || []).reduce((n, a) => n + (a.n || 0), 0) || alertRows.length,
             alertsByLevel: (() => {
-                const order = ['error', 'warn', 'info'];
-                const by = new Map();
-                for (const a of alertRows) {
-                    const level = a.level || 'info';
-                    const row = by.get(level) || { level, n: 0, pinged: 0, silent: 0 };
-                    row.n += 1;
-                    if (a.pinged) row.pinged += 1;
-                    if (a.silent) row.silent += 1;
-                    by.set(level, row);
-                }
-                return [...by.values()].sort((x, y) => (order.indexOf(x.level) < 0 ? 99 : order.indexOf(x.level)) - (order.indexOf(y.level) < 0 ? 99 : order.indexOf(y.level)));
+                const order = ['error', 'warn', 'caution', 'info'];
+                const rank = (l) => (order.indexOf(l) < 0 ? 99 : order.indexOf(l));
+                const stats = (F_.alertStats || []).filter((a) => a && a.level && a.n);
+                const rows = stats.length
+                    ? stats.map((a) => ({ level: a.level, n: a.n, pinged: a.pinged || 0, silent: a.silent || 0 }))
+                    : (() => {
+                        const by = new Map();
+                        for (const a of alertRows) {
+                            const level = a.level || 'info';
+                            const row = by.get(level) || { level, n: 0, pinged: 0, silent: 0 };
+                            row.n += 1;
+                            if (a.pinged) row.pinged += 1;
+                            if (a.silent) row.silent += 1;
+                            by.set(level, row);
+                        }
+                        return [...by.values()];
+                    })();
+                return rows.sort((x, y) => rank(x.level) - rank(y.level));
             })(),
             commands24h: totals.events || 0,
             distinctUsers24h: new Set((F_.cmdStats || []).map((c) => c.command)).size,
