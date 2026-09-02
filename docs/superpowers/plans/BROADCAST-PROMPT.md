@@ -5,6 +5,9 @@ status: live
 
 # Part 3 — Broadcast. Paste this in.
 
+> 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE.** An opener is a pointer with a gate on it. The natural thing to write in one is a digest of the findings — and a digest is a SUBSTITUTE: the reader gets three bullets, feels oriented, and never opens the document. **This Part is closed**; what is still live in here is the method, the traps and the decisions, none of which an opener can carry. Read it before assuming a later Part's prompt supersedes it.
+
+
 > Written 2026-09-01 by the Armory session, per §0.0. **It is deliberately a third the length of `ARMORY-PROMPT.md`, because Broadcast is a third the realm** — 39KB and 5 handlers against Armory's 96KB and 14. Handing over Armory's prompt unchanged would invite Armory-sized effort on a realm that does not need it, which is its own kind of waste.
 
 ## The two lines §0.0 requires before any task content
