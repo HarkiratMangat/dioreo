@@ -85,7 +85,11 @@ async function run() {
         }
         assert.ok(capturedFilter, 'findOneAndUpdate was not called');
         assert.ok(capturedFilter._id.startsWith('chg-'), `expected a "chg-" prefixed counter key, got "${capturedFilter._id}"`);
-        assert.strictEqual(capturedFilter._id, 'chg-Aug15');
+        // 🔴 THIS LINE ASSERTED `chg-Aug15` UNTIL 2026-09-01, A SCHEME RETIRED 2026-08-23 10:56 EDT. utils/changeStore.js:19 records the decision -- Harkirat asked for an internal id that could not be mistaken for a date, because `Aug22-28` renders inches from a real relative timestamp and reads as a second, contradicting one. The counter became a single global `chg-seq` yielding `#284`, and this proof was never updated. It failed from the day of that change and nobody saw it, because this whole FILE was not referenced by any npm script -- the same defect the repo closed for `.claude/hooks/` in v2.50.0 and enforced nowhere else.
+        assert.strictEqual(capturedFilter._id, 'chg-seq');
+        // The property the retirement actually wants held: the key carries no date. Asserting the literal alone would pass again if a future scheme reintroduced `chg-Aug15`, since that also starts with `chg-`.
+        assert.ok(!/[A-Z][a-z]{2}\d{1,2}/.test(capturedFilter._id),
+            `the counter key must not be date-shaped -- that is the scheme retired on 2026-08-23; got "${capturedFilter._id}"`);
     });
 
     // -- markUndone() never throws even when the update fails --
