@@ -38,6 +38,19 @@ run() { # $1 = mode, $2 = content -> "deny:<reason>" | "<advisory text>" | "SILE
   if [ -n "$d" ]; then printf '%s:%s%s' "$d" "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')" \
        "$(printf '%s' "$o" | jq -r 'if .hookSpecificOutput.updatedInput then " FIXED<" + (.hookSpecificOutput.updatedInput.content // .hookSpecificOutput.updatedInput.new_string // "") + ">" else "" end')"
   else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
+# The Bash path, added 2026-09-02 11:42 EDT. `run` sends .tool_input.content; a Bash call carries .tool_input.command instead, and the two travel through DIFFERENT jq branches — the content extractor falls through `new_string // content // command`, while the autofix rewrites every string value in .tool_input. A test that only ever sends `content` cannot see a command-shaped payload break, which is precisely how this gap survived: PostToolUse had covered Bash for weeks and no test ever sent a command.
+run_cmd() { # $1 = mode, $2 = command string
+  local o; o=$(printf '{"tool_input":{"command":%s,"description":"probe"}}' "$(printf '%s' "$2" | jq -Rs .)" | bash "$HOOK" "$1")
+  [ -z "$o" ] && { echo SILENT; return; }
+  local d; d=$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecision // empty')
+  if [ -n "$d" ]; then printf '%s:%s%s' "$d" "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')" \
+       "$(printf '%s' "$o" | jq -r 'if .hookSpecificOutput.updatedInput then " FIXED<" + (.hookSpecificOutput.updatedInput.command // "") + ">" else "" end')"
+  else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
+ac() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run_cmd "$mode" "$5")"
+  case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
+  if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
+  else echo "  FAIL  $n (wanted $want for '$needle')"; echo "        got: [$out]"; fail=$((fail+1)); fi; }
+
 a() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run "$mode" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
@@ -127,5 +140,23 @@ a "wrapped stamp is not a bare date" post "BARE DATE" no "$(printf '# it shipped
 a "wrapped stamp in prose too"       post "BARE DATE" no "$(printf 'filed %s\n%s %s\n' "${PASTSTAMP%% *}" "${PASTSTAMP##* }" "$LOCALTZ")"
 # …and a wrapped FUTURE stamp must still be caught, not hidden by the rejoin.
 a "wrapped future stamp still denied" pre "deny:" yes "$(printf '# filed %s\n# %s %s\n' "${FUTSTAMP%% *}" "${FUTSTAMP##* }" "$LOCALTZ")"
+
+# ── the Bash / heredoc path ────────────────────────────────────────────────── The gap that leaked four placeholder stamps into a tracked plan on 2026-09-01: PostToolUse carried Bash and PreToolUse did not, so a heredoc write was DETECTED and never CORRECTED.
+HEREDOC="python3 - <<'EOF'
+open('x.md','w').write('filed ${TODAY} 19:xx EDT')
+EOF"
+ac "heredoc placeholder is CORRECTED, not denied" pre "allow:"            yes "$HEREDOC"
+ac "heredoc correction carries updatedInput"      pre "FIXED<"            yes "$HEREDOC"
+ac "the substituted command holds the real minute" pre "${TODAY} $(date '+%H:%M')" yes "$HEREDOC"
+ac "the rest of the command survives intact"      pre "python3 - <<'EOF'" yes "$HEREDOC"
+# The deny tier must still reach a command — an impossible stamp is not autofixable and must stop.
+ac "future stamp in a command is DENIED"          pre "deny:"             yes "echo 'shipped ${FARFUTSTAMP} ${LOCALTZ}'"
+# And the overwhelming majority of Bash calls must pass through untouched, or this becomes noise on every single command.
+ac "an ordinary command is silent"                pre "SILENT"            yes "git status --porcelain"
+ac "a command with a REAL stamp is silent"        pre "SILENT"            yes "echo 'done ${PASTSTAMP} ${LOCALTZ}'"
+# The capability-regression seam must still work on this path.
+out_seam=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$HEREDOC" | jq -Rs .)" | TS_NO_AUTOFIX=1 bash "$HOOK" pre | jq -r '.hookSpecificOutput.permissionDecision')
+if [ "$out_seam" = deny ]; then echo "  PASS  TS_NO_AUTOFIX falls back to deny on the command path"; pass=$((pass+1));
+else echo "  FAIL  TS_NO_AUTOFIX falls back to deny on the command path (got [$out_seam])"; fail=$((fail+1)); fi
 
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

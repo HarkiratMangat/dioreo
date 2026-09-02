@@ -130,5 +130,59 @@ case "$(big_run 999999)" in
   *) echo "  PASS  mitigation stands down when the index fits under the platform cap"; pass=$((pass+1));;
 esac
 
+# ── the LINE limit ─────────────────────────────────────────────────────────── 🔴 THIS IS THE VACUOUS PASS THE BYTE-ONLY GATE WOULD HAVE SHIPPED. The platform cuts at the first 200 lines OR 25KB, whichever comes FIRST, and until 2026-09-02 11:40 EDT this hook only ever measured bytes. The trap is that the remedy for the byte ceiling — shortening entries — walks the file toward the LINE ceiling, so the gate would go green at exactly the moment the fix succeeded while the tail silently stopped loading again. These cases use many SHORT lines: comfortably under any byte cap, far over the line cap. A byte-only implementation passes every one of them.
+lines_fixture() {
+  rm -rf "$TMP/mem" "$TMP/state"; mkdir -p "$TMP/mem/archive"
+  echo "# alpha" > "$TMP/mem/alpha.md"
+  echo "RETIRED 2026-08-02 13:05 EDT - shipped and absorbed." > "$TMP/mem/archive/gone.md"
+  : > "$TMP/mem/MEMORY.md"
+  i=0
+  while [ "$i" -lt 250 ]; do
+    printf -- '- [Alpha](alpha.md) - %03d\n' "$i" >> "$TMP/mem/MEMORY.md"
+    i=$((i+1))
+  done
+}
+# Cap set absurdly high so BYTES cannot possibly be the thing that fires.
+lines_run() { MEMCHECK_DIR="$TMP/mem" MEMCHECK_STATE="$TMP/state" MEMCHECK_BUDGET=99999 \
+              MEMCHECK_PLATFORM_CAP=9999999 MEMCHECK_PLATFORM_LINES="${1:-200}" bash "$CHECK"; }
+
+lines_fixture
+lctx="$(lines_run 200 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')"
+lsize=$(wc -c < "$TMP/mem/MEMORY.md" | tr -d ' ')
+
+case "$lctx" in
+  *"READ THE WHOLE MEMORY INDEX"*) echo "  PASS  a 250-line index fires on LINES while only ${lsize}B (bytes never bind)"; pass=$((pass+1));;
+  *) echo "  FAIL  a 250-line index fires on LINES -- byte-only gate, the tail drops silently"; fail=$((fail+1));;
+esac
+case "$lctx" in
+  *"LINES (250 against a 200-line cap)"*) echo "  PASS  names LINES as the binding limit"; pass=$((pass+1));;
+  *) echo "  FAIL  names LINES as the binding limit -- got no such phrase"; fail=$((fail+1));;
+esac
+# The re-emit must carry the lines past 200, not nothing and not everything.
+n_lall=$(grep -c '^- \[' "$TMP/mem/MEMORY.md")
+n_lemit=$(printf '%s\n' "$lctx" | grep -c '^- \[')
+if [ "$n_lemit" -gt 0 ] && [ "$n_lemit" -lt "$n_lall" ]; then
+  echo "  PASS  re-emits only the lines past the LINE cut ($n_lemit of $n_lall)"; pass=$((pass+1))
+else
+  echo "  FAIL  re-emits only the lines past the LINE cut -- got $n_lemit of $n_lall"; fail=$((fail+1))
+fi
+# Raise the line limit above the file and it must stand down entirely.
+case "$(lines_run 999)" in
+  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  line mitigation stands down when the index fits -- it fired anyway"; fail=$((fail+1));;
+  *) echo "  PASS  line mitigation stands down when the index fits under the line cap"; pass=$((pass+1));;
+esac
+# And the advisory must fire BEFORE the breach, same contract as the byte tier: 190 lines against a 200-line cap is 95%, over the 90% line, and still under the cap.
+lines_fixture
+head -190 "$TMP/mem/MEMORY.md" > "$TMP/mem/MEMORY.tmp" && mv "$TMP/mem/MEMORY.tmp" "$TMP/mem/MEMORY.md"
+adv="$(lines_run 200)"
+case "$adv" in
+  *"APPROACHING THE LINE LIMIT"*) echo "  PASS  line advisory fires at 190/200, before the breach"; pass=$((pass+1));;
+  *) echo "  FAIL  line advisory fires at 190/200 -- no advisory emitted"; fail=$((fail+1));;
+esac
+case "$adv" in
+  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  advisory must not be the breach -- the read instruction fired under the cap"; fail=$((fail+1));;
+  *) echo "  PASS  the advisory is not the breach (no read instruction under the cap)"; pass=$((pass+1));;
+esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1
