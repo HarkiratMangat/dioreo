@@ -11,7 +11,7 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell, reportFailure } from './async.js';
-import { useOverlay } from './overlay.js';
+import { useOverlay, Drawer } from './overlay.js';
 
 // ⚠️ NEITHER SIDE'S WORD FOR THE THIRD KIND WAS RIGHT, so this is a deliberate third choice rather than a port. The design says "Deploy" (analytics.html:521) and the fixtures it ships contain rows reading "automatic/unattended restart" — an unattended crash-recovery is not a deploy, so the design's word is factually wrong about its own data. The portal said "BOOT", which is accurate and is exactly the dialect Harkirat ruled against eight lines below this ("literally no clue what p50, p95 even mean… they look like jargon"). RESTART is the one word that is both true of every row and plain. summaryOf() already writes "restarted — …" in the What column, so the chip and the sentence now agree.
 const KIND_LABEL = { change: 'CHANGE', alert: 'ALERT', boot: 'RESTART' };
@@ -137,6 +137,58 @@ function worstAck(timingStats) {
     if (!hit.length) return null;
     const worst = Math.max(...hit);
     return { value: ACK_BOUND_LABEL[worst] || String(worst), tone: worst >= ACK_LIMIT_MS ? 'warn' : undefined };
+}
+
+// The event drawer. ⚠️ ITS ROWS ARE DECLARED, NOT DERIVED FROM THE OBJECT: an alert and a change and a restart store different fields, and a generic key-value dump would print `_id`, `__v` and every null the schema allows, which is how a detail view becomes unreadable the moment a model grows a field. Each kind names what it carries.
+function eventRows(r) {
+    const out = [['Kind', KIND_LABEL[r.kind] || r.kind]];
+    if (r.kind === 'alert') {
+        out.push(['Level', r.level || '—']);
+        out.push(['Pinged a human', r.pinged ? 'yes' : 'no']);
+        // ⚠️ `silent` is not the opposite of `pinged`. An alert can be stored and never posted to Discord at all, which is a third state, and the level panel already says so in its own sub-line.
+        if (r.silent) out.push(['Posted to Discord', 'no — recorded only']);
+        if (typeof r.rssMb === 'number') out.push(['Memory at the time', `${r.rssMb} MB`]);
+        if (r.host) out.push(['Host', r.host]);
+    }
+    if (r.kind === 'change') {
+        out.push(['Page', r.page || '—']);
+        out.push(['Action', r.action || '—']);
+        out.push(['Model', r.model || '—']);
+        out.push(['Undone', r.undone ? 'yes' : 'no']);
+    }
+    if (r.kind === 'boot') {
+        if (r.version) out.push(['Version', r.version]);
+        if (r.commit) out.push(['Commit', r.commit]);
+        if (r.bootKind || r.kind_) out.push(['Restart kind', r.bootKind || r.kind_]);
+    }
+    out.push(['Who', r.actorId ? String(r.actorId) : 'system']);
+    if (r.detail) out.push(['Detail', r.detail]);
+    return out;
+}
+
+// One sentence per kind, saying what the row IS rather than restating the fields above it — an alert has no inverse and a restart is not something anyone did, and neither fact is visible from the table.
+const EVENT_NOTE = {
+    change: 'Every portal and /manage write is recorded with the step that reverses it, so this row can be put back from either surface, and it survives a restart.',
+    alert: 'Alerts come from the bot itself and mirror to the alert webhook. They carry no inverse — an alert is a record of something that happened, not an operation.',
+    boot: 'Restart records are written on boot. A merged version can sit undeployed indefinitely, so this is the only thing that says what is actually running.',
+};
+
+function EventDrawer({ row, onClose, onRevert }) {
+    const revertable = row.kind === 'change' && !row.undone;
+    return html`
+        <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${new Date(row.at).toISOString().slice(0, 16).replace('T', ' ')}`}
+                   title=${summaryOf(row)} onClose=${onClose}
+                   actions=${html`
+                       <button class="btn" onClick=${onClose}>Close</button>
+                       ${revertable ? html`<button class="btn dang" onClick=${onRevert}>Reverse this change</button>` : null}`}>
+            <div class="dwbody">
+                <div class="diff">
+                    ${eventRows(row).map(([k, v]) => html`
+                        <div class="diff-r" key=${k}><span class="dk">${k}</span><span>${v}</span></div>`)}
+                </div>
+                <p class="dw-p" style="margin-top:16px">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
+            </div>
+        <//>`;
 }
 
 function fmtUptime(since) {
@@ -658,6 +710,8 @@ export function AnalyticsRealm({ session }) {
     const [view, setView] = useState('Health');
     // 🔴 THE DESIGN'S LEVEL ROWS ARE A FILTER CONTROL AND THE PORTAL DREW THEM AS TEXT. analytics.html:228 sets the river to kind=alert plus that level and scrolls it into view, so the distribution and the log are one surface: you read that 258 alerts were cautions and press the row to see them. The portal had the same three rows as inert divs and the same filters sitting unreachable in the Manifest's own chipset. `seq` rather than the filters object is what Manifest keys its effect on -- see its comment.
     const [riverFilter, setRiverFilter] = useState(null);
+    // 🔴 THE RIVER'S ROWS OPENED NOTHING, AND THE DESIGN OPENS A DRAWER FROM EVERY ONE. analytics.html:545 makes each row a role=button that calls openEvent, and `--triggers` structurally cannot list a handler bound to a table row, so this was the last piece of the interaction tier and the one no instrument reported. The row carries the columns the table has space for; everything the collection actually stores -- the level, whether it pinged, the memory reading, the page and action behind a change -- had nowhere to be read.
+    const [openEvent, setOpenEvent] = useState(null);
     function filterRiverByLevel(level) {
         setRiverFilter((prev) => ({ seq: (prev ? prev.seq : 0) + 1, filters: { kind: 'alert', level } }));
         // After the render that applies the filter, not before it -- scrolling to a table that has not re-rendered lands on the old row count.
@@ -754,7 +808,9 @@ export function AnalyticsRealm({ session }) {
                                  onChange=${(e) => setIncludeAdmin(e.target.checked)} />
                           include admin traffic
                       </label>`}
-                  overlaySlot=${overlay.render()}
+                  overlaySlot=${html`${overlay.render()}${openEvent ? html`<${EventDrawer} row=${openEvent}
+                                     onClose=${() => setOpenEvent(null)}
+                                     onRevert=${() => { const r = openEvent; setOpenEvent(null); confirmRevert([r.id]); }} />` : null}`}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                stats=${[
                                                    { value: (h.commands24h ?? 0).toLocaleString(), label: 'commands 24h', lead: true, accent: 'var(--r-analytics)' },
@@ -770,6 +826,7 @@ export function AnalyticsRealm({ session }) {
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
                                                     bulkTier=${3} rowNoun=${['event', 'events']}
                                                     bulkActions=${[{ label: 'Revert', danger: true, onClick: confirmRevert }]}
+                                                    onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
                                                     filterSignal=${riverFilter} />`} />
     `;
 }

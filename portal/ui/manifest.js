@@ -215,6 +215,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 <tbody>
                     ${visible.map(row => html`
                         <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId === row.id ? ' preview-sel' : '')}
+                            ${''/* 🔴 A CLICKABLE ROW WITH NO ROLE AND NO TABINDEX IS MOUSE-ONLY, ON EVERY REALM THAT PASSES onRowClick. The design caught this on its own event tables and says so in analytics.html:540: "THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS -- mouse-only... Season's and Armory's rows escaped the same fault only because they happen to contain a rename input; these hold plain text, so the row itself is the control and has to say so. Enter and Space, because a role=button must answer both." That reasoning is about the SHARED component, not about one realm: Armory's rows have been reachable only by accident, through an input that happens to sit inside them. The attributes appear only when there is something to activate, so a table with no row action does not grow a focus stop that does nothing. */}
+                            role=${onRowClick ? 'button' : null} tabIndex=${onRowClick ? 0 : null}
+                            onKeyDown=${onRowClick ? ((e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row); } }) : null}
                             onClick=${onRowClick ? () => onRowClick(row) : null} style=${onRowClick ? 'cursor:pointer' : ''}>
                             <!-- 🔴 THE ONLY BROWSER-DEFAULT CONTROL LEFT IN THE PORTAL, on the row of every table.
                                  The adopted sheet has drawn a checkbox since it was adopted — a 16px sunk square that
