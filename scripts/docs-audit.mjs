@@ -1204,6 +1204,30 @@ check(
   }
 );
 
+/* ------------------------- generator-artifact ----------------------- */
+check(
+  "generator-artifact",
+  "ERROR",
+  "no uninterpolated heredoc expression reached a tracked file",
+  () => {
+    // 🔴 THE EDITING TECHNIQUE THIS REPO MANDATES CAN EMIT ITS OWN SOURCE. The batching contract says any multi-file edit goes through a `python3` heredoc, so nearly every doc and script here is written by a generator -- and a mis-quoted f-string, or a concatenation that lands inside a literal instead of around it, ships the EXPRESSION rather than its value. One did exactly that in this file's own comments and survived a full `npm test`, a `docs:audit` and a comment-reflow pass, because to every gate it reads as ordinary prose. Added 2026-09-02 20:31 EDT.
+    //
+    // ⚠️ MY FIRST TWO NEEDLES WERE BOTH WRONG, IN OPPOSITE DIRECTIONS, AND THE RUN THAT CAUGHT THEM IS WHY THIS COMMENT EXISTS. `${STAMP}` flagged `.claude/hooks/ctx-index-refresh.sh`, where it is a perfectly ordinary SHELL VARIABLE -- a detector that cannot tell its target from valid code. And a bare triple-quote fragment flagged this file, because documenting the pattern spells it. Third detector today that did not match its own intent. The shape is pinned precisely now, and a line may opt out with GEN-EXAMPLE -- the same per-line, deliberately-typed, greppable escape `timestamp-check.sh` uses, for the identical reason: prose ABOUT a bad pattern must be able to quote it.
+    const SHAPE = /"{3}\s*\+\s*[A-Za-z_$][\w$]*\s*\+\s*"{3}|'{3}\s*\+\s*[A-Za-z_$][\w$]*\s*\+\s*'{3}/;
+    const out = [];
+    for (const f of tracked()) {
+      if (!/\.(md|mjs|js|sh|json)$/.test(f)) continue;
+      const t = read(f);
+      if (t === null) continue;
+      t.split("\n").forEach((line, n) => {
+        if (line.includes("GEN-EXAMPLE")) return;
+        if (SHAPE.test(line)) out.push({ msg: `${f}:${n + 1} carries an uninterpolated generator expression — the heredoc that wrote this line emitted its own source instead of the value. If the line is deliberately quoting the pattern, mark it GEN-EXAMPLE.` });
+      });
+    }
+    return out;
+  }
+);
+
 /* ----------------------------- rule-globs --------------------------- */
 check(
   "rule-globs",
@@ -1228,8 +1252,12 @@ check(
       const inline = (fm.match(/paths:\s*\[([^\]]+)\]/) || [])[1];
       const listed = [...fm.matchAll(/^\s*-\s*(\S+)\s*$/gm)].map((m) => m[1]);
       const globs = (inline ? inline.split(",") : listed).map((s) => s.trim().replace(/^['"]|['"]$/g, ""));
+      // A rule with NO `paths:` is legal and documented -- it loads unconditionally at launch, at the same priority as `.claude/CLAUDE.md`. This check predates that being known and treated every rule as path-scoped, so it reported the first genuinely unconditional rule as broken.
+      //
+      // It still ERRORS on an empty `paths:` by DEFAULT, because the far more likely cause is a rule whose globs were deleted or never written -- and that rule then never loads for anything, silently, which is the dead-guard shape this check exists for. `unconditional: true` is how a rule says the emptiness is deliberate: one line, visible in the frontmatter and in any diff, so intent and accident can never look the same. Added 2026-09-02 15:58 EDT with the first such rule (`silent-mode.md`, an instruction that applies to every turn rather than to one subsystem).
       if (!globs.length) {
-        out.push({ msg: `${rule} declares no \`paths:\` globs, so it never auto-loads for any file.` });
+        if (/^\s*unconditional:\s*true\s*$/m.test(fm)) continue;
+        out.push({ msg: `${rule} declares no \`paths:\` globs, so it never auto-loads for any file. If that is deliberate -- an instruction that applies to every turn rather than a trap for one subsystem -- add \`unconditional: true\` to its frontmatter so the intent is explicit and a rule whose globs were simply LOST still fails.` });
         continue;
       }
       globCount += globs.length;

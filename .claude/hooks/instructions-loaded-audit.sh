@@ -43,6 +43,32 @@ if [ "${1:-}" = "--report" ]; then
   exit 0
 fi
 
+# --- the SessionStart line ------------------------------------------------------------------------ 🔴 AN INSTRUMENT NOBODY RUNS IS NOT AN INSTRUMENT — added 2026-09-02 20:27 EDT. This hook answered the session's headline question and then sat there: no always-loaded file mentioned it, its log is gitignored, and `--report` had to be typed by someone who already knew it existed. That is the exact failure the global CLAUDE.md records at length (codebase-index never invoked once, read_smart never invoked, shellcheck installed and unrun for weeks), reproduced within hours of my reading it.
+#
+# The fix is not a pointer in a document -- prose failed three separate times in this same session. The hook already runs; it reports now. One line, arriving unasked, which also makes a rules-tier regression visible: if the injected total climbs back toward the 651KB it started at, every session sees the number without anyone deciding to look.
+#
+# ⚠️ IT REPORTS THE MOST RECENT session_start BATCH, WHICH MAY BE THE PREVIOUS SESSION'S. At the moment a SessionStart hook runs, this session's own instruction loads have not necessarily happened yet, so claiming they are this session's would be a guess. The line says which batch it is reading and when.
+if [ "${1:-}" = "--session" ]; then
+  [ -f "$LOG" ] || exit 0
+  jq -rs '
+    map(select(.load_reason == "session_start" or .load_reason == "include"))
+    | if length == 0 then empty else
+      (max_by(.ts) | .ts[0:16]) as $latest
+      | map(select(.ts[0:16] == $latest)) as $batch
+      # DEDUPE BY PATH. The harness emits a file more than once in a batch, so summing rows reported
+      # 266,496B for three files whose real total is 95,593 -- a wrong number in a line every session
+      # reads, which is the defect this whole session was about. Corrected 2026-09-02 20:28 EDT.
+      | ($batch | group_by(.file_path) | map(.[0])) as $uniq
+      # Last TWO segments, because the project and the global CLAUDE.md have the same basename and the
+      # line rendered "CLAUDE.md, CLAUDE.md" as if one file had loaded twice.
+      | ($uniq | map(.file_path | split("/") | .[-2:] | join("/")) | sort) as $files
+      | ($uniq | map(.bytes) | add) as $bytes
+      | "INSTRUCTION LOAD (most recent batch, \($latest)): \($files | length) file(s), \($bytes)B — \($files | join(", "))."
+        + (if ($files | map(select(endswith("silent-mode.md"))) | length > 0) then " ✅ silent-mode.md is among them, so the standing working style IS loading." else " 🔴 silent-mode.md is NOT among them. If CLAUDE.md IS listed, the unconditional rule did not load and SILENT MODE IS NOT IN EFFECT — switch it to an @-import from CLAUDE.md and move the file out of .claude/rules/ so it cannot double-load. If CLAUDE.md is not listed either, this hook simply had not run yet and the batch is stale." end)
+    end' "$LOG" 2>/dev/null | jq -Rs 'if . == "" then empty else {hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}} end'
+  exit 0
+fi
+
 payload=$(cat 2>/dev/null || true)
 [ -z "$payload" ] && exit 0
 

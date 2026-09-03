@@ -1,4 +1,7 @@
 #!/bin/bash
+# 🔴 THE CLOCK IS PINNED, THE SAME WAY THE HOOK PINS IT — added 2026-09-02 21:56 EDT. Every fixture below is built from `date`, and the hook now resolves "today" in America/New_York regardless of the machine. Left unpinned, this suite computed its placeholders in the runner's UTC while the hook looked for Eastern ones, and 31 of 63 cases failed for a reason that has nothing to do with the behaviour under test. A test and the thing it tests must read the same clock. `TS_TZ` moves both together, so a deliberate probe is still possible.
+export TZ="${TS_TZ:-America/New_York}"
+
 # Proofs for timestamp-check.sh, in BOTH modes.
 #
 # `pre` can now DENY a write, so its false-positive surface is the dangerous one: a wrong deny stops work dead and gets the hook switched off. `post` stays advisory and only has to avoid noise.
@@ -38,6 +41,19 @@ run() { # $1 = mode, $2 = content -> "deny:<reason>" | "<advisory text>" | "SILE
   if [ -n "$d" ]; then printf '%s:%s%s' "$d" "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')" \
        "$(printf '%s' "$o" | jq -r 'if .hookSpecificOutput.updatedInput then " FIXED<" + (.hookSpecificOutput.updatedInput.content // .hookSpecificOutput.updatedInput.new_string // "") + ">" else "" end')"
   else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
+# The Bash path, added 2026-09-02 11:42 EDT. `run` sends .tool_input.content; a Bash call carries .tool_input.command instead, and the two travel through DIFFERENT jq branches — the content extractor falls through `new_string // content // command`, while the autofix rewrites every string value in .tool_input. A test that only ever sends `content` cannot see a command-shaped payload break, which is precisely how this gap survived: PostToolUse had covered Bash for weeks and no test ever sent a command.
+run_cmd() { # $1 = mode, $2 = command string
+  local o; o=$(printf '{"tool_input":{"command":%s,"description":"probe"}}' "$(printf '%s' "$2" | jq -Rs .)" | bash "$HOOK" "$1")
+  [ -z "$o" ] && { echo SILENT; return; }
+  local d; d=$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecision // empty')
+  if [ -n "$d" ]; then printf '%s:%s%s' "$d" "$(printf '%s' "$o" | jq -r '.hookSpecificOutput.permissionDecisionReason')" \
+       "$(printf '%s' "$o" | jq -r 'if .hookSpecificOutput.updatedInput then " FIXED<" + (.hookSpecificOutput.updatedInput.command // "") + ">" else "" end')"
+  else printf '%s' "$o" | jq -r '.hookSpecificOutput.additionalContext // "SILENT"'; fi; }
+ac() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run_cmd "$mode" "$5")"
+  case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
+  if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
+  else echo "  FAIL  $n (wanted $want for '$needle')"; echo "        got: [$out]"; fail=$((fail+1)); fi; }
+
 a() { local n="$1" mode="$2" needle="$3" want="$4" out; out="$(run "$mode" "$5")"
   case "$out" in *"$needle"*) got=yes;; *) got=no;; esac
   if [ "$got" = "$want" ]; then echo "  PASS  $n"; pass=$((pass+1))
@@ -127,5 +143,36 @@ a "wrapped stamp is not a bare date" post "BARE DATE" no "$(printf '# it shipped
 a "wrapped stamp in prose too"       post "BARE DATE" no "$(printf 'filed %s\n%s %s\n' "${PASTSTAMP%% *}" "${PASTSTAMP##* }" "$LOCALTZ")"
 # …and a wrapped FUTURE stamp must still be caught, not hidden by the rejoin.
 a "wrapped future stamp still denied" pre "deny:" yes "$(printf '# filed %s\n# %s %s\n' "${FUTSTAMP%% *}" "${FUTSTAMP##* }" "$LOCALTZ")"
+
+# ── the code review's repro: one line carrying BOTH ────────────────────────── Found 2026-09-02 18:23 EDT. The detector was scoped to today and the SUBSTITUTION was not, so a line with today's placeholder AND a correct historical stamp was auto-allowed with the HISTORICAL one rewritten to the current minute. Two descriptions of the same target, drifting apart.
+a "a historical stamp beside today's placeholder is untouched" pre "2026-08-03 18:12" yes "filed ${TODAY} 18:xx ${LOCALTZ} — see the 2026-08-03 18:12 ${LOCALTZ} incident"
+a "and today's placeholder in that same line IS fixed"         pre "FIXED<filed ${TODAY} $(date '+%H:%M')" yes "filed ${TODAY} 18:xx ${LOCALTZ} — see the 2026-08-03 18:12 ${LOCALTZ} incident"
+# The character class [0-9xX?] matches real digits, so the pattern must also refuse a CORRECT stamp.
+a "a correct stamp for TODAY is left alone"                    pre "SILENT" yes "filed ${TODAY} 09:30 ${LOCALTZ}"
+
+# ── a placeholder on a PAST date is DELIBERATE, not forgotten ──────────────── Added 2026-09-02 16:58 EDT. The suite passed 57/57 with this narrowing already in place, which is precisely the problem: nothing exercised it, so the branch was a claim rather than a check. A stamp like `2026-09-01 16:0x EDT` is an intentionally imprecise historical reference and this repo is full of them -- four in memory-index-check.sh alone. Substituting there does not repair anything; it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix instead of the author.
+YESTERDAY=$(when '-1d' | cut -d' ' -f1)
+a "a placeholder on a PAST date is left alone"  pre "SILENT" yes "filed ${YESTERDAY} 16:0x ${LOCALTZ}"
+a "a placeholder on TODAY is still corrected"   pre "allow:" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
+# And the correction must still put a real minute in, or the branch above is passing for the wrong reason.
+a "the today correction carries a real minute"  pre "FIXED<filed ${TODAY} $(date '+%H:%M')" yes "filed ${TODAY} 16:0x ${LOCALTZ}"
+
+# ── the Bash / heredoc path ────────────────────────────────────────────────── The gap that leaked four placeholder stamps into a tracked plan on 2026-09-01: PostToolUse carried Bash and PreToolUse did not, so a heredoc write was DETECTED and never CORRECTED.
+HEREDOC="python3 - <<'EOF'
+open('x.md','w').write('filed ${TODAY} 19:xx EDT')
+EOF"
+ac "heredoc placeholder is CORRECTED, not denied" pre "allow:"            yes "$HEREDOC"
+ac "heredoc correction carries updatedInput"      pre "FIXED<"            yes "$HEREDOC"
+ac "the substituted command holds the real minute" pre "${TODAY} $(date '+%H:%M')" yes "$HEREDOC"
+ac "the rest of the command survives intact"      pre "python3 - <<'EOF'" yes "$HEREDOC"
+# The deny tier must still reach a command — an impossible stamp is not autofixable and must stop.
+ac "future stamp in a command is DENIED"          pre "deny:"             yes "echo 'shipped ${FARFUTSTAMP} ${LOCALTZ}'"
+# And the overwhelming majority of Bash calls must pass through untouched, or this becomes noise on every single command.
+ac "an ordinary command is silent"                pre "SILENT"            yes "git status --porcelain"
+ac "a command with a REAL stamp is silent"        pre "SILENT"            yes "echo 'done ${PASTSTAMP} ${LOCALTZ}'"
+# The capability-regression seam must still work on this path.
+out_seam=$(printf '{"tool_input":{"command":%s}}' "$(printf '%s' "$HEREDOC" | jq -Rs .)" | TS_NO_AUTOFIX=1 bash "$HOOK" pre | jq -r '.hookSpecificOutput.permissionDecision')
+if [ "$out_seam" = deny ]; then echo "  PASS  TS_NO_AUTOFIX falls back to deny on the command path"; pass=$((pass+1));
+else echo "  FAIL  TS_NO_AUTOFIX falls back to deny on the command path (got [$out_seam])"; fail=$((fail+1)); fi
 
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

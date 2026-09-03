@@ -28,7 +28,37 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.73.0 — 2026-09-02 (#180) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
+## Pre-Release v3.74.0 — 2026-09-02 (#181) — Four context layers reported healthy while being partly unusable, and the workflow we mandate was bypassing the rules tier entirely
+
+- **The timestamp gate's idea of "today" depended on the machine's clock.** `date` was read unpinned, so on a UTC runner between 20:00 and midnight Eastern the hook looked for tomorrow's date, matched none of the placeholders its own safety suite writes, and corrected nothing — the exact silent no-op that suite exists to catch, manufactured by the environment rather than by a defect. `localtz` was wrong the same way, so every `EDT` stamp in the repo read as a foreign zone and the impossible-future branch went quiet where it matters most. **Both the hook and its suite now resolve the clock in `America/New_York`, overridable together via `TS_TZ`** — and the falsifier holds: unpinning the hook alone fails under UTC. This is the same shape as the BSD-vs-GNU `date` failure this file already records, one layer up — there the date *binary* differed, here the date *zone* did.
+
+- **A test that was green here and red on CI, for a reason unrelated to its subject.** `mcp-layer-check.test.sh`'s three probe runs did not pin the fixture database, so `LINKSEE_DB` fell back to `$HOME/.linksee-memory/memory.db` — present on this machine, absent on the runner — and the counts line the assertion looks for simply does not exist without it. Pinned, and proven under an emptied `HOME` that reproduces the runner. **An assertion whose subject exists in only one environment is not testing what it says it is**, and it fails in the direction that costs most: it passes for whoever wrote it.
+
+Not a bot change. This is the layer that decides what a session knows before it does anything, and none of it had been measured.
+
+### What was actually happening
+
+🔴 **`MEMORY.md` was losing its tail every session and a hook reported `ok`.** The loader takes the first 200 lines OR 25,000 B, whichever comes first; the index was 35,147 B, so the cut landed at line 127 and **58 lines never loaded** — including the entire "Working with Harkirat" section that root `CLAUDE.md` tells every session to read first. `memory-index-check.sh` had only ever counted BYTES, against six locally-invented budgets, so the line limit was invisible to it. That matters most at the moment it would have been trusted: the remedy for the byte ceiling is shortening entries, and shortening entries walks the file TOWARD the line ceiling.
+
+🔴 **The `@`-import meant to route around that had never run.** It spent its whole life inside the YAML frontmatter, consumed as YAML; moved below it, it still failed, because `@~/…` uses a shell convention and the docs sanction relative and absolute paths only. The sentinel at the foot of the file is the only reason either failure was detectable.
+
+🔴 **`.claude/rules/` was 651,223 B with no budget and no gate — seven times the root `CLAUDE.md`.** A path-scoped rule is INJECTED IN FULL the moment you read any matching file: median 72,420 B, worst 187,237 B across three rules on one file. A new hook on the `InstructionsLoaded` event measured the rest: a `Read` with `limit: 12` pulls the whole rule, a rule loads once per session, and — the finding that started this — **`rg`, a `python3` heredoc read and a `python3` heredoc write load nothing at all.** The batching contract mandates heredocs and the routing rules push reads through `rg`, so the mandated workflow was bypassing the entire tier.
+
+🔴 **The session banner reported linksee's DATABASE and was read as reporting its SERVER.** `claude mcp list` said `CONNECTION_CLOSED` while the banner printed confident counts read straight from the sqlite file, which is readable whether or not the server is up.
+
+### What changed
+
+🔴 **THE ENTRY-SHORTENING HALF WAS REJECTED AND REVERTED 2026-09-02 21:05 EDT.** A truncated index line reads as a complete one, and a session reasoning from the visible half never learns there was more — which is the exact failure those entries were lengthened to prevent. All 79 were reconstructed from the topic files (0 orphaned). **The index is 30,504 B over 152 lines and is deliberately OVER the 25,000 B budget**, with `CLAUDE.md` force-importing the whole file as a temporary bridge so no session reads half a memory. `SILENT MODE`'s move to the instruction tier STANDS. Open problems, dead ends and the reconstruction record: `docs/superpowers/plans/2026-09-02-context-loading-open-problems.md`.
+
+Originally shipped as: the index at **22,230 B over 151 lines**, inside both limits with headroom, and **nothing was deleted**: `SILENT MODE` moved to `.claude/rules/silent-mode.md` (it is an instruction, and auto memory is for what Claude writes about you), and 79 over-long index-line tails moved into the topic files they already point at. The import was then removed on its own stated condition, and the budget lowered to 25,000 — the platform's own number, and the first value in that hook's history that is not a housekeeping choice.
+
+`accent-and-colors.md` went from 144,650 B to 27,319: the "View Colors" encyclopedia is now `docs/reference/colors-panel.md`, byte-for-byte, already indexed for `ctx_search`. ⚠️ **THAT RATCHET WAS REJECTED AND REMOVED 2026-09-02 21:25 EDT** — Harkirat: *"i also don't really like your pinned byte size implementation either."* The tier is UNGATED. It blessed today's sizes permanently, its `--write` escape was taken three times in one session, and bytes cannot tell a trap from an encyclopedia. Problem 3 in `docs/superpowers/plans/2026-09-02-context-loading-open-problems.md`.
+
+Originally shipped as: The tier as a whole is 540,023 B and is now held by a RATCHET rather than a ceiling — every rule pinned at its current size, allowed only to shrink, with a 30,000 B line for anything new that 14 of the 20 already meet. A ceiling would have failed four files on arrival, and a gate that fails on arrival gets switched off.
+
+Three gates were promoted from reporting to CORRECTING, on one test: does the hook already know the ONE right value? The timestamp autofix now reaches `python3` heredocs — the gap four placeholder stamps came through — after the stated reason for not doing so turned out to be false; `rtk` has rewritten every Bash command via the same mechanism for months. `rg -rn` is corrected to `-n` because a cluster has exactly one reading, while a lone `-r` stays advisory because it is a legitimate `--replace`. `--delete-branch` is appended BEFORE a merge rather than lamented after one. **`typos-check` was considered and deliberately excluded**: a typo has several plausible corrections, and a silent wrong substitution is worse than a refusal.
+
+## Pre-Release v3.73.0 — 2026-09-02 (#180 · `44b2f54`) — Analytics could not draw a third of its own alerts, and the two controls the design makes buttons had been text all along
 
 Part 5 of the conformance pass. Two of the three headline defects were **live wrong renders on real data**, not spacing.
 

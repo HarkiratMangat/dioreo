@@ -114,5 +114,31 @@ prun /nonexistent/cc.json /nonexistent/desktop.json >/dev/null 2>&1 \
   || { echo "  FAIL  no config crashed"; fail=$((fail+1)); }
 
 echo
+
+# ── the SERVER probe ───────────────────────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE BANNER REPORTED THE DATABASE AND WAS READ AS REPORTING THE SERVER. On 2026-09-02 `claude mcp list` said linksee had failed to connect while this hook printed healthy counts, because the counts come from the sqlite file -- which is readable whether or not the server is up. The load-bearing case is the third one: a REACHABLE and an UNREACHABLE server must produce visibly different output, or the probe is decoration.
+ctx_of() { python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])'; }
+ok_json='{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05"}}'
+
+# ⚠️ THESE FOUR RUNS MUST PIN THE FIXTURE DB, and the reason is a real CI failure (2026-09-02 22:15 UTC). They originally ran `bash "$CHECK"` bare, so `LINKSEE_DB` fell back to its default `$HOME/.linksee-memory/memory.db` — present on this Mac, absent on the runner. The counts line is emitted only when that file is readable, so "the counts line is labelled as db-derived" asserted a string that simply does not exist in a fresh environment: green here, red on CI, for a reason having nothing to do with the behaviour under test. An assertion whose SUBJECT exists in only one environment is not testing what it says it is.
+up=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="printf '%s' '$ok_json'" bash "$CHECK" | ctx_of)
+case "$up" in *"linksee MCP: reachable"*) echo "  PASS  a server that answers initialize reports reachable"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that answers initialize reports reachable"; fail=$((fail+1));; esac
+
+down=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE_CMD="false" bash "$CHECK" | ctx_of)
+case "$down" in *"UNREACHABLE THIS SESSION"*) echo "  PASS  a server that does not answer reports UNREACHABLE"; pass=$((pass+1));;
+  *) echo "  FAIL  a server that does not answer reports UNREACHABLE"; fail=$((fail+1));; esac
+
+if [ "$up" != "$down" ]; then echo "  PASS  reachable and unreachable produce different output"; pass=$((pass+1));
+else echo "  FAIL  reachable and unreachable produce IDENTICAL output -- the probe is decoration"; fail=$((fail+1)); fi
+
+# The db counts must no longer be phrased as a claim about the server.
+case "$down" in *"linksee db:"*) echo "  PASS  the counts line is labelled as db-derived"; pass=$((pass+1));;
+  *) echo "  FAIL  the counts line is labelled as db-derived"; fail=$((fail+1));; esac
+
+# And the probe must be skippable, or every hook test pays 3s and CI pays it on every run.
+skip=$(MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_PROBE=0 bash "$CHECK" | ctx_of)
+case "$skip" in *"probe skipped"*) echo "  PASS  MCPCHECK_PROBE=0 skips the round-trip"; pass=$((pass+1));;
+  *) echo "  FAIL  MCPCHECK_PROBE=0 skips the round-trip"; fail=$((fail+1));; esac
+
 echo "  $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

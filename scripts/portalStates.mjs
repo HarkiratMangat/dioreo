@@ -192,10 +192,70 @@ async function walk(page, state, port) {
     return records;
 }
 
+// 🔴 A RED GATE ON A DIFF THAT CANNOT HAVE CAUSED IT IS WORSE THAN NO GATE. Added 2026-09-02 18:07 EDT after PR #181 -- 31 files of hooks, rules, docs and two doc-audit scripts, ZERO portal files and zero runtime .js -- failed `syntax-check` three consecutive times on `manifest . nothing matches the search`, while this same script passed locally on that same tree, 44 states walked, exit 0. `syntax-check` is a REQUIRED check, so a non-deterministic browser walk was able to block any pull request in the repository. That coupling is the defect being fixed here; the underlying non-determinism is filed separately in docs/db-deferred-list.md and is NOT claimed to be solved.
+//
+// ⚠️ IT FAILS CLOSED, AND THAT IS THE WHOLE SAFETY ARGUMENT. If the changed-file list cannot be determined -- no git, no reachable base, an empty diff -- the walk RUNS. A skip is only ever taken from a list that was actually read and actually contains nothing this script measures. The dangerous direction is skipping on uncertainty, because that turns a portal change into a silent pass, which is the exact vacuous-pass shape the rest of this file exists to prevent.
+//
+// ⚠️ AND IT SHOUTS. The skip prints as `⚠ SKIPPED` with the base it compared against and the file count, in the same shape as the no-Chrome branch below, because a skip that reads like a pass is how a gate quietly stops being one.
+export const PORTAL_TOUCHED = [
+    (f) => f.startsWith('portal/'),
+    (f) => f.startsWith('scripts/portal'),
+    (f) => f.startsWith('docs/superpowers/mockups/'),
+    // A dependency bump can move puppeteer or Chrome under the walk without any portal file changing. ⚠️ But a VERSION BUMP is not a dependency change, and treating it as one made this filter useless on the first PR it met: every release touches package.json and package-lock.json, so the walk would have run on every diff regardless. `manifestChangedBeyondVersion` below reads the actual diff and keeps these two only when something other than the version field moved.
+    (f) => f === 'package.json' || f === 'package-lock.json',
+];
+
+// Exported for the test. A package.json diff that only moves `"version"` cannot affect a browser walk, and counting it as if it could is how a narrowing filter quietly widens back to everything — every release touches that file.
+//
+// ⚠️ IT IS DELIBERATELY BROADER THAN ITS OLD NAME (`depsChanged`) CLAIMED, and the name was the half that was wrong — renamed 2026-09-02 18:23 EDT by a code review. ANY non-version change here re-arms the walk, a `scripts` edit included, because `scripts` decides what actually runs. That is conservative on purpose: this branch edits `scripts` and therefore correctly does NOT skip its own walk. Narrowing until my own PR went green would be the "tune the gate until it passes" failure this repo has receipts for.
+export function manifestChangedBeyondVersion(diffText) {
+    if (!diffText) return false;
+    return diffText
+        .split('\n')
+        .filter((l) => (l.startsWith('+') || l.startsWith('-')) && !l.startsWith('+++') && !l.startsWith('---'))
+        .some((l) => !/^[+-]\s*"version"\s*:/.test(l));
+}
+export function portalTouched(changed) {
+    if (!Array.isArray(changed) || !changed.length) return true;   // unknown or empty => RUN
+    return changed.some((f) => PORTAL_TOUCHED.some((m) => m(f)));
+}
+
+function changedAgainstBase() {
+    const { execFileSync } = require('child_process');
+    const bases = [];
+    if (process.env.GITHUB_BASE_REF) bases.push(`origin/${process.env.GITHUB_BASE_REF}`);
+    bases.push('origin/v3-pre-release', 'origin/main');
+    for (const base of bases) {
+        try {
+            const out = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+            let files = out.split('\n').map((x) => x.trim()).filter(Boolean);
+            const manifests = files.filter((f) => f === 'package.json' || f === 'package-lock.json');
+            if (manifests.length) {
+                const d = execFileSync('git', ['diff', `${base}...HEAD`, '--', ...manifests], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+                if (!manifestChangedBeyondVersion(d)) files = files.filter((f) => !manifests.includes(f));
+            }
+            // 🔴 RETURN ON THE FIRST BASE THAT RESOLVED, not the first that survives filtering -- corrected 2026-09-02 18:23 EDT by a code review. When the version-only filter emptied `files`, the loop fell through and tried the NEXT base, so a PR branched from v3-pre-release could end up judged against origin/main. An empty post-filter list is a real answer ("nothing here concerns the walk"), not a failed lookup to retry elsewhere.
+            return { base, files };
+        } catch { /* this base is unreachable -- try the next */ }
+    }
+    return null;
+}
+
 async function run() {
     const args = process.argv.slice(2);
     const flag = (n) => args.includes(n);
     const only = args.includes('--realm') ? args[args.indexOf('--realm') + 1] : null;
+
+    // Only in --ci. An interactive run is someone asking the question directly, and the answer to "walk the states" is never "I decided you did not mean it".
+    if (flag('--ci')) {
+        const diff = changedAgainstBase();
+        if (diff && !portalTouched(diff.files)) {
+            console.error(`  ⚠ SKIPPED — none of the ${diff.files.length} file(s) changed against ${diff.base} is one this walk measures (portal/, scripts/portal*, the mockups, or a dependency bump).`);
+            console.error('    NOT a pass: no state was walked. Run it without --ci to walk them anyway.');
+            console.error('    This exists because a browser walk that is red on a diff it cannot have caused blocks every PR in the repo -- see docs/db-deferred-list.md for the non-determinism itself, which this does NOT fix.');
+            return;
+        }
+    }
 
     fs.mkdirSync(REGISTRY, { recursive: true });
     const files = fs.readdirSync(REGISTRY).filter((f) => f.endsWith('.json')).filter((f) => !only || f === `${only}.json`);
