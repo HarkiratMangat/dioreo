@@ -1,31 +1,14 @@
 // scripts/portalReviewWalk.mjs — the COMMIT walk: does staged work actually become real?
 //
-// 🔴 WHY THIS EXISTS. `portal:status` read `review … realwalk · never` for the life of the portal.
-// Review is the only screen where staged work becomes real — the highest-consequence action in the
-// product — and no instrument on either side had ever exercised it. Not one commit, not one discard,
-// not one gate refusal. Every other instrument in this family measures how a page LOOKS; a realm can
-// be pixel-perfect against its design and still not commit, and Review is the realm where that
-// distinction is the entire point.
+// 🔴 WHY THIS EXISTS. `portal:status` read `review … realwalk · never` for the life of the portal. Review is the only screen where staged work becomes real — the highest-consequence action in the product — and no instrument on either side had ever exercised it. Not one commit, not one discard, not one gate refusal. Every other instrument in this family measures how a page LOOKS; a realm can be pixel-perfect against its design and still not commit, and Review is the realm where that distinction is the entire point.
 //
-// 🔴 AND `portal:realwalk` CANNOT COVER IT, WHICH IS WHY IT NEVER DID. That tool walks a realm's
-// VIEWS in a browser, and Review has none: `review.html` carries no `data-view` and `review.js` passes
-// no `viewOptions`. Pointed at Review it has nothing to click, so the gap was structural rather than
-// an oversight — the near-neighbour instrument existed and was the wrong shape.
+// 🔴 AND `portal:realwalk` CANNOT COVER IT, WHICH IS WHY IT NEVER DID. That tool walks a realm's VIEWS in a browser, and Review has none: `review.html` carries no `data-view` and `review.js` passes no `viewOptions`. Pointed at Review it has nothing to click, so the gap was structural rather than an oversight — the near-neighbour instrument existed and was the wrong shape.
 //
-// WHAT IT DRIVES: the REAL dev server over HTTP — every route, `requireAdmin`, the CSRF check,
-// `gateCommit`, and `commitSet`'s real `session.withTransaction()`. Nothing is stubbed and no function
-// is called directly. The only thing minted locally is the session row, through the same
-// `scripts/lib/portalSession.cjs` every other instrument uses, because the alternative is a Discord
-// OAuth round trip that cannot be automated and that is what kept this unmeasured.
+// WHAT IT DRIVES: the REAL dev server over HTTP — every route, `requireAdmin`, the CSRF check, `gateCommit`, and `commitSet`'s real `session.withTransaction()`. Nothing is stubbed and no function is called directly. The only thing minted locally is the session row, through the same `scripts/lib/portalSession.cjs` every other instrument uses, because the alternative is a Discord OAuth round trip that cannot be automated and that is what kept this unmeasured.
 //
-// ⚠️ IT WRITES TO THE DEV DATABASE AND PUTS IT BACK. The tier-1 change it commits is reverted through
-// the real `/api/revert` route, which exercises `invert()` as a side effect rather than by a separate
-// test. `--keep` leaves the rows for inspection. If it dies mid-run the leftovers are named in the
-// output. `portalSession` itself refuses any non-local database, so this cannot run against prod.
+// ⚠️ IT WRITES TO THE DEV DATABASE AND PUTS IT BACK. The tier-1 change it commits is reverted through the real `/api/revert` route, which exercises `invert()` as a side effect rather than by a separate test. `--keep` leaves the rows for inspection. If it dies mid-run the leftovers are named in the output. `portalSession` itself refuses any non-local database, so this cannot run against prod.
 //
-// ⚠️ WHAT IT CANNOT SEE, stated so nobody reads a green run as more than it is: it drives the API,
-// not the screen. It proves the server commits, refuses and audits; it does not prove the Review page
-// renders any of that, which is the pixel work's job, nor that a person can reach the button.
+// ⚠️ WHAT IT CANNOT SEE, stated so nobody reads a green run as more than it is: it drives the API, not the screen. It proves the server commits, refuses and audits; it does not prove the Review page renders any of that, which is the pixel work's job, nor that a person can reach the button.
 //
 //     node scripts/portalReviewWalk.mjs [--port 8787] [--keep]
 
@@ -73,8 +56,7 @@ async function api(method, route, body) {
     return { status: res.status, json };
 }
 
-// The two numbers every assertion is really about. Read through the models rather than the API,
-// because the API is the thing under test — asking it whether it worked is not evidence.
+// The two numbers every assertion is really about. Read through the models rather than the API, because the API is the thing under test — asking it whether it worked is not evidence.
 async function liveState(mongoose) {
     const SeasonalData = require(path.join(ROOT, 'models/SeasonalData'));
     const ChangeLog = require(path.join(ROOT, 'models/ChangeLog'));

@@ -211,7 +211,7 @@ const FIXTURE_CARD = { components: [
     ] },
 ] };
 
-// /api/review flattens open changesets to individual operations. FIX.sampleOps is the mockup's own staged set; its rows are [field, was, becomes] triples, while diffRows (portal/ui/board.logic.js) returns {key, from, to} — so they are converted here rather than teaching the component a second row shape. One op is marked stale and one changeset is tier 3 and unexported, because a review screen whose fixtures are all clean never renders the two surfaces it exists for.
+// /api/review flattens open changesets to individual operations. FIX.sampleOps is the mockup's own staged set; its rows are [field, was, becomes] triples, while diffRows (portal/ui/board.logic.js) returns {key, from, to} — so they are converted here rather than teaching the component a second row shape. One op is marked stale, which is a real per-op state. 🔴 IT NO LONGER FABRICATES A TIER 3, AND THAT WAS A REAL DEFECT RATHER THAN A HARMLESS PROP (2026-09-02 23:19 EDT). It typed the last op tier 3 so the export gate and the typed confirmation would render — but the tier is a property of the OP, derived from core/ops's registry, and `draw.delete` is tier 1 there because its inverse is exact. Production's /api/review takes the tier from validateSet, so it can NEVER show these four ops as tier 3: the harness was teaching a state the code cannot produce, which is the exact criticism this file applies to its own other stubs. It also made the seeded overlay unreadable — `shell.js`'s Store DERIVES the tier from FIX.OP_TIERS and refuses a claimed one, so the mockup showed tier 1 while this showed tier 3, and the whole tier-3 surface (gate line, export button, typed confirm, red chip, blocker count) reported as a design difference. ⚠️ THE COVERAGE IT PROVIDED IS NOT LOST, it moved somewhere stronger: `npm run portal:reviewwalk` drives a genuinely tier-3 op against the real server and asserts the gate closes, the reason is in words, and the commit is refused with 409. A fabricated fixture demonstrated the surface; the walk proves the behaviour. A states fixture is the right way to photograph it — filed.
 function reviewPayload() {
     const src = window.FIX.sampleOps || [];
     const ops = src.map((o, i) => ({
@@ -220,11 +220,11 @@ function reviewPayload() {
         index: 0,
         realm: o.realm || 'season',
         op: o.op || 'unknown',
-        tier: i === src.length - 1 ? 3 : (o.tier || 1),
+        tier: (window.FIX.OP_TIERS && window.FIX.OP_TIERS[o.op]) || o.tier || 1,
         name: o.name,
         verb: o.verb || 'changed',
         rows: (o.rows || []).map((r) => ({ key: r[0], from: r[1], to: r[2] })),
-        destroys: i === src.length - 1,
+        destroys: ((window.FIX.OP_TIERS && window.FIX.OP_TIERS[o.op]) || o.tier || 1) === 3,
         exported: false,
         exportedAt: null,
         stale: i === 1,

@@ -17,14 +17,7 @@ function readJsonBody(req) {
 function segment(url, index) {
     const raw = url.pathname.split('/').filter(Boolean)[index];
     if (raw === undefined) return raw;
-    // 🔴 DECODED, BECAUSE A CHANGE ID CONTAINS A CHARACTER A URL RESERVES. `2026-09-02 22:41 EDT`: ChangeLog
-    // ids have been `#1`-shaped since 2026-08-23 (utils/changeStore.js), and `getChange()` matches the stored
-    // string exactly. Without this, a correctly-encoded `/api/revert/%231` looked up the literal `%231` and
-    // answered "no such change" — a 404 that reads as a missing row rather than as a seam, on the most
-    // dangerous button in the portal. Every other id routed through here is an ObjectId, which is why nothing
-    // caught it: the one id that needed decoding was the one nobody had ever reverted from the web.
-    // ⚠️ A malformed sequence throws URIError; return it verbatim rather than 500ing on a bad request — the
-    // lookup will miss and the caller's own 404 is the right answer.
+    // 🔴 DECODED, BECAUSE A CHANGE ID CONTAINS A CHARACTER A URL RESERVES. `2026-09-02 22:41 EDT`: ChangeLog ids have been `#1`-shaped since 2026-08-23 (utils/changeStore.js), and `getChange()` matches the stored string exactly. Without this, a correctly-encoded `/api/revert/%231` looked up the literal `%231` and answered "no such change" — a 404 that reads as a missing row rather than as a seam, on the most dangerous button in the portal. Every other id routed through here is an ObjectId, which is why nothing caught it: the one id that needed decoding was the one nobody had ever reverted from the web. ⚠️ A malformed sequence throws URIError; return it verbatim rather than 500ing on a bad request — the lookup will miss and the caller's own 404 is the right answer.
     try { return decodeURIComponent(raw); } catch { return raw; }
 }
 

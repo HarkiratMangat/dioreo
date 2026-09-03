@@ -16,10 +16,7 @@ const args = process.argv.slice(2);
 const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
 const realm = flag('--realm', 'broadcast');
 const view = flag('--view', null);
-// 🔴 A QUERY THE MOCKUP SIDE CARRIES, because one realm cannot be compared without it. Review's staged-ops
-// store is sessionStorage and every load here clears it, so its mockup renders EMPTY against a populated
-// portal and every number is a comparison of two different datasets. `--mk-query demo=1` asks review.html
-// to seed itself from its own fixtures — seeded on request, never automatically (COMPANION §15).
+// 🔴 A QUERY THE MOCKUP SIDE CARRIES, because one realm cannot be compared without it. Review's staged-ops store is sessionStorage and every load here clears it, so its mockup renders EMPTY against a populated portal and every number is a comparison of two different datasets. `--mk-query demo=1` asks review.html to seed itself from its own fixtures — seeded on request, never automatically (COMPANION §15).
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 const MOCKUP = withQuery(`http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive/${realm === 'home' ? 'index' : realm}.html`);

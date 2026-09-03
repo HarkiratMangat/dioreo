@@ -2197,7 +2197,13 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .rvgates{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0}
 .rvgate{font-size:var(--t-sm);color:var(--warn);display:flex;align-items:center;gap:7px}
 .rvgate.ok{color:var(--ok)}
-.rvgate svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+/* 🔴 THE SIZE AND THE FLEX BOTH HAVE TO BE STATED HERE, and neither was reaching the icon.
+   The gate line draws its icon through the shared Icon component, which renders svg.ic — and `.ic.sm`
+   is two classes to this rule's one class plus a type, so it WON: the icon rendered at .85em of an
+   11.5px line, 9.77px, against the design's 14px, and `.ic{flex:none}` flattened it to 0 0 auto where
+   the design leaves 0 1 auto. Measured 2026-09-02 23:26 EDT. Specificity, not order — moving this rule later
+   in the file would have changed nothing. */
+.rvgate svg,.rvgate svg.ic{width:14px;height:14px;flex:0 1 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .rvconf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .rvconf input{width:210px;font-family:var(--data);font-size:var(--t-sm)}
 .rvconf label{font-size:var(--t-sm);color:var(--ink3)}
