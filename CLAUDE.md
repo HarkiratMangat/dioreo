@@ -3,15 +3,17 @@ kind: guide
 status: live
 ---
 
-> 🔴 **WHY THE `MEMORY.md` IMPORT NEVER WORKED FROM THIS FILE — ANSWERED 2026-09-02 23:53 EDT FROM THE CLI'S OWN CODE, AND THE IMPORT IS GONE FROM HERE.**
+> 🔴 **WHY THE `MEMORY.md` IMPORT NEVER WORKED FROM THIS FILE — settled 2026-09-03 00:04 EDT, and this is the THIRD answer because the first two were mine and both were wrong.**
 >
-> The include resolver refuses an imported path that resolves OUTSIDE the project directory unless the walk carries `includeExternal`, and only the USER-scope walk carries it. The guard is one line: `if (u > 0 && !A && !i0(x)) return []` — `u > 0` means "this file arrived through an `@`-import", `i0(x)` means "x is inside the original cwd", and `A = includeExternal && (type !== 'User' || …)`. **A project-scope `CLAUDE.md` can only import paths inside its own project**, and the memory store lives under `~/.claude`. The refusal is silent: no error, no log line, nothing.
+> An external `@`-import from a non-user-scope `claude.md` is gated behind a one-time approval, `hasclaudemdexternalincludesapproved`, which is **`false`** for this project in `~/.claude.json` — and `hasclaudemdexternalincludeswarningshown` is `false` too, so the prompt that would have said so was never shown either. it is an ungranted permission, not a prohibition: the docs are right that absolute paths are allowed, and they do not mention this gate.
 >
-> **Three explanations were blamed before this one and all three were wrong** — the YAML frontmatter, the `~` in the path, and an auto-memory dedupe. The first two were real defects that changed nothing when fixed; the third was my inference from an instrument that could not see the case, because `InstructionsLoaded`'s `memory_type` enum is `User | Project | Local | Managed` and has **no value for an auto-memory file at all**, so "zero `include` rows" could never have distinguished a skipped import from an unreported one.
+> **The evidence is a config value, not an inference:** `rg 'hasClaudeMdExternalIncludes' ~/.claude.json` returns `false` for both keys on every project entry. In the CLI's bundle, `lGe()` collects every loaded file whose `type !== 'User'` and whose path is outside the project, `Izn()` returns early when either flag is set, and the walks differ exactly there — the User walk calls the resolver with `includeExternal` hard-coded `true`, the Project walk passes the approval state.
 >
-> ✅ **The import now lives in `~/.claude/CLAUDE.md`**, which is user-scope and therefore allowed to reach outside the repo — the same reason `@RTK.md` has always loaded from there. Its note carries the verification step. **Do not re-add it here.**
+> ⚠️ **Two wrong answers preceded this one and both were stated confidently.** First: "the harness will not `include` a path it already auto-loads" — inferred from `local/instructions-loaded.jsonl`, an instrument that **cannot report an auto-memory file at all** (`InstructionsLoaded.memory_type` is `User | Project | Local | Managed`), so it could never have distinguished a skipped import from an unreported one. Second: "a project `CLAUDE.md` may only import paths inside its own project" — read off the guard `if (u > 0 && !A && !i0(x)) return []` while **assuming** the value of `A`, which is precisely the approval flag. Harkirat caught the second by reading the published docs, which say plainly that absolute paths are allowed.
 >
-> 📏 **And the cap is confirmed in code, not from the docs:** `YD = 200` lines and `GF = 25000` bytes, applied when the auto-memory index is built, with each individual memory file capped at `eY = 4096` bytes / `zTe = 200` lines for recall previews. The truncation and the import are two separate mechanisms; fixing one was never going to fix the other.
+> ✅ **The import lives in `~/.claude/CLAUDE.md`**, user scope, which passes `includeExternal` unconditionally and needs no approval — the same route `@RTK.md` has always taken. **Do not re-add it here** unless external includes are approved for this project, and if you do, expect a prompt.
+>
+> 📏 **The caps are from the same code and are a SEPARATE mechanism:** `YD = 200` lines and `GF = 25000` bytes for the auto-memory index, `eY = 4096` B / `zTe = 200` lines per topic file, import depth four hops. Fixing the import was never going to fix the truncation, or the reverse.
 
 # Dioreo — CODM Discord Bot
 
