@@ -3,17 +3,17 @@ kind: guide
 status: live
 ---
 
-> 🔴 **WHY THE `MEMORY.md` IMPORT NEVER WORKED FROM THIS FILE — settled 2026-09-03 00:04 EDT, and this is the THIRD answer because the first two were mine and both were wrong.**
+@/Users/harkirat/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md
+
+> 🔴 **THE IMPORT ABOVE WORKS ONLY BECAUSE EXTERNAL INCLUDES ARE NOW APPROVED FOR THIS PROJECT — 2026-09-03 00:08 EDT.**
 >
-> An external `@`-import from a non-user-scope `claude.md` is gated behind a one-time approval, `hasclaudemdexternalincludesapproved`, which is **`false`** for this project in `~/.claude.json` — and `hasclaudemdexternalincludeswarningshown` is `false` too, so the prompt that would have said so was never shown either. it is an ungranted permission, not a prohibition: the docs are right that absolute paths are allowed, and they do not mention this gate.
+> An `@`-import from a non-User-scope `CLAUDE.md` that resolves OUTSIDE the project directory is gated behind a one-time approval, `hasClaudeMdExternalIncludesApproved` in `~/.claude.json`. It was `false` here, and `hasClaudeMdExternalIncludesWarningShown` was `false` too — so the import was skipped in silence and the prompt that would have explained it was never shown. **It was an ungranted permission, never a prohibition:** the published docs are right that both relative and absolute paths are allowed, and they do not mention the gate. Set to `true` for this repo and its eleven worktree entries, so a worktree does not fail the same way; `/Applications/Diors-Builds`, the retired path, was left alone.
 >
-> **The evidence is a config value, not an inference:** `rg 'hasClaudeMdExternalIncludes' ~/.claude.json` returns `false` for both keys on every project entry. In the CLI's bundle, `lGe()` collects every loaded file whose `type !== 'User'` and whose path is outside the project, `Izn()` returns early when either flag is set, and the walks differ exactly there — the User walk calls the resolver with `includeExternal` hard-coded `true`, the Project walk passes the approval state.
+> 🔒 **IT MUST NOT LIVE IN THE GLOBAL `~/.claude/CLAUDE.md`.** That was tried for about ten minutes and is wrong on its face — the global file loads in EVERY repo, so it would import this project's memory index into every unrelated project on the machine. Harkirat caught it immediately. The import belongs here, in the project file, which is why the approval was the thing worth getting.
 >
-> ⚠️ **Two wrong answers preceded this one and both were stated confidently.** First: "the harness will not `include` a path it already auto-loads" — inferred from `local/instructions-loaded.jsonl`, an instrument that **cannot report an auto-memory file at all** (`InstructionsLoaded.memory_type` is `User | Project | Local | Managed`), so it could never have distinguished a skipped import from an unreported one. Second: "a project `CLAUDE.md` may only import paths inside its own project" — read off the guard `if (u > 0 && !A && !i0(x)) return []` while **assuming** the value of `A`, which is precisely the approval flag. Harkirat caught the second by reading the published docs, which say plainly that absolute paths are allowed.
+> ⚠️ **TWO EARLIER EXPLANATIONS WERE WRONG AND BOTH WERE MINE**, each a plausible mechanism narrated over a value I had not checked. First: "the harness will not `include` a path it already auto-loads" — inferred from `local/instructions-loaded.jsonl`, whose `InstructionsLoaded.memory_type` enum is `User | Project | Local | Managed` and therefore **cannot report an auto-memory file at all**, so it was blindness rather than evidence. Second: "a project `CLAUDE.md` may only import paths inside its project" — read off the resolver's guard while ASSUMING the value of the flag that guard tests. The published documentation settled it in one link.
 >
-> ✅ **The import lives in `~/.claude/CLAUDE.md`**, user scope, which passes `includeExternal` unconditionally and needs no approval — the same route `@RTK.md` has always taken. **Do not re-add it here** unless external includes are approved for this project, and if you do, expect a prompt.
->
-> 📏 **The caps are from the same code and are a SEPARATE mechanism:** `YD = 200` lines and `GF = 25000` bytes for the auto-memory index, `eY = 4096` B / `zTe = 200` lines per topic file, import depth four hops. Fixing the import was never going to fix the truncation, or the reverse.
+> ⚠️ **VERIFY IT RATHER THAN ASSUME IT.** `MEMORY.md` ends with `<!-- MEMORY-INDEX-END -->`. **If that literal is not in your context, the import did not work** — `Read` the file and say so. The 200-line / 25,000-byte auto-memory cap is a SEPARATE mechanism (`YD` and `GF` in the CLI's own code) and the import is what routes around it; `.claude/hooks/memory-index-check.sh`'s fallback stays as the belt until a session confirms the sentinel arrives.
 
 # Dioreo — CODM Discord Bot
 
