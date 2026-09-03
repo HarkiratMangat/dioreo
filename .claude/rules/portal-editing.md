@@ -5,6 +5,7 @@ paths:
   - "portal/ui/**"
   - "portal/fixtures/**"
   - "scripts/portal*"
+  - "docs/superpowers/mockups/2026-08-23-portal-interactive/**"
 ---
 
 # Editing the portal — the traps that only matter once you are IN the file
@@ -12,6 +13,8 @@ paths:
 *Created 2026-09-01. **This carries the traps, NOT the procedure.** The procedure (order of operations, close conditions, the approval boundary) is in the Part's own prompt, because a path-scoped rule fires when you read a matching file and a session's first ten calls are `git log`, a build, `preview_start`, `portal:status` and three audits — none of which reads one. **A rule that arrives at triage cannot carry what is needed at turn zero, and a rule that duplicates the prompt is the disagreeing-repetition defect three cold readers named seven times in one day.** One home per fact.*
 
 > 🔴 **⚠️ THIS RULE MAY RARELY FIRE, AND THAT IS A MEASURED TENSION IN THIS REPO'S OWN CONVENTIONS, NOT A COMPLAINT.** Path-scoped rules load when Claude READS a matching file. The working contract mandates that multi-site edits go through ONE `python3` heredoc — and a heredoc opens the file in a subprocess, which is not a Read. **So the more faithfully a session follows the batching discipline, the less likely this rule reaches it.** Measured once, on 2026-09-01: a session edited `portal/ui/app.css`, `manifest.js` and `broadcast.js` repeatedly through heredocs and `sed`, and no portal-adjacent rule ever appeared in its context — while `plan-drafting.md` DID appear, attached to a `Read` of a plan file. One session is one data point. **Falsifier: deliberately `Read` a `portal/ui` file at the start of a portal session and report whether this rule arrives.** If it does not, the honest conclusion is that `CLAUDE.md`'s navigation map advertises thirteen rules as *"load automatically when you touch matching code"* while touching-by-heredoc does not count — which would explain why portal traps keep being re-learned in-session and re-written into the plan instead of arriving from the rule that already held them.
+
+> 🔴 **THE MOCKUP PACKAGE IS IN SCOPE AS OF 2026-09-03 00:22 EDT, AND IT WAS NOT BEFORE — WHICH IS HOW ITS OWN TRAP CLASS BIT IN A FILE THIS RULE COULD NOT REACH.** The globs were `portal/ui/**`, `portal/fixtures/**`, `scripts/portal*`. The design package holds the OTHER half of every conformance edit, and a session that edits `review.html` four times gets no rule at all. Measured the same night: a slice-based deletion in `review.html` left a stray `};`, the whole mockup script died at parse time, and `portalDiff` reported a confident 5.7% with `main` and `nav.rail` as its top regions — which is what a dead page looks like to an instrument that cannot tell. **Parse-check the mockup after every edit:** `new Function(scriptBody)` over what is between its `<script>` tags costs nothing and catches exactly this.
 
 ## The five that have each cost real time
 

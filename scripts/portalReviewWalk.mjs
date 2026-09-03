@@ -4,6 +4,8 @@
 //
 // 🔴 AND `portal:realwalk` CANNOT COVER IT, WHICH IS WHY IT NEVER DID. That tool walks a realm's VIEWS in a browser, and Review has none: `review.html` carries no `data-view` and `review.js` passes no `viewOptions`. Pointed at Review it has nothing to click, so the gap was structural rather than an oversight — the near-neighbour instrument existed and was the wrong shape.
 //
+// ⚠️ WHAT IT DOES NOT PROVE, STATED BECAUSE THE FIRST VERSION OF THIS HEADER OVERCLAIMED IT: this asserts that a ChangeLog row EXISTS after a commit, which is NOT the same as proving it was written INSIDE the transaction. An audit write that ran outside `withTransaction` and survived a rollback would pass every assertion here. Proving atomicity needs a fault injection — abort after apply() and assert the row is absent too — and that is filed in docs/db-deferred-list.md rather than claimed. 2026-09-03 00:21 EDT.
+//
 // WHAT IT DRIVES: the REAL dev server over HTTP — every route, `requireAdmin`, the CSRF check, `gateCommit`, and `commitSet`'s real `session.withTransaction()`. Nothing is stubbed and no function is called directly. The only thing minted locally is the session row, through the same `scripts/lib/portalSession.cjs` every other instrument uses, because the alternative is a Discord OAuth round trip that cannot be automated and that is what kept this unmeasured.
 //
 // ⚠️ IT WRITES TO THE DEV DATABASE AND PUTS IT BACK. The tier-1 change it commits is reverted through the real `/api/revert` route, which exercises `invert()` as a side effect rather than by a separate test. `--keep` leaves the rows for inspection. If it dies mid-run the leftovers are named in the output. `portalSession` itself refuses any non-local database, so this cannot run against prod.
@@ -162,6 +164,28 @@ async function main() {
     const afterRefusal = await liveState(mongoose);
     check('6f', 'nothing was destroyed by the refused commit', afterRefusal.newDraws === afterDisc.newDraws, `newDraws ${afterDisc.newDraws} -> ${afterRefusal.newDraws}`);
     if (!KEEP) await api('POST', `/api/changeset/${cs3}/discard`, {});
+
+    // ── 6b · a BLOCKED changeset — the branch whose reason was once thrown away at the seam
+    //        `/api/review` records that it read `failure.reason`, which no validator sets, so the screen said
+    //        "This change no longer validates" while the system held the exact sentence. Nothing reaches this
+    //        state: the harness sets `blocked: null` unconditionally, and a walk that stages VALID ops never
+    //        produces one. So it is staged here deliberately, with an op the validator must refuse.
+    const stageBad = await api('POST', '/api/changeset', { realm: 'season', ops: [{ type: 'draw.add', payload: { category: 'new' } }] });
+    const csBad = stageBad.json?.changesetId;
+    if (csBad) leftovers.changesets.push(csBad);
+    check('6g', 'an invalid op is accepted as a changeset but marked blocked', stageBad.json?.state === 'blocked', `state=${stageBad.json?.state}`);
+    check('6h', 'the validator\'s own sentence survives to the caller, not a generic one',
+        JSON.stringify(stageBad.json?.failures || []).includes('title'), JSON.stringify(stageBad.json?.failures || []).slice(0, 120));
+    const rBad = await api('GET', '/api/review');
+    const opBad = (rBad.json?.ops || []).find((o) => o.changesetId === String(csBad));
+    check('6i', 'Review carries the specific reason, not "no longer validates"',
+        typeof opBad?.blocked === 'string' && /title/i.test(opBad.blocked), opBad?.blocked);
+    const commitBad = await api('POST', `/api/changeset/${csBad}/commit`, {});
+    check('6j', 'a blocked changeset REFUSES to commit', commitBad.status !== 200, `status=${commitBad.status} ${JSON.stringify(commitBad.json).slice(0, 120)}`);
+    const afterBad = await liveState(mongoose);
+    check('6k', 'and nothing was written by the refusal', afterBad.newDraws === afterRefusal.newDraws && afterBad.changeLog === afterRefusal.changeLog,
+        `newDraws=${afterBad.newDraws} changeLog=${afterBad.changeLog}`);
+    if (!KEEP) await api('POST', `/api/changeset/${csBad}/discard`, {});
 
     // ── 7 · put the database back THROUGH THE ROUTE, which is also the only test of the revert seam
     //        that a URL-encoding bug cannot pass: a `#N` id has to survive the trip both ways.

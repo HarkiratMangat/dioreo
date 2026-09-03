@@ -86,6 +86,7 @@ for (const r of rows) {
     console.log('  ' + r.realm.padEnd(12) + cells.join(''));
 }
 // ⚠️ STATED HERE RATHER THAN LEFT IMPLIED, because the failure this closes is only half the failure. A receipt records that a command executed at a commit. It cannot know what the command REPORTED, and it cannot know whether anyone read it — and the mistake it is aimed at was believing a near-neighbour instrument had already answered the question, which is a reading failure no timestamp can see. A row of ticks is not a closed Part; §L's sixth condition is a person looking, and that one has no instrument at all.
+console.log('  ⚠️ `commitwalk` is REVIEW-ONLY by construction — it drives the commit path, and Review is the only screen that commits. A blank cell on the other five realms is correct and is not work to do.');
 console.log('\n  ⚠️ a receipt says an instrument RAN, never what it found and never that anyone read it. Receipts are');
 console.log('     gitignored and local to this working tree, so a fresh clone correctly reports everything as never-run.');
 

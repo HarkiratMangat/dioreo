@@ -134,6 +134,14 @@ const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 const mockupUrl = withQuery(`${MOCKUP}/${MOCKUP_PAGE}`);
+// 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state.
+if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
+    console.error('refusing: Review must be measured SEEDED or the two sides hold different data.\n'
+        + '  add   --mk-query demo=1     to compare two populated boards (what every recorded figure for this realm means)\n'
+        + '  or    --no-seed             to measure the empty state deliberately');
+    process.exit(2);
+}
+
 const portalUrl = selfTest ? mockupUrl
     : portalMode === 'harness' ? `${PORTAL_HARNESS}?fresh=1&b=${Date.now()}#/${realm}`
     : `${PORTAL_REAL}/?b=${Date.now()}#/${realm}`;
