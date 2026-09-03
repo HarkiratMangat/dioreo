@@ -16,7 +16,10 @@ const PKG = path.join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interact
 const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return ''; } };
 // 🔴 THE OTHER FIVE CONDITIONS. §L closes a Part on six things and four of them are "did you run X against the current code". The geometry fixture was already immune — it is a FILE with a commit stamp, which is why this board could always report it stale. The instruments that print to stdout and write nothing had no memory at all, so on the next morning "never run" and "ran clean" were the same picture. On 2026-09-01 a Part came one summary away from being reported closed with `portal:inventory` — the plan's own named close condition — never having been run on that realm once, because another instrument's output RESEMBLED it. They leave receipts now and this reports them.
 const { readAll } = createRequire(import.meta.url)('./lib/portalReceipt.cjs');
-const TOOLS = ['audit', 'inventory', 'diff', 'converge', 'realwalk'];
+// 🔴 `commitwalk` JOINED THE BOARD 2026-09-02: `realwalk` walks a realm's VIEWS in a browser, and Review has none, so
+// the one realm where staged work becomes real could never earn that receipt — the gap was structural, not neglect.
+// `portal:reviewwalk` drives the commit path itself (stage, commit, discard, refuse) and records this instead.
+const TOOLS = ['audit', 'inventory', 'diff', 'converge', 'realwalk', 'commitwalk'];
 const head = sh('git rev-parse --short HEAD');
 
 // The reference's own fidelity, measured rather than assumed — season's mockup is a realised prototype and Review's is a tenth its size, so one target across seven pages was never right. ⚠️ "Smaller" is not "nothing to open": see the handler comment below.

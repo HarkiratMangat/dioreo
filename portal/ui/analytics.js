@@ -746,7 +746,12 @@ export function AnalyticsRealm({ session }) {
 
     // 🔴 THE MOST DANGEROUS BUTTON IN THE PORTAL ALSO HAD THE QUIETEST FAILURE. A revert that 500ed resolved to a payload nothing read, so the row stayed exactly as it was — indistinguishable from a portal that ignored the click, and the reader's next move is to press it again. ⚠️ ONE WORD FOR THE COMMITTED SENSE, AND IT IS "REVERSE". The UX-copy audit's vocabulary table (`local/handoff/2026-08-25-portal-ux-copy-audit.md`, gitignored -- state the path when citing it) reserves Undo for taking a STAGED change back and Reverse for undoing a COMMITTED one, because one word for two operations at different tiers is how a reader learns the wrong consequence. This realm carried both: the bulk bar and its confirm said Revert while the event drawer said Reverse, four inches apart. The op id stays `change.revert` -- an internal identifier is not a reader-facing word, and renaming it would break the route, the ChangeLog rows already written, and every custom_id in a panel someone still has open.
     async function revert(changeId) {
-        const res = await fetchJson(`/api/revert/${changeId}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
+        // 🔴 ENCODED, AND THE BUG THIS FIXES WAS INVISIBLE FROM BOTH ENDS. A change id is `#1`-shaped, and `#`
+    // in a template-literal URL starts a FRAGMENT: the browser sent `/api/revert/` with no id at all, the
+    // route regex did not match, and the answer was a 404 with a null body — which the comment above
+    // describes as the quiet failure this button already had once. Fixed with `segment()`'s decode on
+    // 2026-09-02 22:41 EDT; either half alone leaves the button dead, so they must never be separated.
+    const res = await fetchJson(`/api/revert/${encodeURIComponent(changeId)}`, { method: 'POST', headers: { 'x-csrf-token': session.csrfToken } });
         if (await reportFailure(overlay, res, 'That change was not reversed')) return false;
         load.reload();
         return true;
