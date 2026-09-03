@@ -3,9 +3,7 @@
 //
 // WHY THIS EXISTS (2026-09-02 20:15 EDT)
 // ------------------------------------------------
-// A `/code-review` pass found seven defects behind a fully green suite. Three were the same thing in
-// three files, and all three were auto-corrections that corrupted the exact thing they existed to
-// protect:
+// A `/code-review` pass found seven defects behind a fully green suite. Three were the same thing in three files, and all three were auto-corrections that corrupted the exact thing they existed to protect:
 //   · timestamp-check   detector scoped to today, substitution not -> rewrote a CORRECT historical
 //                       stamp sitting on the same line as the real target.
 //   · merge-delete-...  detector matched a merge after `;`/`&&`/`|`, the fix appended to the END of
@@ -13,26 +11,15 @@
 //   · rg-flag-guard     spliced correctly, then ran a tidy-up replace over the WHOLE command ->
 //                       collapsed a double space inside a quoted search pattern.
 //
-// Each passed the "does the hook know the ONE right value" test that governs promoting a gate to
-// correcting. That test is necessary and NOT sufficient. The shared shape underneath is narrower and
-// checkable: **the target was described twice, and the two descriptions drifted.** Detector vs
-// substitution. Detector vs placement. Splice vs tidy-up.
+// Each passed the "does the hook know the ONE right value" test that governs promoting a gate to correcting. That test is necessary and NOT sufficient. The shared shape underneath is narrower and checkable: **the target was described twice, and the two descriptions drifted.** Detector vs substitution. Detector vs placement. Splice vs tidy-up.
 //
 // So the invariant here is not "is the fix right" -- it is the one property all three violated:
 //
 //     A CORRECTING HOOK'S OUTPUT MUST DIFFER FROM ITS INPUT ONLY AT THE THING IT CAME FOR.
 //
-// Everything else in the payload -- a neighbouring correct value, the inside of a quoted span, the
-// command after the separator -- must come back byte-identical. Each case below carries the target
-// AND a near-miss that must survive, because a case with only a target cannot fail this way. This
-// is the same reasoning `scripts/reflow-prose.mjs:272` already records for its own rewriter: a
-// verify that recomputes the same wrong boundaries before and after is vacuously equal.
+// Everything else in the payload -- a neighbouring correct value, the inside of a quoted span, the command after the separator -- must come back byte-identical. Each case below carries the target AND a near-miss that must survive, because a case with only a target cannot fail this way. This is the same reasoning `scripts/reflow-prose.mjs:272` already records for its own rewriter: a verify that recomputes the same wrong boundaries before and after is vacuously equal.
 //
-// 🔴 THE ROSTER IS READ OFF DISK, NEVER HAND-MAINTAINED. A new hook that emits `updatedInput` and has
-// no case here FAILS this suite. That is the half that does not rot: a checklist in a doc protects
-// only the hooks whose authors read it, and this repo has measured what prose is worth (`grep` 788x
-// against a rule that had been written down for months). run-all-tests.sh computes its coverage the
-// same way and for the same reason.
+// 🔴 THE ROSTER IS READ OFF DISK, NEVER HAND-MAINTAINED. A new hook that emits `updatedInput` and has no case here FAILS this suite. That is the half that does not rot: a checklist in a doc protects only the hooks whose authors read it, and this repo has measured what prose is worth (`grep` 788x against a rule that had been written down for months). run-all-tests.sh computes its coverage the same way and for the same reason.
 import { readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
@@ -42,8 +29,7 @@ const HOOKS = join(dirname(fileURLToPath(import.meta.url)), '..', '.claude', 'ho
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 const tz = new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', timeZoneName: 'short' }).split(' ').pop();
 
-// A near-miss is a value the hook must recognise as NOT its target while a real target sits beside
-// it. Anything listed in `survives` is asserted back byte-identical in the rewritten payload.
+// A near-miss is a value the hook must recognise as NOT its target while a real target sits beside it. Anything listed in `survives` is asserted back byte-identical in the rewritten payload.
 const CASES = {
     'timestamp-check.sh': [
         {
@@ -54,10 +40,7 @@ const CASES = {
             expect: 'rewrite',
         },
         {
-            // Found by an adversarial pass, not by this suite: TS-EXAMPLE was exempt from DETECTION
-            // and not from SUBSTITUTION, so an exempt line was rewritten whenever any other line in
-            // the same write triggered the branch. The escape hatch is exactly the text that must
-            // never be touched, which makes it the worst possible place for the drift to land.
+            // Found by an adversarial pass, not by this suite: TS-EXAMPLE was exempt from DETECTION and not from SUBSTITUTION, so an exempt line was rewritten whenever any other line in the same write triggered the branch. The escape hatch is exactly the text that must never be touched, which makes it the worst possible place for the drift to land.
             name: 'a TS-EXAMPLE line beside a real placeholder',
             args: ['pre'],
             input: { new_string: `the bad shape is ${today} 09:xx ${tz}   TS-EXAMPLE\nfiled ${today} 11:xx ${tz}` },
@@ -129,13 +112,7 @@ for (const hook of rewriting) {
 
         const j = out.trim() ? JSON.parse(out) : null;
         const u = j?.hookSpecificOutput?.updatedInput;
-        // 🔴 EVERY CASE STATES THE OUTCOME IT EXPECTS -- corrected 2026-09-02 20:26 EDT by an adversarial
-        // pass over this file, written about an hour after it shipped. The first version scored "did
-        // not rewrite" as a PASS unconditionally, so a hook whose autofix broke entirely -- a bad
-        // regex, an unresolved variable, a jq error swallowed by 2>/dev/null -- would turn this whole
-        // suite green. The file whose stated purpose is catching a correcting hook that misbehaves
-        // could not notice one that had stopped correcting. That is the vacuous pass this repo has
-        // three memories about, written by the person who had just quoted them.
+        // 🔴 EVERY CASE STATES THE OUTCOME IT EXPECTS -- corrected 2026-09-02 20:26 EDT by an adversarial pass over this file, written about an hour after it shipped. The first version scored "did not rewrite" as a PASS unconditionally, so a hook whose autofix broke entirely -- a bad regex, an unresolved variable, a jq error swallowed by 2>/dev/null -- would turn this whole suite green. The file whose stated purpose is catching a correcting hook that misbehaves could not notice one that had stopped correcting. That is the vacuous pass this repo has three memories about, written by the person who had just quoted them.
         if (!u) {
             if (c.expect === 'quiet') {
                 console.log(`  ✓ ${hook}: ${c.name} — correctly left alone`);
