@@ -86,4 +86,4 @@ The full panel reference — the k-means extraction, the swatch/gradient renderi
 
 **Read it when you are working on the panel:** `docs/reference/colors-panel.md`, or ask `ctx_search` with `source: "project:dioreo-docs"` — it is indexed and refreshed before every search.
 
-⚠️ **This rule is INJECTED and the reference is not.** Everything in this file is paid in full the moment you read any file matching its `paths:`, so keep this file to what you must know BEFORE editing. Anything you would look up belongs in the reference. `npm run rules:budget` pins the size and only lets it fall.
+⚠️ **This rule is INJECTED and the reference is not.** Everything in this file is paid in full the moment you read any file matching its `paths:`, so keep this file to what you must know BEFORE editing. Anything you would look up belongs in the reference. ⚠️ Nothing currently GATES that — a byte-pin ratchet was tried 2026-09-02 and rejected; see Problem 3 in `docs/superpowers/plans/2026-09-02-context-loading-open-problems.md`.

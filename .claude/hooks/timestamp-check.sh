@@ -89,11 +89,11 @@ if [ -n "$future" ]; then
   fi
 fi
 
-# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance. 🔴 TODAY ONLY, AND THIS NARROWING IS LOAD-BEARING — added 2026-09-02 16:58 EDT. This branch exists for ONE mishap: writing a stamp for NOW, meaning to fill the minute in later, and never doing it. A placeholder on a PAST date is the opposite thing — a deliberately imprecise historical reference (`2026-09-01 16:58 EDT`), and there are many of them in this repo's own records and hook comments. Substituting there does not repair anything: it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix rather than the author. Found by the completeness sweep asking whether this check fires on its OWN artifacts — feeding `memory-index-check.sh` (which carries four such stamps) through it returned an `updatedInput` rewriting them to the current minute.
-placeholder=$(printf '%s' "$joined" \
-  | grep -v 'TS-EXAMPLE' \
-  | grep -oE "${today}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}" \
-  | grep -E '[xX?]' | sort -u)
+# --- (A2) PLACEHOLDER TIME: a date paired with an HH:MM slot that isn't real digits. -------------- Added 2026-08-03 18:12 EDT — see the file-header note for the incident. NOT backtick-exempt, same reasoning as (A): a fake stamp inside backticks is still a fake stamp. TS-EXAMPLE stays exempt so this file's own header can keep quoting the bad pattern as an example. x/X/? only — deliberately NOT h/H, since `YYYY-MM-DD HH:MM TZ` is this project's own literal format spec (used constantly in CLAUDE.md and this very file) and must never be flagged as a fake instance. 🔴 TODAY ONLY, AND THIS NARROWING IS LOAD-BEARING — added 2026-09-02 16:58 EDT. This branch exists for ONE mishap: writing a stamp for NOW, meaning to fill the minute in later, and never doing it. A placeholder on a PAST date is the opposite thing — a deliberately imprecise historical reference (`2026-09-01 16:58 EDT`), and there are many of them in this repo's own records and hook comments. Substituting there does not repair anything: it INVENTS a precise time for a past event, which is the exact fabrication this whole file exists to prevent, committed by the fix rather than the author. Found by the completeness sweep asking whether this check fires on its OWN artifacts — feeding `memory-index-check.sh` (which carries four such stamps) through it returned an `updatedInput` rewriting them to the current minute. 🔴 ONE DEFINITION OF THE TARGET — added 2026-09-02 20:26 EDT. This branch has now drifted THREE times in one day, and every instance was the same cause: the target was written out separately in the detector, in the substitution, and in the post-substitution re-check, and a narrowing applied to one did not reach the others. First the substitution matched any date while the detector was scoped to today. Then the substitution ignored TS-EXAMPLE while the detector honoured it. Then the re-check ignored both narrowings and refused a correct fix. A shell variable is a weak abstraction and it is enough: there is one string now, and `grep -v TS-EXAMPLE` is applied at every site that reads it.
+PLACEHOLDER_RE="${today}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}"
+find_placeholders() { printf '%s' "$1" | grep -v 'TS-EXAMPLE' | grep -oE "$PLACEHOLDER_RE" | grep -E '[xX?]'; }
+
+placeholder=$(find_placeholders "$joined" | sort -u)
 placeholder_nl="$placeholder"          # newline-separated: each match CONTAINS a space, so " " cannot delimit them
 placeholder=$(printf '%s' "$placeholder" | tr '\n' ' ')
 
@@ -109,10 +109,19 @@ if [ -n "$placeholder" ]; then
     fixed=$(printf '%s' "$payload" | jq --arg t "$now_hm" --arg d "$today" '
       ("(?<p>" + $d + "[ \t]+)(?:[0-9xX?]{1,2}:[0-9xX?]?[xX?]|[0-9xX?]?[xX?]:[0-9xX?]{2})") as $re
       | .tool_input |= with_entries(
-        if (.value | type) == "string" then .value |= gsub($re; .p + $t) else . end)
+        if (.value | type) == "string"
+        # 🔴 PER LINE, AND SKIPPING TS-EXAMPLE — corrected 2026-09-02 20:26 EDT after an adversarial pass. The
+        # detector filters TS-EXAMPLE lines out; this gsub ran over the whole string value and did not,
+        # so a write containing an exempt line AND a real placeholder had the EXEMPT one rewritten.
+        # Reproduced: `the bad shape is <today> 09:xx EDT   TS-EXAMPLE` came back as the current time.
+        # That is the same detector-vs-substitution drift as the original defect, relocated into the
+        # escape hatch — which is worse, because the escape exists precisely for text that must not be
+        # touched. Third instance of one shape in one file; the two descriptions have to be ONE.
+        then .value |= (split("\n") | map(if test("TS-EXAMPLE") then . else gsub($re; .p + $t) end) | join("\n"))
+        else . end)
       | .tool_input' 2>/dev/null)
-    # The fallback is not decoration: if jq fails, or the substitution changes nothing, an `allow` would pass the placeholder straight through — a fix that silently does not fix is worse than the refusal it replaced. ⚠️ THE FIRST VERSION OF THIS GUARD REJECTED ITS OWN CORRECT OUTPUT. It re-matched the placeholder pattern against the fixed text to prove the slot was gone — but `[0-9xX?]{2}` is an alternation, so a repaired `19:20` matches it just as happily as `18:xx` does, and every substitution was discarded as unfixed. The check has to ask whether a placeholder CHARACTER survives, which is the same two-step the detector above already uses: find the date+slot shapes, then keep only the ones carrying x/X/?.
-    still=$(printf '%s' "$fixed" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9xX?]{1,2}:[0-9xX?]{2}' | grep -cE '[xX?]' || true)
+    # The fallback is not decoration: if jq fails, or the substitution changes nothing, an `allow` would pass the placeholder straight through — a fix that silently does not fix is worse than the refusal it replaced. ⚠️ THE FIRST VERSION OF THIS GUARD REJECTED ITS OWN CORRECT OUTPUT. It re-matched the placeholder pattern against the fixed text to prove the slot was gone — but `[0-9xX?]{2}` is an alternation, so a repaired `19:20` matches it just as happily as `18:xx` does, and every substitution was discarded as unfixed. The check has to ask whether a placeholder CHARACTER survives, which is the same two-step the detector above already uses: find the date+slot shapes, then keep only the ones carrying x/X/?. Same definition, same TS-EXAMPLE filter. A re-check looser than the detector refuses a fix that actually worked; a re-check tighter than it ships a half-fixed write. It has to be the same one.
+    still=$(find_placeholders "$fixed" | grep -c . || true)
     if [ -n "$fixed" ] && [ "$fixed" != "null" ] && [ "${still:-1}" = "0" ]; then
       jq -n --argjson i "$fixed" --arg r "PLACEHOLDER TIMESTAMP CORRECTED to ${now_hm} — you typed ${placeholder}with a digit slot standing in for the real minute. The hook substituted the current clock rather than refusing the write, so nothing is owed. ⚠️ If you meant a genuinely unknown time, say so in words; a placeholder digit is never publishable content." \
         '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"allow",updatedInput:$i,permissionDecisionReason:$r}}'

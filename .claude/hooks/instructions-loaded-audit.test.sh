@@ -65,4 +65,20 @@ rep2=$(bash "$HOOK" --report 2>&1)
 case "$rep2" in *"has not fired"*) r4=ok;; *) r4=no;; esac
 chk "--report distinguishes 'no log' from 'no loads'" "$r4"
 
+# -- the --session line ------------------------------------------------------- Added 2026-09-02 20:28 EDT. The line is read by every session, so a wrong number in it is worse than no line -- and the first version had one: it summed ROWS rather than FILES and reported 266,496B for three files totalling 95,593. An earlier case re-pointed IL_AUDIT_LOG at a nonexistent path to prove the no-log branch, so these were writing to $LOG while the hook read somewhere else. Point it back before using it.
+export IL_AUDIT_LOG="$LOG"
+mk() { jq -nc --arg f "$1" --argjson b "$2" '{ts:"2026-09-02T20:19:11-0400",file_path:$f,load_reason:"session_start",bytes:$b}'; }
+{ mk "$RULE" 100; mk "$RULE" 100; mk "/x/.claude/rules/silent-mode.md" 50; } > "$LOG"
+line=$(bash "$HOOK" --session | jq -r '.hookSpecificOutput.additionalContext')
+case "$line" in *"2 file(s), 150B"*) d=ok;; *) d=no;; esac
+chk "counts each file ONCE, not each row" "$d"
+case "$line" in *"silent-mode.md is among them"*) sm=ok;; *) sm=no;; esac
+chk "says explicitly whether silent-mode loaded" "$sm"
+mk "$RULE" 100 > "$LOG"
+miss=$(bash "$HOOK" --session | jq -r '.hookSpecificOutput.additionalContext')
+case "$miss" in *"SILENT MODE IS NOT IN EFFECT"*) al=ok;; *) al=no;; esac
+chk "ALARMS when silent-mode is absent from the batch" "$al"
+: > "$LOG"
+chk "--session is silent on an empty log" "$([ -z "$(bash "$HOOK" --session)" ] && echo ok)"
+
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

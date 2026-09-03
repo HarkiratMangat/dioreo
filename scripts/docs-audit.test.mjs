@@ -652,6 +652,13 @@ proves("a path-scoped rule whose glob matches nothing", "rule-globs", (root) => 
 });
 
 // The existing case above proves rule-globs can fail on a DEAD glob. It cannot reach the no-globs path at all, so the `unconditional: true` escape added 2026-09-02 16:05 EDT would have been an untested branch -- and an escape nobody has watched refuse anything is how a check quietly stops checking. This is the case that makes the escape a claim rather than a hope: a rule with an empty `paths:` and NO declaration must still ERROR, which is the far more likely cause (globs deleted, or never written) and the one that makes a rule silently stop loading for anything.
+proves("an uninterpolated generator expression in a tracked file", "generator-artifact", (root) => {
+  // The literal is assembled here rather than written out, so this test file cannot trip the very check it is proving -- the self-suppression trap the check's own comment names.
+  const q = '"'.repeat(3);
+  write(root, "docs/example.md", `---\nkind: reference\nstatus: live\n---\n\n# x\n\nconst v = ${q} + S + ${q};\n`);
+  execFileSync("git", ["add", "-A"], { cwd: root });
+});
+
 proves("a rule with no globs and no `unconditional` declaration", "rule-globs", (root) => {
   write(root, ".claude/rules/example.md", "---\nkind: rule\nstatus: live\n---\n\nA rule with no paths and no declaration.\n");
   execFileSync("git", ["add", "-A"], { cwd: root });

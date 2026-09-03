@@ -102,6 +102,16 @@
             "command": "touch \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/.model-gate-reset\" 2>/dev/null || true"
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/instructions-loaded-audit.sh\" --session",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
