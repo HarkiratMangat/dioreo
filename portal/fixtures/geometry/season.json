@@ -1,7 +1,7 @@
 {
   "realm": "season",
-  "recordedAt": "2026-09-01T20:17:55.191Z",
-  "commit": "55fc1fe",
+  "recordedAt": "2026-09-03T19:48:09.306Z",
+  "commit": "78f8ff90",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,7 +9,7 @@
   "views": {
     "Track": {
       "grid": {
-        "examined": 1448,
+        "examined": 1447,
         "nearMisses": 3,
         "sizeIssues": 35
       },
