@@ -243,11 +243,7 @@ function reviewPayload() {
 // Staged changesets in the shape /api/changeset returns them — one per sample op, so the Board has columns with something in them and Season's staged panel has rows.
 function harnessChangesets() {
     return (window.FIX.sampleOps || []).map((o, i) => ({
-        // 🔴 DERIVED, NOT TYPED — and this line was MISSED when reviewPayload() was fixed on 2026-09-02, which is the
-        // instance-not-class error in the same session that cited a memory about it. The reader test found it. This feeds
-        // /api/changeset, so it is SEASON's Board and staged panel, not Review's: season.js:203 renders the tier chip and
-        // :1278 counts tier >= 3 as blocked. Typing a 3 onto draw.delete taught a state production cannot produce, on a
-        // realm already closed against this fixture. ⚠️ Season must be RE-MEASURED — filed. 2026-09-03 09:03 EDT.
+        // 🔴 DERIVED, NOT TYPED — and this line was MISSED when reviewPayload() was fixed on 2026-09-02, which is the instance-not-class error in the same session that cited a memory about it. The reader test found it. This feeds /api/changeset, so it is SEASON's Board and staged panel, not Review's: season.js:203 renders the tier chip and :1278 counts tier >= 3 as blocked. Typing a 3 onto draw.delete taught a state production cannot produce, on a realm already closed against this fixture. ⚠️ Season must be RE-MEASURED — filed. 2026-09-03 09:03 EDT.
         _id: 'cs-' + i, realm: o.realm || 'season',
         tier: (window.FIX.OP_TIERS && window.FIX.OP_TIERS[o.op || 'draw.edit']) || o.tier || 1,
         state: 'staged', ops: [{ type: o.op || 'draw.edit', target: null, payload: {} }],

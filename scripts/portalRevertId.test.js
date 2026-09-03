@@ -40,9 +40,7 @@ it('segment() still reads an ObjectId path unchanged', () => {
 });
 
 it('EVERY revert call site in portal/ui encodes its id', () => {
-    // ⚠️ EVERY, NOT THE FIRST. This read one line of analytics.js — `.find(...)` — so a SECOND call site, added later or in
-    // another file, was unchecked. There is exactly one today, which made the hole latent rather than live. Found by the
-    // reader test 2026-09-03 09:04 EDT.
+    // ⚠️ EVERY, NOT THE FIRST. This read one line of analytics.js — `.find(...)` — so a SECOND call site, added later or in another file, was unchecked. There is exactly one today, which made the hole latent rather than live. Found by the reader test 2026-09-03 09:04 EDT.
     const files = fs.readdirSync(path.join(ROOT, 'portal', 'ui')).filter((f) => f.endsWith('.js'));
     const sites = [];
     for (const f of files) {
@@ -60,8 +58,7 @@ it('EVERY revert call site in portal/ui encodes its id', () => {
 });
 
 it('the revert ROUTE reads its id through segment(), the function this gate tests', () => {
-    // ⚠️ WITHOUT THIS the gate proved a helper nobody had to call. Replacing segment() at the route with an inline regex
-    // capture left both halves green while the button died again. Found by the reader test 2026-09-03 09:04 EDT.
+    // ⚠️ WITHOUT THIS the gate proved a helper nobody had to call. Replacing segment() at the route with an inline regex capture left both halves green while the button died again. Found by the reader test 2026-09-03 09:04 EDT.
     const src = fs.readFileSync(path.join(ROOT, 'portal', 'api', 'changesets.js'), 'utf8');
     const i = src.indexOf('/^\\/api\\/revert\\/');
     assert.ok(i !== -1, 'no /api/revert route found in portal/api/changesets.js — this gate has lost its subject');

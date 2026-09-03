@@ -23,10 +23,7 @@ const realm = flag('--realm', 'season');
 const view = flag('--view', null);
 const asJson = args.includes('--json');
 
-// 🔴 REVIEW REFUSES WITHOUT A SEED — see portalDiff for the full reasoning. Its staged-ops store is sessionStorage and every
-// load here clears it, so an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong
-// number. ⚠️ THIS TOOL WAS MISSED when the refusal shipped to diff/audit/converge on 2026-09-03; the reader test found it,
-// and this one is quoted in the plan's §L row 6a, so the reading recorded there was taken unseeded. Re-take it. 2026-09-03 09:03 EDT
+// 🔴 REVIEW REFUSES WITHOUT A SEED — see portalDiff for the full reasoning. Its staged-ops store is sessionStorage and every load here clears it, so an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong number. ⚠️ THIS TOOL WAS MISSED when the refusal shipped to diff/audit/converge on 2026-09-03; the reader test found it, and this one is quoted in the plan's §L row 6a, so the reading recorded there was taken unseeded. Re-take it. 2026-09-03 09:03 EDT
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {

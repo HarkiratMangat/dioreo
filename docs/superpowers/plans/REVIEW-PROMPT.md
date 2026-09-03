@@ -1,7 +1,15 @@
 ---
 kind: plan
-status: live
+status: superseded
+superseded_by: docs/superpowers/plans/2026-08-27-portal-conformance.md
 ---
+
+> 🔴 **PART 6a IS DONE. THIS FILE IS A RECORD OF HOW IT WAS FRAMED, NOT AN INSTRUCTION — superseded 2026-09-03 09:18 EDT by §L row 6a of the conformance plan, which carries the outcome, the twelve adjudicated regions and what is still open.**
+>
+> ⚠️ **THE COMMAND BLOCK BELOW NO LONGER RUNS AS WRITTEN, AND THAT IS WHY THIS BANNER EXISTS RATHER THAN A `status:` LINE ALONE.** Three of its five commands now **exit 2**: `portal:audit`, `portal:inventory`, `portal:diff` and `portal:converge` REFUSE on Review without `--mk-query demo=1`, because an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong number. A superseded document's code block is still a code block, and someone would have pasted it.
+>
+> ⚠️ **EVERY FIGURE IN §3 IS THE PRE-SEED READING** — 4.7% / 15 regions, converge 40-of-25, inventory mk 32 · pt 55. They are historically true and currently misleading. The seeded readings are **0.5% in 12 regions**, converge **12 of 28**, and the twelve regions are enumerated with their classes in `docs/reference/portal-decision-ledger.md`.
+
 
 # Part 6a — Review. Paste this in.
 
@@ -29,12 +37,13 @@ If all three answer you need no `preview_start`. If they do not: `preview_start 
 **4 · Create the three artifacts NOW, not at the end** — `local/locate-review.md`, `local/review-triage.md`, `local/difference-ledger-review.md`. At hour six writing is the first thing cut, so these are preconditions rather than deliverables. Part 4 produced one of three under a more explicit instruction than this one. §L ③ consumes them and cannot close without them.
 
 ```bash
+# ⚠️ HISTORICAL — the unseeded forms. Three of these exit 2 now. The seeded forms are:
 npm run portal:status
-npm run portal:audit -- --realm review --all
-npm run portal:audit -- --realm review --triggers
-npm run portal:inventory -- --realm review
-node scripts/portalDiff.mjs --realm review --portal harness
-npm run portal:converge -- --realm review
+npm run portal:audit -- --realm review --all --mk-query demo=1
+npm run portal:audit -- --realm review --triggers --mk-query demo=1
+npm run portal:inventory -- --realm review --mk-query demo=1
+node scripts/portalDiff.mjs --realm review --portal harness --mk-query demo=1
+npm run portal:converge -- --realm review --mk-query demo=1
 ```
 
 ⚠️ **Run `portal:converge` as the named tool.** Reading `portal:audit`'s ① CASCADE section instead and calling ① satisfied was caught on Broadcast, with `portal:status` printing `converge · never` in the same tree.
