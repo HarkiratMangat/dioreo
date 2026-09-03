@@ -81,7 +81,7 @@ The portal harness carries **four staged changesets**; the mockup's staged store
 ## §5 — THE CONTRACT, RESTATED BECAUSE IT DOES NOT SURVIVE A SESSION BOUNDARY
 
 - **Branch off `v3-pre-release`** (at `95923c9e`, `3.75.0-pre`). Part 6a merged as #182.
-- ⚠️ **`docs/ci-flake-filing` is an UNPUSHED local branch** carrying a P1 filing and this file. Fold it into your branch or push it with your PR — do not leave it stranded.
+- ✅ **YOUR BRANCH ALREADY EXISTS: `feat/home-portal-conformance`, UNPUSHED, cut from `v3-pre-release` at `95923c9e`.** It carries this prompt, the §L row 6b pointer and a P1 filing — commit onto it rather than branching again. Named for the work, not for its first commit, and renamed to that 2026-09-03 18:00 EDT (it was `docs/ci-flake-filing`, then `docs/part-6b-prep`); it has no PR, so the rename was safe.
 - 🔴 **Expect CI to be RED and it is not your change.** `portal:states` fails on the runner on Season's *identity · expanded editor* while passing twice locally; it hit `v3-pre-release` after #181 too. Filed `[P1 · M]`. #182 was merged past it with the admin override, on Harkirat's explicit decision.
 - ⛔ **Never push, open a PR, merge, or ask about any of them.** Approval is restated at the moment of the action, naming who · to what · when.
 - ⚠️ **Scoped tests only until a push is approved.** Run the gates covering what you touched; the full suite waits. **`npm run handoff` at every phase end** — it caught a red gate that had already been committed, and a stale carrier, in a session that thought it was finished.
