@@ -28,22 +28,22 @@ If all three answer you need no `preview_start`. Otherwise `preview_start {name:
 
 **4 · Create the three artifacts NOW** — `local/locate-home.md`, `local/home-triage.md`, `local/difference-ledger-home.md`. At hour six writing is the first thing cut, so these are preconditions rather than deliverables. Part 4 produced one of three under a more explicit instruction than this one.
 
-## 🔴 §1 — HOME IS NOT MISALIGNED. TWO OF ITS PANELS ARE UNBUILT
+## 🔴 §1 — EVERY ABSENCE THE INSTRUMENTS REPORT ON HOME IS A FIXTURE, NOT A GAP — AND THIS DOCUMENT GOT IT WRONG FIRST
 
-Every previous realm's gap was *the same components, drawn differently*. Home's is not, and the instruments say so plainly once you read ② rather than the percentage.
+`npm run portal:audit -- --realm home --all` reports these ONLY IN MOCKUP: `span.att-i` ×5, `span.att-b` ×5, `span.att-x` ×5, `span.att-sev`, `span.att-go` ×5, `a.att-row.s-repair` — **the design's entire attention list**, the answer to the question the page asks — plus `section.hclock`, `div.hc-face.sclock`, `span.sc-u`, `span.sc-sep`, **the season countdown clock**.
 
-**`npm run portal:audit -- --realm home --all` reports these ONLY IN MOCKUP:**
+**The first draft of this file concluded that the portal does not build them, and told you to compose against COMPANION before running the audit loop. That was wrong, and it was wrong in the way this repo keeps being wrong.** Two `rg` calls into `portal/ui/home.js` settle it:
 
-| Missing from the portal | What it is |
-|---|---|
-| `span.att-i` ×5 · `span.att-b` ×5 · `span.att-x` ×5 · `span.att-sev` · `span.att-go` ×5 · `a.att-row.s-repair` | **The entire attention list** — the design's answer to the question the page asks. Five numbered severity rows, each naming a destination: *"7 permissions held by exactly one person → Access · the matrix"* |
-| `section.hclock` · `div.hc-face.sclock` · `span.sc-u` · `span.sc-sep` | **The season countdown clock** — `17days:23hrs:59min:59sec` |
+- **`:78-82` builds the attention list.** `att-list` → `att-row s-${a.kind}` → `att-i` / `att-b` / `att-x`, mapped over `rows`. What the harness rendered is **`:70-73`, the EMPTY branch** — `att-row clear`, *"Nothing needs you right now."*
+- **`:118-119` builds the clock**, `section.hclock` → `div.sclock.hc-face` with `sc-u` and `sc-sep`. What the harness rendered is one of the two degenerate branches at **`:102` / `:105`** — `sc-none`, *"No season deadline set"* or *"This season has ended."*
 
-The portal renders neither. In their place, region 1 of the pixel diff — **1040×912, essentially the whole fold** — pairs the design's `a.att-row.s-repair` against the portal's `span.n "Ground War MP Mode"`. Different content, not different styling.
+So both components exist, both are wired, and the fixture puts both in a branch that draws almost nothing. **An element scanner cannot tell "not built" from "built and drawing its empty state", and it reports the second as the first.**
 
-🔴 **THIS IS WHY THE AUDIT LOOP IS THE WRONG FIRST MOVE.** ① CASCADE will hand you `div.masthead height 129 → 116`, and fixing a 13px masthead offset on a page missing its primary panel is polishing a frame around an empty wall. **Compose first against `COMPANION.md` §5.7 (`### 5.7 Home (index.html) — answers: what needs you`), then run the loop.** COMPANION also carries §5.9r.1, §5.9z.5 and §16.6 on Home — read all four; §16.6 in particular records that *the cards were a second authority and the rail was the missing half*, which is a design decision you must not re-derive.
+🔴 **THIS IS THE THIRD TIME IN ONE PASS.** Review's whole board was measured empty against a populated portal (4.7% → 0.5% once seeded). The harness fabricated a tier 3 that made an entire surface read as a design difference. Now Home. **The general form is: when an instrument reports a component ABSENT, the first hypothesis is that the data left it in a branch that renders nothing — not that nobody wrote it.** Check the component's source before you believe an absence. It costs one `rg` and this document is the receipt for what skipping it produces.
 
-⚠️ **The plan already told you this and it is easy to read past:** §L row 6b says Home's failure mode is **composition against COMPANION**, not conformance against the mockup. That sentence is the whole Part, and until now nobody had the measurements to see what it meant.
+**So your actual first move is neither the audit loop nor composition — it is the fixture.** Find why the harness leaves Home's two primary panels in their empty branches: what `rows` is built from, what a season deadline needs to be non-null, and whether the mockup and the harness are reading the same `fixtures.js` (they are — `stub.js:67` is `const F_ = window.FIX`, the design's own file). **Until both sides populate the same panels, every number in §2 is measuring two different datasets and none of them grades anything.**
+
+⚠️ **And then the composition question is still real** — §L row 6b says Home's failure mode is composition against COMPANION rather than conformance against the mockup, and COMPANION carries four Home sections (§5.7, §5.9r.1, §5.9z.5, §16.6). §16.6 in particular records that *the cards were a second authority and the rail was the missing half* — a settled decision, not something to re-derive. Read them **after** the fixture question, so you are comparing two populated pages.
 
 ## §2 — THE NUMBERS, AND THREE WAYS TO MISREAD THEM
 
@@ -51,8 +51,8 @@ Measured 2026-09-03 16:52 EDT, the first run of any instrument on this realm —
 
 | Reading | Value | ⚠️ |
 |---|---|---|
-| `node scripts/portalDiff.mjs --realm home --portal harness` | **6.3% · 31 regions** · mk **1165px** · pt **1073px** | 🔴 **The portal is 92px SHORTER, and it is the only realm where that direction holds.** Everywhere else the portal was taller. A shorter page with a higher percentage means missing content, not extra content — and the diff compares over the SHORTER of the two, so **the 6.3% cannot see what is missing below 1073px.** The figure understates the gap |
-| `npm run portal:audit -- --realm home --all` | ① `div.masthead` h 129→116 · ② **64** · ③ 7 · ④ **43** | ② at 64 is the second-highest first reading of any realm. Most of it is the attention list and the clock, i.e. ONE decision each, not 64 |
+| `node scripts/portalDiff.mjs --realm home --portal harness` | **6.3% · 31 regions** · mk **1165px** · pt **1073px** | 🔴 **READ §1 FIRST — this compares a populated mockup against a portal drawing two EMPTY branches, so it is not yet a design comparison.** The portal is 92px SHORTER, and it is the only realm where that direction holds. Everywhere else the portal was taller. A shorter page with a higher percentage means missing content, not extra content — and the diff compares over the SHORTER of the two, so **the 6.3% cannot see what is missing below 1073px.** The figure understates the gap |
+| `npm run portal:audit -- --realm home --all` | ① `div.masthead` h 129→116 · ② **64** · ③ 7 · ④ **43** | ② at 64 is the second-highest first reading of any realm, and **most of it is the two empty branches from §1** — one fixture question, not 64 findings |
 | `npm run portal:converge -- --realm home` | **75 mismatches of 60 design nodes** · mk 60 (994px) · pt 64 (902px) | 75 > 60 is not a ratio — EXTRA and ABSENT rows count beside paired ones |
 | `npm run portal:inventory -- --realm home` | mk-only **10** · pt-only **14** · different words **14** · count **10** · style **15** | The portal has FOURTEEN elements the design does not — Home is portal-ahead in places as well as behind |
 | Views | 🔴 **NONE** — single view | `--view` does not apply. Season's five-view rhythm does not transfer |
