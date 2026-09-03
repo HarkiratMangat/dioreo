@@ -251,14 +251,7 @@
         <p style="font-size:var(--t-sm);color:var(--ink3);margin-top:16px" data-demo-only>
           Demo only &mdash; this button does not exist in the real portal.</p>
       </div>`;
-    document.getElementById('seed').onclick = () => {
-      F.sampleOps.forEach((o, i) => {
-        const op = { ...o, stale: i === 1 };     // one stale op, to exercise the conflict surface
-        S.Store.onInvert(op.id, () => {});
-        S.Store.add(op);
-      });
-      st.sel = null; render();
-    };
+    document.getElementById('seed').onclick = () => { loadSample(); st.sel = null; render(); };
   }
 
   function renderFoot() {
@@ -333,6 +326,28 @@
   }
 
   S.onAfterRevert = render;
+  /* 🔴 SEEDED ON REQUEST, NEVER AUTOMATICALLY — COMPANION §15 states the rule and this is the second
+   * way of asking. The button above is the reader's way; `?demo=1` is the INSTRUMENTS' way, and it is
+   * the flag review.html's own do-not-ship comment already names as the sanctioned alternative.
+   *
+   * ⚠️ WITHOUT IT THIS REALM CANNOT BE COMPARED AT ALL. The staged-ops store is sessionStorage and
+   * every instrument clears it on load (portalDiff/portalAudit, 2026-08-30, deliberately), while the
+   * portal harness carries four changesets — so a resting run measures an EMPTY page against a
+   * POPULATED one and returns well-formed numbers for a comparison nobody meant to make. Measured
+   * 2026-09-02 22:48 EDT: 4.7% in 15 regions, whose largest was `div.rvnone` against `div.rvdet` — the
+   * empty state against the board, reported as a design difference.
+   *
+   * The clear runs in `evaluateOnNewDocument`, i.e. BEFORE this file's scripts, so seeding here is not
+   * wiped by it. No visible copy is added: the flag changes the DATA, never the design. */
+  function loadSample() {
+    F.sampleOps.forEach((o, i) => {
+      const op = { ...o, stale: i === 1 };       // one stale op, to exercise the conflict surface
+      S.Store.onInvert(op.id, () => {});
+      S.Store.add(op);
+    });
+  }
+  if (new URLSearchParams(location.search).get('demo') === '1' && !S.Store.all().length) loadSample();
+
   render();
   (window.Shell||window.S).holdTop();
   S.audit({

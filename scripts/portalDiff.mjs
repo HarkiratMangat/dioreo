@@ -130,7 +130,13 @@ const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 
 // ── the two URLs, and the one difference in how each is reached ────────────────────────────────────── The mockup is one HTML file per realm. The portal is an SPA addressed by hash. A realm the mockup does not have (there is no `home.html`; index.html is Home) is named here rather than guessed at.
 const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
-const mockupUrl = `${MOCKUP}/${MOCKUP_PAGE}`;
+// 🔴 A QUERY THE MOCKUP SIDE CARRIES, because one realm cannot be compared without it. Review's staged-ops
+// store is sessionStorage and every load here clears it, so its mockup renders EMPTY against a populated
+// portal and every number is a comparison of two different datasets. `--mk-query demo=1` asks review.html
+// to seed itself from its own fixtures — seeded on request, never automatically (COMPANION §15).
+const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
+const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
+const mockupUrl = withQuery(`${MOCKUP}/${MOCKUP_PAGE}`);
 const portalUrl = selfTest ? mockupUrl
     : portalMode === 'harness' ? `${PORTAL_HARNESS}?fresh=1&b=${Date.now()}#/${realm}`
     : `${PORTAL_REAL}/?b=${Date.now()}#/${realm}`;

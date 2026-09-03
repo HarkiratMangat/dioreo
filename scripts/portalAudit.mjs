@@ -54,7 +54,13 @@ const listTriggers = has('--triggers');
 const CAP = has('--all') ? 1e9 : 25;
 
 const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
-const MOCKUP = `http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`;
+// 🔴 A QUERY THE MOCKUP SIDE CARRIES, because one realm cannot be compared without it. Review's staged-ops
+// store is sessionStorage and every load here clears it, so its mockup renders EMPTY against a populated
+// portal and every number is a comparison of two different datasets. `--mk-query demo=1` asks review.html
+// to seed itself from its own fixtures — seeded on request, never automatically (COMPANION §15).
+const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
+const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
+const MOCKUP = withQuery(`http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`);
 const HARNESS = `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}#/${realm}`;
 // The mockup's fixtures hardcode this day and the freeze cannot move it — see the conformance plan §0.6.
 const FROZEN = Date.parse('2026-08-24T18:41:00Z');
