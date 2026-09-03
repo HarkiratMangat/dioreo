@@ -80,7 +80,9 @@ npm run portal:converge -- --realm review
 
 ## §3 — THE RESTING NUMBERS, AND TWO WAYS TO MISREAD THEM
 
-Measured 2026-09-02. ⚠️ **Read §2 first: these compare an empty mockup to a populated portal.**
+🔴 **SUPERSEDED 2026-09-02 23:46 EDT — EVERY FIGURE IN THIS SECTION IS PRE-SEED AND MUST NOT BE QUOTED AS CURRENT.** Part 6a ran: the mockup now seeds behind `?demo=1` and the instruments carry `--mk-query`, so the comparison is of two populated boards. **Current: 0.5% in 12 regions, ① CASCADE clean, ② 10 / ③ 2 / ④ 2, converge 12 mismatches of 28 design nodes, and every region adjudicated into four cited classes with none open.** The live record is §L row 6a of `docs/superpowers/plans/2026-08-27-portal-conformance.md` and `docs/reference/portal-decision-ledger.md`'s Review section. The table below is kept as the BEFORE half of that comparison — it is what an empty-versus-populated reading looks like, which is the section's actual lesson. ⚠️ **`realwalk · never` at §1.5 is also superseded**: `npm run portal:reviewwalk` exists and passes 31/31, recording a `commitwalk` receipt.
+
+Measured 2026-09-02, BEFORE the seed. ⚠️ **Read §2 first: these compare an empty mockup to a populated portal.**
 
 | Reading | Value | ⚠️ |
 |---|---|---|
