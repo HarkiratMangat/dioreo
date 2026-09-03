@@ -42,6 +42,13 @@ payload=$(cat)
 content=$(printf '%s' "$payload" | jq -r '.tool_input.new_string // .tool_input.content // .tool_input.command // empty')
 [ -z "$content" ] && exit 0
 
+# 🔴 THE CLOCK IS PINNED TO THE REPO'S TIMEZONE — added 2026-09-02 21:56 EDT, after this gate's own safety suite went red on CI and green here for the third environment-dependent reason in one session. Every timestamp this repo writes is defined in Eastern (`CLAUDE.md`, the records convention, the `[clock]` hook that feeds them), so "today" is a fact about New York, not about whatever clock the machine happens to keep. Unpinned, `date` read UTC on the runner: between 20:00 and midnight Eastern the hook's `today` was tomorrow's date, it matched none of the placeholders the suite writes, and it silently corrected nothing — the exact silent-no-op the suite exists to catch, produced by the suite's own environment rather than by a defect in the hook.
+#
+# This is the same shape as the BSD/GNU `date` failure recorded above (46 of 47 assertions red in CI, all 47 green on this Mac), one layer up: there the date BINARY differed, here the date ZONE does. Pinning also fixes `localtz` below, which decides whether a stamp carrying an explicit zone is comparable at all — on a UTC runner it read `UTC`, so every `EDT` stamp in the repo was skipped as foreign and branch (A) went quiet exactly where it matters most.
+#
+# `TS_TZ` overrides it, so the pin is testable rather than an assumption baked in.
+export TZ="${TS_TZ:-America/New_York}"
+
 today=$(date +%Y-%m-%d)
 now="$(date '+%Y-%m-%d %H:%M')"
 

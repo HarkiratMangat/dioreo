@@ -1,4 +1,7 @@
 #!/bin/bash
+# 🔴 THE CLOCK IS PINNED, THE SAME WAY THE HOOK PINS IT — added 2026-09-02 21:56 EDT. Every fixture below is built from `date`, and the hook now resolves "today" in America/New_York regardless of the machine. Left unpinned, this suite computed its placeholders in the runner's UTC while the hook looked for Eastern ones, and 31 of 63 cases failed for a reason that has nothing to do with the behaviour under test. A test and the thing it tests must read the same clock. `TS_TZ` moves both together, so a deliberate probe is still possible.
+export TZ="${TS_TZ:-America/New_York}"
+
 # Proofs for timestamp-check.sh, in BOTH modes.
 #
 # `pre` can now DENY a write, so its false-positive surface is the dangerous one: a wrong deny stops work dead and gets the hook switched off. `post` stays advisory and only has to avoid noise.

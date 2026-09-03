@@ -44,6 +44,8 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+- **[P3 · XS] One unreproduced `timestamp-check.test.sh` failure inside `run-all-tests.sh`, 2026-09-02 22:00 EDT.** The suite reported `35 passed, 1 failed ( timestamp-check.test.sh )` under `TZ=UTC` once, while the same test standalone passed 63/63 in both zones in the same minute, and three immediate re-runs of the full suite came back 36/36. **Do:** if it recurs, capture the failing case name — the runner writes each test's output to `$WORK/<name>.out`, so add a copy-on-failure rather than re-running and hoping. Suspect the parallel `xargs -P` path or a minute-boundary race, not the timezone pin, which is proven both ways. **Verify by:** three consecutive green full-suite runs under `TZ=UTC` are NOT sufficient — that is exactly what was already observed after the failure. Only a captured failing case closes this. ⚠️ Recorded rather than dismissed because a non-reproducible failure in a REQUIRED check is how this repo has been bitten before.
+
 
 ### `[P2 · S]` `codebase-memory-mcp`'s MCP layer drops the parameter its worker requires, and reports it as a crash
 *Filed 2026-09-01 20:47 EDT. ⚠️ The first version of this entry said "the indexing worker crashes on a file" and told the next session to bisect the tree for it. **That was the tool's own error message repeated as a diagnosis, and it is wrong** — the bisect would have found nothing, because a different repo entirely fails the same way.*
