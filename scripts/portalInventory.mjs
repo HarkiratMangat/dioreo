@@ -22,6 +22,19 @@ const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args
 const realm = flag('--realm', 'season');
 const view = flag('--view', null);
 const asJson = args.includes('--json');
+
+// 🔴 REVIEW REFUSES WITHOUT A SEED — see portalDiff for the full reasoning. Its staged-ops store is sessionStorage and every
+// load here clears it, so an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong
+// number. ⚠️ THIS TOOL WAS MISSED when the refusal shipped to diff/audit/converge on 2026-09-03; the reader test found it,
+// and this one is quoted in the plan's §L row 6a, so the reading recorded there was taken unseeded. Re-take it. 2026-09-03 09:03 EDT
+const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
+const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
+if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
+    console.error('refusing: Review must be measured SEEDED or the two sides hold different data.\n'
+        + '  add   --mk-query demo=1     to compare two populated boards\n'
+        + '  or    --no-seed             to measure the empty state deliberately');
+    process.exit(2);
+}
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
 // 🔴 THE THIRD INSTRUMENT WAS READING A DIFFERENT PAGE FROM THE OTHER TWO. portalDiff and portalConverge both load the harness with ?conform=1, which stands pending redesigns down so the comparison is against the design; this loaded it WITHOUT, so every stood-down surface came back as a divergence and every fix already made still showed as unfixed. Two instruments agreeing and a third disagreeing is worse than one instrument, because the disagreement looks like a finding. The cache-buster is here for the same reason it is there: the module map survives a reload. ⚠️ STALE COMMENT, corrected 2026-09-01: `?conform=1` no longer exists — the two rendering modes collapsed 2026-08-31 and the flag was renamed `?fresh=1`, which does FIXTURES ONLY. There is no stand-down switch; do not add one back.
 const HARNESS = `http://localhost:8901/harness.html?fresh=1&b=${Date.now()}`;

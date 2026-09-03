@@ -62,8 +62,14 @@ async function api(method, route, body) {
 async function liveState(mongoose) {
     const SeasonalData = require(path.join(ROOT, 'models/SeasonalData'));
     const ChangeLog = require(path.join(ROOT, 'models/ChangeLog'));
-    const doc = (await SeasonalData.findOne({ docType: 'global' }).lean()) || {};
+    const doc = await SeasonalData.findOne({ docType: 'global' }).lean();
+    // 🔴 A FINGERPRINT, BECAUSE A LENGTH IS NOT A DOCUMENT. Until 2026-09-03 09:03 EDT the "nothing moved" assertions compared
+    // `newDraws.length` alone, so a discard that mutated any OTHER field — or that removed one draw and added another —
+    // passed while announcing the document was untouched. The reader test named it. `doc` is returned too, so a missing
+    // global document is a FAILURE rather than an empty object that satisfies every count.
+    const fingerprint = crypto.createHash('sha1').update(JSON.stringify(doc || {})).digest('hex').slice(0, 12);
     return {
+        doc, fingerprint,
         newDraws: (doc.newDraws || []).length,
         titles: (doc.newDraws || []).map((d) => d.title),
         changeLog: await ChangeLog.countDocuments({}),
@@ -91,7 +97,9 @@ async function main() {
     const Changeset = require(path.join(ROOT, 'models/Changeset'));
     const ChangeLog = require(path.join(ROOT, 'models/ChangeLog'));
     const before = await liveState(mongoose);
-    check('S2', 'the live document is reachable', before.newDraws >= 0, `newDraws=${before.newDraws} changeLog=${before.changeLog}`);
+    // ⚠️ ASSERTS THE DOCUMENT, NOT A COUNT DERIVED FROM IT. `newDraws >= 0` is true even when no global document exists at
+    // all — a vacuous pass that announced the opposite of what it checked, found by the reader test 2026-09-03 09:03 EDT.
+    check('S2', 'the live document exists and is reachable', !!before.doc, before.doc ? `newDraws=${before.newDraws} changeLog=${before.changeLog} fp=${before.fingerprint}` : 'NO global document');
 
     // ── 1 · the door and the resting board
     const r0 = await api('GET', '/api/review');
@@ -119,7 +127,8 @@ async function main() {
     check('3a', 'the staged op appears on the Review board', !!op, op ? op.name : `not among ${(r1.json?.ops || []).length} ops`);
     check('3b', 'Review reports the tier core/ops assigned', op?.tier === 1, `tier=${op?.tier}`);
     check('3c', 'Review carries a field-level diff, not just a summary line',
-        Array.isArray(op?.rows) && op.rows.length > 0, `rows=${(op?.rows || []).map((r) => r.key).join(',') || 'none'}`);
+        Array.isArray(op?.rows) && op.rows.length > 0 && op.rows.every((r) => r.key && String(r.key).trim()),
+        `rows=${(op?.rows || []).map((r) => r.key).join(',') || 'none'}`);
     check('3d', 'the commit gate is OPEN for a tier-1 set with no export', set?.gate?.ok === true, JSON.stringify(set?.gate));
 
     // ── 4 · commit, and prove the document AND the audit row both moved
@@ -144,7 +153,7 @@ async function main() {
     const disc = await api('POST', `/api/changeset/${cs2}/discard`, {});
     const afterDisc = await liveState(mongoose);
     check('5a', 'discard returns 200', disc.status === 200, `status=${disc.status}`);
-    check('5b', 'a discard leaves the live document untouched', afterDisc.newDraws === mid.newDraws, `newDraws ${mid.newDraws} -> ${afterDisc.newDraws}`);
+    check('5b', 'a discard leaves the WHOLE live document untouched', afterDisc.fingerprint === mid.fingerprint, `fp ${mid.fingerprint} -> ${afterDisc.fingerprint}`);
     check('5c', 'a discard writes no audit row', afterDisc.changeLog === mid.changeLog, `changeLog ${mid.changeLog} -> ${afterDisc.changeLog}`);
     check('5d', 'the discarded set is marked discarded', (await Changeset.findById(cs2).lean())?.state === 'discarded');
 
@@ -160,9 +169,10 @@ async function main() {
         typeof set3?.gate?.reason === 'string' && set3.gate.reason.length > 0, set3?.gate?.reason);
     const refused = await api('POST', `/api/changeset/${cs3}/commit`, {});
     check('6d', 'the server REFUSES the commit with 409', refused.status === 409, `status=${refused.status}`);
-    check('6e', 'the refusal names the export requirement', /export/i.test(JSON.stringify(refused.json || {})), refused.json?.reason || '');
+    // ⚠️ THE REASON FIELD, not any occurrence of the word anywhere in the body — a field NAME containing "export" used to satisfy this.
+    check('6e', 'the refusal names the export requirement in its reason', /export/i.test(String(refused.json?.reason || '')), refused.json?.reason || '(no reason field)');
     const afterRefusal = await liveState(mongoose);
-    check('6f', 'nothing was destroyed by the refused commit', afterRefusal.newDraws === afterDisc.newDraws, `newDraws ${afterDisc.newDraws} -> ${afterRefusal.newDraws}`);
+    check('6f', 'nothing was destroyed by the refused commit', afterRefusal.fingerprint === afterDisc.fingerprint, `fp ${afterDisc.fingerprint} -> ${afterRefusal.fingerprint}`);
     if (!KEEP) await api('POST', `/api/changeset/${cs3}/discard`, {});
 
     // ── 6b · a BLOCKED changeset — the branch whose reason was once thrown away at the seam
@@ -183,16 +193,21 @@ async function main() {
     const commitBad = await api('POST', `/api/changeset/${csBad}/commit`, {});
     check('6j', 'a blocked changeset REFUSES to commit', commitBad.status !== 200, `status=${commitBad.status} ${JSON.stringify(commitBad.json).slice(0, 120)}`);
     const afterBad = await liveState(mongoose);
-    check('6k', 'and nothing was written by the refusal', afterBad.newDraws === afterRefusal.newDraws && afterBad.changeLog === afterRefusal.changeLog,
-        `newDraws=${afterBad.newDraws} changeLog=${afterBad.changeLog}`);
+    check('6k', 'and nothing was written by the refusal', afterBad.fingerprint === afterRefusal.fingerprint && afterBad.changeLog === afterRefusal.changeLog,
+        `fp=${afterBad.fingerprint} changeLog=${afterBad.changeLog}`);
     if (!KEEP) await api('POST', `/api/changeset/${csBad}/discard`, {});
 
     // ── 7 · put the database back THROUGH THE ROUTE, which is also the only test of the revert seam
     //        that a URL-encoding bug cannot pass: a `#N` id has to survive the trip both ways.
     if (!KEEP && leftovers.changeIds.length) {
         const id = leftovers.changeIds[0];
+        // 🔴 BOTH HALVES, SEPARATELY. Until 2026-09-03 09:03 EDT this encoded the id ITSELF and then called the result "the id survived
+        // the URL" — which proves the SERVER decodes and says nothing about the client, whose only cover is a source regex.
+        // The raw probe reproduces the actual shipped bug: a bare `#` makes the rest a fragment, so the route sees no id.
+        const rawProbe = await api('POST', `/api/revert/${id}`, {});
+        check('7a1', 'a RAW id is not addressable — the client must encode it', rawProbe.status !== 200, `status=${rawProbe.status} (the fragment bug, reproduced)`);
         const rev = await api('POST', `/api/revert/${encodeURIComponent(id)}`, {});
-        check('7a', `POST /api/revert/${id} returns 200 — the id survived the URL`, rev.status === 200, `status=${rev.status} ${rev.json?.error || ''}`);
+        check('7a', `POST /api/revert/${id} encoded returns 200 — the SERVER decodes`, rev.status === 200, `status=${rev.status} ${rev.json?.error || ''}`);
         const end = await liveState(mongoose);
         check('7b', 'the probe draw is gone again — database left as found', !end.titles.includes(title), `newDraws=${end.newDraws} (started ${before.newDraws})`);
     }
@@ -202,15 +217,23 @@ async function main() {
     await mongoose.disconnect();
 }
 
+// 🔴 THE EXPECTED COUNT IS PINNED, because the pass line used to be self-referential: section 7 is conditional on `--keep`
+// and on a ChangeLog row existing, so a silently shorter run printed `34/34 passed`, exited 0 and filed a GREEN receipt —
+// structurally the same defect as the empty-mockup comparison this walk's own realm was fixed for. 2026-09-03 09:03 EDT.
+// ⚠️ 37 IS MEASURED, NOT COUNTED BY HAND — the first version of this line said 39 and the pin caught it on its own
+// first run, which is the only reason it is right now. Update it deliberately when assertions are added. 2026-09-03 09:04 EDT.
+const EXPECTED = 37;
+
 main().then(() => {
     const pad = Math.max(...results.map((r) => r.what.length));
     console.log(`\nportal:reviewwalk — review · ${BASE} · session minted in dev Mongo for this run\n`);
     console.log(results.map((r) => `  ${r.pass ? '✓' : '❌'} ${r.id.padEnd(3)} ${r.what.padEnd(pad)}  ${r.detail}`).join('\n'));
     const failed = results.filter((r) => !r.pass);
-    console.log(`\n  ${results.length - failed.length}/${results.length} passed`);
+    const short = !KEEP && results.length !== EXPECTED;
+    console.log(`\n  ${results.length - failed.length}/${results.length} passed` + (short ? ` — ❌ EXPECTED ${EXPECTED}: this run SKIPPED assertions, so a green line here is not a full walk` : ''));
     if (KEEP) console.log(`  --keep: left behind ${leftovers.changesets.join(', ') || 'nothing'}`);
-    if (!failed.length) receipt.record('commitwalk', 'review', `${results.length} assertions`);
-    process.exit(failed.length ? 1 : 0);
+    if (!failed.length && !short) receipt.record('commitwalk', 'review', `${results.length} assertions`);
+    process.exit(failed.length || short ? 1 : 0);
 }).catch(async (e) => {
     console.error('\nWALK ABORTED:', e?.stack || e);
     console.error('leftovers:', JSON.stringify(leftovers));

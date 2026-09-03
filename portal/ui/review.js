@@ -271,11 +271,16 @@ export function ReviewRealm({ session }) {
                         op: 'changeset.commit', tier: ops.some((o) => o.tier === 3) ? 3 : 2,
                         confirmLabel: `Commit ${ops.length} change${ops.length > 1 ? 's' : ''}`,
                         title: 'Commit these staged changes?',
-                        // One transaction, or nothing. The bot re-reads on every interaction, so a half-applied changeset reaches real players within seconds — which is why atomicity here is load-bearing rather than tidy.
+                        // 🔴 ONE TRANSACTION PER CHANGESET, AND THIS COPY SAID OTHERWISE UNTIL 2026-09-03 09:03 EDT. The meta line above was
+                        // adjudicated on 2026-09-02 — the portal's "N transactions, committed in order" is TRUE where the design's
+                        // "commits as one transaction" is not — and that decision stopped one surface short: this overlay, the
+                        // higher-consequence one, still promised all-or-nothing across every changeset. The loop comment at :173
+                        // refutes it — a failure at changeset four of nine leaves three committed. The reader test found it.
                         body: html`
-                            <p class="dw-p">All <b>${ops.length}</b> changes are written in <b>one transaction</b> —
-                                they all land or none of them do. The bot reads fresh on every interaction, so this is
-                                live to players within seconds.</p>
+                            <p class="dw-p">${changesets.length === 1
+                                ? html`All <b>${ops.length}</b> changes are written in <b>one transaction</b> — they all land or none of them do.`
+                                : html`These <b>${ops.length}</b> changes are <b>${changesets.length} separate transactions</b>, committed in order. Each lands whole or not at all; if one is refused, the ones before it stay committed.`}${' '}
+                                The bot reads fresh on every interaction, so this is live to players within seconds.</p>
                             <p class="dw-p">Every change is recorded with its inverse, so tier-1 and tier-2 changes stay
                                 undoable afterwards${ops.some((o) => o.tier === 3) ? ', and the tier-3 change is recoverable from the export you saved' : ''}.</p>`,
                         onConfirm: commitAll,

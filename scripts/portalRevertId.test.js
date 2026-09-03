@@ -39,12 +39,35 @@ it('segment() still reads an ObjectId path unchanged', () => {
     assert.strictEqual(segment(new URL('http://localhost:8787/api/changeset/6a98ddaf6c28ce6f6ff06bb2/commit'), 2), '6a98ddaf6c28ce6f6ff06bb2');
 });
 
-it('the Analytics revert call encodes its id before putting it in a path', () => {
-    const src = fs.readFileSync(path.join(ROOT, 'portal', 'ui', 'analytics.js'), 'utf8');
-    const call = src.split('\n').find((l) => l.includes('fetchJson(`/api/revert/'));
-    assert.ok(call, 'no /api/revert fetch found in portal/ui/analytics.js — this gate has lost its subject');
-    assert.ok(/encodeURIComponent\(/.test(call),
-        'the revert URL interpolates a raw id: a `#N` change id becomes a URL fragment and never reaches the server\n    ' + call.trim());
+it('EVERY revert call site in portal/ui encodes its id', () => {
+    // ⚠️ EVERY, NOT THE FIRST. This read one line of analytics.js — `.find(...)` — so a SECOND call site, added later or in
+    // another file, was unchecked. There is exactly one today, which made the hole latent rather than live. Found by the
+    // reader test 2026-09-03 09:04 EDT.
+    const files = fs.readdirSync(path.join(ROOT, 'portal', 'ui')).filter((f) => f.endsWith('.js'));
+    const sites = [];
+    for (const f of files) {
+        const src = fs.readFileSync(path.join(ROOT, 'portal', 'ui', f), 'utf8');
+        src.split('\n').forEach((line, i) => {
+            const code = line.replace(/\/\/.*$/, '');            // a comment describing the bug is not a call site
+            if (/\/api\/revert\//.test(code) && /fetch|Json/.test(code)) sites.push({ f, n: i + 1, line: code.trim() });
+        });
+    }
+    assert.ok(sites.length > 0, 'no /api/revert call site found in portal/ui — this gate has lost its subject');
+    for (const s of sites) {
+        assert.ok(/encodeURIComponent\(/.test(s.line),
+            `${s.f}:${s.n} interpolates a raw id: a \`#N\` change id becomes a URL FRAGMENT and never reaches the server\n    ` + s.line);
+    }
+});
+
+it('the revert ROUTE reads its id through segment(), the function this gate tests', () => {
+    // ⚠️ WITHOUT THIS the gate proved a helper nobody had to call. Replacing segment() at the route with an inline regex
+    // capture left both halves green while the button died again. Found by the reader test 2026-09-03 09:04 EDT.
+    const src = fs.readFileSync(path.join(ROOT, 'portal', 'api', 'changesets.js'), 'utf8');
+    const i = src.indexOf('/^\\/api\\/revert\\/');
+    assert.ok(i !== -1, 'no /api/revert route found in portal/api/changesets.js — this gate has lost its subject');
+    const body = src.slice(i, i + 600);
+    assert.ok(/segment\(url,\s*2\)/.test(body),
+        'the revert route no longer reads its id through segment(), so segment()\'s decode above proves nothing about it\n    ' + body.split('\n').slice(0, 4).join('\n    '));
 });
 
 console.log('  ' + n + ' passed');
