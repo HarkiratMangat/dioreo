@@ -337,12 +337,22 @@ The trim and its reversal were both mechanical. The trim: for each `- [Title](fi
 
 ## Session state this hands over
 
-- Branch `feat/context-layer-instruments`, PR **#181** into `v3-pre-release`, **merge held by Harkirat**.
-- ✅ **CI is green.** ⚠️ **The red check was NOT `portal:states`, and this document said it was for an hour.** The standdown shipped earlier on this branch worked: a diff with no portal file no longer runs the walk. The actual failure was `mcp-layer-check.test.sh` — an assertion (*"the counts line is labelled as db-derived"*) whose three probe runs did not pin the fixture database, so `LINKSEE_DB` fell back to `$HOME/.linksee-memory/memory.db`: present on this Mac, absent on the runner. The counts line only exists when that file is readable, so the assertion was green locally and red on CI for a reason having nothing to do with the behaviour under test. **An assertion whose SUBJECT exists in only one environment is not testing what it claims.** Fixed by pinning the three runs to the fixture DB, and proven both ways — 28/28 normally and 28/28 under an emptied `HOME` that reproduces the runner exactly.
-- `docs:audit`, `docs:reflow` and `docs:reflow-comments` all exit 0 as of 2026-09-02 21:30 EDT.
-- ⚠️ **`npm test` has NOT run since `package.json`'s test chain was rewritten and two scripts were deleted.** The chain parses (114 segments, no doubled `&&`) but the suite is unverified.
-- ⚠️ **The work is on the branch but NOT yet committed** — 21 modified/deleted paths in the working tree at handoff, including this file and the two deleted `rulesBudget` scripts. `git status` before anything else; do not assume `git log` shows the current state.
-- Version `3.74.0-pre`. The CHANGELOG, DEVLOG and resolved-list entries for it now carry both reversals inline rather than describing a state that no longer exists.
+**Updated 2026-09-02 22:06 EDT, after the merge. Everything below is now true of `v3-pre-release`, not of an open branch.**
+
+| | |
+|---|---|
+| Merged | **`cfcd1d3a`** — PR #181 squashed into `v3-pre-release`, branch deleted |
+| Version | `3.74.0-pre` (no tag: the pre-release line mints none until `v3.0.0`) |
+| Deployed | **No.** A merge does not touch the VM, and nothing here is runtime code |
+| This branch | `chore/context-loading-parked`, pushed with **no PR** — it exists so the handoff keeps moving after the merge, the same pattern as `chore/silent-mode-guards-parked` |
+
+🔴 **The merge used `--admin`, and the reason is worth reading before you conclude anything from a green or red check here.** `portal:states` failed and it is a required check. It ran at all only because this branch edited `scripts/portalStates.mjs` itself, which is the standdown behaving correctly — a change to the walker is exactly when you want the walk. It then stalled **twice** on Season's `identity · closed again from the header's dead space` and printed its own verdict: *"TWICE, so this is NOT the known race — the subject is genuinely unreachable."* **It is reachable.** `TEST_CACHE=0 node scripts/portalStates.mjs --realm season` walked 21 of 21 green on this Mac minutes later, that state included. So the retry does not discriminate what it claims to: a second attempt separates a race from an unreachable subject only when the two attempts differ in timing, and on a uniformly slow two-core runner they do not. Filed in `docs/db-deferred-list.md` with that falsification and an explicit *do not raise the deadline a fourth time* (4000 → 12000 → 45000 is already on the record).
+
+**Gates at handoff:** `docs:audit` 0 · `docs:reflow` 0 · `docs:reflow-comments` 0 · the 36-test hook suite green, and green three consecutive times under `TZ=UTC`. `npm test` state is recorded at the foot of this section.
+
+✅ **`npm test` exits 0 on this branch, run 2026-09-02 22:10 EDT** — the whole chain, after the merge. One state (`command bar open`) stalled once and reached its subject on the retry; the walk prints it by name and says explicitly *"NOT a clean run"*, which is the known race already filed [P2 · M]. That is the honest reading: green exit code, one named flake, nothing silent.
+
+⚠️ **One unreproduced failure is filed rather than dismissed** — `run-all-tests.sh` reported `35 passed, 1 failed ( timestamp-check.test.sh )` once under `TZ=UTC`, while the same test standalone passed 63/63 in both zones in the same minute and three immediate full-suite re-runs came back 36/36. Its `db-deferred-list.md` entry says explicitly that three green runs do **not** close it, because that is exactly what was already observed.
 
 ## What this session got wrong, so the next one expects it
 
