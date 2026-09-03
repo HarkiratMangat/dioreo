@@ -6,7 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, NoAccess, Masthead, realmLabelOf } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { exportChangeset } from './composeClient.js';
 import { useAsync, RealmShell, Progress, Failure } from './async.js';
@@ -29,7 +29,13 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
                 <span class="rvt">T${op.tier}</span>${' '}
                 <span class="rvn">
                     <b>${op.name || html`<span class="none">unnamed record</span>`}</b>${' '}
-                    <span>${op.op} · ${op.realm}</span>${' '}
+                    <!-- 🔴 THE VERB, NOT THE OP TYPE. The design splits these deliberately: the ROW says what
+                         happened in words a person reads ("release date changed"), and the DETAIL panel below names
+                         the operation that did it (draw.edit · tier 1 · season). This row printed the op type in
+                         both places, so the list of things about to change was written in the registry's vocabulary
+                         rather than the reader's. The review API already returns verb — describeInverse's own
+                         wording — and nothing was reading it. Measured against the design 2026-09-02 23:24 EDT. -->
+                    <span>${op.verb} · ${realmLabelOf(op.realm)}</span>${' '}
                     ${warn ? html`<span class=${'rvw' + (warn === 'export saved' ? ' done' : '')}>${warn}</span>` : null}
                 </span>
             </button>
@@ -47,7 +53,11 @@ function OpDetail({ op, resolved, onResolve }) {
     return html`
         <div class="rvdet">
             <h4>${op.name}</h4>
-            <span class="rvop-name">${op.op} · tier ${op.tier} · ${op.realm}</span>
+            <!-- The realm reads as a PLACE, not as a route key. The design writes "Season" and "Armory";
+                 this printed the raw key in lowercase on both the row and this line. realmLabelOf is the one
+                 capitalisation map the rail, the crumb and the command palette already share — shell.js:353
+                 records what a fourth inline copy of the rule cost. Measured 2026-09-02 23:28 EDT. -->
+            <span class="rvop-name">${op.op} · tier ${op.tier} · ${realmLabelOf(op.realm)}</span>
 
             ${op.blocked ? html`
                 <div class="rvcon">
@@ -106,7 +116,7 @@ function OpDetail({ op, resolved, onResolve }) {
                         <a class="chip go" href=${'#/' + op.realm}>Export in ${op.realm} →</a>`}
                 </div>`
             : html`
-                <p class="chint">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
+                <p class="chint" style="margin-top:16px">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
                    undone after it commits.</p>`}
         </div>`;
 }
@@ -190,7 +200,7 @@ export function ReviewRealm({ session }) {
 
     const viewSlot = ops.length === 0
         ? html`
-            <div class="panel"><div class="ph"><span class="t">Changeset</span></div>
+            <section class="panel"><div class="ph"><span class="t">Changeset</span></div>
                 <div class="rvnone">
                     <h4>Nothing is staged</h4>
                     <p>Everything in the portal matches what the bot is serving right now. Changes arrive here when you
@@ -201,9 +211,9 @@ export function ReviewRealm({ session }) {
                         <a class="chip" href="#/broadcast">Go to Broadcast</a>
                     </div>
                 </div>
-            </div>`
+            </section>`
         : html`
-            <div class="panel">
+            <section class="panel">
                 <div class="ph">
                     <span class="t">Changeset</span>
                     <span class="sp">${ops.length} change${ops.length > 1 ? 's' : ''} · ${changesets.length === 1
@@ -242,14 +252,14 @@ export function ReviewRealm({ session }) {
                         ? html`<span class="rvgates">
                                    ${blockers.map((b) => html`
                                        <span class="rvgate" key=${b.kind + b.msg}>
-                                           <${Icon} name="triangle-alert" cls="sm" />${b.msg}
+                                           <${Icon} name="triangle-alert" />${b.msg}
                                            ${b.kind === 'export' && needExport.length ? html`
                                                <button class="pill sm" disabled=${busy}
                                                        onClick=${() => exportOne(needExport[0])}>Export it now</button>` : null}
                                        </span>`)}
                                </span>`
-                        : html`<span class="rvgate ok"><${Icon} name="check" cls="sm" />Ready — ${ops.length} change${ops.length > 1 ? 's' : ''} to write</span>`}
-                    <button class="btn dang" disabled=${busy} onClick=${() => overlay.confirm({
+                        : html`<span class="rvgate ok"><${Icon} name="check" />Ready — ${ops.length} change${ops.length > 1 ? 's' : ''} to write</span>`}
+                    <button class="btn no" disabled=${busy} onClick=${() => overlay.confirm({
                         op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard all',
                         title: `Discard all ${ops.length} staged change${ops.length > 1 ? 's' : ''}?`,
                         // The old copy said each change is 'reverted — the portal puts the previous value back' AND that none of it ever reached Discord, which are two different mechanics: if it never reached Discord there is no previous value out there to restore. Both halves are true of different things, so this says which is which.
@@ -261,11 +271,12 @@ export function ReviewRealm({ session }) {
                         op: 'changeset.commit', tier: ops.some((o) => o.tier === 3) ? 3 : 2,
                         confirmLabel: `Commit ${ops.length} change${ops.length > 1 ? 's' : ''}`,
                         title: 'Commit these staged changes?',
-                        // One transaction, or nothing. The bot re-reads on every interaction, so a half-applied changeset reaches real players within seconds — which is why atomicity here is load-bearing rather than tidy.
+                        // 🔴 ONE TRANSACTION PER CHANGESET, AND THIS COPY SAID OTHERWISE UNTIL 2026-09-03 09:03 EDT. The meta line above was adjudicated on 2026-09-02 — the portal's "N transactions, committed in order" is TRUE where the design's "commits as one transaction" is not — and that decision stopped one surface short: this overlay, the higher-consequence one, still promised all-or-nothing across every changeset. The loop comment at :173 refutes it — a failure at changeset four of nine leaves three committed. The reader test found it.
                         body: html`
-                            <p class="dw-p">All <b>${ops.length}</b> changes are written in <b>one transaction</b> —
-                                they all land or none of them do. The bot reads fresh on every interaction, so this is
-                                live to players within seconds.</p>
+                            <p class="dw-p">${changesets.length === 1
+                                ? html`All <b>${ops.length}</b> changes are written in <b>one transaction</b> — they all land or none of them do.`
+                                : html`These <b>${ops.length}</b> changes are <b>${changesets.length} separate transactions</b>, committed in order. Each lands whole or not at all; if one is refused, the ones before it stay committed.`}${' '}
+                                The bot reads fresh on every interaction, so this is live to players within seconds.</p>
                             <p class="dw-p">Every change is recorded with its inverse, so tier-1 and tier-2 changes stay
                                 undoable afterwards${ops.some((o) => o.tier === 3) ? ', and the tier-3 change is recoverable from the export you saved' : ''}.</p>`,
                         onConfirm: commitAll,
@@ -273,7 +284,7 @@ export function ReviewRealm({ session }) {
                 </div>
                 <!-- Below the bar rather than inside it: the bar is a row of controls that must not reflow while a run is in flight, and a reader watching a nine-changeset commit is looking at the count, not at the buttons. -->
                 ${progress ? html`<${Progress} ...${progress} />` : null}
-            </div>`;
+            </section>`;
 
     return html`
         <${Shell} realm="review" session=${session} busy=${load.hostClass}

@@ -1,7 +1,15 @@
 ---
 kind: plan
-status: live
+status: superseded
+superseded_by: docs/superpowers/plans/2026-08-27-portal-conformance.md
 ---
+
+> 🔴 **PART 6a IS DONE. THIS FILE IS A RECORD OF HOW IT WAS FRAMED, NOT AN INSTRUCTION — superseded 2026-09-03 09:18 EDT by §L row 6a of the conformance plan, which carries the outcome, the twelve adjudicated regions and what is still open.**
+>
+> ⚠️ **THE COMMAND BLOCK BELOW NO LONGER RUNS AS WRITTEN, AND THAT IS WHY THIS BANNER EXISTS RATHER THAN A `status:` LINE ALONE.** Three of its five commands now **exit 2**: `portal:audit`, `portal:inventory`, `portal:diff` and `portal:converge` REFUSE on Review without `--mk-query demo=1`, because an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong number. A superseded document's code block is still a code block, and someone would have pasted it.
+>
+> ⚠️ **EVERY FIGURE IN §3 IS THE PRE-SEED READING** — 4.7% / 15 regions, converge 40-of-25, inventory mk 32 · pt 55. They are historically true and currently misleading. The seeded readings are **0.5% in 12 regions**, converge **12 of 28**, and the twelve regions are enumerated with their classes in `docs/reference/portal-decision-ledger.md`.
+
 
 # Part 6a — Review. Paste this in.
 
@@ -29,12 +37,13 @@ If all three answer you need no `preview_start`. If they do not: `preview_start 
 **4 · Create the three artifacts NOW, not at the end** — `local/locate-review.md`, `local/review-triage.md`, `local/difference-ledger-review.md`. At hour six writing is the first thing cut, so these are preconditions rather than deliverables. Part 4 produced one of three under a more explicit instruction than this one. §L ③ consumes them and cannot close without them.
 
 ```bash
+# ⚠️ HISTORICAL — the unseeded forms. Three of these exit 2 now. The seeded forms are:
 npm run portal:status
-npm run portal:audit -- --realm review --all
-npm run portal:audit -- --realm review --triggers
-npm run portal:inventory -- --realm review
-node scripts/portalDiff.mjs --realm review --portal harness
-npm run portal:converge -- --realm review
+npm run portal:audit -- --realm review --all --mk-query demo=1
+npm run portal:audit -- --realm review --triggers --mk-query demo=1
+npm run portal:inventory -- --realm review --mk-query demo=1
+node scripts/portalDiff.mjs --realm review --portal harness --mk-query demo=1
+npm run portal:converge -- --realm review --mk-query demo=1
 ```
 
 ⚠️ **Run `portal:converge` as the named tool.** Reading `portal:audit`'s ① CASCADE section instead and calling ① satisfied was caught on Broadcast, with `portal:status` printing `converge · never` in the same tree.
@@ -64,13 +73,13 @@ npm run portal:converge -- --realm review
 
 ## 🔴 §2 — THE TWO SIDES CANNOT BE COMPARED AT REST, AND NO INSTRUMENT CAN FIX THAT
 
-`review.html:109` reads `if (!list.length) { renderEmpty(); renderFoot(); return; }`, and the staged-ops store is empty on every fresh load. The populated board is **not missing** — it is fully drawn between that guard and `renderEmpty()` at `:235`, seeded from `F.sampleOps` — it is behind `:245`'s `<button class="chip go" id="seed" data-demo-only>Load a sample changeset</button>`. The harness populates four changesets. **So every resting number in §3 measures an empty page against a populated one.**
+`review.html:115` reads `if (!list.length) { renderEmpty(); renderFoot(); return; }`, and the staged-ops store is empty on every fresh load. The populated board is **not missing** — it is fully drawn between that guard and `renderEmpty()` at `:235`, seeded from `F.sampleOps` — it is behind `:245`'s `<button class="chip go" id="seed" data-demo-only>Load a sample changeset</button>`. The harness populates four changesets. **So every resting number in §3 measures an empty page against a populated one.**
 
 🔴 **AND NO EXISTING TOOL REACHES THE POPULATED MOCKUP. Verify this before spending a turn on it.** The mockup's store is `sessionStorage` (`assets/shell.js:74-75`), and `portalDiff.mjs:294` / `:433` and `portalAudit.mjs:225` each call `sessionStorage.clear()` on **every** load — deliberately, added 2026-08-30, naming the staged-ops tray in their own comments. `portalAudit.mjs:280` **throws** on an `--open` whose control is missing on one side, which the seed button is.
 
 **So your first decision is a fork, and it is Harkirat's, not the instruments'.** Either (a) the mockup renders `F.sampleOps` behind a query flag the tools can pass, parallel to `?fresh=1`; or (b) `portalDiff`/`portalAudit` gain a `--seed` that repopulates after the storage clear and before the capture; or (c) Review closes on the **empty** state both sides and the populated board is filed as a surface no instrument reaches. **(c) is the honest default and the weakest close** — the only screen that commits would never be compared in the state where it commits. **Put the fork in a pop-up before the first audit.** Do not choose it by drifting into whichever the tools happen to permit.
 
-**Settled, so you do not reopen it:** the seed button and its note **must not ship**. `review.html:247-250` says so as a comment addressed to you — *"NEITHER THIS BUTTON NOR ITS NOTE MAY SHIP… The wiring session removes the button and this comment together, or gates it behind ?demo=1 with no visible copy."*
+**Settled, so you do not reopen it:** the seed button and its note **must not ship**. `review.html:253-258` says so as a comment addressed to you — *"NEITHER THIS BUTTON NOR ITS NOTE MAY SHIP… The wiring session removes the button and this comment together, or gates it behind ?demo=1 with no visible copy."*
 
 ⚠️ **THE FIRST VERSION OF THIS SECTION QUOTED A SENTENCE THAT DOES NOT EXIST.** It cited `review.html:237,240-241` for *"a mockup that invented staged work would teach the wrong thing about staging"*. `rg 'invented staged work'` over that file returns **nothing**: `:237` is `viewReview.innerHTML = ` and `:240-241` is unrelated copy. The string was the UX-copy audit's own prose and the line numbers were its stale citation, passed through unread. **Cite `:247-250`.** The audit is `local/handoff/2026-08-25-portal-ux-copy-audit.md` §F4 — gitignored, open it by path, and check its citations rather than inheriting them.
 
@@ -80,7 +89,9 @@ npm run portal:converge -- --realm review
 
 ## §3 — THE RESTING NUMBERS, AND TWO WAYS TO MISREAD THEM
 
-Measured 2026-09-02. ⚠️ **Read §2 first: these compare an empty mockup to a populated portal.**
+🔴 **SUPERSEDED 2026-09-02 23:46 EDT — EVERY FIGURE IN THIS SECTION IS PRE-SEED AND MUST NOT BE QUOTED AS CURRENT.** Part 6a ran: the mockup now seeds behind `?demo=1` and the instruments carry `--mk-query`, so the comparison is of two populated boards. **Current: 0.5% in 12 regions, ① CASCADE clean, ② 10 / ③ 2 / ④ 2, converge 12 mismatches of 28 design nodes, and every region adjudicated into four cited classes with none open.** The live record is §L row 6a of `docs/superpowers/plans/2026-08-27-portal-conformance.md` and `docs/reference/portal-decision-ledger.md`'s Review section. The table below is kept as the BEFORE half of that comparison — it is what an empty-versus-populated reading looks like, which is the section's actual lesson. ⚠️ **`realwalk · never` at §1.5 is also superseded**: `npm run portal:reviewwalk` exists and passes every assertion (the walk prints and pins its own count — quoting one here went stale within a day), recording a `commitwalk` receipt.
+
+Measured 2026-09-02, BEFORE the seed. ⚠️ **Read §2 first: these compare an empty mockup to a populated portal.**
 
 | Reading | Value | ⚠️ |
 |---|---|---|
@@ -98,7 +109,7 @@ Measured 2026-09-02. ⚠️ **Read §2 first: these compare an empty mockup to a
 
 ## §5 — THE CONTRACT, RESTATED BECAUSE IT DOES NOT SURVIVE A SESSION BOUNDARY
 
-- **Branch `feat/analytics-portal-conformance`**, **31 commits** ahead of `v3-pre-release`, `3.73.0-pre`, **PUSHED 2026-09-02 11:43 EDT at `a8c6f6e`** — and NOT merged, no PR, no tag. Do not branch fresh off `v3-pre-release` — you would orphan the lot. ⚠️ This line read *"22+ commits … unpushed"* until the push made it false; a branch-state sentence goes stale the moment the branch moves, so re-derive it with `git log --oneline v3-pre-release..HEAD` rather than trusting it. §L row 5 has all seven conditions: ④ is claimed at `a8c6f6e`, ② is 34% enumerated rather than closed, ⑥ ran, ⑦ is Harkirat's.
+- 🔴 **SUPERSEDED 2026-09-02 22:28 EDT — THE OPPOSITE INSTRUCTION IS NOW CORRECT.** `feat/analytics-portal-conformance` **merged as #180** (2026-09-02 13:29 EDT) and the context-layer work **merged as #181** (2026-09-02 22:06 EDT). `v3-pre-release` is clean at **`3.74.0-pre`** and carries both. **So branch fresh off `v3-pre-release`** — there is nothing left to orphan. ⚠️ This bullet has now gone stale twice in one day in the same way (it read *"22+ commits … unpushed"*, then *"31 commits … NOT merged"*), which is the point it keeps making about itself: **re-derive branch state with `git log --oneline v3-pre-release..HEAD` and `gh pr view`, never from this line.** ⚠️ This line read *"22+ commits … unpushed"* until the push made it false; a branch-state sentence goes stale the moment the branch moves, so re-derive it with `git log --oneline v3-pre-release..HEAD` rather than trusting it. §L row 5 has all seven conditions: ④ is claimed at `a8c6f6e`, ② is 34% enumerated rather than closed, ⑥ ran, ⑦ is Harkirat's.
 - ⛔ **Never push, open a PR, merge, or ask about any of them.** Approval is restated at the moment of the action.
 - ⚠️ **Scoped tests only until a push is approved** — Harkirat, 2026-09-01 19:04, and the push has not happened. Run the gates that cover what you touched; the full suite waits. **§L ④ is a CLAIM: if the full suite did not run, do not claim it at all.**
 - 🔇 **Silent mode** per `MEMORY.md` — no prose between the first call and the final summary, one structured summary, tables not prose for 4+ items, `sequentialthinking` before any audit or review.

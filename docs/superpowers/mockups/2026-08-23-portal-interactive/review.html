@@ -98,7 +98,13 @@
   function render() {
     const list = ops();
     sOps.textContent    = list.length;
-    sRealms.textContent = new Set(list.map(o => o.realm || 'season')).size;
+      /* 🔴 `.label`, BECAUSE A STAGED OP'S REALM IS AN OBJECT. `shell.js:133` normalises it to
+       * { href, label } on purpose — ten staging sites passed a bare string — and these three
+       * templates never learned to read it, so the page rendered the words "[object Object]" in
+       * every row, in the detail panel, and (as four distinct object references) in the masthead's
+       * realm count, which read 4 where two realms are staged. Invisible until the board was
+       * populated for a side-by-side, which nothing did until 2026-09-02 23:25 EDT. */
+    sRealms.textContent = new Set(list.map(o => (o.realm && o.realm.label) || o.realm || 'season')).size;
     /* 🔴 "1 GATES OPEN" — warn-coloured, plural on a count of one, and it means the REVERSE of
      * what it says: "gates open" reads as cleared, you may pass. On the masthead of the screen
      * where everything is written. The noun now agrees with the number. */
@@ -121,7 +127,7 @@
                 <span class="rvt">T${o.tier}</span>
                 <span class="rvn">
                   <b>${o.name}</b>
-                  <span>${o.verb || 'changed'} · ${o.realm || 'season'}</span>
+                  <span>${o.verb || 'changed'} · ${(o.realm && o.realm.label) || o.realm || 'season'}</span>
                   ${isStale(o) ? `<span class="rvw">needs attention</span>`
                     : needsExport(o) ? `<span class="rvw">export required</span>`
                     : o.tier === 3 ? `<span class="rvw done">export saved</span>` : ''}
@@ -158,7 +164,7 @@
       : [{ field:'(no field-level preview captured)', was:'—', becomes:'—' }];
     return `
       <h4>${o.name}</h4>
-      <span class="rvop-name">${o.op || 'unknown operation'} · tier ${o.tier} · ${o.realm || 'season'}</span>
+      <span class="rvop-name">${o.op || 'unknown operation'} · tier ${o.tier} · ${(o.realm && o.realm.label) || o.realm || 'season'}</span>
 
       ${isStale(o) ? `
         <div class="rvcon">
@@ -251,14 +257,7 @@
         <p style="font-size:var(--t-sm);color:var(--ink3);margin-top:16px" data-demo-only>
           Demo only &mdash; this button does not exist in the real portal.</p>
       </div>`;
-    document.getElementById('seed').onclick = () => {
-      F.sampleOps.forEach((o, i) => {
-        const op = { ...o, stale: i === 1 };     // one stale op, to exercise the conflict surface
-        S.Store.onInvert(op.id, () => {});
-        S.Store.add(op);
-      });
-      st.sel = null; render();
-    };
+    document.getElementById('seed').onclick = () => { loadSample(); st.sel = null; render(); };
   }
 
   function renderFoot() {
@@ -333,6 +332,36 @@
   }
 
   S.onAfterRevert = render;
+  /* 🔴 SEEDED ON REQUEST, NEVER AUTOMATICALLY — COMPANION §15 states the rule and this is the second
+   * way of asking. The button above is the reader's way; `?demo=1` is the INSTRUMENTS' way, and it is
+   * the flag review.html's own do-not-ship comment already names as the sanctioned alternative.
+   *
+   * ⚠️ WITHOUT IT THIS REALM CANNOT BE COMPARED AT ALL. The staged-ops store is sessionStorage and
+   * every instrument clears it on load (portalDiff/portalAudit, 2026-08-30, deliberately), while the
+   * portal harness carries four changesets — so a resting run measures an EMPTY page against a
+   * POPULATED one and returns well-formed numbers for a comparison nobody meant to make. Measured
+   * 2026-09-02 22:48 EDT: 4.7% in 15 regions, whose largest was `div.rvnone` against `div.rvdet` — the
+   * empty state against the board, reported as a design difference.
+   *
+   * The clear runs in `evaluateOnNewDocument`, i.e. BEFORE this file's scripts, so seeding here is not
+   * wiped by it. No visible copy is added: the flag changes the DATA, never the design. */
+  function loadSample() {
+    /* ⚠️ THE TIER CANNOT BE FABRICATED HERE, AND TRYING IT IS HOW THAT WAS MEASURED (2026-09-02 23:18 EDT).
+     * A `tier: 3` passed in this object is DISCARDED: `shell.js`'s `Store.add` derives the tier from
+     * `FIX.OP_TIERS` — core/ops's own registry — and only ever CHECKS what a surface claims, which is
+     * the invariant `.claude/rules/operation-core.md` states and the reason three surfaces once typed a
+     * delete as tier 3 because deleting feels destructive. `sampleOps` carries no op whose real tier is
+     * 3, so THE MOCKUP CANNOT RENDER THE EXPORT GATE AT ALL, and the portal harness can only render it
+     * by fabricating a tier the registry contradicts. That divergence is CITED, not fixed here: closing
+     * it means changing shared fixture data that four closed realms are measured against. */
+    F.sampleOps.forEach((o, i) => {
+      const op = { ...o, stale: i === 1 };       // one stale op, to exercise the conflict surface
+      S.Store.onInvert(op.id, () => {});
+      S.Store.add(op);
+    });
+  }
+  if (new URLSearchParams(location.search).get('demo') === '1' && !S.Store.all().length) loadSample();
+
   render();
   (window.Shell||window.S).holdTop();
   S.audit({

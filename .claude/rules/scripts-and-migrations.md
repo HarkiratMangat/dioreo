@@ -100,6 +100,18 @@ Three tracked scripts from the health/roll-up stage, all wired into `npm test` a
 
 **`portal:realwalk`** is a script now. `scripts/portalRealWalk.mjs` existed and was named on the status board, in the plan and in two prompts with no npm entry point anywhere — a close condition nobody could invoke. `docs-audit`'s new **`npm-script-exists`** (ERROR) is the general form: any `status: live` tracked doc naming an `npm run <script>` absent from `package.json` fails. ⚠️ It cannot see whether the script does what the doc CLAIMS — that needs the §0.5c reader test, which is why that is now close condition ⑥.
 
+## `portalReviewWalk.mjs` + `portalRevertId.test.js` — the COMMIT walk and the revert seam (added 2026-09-03 00:23 EDT)
+
+`npm run portal:reviewwalk` drives the REAL dev server over HTTP: stage a tier-1 op, see it on Review with its tier, diff and gate, commit it and check the live document and a `ChangeLog` row both moved, discard a second and check nothing moved, force a tier-3 export refusal and a BLOCKED-validation refusal and read both reasons, then put the database back through `/api/revert`. **36 assertions.** It exists because `portal:realwalk` walks a realm's VIEWS in a browser and Review has none, so the one screen where staged work becomes real could never earn a receipt — a structural gap, not neglect. It records a new `commitwalk` receipt that `portalStatus` reports.
+
+⚠️ **Manual only, like `portal:realwalk`** — it needs `.env.dev`, local Mongo and a running server, so it is deliberately NOT in `npm test`. The gate that IS wired in is `scripts/portalRevertId.test.js`.
+
+⚠️ **It writes to the dev database and puts it back** through the real revert route; `--keep` leaves the rows. `scripts/lib/portalSession.cjs` refuses any non-local URI, so it cannot run against prod.
+
+⚠️ **What it does NOT prove, stated because its first header overclaimed it:** a ChangeLog row EXISTING after a commit is not proof it was written INSIDE the transaction. An audit write that ran outside `withTransaction` and survived a rollback passes every assertion here. The fault injection that would prove atomicity is filed in `docs/db-deferred-list.md`.
+
+**`scripts/portalRevertId.test.js`** (in `npm test`) holds the revert seam: a change id is `#N`-shaped, so the client must percent-encode it into a URL and `portal/api/httpUtil.js`'s `segment()` must decode it. Either half alone leaves the button dead, so both are asserted, and both were falsified against the pre-fix code before being wired in.
+
 ## `docs-audit.mjs` + `docs-audit.test.mjs` — the documentation invariants (added 2026-07-28 21:00 EDT, v2.42.0)
 `npm run docs:audit` · `npm run docs:audit:test`. Not a migration — a **checker**, and the only script here wired into CI (`.github/workflows/ci.yml`) as a merge gate. Run `node scripts/docs-audit.mjs --list` for the current check roster -- no count is written down here, because a number in prose is a copy of state that nothing updates (see the `feedback_no_duplicated_state_in_prose` memory; this very file said "10" within an hour of the roster reaching 19). Two severities: `ERROR` fails the build, `WARN` reports and never blocks so a hotfix isn't held up by prose.
 

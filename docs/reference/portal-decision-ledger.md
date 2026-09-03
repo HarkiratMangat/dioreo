@@ -134,6 +134,44 @@ status: live
 
 **⚠️ Dev-data reachability — a clean real-server walk over an empty state space is not evidence.** Counted against `.env.dev`'s localhost Mongo on 2026-09-01 18:20 EDT: **3 admins, 8 portal sessions**, exactly **one** holding a bare `manage` — so the `inh inherited` cells are reachable, `locked` is reachable now that the owner row is synthesized, `spof` and `lone` are both reachable, and `pend`/`pend off` are reachable only by clicking. **Two states the realm draws are NOT reachable in dev and the walk's silence about them means nothing**: the sessions empty state (`div.estate`, needs 0 sessions) and the no-admins empty state (`p.empty`, needs 0 admins). Seeding is out of scope; naming the gap is not.
 
+## Review — realm-specific decisions
+
+*Added 2026-09-02 23:37 EDT, Part 6a. Every row here is a difference that REMAINS in the resting overlay at 0.5% / 12 regions and is adjudicated, not open.*
+
+| Surface | Decision | Date | Why | Reopens if |
+|---|---|---|---|---|
+| `span.sp` — the changeset meta line | **Portal keeps "N transactions, committed in order".** Class (b) | 2026-09-02 23:37 EDT | The design says "commits as one transaction". `review.js`'s commit loop posts each changeset separately and `commitSet` wraps ONE changeset in one transaction, so with four staged changesets the portal's sentence is true and the design's promises an atomicity the product does not provide. The design models the staged set as a single changeset; the product mints one per staging action. ⚠️ On the screen whose whole subject is atomicity, the weaker true sentence beats the stronger false one | The product ever commits a whole board in one transaction |
+| `button.rvdrop` — `✕` vs an inlined sprite icon | **Portal keeps the icon**, and keeps its `aria-label` | 2026-09-02 23:37 EDT | `reference_never_text_glyphs_for_icons`, same class as the crumb separator. The design's `✕` is a text glyph with no accessible name; the portal's control is named "Discard &lt;op&gt;" | The standing icon rule is retired |
+| `.rvgate svg` — the gate icon's SIZE | **Design's 14px, and this was a real defect** | 2026-09-02 23:37 EDT | `.ic.sm` is two classes; `.rvgate svg` is one class and a type, so the shared icon component's modifier WON on specificity and the icon drew at 9.77px with `flex:none`. Fixed by giving the rule `.rvgate svg,.rvgate svg.ic`. ⚠️ Specificity, not order — moving the rule later in the file would have changed nothing | An icon in a gate line measures anything but 14px |
+| `button.chip.go#seed` — *Load a sample changeset* | **Permanently ONLY-IN-MOCKUP** | 2026-09-02 23:37 EDT | A demo affordance the mockup's own comment says must not ship (`review.html:253-258`, COMPANION:2381). `portalInventory` will report it forever | The mockup drops the button |
+| The tier-3 surface at rest — export gate, typed confirm, red chip | **NEITHER side may fabricate it.** Class (b) | 2026-09-02 23:37 EDT | `shell.js`'s Store derives an op's tier from `FIX.OP_TIERS` and only ever CHECKS a claimed one, because the tier is a property of the OP — `draw.delete` is tier 1 since its inverse is exact. `sampleOps` holds no genuinely tier-3 op, so the mockup CANNOT render the gate, and the harness used to type one on, teaching a state production's `/api/review` can never produce. The behaviour is proven instead by `npm run portal:reviewwalk` (assertions 6a–6f) against the real server | A genuinely tier-3 op joins `sampleOps`, or a states fixture photographs the surface |
+| The board at rest | **Compared SEEDED, never empty.** `?demo=1` + `--mk-query` | 2026-09-02 23:37 EDT | The staged-ops store is `sessionStorage` and every instrument clears it on load, while the harness carries four changesets — so an unseeded run compares an empty page with a populated one and returns well-formed numbers for a comparison nobody meant. 4.7% / 15 regions unseeded against 0.5% / 12 seeded. "Seeded on request, never automatically" is COMPANION §15's own rule | The mockup's empty state is what is being compared, deliberately |
+
+### Review — the twelve resting regions, mapped onto the four classes
+
+*Added 2026-09-03 09:07 EDT because §L's close condition ② closes on the ENUMERATION, and until now that enumeration lived only in `local/difference-ledger-review.md`, which is gitignored — so a reviewer, a fresh clone and every future session could see the claim and not the evidence. Reproduce with `node scripts/portalDiff.mjs --realm review --portal harness --mk-query demo=1`; the instruments refuse without the seed.*
+
+**0.5% of pixels differ, in 12 regions. mk 888px · pt 984px.**
+
+| # | Region | Class |
+|---|---|---|
+| 1 | 224×48 at (1024,0) — `span` vs `header` | cross-realm — the account chip |
+| 2 | 272×48 at (416,0) — `input.cb-in` both sides | cross-realm — the command bar |
+| 3 | 288×16 at (960,192) — `span.sp` | portal is right — the atomicity sentence |
+| 4 | 80×48 at (880,0) — `div.cmdbar` vs `kbd` | cross-realm — the ⌘K hint |
+| 5 | 96×16 at (208,16) — `span` vs `header` | cross-realm — the crumb |
+| 6 | 48×32 at (256,256) — `span` sub-line | mockup defect, repaired |
+| 7 | 48×32 at (288,320) — `span` sub-line | mockup defect, repaired |
+| 8 | 32×32 at (16,64) — `svg` | icon system — portal keeps the sprite |
+| 9 | 16×48 at (0,400) — `a.realm.out` | icon system |
+| 10 | 48×16 at (240,416) — `span` sub-line | mockup defect, repaired |
+| 11 | 48×16 at (208,480) — `span` sub-line | mockup defect, repaired |
+| 12 | 16×32 at (32,128) — `svg` | icon system |
+
+### Review — the overlay tier, the only one measured
+
+*The resting page is not the whole realm. `--open "Discard all"` opens on BOTH sides — the first overlay ever compared on any realm but Season — and reports **4.0% in 6 regions AT FOLD HEIGHT**, comparable only to a `--fold` run and never to the 0.5% full-page figure. Four regions are `div.scrim.on` at the page corners. The two real ones are **`aside.drawer.open` at 269.25px against 243.34px** (with the matching transform) and **a `span.dw-eye` eyebrow the design does not draw**. Both live in `portal/ui/overlay.js`, which every realm shares, so the fix is a shared-chrome pass and is filed rather than done. `--open "Commit 4 changes"` REFUSES: nothing opens on the mockup side.*
+
 ## Instruments — what they can and cannot do
 
 | Instrument | State | Reopens if |

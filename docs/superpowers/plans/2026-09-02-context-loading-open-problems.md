@@ -69,12 +69,12 @@ Harkirat's instruction: *"reconstruct them and temporarily add back the *correct
 | Tails collected from topic files | **79**, across 74 files |
 | Index lines restored | **79** (0 orphaned) |
 | Appended `## Index-line detail` sections removed | **74** |
-| `MEMORY.md` now | **30,504 B / 151 lines**, median entry 198, max 683 |
+| `MEMORY.md` now | **~30.5 KB / 151 lines**, median entry 198, max 683 |
 | Line count vs pre-trim | 152 = 185 − 33, exactly the `SILENT MODE` block that stays lifted |
 
 ⚠️ **ONE COSMETIC LOSS AT 49 OF THE 79 JUNCTIONS.** The trim stripped the separator from BOTH halves, so which glyph sat there is unrecoverable. 30 tails begin lowercase and were rejoined with a space (mid-sentence, exact). The other 49 sat after a `. `, ` · ` or ` — ` and were rejoined with ` · `, this index's dominant separator. **Content is exact everywhere; the glyph at those 49 points is a best guess.**
 
-🔴 **AND THE `@`-IMPORT IS BACK, CORRECTED.** `CLAUDE.md` line 6, absolute path, no tilde, below the frontmatter — the two things that broke it before. `memory-index-check` now reports **over budget** at 30.5KB against 25,000, and that report is TRUE and deliberate: the bridge exists so no session reasons from half a memory while the real design is worked out. **Delete the import when a real solution ships, not when the number looks better.**
+🔴 **AND THE `@`-IMPORT IS BACK, CORRECTED — AND MEASURED INERT ANYWAY (2026-09-02 22:27 EDT).** `CLAUDE.md` line 6, absolute path, no tilde, below the frontmatter — the two things that broke it before, both genuinely fixed. **It still does not load.** `local/instructions-loaded.jsonl` holds **zero** `include` rows for `MEMORY.md` across the four session starts since 21:03 EDT, while `RTK.md` (parent: the *user-level* `CLAUDE.md`) produced one in each. The session of 2026-09-02 22:27 EDT received the first 25,000 B from the loader — cut inside line 124 of 151 — plus the last 27 lines from `memory-index-check.sh`'s fallback, and nothing from the import. **So the mitigation is the delivery mechanism and the import is decoration.** Two candidates survive: **(a)** the harness will not `include` a path it already loads as auto-memory, or **(b)** a project-level `CLAUDE.md` does not expand imports at all — every `include` ever recorded, in all six logged sessions, has the user-level file as its parent. ✅ **ANSWERED 2026-09-02 23:44 EDT, AND THE ANSWER NARROWS THE PROBLEM TO ONE SENTENCE.** The probe ran: a second `@`-import of a small tracked file was added to the project `CLAUDE.md`, and the next two session starts each logged an `include` row for it whose `parent_file_path` is that file. **Project-level imports expand.** ✅ **SETTLED AND FIXED 2026-09-03 00:08 EDT.** The cause was an ungranted permission: an external `@`-import from a non-User-scope `CLAUDE.md` is gated behind `hasClaudeMdExternalIncludesApproved`, which was `false` here — with `hasClaudeMdExternalIncludesWarningShown` also `false`, so nothing ever surfaced it. **RESOLVED 2026-09-03 00:08 EDT: external includes are APPROVED for this project** (`hasClaudeMdExternalIncludesApproved: true` in `~/.claude.json`, set for the repo and its eleven worktree entries), so the `@`-import in the PROJECT `CLAUDE.md` is the mechanism now. ⚠️ It must never live in the global `~/.claude/CLAUDE.md` — that file loads in every repo, so it would import this project's index into every unrelated project. Verify with the `MEMORY-INDEX-END` sentinel, never by assuming. 🔴 **Two earlier answers in this document were mine and both were wrong in the same shape — a plausible mechanism narrated over a value I never checked.** The first inferred a dedupe from `zero include rows` in a log whose `memory_type` enum has no auto-memory value, so it was blind to the case. The second read the resolver's guard and assumed the value of the very flag it tests; the published docs settled it in one link. 📏 The 200-line / 25,000-byte index cap is a separate mechanism (`YD`, `GF`) and is what the import routes around.
 
 ### Recoverability — measured, not assumed
 
@@ -106,7 +106,7 @@ So a script can restore every original line: parse `- **Title** — tail` out of
 
 | Approach | Why it is dead |
 |---|---|
-| `@import` from `CLAUDE.md` | Removed 2026-09-02 15:56 EDT on its own stated condition. It **never once worked**: it sat inside `CLAUDE.md`'s YAML frontmatter for its whole life (consumed as YAML), and after being moved below it still failed because `@~/…` uses a shell tilde, which the docs do not sanction (relative and absolute only). Also causes a **double load** — the loader reads its 25 KB *and* the import expands the whole file again. |
+| `@import` from `CLAUDE.md` | **Dead for a third reason, and the first two were red herrings.** It sat inside the YAML frontmatter for its whole life (consumed as YAML); moved below it, it read `@~/…`, a shell tilde the docs do not sanction. Both fixed 2026-09-02 21:03 EDT — and measured 2026-09-02 22:27 EDT it **still produces zero `include` rows** in `local/instructions-loaded.jsonl` across four session starts. ⚠️ The **double load** this row used to warn about therefore never happens: there is no second load. See the reconstruction section above for the two surviving candidates and the one-line probe. |
 | Raising the budget | Six values across four raises (16000 → 20000 → 25000 → 30000 → 35000 → 40000), none of which changed what the platform loads. The budget is now the platform's own 25,000 and must not move. |
 | Moving overflow into `.claude/rules/` | That tier is Problem 2. |
 | Line-trimming as a general lever | Argued twice before, verdict went both ways; this session's attempt is the rejection that prompted this document. |
@@ -219,7 +219,7 @@ Everything in the injected tier is paid whether or not it is used, and until thi
 | root `CLAUDE.md` | **~89,000 B** | ❌ |
 | global `~/.claude/CLAUDE.md` + `RTK.md` | 37,718 B | ❌ (outside the repo) |
 | `docs/SESSION-START.md` | ~30,200 B | ❌ |
-| `MEMORY.md` | 30,504 B loaded via import | budgeted, currently over on purpose |
+| `MEMORY.md` | **25,000 B via the loader** (cut inside line 124 of 151) **+ ~5,500 B re-emitted by `memory-index-check.sh`**; the import contributes nothing | budgeted, currently over on purpose |
 | `self-check.sh` | 3,798 B **per prompt** | ❌ |
 
 Largest rules: `scripts-and-migrations.md` 98,173 · `legal-site.md` 79,881 · `design-decisions.md` 37,522 · `loadout-images-and-metadata.md` 34,413 · `draw-prices.md` 30,310. One split has been done as a worked example — `accent-and-colors.md` went 144,650 → 27,319 B by moving its encyclopedia to `docs/reference/colors-panel.md`.
@@ -273,7 +273,7 @@ A `rulesBudget` script plus its test and a size-baseline JSON (paths written wit
 |---|---|
 | `silent-mode.md` loads at `session_start` | **MEASURED** — logged twice beside `CLAUDE.md` and `RTK.md` |
 | Unconditional (`paths`-less) rules load eagerly | **MEASURED** via the above |
-| `MEMORY.md` is **30,504 B / 151 lines** — deliberately OVER the limit, bridged by the import | MEASURED (the 22,230/151 figure was the rejected trim) |
+| `MEMORY.md` is **~30.5 KB / 151 lines** — deliberately OVER the limit, and bridged by the HOOK FALLBACK, not by the import (measured 2026-09-02 22:27 EDT: zero `include` rows in four session starts) | MEASURED (the 22,230/151 figure was the rejected trim) |
 | 79 tails, 0 orphaned, rejoin verified | MEASURED 2026-09-02 20:59 EDT |
 | Memory store has no version control, newest snapshot is 2026-08-02 | MEASURED |
 | The `@`-import never worked, twice, for two different reasons | MEASURED |
@@ -290,7 +290,7 @@ A `rulesBudget` script plus its test and a size-baseline JSON (paths written wit
 | The load instrument | `.claude/hooks/instructions-loaded-audit.sh` | live · `--report` reads the log, `--session` emits a SessionStart line |
 | Its log | `local/instructions-loaded.jsonl` | gitignored, session-local, never accumulates across sessions |
 | Memory index gate | `.claude/hooks/memory-index-check.sh` | live · gates 200 lines AND 25,000 B · **currently reports over budget on purpose** |
-| The index itself | `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md` | 30,504 B / 151 lines · **outside the repo, no version control** |
+| The index itself | `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md` | ~30.5 KB / 151 lines · **outside the repo, no version control** |
 | Force-import | `CLAUDE.md` line 6 | live · absolute path, no tilde · temporary bridge |
 | Standing style | `.claude/rules/silent-mode.md` | live · no `paths:`, `unconditional: true` · verified loading |
 | Worked split | `docs/reference/colors-panel.md` | the one accepted move — encyclopedia out of a rule |
