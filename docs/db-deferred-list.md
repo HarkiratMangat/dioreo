@@ -725,6 +725,28 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P1 · XS · Sonnet5-Medium]` `npm test` has NOT been run against `0a774ed3` — the `--open` collapse guard is suite-unverified
+
+**Filed 2026-09-04 16:02 EDT.** Harkirat asked for no test suites while the handoff was being prepared, so the last full run was at **`9f5220cc`** (exit 0, foreground). Since then `scripts/portalAudit.mjs` gained the collapse guard and seven geometry fixtures were re-recorded by `portal:preflight`.
+
+**What WAS run against the new code:** `docs:audit` 0 · `npm run handoff` 0 blocking · `portal:preflight` 0 · two targeted falsifiers on the guard itself (it refuses Armory's DMZ chip at exit 1 with the real numbers, and `--open "Export…"` still opens).
+
+**What was NOT:** `portalRender`, `portalStates --ci`, `portalGeometry --all --check`, `portal:refs`, the reverse-orphan ratchet, and every non-portal suite.
+
+**Do:** `npm test` in the FOREGROUND, read its exit code from the process rather than a wrapper. **Verify:** exit 0 at a commit at or after `0a774ed3`, and the commit or record quoting that green says which commit it was measured at — a green remembered from three commits ago is a claim about a tree that no longer exists.
+
+⚠️ **This is `[P1]` only because it gates the merge**, not because a failure is expected. Do it first next session; it costs one call.
+
+### `[P2 · XS · Sonnet5-Medium]` `portal:preflight` re-records all seven geometry fixtures on EVERY run, so every commit carries provenance churn
+
+**Filed 2026-09-04 16:02 EDT.** A defect in the script written this same session, found by reading its own commit's diff. Its last step is `portalGeometry --all --write`, which rewrites `recordedAt` and `commit` in all seven fixtures whether or not any measured number moved — so a preflight before a docs-only commit still dirties seven tracked JSON files.
+
+**Worse than noise:** the plan's own rule is that **a re-recorded fixture makes its own `--check` vacuous for that realm**. Running preflight habitually therefore makes `portalGeometry --all --check` vacuous for all seven realms, permanently. Session 2 already tripped this and answered it by diffing (only `recordedAt`/`commit` moved), but that answer has to be re-derived every time.
+
+**Do:** make the geometry step `--all --check` by default and `--write` only under an explicit `--record` flag, or have `portalGeometry --write` skip a fixture whose measured values are unchanged and touch only the ones that moved. The second is better — it keeps the habitual path correct without a flag to remember.
+
+**Verify:** `npm run portal:preflight` on a clean tree with no source change leaves `git status` clean; a preflight after a real geometry change rewrites exactly the realms that moved, and `portalGeometry --all --check` still passes afterwards.
+
 ### `[P2 · S · Opus5-Medium]` What the falsification pass found AFTER the ⑥ audit closed — six items, and one is a live instrument blind spot
 
 **Filed 2026-09-04 15:59 EDT.** `SESSION2-PROMPT.md` §6 mandates `sequentialthinking` before any audit and says *"a real pass is 15+ thoughts, not 3"*. Session 2 ran **three**, at the start, and then treated two dispatched agents' reports as the audit. **Dispatching an auditor is not auditing** — [[feedback_substituting_the_near_neighbour]]. The pass was run afterwards, on request, and found six things twenty-five agent findings had not.
