@@ -299,6 +299,12 @@ const annotate = (key) => {
             await p.evaluate(() => new Promise((r) => setTimeout(r, 1600)));
             const after = await p.evaluate(sig);
             if (after === before) throw new Error(`portal:audit refuses: clicking ${openSel || '"' + openText + '"'} opened nothing on the ${side} side.`);
+            // 🔴 A CHANGE IS NOT AN OPENING, AND THE DIRECTION MATTERS — added 2026-09-04 15:56 EDT. The check above is `after !== before` over a signature of text length, dialog count and node count, so ANY change passes, including a page that replaced itself with less. Measured that day on `--open-sel ".mh-add button:nth-of-type(2)"` against Armory: the MOCKUP went 5,247 -> 5,364 nodes (a create form mounted) while the PORTAL went 5,401 -> 870 (the rack switched from 133 MP builds to 8 DMZ ones). The same control does two different things on the two sides; the audit compared a DMZ-mode portal against an MP-mode mockup and exited 0, reporting the data difference as design. ⚠️ A LARGE SHRINK IS NOT ALWAYS WRONG — a view that collapses a list legitimately loses nodes — so this refuses only a COLLAPSE, past half, which no overlay mount does.
+            const nodesBefore = Number(String(before).split('|')[2] || 0);
+            const nodesAfter = Number(String(after).split('|')[2] || 0);
+            if (nodesBefore > 200 && nodesAfter < nodesBefore / 2) {
+                throw new Error(`portal:audit refuses: clicking ${openSel || '"' + openText + '"'} on the ${side} side took the page from ${nodesBefore} nodes to ${nodesAfter}. An overlay MOUNTS; it does not replace the page with a smaller one. This is a view or mode switch — reach it with --view, and if the two sides disagree about what the control does, that disagreement is the finding.`);
+            }
             // 🔴 THE SAME FIX portalDiff NEEDED, FOR THE SAME REASON. `top` is reported including scrollY, so an overlay that scrolls itself into view on one side and not the other shifts every row beneath it — and the CASCADE section then names a page-wide offset that is a camera artefact rather than a layout one. Both sides are read from the same scroll position, always.
             await p.evaluate(() => new Promise((r) => {
                 for (const el of [...document.querySelectorAll('main'), document.scrollingElement, document.documentElement]) {
