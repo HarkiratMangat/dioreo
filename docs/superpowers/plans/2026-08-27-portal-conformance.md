@@ -857,7 +857,19 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 
 ## THE OVERLAY TIER — enumerated 2026-09-03 22:04 EDT, and it is smaller than this plan's language implies
 
-`portalAudit --realm <r> --triggers` was run on all six realms. Most triggers are the seven nav-rail links and the view tabs, neither of which opens an overlay. **The genuine never-opened overlays are:** armory `Export…` · `New MP build` · `New DMZ build` — broadcast `Export…` · `+ Post announcement` — access `Export…` · `+ Grant access` — analytics `Export…` · three alert-level chips — season's five remaining composer kinds, the expanded identity editor, the typed confirm and the row preview. Home commits nothing and has no composer. **≈12–15 comparisons**, each `--open "<trigger>"` plus a diff, and a hovered/focused/opened frame is captured at FOLD height so its percentage compares only to `--fold`. Season's composer (0.9%), export drawer (0.2%) and day drawer (1.0%) are already measured; every other realm has none.
+`portalAudit --realm <r> --triggers` was run on all six realms. Most triggers are the seven nav-rail links and the view tabs, neither of which opens an overlay. **The genuine never-opened overlays are:** armory `Export…` · `New MP build` · `New DMZ build` — broadcast `Export…` · `+ Post announcement` — access `Export…` · `+ Grant access` — analytics `Export…` · three alert-level chips — season's five remaining composer kinds, the expanded identity editor, the typed confirm and the row preview. Home commits nothing and has no composer. **≈12–15 comparisons**, each `--open "<trigger>"` plus a diff, and a hovered/focused/opened frame is captured at FOLD height so its percentage compares only to `--fold`. Season's composer (0.9%), export drawer (0.2%) and day drawer (1.0%) are already measured.
+
+🔬 **FIRST MEASUREMENTS OF THE TIER, 2026-09-03 22:07 EDT** — six of the eight opened. These are FOLD-height captures, so the SECTIONS are the comparable part and a percentage is not:
+
+| realm · overlay | ② SHAPE | ③ WORDS | ④ STYLE |
+|---|---|---|---|
+| broadcast · `+ Post announcement` | 27 | 5 | 26 |
+| broadcast · `Export…` | 27 | 5 | 22 |
+| access · `Export…` | 61 | 12 | **304** |
+| analytics · `Export…` | **137** | 25 | — |
+| armory · `Export…` | 80 | 18 | 165 |
+
+⚠️ **Two refused, and the refusal is the finding.** The trigger TEXT differs per side — the mockup draws `+ Grant access` where the portal draws `+ Grant access N`, and `New MP build` against `New MP build B`. The suffix is the portal's own keyboard-shortcut chip, already cited on Armory; `--triggers` lists both spellings, so open by the side's own wording. **Access's 304 style rows and Analytics' 137 shape pieces are the two that will cost**, and neither was visible from any resting figure.
 
 ## PART 6a — REVIEW  ·  PART 6b — HOME
 
