@@ -126,17 +126,18 @@ function AttentionList({ rows }) {
     if (!rows.length) {
         // An empty state that names what it MEANS, not "nothing here".
         return html`
-            <ol class="att-list">
-                <li class="att-row clear">
+            <div class="att-list" role="list">
+                <div class="att-row clear" role="listitem">
                     <span class="att-i">✓</span><span class="att-b"></span>
                     <span class="att-x"><b>Nothing needs you right now.</b><em>Every realm matches what the bot is serving.</em></span>
-                </li>
-            </ol>`;
+                </div>
+            </div>`;
     }
+    // 🔴 A LIST ELEMENT, NOT AN <ol>. The rows are anchors, and an <ol> may only contain <li> — so `<ol><a>…</a></ol>` is invalid markup that announces a list with ZERO items, which is exactly what a screen reader got. It also made `portalRealWalk`'s past-the-door probe (`main li`) match nothing on Home, so §L ⑤ could not pass here for a reason that was never a Home defect. `.att-list` is `list-style:none;padding:0;display:flex`, so div + role is PIXEL-IDENTICAL to the <ol> it replaces. The mockup carries the same fix.
     return html`
-        <ol class="att-list">
+        <div class="att-list" role="list">
             ${rows.map((a, i) => html`
-                <a class=${`att-row s-${a.kind}`} href=${a.href} key=${a.text} style=${`--c:var(--r-${a.realm.toLowerCase()})`}>
+                <a role="listitem" class=${`att-row s-${a.kind}`} href=${a.href} key=${a.text} style=${`--c:var(--r-${a.realm.toLowerCase()})`}>
                     <span class="att-i" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
                     <span class="att-b" aria-hidden="true"></span>
                     <span class="att-x"><b>${a.text}</b>${' '}<em>${a.realm} · ${a.act}</em></span>${' '}
@@ -145,7 +146,7 @@ function AttentionList({ rows }) {
                         <span class="arw" aria-hidden="true">→</span>
                     </span>
                 </a>`)}
-        </ol>`;
+        </div>`;
 }
 
 // 🔴 THE CLOCK EARNS ITS TWO LISTS HERE AND ONLY HERE. Harkirat: the ending/starting items are "a feature unique to the home page". Season's clock carries the time and the title and nothing else, because that page IS the season and the detail is one click away there. Home is the overview.

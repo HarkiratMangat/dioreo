@@ -40,8 +40,8 @@ Part 6b made this the loudest sentence in three carriers: *"a symmetric ONLY-IN-
 
 | Owed | Realms |
 |---|---|
-| **§L ⑥** — the reader test / two-agent audit. ⚠️ **NOT phase ⑥, which is UX-copy** — the plan numbers two different things ⑥ | Broadcast · Access · Analytics · **Review** |
-| **§L ⑤** — the real-server pass | Access · Analytics · **Home** (`[P2 · S]`: it now fetches seven endpoints, two expensive, never seen against Mongo) |
+| **§L ⑥** — the reader test / two-agent audit. ⚠️ **NOT phase ⑥, which is UX-copy** — the plan numbers two different things ⑥ | Broadcast · Access · **Review**. ⚠️ **Analytics was listed here and is NOT owed** — §L row 5's body records ⑥ run 2026-09-02 with two agents; this table copied that row's stale STATUS line. Corrected 2026-09-04 12:23 EDT |
+| **§L ⑤** — the real-server pass | **NONE — all seven realms walk clean, 2026-09-04 12:23 EDT**, against a freshly restarted server. ⚠️ **Access and Analytics were never owed**; rows 4 and 5 both record their walks passing and this table copied two stale status lines. **Home was owed and is now run** — and the blocker was the INSTRUMENT, whose past-the-door probe matched none of Home's row shapes |
 | **The overlay tier** — 7 of ~15 measured | armory `Export…` ②80 · **armory create ②156 ④146** · broadcast ×2 ②27 · access `Export…` ②61 **④304** · analytics `Export…` **②137** · season's three. Home's tier is **EMPTY** |
 | **Home's own tail** | 375×812 · tab order after the block reorder · the delegated-admin under-report · the tracked 27-region enumeration exists, use it |
 | **Re-apply the stood-down redesigns** | Gated on all six matching. The count is NOT 13 any more — read the ledger's per-realm sections |

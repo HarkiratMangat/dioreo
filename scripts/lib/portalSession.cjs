@@ -59,12 +59,35 @@ function doorVerdict({ hasDoorMarker, realmNodes, textLen }) {
 
 // The browser half. Throws rather than returning, because a caller that gets a page object back will
 // use it, and the whole failure mode here is a well-formed measurement of the wrong page.
+// 🔴 ONE LIST, BECAUSE THERE WERE TWO AND THEY DRIFTED. `assertPastDoor` below and
+// `portalRealWalk`'s per-view `scan()` each carried their own copy of this selector; the copies
+// disagreed (`.bcard` in one, not the other), and BOTH were missing every shape Home draws — so
+// Home failed the door assertion AND would have reported `0 rows` had it got past it. Two lists
+// of one thing is the defect this branch exists to remove. Adding a realm's row shape here fixes
+// both readings at once.
+const REALM_ROW_SELECTOR = [
+    'main tr',        // Manifest tables — Armory, Analytics, Access
+    'main .bar',      // Season's Track lanes
+    'main li',        // any genuine list item
+    'main .rec-row',  // Review's changeset records
+    'main .bcard',    // Broadcast's announcement cards
+    'main .att-row',  // Home's attention rows (2026-09-04 12:17 EDT)
+    'main .hcard',    // Home's realm strip (2026-09-04 12:17 EDT)
+].join(', ');
+
 async function assertPastDoor(page, label) {
-    const state = await page.evaluate(() => ({
+    const state = await page.evaluate((sel) => ({
         hasDoorMarker: !!document.querySelector('main.door, .doorcard, .dbtn'),
-        realmNodes: document.querySelectorAll('main tr, main .bar, main li, main .rec-row, main .bcard').length,
+        // ⚠️ EVERY REALM'S ROW SHAPE HAS TO BE IN HERE OR THAT REALM CAN NEVER PASS. Added
+        // 2026-09-04 12:16 EDT: Home draws its attention rows as `.att-row` anchors and its realm
+        // strip as `.hcard`, and matched NONE of the five selectors below — so Home's §L ⑤
+        // reported 'never got past the door' on a page that renders correctly, and the
+        // instrument's own message named the one cause it was not. A missing selector and an
+        // unauthenticated walk are indistinguishable from this function's return value, which
+        // is why the list is now commented rather than merely correct.
+        realmNodes: document.querySelectorAll(sel).length,
         textLen: String((document.querySelector('main') || {}).innerText || '').length,
-    }));
+    }), REALM_ROW_SELECTOR);
     const v = doorVerdict(state);
     if (!v.pastDoor) {
         throw new Error(`portalSession: ${label} never got past the door — ${v.why}.\n`
@@ -74,4 +97,4 @@ async function assertPastDoor(page, label) {
     return state;
 }
 
-module.exports = { mintSession, doorVerdict, assertPastDoor };
+module.exports = { mintSession, doorVerdict, assertPastDoor, REALM_ROW_SELECTOR };

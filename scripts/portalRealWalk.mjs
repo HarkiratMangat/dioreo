@@ -14,7 +14,7 @@ const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { findChrome } = require('./lib/chromePath.cjs');
 const { resolveViews } = require('./lib/portalRealWalkViews.cjs');
-const { mintSession, assertPastDoor } = require('./lib/portalSession.cjs');
+const { mintSession, assertPastDoor, REALM_ROW_SELECTOR } = require('./lib/portalSession.cjs');
 
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
@@ -54,7 +54,7 @@ try {
     console.log(`  past the door: ${state.realmNodes} realm node(s), ${state.textLen} chars\n`);
 
     const scan = async (label) => {
-        const out = await page.evaluate((src) => {
+        const out = await page.evaluate((src, rowSel) => {
             const re = new RegExp(src);
             const hits = [];
             for (const el of document.querySelectorAll('main *, header *')) {
@@ -62,8 +62,8 @@ try {
                 const t = (el.innerText || '').trim();
                 if (t && re.test(t)) hits.push((typeof el.className === 'string' && el.className ? '.' + el.className.split(/\s+/)[0] : el.tagName.toLowerCase()) + '  ' + t.slice(0, 74));
             }
-            return { hits: [...new Set(hits)].slice(0, 14), rows: document.querySelectorAll('main tr, main .bar, main li, main .rec-row').length, chars: String((document.querySelector('main') || {}).innerText || '').length };
-        }, GARBAGE.source);
+            return { hits: [...new Set(hits)].slice(0, 14), rows: document.querySelectorAll(rowSel).length, chars: String((document.querySelector('main') || {}).innerText || '').length };
+        }, GARBAGE.source, REALM_ROW_SELECTOR);
         const ok = out.hits.length === 0;
         if (!ok) failed = true;
         console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(9)} ${String(out.rows).padStart(4)} row(s) · ${String(out.chars).padStart(6)} chars${ok ? '' : ` · ${out.hits.length} garbage value(s)`}`);

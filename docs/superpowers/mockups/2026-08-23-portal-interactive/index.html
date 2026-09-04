@@ -3,7 +3,7 @@
 <title>Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1788492866"><link rel="stylesheet" href="assets/app.css?v=1788492866">
+<link rel="stylesheet" href="assets/tokens.css?v=1788538844"><link rel="stylesheet" href="assets/app.css?v=1788538844">
 </head><body>
 <!-- 🔴 HOME USED TO OVERRIDE THE GRID TO ONE COLUMN AND CARRY NO RAIL, under a comment that
      read: "the rail is the in-realm switcher, and repeating it on the page whose entire job IS
@@ -48,7 +48,7 @@
            and nothing else, because that page IS the season and the detail is a click away
            there. Home is the overview, so here the clock earns its two lists. -->
       <section class="hclock" id="hClock" aria-label="Season countdown"></section>
-      <ol class="att-list" id="attList"></ol>
+      <div class="att-list" id="attList" role="list"></div>
       <div class="hlive" id="hlive"></div>
     </div>
   </main>
@@ -56,9 +56,9 @@
 <!-- No floating tray on Home: the resume bar above carries the same information with more of
      it (which realms, and both actions inline), so the tray would be a second, worse copy. -->
 
-<script src="assets/fixtures.js?v=1788492866"></script>
-<script src="assets/icons.js?v=1788492866"></script>
-<script src="assets/shell.js?v=1788492866"></script>
+<script src="assets/fixtures.js?v=1788538844"></script>
+<script src="assets/icons.js?v=1788538844"></script>
+<script src="assets/shell.js?v=1788538844"></script>
 <!-- PROTOTYPE - THROWAWAY. Season-shape glyph variants; inert unless ?glyph= is set. -->
 <link rel="stylesheet" href=".proto-glyph.css?v=1787702090">
 <script defer src=".proto-glyph.js?v=1787702090"></script>
@@ -187,7 +187,7 @@
   function render() {
     const att = attention();
     attList.innerHTML = att.length
-      ? att.map((a, i) => `<a class="att-row s-${a.kind}" href="${a.href}" style="--c:var(--r-${a.realm.toLowerCase()})">
+      ? att.map((a, i) => `<a role="listitem" class="att-row s-${a.kind}" href="${a.href}" style="--c:var(--r-${a.realm.toLowerCase()})">
           <span class="att-i" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
           <span class="att-b" aria-hidden="true"></span>
           <span class="att-x"><b>${a.text}</b><em>${a.realm} &middot; ${a.act}</em></span>
@@ -195,9 +195,9 @@
             <span class="arw" aria-hidden="true">&rarr;</span></span>
         </a>`).join('')
       /* An empty state that names what it means, not "nothing here". */
-      : `<li class="att-row clear"><span class="att-i">&#10003;</span><span class="att-b"></span>
+      : `<div class="att-row clear" role="listitem"><span class="att-i">&#10003;</span><span class="att-b"></span>
            <span class="att-x"><b>Nothing needs you right now.</b>
-           <em>Every page matches what the bot is serving.</em></span></li>`;
+           <em>Every page matches what the bot is serving.</em></span></div>`;
 
     /* ── THE FIGURES ─────────────────────────────────────────────────────────
      * The LEAD is "needs you", because that is what this page is. Its colour is the state
