@@ -384,6 +384,8 @@ The one movement is Review, 12 → 13 regions at the same percentage — the see
 
 Home said **66** builds need repair, Armory's masthead said **60**, the design says **13**. No instrument can see this class: source scanners never execute, and the diff compares a page against its mockup rather than against another page. **Do.** Build the `(realm, label, value, of)` collector described in the plan, falsifier first. **Verify by:** a seeded disagreement failing the gate before any real run is trusted.
 
+⚠️ **THE PRIORITY IS ARGUABLE AND THE ARGUMENT BELONGS HERE — raised 2026-09-03 23:34 EDT by the §L ⑥ agent.** This is `[P1]` and it is specified from a population of ONE consumer: the plan's own text says *"Home is the only realm that reads five OTHER realms"*. Meanwhile **Home's §L ⑤ real-server pass is `[P2]`** and is measurable today against a running server. A gate generalised from one instance can be the right thing to build and still be the wrong thing to build FIRST. ⚠️ **Two live instances exist now, not one** — Armory's 13/60/66 and Analytics' "23 of 496" (different collection, different window, rendered as a ratio) — which strengthens the case for the gate and does not settle the ordering. The plan's hedge (*"build it only if the overlay tier leaves room"*) is the operative instruction; this file's `[P1]` should not override it.
+
 ### `[P2 · S · Sonnet5-High]` Home's §L ⑤ real-server pass has never run, and it now costs seven endpoints
 *Filed 2026-09-03 22:33 EDT, Part 6b.*
 
@@ -408,6 +410,11 @@ COMPANION §15 states the seeding rule ("seeded on request, never automatically"
 *Filed 2026-09-03 22:33 EDT, Part 6b.*
 
 Home held its own copy of Armory's fault predicate; the copy happened to AGREE, which is the version of that bug that survives longest. Nobody has looked for the others. **Do.** Compare every `.filter(` over a realm collection against the realm that owns it. **Verify by:** each surviving copy either importing the owner's derivation or carrying a comment saying why it must differ.
+
+### `[P2 · S · Sonnet5-Medium]` `portalGeometry` reports a `sizeIssues` COUNT and never names them
+*Filed 2026-09-03 23:34 EDT, Part 6b, by the §L ⑥ agent.*
+
+Home's fixture went `sizeIssues` **33 → 35** across four re-records this Part, and nothing can say which two elements are new: the tool prints `examined/near/size` totals and the fixture stores three integers. A reader cannot distinguish an intended consequence of a layout change from an accepted regression, so `--write` silently absorbs both. ⚠️ **A re-recorded fixture also makes its own `--check` vacuous for that realm** — it compares the tree against a baseline taken from that tree. **Do.** Have `--check` print the ELEMENTS behind a changed `sizeIssues`, or store their selectors in the fixture. **Verify by:** re-recording Home and being told which two elements moved.
 
 ## 🔔 Reminders / watch-for
 
