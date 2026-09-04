@@ -13,7 +13,7 @@ status: live
 
 ## 🔴 §0 — FIRST ACTIONS, IN THIS ORDER
 
-**1 · Verify your own memory loaded.** `MEMORY.md` is larger than the harness's 25,000-byte loader cap, and the project `CLAUDE.md` `@`-imports it to route around that. **Search your context for the literal `MEMORY-INDEX-END`.** It should be there — `hasClaudeMdExternalIncludesApproved` was the cause of three failed attempts and was granted 2026-09-03. If it is missing, the import broke again: `Read` the file, say so, and check that flag in `~/.claude.json` before theorising.
+**1 · Verify your own memory loaded.** `MEMORY.md` is larger than the harness's 25,000-byte loader cap, and the project `CLAUDE.md` `@`-imports it to route around that. **Search your context for the literal `MEMORY-INDEX-END`.** It should be there — `hasClaudeMdExternalIncludesApproved` was the cause of three failed attempts and was granted 2026-09-03 00:08 EDT. If it is missing, the import broke again: `Read` the file, say so, and check that flag in `~/.claude.json` before theorising. 🔴 **CORRECTED 2026-09-03 20:13 EDT: until this moment the sentinel was an HTML COMMENT, so this check COULD NOT PASS and answering it honestly meant reporting a failure that had not happened.** It is visible text now. The general form is the one §7.2 states: a test whose passing condition is unreachable does not measure anything, and it is indistinguishable from a real failure to every reader including its author.
 
 **2 · Build, then check the servers.** `portal/public/` is gitignored and holds zero tracked files, so in a fresh clone the harness server dies on `os.chdir` before it binds.
 
