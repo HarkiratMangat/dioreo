@@ -230,41 +230,26 @@ async function fetchChangesets(realm) {
     return body.changesets || [];
 }
 
-// 🔴 ONE HERO, THEN A TICK — AND ONE COPY OF IT. The largest meaningful unit is the figure; everything below it is one quiet mono line. Four near-equal segments was attempt 13's first hierarchy gap (COMPANION §16.31a) — a digital readout tells you the time without telling you anything about the time.
+// 🔴 THE DESIGN'S READOUT, AND THIS COMPONENT IS THE ONLY COPY OF IT. Four segments, colon-separated, the seconds quieter than the rest.
 //
-// ⚠️ HOME HAD ITS OWN TRANSCRIBED COPY OF THIS MARKUP. Both clocks emitted `.sc-u`/`.sc-sep` independently, so rebuilding Season's face left Home's rendering against rules that no longer existed — a whole component reduced to unstyled inline text, silently, with every gate green. The face is the part the two clocks genuinely share; what surrounds it is not (Season states the deadline and its chips, Home states the season title and earns two item columns beside it), so only the face is lifted.
+// 🔴 IT USED TO BE THE HERO CLOCK, AND THAT IS THE BUG THIS FIXES. Attempt 13's one-big-figure face (COMPANION §16.31a) was deleted on 2026-08-30 — but only at SeasonClock's call site below, which is where the comment recording the deletion still sits. The component survived, exported and styled, with home.js as its ONLY consumer: so Season rendered the design while Home went on rendering the scrapped version, and the decision ledger recorded the clock as "DELETED" with no qualifier. A deletion applied to the instance and written down as applied to the class. Found on Home's first ever audit, 2026-09-03 20:24 EDT.
+//
+// ⚠️ HOME HAD ITS OWN TRANSCRIBED COPY OF THIS MARKUP ONCE, and that is why it must not get one again: two independent emitters of .sc-u/.sc-sep meant rebuilding one face left the other rendering against rules that no longer existed — a whole component reduced to unstyled inline text, silently, with every gate green. The face is the part the two clocks genuinely share; what surrounds it is not (Season states the deadline and its chips, Home states the season title and earns two item columns beside it), so only the face lives here.
 export function ClockFace({ p }) {
     const units = [];
-    if (p.d > 0) units.push([p.d, p.d === 1 ? 'day' : 'days']);
-    if (p.d > 0 || p.h > 0) units.push([p.h, 'hrs']);
-    units.push([p.m, 'min']);
-    units.push([p.s, 'sec']);
-
-    const [heroN, heroL] = units[0];
-    const tick = units.slice(1);
+    if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
+    if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+    units.push(['m', p.m, 'min']);
+    units.push(['s', p.s, 'sec']);
 
     return html`
-        <!-- ONE AXIS. The figure owns the column's right edge, the unit sits directly under it and the
-             ticking clock rides the tier rule below that — three right-aligned lines of decreasing weight
-             and nothing set beside anything. The version before this put the unit stack to the figure's
-             RIGHT, which left a 24px stack against a 67px numeral with 43px of nothing under it and put
-             the block's fine print, rather than its figure, on the edge every other row aligns to. -->
         <div class="sc-face">
-            <b class="sc-hero">${heroN}</b>
-            <i class="sc-heroL">${heroL} left</i>
-        </div>
-        <span class="sc-unit">
-                ${tick.length ? html`
-            <div class="sc-tick">
-                ${tick.map((u, i) => {
-                    // ⚠️ THE SEPARATOR CARRIES .sc-s TOO, not just the number. The old markup hid the seconds and left its colon behind — "23 HRS : 59 MIN :" — and needed a :nth-last-child rule to clean up after itself. Marking the pair cannot drift. ⚠️ And .sc-s is the ONLY class the number carries: a `.sc-t-n` alongside it styled nothing (the numbers inherit .sc-tick), and portal:orphans said so.
-                    const sec = i === tick.length - 1;
-                    return html`
-                        ${i ? html`<span class=${'sc-t-sep' + (sec ? ' sc-s' : '')}>:</span>` : null}
-                        <span class=${sec ? 'sc-s' : null}>${String(u[0]).padStart(2, '0')}</span>`;
-                })}
-            </div>` : null}
-        </span>`;
+            ${units.map((u, i) => html`
+                ${i ? html`<span class="sc-sep">:</span>` : null}
+                <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
+                    <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
+                </span>`)}
+        </div>`;
 }
 
 // ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────
@@ -306,20 +291,11 @@ function SeasonClock({ season, today }) {
     //    https://claude.ai/code/artifact/48baf822-3a53-46d0-9fe9-93da8e00d104
     {
 
-        const units = [];
-        if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
-        if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
-        units.push(['m', p.m, 'min']);
-        units.push(['s', p.s, 'sec']);
         return html`
             <div class="sclock mh-stats" data-tier=${seasonTier(p.d)} aria-live="off">
-                <div class="sc-face">
-                    ${units.map((u, i) => html`
-                        ${i ? html`<span class="sc-sep">:</span>` : null}
-                        <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
-                            <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
-                        </span>`)}
-                </div>
+                <!-- The face is ClockFace's, not a second copy of it. Season and Home render the same four
+                     segments from the same code; only what surrounds them differs. -->
+                <${ClockFace} p=${p} />
                 <div class="sc-when">until <b>${fmtDay(next.iso)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
             </div>`;
