@@ -53,7 +53,9 @@ So both components exist, both are wired, and the fixture puts both in a branch 
 
 ⚠️ **And then the composition question is still real** — §L row 6b says Home's failure mode is composition against COMPANION rather than conformance against the mockup, and COMPANION carries four Home sections (§5.7, §5.9r.1, §5.9z.5, §16.6). §16.6 in particular records that *the cards were a second authority and the rail was the missing half* — a settled decision, not something to re-derive. Read them **after** the fixture question, so you are comparing two populated pages.
 
-## §2 — THE NUMBERS, AND THREE WAYS TO MISREAD THEM
+## ~~§2 — THE NUMBERS, AND THREE WAYS TO MISREAD THEM~~ · 🔴 SUPERSEDED 2026-09-03 23:29 EDT
+
+> **Every figure in this section is UNSEEDED and therefore compares an empty mockup against a populated portal.** The seeded readings are **0.7% · 27 regions · both pages 1243px (diff) / 1199px (audit)**. §1's own superseded sentence is struck; this table was not, so a skimmer read `6.3% · 31 regions` as Home's figure. Kept for the reasoning, not the numbers.
 
 Measured 2026-09-03 16:52 EDT, the first run of any instrument on this realm — `portal:status` read `· never` in all six columns.
 

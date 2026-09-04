@@ -10,7 +10,7 @@ import { Shell, NoAccess, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 // The clock FACE is Season's, imported rather than transcribed — see its header for the copy this replaced.
-import { ClockFace, seasonRepairCount, seasonConflictCount } from './season.js';
+import { ClockFace, seasonRepairCount, seasonConflictCount, seasonLastDeadline } from './season.js';
 // Armory's own fault-versus-age split, imported rather than restated — see the attention row that uses it.
 import { splitCoverage } from './armory.js';
 
@@ -36,9 +36,11 @@ function seasonItems(live) {
         // ② The calendar has THREE categories, not two: `draw` is a DRAW WINDOW. `!isPlaylist` is not "is an event",
         //    so every window landed in the Events lane wearing the Events colour — the same one-category-short fix
         //    season.logic.js's calCategoryOf exists to make impossible. Read that table rather than re-testing here.
+        // ⚠️ `calCategoryOf` IS A BARE GLOBAL AND MUST STAY ONE. It is declared in `season.logic.js`, which `scripts/buildPortal.js` injects as a CLASSIC script before the module graph evaluates — it exports nothing. `import { calCategoryOf } from './season.logic.js'` is valid module syntax, passes every parse check, and throws "does not provide an export named" at load, blanking the page; `season.js`'s header records that shipping once. `assertNoLogicImport` catches it at build time, but the sentence above names the file, which reads like an invitation. Flagged 2026-09-03 23:26 EDT by the §L ⑥ agent as a comprehension hazard rather than a live bug.
         const cat = calCategoryOf(c);
         out.push({ lane: cat.lane, accent: `var(${cat.topic})`, title: c.title, start: dayOf(c.date),
-                   end: dayOf(c.endDate || (c.isOngoing && live.bpEnd ? live.bpEnd : c.date)) });
+                   // 🔴 THE FALLBACK IS THE SEASON'S LAST DEADLINE, NOT `bpEnd`, AND THAT MATTERS ON THE REAL DATABASE. `season.js` records that the dev document has `bpEnd` UNSET; keyed on `bpEnd` alone this ternary fell straight through to `c.date` there, collapsing an all-season row back to a single day — the exact defect this line was added to fix, silently, only in the one environment nobody had measured. §L ⑤ has never run on Home. Flagged 2026-09-03 23:26 EDT by the §L ⑥ agent. `seasonLastDeadline` reads all three lines and returns '' only when every one is unset or TBD, which is the honest "the season has no end" case.
+                   end: dayOf(c.endDate || (c.isOngoing && (live.bpEnd || seasonLastDeadline(live)) ? (live.bpEnd || seasonLastDeadline(live)) : c.date)) });
     }
     return out;
 }

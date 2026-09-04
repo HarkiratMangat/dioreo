@@ -220,7 +220,7 @@ const annotate = (key) => {
     if (!frag) return '';
     const hit = ledgerSurfaces.find((s) => s.includes(frag));
     if (!hit) return '';
-    return `      ⚠ ledger may cover this — verify with ctx_search, not this match: ${hit.slice(0, 90)}${hit.length > 90 ? '…' : ''}`;
+    return `      ⚠ ledger KEYWORD match — WRONG 4 of 4 times on Home (all naming a Broadcast row). Verify with ctx_search or ignore: ${hit.slice(0, 90)}${hit.length > 90 ? '…' : ''}`;
 };
 
 (async () => {

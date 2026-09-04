@@ -873,6 +873,8 @@ The one time it was checked — by accident, through `--triggers` printing both 
 
 ⚠️ **`portal:status` WILL READ 🔴 RE-MEASURE ON FIVE REALMS AND THAT IS COMMIT-COUNT BOOKKEEPING, NOT DRIFT.** The regression sweep was RUN 2026-09-03 22:33 EDT and is clean: `npm run portal:sweep` on this branch, and the same sweep with `portal/ui` and the whole mockup package checked out at `95923c9e` and rebuilt, produce identical figures realm for realm — season 12.0%/135 · armory 8.6%/893 · broadcast 0.2%/16 · access 6.6%/56 · analytics 14.0%/41, with the captured page heights matching to the pixel. The only movement is Review, 12 → 13 regions at the same 0.5%. **Do not redo it because the counter is red; the counter counts commits, not differences.** The tables are in `docs/db-deferred-list.md`.
 
+⚠️ **`portalGeometry --all --check` IS GREEN OVER SIX REALMS, NOT SEVEN — `access` HAS NO FIXTURE.** Correct by §L's own rule (a realm records its own when its Part closes) and worth stating, because nothing in the tool's output says a realm it never examined is missing. Named 2026-09-03 23:29 EDT by the §L ⑥ agent.
+
 🔬 **FIRST MEASUREMENTS OF THE TIER, 2026-09-03 22:07 EDT** — six of the eight opened. These are FOLD-height captures, so the SECTIONS are the comparable part and a percentage is not:
 
 | realm · overlay | ② SHAPE | ③ WORDS | ④ STYLE |
@@ -882,6 +884,11 @@ The one time it was checked — by accident, through `--triggers` printing both 
 | access · `Export…` | 61 | 12 | **304** |
 | analytics · `Export…` | **137** | 25 | — |
 | armory · `Export…` | 80 | 18 | 165 |
+| **armory · the create overlay** (`--open-sel ".mh-add button"`) | **156** | 15 | **146** | portal +1990px, first measured 2026-09-03 23:29 EDT |
+
+🔴 **`--open` IS NOT ENOUGH AND `--open-sel` IS THE ESCAPE HATCH — added 2026-09-03 23:29 EDT after the §L ⑥ agent found the documented remedy unexecutable.** `--open` takes ONE string that must match a VISIBLE element on BOTH sides, so a control the two spell differently cannot be opened by text at all: *"open by the side's own wording"* was written into the handoff and is not a thing the tool can do. `--open-sel "<css>"` (`scripts/portalAudit.mjs:52`) takes a selector, and a **selector LIST** (`.mh-new, #grantBtn`) reaches two sides that share no class. ⚠️ **And nothing tells you how to choose one selector meaning "the same control" on two sides** — that is the first judgement this plan does not cover.
+
+🔴 **TWO INSTRUMENT BLIND SPOTS, BOTH FOUND BY RUNNING IT.** ① `--open` decides "it opened" by NODE COUNT, so an affordance that **scrolls** rather than mounting reports *"clicking … opened nothing"* — which reads as a dead button. Access's `+ Grant access` is exactly that: `setView` plus `scrollToGrant`, against a design that opens a drawer. **A refusal is not evidence of a defect.** ② `--triggers` is a FLOOR on what exists (§0.6c says so) and it was being quoted as the overlay tier's BUDGET. **≈12–15 is a lower bound, not an estimate.**
 
 ⚠️ **Two refused, and the refusal is the finding.** The trigger TEXT differs per side — the mockup draws `+ Grant access` where the portal draws `+ Grant access N`, and `New MP build` against `New MP build B`. The suffix is the portal's own keyboard-shortcut chip, already cited on Armory; `--triggers` lists both spellings, so open by the side's own wording. **Access's 304 style rows and Analytics' 137 shape pieces are the two that will cost**, and neither was visible from any resting figure.
 
