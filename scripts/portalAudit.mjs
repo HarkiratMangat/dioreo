@@ -38,6 +38,10 @@ const COVERAGE_NOTE = [
     // 🔴 UNLIKE portalDiff, THIS TOOL DOES NOT FREEZE Date, AND THE COUNTDOWN THEREFORE ALWAYS DIFFERS. The design's clock counts from the START of its fixture day, so it reads 23:59:59 on every capture; the portal keeps Date.now(), which is a settled decision for a running console (decision ledger, Season). So the hrs/min/sec figures and the widths of the units carrying them are reported as differences on every run of any realm with a clock, and they are not defects.
     'the clock is NOT frozen here — the countdown figures and their unit widths differ by construction',
     'light mode is out of scope by decision (the console is dark-only)',
+    // 🔴 ADDED 2026-09-04 12:31 EDT WITH THE FLAGS THEMSELVES. `--hover`/`--focus`/`--open` all widen the walk PAST `main` — a focus ring and an overlay both land on chrome `main` does not contain — so their section counts are NOT comparable to a resting run's. Home reads ② 8 at rest and ② 28 under either flag, and every one of those extra 20 is the header and the rail, not a hover finding. Saying so here is cheaper than the reader who counts 20 new defects.
+    'a --hover/--focus/--open run WIDENS the walk past main, so its counts are not comparable to a resting run',
+    // And the differential point, which is what makes an identical reading a PASS rather than a dead flag: both sides are hovered/focused on the SAME control, so this reports only where the two sides TREAT that state differently. Two different --focus targets returning byte- identical output means the two sheets agree, not that nothing happened.
+    '--hover/--focus apply to BOTH sides, so an identical reading means the two agree — not that the flag did nothing',
 ];
 
 const args = process.argv.slice(2);
@@ -304,8 +308,35 @@ const annotate = (key) => {
                 setTimeout(r, 420);
             }));
         }
+        // 🔴 `--hover` AND `--focus` WERE DECLARED AND NEVER APPLIED — WIRED 2026-09-04 12:30 EDT. They parsed at the top of this file and appeared nowhere else, so every `--hover` and `--focus` run silently returned the RESTING reading. Measured on Home the same day: resting, --hover and --focus all reported ② 8 · ③ 5 · ④ 36, byte for byte, and that agreement reads as "this realm has no hover differences" rather than as a dead flag. Four carriers documented the capability — the plan, CLAUDE.md's nav map, the ledger and the session prompt — all citing ~145 `:hover` and ~75 focus rules a side "that had never been compared". They had not, and this is why. `portalDiff.mjs`'s `pointAt` was wired all along, which is what made the pair look covered. ⚠️ IT REFUSES RATHER THAN FALLING BACK, deliberately: a hover that cannot find its target must not return a resting reading wearing a hover's name. Same rule as `--open` above.
+        for (const [text, kind] of [[hoverText, 'hover'], [focusText, 'focus']]) {
+            if (!text) continue;
+            const box = await p.evaluate((want) => {
+                const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                const c = [...document.querySelectorAll('button,a,[role="button"],[role="tab"],input,select,summary,li,td,[tabindex]')]
+                    .filter((e) => n(e.textContent) === n(want) && e.getClientRects().length > 0)
+                    .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+                if (!c.length) return null;
+                const r = c[0].getBoundingClientRect();
+                return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+            }, text);
+            if (!box) throw new Error(`portal:audit refuses: no visible element reading "${text}" to ${kind} on the ${side} side. Run --triggers to list what each side offers.`);
+            // :hover answers the REAL pointer, never a dispatched event — the same reason portalDiff moves the mouse rather than firing mouseover.
+            if (kind === 'hover') await p.mouse.move(box.x, box.y);
+            else {
+                await p.evaluate((want) => {
+                    const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                    const c = [...document.querySelectorAll('button,a,[role="button"],input,select,[tabindex]')]
+                        .filter((e) => n(e.textContent) === n(want) && e.getClientRects().length > 0)
+                        .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
+                    // focusVisible is what raises the KEYBOARD ring; a bare focus() often does not.
+                    if (c[0]) { try { c[0].focus({ focusVisible: true }); } catch { c[0].focus(); } }
+                }, text);
+            }
+            await p.evaluate(() => new Promise((r) => setTimeout(r, 420)));
+        }
         // ⚠️ A SECOND ARGUMENT, not a property hung off the array. page.evaluate serialises its arguments as JSON, and JSON.stringify drops every non-index property of an array — so the flag arrived undefined and the walk stayed scoped to main while reporting as though it had widened.
-        const data = await p.evaluate(COLLECT, PROPS, Boolean(openText || openSel));
+        const data = await p.evaluate(COLLECT, PROPS, Boolean(openText || openSel || hoverText || focusText));
         await p.close();
         return data;
     };

@@ -25,7 +25,21 @@
   --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
   /* SEASON topic accents — colour carries TOPIC */
-  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --pn:#F2C230;
+  /* 🔴 THESE FIVE WERE THE PRE-FIX SET AND CONTRADICTED THIS PACKAGE'S OWN COMPANION — corrected
+   * 2026-09-04 12:35 EDT. COMPANION §4.2 trap Two records that deriving two lanes from one bot hue produced
+   * "two plums and two blues that read as one family", and that each lane now takes a genuinely
+   * separate hue: draws keep Plum, playlists take Cyber Teal, events take Slate pushed to a true
+   * blue, returning takes a rose. Minimum hue gap 31°. `portal/ui/tokens.css` implements exactly
+   * that; this file still carried the superseded values (#FF3430 red / #337BA6 blue / #1F8A5E
+   * emerald / #8A6BD1 violet), which ARE the two-plums-two-blues set the COMPANION says was
+   * abandoned. So the design's prose and the design's stylesheet disagreed, and the portal
+   * agreed with the prose.
+   * ⚠️ NOTHING COULD SEE IT AT REST. These tokens only reach the rail through `.realm:hover svg
+   * {color:var(--c,var(--patch))}`, so every resting comparison of every realm was blind to them;
+   * it surfaced the first time `portal:audit --hover` actually worked, on the same day the flag
+   * was found declared-and-never-applied. `--dw` is added too: the portal has a draw-window lane
+   * accent and this file had none. */
+  --draw:#AE72E0; --ret:#E8639B; --dw:#B06BA8; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
   /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
    * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
    * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the

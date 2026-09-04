@@ -877,7 +877,26 @@ The one time it was checked — by accident, through `--triggers` printing both 
 
 ⚠️ **A RE-RECORDED FIXTURE MAKES ITS OWN CHECK VACUOUS FOR THAT REALM, AND HOME'S WAS RE-RECORDED FOUR TIMES THIS PART.** `home.json` moved `56ff4cc` → the current HEAD, so `--all --check` passing says nothing about Home — it compares the tree against a baseline taken from that same tree. The six realms whose fixtures this branch never touched are the load-bearing half of that green. ⚠️ **And `sizeIssues` went 33 → 35 across those re-records and the two new ones have never been examined** — the tool reports the count and does not name them, so a reader cannot tell an intended consequence from an accepted regression. Named 2026-09-03 23:34 EDT by the §L ⑥ agent; filed.
 
-⚠️ **`portalGeometry --all --check` IS GREEN OVER SIX REALMS, NOT SEVEN — `access` HAS NO FIXTURE.** Correct by §L's own rule (a realm records its own when its Part closes) and worth stating, because nothing in the tool's output says a realm it never examined is missing. Named 2026-09-03 23:29 EDT by the §L ⑥ agent.
+✅ **RECORDED 2026-09-04 12:41 EDT — `access.json` exists and `--all --check` is green over SEVEN.** By admin 365/0/11 · By permission 224/0/7. Originally: ⚠️ **`portalGeometry --all --check` WAS GREEN OVER SIX REALMS, NOT SEVEN — `access` HAD NO FIXTURE.** Correct by §L's own rule (a realm records its own when its Part closes) and worth stating, because nothing in the tool's output says a realm it never examined is missing. Named 2026-09-03 23:29 EDT by the §L ⑥ agent.
+
+🔴 **THESE FIGURES ARE PAGE-SIZED, NOT OVERLAY-SIZED — MEASURED 2026-09-04 12:41 EDT, AND IT RESIZES THE WHOLE TIER.** `portal:audit --open` re-walks the ENTIRE page with the overlay mounted, so each number below is the realm's own resting audit plus the overlay's contribution. Against each realm's resting run the true contributions are:
+
+| realm · overlay | recorded | ② new | ③ new | ④ new |
+|---|---|---|---|---|
+| access · `Export…` | ② 61 ③ 12 ④ **304** | 9 | 30 | **29** |
+| analytics · `Export…` | ② **137** ③ 25 | 9 | 28 | 42 |
+| armory · `Export…` | ② 80 ③ 18 ④ 165 | 9 | 21 | 32 |
+| armory · create | ② **156** ③ 15 ④ 146 | **75** | 5 | 16 |
+| broadcast · `Export…` | ② 27 ③ 5 ④ 22 | 9 | 17 | 20 |
+| broadcast · `+ Post announcement` | ② 27 ③ 5 ④ 26 | 9 | 17 | 24 |
+
+⚠️ **⑤ RULES is byte-identical (127 rows) on every one of them** — opening a drawer does not change a stylesheet, so that section carries NO overlay information and reading it as though it did counts the resting page a third time.
+
+⚠️ **The `② 9` is the same nine rows every time and eight of them are alignment artifacts.** Opening anything changes the node count, which re-runs the LCS pairing: the whole-page `main`/`div` text node, the view-tab `span`, and the mockup's inline `path`/`circle`/`rect` against the portal's `svg`+`use` sprite. The one real member is `span.id` "…2283", already cited.
+
+✅ **EVERY ROOT CAUSE IS ADJUDICATED, 2026-09-04 12:41 EDT.** The crumb separator, the drawer close and the rail icons are the settled glyph-versus-icon class (c) · `span.who`/`button.whobtn`/`span.av` are the cited identity row · `p.expnone` is cited AND guarded, because the design's *"One-way operations stay locked until there is one"* is the false export interlock `scripts/portalExport.test.js:147` exists to forbid · *Ends* vs *Expires in* is cited at `broadcast.js:262` with the payload-shape question filed · the export scope sets are filed `[P3 · XS]` · the drawer heights follow from the copy differences above · the focus-ring swap is an artifact of which control holds focus after the click · and **armory's ② 75 create-form rows are pairing artifacts, VERIFIED rather than assumed**: `bf-sec`, `bf-h`, `dwfield`, `bf-hint`, `atr`, `atn`, `ati`, `atx` all exist in `portal/ui/armory.js` and all have rules in `portal/ui/app.css`. ⚠️ **`span.crumb` is a real one-sided difference and the tracked filing had its DIRECTION inverted** — the portal names the open view, the mockup does not, on every realm.
+
+🔴 **AND `--hover` / `--focus` WERE DEAD IN THIS TOOL UNTIL 2026-09-04 12:41 EDT.** Declared at `portalAudit.mjs:54-55` and referenced nowhere else, so every run returned the RESTING reading and four carriers — this plan among them — described a capability that did not exist. Wired, refusing rather than falling back. **Its first working run found the mockup's `assets/tokens.css` contradicting COMPANION §4.2**: five category accents still on the pre-fix "two plums and two blues" set the COMPANION itself records as abandoned. Corrected in the package; Armory 893 → 892 regions and Analytics 41 → 40, no realm regressed. ⚠️ **No resting comparison could ever have seen it** — those tokens reach the rail only under `:hover`.
 
 🔬 **FIRST MEASUREMENTS OF THE TIER, 2026-09-03 22:07 EDT** — six of the eight opened. These are FOLD-height captures, so the SECTIONS are the comparable part and a percentage is not:
 
