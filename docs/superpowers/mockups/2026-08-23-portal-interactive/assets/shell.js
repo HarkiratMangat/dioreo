@@ -153,11 +153,32 @@
     blocked(){ return Store.all().filter(o => o.tier === 3 && !o.exported).length; }
   };
 
+  /* 🔴 THE SEED LIVED IN review.html, SO ONLY REVIEW COULD EVER BE MEASURED WITH STAGED WORK IN IT.
+   * The staged store is sessionStorage and every instrument clears it on load, while the portal harness
+   * synthesises four changesets — so any page carrying a staged surface was compared EMPTY against
+   * POPULATED, and the difference came back as well-formed numbers for a comparison nobody meant to make.
+   * Review had `?demo=1` and the other seven pages did not. Measured on Home, 2026-09-03 21:28 EDT: the
+   * masthead's staged figure, the whole `.hres` resume strip and the header's commit crumb were all
+   * reported ONLY IN PORTAL, which is a data difference wearing a design difference's clothes.
+   *
+   * ⚠️ It changes the DATA and never the design: no visible copy, no layout, nothing seeded without the
+   * flag. COMPANION §15's rule — seeded on request, never automatically — is unchanged; this widens WHO
+   * may ask from one page to all of them. `force` is the reader-facing button's way in (review.html),
+   * which seeds even when the store already holds something. */
+  function seedDemoOps(force){
+    const ops = (window.FIX && window.FIX.sampleOps) || [];
+    if (!ops.length || (!force && Store.all().length)) return;
+    /* ⚠️ THE TIER IS NOT FABRICATED HERE AND CANNOT BE. `Store.add` derives it from FIX.OP_TIERS —
+     * core/ops's own registry — and only ever CHECKS what a caller claims, so a `tier: 3` passed in is
+     * discarded. `sampleOps` carries no genuinely tier-3 op, which is why the mockup cannot render the
+     * export gate; that divergence is CITED rather than closed here. */
+    ops.forEach((o, i) => { const op = Object.assign({}, o, { stale: i === 1 }); Store.onInvert(op.id, function(){}); Store.add(op); });
+  }
   const Shell = {
     /* The session origin. In the wired portal this is the cookie's issued-at; here it is
      * pinned once per page load so the countdown moves and never resets mid-session. */
     _signedInAt: Date.now() - (4 * 3600e3 + 40 * 60e3),
-    Store, REALMS,
+    Store, REALMS, seedDemoOps,
 
     mountRail(active){
       const nav = document.querySelector('nav.rail');
@@ -2818,6 +2839,13 @@
     }
   };
   window.Shell = Shell;
+
+  /* ⚠️ SEEDED HERE, AFTER `Shell` EXISTS, AND THE FIRST ATTEMPT PUT IT BESIDE THE STORE. `Store.add`
+   * reaches `Shell` to pulse the tray, so calling it before the `const Shell = {...}` binding is a
+   * temporal-dead-zone error — "Cannot access 'Shell' before initialization" — which throws during the
+   * shell's own load and blanks EVERY page in the package, not just the seeded one. Measured
+   * 2026-09-03 21:29 EDT; `node --check` passes it, because TDZ is a runtime fault. */
+  if (new URLSearchParams(location.search).get('demo') === '1') seedDemoOps();
 
   /* 🔴 THE MEASURING INSTRUMENTS SHIPPED WITH THIS PACKAGE AND NO PAGE HAS EVER LOADED THEM.
    * `.grid.js` and `.peers.js` sit beside these pages and are referenced by the portal's own

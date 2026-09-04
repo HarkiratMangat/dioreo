@@ -329,6 +329,26 @@ Both selectors are emitted by `portal/ui/season.js` and `portal/ui/composer.js`,
 
 ---
 
+### `[P2 · S · Sonnet5-High]` `days left` was dropped from Home's masthead and should come back on merit
+*Filed 2026-09-03 21:40 EDT, Part 6b.*
+
+COMPANION §16.6 and §5.9z.5 both NAME four figures for Home — days left · live now · staged · needs you — and the design RENDERS three. Conformance took the design's three (Harkirat, 2026-09-03 21:40 EDT: *"Three now, revisit at the redesign phase"*). **Do.** In the redesign phase, decide whether the countdown earns a masthead figure given that Home's own clock panel sits ~200px below it stating the same deadline with two item columns off it. **Verify by:** either a fourth `.stat` in `home.js`'s `stats` array with a stated reason, or a line in the decision ledger saying it was considered and dropped.
+
+### `[P2 · S · Sonnet5-High]` Armory's masthead is mode-scoped, so it can never show the console's true repair count
+*Filed 2026-09-03 21:40 EDT, Part 6b.*
+
+Home says **66** builds need repair; Armory's masthead says **60**. The predicate is now shared (`splitCoverage`, imported), so this is scope, not drift: Home counts every build, Armory counts the mode you are looking at and opens on MP. Six DMZ builds have faults that Armory's masthead cannot show. **Do.** Decide whether Armory's figure should carry a both-modes total, or whether Home should scope to MP and lose those six. **Verify by:** the two surfaces reporting the same number, or a ledger row saying why they differ. ⚠️ This is the shape COMPANION records twice ("Home said 117, Armory said 11") and it is currently mitigated rather than closed.
+
+### `[P3 · XS · Sonnet5-Medium]` The mockup's staged strip counts realms by object identity
+*Filed 2026-09-03 21:40 EDT, Part 6b.*
+
+`index.html` computes `new Set(ops.map(o => o.realm)).size` — but `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js`'s `Store.add` rewrites `op.realm` from a string into `{href, label}`, so the Set counts four distinct objects where `FIX.sampleOps` holds two realms. The design renders **"across 4 realms"** where the truth is 2. Same class as `t-legendary` and Broadcast's short `colgroup`; the portal is right and the difference is cited. **Do.** Either read `.label` in `index.html` or stop boxing the realm in `Store.add`. **Verify by:** the mockup's Home strip reading "across 2 realms" on `?demo=1`.
+
+### `[P1 · M · Sonnet5-High]` Five realms need a REGRESSION check after Part 6b's shared changes
+*Filed 2026-09-03 21:40 EDT, Part 6b.*
+
+This part edited three shared surfaces: `portal/ui/app.css` (the whole `.sclock` family), the mockup package's `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` (`seedDemoOps`), and `portal/ui/harness/index.html` (the fixture day is stamped by default). Season, Armory, Broadcast, Access and Analytics were all recorded before those. **Do.** Per realm: `portal:audit --realm <r> --all` and `portalDiff --realm <r> --portal harness`, then compare the enumeration against that realm's section in `docs/reference/portal-decision-ledger.md`. ⚠️ **This is a REGRESSION check, not a fresh pass** — those realms are adjudicated, so anything already carried as a cited row stays cited; only a NEW region is work. **Verify by:** each realm's enumeration matching its ledger section, or a new row explaining what moved. ⚠️ Season additionally carries its own earlier `[P1 · S]` re-measure for the fixture tier change.
+
 ## 🔔 Reminders / watch-for
 
 ### Before promoting any gate to AUTO-CORRECTING, check these three `[P2 · XS]`

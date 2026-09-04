@@ -34,6 +34,8 @@ const COVERAGE_NOTE = [
     'viewport 1282x888 only — 375x812 has never been run on any realm',
     'data states (empty · error · loading) are walked by portal:states but never PIXEL-compared',
     'transitions are zeroed, so only the settled frame is compared',
+    // 🔴 UNLIKE portalDiff, THIS TOOL DOES NOT FREEZE Date, AND THE COUNTDOWN THEREFORE ALWAYS DIFFERS. The design's clock counts from the START of its fixture day, so it reads 23:59:59 on every capture; the portal keeps Date.now(), which is a settled decision for a running console (decision ledger, Season). So the hrs/min/sec figures and the widths of the units carrying them are reported as differences on every run of any realm with a clock, and they are not defects.
+    'the clock is NOT frozen here — the countdown figures and their unit widths differ by construction',
     'light mode is out of scope by decision (the console is dark-only)',
 ];
 
@@ -58,9 +60,10 @@ const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 const MOCKUP = withQuery(`http://localhost:8900/${PKG}/${realm === 'home' ? 'index' : realm}.html`);
-// 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state.
-if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
-    console.error('refusing: Review must be measured SEEDED or the two sides hold different data.\n'
+// 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state. 🔴 TWO REALMS NOW, NOT ONE. Home carries the same staged surfaces Review does — the header's commit crumb, the masthead's staged figure and the whole `.hres` resume strip — and it was measured UNSEEDED through Part 6b's first nine runs, which reported the crumb, the figure and the strip as ONLY IN PORTAL and the two pages 78px apart. Seeded they are the same height. Until 2026-09-03 21:29 EDT the seed lived inside review.html and no other page could be asked; it is in the mockup's shared shell.js now, so this guard can cover any page that shows staged work rather than the one page that happened to own the code.
+const SEED_REALMS = ['review', 'home'];
+if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
+    console.error(`refusing: ${realm === 'home' ? 'Home' : 'Review'} must be measured SEEDED or the two sides hold different data.\n`
         + '  add   --mk-query demo=1     to compare two populated boards (what every recorded figure for this realm means)\n'
         + '  or    --no-seed             to measure the empty state deliberately');
     process.exit(2);

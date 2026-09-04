@@ -116,6 +116,58 @@ function toTrackItems(live, path, lane, ongoingEnd) {
     }));
 }
 
+// Playlists, events and draw windows are three lanes of one stored `calendar` array. The split is driven by `calCategoryOf` so the lane a row lands in and the label the Manifest prints for it come from one table; adding a fourth category cannot silently mean "event".
+function splitCalendar(src) {
+    const all = (src && src.calendar) || [];
+    const of = (lane) => ({ calendar: all.filter((i) => calCategoryOf(i).lane === lane) });
+    return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
+}
+
+// 🔴 HOISTED OUT OF SeasonRealm SO HOME CAN READ THE SAME DERIVATION RATHER THAN COPY IT. Home's attention list carries a "season items to repair" row, and the design's own note on that row is the rule this file keeps re-learning: READ, never re-derive. The mockup records it twice — Home once said "133 builds · 33 need repair" where Armory said "31 · 28", and later "117 need repair" where Armory said 11 — both times because a second copy of a predicate drifted from the first. There is one builder now and both realms call it.
+function buildTrackData(live) {
+    const cal = splitCalendar(live);
+    const windowTitles = (cal.drawWindows?.calendar || []).map((w) => String(w.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
+    // ⚠️ COMPUTED OVER THE SET, NOT PER DRAW. `dateOnly` means a draw no calendar window covers — which /calendar then serves as a synthetic entry that never ends.
+    const servedSynthetic = (item) => {
+        const t = String(item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        return !!t && !windowTitles.some((w) => w && (w.includes(t) || t.includes(w)));
+    };
+    const withDateOnly = (list) => list.map((i) => ({ ...i, dateOnly: servedSynthetic(i) }));
+    return {
+        draw: withDateOnly(toTrackItems(live, 'newDraws', 'draw', live?.bpEnd)),
+        returning: withDateOnly(toTrackItems(live, 'returningDraws', 'returning', live?.bpEnd)),
+        drawwindow: toTrackItems(cal.drawWindows, 'calendar', 'drawwindow', live?.bpEnd),
+        event: toTrackItems(cal.events, 'calendar', 'event', live?.bpEnd),
+        playlist: toTrackItems(cal.playlists, 'calendar', 'playlist', live?.bpEnd),
+    };
+}
+
+// Season's Repairs panel, summarised to one number. `findingRows` is track.logic.js's — the same six checks the panel itself renders — so Home's row and Season's own heading count the same findings by construction.
+export function seasonRepairCount(live) {
+    if (!live) return 0;
+    const rows = findingRows(buildTrackData(live), live);
+    return ['dupe', 'banner', 'pastBp', 'orphanWindows', 'noWindow', 'untagged2x']
+        .reduce((n, k) => n + (rows[k] || []).length, 0);
+}
+
+// The season items that outlive the season — spans only, since a draw is a point in time and cannot run past anything. Exported as an ANSWER rather than exporting `buildTrackData`: a caller handed the builder would have to know which three of its five lanes are spans, which is precisely the knowledge that belongs on this side of the seam.
+export function seasonConflictCount(live) {
+    const last = seasonLastDeadline(live);
+    if (!last || !live) return 0;
+    const track = buildTrackData(live);
+    return ['event', 'playlist', 'drawwindow']
+        .flatMap((lane) => track[lane] || [])
+        .filter((i) => i.endDate && String(i.endDate).slice(0, 10) > last).length;
+}
+
+// 🔴 THE SEASON'S OWN LAST DEADLINE, WHICH IS NOT THE BATTLE PASS. `bpEnd` is the FIRST of three (`SEASON_LINES`), and Home's attention row asked whether an item outlives the battle pass while the design asks whether it outlives THE SEASON. Track's own strip already carries this correction (see its header); this is the same edge, for the same reason, on the other surface.
+export function seasonLastDeadline(season) {
+    if (!season) return '';
+    const ends = SEASON_LINES.map((L) => (season[L.tbdKey] || !season[L.endKey] ? '' : String(season[L.endKey]).slice(0, 10)))
+        .filter(Boolean).sort();
+    return ends.length ? ends[ends.length - 1] : '';
+}
+
 // The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome). ⚠️ `AddComposer` LIVED HERE AND IS GONE. It was a select and three bare inputs in a panel — the form the adopted design replaced with the inline composer above the Track (portal/ui/composer.js). Left in place it would have been a second way to add the same things, with a different vocabulary and no natural-language dates.
 
 // ⚠️ IT READS THE TRACK'S OWN ITEMS, not a second query. `trackData` is what the Track is drawing at this moment, so a day that lists something the Track is not showing — or omits something it is — is impossible by construction rather than by care.
@@ -1052,27 +1104,7 @@ export function SeasonRealm({ session }) {
     // Playlists are split out of `calendar` into their own lane. Track's LANE_LABEL and TOPIC_VAR have carried a `playlist` entry since the first build and nothing ever filled it, so every playlist-category calendar item rendered in the Events lane in the Events colour -- flagged by Session A's own post-hoc pass as pre-existing and left for this phase.
     //
     // 🔴 AND THAT FIX STOPPED ONE CATEGORY SHORT. `!isPlaylist` is not "is an event" -- the calendar has THREE categories, and the third is `draw`, a DRAW WINDOW (when a draw can be bought). Every one of them landed in the Events lane, in the Events colour, exactly as playlists had. The split is now driven by `calCategoryOf`, so the lane a row lands in and the label the Manifest prints for it come from one table; adding a fourth category cannot silently mean "event" again.
-    const splitCalendar = (src) => {
-        const all = (src && src.calendar) || [];
-        const of = (lane) => ({ calendar: all.filter((i) => calCategoryOf(i).lane === lane) });
-        return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
-    };
-    const liveCal = splitCalendar(state.live);
-    const windowTitles = (liveCal.drawWindows?.calendar || []).map((w) => String(w.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
-    const servedSynthetic = (item) => {
-        const t = String(item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-        return !!t && !windowTitles.some((w) => w && (w.includes(t) || t.includes(w)));
-    };
-    const withDateOnly = (list) => list.map((i) => ({ ...i, dateOnly: servedSynthetic(i) }));
-    const trackData = {
-        draw: withDateOnly(toTrackItems(state.live, 'newDraws', 'draw', state.live?.bpEnd)),
-        returning: withDateOnly(toTrackItems(state.live, 'returningDraws', 'returning', state.live?.bpEnd)),
-        drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow', state.live?.bpEnd),
-        // ⚠️ COMPUTED HERE BECAUSE IT IS A FACT ABOUT THE SET, NOT ABOUT ONE DRAW. `dateOnly` means a draw that no calendar window covers — which /calendar then serves as a synthetic entry that never ends. toBoardItems worked it out for the Board and nothing worked it out for the Track, so Repairs' "Draw served synthetic" check reported zero against eleven real ones.
-
-        event: toTrackItems(liveCal.events, 'calendar', 'event', state.live?.bpEnd),
-        playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist', state.live?.bpEnd),
-    };
+    const trackData = buildTrackData(state.live);
     // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since it's the same reshape, not a second task.
     const draftCal = splitCalendar(state.draft);
     const draftRails = state.draft ? {

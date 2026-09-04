@@ -28,6 +28,21 @@
 <!-- fixtures.js reads ?today= itself and stamps document.documentElement.dataset.today, so the
      date-travel switch the mockup harness had comes across for free. -->
 <script src="/harness/fixtures.js"></script>
+
+<!-- 🔴 THE TWO SIDES WERE STANDING ON DIFFERENT DAYS AND ONLY ONE INSTRUMENT HID IT. fixtures.js pins
+     F.today to 2026-08-24 for the mockup, but it stamps documentElement.dataset.today only when the URL
+     carries ?today= (fixtures.js:1589). Every portal component reads that dataset value and otherwise
+     falls back to the REAL date — so under portalDiff, which freezes Date on both sides, the two agreed,
+     and under portalAudit, which does not, the portal was rendering ten days ahead of the design.
+     Measured 2026-09-03 21:25 EDT on Home: "Running right now" listed five entirely different items per
+     side and the counts under them read 4 more against 6 more, which the audit reported as ordinary WORDS
+     differences rather than as two pages describing different weeks.
+     Harness-only, and it defers to an explicit ?today= rather than overriding it. -->
+<script>
+  if (window.FIX && window.FIX.today && !document.documentElement.dataset.today) {
+      document.documentElement.dataset.today = window.FIX.today;
+  }
+</script>
 __LOGIC__
 <script type="module" src="/ui/app.js"></script>
 

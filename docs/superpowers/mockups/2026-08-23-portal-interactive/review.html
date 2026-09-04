@@ -3,7 +3,7 @@
 <title>Review &amp; commit · Dioreo Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Big+Shoulders+Display:wght@600;700&family=Instrument+Serif&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/tokens.css?v=1788273616"><link rel="stylesheet" href="assets/app.css?v=1788273616">
+<link rel="stylesheet" href="assets/tokens.css?v=1788486500"><link rel="stylesheet" href="assets/app.css?v=1788486500">
 </head><body>
 <div class="app">
   <header id="hdr"></header>
@@ -44,9 +44,9 @@
      the footer — two controls for one action, with the redundant one obscuring the one that
      matters. Caught by looking at a screenshot; no audit rule can see it. -->
 
-<script src="assets/fixtures.js?v=1788273616"></script>
-<script src="assets/icons.js?v=1788273616"></script>
-<script src="assets/shell.js?v=1788273616"></script>
+<script src="assets/fixtures.js?v=1788486500"></script>
+<script src="assets/icons.js?v=1788486500"></script>
+<script src="assets/shell.js?v=1788486500"></script>
 <script>
 (function () {
   const F = window.FIX, S = window.Shell;
@@ -345,22 +345,10 @@
    *
    * The clear runs in `evaluateOnNewDocument`, i.e. BEFORE this file's scripts, so seeding here is not
    * wiped by it. No visible copy is added: the flag changes the DATA, never the design. */
-  function loadSample() {
-    /* ⚠️ THE TIER CANNOT BE FABRICATED HERE, AND TRYING IT IS HOW THAT WAS MEASURED (2026-09-02 23:18 EDT).
-     * A `tier: 3` passed in this object is DISCARDED: `shell.js`'s `Store.add` derives the tier from
-     * `FIX.OP_TIERS` — core/ops's own registry — and only ever CHECKS what a surface claims, which is
-     * the invariant `.claude/rules/operation-core.md` states and the reason three surfaces once typed a
-     * delete as tier 3 because deleting feels destructive. `sampleOps` carries no op whose real tier is
-     * 3, so THE MOCKUP CANNOT RENDER THE EXPORT GATE AT ALL, and the portal harness can only render it
-     * by fabricating a tier the registry contradicts. That divergence is CITED, not fixed here: closing
-     * it means changing shared fixture data that four closed realms are measured against. */
-    F.sampleOps.forEach((o, i) => {
-      const op = { ...o, stale: i === 1 };       // one stale op, to exercise the conflict surface
-      S.Store.onInvert(op.id, () => {});
-      S.Store.add(op);
-    });
-  }
-  if (new URLSearchParams(location.search).get('demo') === '1' && !S.Store.all().length) loadSample();
+  /* The seed moved to shell.js so every page can be measured with staged work in it, not only this one.
+   * The button above is the reader's way of asking and forces past the empty-store guard; `?demo=1` is the
+   * instruments' way and shell.js applies it on load, before this file runs. */
+  const loadSample = () => S.seedDemoOps(true);
 
   render();
   (window.Shell||window.S).holdTop();

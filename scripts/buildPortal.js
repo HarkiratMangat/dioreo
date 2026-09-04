@@ -83,6 +83,28 @@ function assertNoLogicImport(file, src) {
     }
 }
 
+// 🔴 A MISSING EXPORT IS A LINK-TIME ERROR AND EVERY GATE ABOVE IS BLIND TO IT. `import { buildTrackData } from './season.js'` where season.js declares that function WITHOUT `export` parses perfectly as a module on both sides, passes assertParsesAsModule, ships — and the browser then throws "does not provide an export named 'buildTrackData'" and blanks the whole page. Hit on 2026-09-03 21:21 EDT while wiring Home's attention list; the audit reported the portal as `1 node / 0px` and nothing else said why. Same failure SHAPE as assertNoLogicImport above — a cross-file reference that is syntactically valid and semantically absent — so it belongs beside it rather than in a test.
+//
+// ⚠️ Deliberately narrow: named imports from a SIBLING './x.js' only. Vendored modules, bare specifiers and `import * as` are out of scope, and a name re-exported through `export { a } from './b.js'` is matched by the `export {` branch below rather than followed. A gate that tried to resolve the whole graph would need a parser; this one catches the case that has actually happened.
+function assertNamedImportsResolve(file, src, readSibling) {
+    for (const m of stripJsComments(src).matchAll(/import\s*\{([^}]*)\}\s*from\s*'\.\/([\w.-]+\.js)'/g)) {
+        const target = m[2];
+        if (target.endsWith('.logic.js')) continue;          // assertNoLogicImport owns that case
+        const dep = readSibling(target);
+        if (dep === null) continue;                          // not a sibling we build; leave it alone
+        const clean = stripJsComments(dep);
+        const names = m[1].split(',').map((n) => n.trim().split(/\s+as\s+/)[0].trim()).filter(Boolean);
+        for (const name of names) {
+            const declared = new RegExp(`export\\s+(?:async\\s+)?(?:function|const|let|var|class)\\s+${name}\\b`).test(clean)
+                || new RegExp(`export\\s*\\{[^}]*\\b${name}\\b`).test(clean);
+            if (!declared) {
+                const line = src.slice(0, m.index).split('\n').length;
+                throw new Error(`portal/ui/${file}:${line} imports '${name}' from './${target}', which does not export it — this parses fine and blanks the page at load. Add \`export\` to its declaration, or import something that exists.`);
+            }
+        }
+    }
+}
+
 function assertParsesAsModule(file, src) {
     const r = spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src, encoding: 'utf8' });
     if (r.status !== 0) {
@@ -95,7 +117,11 @@ function copyUiScripts() {
     const files = fs.readdirSync(UI_DIR).filter(f => f.endsWith('.js'));
     for (const f of files) {
         const src = fs.readFileSync(path.join(UI_DIR, f), 'utf8');
-        if (!f.endsWith('.logic.js')) { assertNoBacktickInComments(f, src); assertNoLogicImport(f, src); assertParsesAsModule(f, src); }
+        if (!f.endsWith('.logic.js')) {
+            assertNoBacktickInComments(f, src); assertNoLogicImport(f, src);
+            assertNamedImportsResolve(f, src, (t) => (files.includes(t) ? fs.readFileSync(path.join(UI_DIR, t), 'utf8') : null));
+            assertParsesAsModule(f, src);
+        }
         copyFile(path.join(UI_DIR, f), path.join(UI_OUT, f));
     }
     return files;

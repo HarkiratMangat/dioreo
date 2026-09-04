@@ -4732,7 +4732,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    the unit and the ticking clock stacked against the numeral's right flank at cap height instead of at
    its feet; then a hairline in the tier colour spanning the block; then the deadline facts. The rule
    went from underlining nothing to dividing the figure from what qualifies it, which is a job. */
-.sclock{--sc-c:var(--ink3);display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+.sclock{display:flex;flex-direction:column;align-items:flex-end;gap:10px;
   text-align:right}
 /* The figure and its unit are ONE object. `flex-end` on the cross axis puts the label stack against the
    numeral's cap height rather than its baseline, and the tick joins the label instead of starting a
@@ -4759,13 +4759,10 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .sc-none{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
 
 /* ── the five tiers. Each REMOVES, it does not shout. ───────────────────── */
-.sclock[data-tier="closing"]{--sc-c:var(--patch)}
 .sclock[data-tier="closing"] .sc-u:first-child b{color:var(--patch)}
 .sclock[data-tier="closing"] .sc-u:first-child b{font-size:calc(var(--t-display) * 1.18)}
-.sclock[data-tier="final"]{--sc-c:var(--warn-ink)}
 .sclock[data-tier="final"] .sc-u:first-child b{color:var(--warn-ink);font-size:calc(var(--t-display) * 1.34)}
 .sclock[data-tier="final"] .sc-then{display:none}          /* later stops mattering */
-.sclock[data-tier="today"]{--sc-c:var(--del)}
 .sclock[data-tier="today"] .sc-u:first-child b{color:var(--del);font-size:calc(var(--t-display) * 1.34)}
 .sclock[data-tier="today"] .sc-then{display:none}
 /* Hours and minutes only. 🔴 AND THE :nth-last-child RULE IS BACK, DELIBERATELY. The comment that

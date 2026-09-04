@@ -88,7 +88,7 @@ function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(
 function saveTClosed(set) { try { sessionStorage.setItem(TCLOSED_KEY, JSON.stringify([...set])); } catch (e) {} }
 
 // 🔴 AGE IS NOT A DEFECT. Counting staleness among the faults put a red mark on nearly every card — the mockup measured 33 of 36 siblings — so the badge stopped meaning anything. Faults get the red count; age gets a quiet dot, because it is a different fact and reads as one.
-function splitCoverage(b) {
+export function splitCoverage(b) {
     const all = b.coverage || [];
     return { faults: all.filter((f) => f !== 'stale-90d'), aged: all.includes('stale-90d') };
 }
