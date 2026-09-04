@@ -168,10 +168,18 @@
   function seedDemoOps(force){
     const ops = (window.FIX && window.FIX.sampleOps) || [];
     if (!ops.length || (!force && Store.all().length)) return;
-    /* ⚠️ THE TIER IS NOT FABRICATED HERE AND CANNOT BE. `Store.add` derives it from FIX.OP_TIERS —
-     * core/ops's own registry — and only ever CHECKS what a caller claims, so a `tier: 3` passed in is
-     * discarded. `sampleOps` carries no genuinely tier-3 op, which is why the mockup cannot render the
-     * export gate; that divergence is CITED rather than closed here. */
+    /* ⚠️ THE TIER CANNOT BE FABRICATED HERE, AND TRYING IT IS HOW THAT WAS MEASURED (2026-09-02 23:18 EDT).
+     * A `tier: 3` passed in this object is DISCARDED: `Store.add` derives the tier from `FIX.OP_TIERS` —
+     * core/ops's own registry — and only ever CHECKS what a surface claims, which is the invariant
+     * `.claude/rules/operation-core.md` states and the reason three surfaces once typed a delete as tier 3
+     * because deleting feels destructive. `sampleOps` carries no op whose real tier is 3, so THE MOCKUP
+     * CANNOT RENDER THE EXPORT GATE AT ALL, and the portal harness can only render it by fabricating a
+     * tier the registry contradicts. That divergence is CITED, not fixed here: closing it means changing
+     * shared fixture data that four closed realms are measured against.
+     * ⚠️ Carried verbatim from review.html when this moved here on 2026-09-03 22:50 EDT — an earlier version of this
+     * fold kept the conclusion and dropped the date, the rule file, the worked case and the reason it is
+     * cited, which leaves a measured finding reading as an opinion. */
+    // `stale: i === 1` is one stale op, to exercise the conflict surface — the comment came across with it.
     ops.forEach((o, i) => { const op = Object.assign({}, o, { stale: i === 1 }); Store.onInvert(op.id, function(){}); Store.add(op); });
   }
   const Shell = {

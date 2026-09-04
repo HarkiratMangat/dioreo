@@ -299,8 +299,8 @@ export function HomeRealm({ session }) {
                       <div class="home">
                           <!-- 🔴 THE MASTHEAD IS A CHILD OF .home, NOT A Shell PROP, AND ON THIS REALM ONLY.
                                Every other realm's masthead spans main's full 1206px and the design agrees. Home does
-                               not: app.css:2105 gives .home a max-width of 1080px with margin 0 auto, and the design
-                               puts the masthead INSIDE that wrapper -- .home .masthead and .home h1 (app.css:4339-4341)
+                               not: app.css's own .home rule sizes it at max-width 1080px with margin 0 auto, and the design
+                               puts the masthead INSIDE that wrapper -- .home .masthead and .home h1 (in app.css's HOME'S SEASON BLOCK)
                                are DESCENDANT selectors. Passed as Shell's masthead prop the element renders as main's
                                child instead, so both rules matched nothing: the masthead measured 1206px against the
                                design's 1080, at x=76 against x=139, with its own padding 30/23/20 against 30/24/18 and

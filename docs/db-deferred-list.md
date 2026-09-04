@@ -362,6 +362,19 @@ This part edited three shared surfaces: `portal/ui/app.css` (the whole `.sclock`
 | analytics | 14.0% · 41 · mk 1685 / pt 2208 | **identical** |
 | review | 0.5% · 12 (seeded) | 0.5% · **13** |
 
+🔴 **AND THE AUDIT HALF HAD NOT RUN WHEN THIS WAS FIRST MARKED ✅.** The item's own wording names TWO instruments — `portal:audit --realm <r> --all` **and** `portalDiff` — and `scripts/portalSweep.sh` runs only the diff. Marking it done on the diff alone closed a two-noun scope having shipped one, which is the exact miss a conservation pass exists to catch, and the wording that would have exposed it was in the same paragraph. **Run 2026-09-03 22:49 EDT**, and these are the audit-half figures, recorded for the first time:
+
+| realm | nodes mk / pt | ② | ③ | ④ |
+|---|---|---|---|---|
+| season | 1495 / 1511 · +223px | 25 | 5 | 60 |
+| armory | 4169 / 4272 · +508px | 69 | 13 | 133 |
+| broadcast | 194 / 194 · **+0px** | 12 | 0 | 2 |
+| access | 296 / 339 · +84px | 50 | 6 | 275 |
+| analytics | 332 / 401 · +523px | 130 | 18 | 125 |
+| home (seeded) | 170 / 168 · **+0px** | 8 | 4 | 34 |
+
+Broadcast is the only other realm at +0px. Access's 275 and Analytics' 125 STYLE rows are the two that will cost, which is the same pair the overlay tier flagged.
+
 The one movement is Review, 12 → 13 regions at the same percentage — the seed moving out of `review.html` into the shared shell splits one region differently. Everything else is byte-for-byte the same measurement.
 
 ⚠️ **AND THESE FIGURES ARE THE REALMS' RECORDED CITED FLOORS, NOT A DISCOVERY.** §L records Season at *12.0% / 135* and Armory at *8.7%, 935 regions, +508px — a cited floor, graded by enumeration*, and Access at *8.6% → 6.3%*. A first reading of this sweep treated 6–14% as alarming; it is what "◐ resting pass closed, the remainder is a CITED floor" means, and the plan says in as many words to read the enumeration and never the number.
