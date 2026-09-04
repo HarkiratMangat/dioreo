@@ -855,6 +855,10 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 
 ---
 
+## THE OVERLAY TIER — enumerated 2026-09-03 22:04 EDT, and it is smaller than this plan's language implies
+
+`portalAudit --realm <r> --triggers` was run on all six realms. Most triggers are the seven nav-rail links and the view tabs, neither of which opens an overlay. **The genuine never-opened overlays are:** armory `Export…` · `New MP build` · `New DMZ build` — broadcast `Export…` · `+ Post announcement` — access `Export…` · `+ Grant access` — analytics `Export…` · three alert-level chips — season's five remaining composer kinds, the expanded identity editor, the typed confirm and the row preview. Home commits nothing and has no composer. **≈12–15 comparisons**, each `--open "<trigger>"` plus a diff, and a hovered/focused/opened frame is captured at FOLD height so its percentage compares only to `--fold`. Season's composer (0.9%), export drawer (0.2%) and day drawer (1.0%) are already measured; every other realm has none.
+
 ## PART 6a — REVIEW  ·  PART 6b — HOME
 
 🔴 **Two surfaces with opposite failure modes, paired only because the numbering pairs them.** Separate exits, separate A/B artifacts.
