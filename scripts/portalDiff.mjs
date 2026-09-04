@@ -25,6 +25,7 @@
 // ⚠️ THE PORTAL SIDE IS THE REAL SERVER BY DEFAULT, NOT THE HARNESS. The harness stubs its data and the mockup is fixture-driven by construction, so those two agree with each other and can both disagree with production — which is what happened with the overview strip, dense in the mockup and 37 marks pinned to their 3px floor against real data. `--portal harness` is available and is the weaker comparison; it says so in the header of its own report.
 
 import fs from 'fs';
+import { SEED_REALMS } from './lib/portalSeedRealms.mjs';
 import path from 'path';
 import crypto from 'crypto';
 import { createRequire } from 'module';
@@ -135,7 +136,6 @@ const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[proce
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 const mockupUrl = withQuery(`${MOCKUP}/${MOCKUP_PAGE}`);
 // 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state. 🔴 TWO REALMS NOW, NOT ONE. Home carries the same staged surfaces Review does — the header's commit crumb, the masthead's staged figure and the whole `.hres` resume strip — and it was measured UNSEEDED through Part 6b's first nine runs, which reported the crumb, the figure and the strip as ONLY IN PORTAL and the two pages 78px apart. Seeded they are the same height. Until 2026-09-03 21:29 EDT the seed lived inside review.html and no other page could be asked; it is in the mockup's shared shell.js now, so this guard can cover any page that shows staged work rather than the one page that happened to own the code.
-const SEED_REALMS = ['review', 'home'];
 if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
     console.error(`refusing: ${realm === 'home' ? 'Home' : 'Review'} must be measured SEEDED or the two sides hold different data.\n`
         + '  add   --mk-query demo=1     to compare two populated boards (what every recorded figure for this realm means)\n'

@@ -187,6 +187,17 @@ status: live
 | The two `repair` rows' ORDER — pt Armory 66 before Season 16 | **Follows from Armory's own predicate.** Class (b) | 2026-09-03 21:38 EDT | Both sides sort by severity then count, and both `repair` rows share severity 60, so the order is decided by Armory's number. The mockup's `armoryFault` and the portal's `coverageFlags` are different predicates over the same builds. Home reads Armory's, which is the rule this row exists to protect | Armory's coverage predicate changes |
 | Home's masthead — **three figures, not four** | **Design's three.** `days left` dropped | 2026-09-03 21:38 EDT | COMPANION §16.6 and §5.9z.5 both NAME four (days left · live now · staged · needs you) and the design RENDERS three. The mockup is the authority the pass is measured against, and the countdown sits ~200px below in Home's own clock panel, which states the same deadline and earns two item columns off it. Harkirat, 2026-09-03 21:38 EDT: conform to three now, revisit at the redesign phase — filed in `docs/db-deferred-list.md`. ⚠️ **Do not "restore" it as a missing figure** | The redesign phase reinstates it on merit |
 
+### Home — what has NOT been measured, stated so nobody assumes coverage
+
+The instruments state their own blind spots on every run and a ledger section should do the same. As of 2026-09-03 22:32 EDT, Home has been compared at 1282×888, at rest, with the clock running, on fixtures:
+
+- **No overlay has been opened on Home, on either side.** `--triggers` lists what exists; `--open` has not been run here.
+- **`--hover` and `--focus` have not been run.**
+- **Home has never been loaded against the real server (`:8787`)** — §L condition ⑤. It now fetches SEVEN endpoints, two of them expensive (`/api/analytics` assembles seven fields from six collections; `/api/access/matrix` builds every admin × every scope), and that cost has never been observed against real Mongo.
+- **375×812 has never been run on any realm**, and Home's block order changed this session — the change most likely to break a responsive stack.
+- **Tab order was not checked.** Moving the masthead inside `.home` changed DOM order; `portalStates` counts focusables (16) but a count is not an order.
+- **A delegated admin's Home is undesigned.** A realm the admin cannot see answers `forbidden`, and its attention row simply does not appear — so a delegated admin sees a smaller `needs you` figure with nothing saying why. Armory's masthead has an explicit ruling that a figure which cannot be known must not read as zero; this list makes the opposite choice by omission. Filed.
+
 ### Home — what was FIXED rather than cited
 
 | Fix | Evidence |

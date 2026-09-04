@@ -175,6 +175,10 @@ This codebase has inline comments explaining **why** something is written a cert
 > - **`--triggers` / `--open` / `--open-sel` reach what a resting page never shows.** A realm at 0.1% is a realm whose RESTING page matches.
 > - ⚠️ **`--at` must stay at the mockup's own `F.today`, `2026-08-24`** — the freeze moves the portal's clock and cannot move the mockup's.
 > - **A realm closes on the ENUMERATION, never a percentage.** Thirteen kept portal decisions are a permanent floor.
+> - 🔴 **HOME AND REVIEW REFUSE WITHOUT `--mk-query demo=1`** (all five instruments, 2026-09-03 22:32 EDT). Their pages carry staged surfaces, the mockup's staged store is `sessionStorage` and every instrument clears it — so unseeded they compare an EMPTY mockup against a POPULATED portal. Home was 78px apart unseeded and the same height seeded. The list is `scripts/lib/portalSeedRealms.mjs`; add a realm there, not in five files.
+> - 🔴 **THE HARNESS STANDS ON THE FIXTURE DAY NOW.** `fixtures.js` stamps `dataset.today` only under `?today=`, so the portal harness used to render on the REAL date while the mockup rendered on `2026-08-24` — invisible under `portalDiff` (it freezes `Date`) and ten days wrong under `portalAudit` (it does not). `portal/ui/harness/index.html` stamps it; the real page does not.
+> - ⚠️ **`--triggers` SPELLS A CONTROL DIFFERENTLY PER SIDE.** The mockup draws `+ Grant access` where the portal draws `+ Grant access N` — the portal's keyboard-shortcut chip. `--open` matches text, so open by the side's own wording or it refuses.
+> - 🔬 **`npm run portal:sweep`** runs the diff for all six realms in one pass, for a regression check after a shared edit.
 
 *`index.js` was 4,553 lines holding the boot sequence, command registration, every lifecycle listener and a ~3,400-line `interactionCreate` handler. It is now **an entrypoint** — 129 lines that connect, construct, wire and log in. Full reasoning in `.claude/rules/interaction-router.md`.*
 

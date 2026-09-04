@@ -54,7 +54,9 @@ const SEV = { conflict: 95, spof: 90, error: 80, repair: 60, forever: 50 };
 
 // 🔴 STAGED WORK IS DELIBERATELY NOT ON THIS LIST, and that is the fix rather than an omission. Measured 2026-08-27: the staged count appeared THREE times on Home inside 500px — the masthead figure, an entry here, and the staged bar 16px below that entry saying the same sentence with more in it. COMPANION §16.6 warns about exactly this shape: "a third copy of a fact stated above it". It also corrects the LEAD figure: this list is EXCEPTIONS — things that are WRONG — and `needs you` counts its rows, so counting a queue here inflated the one number the page is named after.
 //
-// ⚠️ READ EACH REALM'S OWN DERIVATION, NEVER A SECOND COPY OF IT. The mockup records this failing twice from opposite directions: Home once said "133 builds · 33 need repair" where Armory said "31 · 28", and later "117 need repair" where Armory said 11 — the second time while already reading a shared figure that did not carry Armory's own stale-versus-broken split. So the season findings come from `seasonRepairCount`, which is Season's own Repairs panel summed, and the single points of failure come from the server's `singlePointsOfFailure`, never from counting the matrix again here.
+// ⚠️ READ EACH REALM'S OWN DERIVATION, NEVER A SECOND COPY OF IT. The mockup records this failing twice from opposite directions: Home once said "133 builds · 33 need repair" where Armory said "31 · 28", and later "117 need repair" where Armory said 11 — the second time while already reading a shared figure that did not carry Armory's own stale-versus-broken split. So the season findings come from `seasonRepairCount`, which is Season's own Repairs panel summed, and the single points of failure come from the server's `singlePointsOfFailure`, never from counting the matrix again here. 🔴 A DERIVATION THAT THROWS HERE TAKES THE WHOLE PAGE DOWN, and this function grew three new ones in one change. `useAsync` wraps the FETCH, not the RENDER — `attentionRows` runs inside `HomeRealm`'s body, so an exception in `seasonRepairCount` (which walks every calendar row through `findExpiringBanners`) or in `seasonConflictCount` is an unmounted component and a blank console, not a missing row. Home is also the one realm that reads five OTHER realms' data, so it is the page most exposed to one of them being shaped unexpectedly. A row that cannot be computed is dropped and the rest of the list still renders, which is the same judgement `async.js` already makes for a realm the admin cannot see.
+const safeRow = (label, fn, fallback) => { try { return fn(); } catch (e) { console.warn(`home: ${label} row skipped —`, e); return fallback; } };
+
 function attentionRows({ season, armory, broadcast, access, matrix, analytics, today }) {
     const out = [];
     const push = (kind, realm, href, text, n, act, of) => out.push({ sev: SEV[kind], kind, realm, href, text, n, act, of });
@@ -64,7 +66,7 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     const seasonPopulation = items.length + ((live?.patchNotes || []).length);
 
     // 🔴 THE SEASON'S LAST DEADLINE, NOT THE BATTLE PASS. `bpEnd` is the FIRST of three lines, so an item that outlives the season outlives all of them. This row read `bpEnd` while Track's own strip had already been corrected off that edge for exactly this reason (see its header) — one surface fixed, the other left asking a narrower question under the same words.
-    const conflicts = seasonConflictCount(live);
+    const conflicts = safeRow('conflict', () => seasonConflictCount(live), 0);
     if (conflicts) {
         push('conflict', 'Season', '#/season',
             `${conflicts} item${conflicts === 1 ? '' : 's'} run past the season's own deadlines`,
@@ -89,13 +91,13 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     // ⚠️ ARMORY'S OWN `splitCoverage`, IMPORTED RATHER THAN RESTATED. `stale-90d` is age, not a fault — the realm separates them, and a row here that recombined them would report a different question's answer under Armory's words. This line held its own copy of that predicate until 2026-09-03 21:37 EDT; the copy happened to agree, which is the version of this bug that survives longest.
     //
     // 🔴 THE SCOPE STILL DIFFERS FROM ARMORY'S MASTHEAD AND THAT IS DELIBERATE, STATED HERE BECAUSE IT LOOKS LIKE THE DEFECT COMPANION RECORDS TWICE. Home counts EVERY build; Armory's masthead counts the mode you are looking at and opens on MP. Measured on the fixtures: 66 across both modes, 60 in MP, so six DMZ builds have faults that Armory's masthead cannot show and Home would otherwise hide. The design's Home counts all of them too — its `of` is ARMORY_COUNTS.total. A reader who clicks through therefore sees 60 where this said 66, which is a real question about Armory's masthead being mode-scoped rather than a licence for Home to under-report; filed.
-    const flagged = (armory?.builds || []).filter((b) => splitCoverage(b).faults.length);
+    const flagged = safeRow('armory repair', () => (armory?.builds || []).filter((b) => splitCoverage(b).faults.length), []);
     if (flagged.length) {
         push('repair', 'Armory', '#/armory', `${flagged.length} build${flagged.length === 1 ? '' : 's'} need repair`,
             flagged.length, 'Repairs', (armory?.builds || []).length);
     }
 
-    const findings = seasonRepairCount(live);
+    const findings = safeRow('season repair', () => seasonRepairCount(live), 0);
     if (findings) {
         push('repair', 'Season', '#/season', `${findings} season item${findings === 1 ? '' : 's'} to repair`,
             findings, 'Repairs', seasonPopulation);

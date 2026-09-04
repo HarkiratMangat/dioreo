@@ -333,4 +333,4 @@ function runCli() {
 }
 
 if (require.main === module) { runCli(); }
-module.exports = { build, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio };
+module.exports = { build, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio, assertNamedImportsResolve };

@@ -49,3 +49,18 @@ io.open(p,'w').write(s)          # ← ONE call, AFTER the loop
 An assert on edit 5 raises before that write, so edits 1–4 are lost **after printing that they landed**. It happened twice in one session on `portal/ui/access.js` and `ANALYTICS-PROMPT.md`; the first time the built asset still carried the old markup two instrument runs later, which reads as *"the build is not picking up my change"* rather than *"the edit never landed"*.
 
 **Write inside the helper, once per edit** — read, assert, replace, write, print. It costs nothing, and it makes a partial batch a partial success instead of a total loss reported as a success. If you keep a single trailing write, the `print()`s are not the receipt: `rg` the new anchor in the source **and** in `portal/public/ui/<realm>.js` before believing them.
+
+
+## The four ORDERING traps — added 2026-09-03 22:32 EDT, Part 6b
+
+Each one cost a wasted verification round, and none is visible from the file you are editing.
+
+**1 · `portal:bust` runs AFTER `reflow-comments --write`, never before.** The reflow rewrites comments inside the mockup package's own `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js`, which invalidates the `?v=` stamp the bust just wrote — so the sequence bust → reflow leaves `portal:refs` red with *"modified after its stamp"*, and the two warnings it prints alongside (*"1 page with a syntax error"*, *"1 identifier called but never declared"*) are the stale-stamp path reading an old file, not real defects. Two rounds were lost to reading them as real.
+
+**2 · `portalGeometry --realm <r> --write` runs LAST, immediately before the commit.** It records the CURRENT tree; every edit after it invalidates it again. Re-recording when the check first complains and then continuing to edit produces a fixture that is already stale when it is committed — and `npm test` fails on it two runs later, which reads as a new defect.
+
+**3 · A backgrounded `npm test > log 2>&1; echo "exit=$?"; tail log` EXITS 0 WHATEVER THE SUITE DID.** A compound command exits with its LAST command, so the trailing `echo` and `tail` succeed and the harness reports *"completed (exit code 0)"* for a failing suite. **Read the recorded `exit=` line out of the task's own output file.** A commit message shipped on this branch claiming a green suite that had exited 1. It is [[feedback_pipe_masks_exit_status]] in a shape that memory does not name.
+
+**4 · A `git commit -F - <<'MSGEOF'` nested inside a `python3 - <<'PYEOF'` command line feeds the commit message to PYTHON.** Bash reads heredocs in the order the redirections appear, not the order the commands run. Keep a scripted edit and its commit in two calls, or write the message to a file first.
+
+⚠️ **And an assert is scoped to the EDIT, not to the file.** Asserting that a short declaration is absent from a 5,000-line stylesheet fails on any unrelated rule that happens to end the same way. Assert the exact text you removed, and assert a SURVIVOR beside it.

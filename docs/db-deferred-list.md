@@ -366,6 +366,36 @@ The one movement is Review, 12 → 13 regions at the same percentage — the see
 
 ⚠️ **AND THESE FIGURES ARE THE REALMS' RECORDED CITED FLOORS, NOT A DISCOVERY.** §L records Season at *12.0% / 135* and Armory at *8.7%, 935 regions, +508px — a cited floor, graded by enumeration*, and Access at *8.6% → 6.3%*. A first reading of this sweep treated 6–14% as alarming; it is what "◐ resting pass closed, the remainder is a CITED floor" means, and the plan says in as many words to read the enumeration and never the number.
 
+### `[P1 · M · Sonnet5-High]` Nothing checks that two portal surfaces reporting the same collection agree
+*Filed 2026-09-03 22:33 EDT, Part 6b. The full argument and the gate's specification are in the conformance plan's own section.*
+
+Home said **66** builds need repair, Armory's masthead said **60**, the design says **13**. No instrument can see this class: source scanners never execute, and the diff compares a page against its mockup rather than against another page. **Do.** Build the `(realm, label, value, of)` collector described in the plan, falsifier first. **Verify by:** a seeded disagreement failing the gate before any real run is trusted.
+
+### `[P2 · S · Sonnet5-High]` Home's §L ⑤ real-server pass has never run, and it now costs seven endpoints
+*Filed 2026-09-03 22:33 EDT, Part 6b.*
+
+Home fetches `/api/season`, `/api/armory`, `/api/broadcast`, `/api/review`, `/api/access`, `/api/access/matrix` and `/api/analytics` in parallel. Two are expensive — analytics assembles seven fields from six collections, and the matrix builds every admin × every scope. It has only ever been seen on fixtures. **Do.** Load `http://localhost:8787/#/home` against the dev database and time it. **Verify by:** the page rendering, the figures matching each realm's own page, and a stated load time.
+
+### `[P2 · S · Sonnet5-Medium]` A delegated admin's Home silently under-reports
+*Filed 2026-09-03 22:33 EDT, Part 6b.*
+
+A realm the admin cannot see answers `forbidden`, and that realm's attention row simply does not appear — so a delegated admin sees a smaller `needs you` count with nothing saying why. Armory's masthead already rules that a figure which cannot be known must not read as zero; this list makes the opposite choice, by omission rather than by decision. **Do.** Decide whether the list says "2 realms you cannot see" or stays silent. **Verify by:** loading the harness with `?realms=season,armory` and reading what the lead figure claims.
+
+### `[P2 · S · Sonnet5-Medium]` Home at 375×812, and its tab order after the reorder
+*Filed 2026-09-03 22:33 EDT, Part 6b.*
+
+375×812 has never been run on ANY realm — the audit says so on every run — and Part 6b changed Home's entire block order, which is the change most likely to break a responsive stack. The same reorder moved the masthead inside `.home`, changing DOM and therefore TAB order; `portalStates` counts 16 focusables but a count is not an order. **Do.** `--viewport 375x812` on Home, and tab through it once. **Verify by:** no horizontal scroll, and focus reaching masthead → staged → clock → list → live in that order.
+
+### `[P3 · S · Sonnet5-Medium]` COMPANION does not record `seedDemoOps`
+*Filed 2026-09-03 22:33 EDT, Part 6b.*
+
+COMPANION §15 states the seeding rule ("seeded on request, never automatically") and the seed moved out of `review.html` into the package's shared shell this session, where `?demo=1` now reaches every page. COMPANION is exhaustive by design and a thin section is a gap its author owns. **Do.** Record the move and the widened scope in §15. **Verify by:** §15 naming `seedDemoOps` and the five instruments' refusal.
+
+### `[P3 · M · Sonnet5-High]` Sweep `portal/ui` for other hand-copied realm predicates
+*Filed 2026-09-03 22:33 EDT, Part 6b.*
+
+Home held its own copy of Armory's fault predicate; the copy happened to AGREE, which is the version of that bug that survives longest. Nobody has looked for the others. **Do.** Compare every `.filter(` over a realm collection against the realm that owns it. **Verify by:** each surviving copy either importing the owner's derivation or carrying a comment saying why it must differ.
+
 ## 🔔 Reminders / watch-for
 
 ### Before promoting any gate to AUTO-CORRECTING, check these three `[P2 · XS]`

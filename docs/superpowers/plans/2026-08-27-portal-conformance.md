@@ -855,9 +855,21 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 
 ---
 
+## 🔴 THE PORTAL HAS BEEN VERIFIED SURFACE BY SURFACE AND NEVER AS A SYSTEM — found 2026-09-03 22:33 EDT
+
+**Home's nine defects were every one of them a DERIVATION defect, and not one was a styling defect.** A copied predicate, a wrong edge (`bpEnd` where the design reads the season's LAST deadline), a component retired at one call site and left alive at another, a calendar category folded into the wrong lane, an all-season row collapsed to a single day. Home is the only realm that reads five OTHER realms, and it is the first surface where any of this could show — which is the point: **five realms were conformed as SURFACES, and nothing has ever checked that two surfaces reporting the same collection agree.**
+
+The one time it was checked — by accident, through `--triggers` printing both sides' rows in full — it was wrong three ways: Home said **66** builds need repair, Armory's own masthead said **60**, and the design says **13**. One question, three answers, and only the first two share a predicate.
+
+⚠️ **No existing instrument can see this class.** `portal:realwalk` walks one realm's views; `portal:reviewwalk` drives the commit path; `portal:coverage` and `portal:orphans` scan SOURCE and never execute it; the diff and the audit compare a page against its mockup, never a page against another page. A number that lies identically on both sides passes every one of them.
+
+**THE PROPOSED GATE, specified rather than deferred vaguely.** Load the harness, visit every realm, and collect each rendered figure as `(realm, label, value, of)` from the masthead stats and the attention rows — both already carry a label and a population. Then assert: **two rows whose `of` populations are equal must not carry different values**, and **two rows whose labels match must not disagree**. Home vs Armory's `need repair` would have fired. ⚠️ **Its falsifier must come first**: seed a deliberate disagreement and watch it fail, because a cross-surface gate that reports nothing is indistinguishable from a portal that agrees with itself, and this repo already has three memories about that. ~80 lines. Build it only if the overlay tier leaves room — a noisy version is worse than none.
+
 ## THE OVERLAY TIER — enumerated 2026-09-03 22:04 EDT, and it is smaller than this plan's language implies
 
 `portalAudit --realm <r> --triggers` was run on all six realms. Most triggers are the seven nav-rail links and the view tabs, neither of which opens an overlay. **The genuine never-opened overlays are:** armory `Export…` · `New MP build` · `New DMZ build` — broadcast `Export…` · `+ Post announcement` — access `Export…` · `+ Grant access` — analytics `Export…` · three alert-level chips — season's five remaining composer kinds, the expanded identity editor, the typed confirm and the row preview. Home commits nothing and has no composer. **≈12–15 comparisons**, each `--open "<trigger>"` plus a diff, and a hovered/focused/opened frame is captured at FOLD height so its percentage compares only to `--fold`. Season's composer (0.9%), export drawer (0.2%) and day drawer (1.0%) are already measured.
+
+⚠️ **`portal:status` WILL READ 🔴 RE-MEASURE ON FIVE REALMS AND THAT IS COMMIT-COUNT BOOKKEEPING, NOT DRIFT.** The regression sweep was RUN 2026-09-03 22:33 EDT and is clean: `npm run portal:sweep` on this branch, and the same sweep with `portal/ui` and the whole mockup package checked out at `95923c9e` and rebuilt, produce identical figures realm for realm — season 12.0%/135 · armory 8.6%/893 · broadcast 0.2%/16 · access 6.6%/56 · analytics 14.0%/41, with the captured page heights matching to the pixel. The only movement is Review, 12 → 13 regions at the same 0.5%. **Do not redo it because the counter is red; the counter counts commits, not differences.** The tables are in `docs/db-deferred-list.md`.
 
 🔬 **FIRST MEASUREMENTS OF THE TIER, 2026-09-03 22:07 EDT** — six of the eight opened. These are FOLD-height captures, so the SECTIONS are the comparable part and a percentage is not:
 
