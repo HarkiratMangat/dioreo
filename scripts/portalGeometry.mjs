@@ -63,7 +63,8 @@ const READ = function () {
     const g = window.__grid.all();
     const txt = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim() : '');
     return {
-        grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues },
+        // 🔴 THE SAMPLE, NOT ONLY THE COUNT — added 2026-09-04 12:46 EDT. `sizeIssues` was recorded as a bare number, so when Home's went 33 → 35 across four re-records nobody could tell an intended consequence from an accepted regression, and the plan filed it as a gap in this tool. `__grid.all()` has always returned `sizes` (truncated to 18, and the count is still the measurement — the array starts a triage, it does not end one); it was simply thrown away here. ⚠️ Deliberately OUTSIDE the three keys `diff()` compares, so a sample that shifts under a truncation cannot fail a check the counts pass.
+        grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues, sizesSample: g.sizes },
         viewport: g.viewport,
         inventory: {
             h1: txt(document.querySelector('main h1')),

@@ -1,7 +1,7 @@
 {
   "realm": "review",
-  "recordedAt": "2026-09-04T16:41:40.397Z",
-  "commit": "ca0a89c7",
+  "recordedAt": "2026-09-04T16:51:13.527Z",
+  "commit": "4fb17410",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -11,7 +11,82 @@
       "grid": {
         "examined": 113,
         "nearMisses": 2,
-        "sizeIssues": 6
+        "sizeIssues": 6,
+        "sizesSample": [
+          {
+            "group": "[object>[object.SVGAnimatedString]",
+            "dim": "TOP-OFFSET",
+            "n": 11,
+            "spread": 14,
+            "values": [
+              73,
+              136,
+              201,
+              250,
+              264,
+              316
+            ]
+          },
+          {
+            "group": "[object>[object.SVGAnimatedString]",
+            "dim": "TOP-OFFSET",
+            "n": 11,
+            "spread": 13,
+            "values": [
+              73,
+              136,
+              201,
+              250,
+              264,
+              316
+            ]
+          },
+          {
+            "group": "[object>[object.SVGAnimatedString]",
+            "dim": "TOP-OFFSET",
+            "n": 11,
+            "spread": 15,
+            "values": [
+              73,
+              136,
+              201,
+              250,
+              264,
+              316
+            ]
+          },
+          {
+            "group": "stat>v",
+            "dim": "TOP-OFFSET",
+            "n": 3,
+            "spread": 22,
+            "values": [
+              104,
+              126
+            ]
+          },
+          {
+            "group": "stat>k",
+            "dim": "w",
+            "n": 3,
+            "spread": 6.3,
+            "values": [
+              44.1,
+              37.8,
+              44.1
+            ]
+          },
+          {
+            "group": "stat>k",
+            "dim": "TOP-OFFSET",
+            "n": 3,
+            "spread": 22,
+            "values": [
+              88,
+              110
+            ]
+          }
+        ]
       },
       "inventory": {
         "h1": "Review & commit",
