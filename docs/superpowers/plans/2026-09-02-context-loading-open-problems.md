@@ -1,6 +1,7 @@
 ---
 kind: plan
 status: live
+scope: CONTEXT LOADING — the memory index, the rules tier and what reaches a session. Neither of the portal plans
 ---
 
 # Two unsolved context-loading problems — handoff for a fresh session

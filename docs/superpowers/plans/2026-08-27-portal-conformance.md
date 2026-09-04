@@ -1,6 +1,7 @@
 ---
 kind: plan
 status: live
+scope: the portal's REALM-BY-REALM conformance work — the seven realms, their instruments, and §L's close conditions
 ---
 
 # PLAN — THE PORTAL CONFORMANCE PASS (written 2026-08-27 21:0x EDT)

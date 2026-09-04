@@ -22,16 +22,17 @@ const LEDGER = 'docs/reference/portal-decision-ledger.md';
 //
 // Two earlier versions of this were both wrong, and the second wrongness is the interesting one. First it HARDCODED a dated filename that this repo's taxonomy expects to be superseded — caught by the second audit. Then it globbed for `kind: plan` + `status: live` and took the newest — and that is wrong by DESIGN, not by edge case: **there are legitimately TWO live plans right now** (the conformance plan governs realm work, the remediation plan governs the fixes), so "the live plan" was never a singular thing and a glob silently picked one. With zero live plans it would have thrown on path.basename(null).
 //
-// SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else.
-function livePlan() {
-    const start = read(START) || '';
-    const m = start.match(/docs\/superpowers\/plans\/[\w.-]+\.md/);
-    return m ? m[0] : null;
+// SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else. 🔴 ALL OF THEM, NOT THE FIRST ONE — corrected 2026-09-04 14:02 EDT. The comment above has said since it was written that there are legitimately TWO live plans, and this function then returned `match()` — the FIRST path in the file. SESSION-START names the remediation plan first and the conformance work second, so the singular answer was always the remediation plan, and the `.remember` check below dutifully demanded that a session working realms name a plan about working MECHANISMS. That is how "which plan governs?" came to be recorded as an open question in `.remember` and in `docs/db-deferred-list.md` while THREE primary sources already answered it: the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment ("if you were handed a realm prompt, that prompt is your first action and this line is not"), and this very comment. A function contradicting the comment directly above it is the receipt class this repo keeps finding.
+const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
+function livePlans() {
+    return plansNamedIn(read(START) || '');
 }
+
 // ⚠️ CALLED BELOW, AFTER `START` EXISTS. Assigning here read `START` in its temporal dead zone and threw at import — a live TDZ, written minutes after committing a plan whose Task 1 exists to catch exactly this, and which `node --check` passes. That is the whole argument for the lint rule.
 const REMEMBER = '.remember/remember.md';
 const START = 'docs/SESSION-START.md';
-const PLAN = livePlan();
+const PLANS = livePlans();
+const PLAN = PLANS[0] || null;   // kept for the messages that name ONE path
 
 let bad = 0, warn = 0;
 const fail = (m, fix) => { bad++; console.log(`\n  ❌ ${m}\n     → ${fix}`); };
@@ -44,9 +45,10 @@ console.log('\nhandoff check — a handoff is THREE APPENDS and ONE SHORT REWRIT
 //    hung off .remember, which is gitignored and rewritten wholesale. If the tracked files do not
 //    name the live plan, losing one untracked file strands the work.
 const start = read(START) || '';
-if (!PLAN) fail('SESSION-START names no plan at all — there is no first action',
+if (!PLANS.length) fail('SESSION-START names no plan at all — there is no first action',
     `add the governing plan's path to ${START}. Every other check here assumes one exists.`);
-for (const [f, label] of [[PLAN || '\u0000none', 'the live plan'], [LEDGER, 'the decision ledger']]) {
+else ok(`SESSION-START names ${PLANS.length} live plan(s): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
+for (const [f, label] of [[LEDGER, 'the decision ledger']]) {
     if (start.includes(path.basename(f)) || start.includes(f)) ok(`SESSION-START names ${label}`);
     else fail(`SESSION-START does NOT name ${label} — the pointer chain runs through .remember alone`,
         `add a line to ${START}. It is TRACKED and hook-injected; .remember is neither.`);
@@ -63,8 +65,10 @@ else {
     if (kb > 6) soft(`.remember is ${kb.toFixed(1)}KB — that is an essay, not a pointer`,
         'move the facts into the ledger or the deferred list. A fact worth a paragraph there belongs in a tracked file.');
     else ok(`.remember is ${kb.toFixed(1)}KB — pointer-sized`);
-    if (!rem.includes(path.basename(PLAN))) fail('.remember does not name the live plan', `point at ${PLAN}.`);
-    else ok('.remember names the live plan');
+    // ⚠️ ANY of the live plans, not a specific one. Demanding a named file here is what told three sessions to point `.remember` at the plan they were not working from.
+    const named = PLANS.filter((f) => rem.includes(path.basename(f)));
+    if (!named.length) fail('.remember names none of the live plans', `point at one of: ${PLANS.join(' · ')}.`);
+    else ok(`.remember names ${named.map((f) => path.basename(f)).join(' · ')}`);
 }
 
 // ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it.
