@@ -59,14 +59,16 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     const out = [];
     const push = (kind, realm, href, text, n, act, of) => out.push({ sev: SEV[kind], kind, realm, href, text, n, act, of });
     const live = season?.live;
+    // 🔴 THE POPULATION INCLUDES PATCH NOTES AND `seasonItems` DELIBERATELY DOES NOT. The design's season rows read "16 of 39"; this read "16 of 37", and the two missing rows are the season's patch notes. `seasonItems` is also what LiveNow and the clock columns iterate, and a patch note must never enter those — it is a PUBLICATION, not a state with a duration, which is why `track.js` keeps it off an axis whose every other lane answers "when is this ON?". So the denominator is widened here rather than the list. ⚠️ The design's own Repairs checks never examine a patch note either, so 39 is a scale reference for "how much season is there", not a checked set.
     const items = seasonItems(live);
+    const seasonPopulation = items.length + ((live?.patchNotes || []).length);
 
     // 🔴 THE SEASON'S LAST DEADLINE, NOT THE BATTLE PASS. `bpEnd` is the FIRST of three lines, so an item that outlives the season outlives all of them. This row read `bpEnd` while Track's own strip had already been corrected off that edge for exactly this reason (see its header) — one surface fixed, the other left asking a narrower question under the same words.
     const conflicts = seasonConflictCount(live);
     if (conflicts) {
         push('conflict', 'Season', '#/season',
             `${conflicts} item${conflicts === 1 ? '' : 's'} run past the season's own deadlines`,
-            conflicts, 'the Track', items.length);
+            conflicts, 'the Track', seasonPopulation);
     }
 
     const spof = (access?.singlePointsOfFailure || []).length;
@@ -96,7 +98,7 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     const findings = seasonRepairCount(live);
     if (findings) {
         push('repair', 'Season', '#/season', `${findings} season item${findings === 1 ? '' : 's'} to repair`,
-            findings, 'Repairs', items.length);
+            findings, 'Repairs', seasonPopulation);
     }
 
     // The real Broadcast finding is not a coverage gap — it is an announcement with no `expiresAt`, which never stops on its own.

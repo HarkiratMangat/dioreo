@@ -4753,9 +4753,10 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    qualify it, and it carries the tier colour, which is how the five tiers escalate now that they no
    longer bump the figure's size (16.31a). At `open` it is nearly invisible; at `today` it is the loudest
    line in the masthead, and the figure has not moved a pixel. */
-.sc-face{order:0}
-.sc-when{order:2}
-.sc-then{order:3}
+/* The three `order:` declarations that stood here are gone: they existed to re-sequence the hero clock's
+   face, deadline and then-line against a DOM that no longer needs it — ClockFace, .sc-when and .sc-then
+   are already in that order in both SeasonClock and HomeClock. An inert declaration is a rule a reader
+   has to disprove, and the audit's RULES section reported all three as portal-only on every run. */
 .sc-none{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
 
 /* ── the five tiers. Each REMOVES, it does not shout. ───────────────────── */
