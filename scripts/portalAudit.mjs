@@ -324,14 +324,19 @@ const annotate = (key) => {
             // :hover answers the REAL pointer, never a dispatched event — the same reason portalDiff moves the mouse rather than firing mouseover.
             if (kind === 'hover') await p.mouse.move(box.x, box.y);
             else {
-                await p.evaluate((want) => {
+                const focused = await p.evaluate((want) => {
                     const n = (t) => String(t || '').replace(/\s+/g, ' ').trim().toLowerCase();
-                    const c = [...document.querySelectorAll('button,a,[role="button"],input,select,[tabindex]')]
+                    // 🔴 THE SAME LIST THE GUARD USED, ADDED 2026-09-04 14:19 EDT BY THE §L ⑥ REALITY AGENT.
+                // The guard above accepts `[role="tab"]`, `summary`, `li` and `td`; this call queried a NARROWER set and ended `if (c[0])` with no else — so 8 labels on Broadcast and 5 on Access were accepted and then silently focused nothing, under a comment two lines up promising this refuses rather than falls back. Measured, not argued.
+                const c = [...document.querySelectorAll('button,a,[role="button"],[role="tab"],input,select,summary,li,td,[tabindex]')]
                         .filter((e) => n(e.textContent) === n(want) && e.getClientRects().length > 0)
                         .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length);
                     // focusVisible is what raises the KEYBOARD ring; a bare focus() often does not.
-                    if (c[0]) { try { c[0].focus({ focusVisible: true }); } catch { c[0].focus(); } }
+                    if (!c[0]) return 'NOFOCUS';
+                    try { c[0].focus({ focusVisible: true }); } catch { c[0].focus(); }
+                    return document.activeElement === c[0] ? 'OK' : 'NOFOCUS';
                 }, text);
+                if (focused === 'NOFOCUS') throw new Error(`portal:audit refuses: "${text}" matched an element on the ${side} side that cannot take focus. A reading taken here would be the RESTING page wearing a --focus label.`);
             }
             await p.evaluate(() => new Promise((r) => setTimeout(r, 420)));
         }

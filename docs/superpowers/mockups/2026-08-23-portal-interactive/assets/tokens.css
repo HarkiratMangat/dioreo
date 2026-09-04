@@ -29,7 +29,17 @@
    * 2026-09-04 12:35 EDT. COMPANION §4.2 trap Two records that deriving two lanes from one bot hue produced
    * "two plums and two blues that read as one family", and that each lane now takes a genuinely
    * separate hue: draws keep Plum, playlists take Cyber Teal, events take Slate pushed to a true
-   * blue, returning takes a rose. Minimum hue gap 31°. `portal/ui/tokens.css` implements exactly
+   * blue, returning takes a rose.
+   * 🔴 THE COMPANION'S "minimum hue gap 31°" DOES NOT DESCRIBE THESE VALUES, and it was quoted here
+   * as the justification. Measured from the committed hex 2026-09-04 14:21 EDT by the §L ⑥ reality agent and
+   * re-derived independently: the six-token set has a minimum gap of 27.8° (--ret <-> --dw), 30.6°
+   * without --dw — and the set this REPLACED measured 44.0°, sixteen points WIDER. So the arithmetic
+   * does not support the change on hue-separation grounds, and the falsifier written into the ledger
+   * row alongside it ("the 31° floor is re-derived") fired on its first use.
+   * ⚠️ WHAT THE CHANGE DOES STAND ON is narrower and still true: `portal/ui/tokens.css` holds these
+   * values, the design's own prose describes this system, and the two sides must not disagree — the
+   * correction took Armory 893 -> 892 regions and Analytics 41 -> 40 with no realm regressing.
+   * ☐ WHICH SET IS BETTER IS HARKIRAT'S, NOT MINE, and it is filed. Nothing here reverts on its own. `portal/ui/tokens.css` implements exactly
    * that; this file still carried the superseded values (#FF3430 red / #337BA6 blue / #1F8A5E
    * emerald / #8A6BD1 violet), which ARE the two-plums-two-blues set the COMPANION says was
    * abandoned. So the design's prose and the design's stylesheet disagreed, and the portal

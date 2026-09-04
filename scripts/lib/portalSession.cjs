@@ -71,8 +71,24 @@ const REALM_ROW_SELECTOR = [
     'main li',        // any genuine list item
     'main .rec-row',  // Review's changeset records
     'main .bcard',    // Broadcast's announcement cards
-    'main .att-row',  // Home's attention rows (2026-09-04 12:17 EDT)
-    'main .hcard',    // Home's realm strip (2026-09-04 12:17 EDT)
+    // 🔴 `:not(.clear)` IS THE WHOLE POINT OF THIS LINE — added 2026-09-04 14:19 EDT by the §L ⑥ reality
+    // agent, against the version added four hours earlier in the same session. `AttentionList`'s
+    // EMPTY branch emits `att-row clear`, and `fetchJson` never throws while `HomeRealm` fails only
+    // on `!data` — so with all seven `/api/*` answering 500 the page renders `0 NEEDS YOU / 0 LIVE
+    // NOW / 0 STAGED` above "Nothing needs you right now", and a bare `.att-row` made THAT satisfy
+    // the door assertion. The first version of this fix turned a false NEGATIVE into a false
+    // POSITIVE, which is strictly worse: this function exists to stop a well-formed reading of the
+    // wrong page, and a total API failure is exactly that page.
+    // ⚠️ The empty state is a legitimate Home. It is excluded anyway, because a walk cannot tell it
+    // apart from the failure that renders identically — and the two must not be conflated by an
+    // instrument whose whole job is that distinction. A genuinely-empty Home fails this walk and
+    // says so, which is the honest answer rather than the convenient one.
+    'main .att-row:not(.clear)',  // Home's attention rows (2026-09-04 14:19 EDT)
+    // ⚠️ `main .hcard` WAS HERE AND HAS NO EMITTER ANYWHERE — removed 2026-09-04 14:19 EDT, also by the ⑥
+    // agent: zero occurrences in `portal/ui/*.js`, zero in the mockup's `index.html`, `hcards: 0` on
+    // the live page. It survives only as 21 CSS rules and a row in the reverse-orphans accepted-debt
+    // baseline, whose comment asserts Home draws it. A dead selector in a list like this is not
+    // harmless — it reads as coverage.
 ].join(', ');
 
 async function assertPastDoor(page, label) {

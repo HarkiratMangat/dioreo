@@ -47,6 +47,15 @@ status: live
 | `?conform=1` | **Gone.** Renamed `?fresh=1`, which does FIXTURES ONLY | 2026-08-31 | The two rendering modes collapsed. **There is no stand-down switch — do not look for one, and do not add a `conforming()` site** | — |
 | **375×812** | **Dropped** | 2026-08-30 | His call | He asks for it |
 
+### Cross-realm — the first working `--hover` run, 2026-09-04 12:40 EDT
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| **`--draw` `--ret` `--ev` `--play` `--dw`** — the category accents | **THE PORTAL WAS RIGHT AND THE MOCKUP'S STYLESHEET WAS BEHIND ITS OWN COMPANION. Package corrected.** Class (b) | The package's `assets/tokens.css` carried `#FF3430` / `#337BA6` / `#1F8A5E` / `#8A6BD1` and had no `--dw` at all. **COMPANION §4.2 trap Two records that exact set as the one that produced "two plums and two blues that read as one family"**, and that each lane was moved to a separate hue — draws keep Plum, playlists take Cyber Teal, events take Slate pushed to a true blue, returning takes a rose, minimum hue gap **31°** — ⚠️ **AND THAT NUMBER IS FALSE FOR THESE VALUES, measured 2026-09-04 14:21 EDT.** The six-token set's real minimum is **27.8°** (`--ret`↔`--dw`), 30.6° without `--dw`, and the set it replaced measured **44.0°** — wider. The falsifier this row shipped with fired on first use. `portal/ui/tokens.css` implements the described SYSTEM. So the design's prose and the design's CSS disagreed and the portal agreed with the prose. ⚠️ **Invisible to every resting comparison ever run** — these tokens reach the rail only through `.realm:hover svg{color:var(--c,var(--patch))}`. Corrected: **Armory 893 → 892 regions, ④ 133 → 125; Analytics 41 → 40, ④ 125 → 120; no realm regressed** | A lane's bot source changes, or the 31° floor is re-derived |
+| **The overlay tier's recorded figures** | **They are PAGE-sized, not overlay-sized. Read the DELTA against the realm's resting audit.** Not a decision — a property of the instrument | `portal:audit --open` re-walks the whole page, so a recorded `access · Export ④ 304` is the realm's own resting ④ 275 plus the drawer's **29**. Measured across all six opened overlays: contributions are ② 9 · ③ 17–30 · ④ 20–42, except armory's create overlay at ② 75. **⑤ RULES is byte-identical on every overlay run** — opening a drawer does not change a stylesheet, so that section carries no overlay information at all | The audit learns to scope its walk to the mounted overlay |
+| **The `② 9` that appears in every overlay run** | **Alignment artifact plus one cited row.** Not findings | Opening anything changes the node count, which re-runs the LCS pairing: the whole-page `main`/`div` text node, the view-tab `span`, and the mockup's inline `path`/`circle`/`rect` against the portal's `svg`+`use` sprite (the settled icon-delivery class). The one real member is `span.id` "…2283" — the cited identity row | The aligner stops pairing by sequence |
+
+
 ## Season — closed as a cited floor, not as a clean sheet
 
 | Surface | Decision | Date | Why | Reopens if |
@@ -136,11 +145,18 @@ status: live
 
 ## Review — realm-specific decisions
 
-**Reproduce:** `node scripts/portalDiff.mjs --realm home --portal harness --mk-query demo=1` · `npm run portal:audit -- --realm home --all --mk-query demo=1`.
+**Reproduce:** `node scripts/portalDiff.mjs --realm review --portal harness --mk-query demo=1` · `npm run portal:audit -- --realm review --all --mk-query demo=1`. ⚠️ **BOTH COMMANDS SAID `--realm home` UNTIL 2026-09-04 14:16 EDT**, under the Review heading, and the paragraph beneath them quotes Home's page heights (1243/1199) while this section's own table says mk 888 · pt 984. This file is QUERIED rather than read start to finish, so a wrong `Reproduce` line returns another realm's answer to a Review question. Found by the §L ⑥ document agent.
 
 ⚠️ **THE TWO INSTRUMENTS REPORT DIFFERENT PAGE HEIGHTS AND BOTH ARE RIGHT — always name the instrument beside the number.** The diff captures the full page and says **1243px**; the audit walks the DOM and says **1199px**. Three carriers published "both pages 1243px" unattributed until 2026-09-03 23:28 EDT, which is the two-measurements-neither-labelled defect §0.6a records about itself.
 
-*Added 2026-09-02 23:37 EDT, Part 6a. Every row here is a difference that REMAINS in the resting overlay at 0.5% / 12 regions and is adjudicated, not open.*
+*Added 2026-09-02 23:37 EDT, Part 6a. Every row here is a difference that REMAINS in the resting overlay at 0.5% and is adjudicated, not open.*
+
+✅ **ENUMERATED TO THIRTEEN 2026-09-04 14:18 EDT, AND THE THIRTEENTH IS A REAL DEFECT RATHER THAN A SEED ARTIFACT.** The floor moved 12 → 13 on 2026-09-03 22:33 and the plan explained the extra region as the seed *"splitting one region differently"* — an inference with no instrument output behind it, which §0.5a R1 forbids. Named by the §L ⑥ document agent; measured with `--json`. **Regions 7 and 8 are `a.realm.out` reading `REVIEW 4` in the mockup and `REVIEW` in the portal** — the rail's staged badge, and the cause is in the row below. The other eleven fall in the four cited classes: 1 · 5 the shell crumb · 2 `input.cb-in`, empty on both sides, sub-pixel · 3 `span.sp`, the adjudicated atomicity sentence · 4 the command bar · 6 · 9 · 10 · 11 · 12 · 13 the rail and gate icons, the settled sprite-versus-inline class.
+
+| Surface | Decision | Date | Why | Reopens if |
+|---|---|---|---|---|
+| `a.realm.out` — the rail's staged count (regions 7 · 8) | ☐ **OPEN — a real defect, filed `[P2 · S]`.** Not class (b), not a seed artifact | 2026-09-04 14:18 EDT | **`badges` has no producer anywhere.** `Rail` and `Shell` both declare `badges = {}` and default it, and **no file in `portal/ui` ever passes it** — so `staged` is `0` on every realm and the badge has never rendered once. `shell.js:47`'s own comment says *"THE PORTAL STAGED FROM SIX REALMS AND ACKNOWLEDGED IT NOWHERE BUT A TOAST… This is that function"*, directly above code that cannot do it: the same class as `oneway.js`'s seven ops with no button, and the same class [[feedback_comment_is_a_receipt]] names. The two sides' MARKUP is identical, which is why every structural gate is silent — this is a prop with no data | The count renders on any realm |
+
 
 | Surface | Decision | Date | Why | Reopens if |
 |---|---|---|---|---|
@@ -178,7 +194,7 @@ status: live
 
 ## Home — realm-specific decisions
 
-*Added 2026-09-03 21:38 EDT, Part 6b. Every row here is a difference that REMAINS in the resting overlay at **0.7% / 26 regions, both pages 1243px**, measured SEEDED (`--mk-query demo=1`). Adjudicated, not open.*
+*Added 2026-09-03 21:38 EDT, Part 6b. Every row here is a difference that REMAINS in the resting overlay at **0.7% / 27 regions, both pages 1243px** (this said 26 until 2026-09-04 14:16 EDT, the fourth carrier of a figure §L had already declared stale), measured SEEDED (`--mk-query demo=1`). Adjudicated, not open.*
 
 | Surface | Decision | Date | Why | Reopens if |
 |---|---|---|---|---|
@@ -212,14 +228,6 @@ status: live
 | 14 | `span` "Home" ↔ `span.crumb` "Portal Home" | The crumb's wording | CITED — and its comment's SECOND justification was false: `index.html` carries no crumb at all. Corrected in `portal/ui/shell.js`; the decision stands on its surviving half |
 | new | `span.lw` — "2 days left" ↔ "ends tomorrow" | **Portal keeps CALENDAR DAYS.** The design rounds elapsed time against midnight, which is wrong at both ends of its own range: an announcement expiring TODAY at 18:00 reads "ends tomorrow", and one that expired YESTERDAY reads "ends today" — on the panel whose subject is what players see right now. Measured 2026-09-03 23:20 EDT | CITED — reopens if the design's `endsIn` stops rounding |
 | — | not printed | ⚠️ **The tool lists the largest 14 and there are 27.** It said "Every region is CLOSED or CITED" unconditionally until 2026-09-03 23:20 EDT — a string literal, printed after truncation, over regions no reader had seen. It now states what it withheld. ✅ **ENUMERATED 2026-09-03 23:28 EDT VIA `--json`.** All thirteen are 16×16 to 48×32 and cluster in two places: **x=16–32, y=64–320** (five — the nav rail's icons, sub-pixel) and **y=224** (six at x=224…592 — fragments of the staged strip's "across N realms" line, which is region 12), plus (1136,592) and (352,336). **The tool's claim that the remainder are fragments IS true here** — but it was printed unconditionally as a claim, and it is checked now | verified fragments |
-
-### Cross-realm — the first working `--hover` run, 2026-09-04 12:40 EDT
-
-| Surface | Decision | Why | Reopens if |
-|---|---|---|---|
-| **`--draw` `--ret` `--ev` `--play` `--dw`** — the category accents | **THE PORTAL WAS RIGHT AND THE MOCKUP'S STYLESHEET WAS BEHIND ITS OWN COMPANION. Package corrected.** Class (b) | The package's `assets/tokens.css` carried `#FF3430` / `#337BA6` / `#1F8A5E` / `#8A6BD1` and had no `--dw` at all. **COMPANION §4.2 trap Two records that exact set as the one that produced "two plums and two blues that read as one family"**, and that each lane was moved to a separate hue — draws keep Plum, playlists take Cyber Teal, events take Slate pushed to a true blue, returning takes a rose, minimum hue gap **31°**. `portal/ui/tokens.css` implements that. So the design's prose and the design's CSS disagreed and the portal agreed with the prose. ⚠️ **Invisible to every resting comparison ever run** — these tokens reach the rail only through `.realm:hover svg{color:var(--c,var(--patch))}`. Corrected: **Armory 893 → 892 regions, ④ 133 → 125; Analytics 41 → 40, ④ 125 → 120; no realm regressed** | A lane's bot source changes, or the 31° floor is re-derived |
-| **The overlay tier's recorded figures** | **They are PAGE-sized, not overlay-sized. Read the DELTA against the realm's resting audit.** Not a decision — a property of the instrument | `portal:audit --open` re-walks the whole page, so a recorded `access · Export ④ 304` is the realm's own resting ④ 275 plus the drawer's **29**. Measured across all six opened overlays: contributions are ② 9 · ③ 17–30 · ④ 20–42, except armory's create overlay at ② 75. **⑤ RULES is byte-identical on every overlay run** — opening a drawer does not change a stylesheet, so that section carries no overlay information at all | The audit learns to scope its walk to the mounted overlay |
-| **The `② 9` that appears in every overlay run** | **Alignment artifact plus one cited row.** Not findings | Opening anything changes the node count, which re-runs the LCS pairing: the whole-page `main`/`div` text node, the view-tab `span`, and the mockup's inline `path`/`circle`/`rect` against the portal's `svg`+`use` sprite (the settled icon-delivery class). The one real member is `span.id` "…2283" — the cited identity row | The aligner stops pairing by sequence |
 
 ### Cross-realm additions from the §L ⑥ overlay run, 2026-09-03 23:28 EDT
 

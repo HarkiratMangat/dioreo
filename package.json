@@ -15,6 +15,7 @@
     "docs:audit:test": "node scripts/testCache.mjs docs-audit-test scripts/docs-audit.mjs scripts/docs-audit.test.mjs scripts/docs-audit-test-parallel.mjs -- node scripts/docs-audit-test-parallel.mjs",
     "test:hooks": "node scripts/testCache.mjs hooks .claude/hooks -- bash .claude/hooks/run-all-tests.sh",
     "portal:gate": "node docs/superpowers/mockups/2026-08-23-portal-interactive/.schema-gate.mjs --self-test",
+    "portal:preflight": "node scripts/portalPreflight.mjs",
     "portal:bust": "node docs/superpowers/mockups/2026-08-23-portal-interactive/.bust.mjs",
     "portal:refs": "node docs/superpowers/mockups/2026-08-23-portal-interactive/.undeclared.mjs --self-test",
     "portal:coverage": "node scripts/portalCoverage.mjs",
