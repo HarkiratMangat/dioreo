@@ -344,10 +344,25 @@ Home says **66** builds need repair; Armory's masthead says **60**. The predicat
 
 `index.html` computes `new Set(ops.map(o => o.realm)).size` — but `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js`'s `Store.add` rewrites `op.realm` from a string into `{href, label}`, so the Set counts four distinct objects where `FIX.sampleOps` holds two realms. The design renders **"across 4 realms"** where the truth is 2. Same class as `t-legendary` and Broadcast's short `colgroup`; the portal is right and the difference is cited. **Do.** Either read `.label` in `index.html` or stop boxing the realm in `Store.add`. **Verify by:** the mockup's Home strip reading "across 2 realms" on `?demo=1`.
 
-### `[P1 · M · Sonnet5-High]` Five realms need a REGRESSION check after Part 6b's shared changes
+### ✅ `[P1 · M · Sonnet5-High]` Five realms need a REGRESSION check after Part 6b's shared changes — RUN, CLEAN
 *Filed 2026-09-03 21:40 EDT, Part 6b.*
 
 This part edited three shared surfaces: `portal/ui/app.css` (the whole `.sclock` family), the mockup package's `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` (`seedDemoOps`), and `portal/ui/harness/index.html` (the fixture day is stamped by default). Season, Armory, Broadcast, Access and Analytics were all recorded before those. **Do.** Per realm: `portal:audit --realm <r> --all` and `portalDiff --realm <r> --portal harness`, then compare the enumeration against that realm's section in `docs/reference/portal-decision-ledger.md`. ⚠️ **This is a REGRESSION check, not a fresh pass** — those realms are adjudicated, so anything already carried as a cited row stays cited; only a NEW region is work. **Verify by:** each realm's enumeration matching its ledger section, or a new row explaining what moved. ⚠️ Season additionally carries its own earlier `[P1 · S]` re-measure for the fixture tier change.
+
+✅ **RUN 2026-09-03 21:56 EDT, AND THE ANSWER IS ZERO REGRESSION — measured against a real baseline rather than asserted.** `local/sweep.sh` was run twice: once on this branch, and once with `portal/ui` and the whole mockup package checked out at `95923c9e` (the pre-session commit) and rebuilt. **The two runs are identical realm for realm.**
+
+| realm | at `95923c9e` | after Part 6b |
+|---|---|---|
+| season | 12.0% · 135 regions · mk 4038 / pt 4262 | **identical** |
+| armory | 8.6% · 893 · mk 10541 / pt 11049 | **identical** |
+| broadcast | 0.2% · 16 · both 1258 | **identical** |
+| access | 6.6% · 56 · mk 1223 / pt 1307 | **identical** |
+| analytics | 14.0% · 41 · mk 1685 / pt 2208 | **identical** |
+| review | 0.5% · 12 (seeded) | 0.5% · **13** |
+
+The one movement is Review, 12 → 13 regions at the same percentage — the seed moving out of `review.html` into the shared shell splits one region differently. Everything else is byte-for-byte the same measurement.
+
+⚠️ **AND THESE FIGURES ARE THE REALMS' RECORDED CITED FLOORS, NOT A DISCOVERY.** §L records Season at *12.0% / 135* and Armory at *8.7%, 935 regions, +508px — a cited floor, graded by enumeration*, and Access at *8.6% → 6.3%*. A first reading of this sweep treated 6–14% as alarming; it is what "◐ resting pass closed, the remainder is a CITED floor" means, and the plan says in as many words to read the enumeration and never the number.
 
 ## 🔔 Reminders / watch-for
 
