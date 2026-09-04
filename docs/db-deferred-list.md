@@ -725,6 +725,27 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · S · Sonnet5-High]` Ten CARRIER defects the ⑥ audit found — corrections to documents, verified unfixed at 2026-09-04 15:48 EDT
+
+**Filed 2026-09-04 15:48 EDT** because they were about to live only in a gitignored handoff. Each was confirmed by grep at that time, not inferred. They are one `python3` heredoc between them.
+
+| # | Where | What is wrong |
+|---|---|---|
+| D1 | `docs/reference/portal-decision-ledger.md`, `## Review` §, the paragraph after `Reproduce:` | Quotes **1243px / 1199px** — **Home's** heights. Review's own table says mk 888 · pt 984. The `Reproduce:` line was fixed and this paragraph was left. **Move it under `## Home`** |
+| D2 | `docs/superpowers/plans/2026-08-27-portal-conformance.md` line 917 | `analytics ②130` is Analytics' **resting** ②; its overlay reading is **②137**. A resting figure quoted inside a list of overlay readings, inside the paragraph warning against sizing from the wrong shape |
+| D3 | Same plan, line 193 (§0.1a) **and** `docs/SESSION-START.md` #2 | Both read **"THE MOCKUP IS NEVER EDITED"** unqualified while four commits in two days correctly edited it. **`local/agentB-L6-2026-09-04.md` §⑦ is the full replacement paragraph** — three tests for a package DEFECT versus a design WEAKNESS, plus its five stated costs. Paste it; do not re-derive it |
+| D4 | `docs/superpowers/plans/SESSION2-PROMPT.md` §4 heading | Says **"FIVE TRAPS"** over five items where `.claude/rules/portal-editing.md` numbers **seven** (0–6) — a lossy duplicate of a rule file whose own header forbids duplication |
+| D5 | `docs/CHANGELOG.md:31` | The **v3.76.0** entry is dated **2026-09-03** and now contains six 2026-09-04 commits |
+| D6 | This file | The **375×812** filing bundles a **decided** item (do not run it — his call, twice) with an **undecided** one (**Home's tab order after the block reorder**, one tab-through, never checked). Obeying the decision silently drops the tab order. **Split into two entries** |
+| D7 | Plan §0.5b's exit-condition block | The A/B-artifact supersession lives in §L line 173, and `SESSION-START.md` names **§0.5b** and not §L — so the superseded version is what a compliant session reaches. **Put the supersession inline at the head of §0.5b** |
+| D8 | Plan §0.7c | Drops phase ⑥ **UX-COPY** entirely while §0.4b still demands an observable for it. Audit-log row 25 calls it *"the most-missed body of work"* in the project |
+| D9 | `SESSION2-PROMPT.md` | Should state in one line that **it IS the Part prompt** for §0.7a's five-way "first call" tiebreak |
+| D10 | `SESSION2-PROMPT.md` §6 | Says "18 commits … `npm test` 0 at `27f4e7d9`"; HEAD is `9f5220cc`, 28 commits |
+
+**Verify:** each row's stated wrong text returns zero hits, and D3's replacement is in both carriers rather than one.
+
+⚠️ **D3 is the expensive one and its cost is written into Agent B's own rewrite:** adopting it re-decides three ledger rows from CITED to FIXED (`t-legendary`, `.bc-mode`, Broadcast's short `colgroup`), which moves three realms' region counts, which triggers the sweep obligation the rewrite itself imposes. **Pay it deliberately rather than discovering it.**
+
 ### `[P2 · M · Opus5-High]` The §L ⑥ two-agent audit's remainder — twelve findings, filed together because they share one verify pass
 
 **Filed 2026-09-04 14:22 EDT.** Both reports: `local/agentA-L6-2026-09-04.md` · `local/agentB-L6-2026-09-04.md` (gitignored — state the paths). Fixed in-session and NOT listed here: the false-positive door selector, the dead `.hcard` selector, the `--focus` no-op, the false 31° claim, the misfiled cross-realm tables, Review's 13th region, three stale §L floors, `SESSION-START`'s three false statements, and `SESSION2-PROMPT` §5.
