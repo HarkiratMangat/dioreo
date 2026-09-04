@@ -21,19 +21,14 @@ const DRY = args.includes('--dry-run');
 export const STEPS = [
     { name: 'reflow-comments', argv: ['scripts/reflow-comments.mjs', '--write'] },
     { name: 'reflow-prose', argv: ['scripts/reflow-prose.mjs', '--write'] },
-    // 🔴 BUST AFTER THE REFLOWS, BUILD AFTER THE BUST. `portal:bust` stamps every mockup page with a
-    // `?v=` derived from its assets' mtimes, so any edit to an asset after this point invalidates the
-    // stamp it just wrote — which is the exact failure this file exists to stop.
+    // 🔴 BUST AFTER THE REFLOWS, BUILD AFTER THE BUST. `portal:bust` stamps every mockup page with a `?v=` derived from its assets' mtimes, so any edit to an asset after this point invalidates the stamp it just wrote — which is the exact failure this file exists to stop.
     { name: 'portal:bust', argv: ['docs/superpowers/mockups/2026-08-23-portal-interactive/.bust.mjs'] },
     { name: 'build', argv: ['-e', "require('./scripts/buildPortal').build()"] },
-    // 🔴 GEOMETRY LAST, because it MEASURES the built tree. Recording before the build stamps the
-    // previous build's numbers under this commit's sha, which is a fixture that certifies the wrong tree.
+    // 🔴 GEOMETRY LAST, because it MEASURES the built tree. Recording before the build stamps the previous build's numbers under this commit's sha, which is a fixture that certifies the wrong tree.
     { name: 'portalGeometry --write', argv: ['scripts/portalGeometry.mjs', '--all', '--write'] },
 ];
 
-// ⚠️ THE ORDER CHECK IS THE POINT, NOT THE STEPS. Running the five in sequence is easy; what has
-// actually failed is a SIXTH thing happening between two of them. So after the bust, any later change
-// to a mockup asset is a hard failure rather than a silent stale stamp.
+// ⚠️ THE ORDER CHECK IS THE POINT, NOT THE STEPS. Running the five in sequence is easy; what has actually failed is a SIXTH thing happening between two of them. So after the bust, any later change to a mockup asset is a hard failure rather than a silent stale stamp.
 const ASSETS = 'docs/superpowers/mockups/2026-08-23-portal-interactive/assets';
 const mtimes = () => {
     const out = execFileSync('git', ['ls-files', ASSETS], { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
