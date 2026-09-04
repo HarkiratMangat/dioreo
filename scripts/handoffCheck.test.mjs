@@ -7,6 +7,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawnSync } from 'child_process';
 import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
@@ -34,8 +35,7 @@ assert.deepStrictEqual(
 );
 ok('a plan named twice (a FIRST ACTION line and its amendment) is one plan, not two');
 
-// A shared `g`-flagged regex carries lastIndex between calls; that is a real silent-wrong-answer bug
-// and the module builds a fresh one per call. Two identical calls must agree.
+// A shared `g`-flagged regex carries lastIndex between calls; that is a real silent-wrong-answer bug and the module builds a fresh one per call. Two identical calls must agree.
 assert.deepStrictEqual(plansNamedIn('docs/superpowers/plans/a.md'), plansNamedIn('docs/superpowers/plans/a.md'));
 ok('two identical calls agree — no lastIndex carried between them');
 
@@ -49,5 +49,14 @@ ok(`the real SESSION-START names ${real.length} plans, and all of them are retur
 assert.ok(real.some((f) => f.includes('portal-conformance')),
     `the conformance plan is the one realm sessions actually work from and it must be among them — got ${JSON.stringify(real)}`);
 ok('the conformance plan is among them — it is NOT first in the file, which is the whole defect');
+
+// 🔴 THE PROGRAM MUST RUN, AND IT HAS TO BE A SUBPROCESS. Added 2026-09-04 14:11 EDT after `npm run handoff` threw `ReferenceError: require_ is not defined` at import while this suite was green — the resolver had a test and the PROGRAM had none, so a change that made the script unrunnable passed everything. ⚠️ THE FIRST VERSION OF THIS CASE `await import`ed IT, under a comment of mine asserting the module is `process.exit`-free at import. It is not: importing runs the whole check and exits with its verdict, which killed this suite. A claim in a comment, contradicted by running it, one turn after writing it — so the subprocess is not caution, it is the measured requirement. ⚠️ THE EXIT CODE IS DELIBERATELY NOT ASSERTED. `handoffCheck` exits 1 whenever a carrier is genuinely missing, which is its JOB; asserting 0 would make this suite fail for reasons that have nothing to do with whether the script is runnable. What is asserted is that it did not die at load — a ReferenceError, a SyntaxError, or a stack trace instead of a report.
+const run = spawnSync(process.execPath, [path.join(ROOT, 'scripts/handoffCheck.mjs')], { cwd: ROOT, encoding: 'utf8' });
+const out = (run.stdout || '') + (run.stderr || '');
+assert.ok(!/ReferenceError|SyntaxError|TypeError|Cannot find module/.test(out),
+    `handoffCheck.mjs died at load rather than reporting — got:\n${out.slice(0, 600)}`);
+assert.ok(/handoff check/.test(out),
+    `handoffCheck.mjs produced no report at all — got:\n${out.slice(0, 600)}`);
+ok('handoffCheck.mjs RUNS and reports — the resolver had a test and the program had none');
 
 console.log(`\nhandoffCheck plans — ${n} passed`);

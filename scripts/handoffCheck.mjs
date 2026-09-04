@@ -11,6 +11,10 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'node:module';
+
+// ⚠️ `require_` DID NOT EXIST AND NOTHING RAN THIS FILE. Added 2026-09-04 14:10 EDT — the previous edit wrote `require_('./lib/handoffPlans.cjs')` into an ESM module that had no `createRequire`, so `npm run handoff` threw `ReferenceError: require_ is not defined` at import. **`npm test` stayed green**: the resolver has a self-test, and the SCRIPT had nothing that so much as imported it — a gate for the function beside no gate for the program. The self-test imports this module now.
+const require_ = createRequire(import.meta.url);
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sh = (c) => { try { return execSync(c, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return ''; } };
