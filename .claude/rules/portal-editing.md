@@ -51,7 +51,7 @@ An assert on edit 5 raises before that write, so edits 1–4 are lost **after pr
 **Write inside the helper, once per edit** — read, assert, replace, write, print. It costs nothing, and it makes a partial batch a partial success instead of a total loss reported as a success. If you keep a single trailing write, the `print()`s are not the receipt: `rg` the new anchor in the source **and** in `portal/public/ui/<realm>.js` before believing them.
 
 
-## The four ORDERING traps — added 2026-09-03 22:32 EDT, Part 6b
+## The six ORDERING traps — added 2026-09-03 22:32 EDT, Part 6b
 
 Each one cost a wasted verification round, and none is visible from the file you are editing.
 
@@ -63,6 +63,10 @@ Each one cost a wasted verification round, and none is visible from the file you
 
 **4 · A `git commit -F - <<'MSGEOF'` nested inside a `python3 - <<'PYEOF'` command line feeds the commit message to PYTHON.** Bash reads heredocs in the order the redirections appear, not the order the commands run. Keep a scripted edit and its commit in two calls, or write the message to a file first.
 
+**0 · HOME IS THE ONLY REALM THAT RENDERS ITS MASTHEAD OUTSIDE `Shell`'s `masthead` PROP, AND THE FIX DOES NOT GENERALISE.** `access.js`, `broadcast.js`, `armory.js`, `analytics.js` and `season.js` all pass the prop; `home.js` renders `<Masthead>` inline inside `.home`, because `.home` is a 1080px wrapper whose descendant rules (`.home .masthead`, `.home h1`) could never match an element rendered as `main`'s child. **On a realm with no such wrapper the same move changes nothing and costs the ExportStrip seam.** The measurement and the words *ON THIS REALM ONLY* are in `home.js`'s own comment — and that is exactly the problem this entry fixes: the batching contract means a session may edit `portal/ui` all day through `python3` heredocs and never trigger a rule file, let alone read the comment inside the component. **A safety clause that lives only at the call site is a safety clause the working method routes around.**
+
 **5 · `reflow-comments` SCANS TRACKED FILES, so a NEW file is invisible to it until the commit that adds it — and fails the check immediately after.** Measured 2026-09-03 22:38 EDT: `--write` then `--check` were both green with three new untracked files on disk, `npm test` passed, the commit landed, and the very next `--check` went red on exactly those three. The file count in its own summary is the tell — it went 458 → 461 at the moment they became tracked. **After a commit that ADDS files, run the reflows again before believing the suite that ran before it.** The same applies to any gate that enumerates from git rather than from the filesystem.
+
+**6 · `reflow-comments` DESTROYS A COMMENT THAT A TOOL READS BY POSITION, AND IT DOES IT AGAIN ON EVERY RUN.** Measured 2026-09-03 23:13 EDT on `scripts/portalSweep.sh`: a `# shellcheck disable=SC2086` line was merged into the prose comment above it, stopped being a directive, and the check it suppressed went red. **Restoring it to its own line did not survive** — the very next `--write` merged it back. A reflow is a shape transform and a directive IS a shape. **The durable fix is to need no directive** (there, an array expands correctly quoted and raises no SC2086 at all). ⚠️ **The class is wider than shellcheck**: `eslint-disable`, `prettier-ignore`, `@ts-expect-error`, `istanbul ignore`, a `#!` that is not on line 1 — anything a tool reads by POSITION. Neither `bash -n` nor `node --check` says a word, because the file is still valid; only the suppressed check going red reveals it, and only if something runs it.
 
 ⚠️ **And an assert is scoped to the EDIT, not to the file.** Asserting that a short declaration is absent from a 5,000-line stylesheet fails on any unrelated rule that happens to end the same way. Assert the exact text you removed, and assert a SURVIVOR beside it.

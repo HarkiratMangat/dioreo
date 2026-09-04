@@ -187,6 +187,27 @@ status: live
 | The two `repair` rows' ORDER — pt Armory 66 before Season 16 | **Follows from Armory's own predicate.** Class (b) | 2026-09-03 21:38 EDT | Both sides sort by severity then count, and both `repair` rows share severity 60, so the order is decided by Armory's number. The mockup's `armoryFault` and the portal's `coverageFlags` are different predicates over the same builds. Home reads Armory's, which is the rule this row exists to protect | Armory's coverage predicate changes |
 | Home's masthead — **three figures, not four** | **Design's three.** `days left` dropped | 2026-09-03 21:38 EDT | COMPANION §16.6 and §5.9z.5 both NAME four (days left · live now · staged · needs you) and the design RENDERS three. The mockup is the authority the pass is measured against, and the countdown sits ~200px below in Home's own clock panel, which states the same deadline and earns two item columns off it. Harkirat, 2026-09-03 21:38 EDT: conform to three now, revisit at the redesign phase — filed in `docs/db-deferred-list.md`. ⚠️ **Do not "restore" it as a missing figure** | The redesign phase reinstates it on merit |
 
+### Home — the resting regions, mapped onto the cited set
+
+*Added 2026-09-03 23:12 EDT because §L ② closes on the ENUMERATION and this table did not exist — the regions lived only in a gitignored working file, as nine class groupings. Review was given the equivalent table on 2026-09-03 09:07 EDT for the same reason. Caught by the §L ⑥ agent.*
+
+`node scripts/portalDiff.mjs --realm home --portal harness --mk-query demo=1` → **0.7% of pixels, 25 regions, mk 1243px · pt 1243px.** ⚠️ **The tool prints the largest 14; the remainder are fragments of the same regions and it does not enumerate them** — a limit of the instrument, stated rather than claimed away, the same way the Analytics row states it.
+
+| # | Region | What it is | Class |
+|---|---|---|---|
+| 1 | `span` "staged · review" ×2 | The header's commit crumb, same text both sides | sub-pixel |
+| 2 · 3 · 10 · 11 | `b` and `span.att-sev` — "16 season items" ↔ "66 builds", "16 of 39" ↔ "66 of 133" | The two `repair` rows in the opposite ORDER, because Armory's predicate gives 66 where the design's gives 13 | CITED — Armory's own predicate, filed `[P2 · S]` |
+| 4 | `input.cb-in` | The command-bar input, empty both sides | sub-pixel |
+| 5 | `button.chip` "Discard all" ↔ `div.hres` | The design's discard verb, which the portal omits | CITED — `Resume`'s own reason |
+| 6 · 8 | `b` "59"↔"18", "23"↔"05" | The countdown's minutes and hours | CITED — the portal keeps `Date.now()`; the design counts from its fixture day |
+| 7 | `kbd` "⌘K" | Same glyph both sides | sub-pixel |
+| 9 | `button.chip.go` ↔ `a.chip.go` "Review & commit" | Button versus anchor | CITED — it navigates |
+| 12 | `span` "across 4 realms" ↔ "across 2 realms" | The mockup counts realms by object identity | CITED — a package defect; the portal is right |
+| 13 | `b` "oldest up 19d" ↔ "20d" | ✅ **FIXED 2026-09-03 23:12 EDT** — the age truncated to calendar days where the design rounds real elapsed time, twenty lines below an `endsIn` corrected for exactly that an hour earlier. Instance fixed, class missed; this region found the other half | resolved, region count 26 → 25 |
+| 14 | `span` "Home" ↔ `span.crumb` "Portal Home" | The crumb's wording | CITED — and its comment's SECOND justification was false: `index.html` carries no crumb at all. Corrected in `portal/ui/shell.js`; the decision stands on its surviving half |
+| new | `span.lw` — "2 days left" ↔ "ends tomorrow" | **Portal keeps CALENDAR DAYS.** The design rounds elapsed time against midnight, which is wrong at both ends of its own range: an announcement expiring TODAY at 18:00 reads "ends tomorrow", and one that expired YESTERDAY reads "ends today" — on the panel whose subject is what players see right now. Measured 2026-09-03 23:20 EDT | CITED — reopens if the design's `endsIn` stops rounding |
+| — | not printed | ⚠️ **The tool lists the largest 14 and there are 27.** It said "Every region is CLOSED or CITED" unconditionally until 2026-09-03 23:20 EDT — a string literal, printed after truncation, over regions no reader had seen. It now states what it withheld. **The remaining 13 are unexamined, not cited**, and `--json` is how to see them | 🔴 OPEN |
+
 ### Home — what has NOT been measured, stated so nobody assumes coverage
 
 The instruments state their own blind spots on every run and a ledger section should do the same. As of 2026-09-03 22:32 EDT, Home has been compared at 1282×888, at rest, with the clock running, on fixtures:

@@ -521,8 +521,16 @@ async function label(page, url, regions) {
                 console.log(`      pt- ${ptAt[i].at}  ${ptAt[i].text ? '“' + ptAt[i].text + '”' : ''}`);
             });
             console.log('\n  not covered by this run: ' + COVERAGE_NOTE.join('\n' + ' '.repeat(22)) + '\n');
-            console.log('\n  Every region is CLOSED or CITED in the Part\'s difference ledger. A region is not');
-            console.log('  a defect by itself — real data, portal-ahead surfaces and fixture gaps all land here.\n');
+            // 🔴 THIS SENTENCE WAS PRINTED UNCONDITIONALLY, AFTER TRUNCATING TO 14 REGIONS, AND IT READ AS A VERIFIED CLAIM. It is a string literal: this tool has never read the ledger and cannot know whether any region is cited. On every realm but Review it asserted closure over regions it had not shown anyone — season 121 hidden, armory 879, access 42, analytics 27, home 12. §0.7d makes the ENUMERATION the close condition, so the close was being discharged by boilerplate. Found by the §L ⑥ agent, 2026-09-03 23:19 EDT.
+            const hidden = d.regionCount - Math.min(14, d.regionCount);
+            if (hidden > 0) {
+                console.log(`\n  ⚠️  ${hidden} of ${d.regionCount} regions were NOT printed — this tool lists the largest 14.`);
+                console.log('  The close condition is the ENUMERATION, so a realm is not closed on what you can see here.');
+                console.log('  Use --json for every region.');
+            }
+            console.log('\n  A region is not a defect by itself — real data, portal-ahead surfaces and fixture gaps all');
+            console.log('  land here. Adjudicate each against the Part\'s difference ledger; this tool does not read it');
+            console.log('  and cannot tell you whether anything here is cited.\n');
         }
         if (selfTest) {
             const ok = d.diffRatio < 0.001 && d.regionCount === 0;

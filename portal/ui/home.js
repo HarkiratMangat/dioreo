@@ -85,7 +85,9 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     const errs = errRow ? (errRow.pinged ?? errRow.n ?? 0) : 0;
     if (errs) {
         push('error', 'Analytics', '#/analytics', `${errs} error${errs === 1 ? '' : 's'} pinged`,
-            errs, 'Health', analytics?.health?.commands24h ?? 0);
+            // 🔴 THE DENOMINATOR IS NOW THE SAME COLLECTION AND WINDOW AS THE NUMERATOR, AND IT WAS NOT. This read
+        // `commands24h` — `AnalyticsEvent` over 24 HOURS — against a numerator counted from `AlertLog` over SEVEN DAYS, and rendered the pair as "23 of 496". N was not a subset of M and could exceed it: a fixture with no commands in 24h and one error alert renders "23 of 0". Every gate passed because the design renders the same string, so the two sides agreed about a number that means nothing. Found 2026-09-03 23:19 EDT by the §L ⑥ agent — the second live instance of the cross-surface class this Part filed, and the one with no comment admitting it.
+        errs, 'Health', analytics?.health?.alerts7d ?? 0);
     }
 
     // ⚠️ ARMORY'S OWN `splitCoverage`, IMPORTED RATHER THAN RESTATED. `stale-90d` is age, not a fault — the realm separates them, and a row here that recombined them would report a different question's answer under Armory's words. This line held its own copy of that predicate until 2026-09-03 21:37 EDT; the copy happened to agree, which is the version of this bug that survives longest.
@@ -106,8 +108,9 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
     // The real Broadcast finding is not a coverage gap — it is an announcement with no `expiresAt`, which never stops on its own.
     const forever = (broadcast?.all || []).filter((a) => a.state === 'live' && !a.expiresAt);
     if (forever.length) {
+        // 🔴 ROUNDS THE REAL ELAPSED TIME, and this line truncated to calendar days until 2026-09-03 23:11 EDT — twenty lines below `endsIn`, which had been corrected for exactly this an hour earlier. `createdAt` is an INSTANT, so an announcement posted 19.6 days ago is "up 20d" to the design and was "up 19d" here. The fix was applied to the instance and not to the class; the region diff found the other half.
         const age = (a) => (a.createdAt
-            ? Math.round((new Date(dayOf(today) + 'T00:00:00Z') - new Date(dayOf(a.createdAt) + 'T00:00:00Z')) / 86400000) : 0);
+            ? Math.round((new Date(dayOf(today) + 'T00:00:00Z').getTime() - new Date(a.createdAt).getTime()) / 86400000) : 0);
         const oldest = Math.max(0, ...forever.map(age));
         push('forever', 'Broadcast', '#/broadcast',
             `${forever.length} announcement${forever.length === 1 ? '' : 's'} never end — oldest up ${oldest}d`,
@@ -196,10 +199,13 @@ function HomeClock({ season, today }) {
 //
 // ⚠️ AND IT RE-USES `seasonItems`, never its own filter. Home already learned this the expensive way in the mockup: two copies of one predicate on one page reported different numbers for the same collection, and the fix is that there is only ever one derivation to read. The design's own three rungs. The portal's version said "ends in 2d" where the design says "2 days left", and had no `ends tomorrow` at all — so the one day that most wants naming read as a number like every other day.
 //
-// ⚠️ IT ROUNDS THE REMAINING TIME, IT DOES NOT COUNT CALENDAR DAYS, and the difference is only visible on the one row that carries a real timestamp. A season item's end is a date, so both readings agree on it. An announcement's `expiresAt` is an instant: one expiring tomorrow at 18:00 is 1.75 days away, which the design reports as "2 days left" and a calendar-day count reported as "ends tomorrow". Truncating threw away the only extra precision the field has — so the value arrives here unsliced and the rounding happens once, here.
+// 🔴 CALENDAR DAYS, AND THE DIFFERENCE FROM THE DESIGN IS CITED RATHER THAN AN OVERSIGHT. The design rounds ELAPSED TIME against midnight, and that is wrong at BOTH ends of its own range: measured 2026-09-03 23:19 EDT with today = 2026-08-24, an announcement expiring **today at 18:00** rounds to 1 and reads "ends tomorrow", and one that expired **yesterday at 18:00** rounds to 0 and reads "ends today". Any expiry past roughly midday is reported a day late, and an already-dead announcement is reported as live — on the panel whose entire subject is what players are being shown right now.
+//
+// ⚠️ THIS FILE HELD THE ROUNDING VERSION FOR ABOUT AN HOUR AND ITS COMMENT DEFENDED IT WITH ONE CASE — the 1.75-day example, where rounding is right — and never tested the two ends. A comment that argues from the middle of a range is how a range's edges go unexamined. Found by the §L ⑥ agent, not by me.
+//
+// The cost is one permanent region of the resting diff: the design says "2 days left" where this says "ends tomorrow" for a timestamped expiry.
 const endsIn = (iso, today) => {
-    const t = new Date(String(iso).length > 10 ? iso : dayOf(iso) + 'T00:00:00Z').getTime();
-    const d = Math.round((t - new Date(dayOf(today) + 'T00:00:00Z').getTime()) / 86400000);
+    const d = dday(today, dayOf(iso));
     if (d < 0) return 'ended';
     if (d === 0) return 'ends today';
     if (d === 1) return 'ends tomorrow';
@@ -292,7 +298,7 @@ export function HomeRealm({ session }) {
     return html`
         <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged }}
                   commands=${rows.map((a) => ({
-                      label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm})`,
+                      label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm.toLowerCase()})`,
                       keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },
                   }))}
                   viewSlot=${html`
