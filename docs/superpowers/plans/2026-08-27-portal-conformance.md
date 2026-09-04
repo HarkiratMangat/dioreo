@@ -857,6 +857,8 @@ Rail · **command bar (the doubled search bar — `.cb-in` needs `data-bare`)** 
 
 ---
 
+🔴 **SESSION 2 STARTS AT `docs/superpowers/plans/SESSION2-PROMPT.md` — written 2026-09-04 00:00 EDT at the close of Part 6b.** It carries what a fresh session needs before it runs anything: why Part 6b's loudest rule is BACKWARDS in the overlay tier, what each instrument does not tell you, and the five ordering traps that each cost a round. ⚠️ `local/handoff/2026-09-03-portal-session2.md` is a ROUTE and was read as an inventory once; §L and `docs/db-deferred-list.md` are the inventory.
+
 ## 🔴 THE PORTAL HAS BEEN VERIFIED SURFACE BY SURFACE AND NEVER AS A SYSTEM — found 2026-09-03 22:33 EDT
 
 **Home's nine defects were every one of them a DERIVATION defect, and not one was a styling defect.** A copied predicate, a wrong edge (`bpEnd` where the design reads the season's LAST deadline), a component retired at one call site and left alive at another, a calendar category folded into the wrong lane, an all-season row collapsed to a single day. Home is the only realm that reads five OTHER realms, and it is the first surface where any of this could show — which is the point: **five realms were conformed as SURFACES, and nothing has ever checked that two surfaces reporting the same collection agree.**
