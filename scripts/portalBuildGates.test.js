@@ -1,10 +1,6 @@
 // scripts/portalBuildGates.test.js — the build's own source-shape gates, tested as pure functions.
 //
-// 🔴 WRITTEN BECAUSE assertNamedImportsResolve WAS PROVEN ONCE, BY HAND, AND THE FALSIFIER WAS THROWN AWAY.
-// It was added on 2026-09-03 after a missing `export` blanked the portal, verified by temporarily deleting
-// an `export` keyword and watching the build fail — and then nothing kept that proof. A gate whose failure
-// path has no test is a gate that can rot into a vacuous pass, which is the failure this repo has three
-// memories about. Every case below is a FALSIFIER: it asserts the gate THROWS, and one asserts it does not.
+// 🔴 WRITTEN BECAUSE assertNamedImportsResolve WAS PROVEN ONCE, BY HAND, AND THE FALSIFIER WAS THROWN AWAY. It was added on 2026-09-03 after a missing `export` blanked the portal, verified by temporarily deleting an `export` keyword and watching the build fail — and then nothing kept that proof. A gate whose failure path has no test is a gate that can rot into a vacuous pass, which is the failure this repo has three memories about. Every case below is a FALSIFIER: it asserts the gate THROWS, and one asserts it does not.
 const assert = require('assert');
 const { assertNamedImportsResolve } = require('./buildPortal');
 

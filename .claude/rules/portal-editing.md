@@ -63,4 +63,6 @@ Each one cost a wasted verification round, and none is visible from the file you
 
 **4 · A `git commit -F - <<'MSGEOF'` nested inside a `python3 - <<'PYEOF'` command line feeds the commit message to PYTHON.** Bash reads heredocs in the order the redirections appear, not the order the commands run. Keep a scripted edit and its commit in two calls, or write the message to a file first.
 
+**5 · `reflow-comments` SCANS TRACKED FILES, so a NEW file is invisible to it until the commit that adds it — and fails the check immediately after.** Measured 2026-09-03 22:38 EDT: `--write` then `--check` were both green with three new untracked files on disk, `npm test` passed, the commit landed, and the very next `--check` went red on exactly those three. The file count in its own summary is the tell — it went 458 → 461 at the moment they became tracked. **After a commit that ADDS files, run the reflows again before believing the suite that ran before it.** The same applies to any gate that enumerates from git rather than from the filesystem.
+
 ⚠️ **And an assert is scoped to the EDIT, not to the file.** Asserting that a short declaration is absent from a 5,000-line stylesheet fails on any unrelated rule that happens to end the same way. Assert the exact text you removed, and assert a SURVIVOR beside it.
