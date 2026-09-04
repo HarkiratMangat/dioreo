@@ -237,10 +237,26 @@ export function HomeRealm({ session }) {
                       label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm})`,
                       keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },
                   }))}
-                  masthead=${html`<${Masthead} eyebrow=${html`<span class="job">Dioreo admin</span>`}
-                                               title="What needs you" stats=${stats} />`}
                   viewSlot=${html`
                       <div class="home">
+                          <!-- 🔴 THE MASTHEAD IS A CHILD OF .home, NOT A Shell PROP, AND ON THIS REALM ONLY.
+                               Every other realm's masthead spans main's full 1206px and the design agrees. Home does
+                               not: app.css:2105 gives .home a max-width of 1080px with margin 0 auto, and the design
+                               puts the masthead INSIDE that wrapper -- .home .masthead and .home h1 (app.css:4339-4341)
+                               are DESCENDANT selectors. Passed as Shell's masthead prop the element renders as main's
+                               child instead, so both rules matched nothing: the masthead measured 1206px against the
+                               design's 1080, at x=76 against x=139, with its own padding 30/23/20 against 30/24/18 and
+                               the h1's margin-bottom at 0 against 18. That is the whole of section 1 CASCADE, and the
+                               audit counted 89 offsets below it as separate findings.
+                               Neither portal:orphans nor portal:coverage could see it -- the classes exist and the rules
+                               exist, they simply never meet. Same shape as the .mh-add defect in shell.js's own header.
+                               SAFE HERE SPECIFICALLY: Shell renders the masthead slot as a ternary against null, Home
+                               passes no exports so the ExportStrip cloneElement branch never applied to it, and the
+                               .rise entrance stagger selects .masthead from the document wherever it sits.
+                               DO NOT generalise this to another realm without measuring: on a realm with no 1080px
+                               wrapper, moving the masthead inside the view changes nothing and costs the export seam. -->
+                          <${Masthead} eyebrow=${html`<span class="job">Dioreo admin</span>`}
+                                       title="What needs you" stats=${stats} />
                           <${AttentionList} rows=${rows} />
                           <${Resume} ops=${data.review?.ops || []} />
                           <${HomeClock} season=${data.season?.live} today=${today} />
