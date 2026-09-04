@@ -725,6 +725,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · S · Sonnet5-High]` `portal:refs` REPORTS a stale cache stamp and exits 0 — the one gate on the trap it describes cannot fail
+
+**Filed 2026-09-04 16:26 EDT, and it cost three attempts at a guard to find.** `.claude/rules/portal-editing.md`'s ordering trap 1 says a reflow after `portal:bust` invalidates the `?v=` stamp, *"so the sequence bust → reflow leaves `portal:refs` red"*. **It does not.** Reproduced twice: run `portal:bust`, edit `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/app.css`'s CONTENT, run `npm run portal:refs` — it prints `❌ assets/app.css was modified after its ?v=… stamp` and **exits 0**.
+
+**Why it matters more than a wrong exit code:** a stale stamp means a warm cache serves the previous asset, so a session rebuilds, re-measures, and reads figures taken against the OLD stylesheet. The rule file records two rounds already lost to reading that state's side-effects as real defects.
+
+**How it was found:** writing `scripts/portalPreflight.mjs`, whose filed verify condition was *"running it out of order fails"*. Three guards were attempted and **none could be falsified** — (1) an internal mtime comparison, which cannot fire because the script always runs its own steps in order; (2) delegating to `portal:refs`, which is this defect; (3) implementing the mtime-versus-stamp comparison inside preflight, which cannot fire because preflight RE-RUNS the bust and so repairs the staleness before its own check could see it. **The staleness is created by running the steps BY HAND, which is the path `portal:refs` is on and preflight is not.** `portalPreflight.mjs` now carries all three failures in its header and claims no guard.
+
+**Do:** make `.undeclared.mjs` exit non-zero on a stale stamp — it already detects and prints it. ⚠️ **Check what else that script reports at exit 0 in the same pass**; its output also carries *"⚠ 1 page(s) with a syntax error"* and *"⚠ 1 identifier(s) called but never declared"*, and whether those are also non-failing is unknown.
+
+**Verify:** bust, edit an asset's content, `npm run portal:refs` → **exit 1**; and a clean tree → exit 0. Then re-check whether `npm test` was ever actually red for this reason, because a session earlier today attributed a red suite to it and that attribution is now unproven.
+
 ### `[P1 · XS · Sonnet5-Medium]` `npm test` has NOT been run against `0a774ed3` — the `--open` collapse guard is suite-unverified
 
 **Filed 2026-09-04 16:02 EDT.** Harkirat asked for no test suites while the handoff was being prepared, so the last full run was at **`9f5220cc`** (exit 0, foreground). Since then `scripts/portalAudit.mjs` gained the collapse guard and seven geometry fixtures were re-recorded by `portal:preflight`.

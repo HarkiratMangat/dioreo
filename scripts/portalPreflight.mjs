@@ -29,6 +29,7 @@ export const STEPS = [
 ];
 
 // ⚠️ THE ORDER CHECK IS THE POINT, NOT THE STEPS. Running the five in sequence is easy; what has actually failed is a SIXTH thing happening between two of them. So after the bust, any later change to a mockup asset is a hard failure rather than a silent stale stamp.
+const PKG = 'docs/superpowers/mockups/2026-08-23-portal-interactive';
 const ASSETS = 'docs/superpowers/mockups/2026-08-23-portal-interactive/assets';
 const mtimes = () => {
     const out = execFileSync('git', ['ls-files', ASSETS], { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
@@ -36,6 +37,11 @@ const mtimes = () => {
     return out.map((f) => `${f}:${fs.statSync(path.join(ROOT, f)).mtimeMs}`).join('|');
 };
 
+// 🔴 THIS SCRIPT CARRIES NO STAMP GUARD, AND THREE ATTEMPTS AT ONE IS WHY — 2026-09-04 16:25 EDT. The filed entry's verify condition was "running it out of order fails", and running it is what killed each attempt:
+//  1. Compare asset mtimes between this script's own bust and geometry steps. Exits 0 on a touched asset, and must: this script always runs its steps IN ORDER, so an internal comparison catches only a change made by something else mid-run.
+//  2. Delegate to `portal:refs`. 🔴 **It REPORTS a stale stamp and exits 0** — reproduced twice by busting, editing `assets/app.css`'s content, and running it. A step that cannot go red.
+//  3. Implement the mtime-versus-`?v=` comparison here. Cannot fire either, and the reason is structural: **this tool RE-RUNS the bust**, so any staleness present when it starts is fixed by step 3 before the check on step 5 could see it.
+// **The staleness this trap describes is created by running the steps BY HAND in the wrong order — which is precisely the thing this script exists to stop anyone doing.** So the guard belongs in the suite, on the path a hand-run reaches; `portal:refs` is that path and it reports instead of failing. Filed as its own defect. What this script is, honestly: five commands in the one order that does not undo itself, and nothing more.
 function run(step) {
     if (DRY) { console.log(`  · ${step.name}`); return; }
     process.stdout.write(`  · ${step.name} … `);
