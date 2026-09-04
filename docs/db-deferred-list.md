@@ -725,6 +725,31 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · S · Sonnet5-High]` The Silent output style is drafted but not installed, and its companion rule file is not written
+
+**Filed 2026-09-04 10:00 EDT.** Draft lives at `local/output-style-silent-DRAFT.md` (**gitignored** — this entry is the only tracked record of it). Review artifact: <https://claude.ai/code/artifact/613d54ad-c309-42af-8d6b-c8389c658c92>. Graded samples in `local/output-style-samples/` (7 rejected, 5 kept).
+
+**Do:**
+1. Install the draft at `~/.claude/output-styles/silent.md` (user level — it is how Harkirat works, not a Diors convention) and select it. ⚠️ Keep the file and the `outputStyle` setting at the same level; a user-level file with a repo-committed setting resolves to `null` and applies **nothing**, with no error.
+2. Rewrite `.claude/rules/silent-mode.md` down to what must NOT be switchable — approval before push/PR/merge, irreversible actions, forks in popups — plus the evidence the style file deliberately does not carry: the 171-transcript corpus counts, the dated quotes, the 12 graded samples, and the measured finding that compliance decays at **transitions** (finishing a unit, hitting a fork, starting a phase).
+3. Delete from the rule file anything the style now states, so the two cannot drift.
+
+**Verify:** `MEMORY.md` and `.claude/rules/silent-mode.md` contain no restatement of a rule that lives in the style file; the style is listed by `/config`; and `~/.claude/output-styles/silent.md` exists on the same tier as whatever sets `outputStyle`.
+
+**Why it is not done:** Harkirat is still reviewing and tweaking the draft. Nothing is installed and nothing was trimmed.
+
+### `[P3 · S · Sonnet5-Medium]` A separate "Pings" output style for supervised long runs — Harkirat's idea, not mine
+
+**Filed 2026-09-04 10:00 EDT.** Raised by Harkirat 2026-09-04: *"honestly the pings style seems like it's own output style, rather than trying to manipulate 'silent mode' to work for all scenarios."*
+
+Silent mode resolves the conflict between *zero narration* and his 2026-08-19 request — *"keep me updated with 1 line updates on major status changes"* — by allowing an unprompted line only when blocked or when the approved approach turned out wrong. That is a compromise. A second style would let him pick per-session instead: silent when he is away, pings when he is supervising.
+
+**Do:** only if the compromise proves wrong in practice. Author `~/.claude/output-styles/pings.md` sharing Silent's four checks and shape rules, differing only in the interstitial-line policy (one line per completed unit, no elaboration).
+
+**Verify:** the two files share their check and shape sections verbatim, so a fix to one is a fix to both — or the shared part moves to `.claude/rules/` and both reference it.
+
+**Do not build it pre-emptively.** It is a real idea, not an agreed one.
+
 - **Three plans are `status: live` simultaneously, and one has ~50 open boxes nobody has touched in three days** `[P2 · S · 🧩needs-design]` — surfaced 2026-09-03 09:18 EDT by `npm run handoff`, whose blocking remedy told `.remember` to name `2026-08-31-post-compact-remediation.md` as the live plan while every session for three days has worked `2026-08-27-portal-conformance.md`. `CLAUDE.md`'s nav names the remediation plan's ten tasks "in the order 1 → 4 → 5 → …"; Task 1 is marked DONE and the rest appear unstarted. **Either it is stale and should be `superseded`, or the conformance work has been running ahead of an agreed order.** ⚠️ **Harkirat's call — do not pick one silently.** **Do:** decide which governs and mark the other. **Verify by:** exactly one plan reading `status: live`, or each live one naming its own scope.
 - **Nothing detects a `status: live` plan that has become a record of finished work** `[P3 · S · Sonnet5-High]` — filed 2026-09-03 09:18 EDT. `docs-audit` enforces that a `superseded` file names a `superseded_by:` target; it cannot see that a LIVE file has gone retrospective. `REVIEW-PROMPT.md` is the third to do this, and it sat `live` with an executable command block whose commands now exit 2 — a superseded document's code block is still a code block. **Do:** consider a check — a plan whose §L row is closed, or whose quoted commands fail, is a candidate. ⚠️ Speculative; the cost of a false positive on a legitimately-live plan may exceed the benefit. **Verify by:** the check firing on `REVIEW-PROMPT.md` as it stood this morning and staying silent on the conformance plan.
 
