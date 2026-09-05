@@ -196,7 +196,7 @@ function Rack({ builds, onPick }) {
                         </div>`;
                 })}
             </div>
-            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and <code>parseLoadoutBadges()</code> in <code>adminParser.js</code> validates it. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
+            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The words are the bot's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and anything else is refused when you save. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
         </div>
     `;
 }
@@ -434,8 +434,10 @@ function BulkBadgesPanel({ ids, onApply, onCancel }) {
     const [badges, setBadges] = useState('');
     return html`
         <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px dashed var(--rule)">
-            <label class="sr" for="bulk-badges">Badges to apply to ${ids.length} selected build(s)</label>
-            <input id="bulk-badges" placeholder=${`Badges for ${ids.length} build(s) (e.g. meta, top3)`} value=${badges} onInput=${(e) => setBadges(e.target.value)} style="flex:1" />
+            <!-- ⚠️ (s) IS USED NOWHERE ELSE IN THIS PRODUCT and reads as a form field rather than a sentence —
+                 copy audit §D2, applied 2026-09-04 20:53 EDT. The count is known at render time, so the word can simply agree. -->
+            <label class="sr" for="bulk-badges">Badges to apply to ${ids.length} selected ${ids.length === 1 ? 'build' : 'builds'}</label>
+            <input id="bulk-badges" placeholder=${`Badges for ${ids.length} ${ids.length === 1 ? 'build' : 'builds'} (e.g. meta, top3)`} value=${badges} onInput=${(e) => setBadges(e.target.value)} style="flex:1" />
             <button class="accent-fill" onClick=${() => onApply(badges)}>Apply</button>
             <button onClick=${onCancel}>Cancel</button>
         </div>
@@ -938,9 +940,12 @@ function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
                 </section>
             </div>
             <div class="bvnote">
-                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot has none
-                either — <code>commands/manage.js</code>'s <code>PURGE_LABELS</code> omits both — and adding one to the
-                portal would put a capability within reach that the system has already decided against.
+                <!-- ⚠️ THE SOURCE PATH IS GONE AND THE FACT IS NOT — 2026-09-04 20:53 EDT, copy audit §B. The reason this
+                     note is worth reading is that the ABSENCE is deliberate; which file records the decision is
+                     not something the reader can act on. -->
+                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot does not
+                offer one either, and adding one to the portal would put a capability within reach that the system
+                has already decided against.
             </div>
         </div>
     `;

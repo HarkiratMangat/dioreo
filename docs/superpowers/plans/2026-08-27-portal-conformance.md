@@ -163,6 +163,14 @@ home        0.7% /  27
 
 ⚠️ **A percentage is not a target — §0.7d.** These are here so a stale row cannot be read as current, not as a score.
 
+🔴 **⑤ AND ⑥ ARE RUN ON EVERY REALM, 2026-09-04 20:57 EDT — and ⑥ has an observable now, which it never had.**
+
+- **⑤ real-server walk:** six realms through `portal:realwalk` (17 views, every one past the door and non-empty), Review through `portal:reviewwalk` **37/37**. ⚠️ **Two instruments, and "all seven realms walk clean" is a conflation that reached four carriers once.** Both were re-run under two rules that did not exist before: a zero-row view now FAILS, and `portalDiff` uses the same door assertion as the walks. Between them they found three dead entries in the realm-row selector — Home's, Review's `.rec-row` (no emitter anywhere) and Access's `By permission`, which had walked at 0 rows and passed.
+- **⑥ UX-COPY:** `npm run portal:uxcopy`, in `npm test`. The mechanical half of the copy audit is a gate — no source path, model name, `foo()` or `(s)` plural in text a person reads — and it found **seven** on its first run. The judgement half is a table in `docs/reference/portal-decision-ledger.md`, one row per audit section, saying whether the defect reaches the portal at all. **Four of the seven audit sections turned out to be the mockup's alone.**
+- **The cross-surface gate the plan specified but did not build:** `npm run portal:agreement`. Every other instrument compares a page against its mockup or against source; none compares a page against ANOTHER PAGE, so a number that lies identically on both sides passes all of them. It reads 29 figures across seven realms in three shapes and fails when one label carries two values. ⚠️ **Its first working run found `live now` at season=20 against home=2** — both correct, both matching the design, one label over two questions. Filed as a post-conformance copy fix rather than corrected mid-pass, per §0.1a. ⚠️ Its first version read only `.stat` and reported **season: 0 figures** while printing a green tick; the per-realm count is printed beside the timing now, where a zero is visible.
+
+⚠️ **Home's ⑤ remainder is closed with it:** the page loads in **2,690ms** on the harness and its figures are cross-checked against every other realm's, which is the half that had been run and the half that had not.
+
 | # | Unit | Status | Closed by | Note |
 |---|---|---|---|---|
 | **0** | Reverse-orphan sweep, scripted and in `npm test` | ☑ closed | `scripts/portalReverseOrphans.mjs` + `.test.mjs` | must report `data-bare`, `hcard`, `srec-open` and `--ci` on its first run or it is not trusted. ⚠️ **NOT `t-best`** — it IS emitted (`armory.js:165`), and a concatenation-aware scanner will correctly stay quiet about it |

@@ -200,7 +200,10 @@ export function ReviewRealm({ session }) {
 
     const viewSlot = ops.length === 0
         ? html`
-            <section class="panel"><div class="ph"><span class="t">Changeset</span></div>
+            <!-- ⚠️ "Staged changes", not "Changeset" — copy audit's vocabulary table, applied 2026-09-04 20:53 EDT.
+                 Changeset is this product's MODEL name and a git word besides; the thing on screen is the set of
+                 changes you have staged, which is what every other surface in the portal already calls it. -->
+            <section class="panel"><div class="ph"><span class="t">Staged changes</span></div>
                 <div class="rvnone">
                     <h4>Nothing is staged</h4>
                     <p>Everything in the portal matches what the bot is serving right now. Changes arrive here when you
@@ -215,7 +218,7 @@ export function ReviewRealm({ session }) {
         : html`
             <section class="panel">
                 <div class="ph">
-                    <span class="t">Changeset</span>
+                    <span class="t">Staged changes</span>
                     <span class="sp">${ops.length} change${ops.length > 1 ? 's' : ''} · ${changesets.length === 1
                         ? 'commits as one transaction' : `${changesets.length} transactions, committed in order`}</span>
                 </div>

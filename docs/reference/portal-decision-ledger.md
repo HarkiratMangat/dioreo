@@ -309,6 +309,22 @@ The instruments state their own blind spots on every run and a ledger section sh
 | review · `Discard all` | — | **NOT YET OPENED** | — |
 | home | — | **None exist.** Home commits nothing and has no composer — `--triggers` lists only the rail and the view chrome | Home gains a composer |
 
+## ⑥ UX-COPY — the phase that had no observable, worked 2026-09-04 20:53 EDT
+
+> 🔴 **The plan's own audit log calls this "the most-missed body of work" in the project.** `local/handoff/2026-08-25-portal-ux-copy-audit.md` (gitignored — state the path) existed for ten days and had never been folded into any Part, and the reason is structural: its findings are prose, so *"apply them"* is unfalsifiable and a session can believe it complied. **The mechanical half is a gate now** — `npm run portal:uxcopy`, in `npm test`. The judgement half is these rows.
+
+| Audit row | In the portal? | What was done |
+|---|---|---|
+| **A1** staged work survives sign-out, or is destroyed by it — five contradicting strings | **No** | The portal already says it survives, in all three places: the door, the expired banner, and the sign-out confirm (`shell.js:409`'s comment records the reasoning). The contradiction is the mockup's |
+| **B** source paths, model names and `foo()` printed to the reader | **Yes, 7 of them** | Fixed, and the class is now a gate. Analytics named four collections to answer a question about WHAT is counted; Armory printed a bot source path and a parser function; Review titled two panels with the model name |
+| **C1** "1 GATES OPEN" | **No** | `review.js:159` already reads `blocker` / `blockers` and paints it warn. The design's string is the defect |
+| **D2** the `(s)` plural | **Yes, once** | Armory's bulk-badges label and placeholder. The count is known at render time, so the word agrees now. Gated |
+| **Vocabulary — "changeset"** | **Yes** | Review's two panel headings read **Staged changes**, which is what every other surface already calls it. `Changeset` is this product's model name and a git word besides |
+| **E1** the fallback banner *"Something is wrong."* with an empty explanation | **No** | `async.logic.js` gives every banner kind a real `what` and `means`. The mockup's default is the defect |
+| **B/§F/§G** — judgement rows: copy that justifies its own existence, design principles aimed at the wrong reader, dated history in the UI | **Mostly the mockup's** | Not ported wholesale. ⚠️ **Not exhaustively re-checked against the portal** — the gate covers the four mechanical classes and nothing more, which it says in its own output |
+
+⚠️ **What the gate cannot see, so that nobody reads its green as coverage:** copy composed at runtime from variables, copy in `portal/api`, and every judgement class above. Those are hand-worked and this table is the record.
+
 ## Instruments — what they can and cannot do
 
 > 🔴 **TWO ALIGNMENT FAULTS FOUND IN PART 6b, 2026-09-03 21:38 EDT — both made the instruments compare different DATA and report it as different DESIGN.** · **The harness stood on the real date.** `fixtures.js` pins `F.today` to `2026-08-24` but stamps `documentElement.dataset.today` only when the URL carries `?today=`. Every portal component reads that value and otherwise falls back to the wall clock — so under `portalDiff`, which freezes `Date`, the two sides agreed, and under `portalAudit`, which does not, the portal was rendering **ten days ahead of the design**. Home's "Running right now" listed five entirely different items per side. The harness page now stamps the fixture day itself, deferring to an explicit `?today=`. · **The staged seed reached one page.** `loadSample()` lived inside `review.html`, so `?demo=1` worked on Review and nowhere else — while the portal harness synthesises four changesets on every page. It is `seedDemoOps` in the mockup's shared `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` now, and **the seeding refusal covers Home as well as Review** in all five instruments. Seeded, Home's two pages are the same height; unseeded they were 78px apart. ⚠️ Placing the CALL beside the Store was a TDZ error that blanked every page in the package — `node --check` passes it, because TDZ is a runtime fault.

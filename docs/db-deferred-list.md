@@ -396,6 +396,11 @@ Home fetches `/api/season`, `/api/armory`, `/api/broadcast`, `/api/review`, `/ap
 
 A realm the admin cannot see answers `forbidden`, and that realm's attention row simply does not appear — so a delegated admin sees a smaller `needs you` count with nothing saying why. Armory's masthead already rules that a figure which cannot be known must not read as zero; this list makes the opposite choice, by omission rather than by decision. **Do.** Decide whether the list says "2 realms you cannot see" or stays silent. **Verify by:** loading the harness with `?realms=season,armory` and reading what the lead figure claims.
 
+### `[P2 · XS · Sonnet5-Medium]` "live now" is one label over two questions
+*Filed 2026-09-04 20:56 EDT, found by `npm run portal:agreement` on its first working run.*
+
+Season's masthead eyebrow reads **20 live now** and Home's reads **2 live now**, on the same fixture. Both are right: Season counts live SEASON ITEMS, Home counts live ANNOUNCEMENTS, and Home matches the design exactly (`index.html:207` counts `liveAnns()`). **It is the copy audit's vocabulary class — one word, two meanings — and it is the design's own wording on both sides**, so the conformance rule says reproduce it and file it rather than correct it mid-pass. **Do.** Give each figure a label that names what it counts, after all six realms match. **Verify by:** `portal:agreement` no longer needs a `SCOPED` entry for `live now`.
+
 ### `[P2 · XS · Sonnet5-Medium]` Home's TAB ORDER after the block reorder
 *Filed 2026-09-03 22:33 EDT, Part 6b. **Split out of a bundled entry 2026-09-04 20:02 EDT.***
 

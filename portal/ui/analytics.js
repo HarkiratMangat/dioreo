@@ -299,9 +299,13 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                 </section>
                 <section class="hpanel">
                     <h4>Where these come from</h4>
-                    <p class="hp">Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
-                        the memory figure come from the <code>AlertLog</code> collection; command counts come from${' '}
-                        <code>AnalyticsEvent</code> records, and the river below adds <code>ChangeLog</code> to those three.</p>
+                    <!-- ⚠️ NAMED IN THE READER'S WORDS, NOT THE DATABASE'S — 2026-09-04 20:53 EDT, copy audit §B. This
+                         paragraph printed four collection names to somebody who wants to know whether the numbers
+                         above are trustworthy, which is a question about WHAT is counted, not about where it is
+                         stored. The collections are still the answer; they are just not the reader's vocabulary. -->
+                    <p class="hp">Uptime and restarts come from what the bot writes each time it starts; errors and
+                        the memory figure from its alert log; command counts from what players actually ran, and the${' '}
+                        river below adds every admin change to those three.</p>
                     <${DailyBars} series=${h.spark?.commands || []} label="Commands per day" />
                 </section>
             </div>
