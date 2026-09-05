@@ -1,7 +1,7 @@
 {
   "realm": "broadcast",
-  "recordedAt": "2026-09-05T02:07:29.643Z",
-  "commit": "c963f303",
+  "recordedAt": "2026-09-05T02:40:11.265Z",
+  "commit": "c4100bc1",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,7 +9,7 @@
   "views": {
     "Delivery queue": {
       "grid": {
-        "examined": 236,
+        "examined": 235,
         "nearMisses": 30,
         "sizeIssues": 10,
         "sizeGroups": [
@@ -44,7 +44,7 @@
     },
     "Airtime": {
       "grid": {
-        "examined": 232,
+        "examined": 231,
         "nearMisses": 35,
         "sizeIssues": 7,
         "sizeGroups": [

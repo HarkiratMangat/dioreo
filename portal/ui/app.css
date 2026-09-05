@@ -515,6 +515,12 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
      and the bottom tab bar shows which one is current. Dropping it is what lets the header
      fit rather than forcing an ellipsis onto something already said twice. */
   header .crumb{display:none}
+  /* 🔴 AND THE COMMIT CHIP, for the same reason and a worse symptom — measured 2026-09-04 22:39 EDT at 375px on all
+     seven realms: `clientWidth 0`, `scrollWidth 96`, a bounding rect of 2 × 70.25 hanging at top −11.6. Not
+     cramped: destroyed, and above the header it belongs to. The header is a flex row with no shrink floor, so
+     the chip is the first thing crushed. Hidden rather than floored because the rail badge already carries the
+     staged count at this width and Review is one tap away — a 2px control is worse than an absent one. */
+  header .hdr-commit{display:none}
   header .mk{font-size:11px}
 }
 @media (max-width:768px){
@@ -1707,7 +1713,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    one mattered. The masthead is quiet and generous; the context strip is a STRIP, never a
    panel; the view layer gets the strongest treatment; the Manifest is recessive because it
    is the mechanism beneath the picture. */
-.masthead{padding:34px 23px 22px;max-width:none}
+/* 23px → 22px, 2026-09-04 22:39 EDT: `.panel{margin:0 22px}` is the only thing establishing the content column, and
+   the masthead sat one pixel off it — so the realm title, the largest type on the page, was the one element
+   NOT on the column it appears to define. Measured across six realms: title left edge 99–100, panel edge 98. */
+.masthead{padding:34px 22px 22px;max-width:none}
 .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
 /* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
@@ -1728,8 +1737,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .mh-stats .stat{display:flex;flex-direction:column-reverse;gap:2px;align-items:flex-start}
+/* ONE letter-spacing, not two. This rule declared `--tr-fig` (+.004em, tokens.css's own "condensed wants air —
+   the one positive step in the scale") and then `--tr-figure` (−.02em) on the next line, so source order won and
+   the token created for the figure voice never reached a figure. The same face at the same size gets +.004em in
+   `.tile .tl-v`, so the product tracked its own figures two ways, 2.4% apart, on one page. Fixed 2026-09-04 22:39 EDT. */
 .mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-fig);line-height:1;
-  letter-spacing:var(--tr-figure);font-variant-numeric:tabular-nums;color:var(--ink)}
+  font-variant-numeric:tabular-nums;color:var(--ink)}
 .mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
 /* 🔴 A ZERO IS GOOD NEWS AND MUST NOT BE PAINTED AS AN ALERT. "STAGED 0" rendered in the
