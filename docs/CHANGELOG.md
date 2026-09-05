@@ -28,7 +28,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.76.0 — 2026-09-03 → 2026-09-05 — Home rendered a clock that was deleted a week ago, and two instruments had been comparing different data
+## Pre-Release v3.76.0 — 2026-09-03 → 2026-09-05 (#183) — Home rendered a clock that was deleted a week ago, and two instruments had been comparing different data
 
 **Part 6b of the portal conformance plan. Home had never been measured — `portal:status` read `· never` in all six of its columns until 2026-09-03.**
 
