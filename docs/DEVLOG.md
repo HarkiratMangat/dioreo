@@ -233,6 +233,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-03 16:18 EDT — Review's commit path proven, and three of the ten fixes were the measurement rather than the portal (v3.75.0-pre)
 - 2026-09-04 21:35 EDT — The portal conformance pass, session 3: six gates that could not fail, and two surfaces that were never there (v3.76.0-pre)
 - 2026-09-05 00:02 EDT — the portal conformance pass closes on every condition that is mine to run (v3.76.0-pre)
+- 2026-09-05 15:00 EDT — the dev portal became reachable, and the check that said its sign-in would work could not fail (v3.77.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4133,6 +4134,26 @@ Chasing that took three wrong readings of one line, in two opposite directions, 
 That is the session's real finding, and it is structural rather than personal. Every uncited change tonight came from a commit whose subject described a repair. Every cited one came from a commit whose subject described a decision. The subtraction pass called itself six deletions and wrote six ledger rows; the shared-chrome commit called itself four defects, said in its own subject line that each edit reached seven realms, and wrote none. The larger blast radius recorded nothing, because a repair does not feel like it needs a decision row — and three of those four altered what every realm draws.
 
 So the rule is now mechanical and lives in the plan rather than in anyone's memory: does this change what the portal draws relative to the package? If yes it needs a row, and how it felt is not evidence either way. A commit message is not a carrier. Twice tonight a decision had to be reconstructed from `git log`, and both times only because something already looked wrong.
+
+## 2026-09-05 15:00 EDT — the dev portal became reachable, and the check that said its sign-in would work could not fail (v3.77.0-pre)
+
+Harkirat asked a question that sounded like a status check and was not: *"can I go to dev-portal.dioreo.app, log in, and genuinely update the dev bot's data same as /manage?"*
+
+The parts of it that were about the portal answered themselves. `portal/api/changesets.js` calls `commitSet`, which is the real `session.withTransaction()`; `portal:reviewwalk` drives that over HTTP against the running dev server with nothing stubbed; `portalOpsReach` proves every one of the 42 registered operations is reachable from the portal or excused by a claim that is itself checked; and his Discord id is the hardcoded owner, so the door opens. The honest difference from `/manage` is ceremony, not capability — the portal stages and then commits on Review, and tier-3 wants an export first.
+
+The part that did not answer itself was the first clause. `dev-portal.dioreo.app` had a tunnel, a DNS record proxied through Cloudflare, a hostname and a port in `.env.dev`, and a config file byte-identical to its tracked copy. It also had nothing running. Both processes were things a person started by hand, so the whole apparatus was one forgotten command away from a 502 at all times, and the answer to his question was "no" for a reason that had nothing to do with any of the work that made it possible.
+
+Two launchd agents fixed that in about ten minutes, split the way the VM splits its systemd units and for the reason the VM states: a portal crash must not take down the tunnel, and the tunnel dying must take down only reachability. The interesting part came afterwards, in the pass before the merge.
+
+I had told him the OAuth redirect looked fine — Discord returned a 302 rather than an error, so the URI was presumably registered. That sentence was already in a commit message. Asking what a NEGATIVE result would have looked like took one command: an obviously unregistered `redirect_uri` returns the **identical** 302, because Discord redirects to its login before it validates anything. The check could not have failed. Its silence was not evidence, and I had reported it as reassurance.
+
+Then the reason it mattered turned up in the tracker. The deferred entry records Harkirat registering `dev.portal.dioreo.app/auth/callback` — with a dot — on 2026-08-28. The hostname changed to `dev-portal` days later, because Cloudflare's Universal SSL covers one label below the apex and not two, and the three-level name died in a TLS handshake before reaching anything. Nobody came back to update the entry. So a check that could not fail was sitting on top of a record known to be wrong, and the pair read as confirmation. A green from an untestable check plus a tick from an unmaintained record is not two pieces of evidence; it is zero.
+
+That is the fourth time in one session that the same shape has surfaced. A reverse-orphan baseline listing names nothing renders any more. A cache-bust stamp correct on a branch and wrong the instant a squash re-dated the files under it. An item recorded as "never identified" whose answer had been a comment in the file it was about since August. And now a hostname that changed while its registration record did not. Every one of them is a fix that landed while the thing a later reader queries stayed still, and none of them is detectable by the gates, because a gate reads the tree and every one of these is a disagreement between the tree and a sentence about it.
+
+The pass also found three ordinary gaps worth naming for how dull they are. The documented install never created the log directory, and launchd does not create one — an agent whose log path is missing starts, looks loaded, and writes nothing, which is the worst failure mode available because the error has nowhere to go. `.env.dev` is read once at start, so `KeepAlive` restarting on a crash carries a rotated secret forward indefinitely. And the README documenting how to install the files beside it sat in a directory the doc taxonomy had no rule for, which `doc-frontmatter` caught in the way that gate is supposed to: not "this is wrong" but "nobody decided what this is."
+
+None of that changes what he can do this evening. He can open the URL, and if the sign-in errors, one line in the Discord developer portal fixes it. The point is that I nearly told him it would work on the strength of nothing at all.
 
 # Part B — Lessons Ledger (thematic)
 
