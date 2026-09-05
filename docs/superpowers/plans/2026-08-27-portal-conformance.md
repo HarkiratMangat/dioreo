@@ -152,9 +152,9 @@ scope: the portal's REALM-BY-REALM conformance work — the seven realms, their 
 🔴 **THE CURRENT MEASURED FLOORS — `npm run portal:sweep`, 2026-09-04 20:18 EDT. ANY PER-ROW FIGURE BELOW DATED EARLIER IS SUPERSEDED BY THIS BLOCK.** §L's own rule is that a wrong figure is worse than no row, and the rows carry figures from five different dates. Rather than rewrite each and create six new things to keep in sync, the figures live in ONE dated place with the command that reproduces them.
 
 ```
-season     12.3% / 135    armory    8.0% / 906    broadcast 0.8% / 17
-access      7.1% /  56    analytics 14.2% /  40   review    0.6% / 12
-home        0.7% /  27
+season     12.3% / 135    armory    8.0% / 906    broadcast 1.2% / 17
+access      7.3% /  56    analytics 14.2% /  40   review    0.6% / 13
+home        1.2% /  28
 ```
 
 🔴 **SEVERAL WENT UP AND THAT IS THE SEEDING, NOT A REGRESSION — 2026-09-04 20:47 EDT.** Every realm is a SEED realm now (`scripts/lib/portalSeedRealms.mjs`), because the rail badge and the header commit chip are drawn by the SHELL on every realm and simply never rendered on five of them. The moment all seven passed `badges`, five realms grew a staged surface — and a staged surface on an unseeded mockup is the empty-versus-populated comparison that list exists to stop. So the mockup gained the chip on five pages (+43px each) and the two sides are now compared with the same data. ⚠️ **The cost is Harkirat's own ruling made visible: he kept the portal's segmented chip, and the two chips differ in HEIGHT (63px against 57px), so that cited difference now costs a region on every realm instead of two.** Broadcast 0.3% → 0.8% is entirely that.

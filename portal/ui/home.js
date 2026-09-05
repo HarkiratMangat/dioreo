@@ -301,7 +301,7 @@ export function HomeRealm({ session }) {
     ];
 
     return html`
-        <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged || 0 }}
+        <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged || 0 }} stagedOps=${unknown(data.review) ? null : (data.review?.ops || [])}
                   commands=${rows.map((a) => ({
                       label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm.toLowerCase()})`,
                       keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },

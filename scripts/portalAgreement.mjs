@@ -1,23 +1,13 @@
 #!/usr/bin/env node
 // scripts/portalAgreement.mjs — do two surfaces reporting the same collection agree?
 //
-// 🔴 THE CLASS NO EXISTING INSTRUMENT CAN SEE, named in the conformance plan 2026-09-03 22:33 EDT. `portal:realwalk`
-// walks one realm's views; `portal:reviewwalk` drives the commit path; `portal:coverage` and `portal:orphans` scan
-// SOURCE and never execute it; the diff and the audit compare a page against its mockup, never a page against
-// another page. **A number that lies identically on both sides passes every one of them.** Five realms were
-// conformed as SURFACES and nothing had ever checked that two surfaces reporting the same collection agree.
+// 🔴 THE CLASS NO EXISTING INSTRUMENT CAN SEE, named in the conformance plan 2026-09-03 22:33 EDT. `portal:realwalk` walks one realm's views; `portal:reviewwalk` drives the commit path; `portal:coverage` and `portal:orphans` scan SOURCE and never execute it; the diff and the audit compare a page against its mockup, never a page against another page. **A number that lies identically on both sides passes every one of them.** Five realms were conformed as SURFACES and nothing had ever checked that two surfaces reporting the same collection agree.
 //
-// It was checked once, by accident, when `--triggers` printed both sides' rows in full: **Home said 66 builds need
-// repair, Armory's own masthead said 60, and the design says 13.** One question, three answers.
+// It was checked once, by accident, when `--triggers` printed both sides' rows in full: **Home said 66 builds need repair, Armory's own masthead said 60, and the design says 13.** One question, three answers.
 //
-// ⚠️ WHAT IT ASSERTS, and it is deliberately narrow: two rendered figures carrying the SAME LABEL on two different
-// realms must carry the same VALUE. It does not know what a label means, cannot tell a legitimately-scoped figure
-// from a global one, and says so — a realm whose figure is scoped on purpose belongs in SCOPED below, by name, with
-// the reason. That list is the honest cost of the check and is meant to stay short.
+// ⚠️ WHAT IT ASSERTS, and it is deliberately narrow: two rendered figures carrying the SAME LABEL on two different realms must carry the same VALUE. It does not know what a label means, cannot tell a legitimately-scoped figure from a global one, and says so — a realm whose figure is scoped on purpose belongs in SCOPED below, by name, with the reason. That list is the honest cost of the check and is meant to stay short.
 //
-// ⚠️ IT READS THE HARNESS, not the real server: fixtures make it deterministic, and a disagreement between two
-// surfaces over the SAME fixture is a derivation defect rather than a data one. A real-server run would also be
-// worth having and is not this.
+// ⚠️ IT READS THE HARNESS, not the real server: fixtures make it deterministic, and a disagreement between two surfaces over the SAME fixture is a derivation defect rather than a data one. A real-server run would also be worth having and is not this.
 import fs from 'fs';
 import http from 'http';
 import path from 'path';
@@ -30,19 +20,11 @@ const PUBLIC = path.join(ROOT, 'portal', 'public');
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
 const VIEWPORT = { w: 1282, h: 888 };
 
-// A figure that is scoped on purpose, and why. Each entry is a claim somebody has to defend; an empty list would
-// make this gate loud and useless, and a long one would make it vacuous.
+// A figure that is scoped on purpose, and why. Each entry is a claim somebody has to defend; an empty list would make this gate loud and useless, and a long one would make it vacuous.
 const SCOPED = {
-    // Broadcast's masthead counts what THIS realm has staged (`broadcast.js`'s `stagedHere`), while Home and Season
-    // count everything waiting. Both are correct and they are not the same question.
+    // Broadcast's masthead counts what THIS realm has staged (`broadcast.js`'s `stagedHere`), while Home and Season count everything waiting. Both are correct and they are not the same question.
     staged: 'Broadcast and Armory scope "staged" to their own realm; Home, Season and the rail count every changeset.',
-    // 🔴 FOUND BY THIS GATE ON ITS FIRST WORKING RUN, 2026-09-04 20:56 EDT: season=20, home=2. Both are correct and both
-    // match the design. Season's eyebrow counts LIVE SEASON ITEMS; Home counts LIVE ANNOUNCEMENTS, which is what
-    // `index.html:207`'s own `liveAnns().length` counts. **It is one label over two questions — the copy audit's
-    // vocabulary class — and it is the DESIGN's wording on both sides**, so §0.1a says reproduce it and file it
-    // rather than correct it mid-pass. Filed in `docs/db-deferred-list.md`. ⚠️ This entry is the honest cost of
-    // that: the gate is quiet about a genuine ambiguity because the ambiguity is approved, and the entry is where
-    // a reader learns it was seen rather than missed.
+    // 🔴 FOUND BY THIS GATE ON ITS FIRST WORKING RUN, 2026-09-04 20:56 EDT: season=20, home=2. Both are correct and both match the design. Season's eyebrow counts LIVE SEASON ITEMS; Home counts LIVE ANNOUNCEMENTS, which is what `index.html:207`'s own `liveAnns().length` counts. **It is one label over two questions — the copy audit's vocabulary class — and it is the DESIGN's wording on both sides**, so §0.1a says reproduce it and file it rather than correct it mid-pass. Filed in `docs/db-deferred-list.md`. ⚠️ This entry is the honest cost of that: the gate is quiet about a genuine ambiguity because the ambiguity is approved, and the entry is where a reader learns it was seen rather than missed.
     'live now': 'Season counts live SEASON ITEMS; Home counts live ANNOUNCEMENTS (index.html:207). One label, two questions — the design\'s own, filed as a post-conformance copy fix.',
 };
 
@@ -71,10 +53,7 @@ function serve() {
     return new Promise((r) => server.listen(0, '127.0.0.1', () => r({ server, port: server.address().port })));
 }
 
-// 🔴 THREE SHAPES, NOT ONE, AND THE FIRST VERSION READ ONLY THE FIRST — which reported **season: 0 figures** and
-// still printed a green tick. A gate that finds nothing on a page it never read is the vacuous pass this repo keeps
-// paying for, so the shapes are enumerated and the per-realm figure count is printed beside the timing, where a zero
-// is visible rather than folded into a total.
+// 🔴 THREE SHAPES, NOT ONE, AND THE FIRST VERSION READ ONLY THE FIRST — which reported **season: 0 figures** and still printed a green tick. A gate that finds nothing on a page it never read is the vacuous pass this repo keeps paying for, so the shapes are enumerated and the per-realm figure count is printed beside the timing, where a zero is visible rather than folded into a total.
 //   · `.stat`        — every realm's masthead cluster.
 //   · `.mh-eyebrow`  — SEASON ONLY, and the reason is a design decision already made: COMPANION §16.31 sends
 //                      LIVE NOW / STAGED / FLAGS up to an eyebrow and deletes the stat block, so Season's figures
@@ -104,16 +83,14 @@ const READ = function () {
         if (!sev || !text) continue;
         const m = /^([\d.,]+) of ([\d.,]+)$/.exec(norm(sev.textContent));
         if (!m) continue;
-        // The row's own sentence is the question, with its figures stripped so "60 builds need repair" and
-        // "13 builds need repair" are one label rather than two.
+        // The row's own sentence is the question, with its figures stripped so "60 builds need repair" and "13 builds need repair" are one label rather than two.
         out.push({ label: text.replace(/[\d.,]+/g, '').replace(/\s+/g, ' ').trim(), value: m[1], of: m[2], from: 'attention' });
     }
     return out;
 };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
-    // 🔴 THE FALSIFIER RUNS FIRST. A cross-surface gate that reports nothing is indistinguishable from a portal that
-    // agrees with itself, and this repo has three memories about exactly that. A seeded disagreement must fail.
+    // 🔴 THE FALSIFIER RUNS FIRST. A cross-surface gate that reports nothing is indistinguishable from a portal that agrees with itself, and this repo has three memories about exactly that. A seeded disagreement must fail.
     const planted = disagreements([
         { realm: 'home', label: 'need repair', value: 66 },
         { realm: 'armory', label: 'need repair', value: 60 },

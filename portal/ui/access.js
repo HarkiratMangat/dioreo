@@ -499,6 +499,7 @@ export function AccessRealm({ session }) {
         <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By permission']} onSetView=${setView}
                   meta=${viewMeta} realmKey=${accessKey}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
+                  stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."

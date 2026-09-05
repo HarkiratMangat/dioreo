@@ -14,8 +14,7 @@ import { fileURLToPath } from 'url';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UI = path.join(ROOT, 'portal', 'ui');
 
-// A tag's insides are markup, not prose: `class="mh-add"` and an interpolated handler are read by nobody. Stripping
-// them is what takes the false-positive rate from "every call site in the file" to zero.
+// A tag's insides are markup, not prose: `class="mh-add"` and an interpolated handler are read by nobody. Stripping them is what takes the false-positive rate from "every call site in the file" to zero.
 export function visibleText(quasis) {
     return quasis.join(' ').replace(/<[^>]*>/g, ' ');
 }
@@ -28,8 +27,7 @@ const RULES = [
     { id: 'paren-s', re: /\(s\)/g, say: 'the (s) plural' },
 ];
 
-// Deliberately empty, and it must stay that way — an allowlist here is how a gate becomes a diary. A string that
-// genuinely needs one of these words is a string that should name the thing in the reader's own words instead.
+// Deliberately empty, and it must stay that way — an allowlist here is how a gate becomes a diary. A string that genuinely needs one of these words is a string that should name the thing in the reader's own words instead.
 const ALLOW = new Set([]);
 
 export function findingsIn(source, file) {
@@ -59,8 +57,7 @@ export function findingsIn(source, file) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
-    // 🔴 THE FALSIFIER RUNS FIRST AND THE PROGRAM REFUSES WITHOUT IT. Every gate in this repo that could not fail
-    // stayed green through the whole period it was blind, so this one proves it can report before it reports nothing.
+    // 🔴 THE FALSIFIER RUNS FIRST AND THE PROGRAM REFUSES WITHOUT IT. Every gate in this repo that could not fail stayed green through the whole period it was blind, so this one proves it can report before it reports nothing.
     const PLANT = 'const html=(x)=>x; const a = html`<p class="x">Read models/AdminUser.js and call apply() for 3 item(s)</p>`;';
     const MARKUP = 'const html=(x)=>x; const a = html`<p class="core/ops" title="apply()">Three builds need repair</p>`;';
     const kinds = new Set(findingsIn(PLANT, '<self-test>').map((p) => p.rule));

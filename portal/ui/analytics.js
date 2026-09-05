@@ -819,6 +819,7 @@ export function AnalyticsRealm({ session }) {
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   meta=${viewMeta}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
+                  stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   tools=${html`
                       <label class="adminsw">
                           <input type="checkbox" checked=${includeAdmin}

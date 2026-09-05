@@ -1152,6 +1152,7 @@ export function ArmoryRealm({ session }) {
                   modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
                   badges=${{ review: load.data.stagedUnknown ? 0 : (load.data.stagedOps || []).length }}
+                  stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',

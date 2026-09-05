@@ -13,7 +13,6 @@ import { downloadText } from './download.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest, StatePill } from './manifest.js';
-import { Tray } from './tray.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { DiscordCard } from './v2Render.js';
 import { Composer } from './composer.js';
@@ -881,7 +880,6 @@ export function SeasonRealm({ session }) {
     const load = useAsync(() => fetchSeasonState(), []);
     const state = load.data;
     const [changesets, setChangesets] = useState([]);
-    const [notices, setNotices] = useState([]);
     const overlay = useOverlay();
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
@@ -1282,7 +1280,5 @@ export function SeasonRealm({ session }) {
                                     onDay=${setDayOpen}
                                     onClose=${() => setDayOpen(null)} />` : null}`} manifestSlot=${manifestSlot}
                   footSlot=${html`<${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
-                  traySlot=${html`<${Tray} notices=${notices}
-                                           blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}
-                                           onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />`;
+                  stagedOps=${(changesets || []).filter((c) => c.state === 'staged' || c.state === 'blocked').flatMap((c) => (c.ops || []).map((o) => ({ ...o, changesetId: c.id })))} />`;
 }

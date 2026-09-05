@@ -10,7 +10,9 @@ import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
 import { useOverlay } from './overlay.js';
 import { ExportStrip, ExportDrawer } from './exportPanel.js';
+import { StagedTray } from './tray.js';
 import { installTips } from './tips.js';
+import { fetchJson } from './httpClient.js';
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -388,9 +390,34 @@ function StateKey({ states }) {
     `;
 }
 
-export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
+export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, stagedOps = null, onDiscardAll = null, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
-    // 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent.
+    // 🔴 THE STAGED TRAY IS SHELL-OWNED, MOUNTED 2026-09-04 21:10 EDT, FOR THE SAME REASON THE RAIL IS. The design floats it on every page; the portal had it on no page. Its predecessor was a per-realm `traySlot` that ONE realm passed and nothing ever filled — a shared surface wired realm by realm is a shared surface five realms forget, which is the `badges` defect in another file. `stagedOps` is the ops array every realm already holds; a realm that passes none renders no tray, which is the correct empty state. 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent. ⚠️ THE DISCARD LIVES HERE, NOT IN SIX REALMS. The tray is shared chrome and its one destructive verb has one meaning everywhere, so a per-realm handler would be six chances to get it slightly different — which is the defect the tray itself is being fixed for. A realm that needs its own may still pass `onDiscardAll`. 🔴 IT DISCARDS CHANGESETS, NOT OPS, because that is what the endpoint takes; the ids are de-duplicated so a five-op changeset is one request rather than five. A refusal is surfaced rather than swallowed — a discard that silently does nothing is worse than one that fails out loud.
+    async function discardAllStaged() {
+        const ids = [...new Set((stagedOps || []).map((o) => o.changesetId).filter(Boolean))];
+        if (!ids.length) return;
+        for (const id of ids) {
+            await fetchJson(`/api/changeset/${id}/discard`, {
+                method: 'POST', headers: { 'x-csrf-token': session?.csrfToken },
+            });
+        }
+        location.reload();
+    }
+    // 🔴 THE PAGE RESERVES ROOM FOR THE TRAY, because the tray is `position:fixed` and would otherwise sit ON TOP of whatever is at the foot of the realm — measured in the design's own comment as covering Broadcast's "+ Post announcement". The design reserves `tray height + 34`; without it the portal measured 49px shorter than the design on every realm, which is that padding exactly. ⚠️ AN OBSERVER, NOT A ONE-SHOT. The design's own note: the tray's height depends on webfont metrics and on its own collapsed state, both of which settle AFTER the frame that renders it, so a single rAF measures the wrong box often enough to leave the overlap live.
+    useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main || typeof ResizeObserver !== 'function') return undefined;
+        const apply = () => {
+            const t = document.querySelector('.tray');
+            const need = t ? t.getBoundingClientRect().height + 34 : 0;
+            if (need > 0) main.style.paddingBottom = `${need}px`; else main.style.removeProperty('padding-bottom');
+        };
+        const ro = new ResizeObserver(apply);
+        const t = document.querySelector('.tray');
+        if (t) ro.observe(t);
+        apply();
+        return () => ro.disconnect();
+    }, [stagedOps]);
     useEffect(() => { installTips(); }, []);
     // 🔴 THE PAGE ARRIVED ALL AT ONCE AND THE DESIGN STAGGERS IT. One orchestrated entrance — the masthead, then the context strip, then each panel, 55ms apart — is the design's own line ("chrome, then the lanes cascading, then the flags") and the class it needs, `.rise`, was carried over into the stylesheet with nothing to put it on. Skipped entirely under reduced-motion, which is also why it can never affect a settled screenshot.
     useEffect(() => {
@@ -537,6 +564,8 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      adjacent-sibling chain that makes the Manifest recessive. -->
                 ${footSlot || null}
             </main>
+            <${StagedTray} ops=${stagedOps} onDiscardAll=${onDiscardAll || discardAllStaged} busy=${Boolean(busy)}
+                           inert=${exportOpen} />
             ${traySlot || null}
             ${overlaySlot || null}
             ${exportScopes && exportScopes.length && exportOpen

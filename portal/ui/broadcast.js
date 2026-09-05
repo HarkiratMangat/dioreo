@@ -382,6 +382,7 @@ export function BroadcastRealm({ session }) {
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
+                  stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}`}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
