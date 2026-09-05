@@ -781,9 +781,14 @@ export function AnalyticsRealm({ session }) {
                 <ul class="dw-l">${revertable.slice(0, 6).map((r) => html`
                     <li key=${r.id}>${r.summary}</li>`)}
                     ${revertable.length > 6 ? html`<li>…and ${revertable.length - 6} more</li>` : null}</ul>`,
-            onConfirm: () => {
-                revertable.forEach((r) => revert(r.id));
-                overlay.say(`${revertable.length} change${revertable.length === 1 ? '' : 's'} reverted.`);
+            // 🔴 IT CLAIMED SUCCESS BEFORE A SINGLE REQUEST HAD ANSWERED — corrected 2026-09-04 21:57 EDT. `revert` is async and `forEach` discards every promise, so the toast fired synchronously: a server that was down produced BOTH *"3 changes reverted"* and, a moment later, the failure — and since one toast replaces another, the reader's last word was the failure with a success already in their memory. The single-row path was fixed under the comment above calling this the most dangerous button in the portal; the BULK path was the same defect, still live, on the only control that mutates committed production data with no staging step. ⚠️ AND THE WORD WAS WRONG. `analytics.js`'s own rule is one word for the committed sense and it is REVERSE; the button says Reverse and the toast said *reverted*, two lines apart.
+            onConfirm: async () => {
+                const results = await Promise.all(revertable.map((r) => revert(r.id)));
+                const done = results.filter(Boolean).length;
+                if (!done) return;   // every failure has already named itself through reportFailure
+                overlay.say(done === revertable.length
+                    ? `${done} change${done === 1 ? '' : 's'} reversed. Players see the previous value now.`
+                    : `${done} of ${revertable.length} reversed. The rest are unchanged — try them again.`);
             },
         });
     }

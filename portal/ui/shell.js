@@ -13,6 +13,8 @@ import { ExportStrip, ExportDrawer } from './exportPanel.js';
 import { StagedTray } from './tray.js';
 import { installTips } from './tips.js';
 import { fetchJson } from './httpClient.js';
+// ⚠️ `refusalOf` is NOT imported: it is an `async.logic.js` global, loaded as a script on every page — the same shape `season.js` uses it in. The build's named-import check refused the import, correctly.
+/* global refusalOf */
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
@@ -392,18 +394,7 @@ function StateKey({ states }) {
 
 export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, contextSlot, manifestSlot, noticeSlot, footSlot, traySlot, overlaySlot, masthead, badges = {}, stagedOps = null, onDiscardAll = null, tools = null, commands = [], busy = '', busyNote = '', exports: exportScopes = null, exportLabel = '', overlayFor = null, stateKey = false, modeOptions = null, mode = null, onSetMode = null, modeLabel = 'Mode', realmKey = null, meta = null }) {
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
-    // 🔴 THE STAGED TRAY IS SHELL-OWNED, MOUNTED 2026-09-04 21:10 EDT, FOR THE SAME REASON THE RAIL IS. The design floats it on every page; the portal had it on no page. Its predecessor was a per-realm `traySlot` that ONE realm passed and nothing ever filled — a shared surface wired realm by realm is a shared surface five realms forget, which is the `badges` defect in another file. `stagedOps` is the ops array every realm already holds; a realm that passes none renders no tray, which is the correct empty state. 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent. ⚠️ THE DISCARD LIVES HERE, NOT IN SIX REALMS. The tray is shared chrome and its one destructive verb has one meaning everywhere, so a per-realm handler would be six chances to get it slightly different — which is the defect the tray itself is being fixed for. A realm that needs its own may still pass `onDiscardAll`. 🔴 IT DISCARDS CHANGESETS, NOT OPS, because that is what the endpoint takes; the ids are de-duplicated so a five-op changeset is one request rather than five. A refusal is surfaced rather than swallowed — a discard that silently does nothing is worse than one that fails out loud.
-    async function discardAllStaged() {
-        const ids = [...new Set((stagedOps || []).map((o) => o.changesetId).filter(Boolean))];
-        if (!ids.length) return;
-        for (const id of ids) {
-            await fetchJson(`/api/changeset/${id}/discard`, {
-                method: 'POST', headers: { 'x-csrf-token': session?.csrfToken },
-            });
-        }
-        location.reload();
-    }
-    // 🔴 THE PAGE RESERVES ROOM FOR THE TRAY, because the tray is `position:fixed` and would otherwise sit ON TOP of whatever is at the foot of the realm — measured in the design's own comment as covering Broadcast's "+ Post announcement". The design reserves `tray height + 34`; without it the portal measured 49px shorter than the design on every realm, which is that padding exactly. ⚠️ AN OBSERVER, NOT A ONE-SHOT. The design's own note: the tray's height depends on webfont metrics and on its own collapsed state, both of which settle AFTER the frame that renders it, so a single rAF measures the wrong box often enough to leave the overlap live.
+    // 🔴 THE STAGED TRAY IS SHELL-OWNED, MOUNTED 2026-09-04 21:10 EDT, FOR THE SAME REASON THE RAIL IS. The design floats it on every page; the portal had it on no page. Its predecessor was a per-realm `traySlot` that ONE realm passed and nothing ever filled — a shared surface wired realm by realm is a shared surface five realms forget, which is the `badges` defect in another file. `stagedOps` is the ops array every realm already holds; a realm that passes none renders no tray, which is the correct empty state. 🔴 FOURTEEN `data-tip` ATTRIBUTES WERE WRITTEN AND NOTHING READ THEM. The Track's lane headers, its drag handles, the deadline rail and Review's rollback note all carry one, and the portal had no tooltip runtime at all — so every one of those sentences was markup nobody could reach, while `.tip` and `.tip .sub` sat defined and unused in the adopted sheet. An orphan check asks whether a class has a RULE; these had one, which is exactly why it stayed invisible. Installed from the Shell because every realm renders one, and the installer is idempotent. ⚠️ THE DISCARD LIVES HERE, NOT IN SIX REALMS. The tray is shared chrome and its one destructive verb has one meaning everywhere, so a per-realm handler would be six chances to get it slightly different — which is the defect the tray itself is being fixed for. A realm that needs its own may still pass `onDiscardAll`. 🔴 IT DISCARDS CHANGESETS, NOT OPS, because that is what the endpoint takes; the ids are de-duplicated so a five-op changeset is one request rather than five. A refusal is surfaced rather than swallowed — a discard that silently does nothing is worse than one that fails out loud. 🔴 THE PAGE RESERVES ROOM FOR THE TRAY, because the tray is `position:fixed` and would otherwise sit ON TOP of whatever is at the foot of the realm — measured in the design's own comment as covering Broadcast's "+ Post announcement". The design reserves `tray height + 34`; without it the portal measured 49px shorter than the design on every realm, which is that padding exactly. ⚠️ AN OBSERVER, NOT A ONE-SHOT. The design's own note: the tray's height depends on webfont metrics and on its own collapsed state, both of which settle AFTER the frame that renders it, so a single rAF measures the wrong box often enough to leave the overlap live.
     useEffect(() => {
         const main = document.querySelector('main');
         if (!main || typeof ResizeObserver !== 'function') return undefined;
@@ -432,6 +423,31 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     }, []);
     // The chrome keeps its OWN overlay rather than borrowing the realm's, because sign-out is not a realm's business and every realm would otherwise have to wire it. Both render into the same page; only one can be open, since running any command closes the palette that offered it.
     const chrome = useOverlay();
+
+    // 🔴 CONFIRMED, AND THE FIRST VERSION WAS NOT — corrected 2026-09-04 21:57 EDT, hours after shipping. It was the ONE unconfirmed destructive control in a product built entirely around confirmation, sitting on six screens eight pixels from `Review & commit`, where a right-handed mouse rests. Its identical twin on Review has always been wrapped in a tier-1 danger confirm; the shared-chrome copy shipped without one. ⚠️ AND THE COMMENT ABOVE IT CLAIMED *"a refusal is surfaced rather than swallowed"* while the code read no response at all — a receipt for work that was not done, which is the exact class this repo keeps finding. It reads every answer now and names the first refusal. ⚠️ NO `location.reload()`. A reload throws away every unsaved field on the page — a composer row, two grant inputs, a typed tier-3 confirmation — which is a second destructive act hidden inside the first.
+    async function discardAllStaged() {
+        const ids = [...new Set((stagedOps || []).map((o) => o.changesetId).filter(Boolean))];
+        if (!ids.length) return;
+        const n = (stagedOps || []).length;
+        chrome.confirm({
+            op: 'changeset.discard', tier: 1, danger: true, confirmLabel: 'Discard all',
+            title: `Discard all ${n} staged change${n === 1 ? '' : 's'}?`,
+            body: html`<p class="dw-p">None of this ever reached Discord, so nothing changes for players.
+                Every row you touched goes back to the value it had before.</p>`,
+            onConfirm: async () => {
+                for (const id of ids) {
+                    const res = await fetchJson(`/api/changeset/${id}/discard`, {
+                        method: 'POST', headers: { 'x-csrf-token': session?.csrfToken },
+                    });
+                    const refused = refusalOf(res);
+                    if (refused) return chrome.say(`Not discarded — ${refused}`);
+                }
+                chrome.say(`${n} staged change${n === 1 ? '' : 's'} discarded.`);
+                location.hash = location.hash || '#/home';
+                setTimeout(() => location.reload(), 400);
+            },
+        });
+    }
 
     // 🔴 SIGNING OUT IS CONFIRMED, AND THE CONFIRMATION SAYS WHAT HAPPENS TO STAGED WORK. The door page promises staged work is held against your account and comes back when you sign back in; a sign-out that says nothing invites the reader to assume the opposite, one click from the page that promised it. Staging is server-side (models/Changeset.js), so this is a statement of fact, not reassurance.
     function signOut(n) {

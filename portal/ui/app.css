@@ -180,6 +180,17 @@ main{overflow:auto;padding-bottom:96px}
 .pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);border-radius:var(--rad-1);
   background:var(--c);cursor:pointer;z-index:2}
 .pt.staged{background:transparent;border:1.5px dashed var(--c)}
+/* 🔴 A CONFLICTED POINT RENDERED AS A SAVED ONE — added 2026-09-04 22:00 EDT. `track.js:224` emits `pt saved`,
+   `pt staged` and `pt conflict`; this sheet defined `.pt` and `.pt.staged` and nothing else, so a conflict
+   fell through to the base rule: a SOLID fill in the lane's TOPIC colour, shape-identical and colour-identical
+   to saved. COMPANION §0.0's law is that shape carries state, and the one marker that most needs to break the
+   pattern was the one that could not. ⚠️ The class is CONCATENATED (`'pt ' + state`), so no literal `pt
+   conflict` string exists for the reverse-orphan scanner to find — the trap `.claude/rules/portal-editing.md`
+   names, hit again. ⚠️ Inherited from the design, which never drew it either; the portal can EMIT the state,
+   so this is the portal completing a vocabulary the mockup left open rather than diverging from it.
+   The treatment is `.bar.conflict`'s, at point scale: transparent, dashed, warn, hatched. */
+.pt.conflict{background:transparent;border:1.5px dashed var(--warn);
+  background-image:repeating-linear-gradient(45deg,transparent 0 2px,color-mix(in srgb,var(--warn) 38%,transparent) 2px 4px)}
 .pt:hover{filter:brightness(1.2)}
 
 /* ═══ TRACK ═══ */
@@ -3122,7 +3133,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .pill:active{transform:none}
 .pill:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 .pill .dot{width:9px;height:9px;border-radius:var(--rad-1);background:var(--c,var(--ink4));flex:none}
-.pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink4)}
+/* --ink3, not --ink4: this is 10px uppercase TEXT, and #5C6A75 scores 3.02:1 on --paper. It was declared
+   TWICE — here and again in the orphaned stand-down block deleted above — so the failing value won on source
+   order. Corrected 2026-09-04 21:54 EDT, applying the ledger's standing --ink4 rule rather than making a new call. */
+.pill .sub{font:400 10px/1 var(--data);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
 .pill kbd{font:500 10.5px/1 var(--ui);letter-spacing:.04em;color:var(--ink3);
   border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 6px}
 .pill.on{border-color:var(--c,var(--patch));background:color-mix(in srgb,var(--c,var(--patch)) 13%,transparent);color:var(--ink)}
@@ -5174,12 +5188,21 @@ button .ic,a .ic{pointer-events:none}
    ⚠️ THE FIVE BELOW ARE UNMEASURED — none of them renders anywhere on Season, so the same mistake in
    the other direction is available. Measure each on the realm where it appears before trusting it:
        node scripts/portalProbe.mjs --realm <r> --sel "<selector>" --props color --chain */
-.round-u.none,
-.mh-stats .stat .v.zero,
-.pill .sub,
-.att-i,
-.atx{color:var(--ink4)}
-.cb-in::placeholder{color:var(--ink4)}
+/* 🔴 THE STAND-DOWN BLOCK THAT USED TO SIT HERE IS DELETED — 2026-09-04 21:53 EDT.
+   Its own header read "Under ?conform=1 they return to the design's colour", and `?conform=1` was deleted in
+   the 2026-08-31 mode collapse. So five selectors that were only ever meant to carry --ink4 WHILE CONFORMING
+   carried it unconditionally, in shipped output, for four days: .round-u.none · .mh-stats .stat .v.zero ·
+   .pill .sub · .att-i · .atx, plus .cb-in::placeholder — the command bar's own placeholder, the most-seen
+   string in the product. **A gate was removed and the rules it gated were left live.**
+   ⚠️ THE BLOCK'S OWN COMMENT SAID THE FIVE WERE UNMEASURED and invited somebody to measure them before
+   trusting it. Nobody did, and #5C6A75 scores 3.02:1 on --paper and 2.72:1 on --raised — failing AA for text
+   on every surface in the product, which DESIGN.md forbids in bold ("Never write color:var(--ink4)").
+   ⚠️ AND `.mh-stats .stat .v.zero` WAS DECLARED TWICE — --ink3 at line 1731 and --ink4 here, same
+   specificity, source order winning. The portal's base rules already say --ink3, which is exactly what the
+   decision ledger's own --ink4 row rules: the portal keeps --ink3 wherever the token colours TEXT and --ink4
+   wherever it does not. This deletion applies a decision already made rather than making a new one.
+   ⚠️ It is a deliberate divergence from the design's stylesheet, which does carry --ink4 on these selectors.
+   That divergence is the cited one; contrast is not a conformance question. */
 
 
 /* ════ STAND-DOWN · the design's own season clock ════
