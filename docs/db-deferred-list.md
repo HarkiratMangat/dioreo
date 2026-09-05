@@ -1487,6 +1487,14 @@ Still missing, and each needs data the Track's items do not carry: **draw window
 ⚠️ **Two of the three legitimately report ZERO against the live document**, and COMPANION's rule is that such a check stays on screen with its reason. The portal already does that correctly — `track.js`'s `group()` emits `repgrp clean` and a `.repclean` line — so this is about the checks, never about the empty state. ⚠️ **The portal also adds a check the mockup never had** (`Gaps in a lane`) and re-frames the other two around `DATE`/`RECORD`/`WINDOW` rather than mechanical/judgement; that divergence is uncited and should be settled in the same session.
 
 
+### ~~A dev hostname for the portal, so it is reachable from a phone~~ ◐ **BUILT AND SERVING 2026-09-05 14:47 EDT — one step remains and it is Harkirat's** `[P2 · S · Sonnet5-High]`
+
+✅ **`https://dev-portal.dioreo.app` answers 200 and the two processes are standing launchd agents** (`scripts/launchd/`, documented beside the VM's systemd units in `docs/reference/deployment-and-ops.md`). Measured: `127.0.0.1:8787` 200 · the public hostname 200 · `/auth/login` 302s to Discord with the DEV client id · the server logs `connected to MongoDB (localhost/diors-builds-dev)` · 200 again after a forced restart.
+
+🔴 **THE ONE REMAINING STEP, AND THIS ENTRY IS THE REASON IT WAS NEARLY MISSED: THE REGISTERED REDIRECT URI BELOW IS THE *DOT* FORM, AND THE HOSTNAME IS THE *HYPHEN* FORM.** `dev.portal.dioreo.app` was registered on the `Dioreo (Dev)` application on 2026-08-28; the name then changed to `dev-portal.dioreo.app` because Universal SSL covers one label and not two — and **nothing came back to update this entry**, which still carries a ✅ next to the wrong string. ⚠️ **It cannot be checked from a terminal**: measured 2026-09-05 14:47 EDT, an obviously unregistered `redirect_uri` returns the SAME 302 to Discord's login as the real one, so a curl probe here cannot fail. **Harkirat signs in; if it errors with *Invalid OAuth2 redirect_uri*, add `https://dev-portal.dioreo.app/auth/callback` to the dev application.**
+
+🔵 **Also stale below, and both were true when written:** *"cloudflared has never been connected to the account — there is no `~/.cloudflared/`"* is false (tunnel `dioreo-dev` created 2026-08-28T15:59Z, cert and credentials on disk), and the **Cloudflare Access** recommendation now matters MORE rather than less: the tunnel was a thing you started deliberately when that was written, and it is `RunAtLoad` + `KeepAlive` now, so the surface is permanent while the Mac is on. **That is Harkirat's call and is deliberately left open.** Original entry follows, unedited.
+
 ### A dev hostname for the portal, so it is reachable from a phone `[P2 · S · Sonnet5-High]`
 
 *Filed 2026-08-28 11:2x EDT, from Harkirat's question while away from his machine — the morning's OAuth sign-in had to go through Discord's QR login because the dev portal only exists on `localhost:8787`, which a phone cannot reach.*

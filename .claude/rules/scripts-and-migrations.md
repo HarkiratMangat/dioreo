@@ -346,6 +346,10 @@ Renders the mockup and the real portal at the same viewport and reports the diff
 
 ⚠️ **It mints a `PortalSession` in dev Mongo for the hardcoded owner** and refuses any URI that is not localhost. Minting for whoever `AdminUser.findOne({})` returns is what it used to do, and that is a scoped test admin holding three realms of six — the tool then reported the rail as a difference, which is a tool measuring its own setup.
 
+## `scripts/launchd/` — the two agents that KEEP the dev portal up (added 2026-09-05 14:46 EDT)
+
+`app.dioreo.dev-portal.plist` runs `node --env-file=.env.dev portal/server.js` on `127.0.0.1:8787`; `app.dioreo.dev-tunnel.plist` runs the tunnel below. **Two units, not one, and the split is the VM's**: a portal crash must not take down the tunnel, and the tunnel dying must take down only reachability. The tracked copies carry `$HOME`; the install line in `scripts/launchd/README.md` expands it, and the result is byte-identical to what is loaded (verified by diff, not asserted). ⚠️ **`mkdir -p ~/Library/Logs/dioreo` is part of the install** — launchd does not create a log directory and an agent that cannot open its log starts anyway and writes nothing. ⚠️ **No hot reload**: plain `node`, so a `portal/` change needs `launchctl kickstart -k`, and `.env.dev` is read once at start.
+
 ## `scripts/cloudflared-dev-config.yml` — the DEV tunnel, on the Mac (added 2026-08-28 12:0x EDT)
 
 Installed to `~/.cloudflared/dioreo-dev.yml`; run with `cloudflared tunnel --config ~/.cloudflared/dioreo-dev.yml run`. Puts `https://dev-portal.dioreo.app` in front of the local dev portal on `127.0.0.1:8787`, so the branch is reviewable from a phone instead of only from the machine it runs on. Tracked for reproducibility and holds no secret.
