@@ -1004,6 +1004,8 @@ const FM_RULE = [
   ["docs/reference/", "reference"],
   ["docs/ideas/", "idea"],
   ["docs/legal/", "legal"],
+  // A README that documents how to INSTALL the files sitting next to it is a lookup doc, and it has to live beside them: scripts/launchd/README.md is read while copying those plists, and pointing it at docs/reference/ would put the instructions one directory away from the thing they operate on. Same shape as PRODUCT.md below - placement driven by what reads it, kind driven by what it is. Added 2026-09-05 14:46 EDT.
+  ["scripts/", "reference"],
 ];
 const fmExpected = (f) => {
   for (const [prefix, kind] of FM_RULE) if (f.startsWith(prefix)) return kind;

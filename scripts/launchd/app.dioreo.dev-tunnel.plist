@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The DEV Cloudflare tunnel: dev-portal.dioreo.app -> 127.0.0.1:8787 on this Mac.
+     Outbound only. No inbound firewall rule, no port forwarding, and the Mac's IP is never referenced.
+     Config: ~/.cloudflared/dioreo-dev.yml, which is the tracked scripts/cloudflared-dev-config.yml. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>app.dioreo.dev-tunnel</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/cloudflared</string>
+    <string>--config</string>
+    <string>$HOME/.cloudflared/dioreo-dev.yml</string>
+    <string>--no-autoupdate</string>
+    <string>tunnel</string>
+    <string>run</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardOutPath</key><string>$HOME/Library/Logs/dioreo/dev-tunnel.log</string>
+  <key>StandardErrorPath</key><string>$HOME/Library/Logs/dioreo/dev-tunnel.err.log</string>
+</dict></plist>

@@ -28,7 +28,17 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 
 ---
 
-## Pre-Release v3.76.0 — 2026-09-03 → 2026-09-05 (#183) — Home rendered a clock that was deleted a week ago, and two instruments had been comparing different data
+
+## Pre-Release v3.77.0 — 2026-09-05 — The dev portal was fully configured and running nothing
+
+**`dev-portal.dioreo.app` had a tunnel, a DNS record, a hostname in `.env.dev` and a port — and both processes had to be started by hand.** So the answer to *"can I just open the URL and edit the dev bot's data"* was no, for a reason that had nothing to do with whether the portal worked.
+
+- 🔴 **Two launchd agents, split the way the VM splits its systemd units and for the same stated reason** — a portal crash must not take down the tunnel, and the tunnel dying must take down only reachability. `RunAtLoad` + `KeepAlive`, logs under `~/Library/Logs/dioreo`, tracked at `scripts/launchd/` so a rebuild does not depend on this machine. Verified rather than assumed: the local port answers 200, the public hostname answers 200, `/auth/login` 302s to Discord carrying the DEV client id, the server logs `connected to MongoDB (localhost/diors-builds-dev)`, and it answers 200 again after a forced restart.
+- 🔴 **The registered OAuth redirect URI is very probably the WRONG STRING, and the record that said otherwise is why it was nearly missed.** `docs/db-deferred-list.md` carries a ✅ against `https://dev.portal.dioreo.app/auth/callback` — the **dot** form, registered 2026-08-28. The hostname changed to `dev-portal` immediately afterwards, because Cloudflare's Universal SSL covers one label and not two, and **nothing came back to update the entry.** That is this branch's own signature defect for the fourth time: the thing changed, the record did not.
+- 🔴 **And the check I used to reassure myself about it could not fail.** A curl to Discord's authorize endpoint returned a 302 for the real `redirect_uri` — and the **identical** 302 for `not-registered-at-all.example`, because Discord redirects to login before validating. One non-failure of a check that cannot fail is not evidence of success, which is the converse of the rule this same session wrote into `portalStates.mjs` four hours earlier. The claim is withdrawn; the only test is a sign-in.
+- 🩹 **Three smaller gaps the pass found:** the documented install never created `~/Library/Logs/dioreo`, and launchd does not create it — an agent whose log path is missing starts anyway and writes nothing · `.env.dev` is read once at start, so `KeepAlive` restarting on a crash never picks up a rotated secret · and `scripts/launchd/README.md` sat in a location the doc taxonomy did not describe, which `doc-frontmatter` caught; `scripts/` is classified `reference` in both carriers now, because a README that documents how to install the files beside it has to live beside them.
+
+## Pre-Release v3.76.0 — 2026-09-03 → 2026-09-05 (#183 · `aef3215`) — Home rendered a clock that was deleted a week ago, and two instruments had been comparing different data
 
 **Part 6b of the portal conformance plan. Home had never been measured — `portal:status` read `· never` in all six of its columns until 2026-09-03.**
 
