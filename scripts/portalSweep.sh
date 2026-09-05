@@ -23,6 +23,8 @@ for r in season armory broadcast access analytics review home; do
     node scripts/portalAudit.mjs --realm "$r" --all "${q[@]}" 2>&1 \
         | rg -o "② SHAPE \([0-9]+|③ WORDS \([0-9]+|④ STYLE \([0-9]+" \
         | tr -d '(' | tr '\n' ' '
+    # 🔴 THE LEDGER ROW COUNT RIDES BESIDE THE NUMBER, BECAUSE THE NUMBER IS NOT THE CLOSE CONDITION. §0.7d retired the percentage as a target and a realm closes on the ENUMERATION — are its regions exactly the cited set. This sweep is the first artifact of a session, so a percentage standing alone at the top of the log is read as a grade whatever the plan says. ⚠️ One row can cover many regions and many rows can cover one, so this is a PROMPT, never a score; scripts/portalLedgerRows.mjs says so in its own header and in its stdout.
+    printf 'ledger %s' "$(node scripts/portalLedgerRows.mjs "$r")"
     echo
 done
 

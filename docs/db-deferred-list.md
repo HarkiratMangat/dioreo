@@ -396,10 +396,17 @@ Home fetches `/api/season`, `/api/armory`, `/api/broadcast`, `/api/review`, `/ap
 
 A realm the admin cannot see answers `forbidden`, and that realm's attention row simply does not appear — so a delegated admin sees a smaller `needs you` count with nothing saying why. Armory's masthead already rules that a figure which cannot be known must not read as zero; this list makes the opposite choice, by omission rather than by decision. **Do.** Decide whether the list says "2 realms you cannot see" or stays silent. **Verify by:** loading the harness with `?realms=season,armory` and reading what the lead figure claims.
 
-### `[P2 · S · Sonnet5-Medium]` Home at 375×812, and its tab order after the reorder
-*Filed 2026-09-03 22:33 EDT, Part 6b.*
+### `[P2 · XS · Sonnet5-Medium]` Home's TAB ORDER after the block reorder
+*Filed 2026-09-03 22:33 EDT, Part 6b. **Split out of a bundled entry 2026-09-04 20:02 EDT.***
 
-375×812 has never been run on ANY realm — the audit says so on every run — and Part 6b changed Home's entire block order, which is the change most likely to break a responsive stack. The same reorder moved the masthead inside `.home`, changing DOM and therefore TAB order; `portalStates` counts 16 focusables but a count is not an order. **Do.** `--viewport 375x812` on Home, and tab through it once. **Verify by:** no horizontal scroll, and focus reaching masthead → staged → clock → list → live in that order.
+Part 6b moved the masthead inside `.home` and reordered every block, changing DOM and therefore TAB order; `portalStates` counts 16 focusables but a count is not an order. **Do.** Tab through Home once. **Verify by:** focus reaching masthead → staged → clock → list → live in that order.
+
+🔴 **IT WAS FILED TOGETHER WITH THE 375×812 PASS AND THAT BUNDLING WAS THE DEFECT.** 375×812 is DECIDED — Harkirat said no, twice — so a session obeying the decision correctly dropped the tab-through with it, and the tab order has never been checked. **A decided item and an undecided one must never share an entry.**
+
+### `[🔵 DECIDED-NO]` Home at 375×812
+*Split out 2026-09-04 20:02 EDT.*
+
+**Do not run it.** His standing direction of 2026-08-27 is *"desktop is the primary layout/device… Mobile optimization is a future endeavour"*, re-affirmed 2026-08-30 21:51 EDT against a counter-argument that was made and rejected. **Reopens if:** he asks for it. A mobile defect noticed in passing is FILED, never fixed.
 
 ### `[P3 · S · Sonnet5-Medium]` COMPANION does not record `seedDemoOps`
 *Filed 2026-09-03 22:33 EDT, Part 6b.*

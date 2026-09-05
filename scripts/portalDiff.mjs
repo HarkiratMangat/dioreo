@@ -74,7 +74,42 @@ const COVERAGE_NOTE = [
 
 const args = process.argv.slice(2);
 const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
+
+// 🔴 `--help` RAN A 2.5-MINUTE REAL-SERVER SEASON DIFF AND OVERWROTE `local/diff-season/*.png`. Every flag here is read by `indexOf`, so an unrecognised one is simply not seen and the tool falls through to its defaults — which means the ONE command a reader tries first was the most expensive one available, and it destroyed the captures of whatever was last diffed. A typo in `--realm` did the same thing more quietly: `--realm brodcast` diffed Season and said nothing.
+const KNOWN_FLAGS = new Set(['--realm', '--scroll', '--view', '--viewport', '--json', '--portal', '--fold',
+                             '--live-clock', '--selftest', '--open', '--open-sel', '--hover', '--focus',
+                             '--mk-query', '--no-seed', '--at', '--help', '-h']);
+const REALM_NAMES = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
+const USAGE = `
+portal:diff — render both pages and subtract them. It does not enumerate anything.
+
+  --realm <r>        one of: ${REALM_NAMES.join(' ')}   (default season)
+  --view <tab>       a sub-view; refuses if either side did not switch
+  --scroll <px>      capture at a scroll offset
+  --viewport WxH     off-contract, and says so in its own header (contract is 1282x888)
+  --portal real|harness   real is the default and the stronger comparison
+  --open "<text>"    open an overlay by a control BOTH sides render with that text
+  --open-sel "<css>" open it by selector when the two sides spell the control differently
+  --hover / --focus  the same DOM under a different pointer or focus condition
+  --mk-query demo=1  seed the mockup — REQUIRED for review and home, which refuse without it
+  --fold             one screenful only; a different question from "do these two pages match"
+  --json             machine-readable region list
+  --selftest         identical input must produce an empty result
+
+OUTPUT  local/diff-<realm>/mk-<realm>.png · pt-<realm>.png · delta-<realm>.png
+`;
+if (args.includes('--help') || args.includes('-h')) { console.log(USAGE); process.exit(0); }
+const unknown = args.filter((a) => a.startsWith('--') && !KNOWN_FLAGS.has(a));
+if (unknown.length) {
+    console.error(`portal:diff: unknown flag(s) ${unknown.join(' ')}\n${USAGE}`);
+    process.exit(2);
+}
 const realm = flag('--realm', 'season');
+if (!REALM_NAMES.includes(realm)) {
+    console.error(`portal:diff: --realm ${realm} is not a realm. One of: ${REALM_NAMES.join(' ')}\n`
+        + '  An unvalidated realm fell through to season and reported season\'s regions under another name.');
+    process.exit(2);
+}
 const scrollY = Number(flag('--scroll', 0)) || 0;
 const asJson = args.includes('--json');
 const portalMode = flag('--portal', 'real');

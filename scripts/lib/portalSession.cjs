@@ -69,7 +69,20 @@ const REALM_ROW_SELECTOR = [
     'main tr',        // Manifest tables — Armory, Analytics, Access
     'main .bar',      // Season's Track lanes
     'main li',        // any genuine list item
-    'main .rec-row',  // Review's changeset records
+    // 🔴 `main .rec-row` HAD NO EMITTER ANYWHERE — replaced 2026-09-04 20:08 EDT, the same defect as the
+    // `.hcard` entry removed from this list four hours earlier and for the same reason: a dead selector in
+    // a list like this reads as coverage. Review draws its staged changes as `OpRow` children of `.rvlist`
+    // (`portal/ui/review.js:223`) and its empty state as `.rvnone`; nothing in either the portal or the
+    // mockup emits `rec-row`. Found because `portalDiff` adopted this rule and Review immediately refused —
+    // which is the assertion working, on a gap that had been invisible while the caller used `main.door`.
+    'main .rvlist > *',  // Review's staged changes (2026-09-04 20:08 EDT)
+    // 🔴 ACCESS'S SECOND VIEW HAD NO ROW SHAPE IN THIS LIST EITHER — added 2026-09-04 20:09 EDT, found by the
+    // zero-row assertion `portalRealWalk` gained in the same session. `By permission` is the permission MATRIX:
+    // `<div id="by-scope">` with one `.scope` card per permission (`access.js:303`) — no table, no `li`. So the
+    // view walked at 0 rows and passed for as long as the count was printed and never asserted. ⚠️ This is the
+    // THIRD entry this list has been missing (Home's, Review's, this one) and the second found the same way:
+    // a realm's row shape stays invisible until something REFUSES on it.
+    'main .scope',    // Access's By-permission scope cards (2026-09-04 20:10 EDT)
     'main .bcard',    // Broadcast's announcement cards
     // 🔴 `:not(.clear)` IS THE WHOLE POINT OF THIS LINE — added 2026-09-04 14:19 EDT by the §L ⑥ reality
     // agent, against the version added four hours earlier in the same session. `AttentionList`'s

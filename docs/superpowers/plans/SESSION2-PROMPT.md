@@ -56,7 +56,11 @@ Two live instances, both of which pass every gate because the design renders the
 
 The gate is specified in the plan with its falsifier first. ⚠️ **It is filed `[P1]` from a population of ONE consumer while Home's ⑤ is `[P2]` and measurable today** — the plan's hedge (*"build it only if the overlay tier leaves room"*) is the operative instruction, and that argument is written into the filing itself.
 
-## §4 — FIVE TRAPS THAT EACH COST A ROUND
+## §4 — THE ORDERING TRAPS THAT EACH COST A ROUND
+
+⚠️ **THIS HEADING SAID "FIVE TRAPS" UNTIL 2026-09-04 20:02 EDT OVER A LIST `.claude/rules/portal-editing.md` NUMBERS 0–6 — SEVEN.** A lossy duplicate of a rule file whose own header forbids duplication, and it had already drifted. **The rule file is the home; what follows is a pointer plus the two that are about ORDER rather than about editing.** ⚠️ Traps 0 and 6 are the two most often dropped when this list is copied.
+
+🔴 **AND THIS DOCUMENT IS THE PART PROMPT.** §0.7a of the conformance plan records that five different things each claim to be "the first call of every realm" and that the tiebreak is the Part's own prompt. This is that prompt for session 2's scope; a later Part's prompt supersedes it for that Part.
 
 1. 🔴 **A backgrounded `npm test > log 2>&1; echo "exit=$?"; tail log` EXITS 0 WHATEVER THE SUITE DID.** The harness reports the WRAPPER. **Read the recorded `exit=` line out of the task's output file.** A commit shipped claiming a green suite that had exited 1.
 2. 🔴 **Pipeline order:** `reflow-comments --write` → `portal:bust` → build → `portalGeometry --realm <r> --write` **LAST** → commit. Reversed, each undoes the next.
@@ -74,7 +78,7 @@ The gate is specified in the plan with its falsifier first. ⚠️ **It is filed
 
 ## §6 — THE CONTRACT
 
-- **Branch `feat/home-portal-conformance`**, 18 commits, **unpushed**, `3.76.0-pre`, tree clean, `npm test` 0 at `27f4e7d9`.
+- **Branch `feat/home-portal-conformance`**, unpushed. ⚠️ **THE COMMIT COUNT, THE VERSION AND THE LAST-GREEN SHA WERE WRITTEN OUT HERE AND WENT STALE THE SAME DAY** (it read "18 commits … `npm test` 0 at `27f4e7d9`" while HEAD was ten commits further on). A present-tense count in prose is duplicated state that rots silently — the structural form is the command: `git rev-list --count v3-pre-release..HEAD` · `node -p "require('./package.json').version"` · and `npm test` read from the FOREGROUND process, never a wrapper.
 - ⛔ **Never push, open a PR, merge, or tag** — approval is restated at the moment of the action, naming who · to what · when.
 - 🔴 **The merge owes a `(#PR)` on the v3.76.0 entry and the v3.75.0 squash hash backfill.** `docs-audit` passes today because there is no placeholder to catch; **nothing will remind you.**
 - **`npm run handoff` at every phase end.** Scoped tests until a push is approved.
