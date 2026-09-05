@@ -401,7 +401,11 @@ A realm the admin cannot see answers `forbidden`, and that realm's attention row
 
 Season's masthead eyebrow reads **20 live now** and Home's reads **2 live now**, on the same fixture. Both are right: Season counts live SEASON ITEMS, Home counts live ANNOUNCEMENTS, and Home matches the design exactly (`index.html:207` counts `liveAnns()`). **It is the copy audit's vocabulary class — one word, two meanings — and it is the design's own wording on both sides**, so the conformance rule says reproduce it and file it rather than correct it mid-pass. **Do.** Give each figure a label that names what it counts, after all six realms match. **Verify by:** `portal:agreement` no longer needs a `SCOPED` entry for `live now`.
 
-### `[P1 · M · Opus5-High]` §L condition ⑥ — the §0.5c reader test — has never run on BROADCAST or ACCESS
+### `[🔵 DECIDED-NO 2026-09-04 23:19 EDT]` §L condition ⑥ on BROADCAST and ACCESS — WAIVED by Harkirat
+
+🔴 **His call, 2026-09-04 23:19 EDT: *"they might not have ran the exact (6) subagents but im pretty sure both those sessions ran subagents. So you can skip (6) as well."*** Both realms' sessions did dispatch subagents, just not the two-agent §0.5c split. **Do not re-open this from the plan's §L status column, which still shows the condition unmet** — the condition is waived for these two realms, not satisfied. **Reopens if:** he asks for it, or a defect surfaces on Broadcast or Access that a reader test would plainly have caught. The original filing follows, because the caveat inside it is still worth reading.
+
+### `[filed for the record]` §L condition ⑥ — the §0.5c reader test — has never run on BROADCAST or ACCESS
 *Filed 2026-09-04 23:17 EDT. It has lived only in the plan's §L status column and in chat, which is status rather than direction — the distinction this list exists for.*
 
 **Five of seven realms have run it** (Season, Armory, Analytics, Review, Home). Broadcast and Access have not: they closed in the 2026-09-01 session that ran out before reaching them, and Access's own §L row still reads *"⑥ is this session's next step"* three days later.
