@@ -24,9 +24,14 @@ export function OneWay({ live, draft, session, overlay, onStage }) {
             op: item.op.type, tier: 3, danger: true, typed: item.word,
             confirmLabel: item.title,
             title: `${item.title}?`,
+            // 🔴 ONE BODY SERVED SEVEN ROWS AND DESCRIBED THE INVERSE OF ONE OF THEM. Promoting the draft season PUBLISHES it; it removes nothing. The confirmation read "This removes 12 staged items" on the single row where a mistake costs a whole season. Split 2026-09-04 22:49 EDT: the lifecycle rows say what they replace, the destructive rows say what they remove.
             body: html`
-                <p class="dw-p">This removes <b>${item.count} ${plural(item.count, item.unit)}</b> and${' '}
-                    <b>cannot be undone</b> from inside the portal.</p>
+                ${item.op.type === 'season.promoteDraft'
+                    ? html`<p class="dw-p">This replaces the live season with the draft — all${' '}
+                        <b>${item.count} ${plural(item.count, item.unit)}</b> go out to players at once, and${' '}
+                        <b>the season you have now is gone</b> from inside the portal.</p>`
+                    : html`<p class="dw-p">This removes <b>${item.count} ${plural(item.count, item.unit)}</b> and${' '}
+                        <b>cannot be undone</b> from inside the portal.</p>`}
                 <p class="dw-p">Nothing happens yet. This stages the change, and Review will not commit it until you
                     have taken an export — that export is the only way back, and it is a real file containing the
                     records this would remove.${session?.isOwner ? '' : html` You are running this under the${' '}

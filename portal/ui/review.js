@@ -40,8 +40,8 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
                 </span>
             </button>
             <button class="rvdrop" onClick=${(e) => { e.stopPropagation(); onDrop(op); }}
-                    data-tip=${`Discard the changeset holding “${op.name}”`}
-                    aria-label=${`Discard ${op.name}`}><${Icon} name="x" cls="sm" /></button>
+                    data-tip=${`Discard everything staged together with “${op.name}”`}
+                    aria-label=${`Discard ${op.name} and anything staged with it`}><${Icon} name="x" cls="sm" /></button>
         </div>`;
 }
 
@@ -117,7 +117,7 @@ function OpDetail({ op, resolved, onResolve }) {
                 </div>`
             : html`
                 <p class="chint" style="margin-top:16px">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
-                   undone after it commits.</p>`}
+                   reversed after it commits, from the event list in Analytics.</p>`}
         </div>`;
 }
 
@@ -193,7 +193,13 @@ export function ReviewRealm({ session }) {
                 return;
             }
         }
-        setProgress(null); setBusy(false); setConfirmText({}); setResolved({}); setSel(null); refresh();
+        setProgress(null); setBusy(false); setConfirmText({}); setResolved({}); setSel(null);
+        // 🔴 THE COMMIT SAID NOTHING — corrected 2026-09-04 22:49 EDT. Saving an export toasted; writing N changes to live content, which the confirm copy itself calls "live to players within seconds", did not. Worse, commit and discard shared this exact terminal line and landed on the same empty state, so an operator who mis-clicked could not tell from the screen which of the two had happened. The only screen that could answer it is the event river, two realms away.
+        const n = ops.length;
+        overlay.say(commit
+            ? `${n} change${n === 1 ? '' : 's'} committed. Players see ${n === 1 ? 'it' : 'them'} now.`
+            : `${n} change${n === 1 ? '' : 's'} discarded. Nothing reached Discord.`);
+        refresh();
     }
     const commitAll = () => runAll('commit');
     const discardAll = () => runAll('discard');
