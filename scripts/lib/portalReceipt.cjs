@@ -27,8 +27,17 @@ function record(tool, realm, note = '') {
     try {
         fs.mkdirSync(DIR, { recursive: true });
         let commit = ''; try { commit = execSync('git rev-parse --short HEAD', { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { /* not a repo */ }
+        // 🔴 A COMMIT SHA ALONE IS A CLAIM THE RECEIPT CANNOT SUPPORT. Every instrument here runs against the
+        // WORKING TREE, so stamping only `rev-parse HEAD` says "ran at this commit" for a run that measured
+        // something that commit does not contain — which is how `portalStatus` came to contradict §L row 7. The
+        // portal surfaces are the ones that matter: a dirty `docs/` does not change what a realm renders.
+        let dirty = null;
+        try {
+            dirty = execSync('git status --porcelain -- portal docs/superpowers/mockups/2026-08-23-portal-interactive',
+                { cwd: ROOT, encoding: 'utf8' }).trim() !== '';
+        } catch { /* not a repo — leave it unknown rather than asserting clean */ }
         fs.writeFileSync(path.join(DIR, `${realm}.${tool}.json`),
-            JSON.stringify({ tool, realm, commit, at: new Date().toISOString(), note }, null, 2) + '\n');
+            JSON.stringify({ tool, realm, commit, dirty, at: new Date().toISOString(), note }, null, 2) + '\n');
     } catch { /* a receipt that cannot be written must never take the instrument down with it */ }
 }
 

@@ -1,7 +1,7 @@
 {
   "realm": "analytics",
-  "recordedAt": "2026-09-04T20:25:40.868Z",
-  "commit": "ffd50ec4",
+  "recordedAt": "2026-09-04T23:58:07.754Z",
+  "commit": "04769143",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,253 +9,180 @@
   "views": {
     "Health": {
       "grid": {
-        "examined": 445,
+        "examined": 449,
         "nearMisses": 0,
         "sizeIssues": 170,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 9,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 9,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 9,
-            "spread": 29,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 9,
-            "spread": 36,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          },
-          {
-            "group": "seg>button",
-            "dim": "w",
-            "n": 5,
-            "spread": 4.2,
-            "values": [
-              62.2,
-              60.3,
-              62.9,
-              60.3,
-              64.5
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 24,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>span",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 24,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 24,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          },
-          {
-            "group": "bootgrid>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 23,
-            "values": [
-              524,
-              547,
-              570,
-              594,
-              617,
-              640
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "bootgrid>b|TOP-OFFSET",
+          "bootgrid>b|TOP-OFFSET",
+          "bootgrid>b|TOP-OFFSET",
+          "bootgrid>b|TOP-OFFSET",
+          "bootgrid>b|TOP-OFFSET",
+          "bootgrid>ok|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "bootgrid>span|TOP-OFFSET",
+          "hp>code|TOP-OFFSET",
+          "hp>code|TOP-OFFSET",
+          "hpanel>h5|TOP-OFFSET",
+          "hpanel>lvlbars|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lt>i|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>ln|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lp|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lt|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlb>lv2|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "lvlbars>lvlb|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|w",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "seg>button|w",
+          "stat>k|TOP-OFFSET",
+          "stat>v|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -280,231 +207,150 @@
     },
     "Usage": {
       "grid": {
-        "examined": 392,
+        "examined": 396,
         "nearMisses": 0,
         "sizeIssues": 140,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 29,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 36,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          },
-          {
-            "group": "seg>button",
-            "dim": "w",
-            "n": 5,
-            "spread": 4.2,
-            "values": [
-              62.2,
-              60.3,
-              62.9,
-              60.3,
-              64.5
-            ]
-          },
-          {
-            "group": "diff>diff-r",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 37,
-            "values": [
-              310,
-              347,
-              385
-            ]
-          },
-          {
-            "group": "diff>diff-r",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 38,
-            "values": [
-              310,
-              347,
-              385
-            ]
-          },
-          {
-            "group": "diff-r>dk",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 38,
-            "values": [
-              310,
-              348,
-              386
-            ]
-          },
-          {
-            "group": "diff-r>dk",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 38,
-            "values": [
-              310,
-              348,
-              386
-            ]
-          },
-          {
-            "group": "diff-r>span",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 38,
-            "values": [
-              310,
-              348,
-              386
-            ]
-          },
-          {
-            "group": "diff-r>span",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 38,
-            "values": [
-              310,
-              348,
-              386
-            ]
-          },
-          {
-            "group": "hp>b",
-            "dim": "TOP-OFFSET",
-            "n": 2,
-            "spread": 36,
-            "values": [
-              738,
-              774
-            ]
-          },
-          {
-            "group": "uside>erow",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 18,
-            "values": [
-              804,
-              822,
-              829,
-              847,
-              873,
-              898
-            ]
-          },
-          {
-            "group": "uside>erow",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 7,
-            "values": [
-              804,
-              822,
-              829,
-              847,
-              873,
-              898
-            ]
-          },
-          {
-            "group": "uside>erow",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 18,
-            "values": [
-              804,
-              822,
-              829,
-              847,
-              873,
-              898
-            ]
-          },
-          {
-            "group": "uside>erow",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 26,
-            "values": [
-              804,
-              822,
-              829,
-              847,
-              873,
-              898
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "diff-r>dk|TOP-OFFSET",
+          "diff-r>dk|TOP-OFFSET",
+          "diff-r>span|TOP-OFFSET",
+          "diff-r>span|TOP-OFFSET",
+          "diff>diff-r|TOP-OFFSET",
+          "diff>diff-r|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>ek|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>et|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "erow>ev|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "et>i|TOP-OFFSET",
+          "hp>b|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|w",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "seg>button|w",
+          "stat>k|TOP-OFFSET",
+          "stat>v|TOP-OFFSET",
+          "uside>erow.never|TOP-OFFSET",
+          "uside>erow.never|TOP-OFFSET",
+          "uside>erow.never|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET",
+          "uside>erow|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -529,249 +375,154 @@
     },
     "Timing": {
       "grid": {
-        "examined": 424,
+        "examined": 428,
         "nearMisses": 0,
         "sizeIssues": 144,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 9,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 9,
-            "spread": 29,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 9,
-            "spread": 36,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          },
-          {
-            "group": "seg>button",
-            "dim": "w",
-            "n": 5,
-            "spread": 4.2,
-            "values": [
-              62.2,
-              60.3,
-              62.9,
-              60.3,
-              64.5
-            ]
-          },
-          {
-            "group": "hp>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 18,
-            "values": [
-              342,
-              360,
-              379,
-              805
-            ]
-          },
-          {
-            "group": "hp>b",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 19,
-            "values": [
-              342,
-              360,
-              379,
-              805
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>al",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              467,
-              506,
-              545,
-              584,
-              623,
-              662
-            ]
-          },
-          {
-            "group": "ackrow>at",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              459,
-              498,
-              537,
-              576,
-              615,
-              654
-            ]
-          },
-          {
-            "group": "ackrow>at",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              459,
-              498,
-              537,
-              576,
-              615,
-              654
-            ]
-          },
-          {
-            "group": "ackrow>at",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              459,
-              498,
-              537,
-              576,
-              615,
-              654
-            ]
-          },
-          {
-            "group": "ackrow>at",
-            "dim": "TOP-OFFSET",
-            "n": 7,
-            "spread": 39,
-            "values": [
-              459,
-              498,
-              537,
-              576,
-              615,
-              654
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|w",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>al|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>at|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackrow>av|TOP-OFFSET",
+          "ackscale>ackrow.danger|TOP-OFFSET",
+          "ackscale>ackrow.zero|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "dt2>i|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durlist>durrow|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dl|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dt2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "durrow>dv2|TOP-OFFSET",
+          "hp>b|TOP-OFFSET",
+          "hp>b|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|w",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "seg>button|w",
+          "stat>k|TOP-OFFSET",
+          "stat>v|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -796,253 +547,88 @@
     },
     "Reach": {
       "grid": {
-        "examined": 316,
+        "examined": 320,
         "nearMisses": 0,
         "sizeIssues": 78,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 29,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 36,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          },
-          {
-            "group": "seg>button",
-            "dim": "w",
-            "n": 5,
-            "spread": 4.2,
-            "values": [
-              62.2,
-              60.3,
-              62.9,
-              60.3,
-              64.5
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              754,
-              802,
-              834,
-              866,
-              898,
-              930
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 40,
-            "values": [
-              769,
-              809,
-              841,
-              873,
-              905,
-              937
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              769,
-              809,
-              841,
-              873,
-              905,
-              937
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              769,
-              809,
-              841,
-              873,
-              905,
-              937
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              769,
-              809,
-              841,
-              873,
-              905,
-              937
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|w",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "seg>button|w",
+          "stat>k|TOP-OFFSET",
+          "stat>v|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -1067,253 +653,91 @@
     },
     "Search": {
       "grid": {
-        "examined": 313,
+        "examined": 317,
         "nearMisses": 0,
         "sizeIssues": 81,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 8,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 29,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 8,
-            "spread": 36,
-            "values": [
-              73,
-              136,
-              165,
-              201,
-              264,
-              329
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          },
-          {
-            "group": "seg>button",
-            "dim": "w",
-            "n": 5,
-            "spread": 4.2,
-            "values": [
-              62.2,
-              60.3,
-              62.9,
-              60.3,
-              64.5
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>tr",
-            "dim": "TOP-OFFSET",
-            "n": 13,
-            "spread": 32,
-            "values": [
-              417,
-              731,
-              779,
-              811,
-              843,
-              875
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 40,
-            "values": [
-              746,
-              786,
-              818,
-              850,
-              882,
-              914
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              746,
-              786,
-              818,
-              850,
-              882,
-              914
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              746,
-              786,
-              818,
-              850,
-              882,
-              914
-            ]
-          },
-          {
-            "group": "root>cb",
-            "dim": "TOP-OFFSET",
-            "n": 12,
-            "spread": 32,
-            "values": [
-              746,
-              786,
-              818,
-              850,
-              882,
-              914
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "n>ncell|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>dot|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|TOP-OFFSET",
+          "ncell>span|w",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>cb|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>lvtag.lv-info|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>none|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>n|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.alert|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>rivk.change|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>sev.info|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>td|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "root>tr|TOP-OFFSET",
+          "seg>button|w",
+          "stat>k|TOP-OFFSET",
+          "stat>v|TOP-OFFSET"
         ]
       },
       "inventory": {

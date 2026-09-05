@@ -64,9 +64,15 @@ try {
             }
             return { hits: [...new Set(hits)].slice(0, 14), rows: document.querySelectorAll(rowSel).length, chars: String((document.querySelector('main') || {}).innerText || '').length };
         }, GARBAGE.source, REALM_ROW_SELECTOR);
-        const ok = out.hits.length === 0;
+        // 🔴 THE ROW COUNT WAS PRINTED AND NEVER ASSERTED — `access · By permission` walked at 0 rows and passed. A view with no rows is either a realm whose row shape is missing from `REALM_ROW_SELECTOR` (an instrument gap, which is what the door assertion already exists to stop being invisible) or a view that genuinely rendered nothing (a defect). Both are findings; neither is a pass. Same class as the `sizeIssues` count one file away: a number reported without a rule attached to it is decoration.
+        const noRows = out.rows === 0;
+        const ok = out.hits.length === 0 && !noRows;
         if (!ok) failed = true;
-        console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(9)} ${String(out.rows).padStart(4)} row(s) · ${String(out.chars).padStart(6)} chars${ok ? '' : ` · ${out.hits.length} garbage value(s)`}`);
+        console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(9)} ${String(out.rows).padStart(4)} row(s) · ${String(out.chars).padStart(6)} chars${ok ? '' : ` · ${out.hits.length} garbage value(s)${noRows ? ' · ZERO ROWS' : ''}`}`);
+        if (noRows) {
+            console.log('        ⚠️  no element matched REALM_ROW_SELECTOR on this view. Either the view rendered');
+            console.log('            nothing, or this realm\'s row shape is missing from scripts/lib/portalSession.cjs.');
+        }
         out.hits.forEach((h) => console.log(`        ⚠️  ${h}`));
         return out;
     };

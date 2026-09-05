@@ -335,9 +335,11 @@ function ByScope({ matrix, spof, ownerId }) {
 }
 
 export function AccessRealm({ session }) {
-    // Both endpoints in ONE useAsync, because they are one page: two hooks would give the realm two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading.
-    const load = useAsync(() => Promise.all([fetchJson('/api/access'), fetchJson('/api/access/matrix')])
-        .then(([d, m]) => (failureOf(d) ? d : failureOf(m) ? m : { ...d, matrix: m })), []);
+    // Both endpoints in ONE useAsync, because they are one page: two hooks would give the realm two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading. ⚠️ `/api/review` RIDES ALONG for the rail's staged badge, in the SAME `useAsync` so the realm still has one loading phase. It is deliberately NOT run through `failureOf`: a 403 on review must not take down the Access page, which an admin can legitimately hold without holding Review.
+    const load = useAsync(() => Promise.all([fetchJson('/api/access'), fetchJson('/api/access/matrix'), fetchJson('/api/review')])
+        .then(([d, m, review]) => (failureOf(d) ? d : failureOf(m) ? m : { ...d, matrix: m,
+            stagedOps: (review && review.ops) || [],
+            stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), []);
     const [notice, setNotice] = useState('');
     const [view, setView] = useState('By admin');
     const overlay = useOverlay();
@@ -492,9 +494,11 @@ export function AccessRealm({ session }) {
     // A session is "signed in now" if it was seen in the last 15 minutes -- the same rough threshold 06-access-and-analytics.html's own "2 signed in now" stat line implies. Not a stored flag: a browser session has no logout event unless someone clicks it, so recency is the only honest signal there is.
     const activeSessions = data.sessions.filter((s) => Date.now() - new Date(s.lastSeenAt).getTime() < 15 * 60000).length;
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By permission']} onSetView=${setView}
                   meta=${viewMeta} realmKey=${accessKey}
+                  badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."

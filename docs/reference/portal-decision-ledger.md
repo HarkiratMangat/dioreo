@@ -261,6 +261,29 @@ The instruments state their own blind spots on every run and a ledger section sh
 | **Block ORDER** — the staged strip sat 1,281px below where the design puts it | masthead → resume → clock → attention list → live. `portal:converge` went from a flat +414px offset on eleven nodes to +0 everywhere |
 | `.hclock .sclock` was never defined, so every clock segment on Home rendered right-aligned | The design's own rule, adopted |
 
+## Overlay tier — one row per overlay, graded on the DELTA
+
+> 🔴 **The close condition is the plan's ⑧.** A row here is the overlay's own contribution — the realm's resting `--all` subtracted from its `--open` run — never the page-sized figure the instrument prints. The three standing subtractions (`② 9`, `⑤ RULES`, a refusal on an unchanged node count) are in ⑧ and are not repeated per row.
+
+| Realm · overlay | Delta ② / ③ / ④ | State | Reopens if |
+|---|---|---|---|
+| season · composer, six kinds | 0.8–1.2% each, enumerated | **Closed** — Part 1 | A composer kind is added |
+| season · export drawer | 0.2% | **Closed** — Part 1 | — |
+| season · day drawer | 1.0% | **Closed** — Part 1; its prev/next buttons are a cited portal-ahead keep | — |
+| season · identity editor | 10.7% → 0.2%, 35px gap closed | **Closed** — Part 1 | — |
+| season · record preview | 18.8% → 0.6% | **Closed** — Part 1 | — |
+| armory · `Export…` | 9 / 21 / 32 | **Enumerated, unadjudicated** | — |
+| armory · create (`--open-sel ".mh-add button"`) | 75 / 5 / 16 | ⚠️ **Enumerated; the ② 75 are pairing artifacts, VERIFIED** — `bf-sec` `bf-h` `dwfield` `bf-hint` `atr` `atn` `ati` `atx` all exist in `portal/ui/armory.js` with rules in `app.css`. 🔴 **The second create chip does DIFFERENT THINGS per side** — the mockup mounts a form (+117 nodes), the portal switches the rack to DMZ (−4,531). **Harkirat's call, not mine** | — |
+| broadcast · `Export…` | 9 / 17 / 20 | **Enumerated, unadjudicated** | — |
+| broadcast · `+ Post announcement` | 9 / 17 / 24 | **Enumerated, unadjudicated** | — |
+| access · `Export…` | 9 / 30 / 29 | **Enumerated, unadjudicated** | — |
+| access · `+ Grant access` | — | **CITED, not work.** The design opens a drawer; the portal does `setView` + `scrollToGrant`, which Harkirat chose. `--open` refuses because the node count does not change — that refusal is the evidence, not a defect | The inline form is replaced by a drawer |
+| analytics · `Export…` | 9 / 28 / 42 | **Enumerated, unadjudicated** | — |
+| analytics · three alert-level chips (`--open-sel ".lvlb"`) | — | **NOT YET OPENED** | — |
+| season · typed confirm · four remaining composer kinds | — | **NOT YET OPENED** | — |
+| review · `Discard all` | — | **NOT YET OPENED** | — |
+| home | — | **None exist.** Home commits nothing and has no composer — `--triggers` lists only the rail and the view chrome | Home gains a composer |
+
 ## Instruments — what they can and cannot do
 
 > 🔴 **TWO ALIGNMENT FAULTS FOUND IN PART 6b, 2026-09-03 21:38 EDT — both made the instruments compare different DATA and report it as different DESIGN.** · **The harness stood on the real date.** `fixtures.js` pins `F.today` to `2026-08-24` but stamps `documentElement.dataset.today` only when the URL carries `?today=`. Every portal component reads that value and otherwise falls back to the wall clock — so under `portalDiff`, which freezes `Date`, the two sides agreed, and under `portalAudit`, which does not, the portal was rendering **ten days ahead of the design**. Home's "Running right now" listed five entirely different items per side. The harness page now stamps the fixture day itself, deferring to an explicit `?today=`. · **The staged seed reached one page.** `loadSample()` lived inside `review.html`, so `?demo=1` worked on Review and nowhere else — while the portal harness synthesises four changesets on every page. It is `seedDemoOps` in the mockup's shared `docs/superpowers/mockups/2026-08-23-portal-interactive/assets/shell.js` now, and **the seeding refusal covers Home as well as Review** in all five instruments. Seeded, Home's two pages are the same height; unseeded they were 78px apart. ⚠️ Placing the CALL beside the Store was a TDZ error that blanked every page in the package — `node --check` passes it, because TDZ is a runtime fault.

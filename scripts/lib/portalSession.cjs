@@ -84,6 +84,13 @@ const REALM_ROW_SELECTOR = [
     // instrument whose whole job is that distinction. A genuinely-empty Home fails this walk and
     // says so, which is the honest answer rather than the convenient one.
     'main .att-row:not(.clear)',  // Home's attention rows (2026-09-04 14:19 EDT)
+    // 🔴 THE LINE ABOVE LEFT A CONDITIONAL FALSE NEGATIVE AND THIS IS THE OTHER HALF — 2026-09-04 19:48 EDT.
+    // Excluding `.clear` correctly stops an all-500s Home passing, but it also fails a Home that is
+    // simply CLEAN: nothing needing attention is the good state, and an instrument that cannot tell it
+    // from a dead backend reports a defect on a healthy page. `.sclock` is Home's season clock, which
+    // renders from `/api/season` — so it is present on a live-and-empty Home and absent when the
+    // endpoints are down, which is exactly the axis `.att-row` alone could not separate.
+    'main .sclock',   // Home's season clock — live-but-empty is not the door (2026-09-04 19:48 EDT)
     // ⚠️ `main .hcard` WAS HERE AND HAS NO EMITTER ANYWHERE — removed 2026-09-04 14:19 EDT, also by the ⑥
     // agent: zero occurrences in `portal/ui/*.js`, zero in the mockup's `index.html`, `hcards: 0` on
     // the live page. It survives only as 21 CSS rules and a row in the reverse-orphans accepted-debt

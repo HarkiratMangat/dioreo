@@ -377,9 +377,11 @@ export function BroadcastRealm({ session }) {
             `${header}\n${body}`, 'text/tab-separated-values;charset=utf-8');
     }
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="broadcast" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Delivery queue', 'Airtime']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
+                  badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}`}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',

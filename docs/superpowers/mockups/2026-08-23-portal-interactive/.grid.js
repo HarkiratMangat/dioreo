@@ -139,8 +139,15 @@
   window.__grid.all = function () {
     var n = near(), s = sizes();
     /* ⚠️ near/sizes are TRUNCATED samples and the counts are the measurement. Read nearMisses
-     * and sizeIssues as numbers; the arrays are there to start the triage, never to end it.  */
+     * and sizeIssues as numbers; the arrays are there to start the triage, never to end it.
+     * 🔴 sizeGroups IS NOT A SAMPLE AND IS NOT TRUNCATED. The recorded `sizes` array was capped at 18 while
+     * Home — the case the recording was added FOR — has 35, so the motivating case was the one it could not
+     * name; and because it sat outside the keys the fixture diff compares, nothing read it either. This is the
+     * bounded, complete form: one string per (group, dimension), which is what "which group moved" means. The
+     * SPREAD is deliberately left out of the key — a float that drifts by a tenth would make the gate flaky,
+     * and magnitude is already carried by the sizeIssues count.  */
+    var groups = s.map(function (x) { return x.group + '|' + x.dim; }).sort();
     return { viewport: viewport(), examined: all().length, nearMisses: n.length, sizeIssues: s.length,
-             near: n.slice(0, 22), sizes: s.slice(0, 18) };
+             near: n.slice(0, 22), sizes: s.slice(0, 18), sizeGroups: groups };
   };
 })();

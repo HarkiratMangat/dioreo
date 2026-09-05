@@ -33,6 +33,8 @@ import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
 const { record: recordRun } = require('./lib/portalReceipt.cjs');
+// 🔴 ONE DOOR RULE, THREE CALLERS. `lib/portalSession.cjs`'s header says "this is that logic, extracted" and this file never adopted it: it kept its own `mintSession` and a door guard testing `main.door` ALONE, which passes the shell-with-no-rows case the lib exists to catch. Three unequal copies of one rule is the defect that lib was written to remove, in the file it was extracted FROM.
+const { mintSession: mintDevSession, assertPastDoor } = require('./lib/portalSession.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
@@ -153,33 +155,8 @@ const portalUrl = selfTest ? mockupUrl
 //
 // Two answers, and it needs both. It MINTS a session against dev Mongo so it can see the realm at all, and it REFUSES to report if the portal side is still the door — because a diff that silently compares the wrong page is worse than no diff, and this one had already proved it can happen.
 //
-// ⚠️ DEV MONGO ONLY, asserted rather than assumed. It reads the URI out of `.env.dev` by hand (the same grep-do-not-source reasoning as backupDb.sh and portSeasonalToLocal.mjs) and refuses anything that is not localhost. A diff tool that can write a session into the production database is not a diff tool.
-async function mintSession(discordId) {
-    const envPath = path.join(ROOT, '.env.dev');
-    if (!fs.existsSync(envPath)) return null;
-    const line = fs.readFileSync(envPath, 'utf8').split(/\r?\n/).find((l) => l.trimStart().startsWith('MONGODB_URI='));
-    const uri = line ? line.slice(line.indexOf('=') + 1).trim().replace(/^["']|["']$/g, '') : '';
-    if (!uri) return null;
-    if (!/mongodb:\/\/(localhost|127\.0\.0\.1)/.test(uri)) {
-        throw new Error(`portal:diff refuses to mint a session against a non-local database: ${uri.replace(/\/\/.*@/, '//***@')}`);
-    }
-    const mongoose = require('mongoose');
-    await mongoose.connect(uri);
-    const PortalSession = require(path.join(ROOT, 'models/PortalSession'));
-    const AdminUser = require(path.join(ROOT, 'models/AdminUser'));
-    // 🔴 THE OWNER, NOT "WHOEVER THE DATABASE LISTS FIRST". This read AdminUser.findOne({}) and got a scoped test admin holding three realms out of six, so the rail rendered SEASON / BROADCAST / REVIEW against the mockup's six — and the diff duly reported the rail, the realm links and everything they push around as differences. Three of the eleven regions in the first real-server season run were that. A tool whose own session narrows the page is measuring its own setup; the owner id is hardcoded in utils/owner.js and implicitly holds everything, which is the only grant that shows the whole surface. The AdminUser fallback stays for a database that somehow has no owner row.
-    const { ALLOWED_ADMIN_ID } = require(path.join(ROOT, 'utils/owner'));
-    const who = discordId || ALLOWED_ADMIN_ID || (await AdminUser.findOne({}).lean())?.discordId;
-    if (!who) { await mongoose.disconnect(); return null; }
-    const raw = crypto.randomBytes(32).toString('hex');
-    await PortalSession.create({
-        sessionHash: crypto.createHash('sha256').update(raw).digest('hex'),
-        discordId: who,
-        userAgent: 'portal:diff (scripts/portalDiff.mjs)',
-    });
-    await mongoose.disconnect();
-    return { raw, who };
-}
+// ⚠️ DEV MONGO ONLY, asserted rather than assumed. It reads the URI out of `.env.dev` by hand (the same grep-do-not-source reasoning as backupDb.sh and portSeasonalToLocal.mjs) and refuses anything that is not localhost. A diff tool that can write a session into the production database is not a diff tool. Delegates to the extracted lib. The reasoning that used to live here — dev Mongo asserted rather than assumed, the OWNER rather than whoever the database lists first — is unchanged and now lives in ONE place.
+async function mintSession(discordId) { return mintDevSession(ROOT, discordId); }
 
 // Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence. Every visible control the page offers, both sides, as one map. Written because the first question the overlay tier asks — "what is there to open, and does the other side have it?" — had no answer short of reading two source files, and a control present on ONE side is itself a finding this reports for free.
 const LIST_TRIGGERS = () => {
@@ -322,7 +299,9 @@ async function shoot(page, url, label) {
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
     await page.evaluate(() => new Promise((r) => setTimeout(r, 260)));
+    // 🔴 `main.door` ALONE PASSES THE SHELL-WITH-NO-ROWS CASE, which is the exact reading `lib/portalSession.cjs` was extracted to stop: a rendered header and 784 characters of chrome, identical on every view, looks like a stable measurement and is the signature of never having arrived. The lib's rule runs on the PORTAL side only — the mockup is a static page with no door to be behind, and its fold/overlay captures legitimately render shapes the realm-row list does not name.
     const door = await page.evaluate(() => !!document.querySelector('main.door'));
+    if (!door && !selfTest && label !== 'mk') await assertPastDoor(page, `${url} (portal side)`);
     if (door && !selfTest) {
         throw new Error(`portal:diff refuses to report: ${url} is showing the DOOR, not the realm.\n`
             + '  A diff of a login page produces percentages and ranked regions that look exactly like findings.\n'

@@ -24,8 +24,8 @@ export const STEPS = [
     // 🔴 BUST AFTER THE REFLOWS, BUILD AFTER THE BUST. `portal:bust` stamps every mockup page with a `?v=` derived from its assets' mtimes, so any edit to an asset after this point invalidates the stamp it just wrote — which is the exact failure this file exists to stop.
     { name: 'portal:bust', argv: ['docs/superpowers/mockups/2026-08-23-portal-interactive/.bust.mjs'] },
     { name: 'build', argv: ['-e', "require('./scripts/buildPortal').build()"] },
-    // 🔴 GEOMETRY LAST, because it MEASURES the built tree. Recording before the build stamps the previous build's numbers under this commit's sha, which is a fixture that certifies the wrong tree.
-    { name: 'portalGeometry --write', argv: ['scripts/portalGeometry.mjs', '--all', '--write'] },
+    // 🔴 GEOMETRY LAST, because it MEASURES the built tree. Recording before the build stamps the previous build's numbers under this commit's sha, which is a fixture that certifies the wrong tree. 🔴 CHECK BEFORE WRITE, ADDED 2026-09-04 19:52 EDT. `--all --write` unconditionally re-records all seven fixtures, and a re-recorded fixture makes its own `--check` VACUOUS for that realm — it then compares the tree against a baseline taken from that same tree. So this tool, run as documented before every commit, was quietly disarming the one regression gate the plan relies on, for every realm, every time. A preflight on a clean tree now leaves `git status` clean, which is the observable.
+    { name: 'portalGeometry --check', argv: ['scripts/portalGeometry.mjs', '--all', '--check'], writeOnFail: ['scripts/portalGeometry.mjs', '--all', '--write'] },
 ];
 
 // ⚠️ THE ORDER CHECK IS THE POINT, NOT THE STEPS. Running the five in sequence is easy; what has actually failed is a SIXTH thing happening between two of them. So after the bust, any later change to a mockup asset is a hard failure rather than a silent stale stamp.
@@ -49,6 +49,13 @@ function run(step) {
         execFileSync(process.execPath, step.argv, { cwd: ROOT, stdio: 'pipe' });
         console.log('ok');
     } catch (e) {
+        // A geometry CHECK that fails is the normal case after a real edit — the measurements moved, and the fixture is meant to follow. It is re-recorded here rather than in the step list, so a run over an UNCHANGED tree writes nothing at all and the next `--check` still means something.
+        if (step.writeOnFail) {
+            console.log('moved — re-recording');
+            process.stdout.write('  · portalGeometry --write … ');
+            try { execFileSync(process.execPath, step.writeOnFail, { cwd: ROOT, stdio: 'pipe' }); console.log('ok'); return; }
+            catch (e2) { console.log('FAILED'); console.log(String(e2.stdout || '').slice(-1200)); process.exit(1); }
+        }
         console.log('FAILED');
         console.log(String(e.stdout || '').slice(-1200));
         console.log(String(e.stderr || '').slice(-600));

@@ -702,7 +702,10 @@ function Search({ rows = [] }) {
 export function AnalyticsRealm({ session }) {
     // 🔴 THE ONE FIGURE AN ADMIN CANNOT GET ANYWHERE ELSE. `/manage`, `/bot` and `/autobuild` are stamped `isAdmin` and excluded from every product count — correctly, because one admin's afternoon would otherwise dominate a small dataset. But that also makes "did my own edit register, and how long did it take" unanswerable from the screen that should answer it. The toggle asks the server again rather than filtering here, because the percentiles and the roll-ups are aggregations: there is no client-side subset of a p95.
     const [includeAdmin, setIncludeAdmin] = useState(false);
-    const load = useAsync(() => fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), [includeAdmin]);
+    // ⚠️ `/api/review` RIDES ALONG for the rail's staged badge, in the SAME `useAsync` so the realm still has one loading phase. Spreading `analytics` first keeps its own `forbidden`/`failed`/`signedOut` keys, so `failureOf` inside `useAsync` still routes a genuine analytics failure to the failbox.
+    const load = useAsync(() => Promise.all([fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), fetchJson('/api/review')])
+        .then(([analytics, review]) => ({ ...analytics, stagedOps: (review && review.ops) || [],
+                                          stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), [includeAdmin]);
     const [view, setView] = useState('Health');
     // 🔴 THE DESIGN'S LEVEL ROWS ARE A FILTER CONTROL AND THE PORTAL DREW THEM AS TEXT. analytics.html:228 sets the river to kind=alert plus that level and scrolls it into view, so the distribution and the log are one surface: you read that 258 alerts were cautions and press the row to see them. The portal had the same three rows as inert divs and the same filters sitting unreachable in the Manifest's own chipset. `seq` rather than the filters object is what Manifest keys its effect on -- see its comment.
     const [riverFilter, setRiverFilter] = useState(null);
@@ -806,10 +809,12 @@ export function AnalyticsRealm({ session }) {
         : 'autocomplete sessions only';
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   meta=${viewMeta}
+                  badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   tools=${html`
                       <label class="adminsw">
                           <input type="checkbox" checked=${includeAdmin}

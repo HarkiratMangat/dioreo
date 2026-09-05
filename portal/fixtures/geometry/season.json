@@ -1,7 +1,7 @@
 {
   "realm": "season",
-  "recordedAt": "2026-09-04T20:25:27.747Z",
-  "commit": "ffd50ec4",
+  "recordedAt": "2026-09-04T23:57:54.572Z",
+  "commit": "04769143",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -12,237 +12,42 @@
         "examined": 1447,
         "nearMisses": 3,
         "sizeIssues": 35,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 47,
-            "spread": 18,
-            "values": [
-              73,
-              136,
-              201,
-              264,
-              311,
-              329
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "w",
-            "n": 4,
-            "spread": 6.3,
-            "values": [
-              25.2,
-              18.9,
-              18.9,
-              18.9
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "TOP-OFFSET",
-            "n": 4,
-            "spread": 17,
-            "values": [
-              112,
-              129
-            ]
-          },
-          {
-            "group": "srec-c>k",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 35,
-            "values": [
-              439,
-              474
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 26,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 8,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>d",
-            "dim": "TOP-OFFSET",
-            "n": 5,
-            "spread": 38,
-            "values": [
-              438,
-              476
-            ]
-          },
-          {
-            "group": "scrub-track>mini",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 6,
-            "values": [
-              609,
-              615,
-              621,
-              627,
-              633,
-              639
-            ]
-          },
-          {
-            "group": "scrub-track>mini",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 6,
-            "values": [
-              609,
-              615,
-              621,
-              627,
-              633,
-              639
-            ]
-          },
-          {
-            "group": "scrub-track>mini",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 6,
-            "values": [
-              609,
-              615,
-              621,
-              627,
-              633,
-              639
-            ]
-          },
-          {
-            "group": "scrub-track>mini",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 6,
-            "values": [
-              609,
-              615,
-              621,
-              627,
-              633,
-              639
-            ]
-          },
-          {
-            "group": "scrub-track>mini",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 6,
-            "values": [
-              609,
-              615,
-              621,
-              627,
-              633,
-              639
-            ]
-          },
-          {
-            "group": "ruler>span",
-            "dim": "w",
-            "n": 6,
-            "spread": 6,
-            "values": [
-              37,
-              43,
-              43,
-              37,
-              37,
-              43
-            ]
-          },
-          {
-            "group": "root>b",
-            "dim": "w",
-            "n": 6,
-            "spread": 6,
-            "values": [
-              30,
-              36,
-              36,
-              30,
-              30,
-              36
-            ]
-          },
-          {
-            "group": "lnh>lnh-t",
-            "dim": "w",
-            "n": 5,
-            "spread": 6.1,
-            "values": [
-              75.4,
-              69.3,
-              75.4,
-              75.4,
-              69.3
-            ]
-          },
-          {
-            "group": "lnh>lnh-n",
-            "dim": "w",
-            "n": 5,
-            "spread": 6.1,
-            "values": [
-              6.1,
-              12.2,
-              6.1,
-              6.1,
-              12.2
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "bar>bl|TOP-OFFSET",
+          "bar>bl|TOP-OFFSET",
+          "bar>bl|TOP-OFFSET",
+          "dnotch>i|TOP-OFFSET",
+          "lnh>lnh-n|w",
+          "lnh>lnh-t|w",
+          "ow-l>ow-i|h",
+          "rec-row>rec-d|TOP-OFFSET",
+          "rec-row>rec-d|w",
+          "rec-row>rec-meta|TOP-OFFSET",
+          "rec-row>rec-mk|TOP-OFFSET",
+          "rec-row>rec-tag|TOP-OFFSET",
+          "rec-row>rec-ttl|TOP-OFFSET",
+          "rec-row>rec-ttl|w",
+          "root>b|w",
+          "ruler>span|w",
+          "sc-u>i|TOP-OFFSET",
+          "sc-u>i|w",
+          "scrub-track>mini|TOP-OFFSET",
+          "scrub-track>mini|TOP-OFFSET",
+          "scrub-track>mini|TOP-OFFSET",
+          "scrub-track>mini|TOP-OFFSET",
+          "scrub-track>mini|TOP-OFFSET",
+          "sortable>sortbtn|TOP-OFFSET",
+          "srec-c>d|TOP-OFFSET",
+          "srec-c>k|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "tiers>t-legendary|TOP-OFFSET",
+          "tk>bar.saved|TOP-OFFSET",
+          "tk>bar.saved|TOP-OFFSET",
+          "tk>bar.saved|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -272,237 +77,114 @@
         "examined": 1598,
         "nearMisses": 0,
         "sizeIssues": 107,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 47,
-            "spread": 18,
-            "values": [
-              73,
-              136,
-              201,
-              264,
-              311,
-              329
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "w",
-            "n": 4,
-            "spread": 6.3,
-            "values": [
-              25.2,
-              18.9,
-              18.9,
-              18.9
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "TOP-OFFSET",
-            "n": 4,
-            "spread": 17,
-            "values": [
-              112,
-              129
-            ]
-          },
-          {
-            "group": "srec-c>k",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 35,
-            "values": [
-              439,
-              474
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 26,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 8,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>d",
-            "dim": "TOP-OFFSET",
-            "n": 5,
-            "spread": 38,
-            "values": [
-              438,
-              476
-            ]
-          },
-          {
-            "group": "bcol-h>bcol-n",
-            "dim": "w",
-            "n": 4,
-            "spread": 6,
-            "values": [
-              28,
-              22,
-              22,
-              28
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 14,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 28,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 14,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 28,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 28,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 28,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 39,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          },
-          {
-            "group": "bcol-body>bcard",
-            "dim": "TOP-OFFSET",
-            "n": 39,
-            "spread": 28,
-            "values": [
-              665,
-              760,
-              856,
-              951,
-              965,
-              1047
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bd|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bmeta|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>bn|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcard>sparkwrap|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-body>bcard|TOP-OFFSET",
+          "bcol-h>bcol-n|w",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bd>dot2|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|TOP-OFFSET",
+          "bmeta>b|w",
+          "ow-l>ow-i|h",
+          "sc-u>i|TOP-OFFSET",
+          "sc-u>i|w",
+          "sortable>sortbtn|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "spark>saved|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "sparkwrap>spark|TOP-OFFSET",
+          "srec-c>d|TOP-OFFSET",
+          "srec-c>k|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "tiers>t-legendary|TOP-OFFSET"
         ]
       },
       "inventory": {
@@ -532,239 +214,68 @@
         "examined": 1351,
         "nearMisses": 0,
         "sizeIssues": 61,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "w",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              12.7,
-              15.8,
-              14.2,
-              12.6,
-              14.3,
-              14.2
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "h",
-            "n": 47,
-            "spread": 7.6,
-            "values": [
-              13.5,
-              15.8,
-              11.1,
-              8.8,
-              11.1,
-              10.7
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 47,
-            "spread": 18,
-            "values": [
-              73,
-              136,
-              201,
-              264,
-              311,
-              329
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "w",
-            "n": 4,
-            "spread": 6.3,
-            "values": [
-              25.2,
-              18.9,
-              18.9,
-              18.9
-            ]
-          },
-          {
-            "group": "sc-u>i",
-            "dim": "TOP-OFFSET",
-            "n": 4,
-            "spread": 17,
-            "values": [
-              112,
-              129
-            ]
-          },
-          {
-            "group": "srec-c>k",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 35,
-            "values": [
-              439,
-              474
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 26,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>t",
-            "dim": "TOP-OFFSET",
-            "n": 6,
-            "spread": 8,
-            "values": [
-              438,
-              464,
-              472
-            ]
-          },
-          {
-            "group": "srec-c>d",
-            "dim": "TOP-OFFSET",
-            "n": 5,
-            "spread": 38,
-            "values": [
-              438,
-              476
-            ]
-          },
-          {
-            "group": "reph>rt-k",
-            "dim": "w",
-            "n": 6,
-            "spread": 3.3,
-            "values": [
-              82.6,
-              82.6,
-              82.6,
-              82.6,
-              79.3,
-              79.3
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 29,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 29,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 29,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 30,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 30,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 29,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 30,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          },
-          {
-            "group": "rephits>li",
-            "dim": "TOP-OFFSET",
-            "n": 16,
-            "spread": 29,
-            "values": [
-              741,
-              875,
-              904,
-              1038,
-              1067,
-              1382
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
+          "ow-l>ow-i|h",
+          "reph>rt-k|w",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "rephits>li|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>button|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>b|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "root>span|TOP-OFFSET",
+          "sc-u>i|TOP-OFFSET",
+          "sc-u>i|w",
+          "sortable>sortbtn|TOP-OFFSET",
+          "srec-c>d|TOP-OFFSET",
+          "srec-c>k|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "srec-c>t|TOP-OFFSET",
+          "tiers>t-legendary|TOP-OFFSET"
         ]
       },
       "inventory": {

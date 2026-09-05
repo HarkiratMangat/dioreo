@@ -1,7 +1,7 @@
 {
   "realm": "review",
-  "recordedAt": "2026-09-04T20:25:41.538Z",
-  "commit": "ffd50ec4",
+  "recordedAt": "2026-09-04T23:58:08.490Z",
+  "commit": "04769143",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,83 +9,16 @@
   "views": {
     "(single view)": {
       "grid": {
-        "examined": 113,
+        "examined": 117,
         "nearMisses": 2,
         "sizeIssues": 6,
-        "sizesSample": [
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 11,
-            "spread": 14,
-            "values": [
-              73,
-              136,
-              201,
-              250,
-              264,
-              316
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 11,
-            "spread": 13,
-            "values": [
-              73,
-              136,
-              201,
-              250,
-              264,
-              316
-            ]
-          },
-          {
-            "group": "[object>[object.SVGAnimatedString]",
-            "dim": "TOP-OFFSET",
-            "n": 11,
-            "spread": 15,
-            "values": [
-              73,
-              136,
-              201,
-              250,
-              264,
-              316
-            ]
-          },
-          {
-            "group": "stat>v",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              104,
-              126
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "w",
-            "n": 3,
-            "spread": 6.3,
-            "values": [
-              44.1,
-              37.8,
-              44.1
-            ]
-          },
-          {
-            "group": "stat>k",
-            "dim": "TOP-OFFSET",
-            "n": 3,
-            "spread": 22,
-            "values": [
-              88,
-              110
-            ]
-          }
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "stat>k|TOP-OFFSET",
+          "stat>k|w",
+          "stat>v|TOP-OFFSET"
         ]
       },
       "inventory": {

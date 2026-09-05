@@ -285,8 +285,10 @@ export function HomeRealm({ session }) {
 
     const today = todayIso();
     const rows = attentionRows({ ...data, today });
-    const live = (data.broadcast?.live || []).length;
-    const staged = (data.review?.ops || []).length;
+    // 🔴 A FIGURE THAT CANNOT BE KNOWN MUST NOT READ AS ZERO — the rule `broadcast.js:326` states and implements, which this file broke on the one page that reads five other realms. `/api/review` and `/api/broadcast` are both forbidden to a delegated admin who does not hold them, and `fetchJson` answers a 403 with `{forbidden:true}` — so `(x || [])` yielded `[]` and Home told that admin "0 live now / 0 staged" when the honest answer is "you cannot see that". `null` reaches the Masthead as an em dash, the portal's own absent-value voice. ⚠️ `needs you` is NOT given the same treatment: `attentionRows` already drops a row it cannot compute and still renders the rest, so its count is a real count of what IS known rather than a masked absence.
+    const unknown = (d) => Boolean(d && (d.forbidden || d.failed));
+    const live = unknown(data.broadcast) ? null : (data.broadcast?.live || []).length;
+    const staged = unknown(data.review) ? null : (data.review?.ops || []).length;
 
     // The LEAD is "needs you", because that is what this page IS. Its colour is the state it reports — warn when there is something, plain ink at zero — which is the same rule every other masthead follows. A zero lead keeps its SIZE and drops its COLOUR.
     //
@@ -294,12 +296,12 @@ export function HomeRealm({ session }) {
     const stats = [
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
         // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour. ⚠️ NO `tone: 'live'` HERE, AND THE ABSENCE IS THE POINT. It was added to clear a coverage entry and there is no `.stat.live` rule anywhere — `.stat.stg .v` and `.stat.warn .v` exist, `.stat.live` does not — so the class styled nothing and existed only to make a number move. The live figure reads in plain ink because that is what the design gives it.
-        { value: live, label: 'live now' },
-        { value: staged, label: 'staged', tone: staged ? 'stg' : undefined },
+        { value: live === null ? '—' : live, label: 'live now' },
+        { value: staged === null ? '—' : staged, label: 'staged', tone: staged ? 'stg' : undefined },
     ];
 
     return html`
-        <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged }}
+        <${Shell} realm="home" session=${session} busy=${load.hostClass} badges=${{ review: staged || 0 }}
                   commands=${rows.map((a) => ({
                       label: a.text, group: a.realm, local: true, accent: `var(--r-${a.realm.toLowerCase()})`,
                       keywords: ['needs', 'attention', 'fix', a.act], run: () => { location.hash = a.href.slice(1); },

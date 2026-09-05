@@ -872,6 +872,25 @@ The one time it was checked — by accident, through `--triggers` printing both 
 
 ## THE OVERLAY TIER — enumerated 2026-09-03 22:04 EDT, and it is smaller than this plan's language implies
 
+### 🔴 ⑧ — THE OVERLAY TIER'S CLOSE CONDITION. Written 2026-09-04 19:57 EDT; until now the tier had none.
+
+**§L closes a resting realm on ② — an ENUMERATION, every region either fixed or carried as a cited row with a falsifier.** No enumeration format existed for an overlay, so "the overlay tier" could be neither opened nor closed: a session could open every drawer, report six percentages, and have produced nothing §L can grade. Found by the §L ⑥ audit and filed `[P2 · S]`; this is that condition, deliberately in ②'s shape rather than a new kind of grading.
+
+**An overlay closes when its DELTA is enumerated.** Two runs per overlay — the realm's resting `--all`, then the same command with `--open "<trigger>"` or `--open-sel "<css>"` — and the overlay's own contribution is the SUBTRACTION. Every member of that delta is then either fixed, or carried as a row under that realm in `docs/reference/portal-decision-ledger.md` with a Why and a Reopens-if. That is the same bar ② sets and the same artifact it writes to.
+
+⛔ **A percentage is not a close condition here, for two reasons and the second is specific to this tier.** §0.7d retired it for a resting page; and an `--open` frame is captured at FOLD height, so its percentage is not comparable to the realm's own page figure at all. **Grade the section counts, never the number.**
+
+**Three standing subtractions, measured across all six overlays opened on 2026-09-03/04 and re-derivable rather than remembered:**
+
+| Subtract | Because | It stops being true if |
+|---|---|---|
+| `② 9` | Opening anything changes the node count, which re-runs the LCS pairing: the whole-page `main`/`div` text node, the view-tab `span`, and the mockup's inline `path`/`circle`/`rect` against the portal's `svg`+`use` sprite. **The one real member is `span.id` "…2283", already cited** | The aligner stops pairing by sequence |
+| `⑤ RULES` entirely | Byte-identical (127 rows) on every overlay run — opening a drawer does not change a stylesheet, so the section carries **no** overlay information and reading it counts the resting page a third time | An overlay starts injecting a stylesheet |
+| A refusal on an unchanged node count | `--open` decides "it opened" by node count, so an affordance that SCROLLS or calls `setView` reports *"clicking … opened nothing"*. **A refusal is not evidence of a defect** — access's `+ Grant access` is exactly this and is cited | `--open` learns to detect a scroll |
+
+⚠️ **AND THE TIER IS NOT CLOSED BY OPENING EVERY TRIGGER.** `--triggers` is a FLOOR on what exists (§0.6c), not a budget — so *"every trigger has been opened"* is a different and weaker claim than *"every overlay's delta is enumerated"*. The second is the condition. ⚠️ **Do not carry the resting page's pairing-artifact rule in here** — the note below this section says why it inverts.
+
+
 `portalAudit --realm <r> --triggers` was run on all six realms. Most triggers are the seven nav-rail links and the view tabs, neither of which opens an overlay. **The genuine never-opened overlays are:** armory `Export…` · `New MP build` · `New DMZ build` — broadcast `Export…` · `+ Post announcement` — access `Export…` · `+ Grant access` — analytics `Export…` · three alert-level chips — season's five remaining composer kinds, the expanded identity editor, the typed confirm and the row preview. Home commits nothing and has no composer. **≈12–15 comparisons**, each `--open "<trigger>"` plus a diff, and a hovered/focused/opened frame is captured at FOLD height so its percentage compares only to `--fold`. Season's composer (0.9%), export drawer (0.2%) and day drawer (1.0%) are already measured.
 
 ⚠️ **`portal:status` WILL READ 🔴 RE-MEASURE ON FIVE REALMS AND THAT IS COMMIT-COUNT BOOKKEEPING, NOT DRIFT.** The regression sweep was RUN 2026-09-03 22:33 EDT and is clean: `npm run portal:sweep` on this branch, and the same sweep with `portal/ui` and the whole mockup package checked out at `95923c9e` and rebuilt, produce identical figures realm for realm — season 12.0%/135 · armory 8.6%/893 · broadcast 0.2%/16 · access 6.6%/56 · analytics 14.0%/41, with the captured page heights matching to the pixel. The only movement is Review, 12 → 13 regions at the same 0.5%. **Do not redo it because the counter is red; the counter counts commits, not differences.** The tables are in `docs/db-deferred-list.md`.
