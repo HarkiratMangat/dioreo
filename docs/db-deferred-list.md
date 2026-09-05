@@ -401,6 +401,26 @@ A realm the admin cannot see answers `forbidden`, and that realm's attention row
 
 Season's masthead eyebrow reads **20 live now** and Home's reads **2 live now**, on the same fixture. Both are right: Season counts live SEASON ITEMS, Home counts live ANNOUNCEMENTS, and Home matches the design exactly (`index.html:207` counts `liveAnns()`). **It is the copy audit's vocabulary class — one word, two meanings — and it is the design's own wording on both sides**, so the conformance rule says reproduce it and file it rather than correct it mid-pass. **Do.** Give each figure a label that names what it counts, after all six realms match. **Verify by:** `portal:agreement` no longer needs a `SCOPED` entry for `live now`.
 
+### `[P1 · M · Opus5-High]` §L condition ⑥ — the §0.5c reader test — has never run on BROADCAST or ACCESS
+*Filed 2026-09-04 23:17 EDT. It has lived only in the plan's §L status column and in chat, which is status rather than direction — the distinction this list exists for.*
+
+**Five of seven realms have run it** (Season, Armory, Analytics, Review, Home). Broadcast and Access have not: they closed in the 2026-09-01 session that ran out before reaching them, and Access's own §L row still reads *"⑥ is this session's next step"* three days later.
+
+⚠️ **Tonight's two agents do NOT satisfy it.** They audited the branch's carriers globally; §0.5c's Agent A half — *execute that realm's first phase for real, run every instrument on it, then attack that Part's own diff* — never happened for either realm.
+
+**Do.** Per §0.5c: **exactly two agents, split REALITY vs THE DOCUMENT** (Harkirat, 2026-09-01 19:26 EDT — three soft agents were answered with seven, and he ruled that two must encompass what the seven were asked). Both also take **the comments as claims to test**: Part 5 measured eight defects, every one the code violating a rule its own adjacent prose states. ⚠️ **Requires Harkirat's approval at the moment of dispatch** — the agents are not the session's to spawn, and 2026-09-04's approval is spent.
+
+🔴 **Read Broadcast's §L row first.** It records that `portalConverge` had never been run on that realm when the row was written — `portal:audit`'s ① CASCADE section was substituted for it while `portal:status` said `converge · never`. **Its ① may still be standing on a near-neighbour**, which is exactly what Agent A is for.
+
+**Verify by:** both realms' §L rows name the reader test as run with a date, and every finding it returns is either fixed or carried as a ledger row with a falsifier. Historical yield for sizing: Armory 16 findings; Analytics found a deleted `EventDrawer` that had survived `node --check`, the build, ten scoped gates and a green `npm test`.
+
+### `[P2 · S · Sonnet5-High]` Part 7's tail — the misc and the double-check
+*Filed 2026-09-04 23:17 EDT. The SWEEP half is run and clean (2026-09-04 12:53 EDT); the rest is not.*
+
+Open, from the plan's PART 7 list: **item 1 — Item M#4, a component clipped to 1px by a class-name collision, rendering for screen readers only, never identified** (`.lnc` inheriting `.col{min-height:220px}` was a previous instance of the same shape) · item 2, the remaining reverse-orphan rows no Part claimed, plus `--ci`/`--mono`/`--focus` · item 5, the difference ledgers read end to end with every *stays, because X* re-read against X · item 6, the one batched pop-up (the four composition changes he has never seen · item H, playlist concurrency density, where his *"Idk"* has never been re-asked).
+
+**Verify by:** item M#4 is named with a `file:line` or explicitly retired as not reproducing, and the pop-up has been asked once rather than deferred again.
+
 ### `[P2 · XS · Sonnet5-Medium]` Home's TAB ORDER after the block reorder
 *Filed 2026-09-03 22:33 EDT, Part 6b. **Split out of a bundled entry 2026-09-04 20:02 EDT.***
 
