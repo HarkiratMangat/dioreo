@@ -230,12 +230,15 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
                          onClick=${onOpenTiming} tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
-                <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
-                         onClick=${onOpenReach}
-                         sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
-                <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
-                         onClick=${() => onFilterRiver({ kind: 'alert' })}
-                         sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
+                <!-- 🔴 TWO TILES, NOT FOUR — 2026-09-04 22:54 EDT. The row held four metrics across three time windows
+                     and three units, and the code comment above records that the first version wired all four to
+                     Timing *because the design wires its four there*: four slots existed, then four numbers were
+                     found to fill them. The rule for which two go is not taste — **a tile whose own subtitle is
+                     defined against a masthead figure is a third statement of that figure.** Distinct users 24h
+                     read "across N commands" beside a masthead reading COMMANDS 24H, and Quiet alerts 24h read
+                     "below the N errors" beside ERRORS 24H. The two that remain say something the masthead
+                     cannot. Their filters are still reachable: the level rows scope the river to alerts, and
+                     Reach is a view tab. -->
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
                  stores the commit, the guild count, how many commands registered and how many emoji synced
@@ -295,7 +298,12 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                     <!-- ⚠️ THE COUNTS MOVED UP INTO A TILE AND ARE NOT REPEATED HERE. Restating them would
                          rebuild the duplication the tiles were just rewritten to remove, one panel lower. -->
                     <p class="hp">A restart is normal after a deploy and is worth a look when it was not one.</p>
-                    <${DailyBars} series=${h.spark?.alerts || []} label="Alerts per day" />
+                    <!-- 🔴 IT PLOTTED ALERTS UNDER A HEADING READING "RESTARTS" — 2026-09-04 22:54 EDT. The heading, the
+                         prose and the series disagreed three ways, and the two figures could not be reconciled: a
+                         tile said 303 restarts in 7d while this chart totalled 6. spark.boots has existed in the
+                         payload all along (portal/api/analytics.js:110). Corrected toward what the heading and the
+                         prose already agree on rather than by retitling, because they are the half that is right. -->
+                    <${DailyBars} series=${h.spark?.boots || []} label="Restarts per day" />
                 </section>
                 <section class="hpanel">
                     <h4>Where these come from</h4>

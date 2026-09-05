@@ -152,10 +152,12 @@ scope: the portal's REALM-BY-REALM conformance work — the seven realms, their 
 🔴 **THE CURRENT MEASURED FLOORS — `npm run portal:sweep`, 2026-09-04 20:18 EDT. ANY PER-ROW FIGURE BELOW DATED EARLIER IS SUPERSEDED BY THIS BLOCK.** §L's own rule is that a wrong figure is worse than no row, and the rows carry figures from five different dates. Rather than rewrite each and create six new things to keep in sync, the figures live in ONE dated place with the command that reproduces them.
 
 ```
-season     12.3% / 135    armory    8.0% / 906    broadcast 1.2% / 17
-access      7.3% /  56    analytics 14.2% /  40   review    0.6% / 13
-home        1.2% /  28
+season     12.3% / 141    armory    8.0% / 913    broadcast 1.2% / 20
+access      7.3% /  56    analytics 12.6% /  44   review    0.7% / 14
+home        1.4% /  29
 ```
+
+🔴 **THE SUBTRACTION PASS RAISED FIVE OF THESE ON PURPOSE, 2026-09-04 23:01 EDT.** Six design reviewers converged on one finding — the machine signature is that nothing is ever taken away — and every deletion made from it costs regions, because the mockup still draws what was removed. Analytics went the other way (14.2% → **12.6%**) because two of its four tiles were a third statement of a masthead figure. ⚠️ **A session reading the rises as regressions will restore the duplication.** Each is a cited row in `docs/reference/portal-decision-ledger.md`; the enumeration is the close condition, not the number.
 
 🔴 **SEVERAL WENT UP AND THAT IS THE SEEDING, NOT A REGRESSION — 2026-09-04 20:47 EDT.** Every realm is a SEED realm now (`scripts/lib/portalSeedRealms.mjs`), because the rail badge and the header commit chip are drawn by the SHELL on every realm and simply never rendered on five of them. The moment all seven passed `badges`, five realms grew a staged surface — and a staged surface on an unseeded mockup is the empty-versus-populated comparison that list exists to stop. So the mockup gained the chip on five pages (+43px each) and the two sides are now compared with the same data. ⚠️ **The cost is Harkirat's own ruling made visible: he kept the portal's segmented chip, and the two chips differ in HEIGHT (63px against 57px), so that cited difference now costs a region on every realm instead of two.** Broadcast 0.3% → 0.8% is entirely that.
 

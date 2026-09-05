@@ -297,7 +297,8 @@ export function HomeRealm({ session }) {
         { value: rows.length, label: 'needs you', lead: true, accent: rows.length ? 'var(--warn)' : 'var(--ink)' },
         // The two non-lead figures carry their own state rather than plain ink: a live count reads in the live colour and a staged count in the staged one, which is the same shape-and-colour rule every mark in this portal follows. A zero keeps its size and drops its colour. ⚠️ NO `tone: 'live'` HERE, AND THE ABSENCE IS THE POINT. It was added to clear a coverage entry and there is no `.stat.live` rule anywhere — `.stat.stg .v` and `.stat.warn .v` exist, `.stat.live` does not — so the class styled nothing and existed only to make a number move. The live figure reads in plain ink because that is what the design gives it.
         { value: live === null ? '—' : live, label: 'live now' },
-        { value: staged === null ? '—' : staged, label: 'staged', tone: staged ? 'stg' : undefined },
+        // 🔴 THE STAGED FIGURE IS NOT A MASTHEAD STAT ON HOME — removed 2026-09-04 22:54 EDT. This screen stated one number four times: the header commit chip, the rail badge, this stat, and the resume strip 60px below it — which is the only one of the four that says WHICH realms and what "staged" costs. On a page titled "What needs you", whose job is ranking, a bare repeated digit is the weakest of the four and it goes. ⚠️ HOME ONLY. Every other realm's masthead staged figure is scoped to that realm and says something its neighbours do not.
+
     ];
 
     return html`
