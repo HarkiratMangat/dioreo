@@ -842,7 +842,7 @@ export function AnalyticsRealm({ session }) {
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}
-                                                    title="One history, both front doors" filterGroups=${RIVER_FILTERS}
+                                                    title="One history, both front doors" label="River" filterGroups=${RIVER_FILTERS}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"

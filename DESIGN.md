@@ -104,7 +104,9 @@ Recording an invented scale would have been the wrong move twice over: it would 
 
 ## Known divergences — none currently stand
 
-The previous version listed two, both measured against the retired `2026-08-20-portal` package. **Both were re-measured on the current authority on 2026-08-30 and neither reproduces:** `portal/ui/app.css` carries 91 `transition` declarations against the package's 91, and `--ink4:#5C6A75` is declared identically in both token files. Both are annotated in `docs/db-deferred-list.md` rather than deleted, so the next reader of the retired package finds the correction instead of repeating the hunt.
+The previous version listed two, both measured against the retired `2026-08-20-portal` package. **Both were re-measured on the current authority on 2026-08-30 and neither reproduces:** `--ink4:#5C6A75` is declared identically in both token files, and the transition counts hold.
+
+🔴 **THE COUNTS IN THIS FILE WERE RE-DERIVED 2026-09-04 22:05 EDT AND TWO OF THEM WERE STALE.** Not by much, and that is the point — a number in prose rots quietly and then reads as measured. Current: **`box-shadow` portal 111 · package 103** (this file said "the package carries 98") and **`transition` 92 · 92** (it said 91/91). ⚠️ **They were stale before tonight's work and were inherited by an edit to this very section**, which is exactly the content-conservation failure the completeness sweep names: moved or edited text keeps asserting what it asserted, and the edit makes it look freshly checked. `rg -o 'box-shadow' portal/ui/app.css | wc -l` re-derives it in one command; prefer running that to trusting this sentence. Both are annotated in `docs/db-deferred-list.md` rather than deleted, so the next reader of the retired package finds the correction instead of repeating the hunt.
 
 ⚠️ **This section should not stay empty by neglect.** Where the portal genuinely differs from the design, the live record is the conformance measurement itself — `npm run portal:audit -- --realm <r>` and `portalDiff`.
 

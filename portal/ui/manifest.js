@@ -140,7 +140,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
             <div class="mtools">
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
-                <span class="mlabel"><span>${label || title || 'Rows'}</span></span>
+                <!-- ⚠️ NO || title FALLBACK — removed 2026-09-04 22:06 EDT. The comment nine lines above records that these
+                 two props were deliberately SPLIT so a realm can have a header band and a toolbar word; a fallback
+                 from one to the other re-fuses them, and a realm passing title alone printed the identical
+                 string twice, 45px apart, in two type treatments. Analytics was the only realm doing it, and it
+                 had been on screen through every conformance gate. A prop that falls back to the prop it was
+                 split from is not a default; it is the split undone. -->
+            <span class="mlabel"><span>${label || 'Rows'}</span></span>
                 <span class="srch">
                     <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
                          sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding

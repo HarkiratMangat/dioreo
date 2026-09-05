@@ -1,19 +1,10 @@
 // scripts/portalOpWords.test.js — every registered operation describes itself in English, on the LIVE server.
 //
-// 🔴 WHY THIS EXISTS, AND WHY NO EXISTING GATE COULD HAVE CAUGHT IT. `portal/ui/harness/stub.js:225` reads
-// `verb: o.verb || 'changed'` — it passes the fixture's own hand-written verb straight through and never calls
-// `describeOp` or `describeInverse`. So `portalDiff`, `portalAudit`, `portalConverge`, `portalProbe` and
-// `portalStates` all compare a Review screen wearing words the running portal will never print. **The one screen
-// where everything becomes real is the one screen whose most consequential words the instruments cannot see.**
+// 🔴 WHY THIS EXISTS, AND WHY NO EXISTING GATE COULD HAVE CAUGHT IT. `portal/ui/harness/stub.js:225` reads `verb: o.verb || 'changed'` — it passes the fixture's own hand-written verb straight through and never calls `describeOp` or `describeInverse`. So `portalDiff`, `portalAudit`, `portalConverge`, `portalProbe` and `portalStates` all compare a Review screen wearing words the running portal will never print. **The one screen where everything becomes real is the one screen whose most consequential words the instruments cannot see.**
 //
-// Measured 2026-09-04 21:58 EDT against `listOpTypes()`: **10 of the 42 registered op types** fell through
-// `OP_VERB` and printed their raw method segment as the headline — Review's row read *"setTitlesDeadlines season"*
-// for the most common edit in the product. And two `INVERSE_OF` values ended in an article the template then
-// supplied again, producing *"Undo would restore the previous the season"*.
+// Measured 2026-09-04 21:58 EDT against `listOpTypes()`: **10 of the 42 registered op types** fell through `OP_VERB` and printed their raw method segment as the headline — Review's row read *"setTitlesDeadlines season"* for the most common edit in the product. And two `INVERSE_OF` values ended in an article the template then supplied again, producing *"Undo would restore the previous the season"*.
 //
-// ⚠️ IT READS THE REAL REGISTRY, not a list kept here. A list would go stale the moment somebody registers an op,
-// which is precisely the failure being guarded: the defect was a lookup table whose fallback was the identifier,
-// so it stopped being a translation silently.
+// ⚠️ IT READS THE REAL REGISTRY, not a list kept here. A list would go stale the moment somebody registers an op, which is precisely the failure being guarded: the defect was a lookup table whose fallback was the identifier, so it stopped being a translation silently.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -28,8 +19,7 @@ require(path.join(ROOT, 'core/ops/patchnotes'));
 require(path.join(ROOT, 'core/ops/announcements'));
 const { listOpTypes } = require(path.join(ROOT, 'core/ops'));
 
-// `board.logic.js` declares globals rather than exporting — every page loads it as a script. Evaluating it in a
-// sandbox is how a test reaches the same functions the browser does, without inventing a second copy of them.
+// `board.logic.js` declares globals rather than exporting — every page loads it as a script. Evaluating it in a sandbox is how a test reaches the same functions the browser does, without inventing a second copy of them.
 const ctx = { console };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'portal/ui/board.logic.js'), 'utf8'), ctx);

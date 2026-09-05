@@ -800,9 +800,24 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ⚠️ **`codebase-memory-mcp cli search_graph` takes `--project` (REQUIRED) and `--name-pattern` with a HYPHEN**, not the underscore form `CLAUDE.md` shows for `index_repository`. Verified by query 2026-09-04 15:59 EDT: the graph is current at 10,093 nodes / 21,365 edges and returns symbols created that day.
 
-### `[P2 · S · Sonnet5-High]` Ten CARRIER defects the ⑥ audit found — corrections to documents, verified unfixed at 2026-09-04 15:48 EDT
+### `[✅ CLOSED 2026-09-04 22:05 EDT]` Ten CARRIER defects the ⑥ audit found — all ten addressed
 
-**Filed 2026-09-04 15:48 EDT** because they were about to live only in a gitignored handoff. Each was confirmed by grep at that time, not inferred. They are one `python3` heredoc between them.
+**Filed 2026-09-04 15:48 EDT · closed 2026-09-04 22:05 EDT, enumerated one by one rather than swept.** 🔴 **THE ENTRY SAT HERE SAYING "VERIFIED UNFIXED" FOR HOURS AFTER THE LAST OF THE TEN WAS FIXED** — caught by the completeness sweep's scope-conservation pass, which is the whole reason that pass exists: an item that lists ten things and ships nine leaves no trace, because the wording that would expose it is deleted by the same commit.
+
+| | Where it landed |
+|---|---|
+| **D1** | The two-instruments paragraph is **hoisted** above the per-realm sections of the ledger — not moved under `## Home`, which is what the row asked for and would have been wrong: it is the general rule, using Home as its example |
+| **D2** | Plan's overlay paragraph now reads `analytics **②137**` with the correction stated inline |
+| **D3** | The replacement paragraph is in the plan's §0.1a **and** in `SESSION-START.md` #2 — three tests for a package DEFECT versus a design WEAKNESS, plus the three obligations a correction carries. Its stated cost was paid: `t-legendary`, `.bc-mode` and Broadcast's `colgroup` were re-graded and corrected, and the movement was isolated by two full sweeps |
+| **D4** | `SESSION2-PROMPT.md` §4 no longer says "five traps"; it points at the rule file that numbers seven |
+| **D5** | The v3.76.0 entry is dated `2026-09-03 → 2026-09-04` |
+| **D6** | Split into a `[P2 · XS]` tab-order entry and a `[🔵 DECIDED-NO]` 375×812 entry — the bundling was the defect |
+| **D7** | The A/B supersession is inline at the head of §0.5b, where `SESSION-START` actually points |
+| **D8** | §0.7c carries phase ⑥ UX-COPY, with why a loop that omits it is how it goes missing a fourth time |
+| **D9** | `SESSION2-PROMPT.md` states in its §4 that it IS the Part prompt for §0.7a's five-way tiebreak |
+| **D10** | Its stale counts are replaced by the commands that produce them — a present-tense count in prose is the duplicated state this repo has a memory about |
+
+**Original filing, kept because the wording is the audit trail:** filed 2026-09-04 15:48 EDT because they were about to live only in a gitignored handoff. Each was confirmed by grep at that time, not inferred.
 
 | # | Where | What is wrong |
 |---|---|---|
