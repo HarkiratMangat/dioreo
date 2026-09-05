@@ -5,6 +5,17 @@ status: live
 
 # Dioreo web admin portal — the interactive mockup, explained in full
 
+> 🔴 **PACKAGE CORRECTIONS — this mockup's own files were edited during the conformance pass, and this is the list.** COMPANION is MAINTAINED, not frozen, so a divergence it does not record is a defect in it. Each of these is a §0.1a **test 2** correction — the package disagreeing with itself, not a design weakness the portal should have reproduced. None changes a rendered pixel except the first, which restores type the package had been silently dropping.
+>
+> | 2026-09-05 00:03 EDT | What | Why it was a defect rather than a choice |
+> |---|---|---|
+> | `assets/tokens.css` | `--mono` and `--focus` are now SET | Four rules read `var(--mono)` inside a `font` shorthand and one reads `var(--focus)`. Neither token existed. **A `font` shorthand whose family cannot resolve is invalid at computed-value time and the whole declaration is dropped** — so `.fail-d`, `.scope .nm em`, `.holder` and `.reph .rt-n` lost their size and weight along with their face. `--mono` is `var(--data)`; `--focus` is the literal its one call site already carried, so that half changes nothing. |
+> | `assets/app.css` | `.mh-stats .v` declared `letter-spacing` **twice**; the dead first declaration is gone | Source order gave `--tr-figure` the win, so `--tr-fig` never applied. Deleting it changes no pixel here and makes the rule say what it does. ⚠️ The portal had resolved this the other way and has been **reverted** to the value the design renders. |
+> | `assets/app.css` | `.masthead` `padding-left` 23px → **22px** | `.panel` and `.identity` both sit at 22px. The masthead was the single outlier, so the realm title — the largest type on the page — sat 1px off the column its own panels define. |
+>
+> ⚠️ **The portal is NOT permitted to edit this package for anything else.** §0.6a: a portal-ahead surface is reproduced and filed, never pushed back into the design. These three are corrections to internal contradictions, and each is also a row in `docs/reference/portal-decision-ledger.md`.
+
+
 
 > ## 🔴 THIS DOCUMENT IS EXHAUSTIVE BY DESIGN. SIZE IS NEVER A REASON TO TRIM IT.
 >

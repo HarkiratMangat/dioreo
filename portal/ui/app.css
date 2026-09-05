@@ -1745,7 +1745,15 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    the one positive step in the scale") and then `--tr-figure` (−.02em) on the next line, so source order won and
    the token created for the figure voice never reached a figure. The same face at the same size gets +.004em in
    `.tile .tl-v`, so the product tracked its own figures two ways, 2.4% apart, on one page. Fixed 2026-09-04 22:39 EDT. */
-.mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-fig);line-height:1;
+/* 🔴 THIS RULE DECLARED letter-spacing TWICE AND THE PORTAL RESOLVED IT THE WRONG WAY ROUND ON 2026-09-04 22:39 EDT.
+   The package writes --tr-fig then --tr-figure in one rule; source order means --tr-figure (-.02em) is what the
+   design has always RENDERED, and --tr-fig (+.004em) never applied. That commit deleted the winner and kept the
+   loser, which silently moved every masthead figure on every realm 0.024em apart from the design - a portal-ahead
+   judgement taken mid-pass, which §0.6a forbids until all seven realms match. Reverted to the value the design
+   actually renders, as ONE declaration rather than two: same pixels as the package, no dead line in either sheet.
+   ⚠️ The +.004em preference is real and is FILED, not lost - .tile .tl-v uses it for the same face at the same
+   size, so the two figure voices genuinely disagree. That is a post-conformance question, not a conformance fix. */
+.mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-figure);line-height:1;
   font-variant-numeric:tabular-nums;color:var(--ink)}
 .mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}

@@ -1594,7 +1594,11 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    one mattered. The masthead is quiet and generous; the context strip is a STRIP, never a
    panel; the view layer gets the strongest treatment; the Manifest is recessive because it
    is the mechanism beneath the picture. */
-.masthead{padding:34px 23px 22px;max-width:none}
+/* 🔴 23px -> 22px, 2026-09-04 23:56 EDT. A PACKAGE DEFECT under the plan's §0.1a test 2, not a portal preference:
+   .panel and .identity both sit at 22px, so the masthead was the single outlier and the largest type on the page -
+   the realm title - sat 1px off the column its own panels define. Corrected here as well as in the portal, so the
+   two sheets agree and the design stops disagreeing with itself. */
+.masthead{padding:34px 22px 22px;max-width:none}
 .masthead .job{display:block;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);color:var(--patch);text-transform:uppercase;margin-bottom:12px}
 /* A realm title is a LABEL, not a hero. It sits one step below the lead figure on purpose:
@@ -1605,8 +1609,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   letter-spacing:.055em;text-transform:uppercase;line-height:1;color:var(--ink)}
 .mh-stats{display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .mh-stats .stat{display:flex;flex-direction:column-reverse;gap:2px;align-items:flex-start}
-.mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-fig);line-height:1;
-  letter-spacing:var(--tr-figure);font-variant-numeric:tabular-nums;color:var(--ink)}
+/* The first of two letter-spacing declarations was removed 2026-09-04 23:56 EDT. It never applied - source order gave
+   --tr-figure the win - so deleting it changes no pixel here and makes the rule say what it does. */
+.mh-stats .v{font-size:var(--t-figure);font-family:var(--display);font-weight:700;letter-spacing:var(--tr-figure);line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--ink)}
 .mh-stats .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
 /* 🔴 A ZERO IS GOOD NEWS AND MUST NOT BE PAINTED AS AN ALERT. "STAGED 0" rendered in the

@@ -232,6 +232,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-02 15:59 EDT — the context layer was measured for the first time (v3.74.0-pre)
 - 2026-09-03 16:18 EDT — Review's commit path proven, and three of the ten fixes were the measurement rather than the portal (v3.75.0-pre)
 - 2026-09-04 21:35 EDT — The portal conformance pass, session 3: six gates that could not fail, and two surfaces that were never there (v3.76.0-pre)
+- 2026-09-05 00:02 EDT — the portal conformance pass closes on every condition that is mine to run (v3.76.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4114,6 +4115,24 @@ Session 3 of the portal conformance pass. The handoff listed twenty rows; what i
 **And the class no instrument could see now has one.** Every existing check compares a page against its mockup or against source; none compares a page against another page, so a number that lies identically on both sides passes all of them. `portal:agreement` reads twenty-nine figures across seven realms and fails when one label carries two values. Its first version read one figure shape and reported "season: 0 figures" while printing a green tick — the vacuous pass in miniature. Its first working run found `live now` at twenty on Season and two on Home: both correct, both matching the design, one label over two questions.
 
 Harkirat settled four things by looking rather than by argument, which is what §0.7d says the deliverable is: the accent set stays, a cited row whose difference stops reproducing goes back on the list, Armory's create chip was broken and the design was right, and the header commit chip is the portal's. The instrument built to put those questions to him — one control, both sides, cropped — is `portal:shot`, and it exists because a decision that is his could otherwise only be handed over as a table of computed styles.
+
+## 2026-09-05 00:02 EDT — the portal conformance pass closes on every condition that is mine to run (v3.76.0-pre)
+
+Part 7 of the portal conformance plan, and the last of the seven realms' close conditions that are mine to run.
+
+The sweep half had been clean for a day. The tail was four items nobody had touched: an unidentified 1px component, the reverse-orphan remainder, a fixture re-run, and the difference ledgers read end to end.
+
+Item 1 took ten minutes and the answer had been in the tree since August. The season record had been named `.sr`, which is the screen-reader-only utility — absolute, 1px by 1px, clipped. It rendered for screen readers and was invisible to everyone else, with no error, valid markup, and `innerText` reading back perfectly. It was renamed `.srec` weeks ago and a twelve-line comment three lines from the fix explains the whole thing. The plan said "Never identified."
+
+Item 2 found something no pixel instrument in the suite could have found. `--mono` is read by four rules and `--focus` by one, and neither token existed in either token file. A `font` shorthand whose family cannot resolve is invalid at computed-value time, so the whole declaration goes — the size and the weight leave with the family. Four elements had been rendering at whatever they inherited. The reason no instrument saw it is that the design package reads the same unset token in the same four rules: both sides were wrong identically, and a comparison of two identical wrongs is a pass.
+
+Then the falsification pass turned up the thing that matters more than any of it. `portal:status` — the receipt board — says `portalConverge` had never run on Season, the largest realm, whose row reads closed. The same defect had been found on Broadcast two days ago and nobody had thought to ask whether it was true anywhere else. And running converge on all seven surfaced a masthead width redistribution that costs zero diff pixels, because the width it frees is painted the same colour as the ground beneath it.
+
+Chasing that took three wrong readings of one line, in two opposite directions, before reading four lines above the match. The third reading was the most confident. What corrected it was widening the read, not thinking harder. And the answer turned out to be a change this same session had made two hours earlier, deliberately, recorded in a code comment and nowhere else — so I spent four thoughts treating my own work as an undiscovered defect.
+
+That is the session's real finding, and it is structural rather than personal. Every uncited change tonight came from a commit whose subject described a repair. Every cited one came from a commit whose subject described a decision. The subtraction pass called itself six deletions and wrote six ledger rows; the shared-chrome commit called itself four defects, said in its own subject line that each edit reached seven realms, and wrote none. The larger blast radius recorded nothing, because a repair does not feel like it needs a decision row — and three of those four altered what every realm draws.
+
+So the rule is now mechanical and lives in the plan rather than in anyone's memory: does this change what the portal draws relative to the package? If yes it needs a row, and how it felt is not evidence either way. A commit message is not a carrier. Twice tonight a decision had to be reconstructed from `git log`, and both times only because something already looked wrong.
 
 # Part B — Lessons Ledger (thematic)
 

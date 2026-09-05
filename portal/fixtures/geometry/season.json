@@ -1,7 +1,7 @@
 {
   "realm": "season",
-  "recordedAt": "2026-09-05T02:54:26.123Z",
-  "commit": "bba9d30e",
+  "recordedAt": "2026-09-05T03:40:13.923Z",
+  "commit": "e6c4b652",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -212,7 +212,7 @@
     "Repairs": {
       "grid": {
         "examined": 1355,
-        "nearMisses": 12,
+        "nearMisses": 11,
         "sizeIssues": 61,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
