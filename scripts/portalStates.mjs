@@ -305,17 +305,7 @@ async function run() {
                         flaked.push(state.name);
                         console.log(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled once, reached its subject on the retry — not a defect, and not silent`);
                     } catch (again) {
-                        // 🔴 THE SENTENCE THIS THROW USED TO CARRY WAS AN INVALID INFERENCE, corrected 2026-09-05 09:34 EDT.
-                        // It asserted that two failures prove the stall is not the filed race. The filed entry measures
-                        // that stall at roughly 50% in-suite, so two consecutive failures happen about a quarter of the
-                        // time by chance alone: the retry cannot separate the two cases it claimed to separate.
-                        // ⚠️ THE DISPROOF WAS ALREADY WRITTEN FOURTEEN LINES ABOVE AND THE CLAIM WAS MADE ANYWAY — four
-                        // failures across four runs on FOUR DIFFERENT states is the signature of a race, not of one
-                        // broken subject. ⚠️ IT COST A REAL INVESTIGATION ON 2026-09-05: CI failed here while the same
-                        // tree passed 44/44 locally, and this sentence asserted the one thing that would have made that
-                        // a defect. Re-running settled it in one command — the failing state MOVED, which is the only
-                        // observation that discriminates, and it is named in the message now so the next reader has it
-                        // at the point of failure rather than in a tracker they would have to already suspect.
+                        // 🔴 THE SENTENCE THIS THROW USED TO CARRY WAS AN INVALID INFERENCE, corrected 2026-09-05 09:34 EDT. It asserted that two failures prove the stall is not the filed race. The filed entry measures that stall at roughly 50% in-suite, so two consecutive failures happen about a quarter of the time by chance alone: the retry cannot separate the two cases it claimed to separate. ⚠️ THE DISPROOF WAS ALREADY WRITTEN FOURTEEN LINES ABOVE AND THE CLAIM WAS MADE ANYWAY — four failures across four runs on FOUR DIFFERENT states is the signature of a race, not of one broken subject. ⚠️ IT COST A REAL INVESTIGATION ON 2026-09-05: CI failed here while the same tree passed 44/44 locally, and this sentence asserted the one thing that would have made that a defect. Re-running settled it in one command — the failing state MOVED, which is the only observation that discriminates, and it is named in the message now so the next reader has it at the point of failure rather than in a tracker they would have to already suspect.
                         throw new Error(`${again.message}\n           ⚠️ The retry did not clear it — which is consistent with BOTH a genuinely unreachable subject AND the filed ~50% stall (docs/db-deferred-list.md, [P1 · S]). Two failures of a coin-flip are not evidence against a coin.\n           ⚠️ WHAT DISCRIMINATES: does this state's selector belong to anything you edited? If not, re-run — and if the failing STATE changes between runs on the same tree, it is the race.`);
                     }
                 }
