@@ -13,7 +13,8 @@ cd "$(dirname "$0")/.." || exit 1
 for r in season armory broadcast access analytics review home; do
     # An ARRAY, not a string, and that is the whole point: `$q` unquoted needs a shellcheck suppression, and a suppression is a COMMENT — see the trap note at the foot of this file.
     q=()
-    case "$r" in review|home) q=(--mk-query demo=1) ;; esac
+    # Every realm is a SEED realm since 2026-09-04 20:43 EDT — see scripts/lib/portalSeedRealms.mjs for why. The case is kept rather than unconditionally adding the flag, so a realm removed from that list here fails loudly instead of being seeded by a line nobody re-reads.
+    case "$r" in season|armory|broadcast|access|analytics|review|home) q=(--mk-query demo=1) ;; esac
     printf '%-11s ' "$r"
     node scripts/portalDiff.mjs --realm "$r" --portal harness "${q[@]}" 2>&1 \
         | rg -o "captured mk- [0-9]+px · pt- [0-9]+px|[0-9.]+% of pixels differ, in [0-9]+ region" \

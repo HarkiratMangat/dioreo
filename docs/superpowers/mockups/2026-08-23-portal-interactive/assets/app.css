@@ -4169,7 +4169,13 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
 .umenu .mi.danger:hover{background:rgba(255,107,107,.10)}
 /* The header slot the sign-out button used to hold, spent on the most frequent act instead
  * of the rarest — and ABSENT at zero, so it is never a permanent duplicate of the tray. */
-.hdr-commit{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;
+/* 🔴 PACKAGE DEFECT, CORRECTED 2026-09-04 20:43 EDT under §0.1a test 3 (the package renders a value it did not
+ * mean). This chip is an `a` and this rule never set `text-decoration`, so the header's anchor styling
+ * UNDERLINED it — the one control in the chrome that says work is waiting read as prose someone had linked,
+ * and nothing else in that header is underlined. It is not a design decision; it is a declaration the sheet
+ * forgot to make. ⚠️ The SEGMENTED two-cell layout the portal draws is a separate question and is NOT
+ * adopted here: Harkirat kept the portal's version 2026-09-04 20:43 EDT, so that stays a cited difference. */
+.hdr-commit{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;text-decoration:none;
   border:1px solid color-mix(in srgb,var(--staged) 45%,var(--rule2));border-radius:var(--rad-pill);
   background:color-mix(in srgb,var(--staged) 12%,transparent);color:var(--ink);font-size:12.5px}
 .hdr-commit b{font-family:var(--display);font-size:15px;color:var(--staged);letter-spacing:var(--tr-fig)}

@@ -970,6 +970,8 @@ export function ArmoryRealm({ session }) {
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
     const [weaponFilter, setWeaponFilter] = useState(null);
     const [showAdd, setShowAdd] = useState(false);
+    // 🔴 WHICH ARMORY THE BUILD IS FILED UNDER, NOT WHICH ARMORY YOU ARE LOOKING AT — separated 2026-09-04 20:42 EDT, Harkirat's call after seeing both sides. `AddBuildForm`'s own comment has stated the distinction since it was written (*"this one sets a PROPERTY OF THE RECORD… rather than which armory you are looking at, and those are different acts that happen to use the same two words"*) and the chip handler four hundred lines below it did both: `setArmMode(m); setShowAdd(true)`. So pressing `New DMZ build` opened the form AND swapped the rack out from under it — measured at **−4,531 nodes**, against the design's **+117**, which is the design mounting a form over the rack you were already reading. The two sides were not two renderings of one control. ⚠️ It survived because every instrument shoots the page AS IT LOADS: the only thing that ever saw it was `--open`, and the first version of THAT accepted the collapse as an overlay and exited 0.
+    const [addMode, setAddMode] = useState('MP');
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
@@ -1148,7 +1150,7 @@ export function ArmoryRealm({ session }) {
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
+                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => { setAddMode(armMode); setShowAdd(true); } },
                       { label: 'Compare the selected builds', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['diff', 'side by side', 'duplicate'], run: () => setView(VIEWS.compare) },
                       { label: 'Paste a list of builds', group: 'armory', local: true, accent: 'var(--r-armory)',
@@ -1165,7 +1167,7 @@ export function ArmoryRealm({ session }) {
                                                         code and ranks by combat range — and a single "New build" made the mode a
                                                         thing you discovered inside the form. Season's masthead already works this
                                                         way for its five item types; this is the same control. -->
-                                                   <${ArmoryAddChips} onAdd=${(m) => { setArmMode(m); setShowAdd(true); }} />`} />`}
+                                                   <${ArmoryAddChips} onAdd=${(m) => { setAddMode(m); setShowAdd(true); }} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
@@ -1183,7 +1185,7 @@ export function ArmoryRealm({ session }) {
                            (No backticks in this comment. The first draft had five and broke the parse; portal:template-comments,
                             written earlier in this same session for exactly this, named the file and the line.) -->
                       ${wrapBed(html`
-                              ${showAdd ? html`<${AddBuildForm} mode=${armMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+                              ${showAdd ? html`<${AddBuildForm} mode=${addMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${editingId ? html`
                                   <${BuildEditor} build=${builds.find((b) => String(b._id) === editingId)}
                                                   csrfToken=${session.csrfToken}
@@ -1238,7 +1240,7 @@ export function ArmoryRealm({ session }) {
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
-                                   onAdd=${() => setShowAdd(true)} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
+                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onFiltersChange=${setManifestFilters}

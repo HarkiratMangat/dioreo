@@ -100,6 +100,7 @@ scope: the portal's REALM-BY-REALM conformance work — the seven realms, their 
 
 ### Three tests that retire a whole class of finding at once
 
+0. 🔴 **A CITED ROW WHOSE DIFFERENCE STOPS REPRODUCING GOES BACK ON THE LIST — the FIFTH bucket, decided by Harkirat 2026-09-04 20:38 EDT.** The other four buckets sort a finding the instruments DID report; this one is the opposite case and had no owner at all. *"CITED = report forever, do not chase"* is right about a difference that is still there, and it was being applied to four of Review's cited coordinates that no longer appear — so the rule told a reader to ignore the one piece of evidence that a decision had expired. **A citation is a decision about a difference. When the difference is gone, so is the thing that was decided.** The row returns to unadjudicated and is decided again on what the page does NOW; it is not deleted, because the record of why it was cited is what stops the same argument being had a third time. ⚠️ **Coupled and still open:** §L has no rule for re-grading a CLOSED row when shared chrome moves, which is where Review's five uncited rail regions came from.
 1. 🔴 **⑤ RULES IS ADVISORY — a rule difference the RENDERED page does not show is not work.** §0.10 already says the rendered value is ground truth. Season's ⑤ listed 44 differing selectors; almost none manifested in ④.
 2. 🔴 **A SYMMETRIC DIFFERENCE IS A PAIRING ARTIFACT.** When `A → B` and `B → A` both appear, the instrument matched the wrong pair. Season's overview strip reported ~20 width and colour differences that way. **The test is to compare the elements AS A SET, order-independently** — sorted `left,top,width,colour` tuples. Done for the minis: `left`, `width` and colour matched **exactly**, and the sets differed only by a constant **+15px** of `top`, which is the cited cascade. They were never wrong.
 3. **A SUB-PIXEL DIFFERENCE IS NOISE.** `width: 921px → 920.469px` is not a finding.
@@ -151,10 +152,12 @@ scope: the portal's REALM-BY-REALM conformance work — the seven realms, their 
 🔴 **THE CURRENT MEASURED FLOORS — `npm run portal:sweep`, 2026-09-04 20:18 EDT. ANY PER-ROW FIGURE BELOW DATED EARLIER IS SUPERSEDED BY THIS BLOCK.** §L's own rule is that a wrong figure is worse than no row, and the rows carry figures from five different dates. Rather than rewrite each and create six new things to keep in sync, the figures live in ONE dated place with the command that reproduces them.
 
 ```
-season     12.2% / 133    armory    8.0% / 903    broadcast 0.3% / 17
-access      6.7% /  57    analytics 14.1% /  41   review    0.6% / 12
+season     12.3% / 135    armory    8.0% / 906    broadcast 0.8% / 17
+access      7.1% /  56    analytics 14.2% /  40   review    0.6% / 12
 home        0.7% /  27
 ```
+
+🔴 **SEVERAL WENT UP AND THAT IS THE SEEDING, NOT A REGRESSION — 2026-09-04 20:47 EDT.** Every realm is a SEED realm now (`scripts/lib/portalSeedRealms.mjs`), because the rail badge and the header commit chip are drawn by the SHELL on every realm and simply never rendered on five of them. The moment all seven passed `badges`, five realms grew a staged surface — and a staged surface on an unseeded mockup is the empty-versus-populated comparison that list exists to stop. So the mockup gained the chip on five pages (+43px each) and the two sides are now compared with the same data. ⚠️ **The cost is Harkirat's own ruling made visible: he kept the portal's segmented chip, and the two chips differ in HEIGHT (63px against 57px), so that cited difference now costs a region on every realm instead of two.** Broadcast 0.3% → 0.8% is entirely that.
 
 ⚠️ **Two changes moved these and both were measured in isolation** (the package was stashed, the tree rebuilt and swept, then restored — two full sweeps, because the alternative was one number covering two causes). **The rail badge** reaching five more realms: armory +2, broadcast +1, access +1, analytics +1, review −1 region. **The three package corrections** (§0.1a test 2): season −2 regions and ④ −7 · broadcast ② −2 and ④ −1 · armory ④ −14 and −0.6% at +9 regions on a page that grew 59px · the other four identical to the pixel. **No realm regressed on ② or ③.** Per-realm detail and the re-graded rows: `docs/reference/portal-decision-ledger.md`.
 
