@@ -29,7 +29,7 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.77.0 — 2026-09-05 — The dev portal was fully configured and running nothing
+## Pre-Release v3.77.0 — 2026-09-05 (#184) — The dev portal was fully configured and running nothing
 
 **`dev-portal.dioreo.app` had a tunnel, a DNS record, a hostname in `.env.dev` and a port — and both processes had to be started by hand.** So the answer to *"can I just open the URL and edit the dev bot's data"* was no, for a reason that had nothing to do with whether the portal worked.
 
