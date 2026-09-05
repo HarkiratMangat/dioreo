@@ -1,15 +1,11 @@
 {
-  "recordedAt": "2026-09-02T01:44:37.809Z",
+  "recordedAt": "2026-09-05T13:18:00.277Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [
-    "kind",
     "role",
     "src"
   ],
-  "vars": [
-    "--focus",
-    "--mono"
-  ],
+  "vars": [],
   "classes": [
     "ackrow",
     "act",
@@ -58,7 +54,6 @@
     "lift",
     "lit",
     "lvl1",
-    "manifest-cell",
     "mrow",
     "mxrole",
     "mxrow",
@@ -101,7 +96,6 @@
     "zhint"
   ],
   "mismatch": [
-    "lone",
-    "preview-sel"
+    "lone"
   ]
 }

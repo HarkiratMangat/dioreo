@@ -25,7 +25,31 @@
   --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
   /* SEASON topic accents — colour carries TOPIC */
-  --draw:#FF3430; --ret:#337BA6; --ev:#1F8A5E; --play:#8A6BD1; --pn:#F2C230;
+  /* 🔴 THESE FIVE WERE THE PRE-FIX SET AND CONTRADICTED THIS PACKAGE'S OWN COMPANION — corrected
+   * 2026-09-04 12:35 EDT. COMPANION §4.2 trap Two records that deriving two lanes from one bot hue produced
+   * "two plums and two blues that read as one family", and that each lane now takes a genuinely
+   * separate hue: draws keep Plum, playlists take Cyber Teal, events take Slate pushed to a true
+   * blue, returning takes a rose.
+   * 🔴 THE COMPANION'S "minimum hue gap 31°" DOES NOT DESCRIBE THESE VALUES, and it was quoted here
+   * as the justification. Measured from the committed hex 2026-09-04 14:21 EDT by the §L ⑥ reality agent and
+   * re-derived independently: the six-token set has a minimum gap of 27.8° (--ret <-> --dw), 30.6°
+   * without --dw — and the set this REPLACED measured 44.0°, sixteen points WIDER. So the arithmetic
+   * does not support the change on hue-separation grounds, and the falsifier written into the ledger
+   * row alongside it ("the 31° floor is re-derived") fired on its first use.
+   * ⚠️ WHAT THE CHANGE DOES STAND ON is narrower and still true: `portal/ui/tokens.css` holds these
+   * values, the design's own prose describes this system, and the two sides must not disagree — the
+   * correction took Armory 893 -> 892 regions and Analytics 41 -> 40 with no realm regressing.
+   * ☐ WHICH SET IS BETTER IS HARKIRAT'S, NOT MINE, and it is filed. Nothing here reverts on its own. `portal/ui/tokens.css` implements exactly
+   * that; this file still carried the superseded values (#FF3430 red / #337BA6 blue / #1F8A5E
+   * emerald / #8A6BD1 violet), which ARE the two-plums-two-blues set the COMPANION says was
+   * abandoned. So the design's prose and the design's stylesheet disagreed, and the portal
+   * agreed with the prose.
+   * ⚠️ NOTHING COULD SEE IT AT REST. These tokens only reach the rail through `.realm:hover svg
+   * {color:var(--c,var(--patch))}`, so every resting comparison of every realm was blind to them;
+   * it surfaced the first time `portal:audit --hover` actually worked, on the same day the flag
+   * was found declared-and-never-applied. `--dw` is added too: the portal has a draw-window lane
+   * accent and this file had none. */
+  --draw:#AE72E0; --ret:#E8639B; --dw:#B06BA8; --ev:#4A90D9; --play:#2CC4C4; --pn:#F2C230;
   /* `--ev` is the bot's CP Emerald and is dark enough that it can fill a shape but cannot
    * carry text: 3.28:1 on --hi, under the AA floor. Same problem the LANES data already
    * solves with its `hex` vs `bar` pair, so it takes the same solution — one value for the
@@ -184,5 +208,20 @@
 
   --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* 🔴 `--mono` AND `--focus` WERE READ AND NEVER SET, ON BOTH SIDES, UNTIL 2026-09-04 23:34 EDT.
+     Four rules say `font:11px/1.5 var(--mono)` and one says `outline:2px solid var(--focus,#5FD4E8)`.
+     A `font` shorthand whose family resolves to nothing is INVALID AT COMPUTED-VALUE TIME, so the
+     whole declaration is dropped - not just the family: the size, the weight and the line-height go
+     with it. `.fail-d` (the failure diagnostic), `.scope .nm em` (the raw scope token), `.holder`
+     (an admin chip) and `.reph .rt-n` (the repair count) were each rendering at the inherited face
+     and the inherited size. ⚠️ INVISIBLE TO EVERY PIXEL INSTRUMENT: the package reads the same
+     unset token in the same four rules, so both sides were wrong IDENTICALLY and the diff was 0.
+     Found by `portal:reverse-orphans` ②, whose whole job is the rule no element and no value reaches.
+     Corrected in the package too, under the plan's §0.1a test 2 - a sheet that reads a token its own
+     token file never sets is a DEFECT, not a design weakness to reproduce. */
+  --mono:var(--data);
+  /* `--focus` always had the fallback beside it, so it renders; it is set here so the read resolves
+     rather than leaning on a literal repeated at one call site. Same value, zero pixel change. */
+  --focus:#5FD4E8;
 }
 @media (max-width:768px){ :root{ --rail-w:0px; --hdr-h:48px; } }

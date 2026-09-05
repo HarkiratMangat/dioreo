@@ -201,33 +201,45 @@ let staleBust = 0;
       stamps.set(asset, Math.max(stamps.get(asset) || 0, Number(v)));
     }
   }
-  // Last commit time when the file is tracked; mtime only when git cannot answer.
+  // Last commit time when the file is tracked AND CLEAN; the working-tree mtime when it is dirty.
+  //
+  // 🔴 THE COMMIT CLOCK MADE THIS GATE BLIND AT THE ONE MOMENT IT IS FOR — measured 2026-09-04 19:50 EDT by running the documented reproduction: bust, edit `assets/app.css`, run `npm run portal:refs`. It printed no stale line and exited 0. An UNCOMMITTED edit does not move `git log -1`, so the whole window between editing an asset and committing it — which is exactly the window the reflow/bust ordering trap lives in — was invisible, and the check only began to fire once the bad commit already existed. It was filed as "reports and exits 0"; the exit code was never the defect, the MOMENT was.
+  //
+  // ⚠️ THE COMMIT CLOCK STAYS FOR CLEAN FILES AND THAT HALF IS NOT A COMPROMISE. mtime alone could never pass in CI — every CI run is a fresh clone, so checkout time is newer than any fixed stamp — which is the regression this file already paid for once. Dirty is the only state where mtime is both available and meaningful, and a fresh clone has no dirty files, so CI reaches the commit clock on every asset.
+  const isDirty = (rel) => {
+    try {
+      return execFileSync('git', ['status', '--porcelain', '--', rel], { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() !== '';
+    } catch { return false; }
+  };
+  const mtimeOf = (rel) => { try { return Math.floor(statSync(dir + rel).mtimeMs / 1000); } catch { return null; } };
   const changedAt = (rel) => {
+    if (isDirty(rel)) { const m = mtimeOf(rel); if (m !== null) return m; }
     try {
       const out = execFileSync('git', ['log', '-1', '--format=%ct', '--', rel], { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
       if (out) return Number(out);
     } catch { /* not a git tree, or git absent — fall through */ }
-    try { return Math.floor(statSync(dir + rel).mtimeMs / 1000); } catch { return null; }
+    return mtimeOf(rel);
   };
-  for (const [asset, v] of stamps) {
-    const changed = changedAt(asset);
-    if (changed === null) continue;
-    if (changed > v) {
-      console.log(`  ❌ ${asset} was modified after its ?v=${v} stamp (committed ${changed}) — ` +
-                  'a warm cache will serve the old file; bump the stamp on every page');
-      staleBust++;
-    }
+
+  // The comparison, extracted so the self-test below can run THE REAL RULE rather than a paraphrase of it.
+  const staleIn = (map) => [...map].filter(([asset, v]) => { const c = changedAt(asset); return c !== null && c > v; }).map(([a]) => a);
+  for (const asset of staleIn(stamps)) {
+    console.log(`  ❌ ${asset} was modified after its ?v=${stamps.get(asset)} stamp (last changed ${changedAt(asset)}) — ` +
+                'a warm cache will serve the old file; bump the stamp on every page (npm run portal:bust)');
+    staleBust++;
   }
   /* 🔴 IT MUST BE ABLE TO FAIL, and "can I read a timestamp" was too weak a probe — it stayed green
      through the entire period the check could not pass in CI. This one asserts the real condition:
      an asset dated one second after its stamp IS reported stale. */
+  // 🔴 THE PREVIOUS SELF-TEST WAS `t > t - 1`, WHICH IS TRUE FOR EVERY NUMBER. It asserted only that a timestamp could be READ; the comparison it claimed to prove was never executed, so it stayed green through the entire period the check was blind to an uncommitted edit. A tautology dressed as a falsifier is worse than no falsifier, because it is read as evidence. This one runs `staleIn` — the real rule, the same function the loop above uses — in BOTH directions.
   const t = changedAt('assets/app.css');
   const canRead = t !== null && t > 1;
-  const wouldFlag = canRead && (t > t - 1);
-  console.log(canRead && wouldFlag
-    ? '  ✅ self-test: a stamp older than its asset IS reported stale'
-    : '  ❌ self-test: VACUOUS — the cache-buster cannot date an asset, so it passes on nothing');
-  if (!canRead || !wouldFlag) staleBust++;
+  const firesWhenOld = canRead && staleIn(new Map([['assets/app.css', 1]])).length === 1;
+  const quietWhenNew = canRead && staleIn(new Map([['assets/app.css', t + 86400]])).length === 0;
+  console.log(firesWhenOld && quietWhenNew
+    ? '  ✅ self-test: a stamp older than its asset IS reported stale, and a newer one is NOT'
+    : `  ❌ self-test: VACUOUS — fires-when-old=${firesWhenOld}, quiet-when-new=${quietWhenNew}`);
+  if (!firesWhenOld || !quietWhenNew) staleBust++;
 }
 if (staleBust) syntaxBad += staleBust;
 console.log(syntaxBad ? `  ⚠ ${syntaxBad} page(s) with a syntax error` : '  ✅ every page parses');

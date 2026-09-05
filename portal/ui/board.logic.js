@@ -55,20 +55,40 @@ function groupByColumn(changesets) {
 // An op described in WORDS. The Board's cards used to read "3 op(s)", which tells you the size of a change and nothing about what it is. 03/04's cards carry a real sentence per op, and 04's review screen is built on the same descriptions -- so this lives here, once, rather than in either.
 const OP_VERB = { add: 'Add', post: 'Post', edit: 'Edit', delete: 'Delete', bulkDelete: 'Delete', bulkAdd: 'Add', bulkReplace: 'Replace', purge: 'Purge', startNew: 'Start', promoteDraft: 'Promote', restore: 'Restore', restoreSnapshot: 'Restore', restoreDraft: 'Restore', removeSeason: 'Remove', restoreSeason: 'Restore', editSeason: 'Edit' };
 const OP_NOUN = { draw: 'draw', calendar: 'calendar item', loadout: 'build', patchnote: 'patch note', season: 'season', announcement: 'announcement' };
+// 🔴 TEN OF THE FORTY-TWO REGISTERED OP TYPES FELL THROUGH `OP_VERB` AND PRINTED THEIR RAW METHOD SEGMENT AS A HEADLINE — measured 2026-09-04 21:58 EDT against `listOpTypes()`, not estimated. Review's row read **setTitlesDeadlines season** for the single most common edit in the product, and the row's own comment two files away says *"the ROW says what happened in words a person reads"*. A verb map whose fallback is the identifier is a map that silently stops being a translation the moment somebody registers an op it does not know. ⚠️ WHOLE-OP LABELS, keyed on the FULL type, because these ten are not verb+noun pairs — `season.setTitlesDeadlines` is one act with a name, not a verb applied to a season.
+const OP_LABEL = {
+    'season.setTitlesDeadlines': 'Season identity',
+    'season.setDraftTitlesDeadlines': 'Draft season identity',
+    'season.discardDraft': 'Discard the draft season',
+    'season.bulkDraftDraws': "Replace the draft's draws",
+    'season.bulkDraftCalendar': "Replace the draft's calendar",
+    'calendar.setBanners': 'Calendar banners',
+    'patchnote.setDateInfo': 'Patch-note dates',
+    'patchnote.setUrls1': 'Patch-note images (first set)',
+    'patchnote.setUrls2': 'Patch-note images (second set)',
+    'patchnote.addSeason': 'Add a patch-note season',
+};
 
 function describeOp(op) {
     if (!op || !op.type) return 'Unknown operation';
     const [entity, verb] = String(op.type).split('.');
     const noun = OP_NOUN[entity] || entity;
-    const action = OP_VERB[verb] || verb;
+    // A whole-op label wins over verb+noun: these ten acts do not decompose into one.
+    if (OP_LABEL[op.type]) {
+        const named = (op.payload && (op.payload.title || op.payload.text || op.payload.weaponName)) || null;
+        return named ? `${OP_LABEL[op.type]} — “${String(named).slice(0, 40)}”` : OP_LABEL[op.type];
+    }
+    // ⚠️ NO RAW SEGMENT IN THE FALLBACK. `OP_VERB[verb] || verb` printed the identifier, so a newly registered op reached the reader as camelCase rather than as English — silently, and only on the live server.
+    const action = OP_VERB[verb] || null;
+    if (!action) return `Change to the ${noun}`;
     const ids = (op.payload && Array.isArray(op.payload.ids)) ? op.payload.ids.length : null;
     const name = (op.payload && (op.payload.title || op.payload.text || op.payload.weaponName)) || null;
     if (ids) return `${action} ${ids} ${noun}${ids === 1 ? '' : 's'}`;
     return name ? `${action} ${noun} “${String(name).slice(0, 40)}”` : `${action} ${noun}`;
 }
 
-// What undoing this would do. Every op in core/ops has an invert(), so a committed change is always reversible -- but nothing ever SHOWED that before committing, which is the one thing a Discord modal structurally cannot do and the reason the Board exists as a surface at all.
-const INVERSE_OF = { add: 'remove', post: 'remove', bulkAdd: 'remove', delete: 'restore', bulkDelete: 'restore', purge: 'restore', edit: 'put back the previous values on', bulkReplace: 'restore the previous', promoteDraft: 'un-promote', startNew: 'restore the previous' };
+// What undoing this would do. Every op in core/ops has an invert(), so a committed change is always reversible -- but nothing ever SHOWED that before committing, which is the one thing a Discord modal structurally cannot do and the reason the Board exists as a surface at all. ⚠️ EVERY VALUE IS A COMPLETE PREDICATE ENDING BEFORE THE ARTICLE, because the template appends " the ${noun}". `bulkReplace` and `startNew` both read 'restore the previous' and produced **"Undo would restore the previous the season"** — corrected 2026-09-04 21:58 EDT. The template supplies one article; a value carrying its own makes two.
+const INVERSE_OF = { add: 'remove', post: 'remove', bulkAdd: 'remove', delete: 'restore', bulkDelete: 'restore', purge: 'restore', edit: 'put back the previous values on', bulkReplace: 'restore the previous version of', promoteDraft: 'un-promote', startNew: 'bring back' };
 
 function describeInverse(op) {
     if (!op || !op.type) return null;

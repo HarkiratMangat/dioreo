@@ -10,6 +10,7 @@
 //
 // ⚠️ A DIFFERENCE IS NOT A DEFECT. Several of these are portal-ahead and cited; the point is that the list is COMPLETE and ranked by kind, so an audit is bounded by what is actually there rather than by what somebody happened to notice. Adjudicate every row against COMPANION.md before any of it becomes an edit.
 import fs from 'node:fs';
+import { SEED_REALMS } from './lib/portalSeedRealms.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -26,8 +27,9 @@ const asJson = args.includes('--json');
 // 🔴 REVIEW REFUSES WITHOUT A SEED — see portalDiff for the full reasoning. Its staged-ops store is sessionStorage and every load here clears it, so an unseeded run measures an EMPTY mockup against a POPULATED portal and returns a confident wrong number. ⚠️ THIS TOOL WAS MISSED when the refusal shipped to diff/audit/converge on 2026-09-03; the reader test found it, and this one is quoted in the plan's §L row 6a, so the reading recorded there was taken unseeded. Re-take it. 2026-09-03 09:03 EDT
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
-if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
-    console.error('refusing: Review must be measured SEEDED or the two sides hold different data.\n'
+// 🔴 TWO REALMS NOW, NOT ONE. Home carries the same staged surfaces Review does — the header's commit crumb, the masthead's staged figure and the whole `.hres` resume strip — and it was measured UNSEEDED through Part 6b's first nine runs, which reported the crumb, the figure and the strip as ONLY IN PORTAL and the two pages 78px apart. Seeded they are the same height. Until 2026-09-03 21:29 EDT the seed lived inside review.html and no other page could be asked; it is in the mockup's shared shell.js now, so this guard can cover any page that shows staged work rather than the one page that happened to own the code.
+if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
+    console.error(`refusing: ${realm === 'home' ? 'Home' : 'Review'} must be measured SEEDED or the two sides hold different data.\n`
         + '  add   --mk-query demo=1     to compare two populated boards\n'
         + '  or    --no-seed             to measure the empty state deliberately');
     process.exit(2);

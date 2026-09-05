@@ -25,6 +25,7 @@
 // ⚠️ THE PORTAL SIDE IS THE REAL SERVER BY DEFAULT, NOT THE HARNESS. The harness stubs its data and the mockup is fixture-driven by construction, so those two agree with each other and can both disagree with production — which is what happened with the overview strip, dense in the mockup and 37 marks pinned to their 3px floor against real data. `--portal harness` is available and is the weaker comparison; it says so in the header of its own report.
 
 import fs from 'fs';
+import { SEED_REALMS } from './lib/portalSeedRealms.mjs';
 import path from 'path';
 import crypto from 'crypto';
 import { createRequire } from 'module';
@@ -32,6 +33,8 @@ import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
 const { record: recordRun } = require('./lib/portalReceipt.cjs');
+// 🔴 ONE DOOR RULE, THREE CALLERS. `lib/portalSession.cjs`'s header says "this is that logic, extracted" and this file never adopted it: it kept its own `mintSession` and a door guard testing `main.door` ALONE, which passes the shell-with-no-rows case the lib exists to catch. Three unequal copies of one rule is the defect that lib was written to remove, in the file it was extracted FROM.
+const { mintSession: mintDevSession, assertPastDoor } = require('./lib/portalSession.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
@@ -71,7 +74,42 @@ const COVERAGE_NOTE = [
 
 const args = process.argv.slice(2);
 const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
+
+// 🔴 `--help` RAN A 2.5-MINUTE REAL-SERVER SEASON DIFF AND OVERWROTE `local/diff-season/*.png`. Every flag here is read by `indexOf`, so an unrecognised one is simply not seen and the tool falls through to its defaults — which means the ONE command a reader tries first was the most expensive one available, and it destroyed the captures of whatever was last diffed. A typo in `--realm` did the same thing more quietly: `--realm brodcast` diffed Season and said nothing.
+const KNOWN_FLAGS = new Set(['--realm', '--scroll', '--view', '--viewport', '--json', '--portal', '--fold',
+                             '--live-clock', '--selftest', '--open', '--open-sel', '--hover', '--focus',
+                             '--mk-query', '--no-seed', '--at', '--help', '-h']);
+const REALM_NAMES = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
+const USAGE = `
+portal:diff — render both pages and subtract them. It does not enumerate anything.
+
+  --realm <r>        one of: ${REALM_NAMES.join(' ')}   (default season)
+  --view <tab>       a sub-view; refuses if either side did not switch
+  --scroll <px>      capture at a scroll offset
+  --viewport WxH     off-contract, and says so in its own header (contract is 1282x888)
+  --portal real|harness   real is the default and the stronger comparison
+  --open "<text>"    open an overlay by a control BOTH sides render with that text
+  --open-sel "<css>" open it by selector when the two sides spell the control differently
+  --hover / --focus  the same DOM under a different pointer or focus condition
+  --mk-query demo=1  seed the mockup — REQUIRED for review and home, which refuse without it
+  --fold             one screenful only; a different question from "do these two pages match"
+  --json             machine-readable region list
+  --selftest         identical input must produce an empty result
+
+OUTPUT  local/diff-<realm>/mk-<realm>.png · pt-<realm>.png · delta-<realm>.png
+`;
+if (args.includes('--help') || args.includes('-h')) { console.log(USAGE); process.exit(0); }
+const unknown = args.filter((a) => a.startsWith('--') && !KNOWN_FLAGS.has(a));
+if (unknown.length) {
+    console.error(`portal:diff: unknown flag(s) ${unknown.join(' ')}\n${USAGE}`);
+    process.exit(2);
+}
 const realm = flag('--realm', 'season');
+if (!REALM_NAMES.includes(realm)) {
+    console.error(`portal:diff: --realm ${realm} is not a realm. One of: ${REALM_NAMES.join(' ')}\n`
+        + '  An unvalidated realm fell through to season and reported season\'s regions under another name.');
+    process.exit(2);
+}
 const scrollY = Number(flag('--scroll', 0)) || 0;
 const asJson = args.includes('--json');
 const portalMode = flag('--portal', 'real');
@@ -134,9 +172,9 @@ const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 const mockupUrl = withQuery(`${MOCKUP}/${MOCKUP_PAGE}`);
-// 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state.
-if (realm === 'review' && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
-    console.error('refusing: Review must be measured SEEDED or the two sides hold different data.\n'
+// 🔴 REVIEW REFUSES WITHOUT A SEED, AND THAT IS A REFUSAL RATHER THAN A NOTE ON PURPOSE. Review's staged-ops store is sessionStorage and every load here clears it, so an unseeded run compares an EMPTY mockup against a POPULATED portal and returns a confident, well-formed number for a comparison nobody meant to make — measured 2026-09-03 00:22 EDT at 4.7% in 15 regions against 0.5% in 12 seeded. A note in the plan would be one more thing to remember; this cannot be forgotten. `--no-seed` is the explicit opt-out for anyone who really does want the empty state. 🔴 TWO REALMS NOW, NOT ONE. Home carries the same staged surfaces Review does — the header's commit crumb, the masthead's staged figure and the whole `.hres` resume strip — and it was measured UNSEEDED through Part 6b's first nine runs, which reported the crumb, the figure and the strip as ONLY IN PORTAL and the two pages 78px apart. Seeded they are the same height. Until 2026-09-03 21:29 EDT the seed lived inside review.html and no other page could be asked; it is in the mockup's shared shell.js now, so this guard can cover any page that shows staged work rather than the one page that happened to own the code.
+if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
+    console.error(`refusing: ${realm === 'home' ? 'Home' : 'Review'} must be measured SEEDED or the two sides hold different data.\n`
         + '  add   --mk-query demo=1     to compare two populated boards (what every recorded figure for this realm means)\n'
         + '  or    --no-seed             to measure the empty state deliberately');
     process.exit(2);
@@ -152,33 +190,8 @@ const portalUrl = selfTest ? mockupUrl
 //
 // Two answers, and it needs both. It MINTS a session against dev Mongo so it can see the realm at all, and it REFUSES to report if the portal side is still the door — because a diff that silently compares the wrong page is worse than no diff, and this one had already proved it can happen.
 //
-// ⚠️ DEV MONGO ONLY, asserted rather than assumed. It reads the URI out of `.env.dev` by hand (the same grep-do-not-source reasoning as backupDb.sh and portSeasonalToLocal.mjs) and refuses anything that is not localhost. A diff tool that can write a session into the production database is not a diff tool.
-async function mintSession(discordId) {
-    const envPath = path.join(ROOT, '.env.dev');
-    if (!fs.existsSync(envPath)) return null;
-    const line = fs.readFileSync(envPath, 'utf8').split(/\r?\n/).find((l) => l.trimStart().startsWith('MONGODB_URI='));
-    const uri = line ? line.slice(line.indexOf('=') + 1).trim().replace(/^["']|["']$/g, '') : '';
-    if (!uri) return null;
-    if (!/mongodb:\/\/(localhost|127\.0\.0\.1)/.test(uri)) {
-        throw new Error(`portal:diff refuses to mint a session against a non-local database: ${uri.replace(/\/\/.*@/, '//***@')}`);
-    }
-    const mongoose = require('mongoose');
-    await mongoose.connect(uri);
-    const PortalSession = require(path.join(ROOT, 'models/PortalSession'));
-    const AdminUser = require(path.join(ROOT, 'models/AdminUser'));
-    // 🔴 THE OWNER, NOT "WHOEVER THE DATABASE LISTS FIRST". This read AdminUser.findOne({}) and got a scoped test admin holding three realms out of six, so the rail rendered SEASON / BROADCAST / REVIEW against the mockup's six — and the diff duly reported the rail, the realm links and everything they push around as differences. Three of the eleven regions in the first real-server season run were that. A tool whose own session narrows the page is measuring its own setup; the owner id is hardcoded in utils/owner.js and implicitly holds everything, which is the only grant that shows the whole surface. The AdminUser fallback stays for a database that somehow has no owner row.
-    const { ALLOWED_ADMIN_ID } = require(path.join(ROOT, 'utils/owner'));
-    const who = discordId || ALLOWED_ADMIN_ID || (await AdminUser.findOne({}).lean())?.discordId;
-    if (!who) { await mongoose.disconnect(); return null; }
-    const raw = crypto.randomBytes(32).toString('hex');
-    await PortalSession.create({
-        sessionHash: crypto.createHash('sha256').update(raw).digest('hex'),
-        discordId: who,
-        userAgent: 'portal:diff (scripts/portalDiff.mjs)',
-    });
-    await mongoose.disconnect();
-    return { raw, who };
-}
+// ⚠️ DEV MONGO ONLY, asserted rather than assumed. It reads the URI out of `.env.dev` by hand (the same grep-do-not-source reasoning as backupDb.sh and portSeasonalToLocal.mjs) and refuses anything that is not localhost. A diff tool that can write a session into the production database is not a diff tool. Delegates to the extracted lib. The reasoning that used to live here — dev Mongo asserted rather than assumed, the OWNER rather than whoever the database lists first — is unchanged and now lives in ONE place.
+async function mintSession(discordId) { return mintDevSession(ROOT, discordId); }
 
 // Applied identically by shoot() and label(), because a region labelled from the DEFAULT view while the pixels came from Board is worse than no label at all — it names the wrong element with total confidence. Every visible control the page offers, both sides, as one map. Written because the first question the overlay tier asks — "what is there to open, and does the other side have it?" — had no answer short of reading two source files, and a control present on ONE side is itself a finding this reports for free.
 const LIST_TRIGGERS = () => {
@@ -321,7 +334,9 @@ async function shoot(page, url, label) {
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
     await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' });
     await page.evaluate(() => new Promise((r) => setTimeout(r, 260)));
+    // 🔴 `main.door` ALONE PASSES THE SHELL-WITH-NO-ROWS CASE, which is the exact reading `lib/portalSession.cjs` was extracted to stop: a rendered header and 784 characters of chrome, identical on every view, looks like a stable measurement and is the signature of never having arrived. The lib's rule runs on the PORTAL side only — the mockup is a static page with no door to be behind, and its fold/overlay captures legitimately render shapes the realm-row list does not name.
     const door = await page.evaluate(() => !!document.querySelector('main.door'));
+    if (!door && !selfTest && label !== 'mk') await assertPastDoor(page, `${url} (portal side)`);
     if (door && !selfTest) {
         throw new Error(`portal:diff refuses to report: ${url} is showing the DOOR, not the realm.\n`
             + '  A diff of a login page produces percentages and ranked regions that look exactly like findings.\n'
@@ -520,8 +535,16 @@ async function label(page, url, regions) {
                 console.log(`      pt- ${ptAt[i].at}  ${ptAt[i].text ? '“' + ptAt[i].text + '”' : ''}`);
             });
             console.log('\n  not covered by this run: ' + COVERAGE_NOTE.join('\n' + ' '.repeat(22)) + '\n');
-            console.log('\n  Every region is CLOSED or CITED in the Part\'s difference ledger. A region is not');
-            console.log('  a defect by itself — real data, portal-ahead surfaces and fixture gaps all land here.\n');
+            // 🔴 THIS SENTENCE WAS PRINTED UNCONDITIONALLY, AFTER TRUNCATING TO 14 REGIONS, AND IT READ AS A VERIFIED CLAIM. It is a string literal: this tool has never read the ledger and cannot know whether any region is cited. On every realm but Review it asserted closure over regions it had not shown anyone — season 121 hidden, armory 879, access 42, analytics 27, home 12. §0.7d makes the ENUMERATION the close condition, so the close was being discharged by boilerplate. Found by the §L ⑥ agent, 2026-09-03 23:19 EDT.
+            const hidden = d.regionCount - Math.min(14, d.regionCount);
+            if (hidden > 0) {
+                console.log(`\n  ⚠️  ${hidden} of ${d.regionCount} regions were NOT printed — this tool lists the largest 14.`);
+                console.log('  The close condition is the ENUMERATION, so a realm is not closed on what you can see here.');
+                console.log('  Use --json for every region.');
+            }
+            console.log('\n  A region is not a defect by itself — real data, portal-ahead surfaces and fixture gaps all');
+            console.log('  land here. Adjudicate each against the Part\'s difference ledger; this tool does not read it');
+            console.log('  and cannot tell you whether anything here is cited.\n');
         }
         if (selfTest) {
             const ok = d.diffRatio < 0.001 && d.regionCount === 0;

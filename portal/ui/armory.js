@@ -88,7 +88,7 @@ function loadTClosed() { try { return new Set(JSON.parse(sessionStorage.getItem(
 function saveTClosed(set) { try { sessionStorage.setItem(TCLOSED_KEY, JSON.stringify([...set])); } catch (e) {} }
 
 // 🔴 AGE IS NOT A DEFECT. Counting staleness among the faults put a red mark on nearly every card — the mockup measured 33 of 36 siblings — so the badge stopped meaning anything. Faults get the red count; age gets a quiet dot, because it is a different fact and reads as one.
-function splitCoverage(b) {
+export function splitCoverage(b) {
     const all = b.coverage || [];
     return { faults: all.filter((f) => f !== 'stale-90d'), aged: all.includes('stale-90d') };
 }
@@ -196,7 +196,7 @@ function Rack({ builds, onPick }) {
                         </div>`;
                 })}
             </div>
-            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The vocabulary is the schema's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and <code>parseLoadoutBadges()</code> in <code>adminParser.js</code> validates it. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
+            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its tier. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The words are the bot's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and anything else is refused when you save. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
         </div>
     `;
 }
@@ -434,8 +434,10 @@ function BulkBadgesPanel({ ids, onApply, onCancel }) {
     const [badges, setBadges] = useState('');
     return html`
         <div style="display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px dashed var(--rule)">
-            <label class="sr" for="bulk-badges">Badges to apply to ${ids.length} selected build(s)</label>
-            <input id="bulk-badges" placeholder=${`Badges for ${ids.length} build(s) (e.g. meta, top3)`} value=${badges} onInput=${(e) => setBadges(e.target.value)} style="flex:1" />
+            <!-- ⚠️ (s) IS USED NOWHERE ELSE IN THIS PRODUCT and reads as a form field rather than a sentence —
+                 copy audit §D2, applied 2026-09-04 20:53 EDT. The count is known at render time, so the word can simply agree. -->
+            <label class="sr" for="bulk-badges">Badges to apply to ${ids.length} selected ${ids.length === 1 ? 'build' : 'builds'}</label>
+            <input id="bulk-badges" placeholder=${`Badges for ${ids.length} ${ids.length === 1 ? 'build' : 'builds'} (e.g. meta, top3)`} value=${badges} onInput=${(e) => setBadges(e.target.value)} style="flex:1" />
             <button class="accent-fill" onClick=${() => onApply(badges)}>Apply</button>
             <button onClick=${onCancel}>Cancel</button>
         </div>
@@ -938,9 +940,12 @@ function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
                 </section>
             </div>
             <div class="bvnote">
-                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot has none
-                either — <code>commands/manage.js</code>'s <code>PURGE_LABELS</code> omits both — and adding one to the
-                portal would put a capability within reach that the system has already decided against.
+                <!-- ⚠️ THE SOURCE PATH IS GONE AND THE FACT IS NOT — 2026-09-04 20:53 EDT, copy audit §B. The reason this
+                     note is worth reading is that the ABSENCE is deliberate; which file records the decision is
+                     not something the reader can act on. -->
+                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot does not
+                offer one either, and adding one to the portal would put a capability within reach that the system
+                has already decided against.
             </div>
         </div>
     `;
@@ -970,6 +975,8 @@ export function ArmoryRealm({ session }) {
     const [coverageFilter, setCoverageFilter] = useState(null);   // {flag, category} | null
     const [weaponFilter, setWeaponFilter] = useState(null);
     const [showAdd, setShowAdd] = useState(false);
+    // 🔴 WHICH ARMORY THE BUILD IS FILED UNDER, NOT WHICH ARMORY YOU ARE LOOKING AT — separated 2026-09-04 20:42 EDT, Harkirat's call after seeing both sides. `AddBuildForm`'s own comment has stated the distinction since it was written (*"this one sets a PROPERTY OF THE RECORD… rather than which armory you are looking at, and those are different acts that happen to use the same two words"*) and the chip handler four hundred lines below it did both: `setArmMode(m); setShowAdd(true)`. So pressing `New DMZ build` opened the form AND swapped the rack out from under it — measured at **−4,531 nodes**, against the design's **+117**, which is the design mounting a form over the rack you were already reading. The two sides were not two renderings of one control. ⚠️ It survived because every instrument shoots the page AS IT LOADS: the only thing that ever saw it was `--open`, and the first version of THAT accepted the collapse as an overlay and exited 0.
+    const [addMode, setAddMode] = useState('MP');
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
@@ -1138,15 +1145,18 @@ export function ArmoryRealm({ session }) {
           note: 'Matches /manage loadouts\' "Up To 5".' },
     ];
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView}
                   meta=${viewMeta}
                   modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
+                  badges=${{ review: load.data.stagedUnknown ? 0 : (load.data.stagedOps || []).length }}
+                  stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
                   overlaySlot=${overlay.render()} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => setShowAdd(true) },
+                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => { setAddMode(armMode); setShowAdd(true); } },
                       { label: 'Compare the selected builds', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['diff', 'side by side', 'duplicate'], run: () => setView(VIEWS.compare) },
                       { label: 'Paste a list of builds', group: 'armory', local: true, accent: 'var(--r-armory)',
@@ -1163,7 +1173,7 @@ export function ArmoryRealm({ session }) {
                                                         code and ranks by combat range — and a single "New build" made the mode a
                                                         thing you discovered inside the form. Season's masthead already works this
                                                         way for its five item types; this is the same control. -->
-                                                   <${ArmoryAddChips} onAdd=${(m) => { setArmMode(m); setShowAdd(true); }} />`} />`}
+                                                   <${ArmoryAddChips} onAdd=${(m) => { setAddMode(m); setShowAdd(true); }} />`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       <!-- The .bed class is the adopted sheet's own main-plus-side split (1fr 340px), which is
@@ -1181,7 +1191,7 @@ export function ArmoryRealm({ session }) {
                            (No backticks in this comment. The first draft had five and broke the parse; portal:template-comments,
                             written earlier in this same session for exactly this, named the file and the line.) -->
                       ${wrapBed(html`
-                              ${showAdd ? html`<${AddBuildForm} mode=${armMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+                              ${showAdd ? html`<${AddBuildForm} mode=${addMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
                               ${editingId ? html`
                                   <${BuildEditor} build=${builds.find((b) => String(b._id) === editingId)}
                                                   csrfToken=${session.csrfToken}
@@ -1236,7 +1246,7 @@ export function ArmoryRealm({ session }) {
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
-                                   onAdd=${() => setShowAdd(true)} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
+                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onFiltersChange=${setManifestFilters}

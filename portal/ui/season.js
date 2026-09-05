@@ -13,7 +13,6 @@ import { downloadText } from './download.js';
 import { useRef } from '../vendor/preact-hooks.mjs';
 import { Board } from './board.js';
 import { Manifest, StatePill } from './manifest.js';
-import { Tray } from './tray.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { DiscordCard } from './v2Render.js';
 import { Composer } from './composer.js';
@@ -114,6 +113,58 @@ function toTrackItems(live, path, lane, ongoingEnd) {
         startDate: item.startDate || item.date,
         endDate: item.endDate || (item.isOngoing && ongoingEnd ? String(ongoingEnd).slice(0, 10) : item.date),
     }));
+}
+
+// Playlists, events and draw windows are three lanes of one stored `calendar` array. The split is driven by `calCategoryOf` so the lane a row lands in and the label the Manifest prints for it come from one table; adding a fourth category cannot silently mean "event".
+function splitCalendar(src) {
+    const all = (src && src.calendar) || [];
+    const of = (lane) => ({ calendar: all.filter((i) => calCategoryOf(i).lane === lane) });
+    return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
+}
+
+// 🔴 HOISTED OUT OF SeasonRealm SO HOME CAN READ THE SAME DERIVATION RATHER THAN COPY IT. Home's attention list carries a "season items to repair" row, and the design's own note on that row is the rule this file keeps re-learning: READ, never re-derive. The mockup records it twice — Home once said "133 builds · 33 need repair" where Armory said "31 · 28", and later "117 need repair" where Armory said 11 — both times because a second copy of a predicate drifted from the first. There is one builder now and both realms call it.
+function buildTrackData(live) {
+    const cal = splitCalendar(live);
+    const windowTitles = (cal.drawWindows?.calendar || []).map((w) => String(w.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
+    // ⚠️ COMPUTED OVER THE SET, NOT PER DRAW. `dateOnly` means a draw no calendar window covers — which /calendar then serves as a synthetic entry that never ends.
+    const servedSynthetic = (item) => {
+        const t = String(item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        return !!t && !windowTitles.some((w) => w && (w.includes(t) || t.includes(w)));
+    };
+    const withDateOnly = (list) => list.map((i) => ({ ...i, dateOnly: servedSynthetic(i) }));
+    return {
+        draw: withDateOnly(toTrackItems(live, 'newDraws', 'draw', live?.bpEnd)),
+        returning: withDateOnly(toTrackItems(live, 'returningDraws', 'returning', live?.bpEnd)),
+        drawwindow: toTrackItems(cal.drawWindows, 'calendar', 'drawwindow', live?.bpEnd),
+        event: toTrackItems(cal.events, 'calendar', 'event', live?.bpEnd),
+        playlist: toTrackItems(cal.playlists, 'calendar', 'playlist', live?.bpEnd),
+    };
+}
+
+// Season's Repairs panel, summarised to one number. `findingRows` is track.logic.js's — the same six checks the panel itself renders — so Home's row and Season's own heading count the same findings by construction.
+export function seasonRepairCount(live) {
+    if (!live) return 0;
+    const rows = findingRows(buildTrackData(live), live);
+    return ['dupe', 'banner', 'pastBp', 'orphanWindows', 'noWindow', 'untagged2x']
+        .reduce((n, k) => n + (rows[k] || []).length, 0);
+}
+
+// The season items that outlive the season — spans only, since a draw is a point in time and cannot run past anything. Exported as an ANSWER rather than exporting `buildTrackData`: a caller handed the builder would have to know which three of its five lanes are spans, which is precisely the knowledge that belongs on this side of the seam.
+export function seasonConflictCount(live) {
+    const last = seasonLastDeadline(live);
+    if (!last || !live) return 0;
+    const track = buildTrackData(live);
+    return ['event', 'playlist', 'drawwindow']
+        .flatMap((lane) => track[lane] || [])
+        .filter((i) => i.endDate && String(i.endDate).slice(0, 10) > last).length;
+}
+
+// 🔴 THE SEASON'S OWN LAST DEADLINE, WHICH IS NOT THE BATTLE PASS. `bpEnd` is the FIRST of three (`SEASON_LINES`), and Home's attention row asked whether an item outlives the battle pass while the design asks whether it outlives THE SEASON. Track's own strip already carries this correction (see its header); this is the same edge, for the same reason, on the other surface.
+export function seasonLastDeadline(season) {
+    if (!season) return '';
+    const ends = SEASON_LINES.map((L) => (season[L.tbdKey] || !season[L.endKey] ? '' : String(season[L.endKey]).slice(0, 10)))
+        .filter(Boolean).sort();
+    return ends.length ? ends[ends.length - 1] : '';
 }
 
 // The Add composer -- a kind picker revealing only the fields that kind's op actually needs, rather than one form with every field always visible (spec §7: desktop-first, dense, no wasted chrome). ⚠️ `AddComposer` LIVED HERE AND IS GONE. It was a select and three bare inputs in a panel — the form the adopted design replaced with the inline composer above the Track (portal/ui/composer.js). Left in place it would have been a second way to add the same things, with a different vocabulary and no natural-language dates.
@@ -230,41 +281,26 @@ async function fetchChangesets(realm) {
     return body.changesets || [];
 }
 
-// 🔴 ONE HERO, THEN A TICK — AND ONE COPY OF IT. The largest meaningful unit is the figure; everything below it is one quiet mono line. Four near-equal segments was attempt 13's first hierarchy gap (COMPANION §16.31a) — a digital readout tells you the time without telling you anything about the time.
+// 🔴 THE DESIGN'S READOUT, AND THIS COMPONENT IS THE ONLY COPY OF IT. Four segments, colon-separated, the seconds quieter than the rest.
 //
-// ⚠️ HOME HAD ITS OWN TRANSCRIBED COPY OF THIS MARKUP. Both clocks emitted `.sc-u`/`.sc-sep` independently, so rebuilding Season's face left Home's rendering against rules that no longer existed — a whole component reduced to unstyled inline text, silently, with every gate green. The face is the part the two clocks genuinely share; what surrounds it is not (Season states the deadline and its chips, Home states the season title and earns two item columns beside it), so only the face is lifted.
+// 🔴 IT USED TO BE THE HERO CLOCK, AND THAT IS THE BUG THIS FIXES. Attempt 13's one-big-figure face (COMPANION §16.31a) was deleted on 2026-08-30 — but only at SeasonClock's call site below, which is where the comment recording the deletion still sits. The component survived, exported and styled, with home.js as its ONLY consumer: so Season rendered the design while Home went on rendering the scrapped version, and the decision ledger recorded the clock as "DELETED" with no qualifier. A deletion applied to the instance and written down as applied to the class. Found on Home's first ever audit, 2026-09-03 20:24 EDT.
+//
+// ⚠️ HOME HAD ITS OWN TRANSCRIBED COPY OF THIS MARKUP ONCE, and that is why it must not get one again: two independent emitters of .sc-u/.sc-sep meant rebuilding one face left the other rendering against rules that no longer existed — a whole component reduced to unstyled inline text, silently, with every gate green. The face is the part the two clocks genuinely share; what surrounds it is not (Season states the deadline and its chips, Home states the season title and earns two item columns beside it), so only the face lives here.
 export function ClockFace({ p }) {
     const units = [];
-    if (p.d > 0) units.push([p.d, p.d === 1 ? 'day' : 'days']);
-    if (p.d > 0 || p.h > 0) units.push([p.h, 'hrs']);
-    units.push([p.m, 'min']);
-    units.push([p.s, 'sec']);
-
-    const [heroN, heroL] = units[0];
-    const tick = units.slice(1);
+    if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
+    if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
+    units.push(['m', p.m, 'min']);
+    units.push(['s', p.s, 'sec']);
 
     return html`
-        <!-- ONE AXIS. The figure owns the column's right edge, the unit sits directly under it and the
-             ticking clock rides the tier rule below that — three right-aligned lines of decreasing weight
-             and nothing set beside anything. The version before this put the unit stack to the figure's
-             RIGHT, which left a 24px stack against a 67px numeral with 43px of nothing under it and put
-             the block's fine print, rather than its figure, on the edge every other row aligns to. -->
         <div class="sc-face">
-            <b class="sc-hero">${heroN}</b>
-            <i class="sc-heroL">${heroL} left</i>
-        </div>
-        <span class="sc-unit">
-                ${tick.length ? html`
-            <div class="sc-tick">
-                ${tick.map((u, i) => {
-                    // ⚠️ THE SEPARATOR CARRIES .sc-s TOO, not just the number. The old markup hid the seconds and left its colon behind — "23 HRS : 59 MIN :" — and needed a :nth-last-child rule to clean up after itself. Marking the pair cannot drift. ⚠️ And .sc-s is the ONLY class the number carries: a `.sc-t-n` alongside it styled nothing (the numbers inherit .sc-tick), and portal:orphans said so.
-                    const sec = i === tick.length - 1;
-                    return html`
-                        ${i ? html`<span class=${'sc-t-sep' + (sec ? ' sc-s' : '')}>:</span>` : null}
-                        <span class=${sec ? 'sc-s' : null}>${String(u[0]).padStart(2, '0')}</span>`;
-                })}
-            </div>` : null}
-        </span>`;
+            ${units.map((u, i) => html`
+                ${i ? html`<span class="sc-sep">:</span>` : null}
+                <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
+                    <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
+                </span>`)}
+        </div>`;
 }
 
 // ── THE SEASON CLOCK ──────────────────────────────────────────────────────────────────────────
@@ -306,20 +342,11 @@ function SeasonClock({ season, today }) {
     //    https://claude.ai/code/artifact/48baf822-3a53-46d0-9fe9-93da8e00d104
     {
 
-        const units = [];
-        if (p.d > 0) units.push(['d', p.d, p.d === 1 ? 'day' : 'days']);
-        if (p.d > 0 || p.h > 0) units.push(['h', p.h, 'hrs']);
-        units.push(['m', p.m, 'min']);
-        units.push(['s', p.s, 'sec']);
         return html`
             <div class="sclock mh-stats" data-tier=${seasonTier(p.d)} aria-live="off">
-                <div class="sc-face">
-                    ${units.map((u, i) => html`
-                        ${i ? html`<span class="sc-sep">:</span>` : null}
-                        <span class=${'sc-u' + (u[0] === 's' ? ' sec' : '')}>
-                            <b>${u[0] === 'd' ? u[1] : String(u[1]).padStart(2, '0')}</b><i>${u[2]}</i>
-                        </span>`)}
-                </div>
+                <!-- The face is ClockFace's, not a second copy of it. Season and Home render the same four
+                     segments from the same code; only what surrounds them differs. -->
+                <${ClockFace} p=${p} />
                 <div class="sc-when">until <b>${fmtDay(next.iso)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
             </div>`;
@@ -853,7 +880,6 @@ export function SeasonRealm({ session }) {
     const load = useAsync(() => fetchSeasonState(), []);
     const state = load.data;
     const [changesets, setChangesets] = useState([]);
-    const [notices, setNotices] = useState([]);
     const overlay = useOverlay();
     // 🔴 THE FIVE ADD CHIPS ALL DID THE SAME THING. Each passed its own key to `onAdd` and every call site threw it away with `() => setShowAdd(true)`, so clicking Playlist and clicking Draw opened an identical form defaulted to Draw — five controls, one behaviour, and the only way to notice was to click two of them. The state IS the type now, so the chip you press is the type the composer opens on.
     const [showAdd, setShowAdd] = useState(null);   // the chip's own key, or null
@@ -1076,27 +1102,7 @@ export function SeasonRealm({ session }) {
     // Playlists are split out of `calendar` into their own lane. Track's LANE_LABEL and TOPIC_VAR have carried a `playlist` entry since the first build and nothing ever filled it, so every playlist-category calendar item rendered in the Events lane in the Events colour -- flagged by Session A's own post-hoc pass as pre-existing and left for this phase.
     //
     // 🔴 AND THAT FIX STOPPED ONE CATEGORY SHORT. `!isPlaylist` is not "is an event" -- the calendar has THREE categories, and the third is `draw`, a DRAW WINDOW (when a draw can be bought). Every one of them landed in the Events lane, in the Events colour, exactly as playlists had. The split is now driven by `calCategoryOf`, so the lane a row lands in and the label the Manifest prints for it come from one table; adding a fourth category cannot silently mean "event" again.
-    const splitCalendar = (src) => {
-        const all = (src && src.calendar) || [];
-        const of = (lane) => ({ calendar: all.filter((i) => calCategoryOf(i).lane === lane) });
-        return { events: of('event'), playlists: of('playlist'), drawWindows: of('drawwindow') };
-    };
-    const liveCal = splitCalendar(state.live);
-    const windowTitles = (liveCal.drawWindows?.calendar || []).map((w) => String(w.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim());
-    const servedSynthetic = (item) => {
-        const t = String(item.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-        return !!t && !windowTitles.some((w) => w && (w.includes(t) || t.includes(w)));
-    };
-    const withDateOnly = (list) => list.map((i) => ({ ...i, dateOnly: servedSynthetic(i) }));
-    const trackData = {
-        draw: withDateOnly(toTrackItems(state.live, 'newDraws', 'draw', state.live?.bpEnd)),
-        returning: withDateOnly(toTrackItems(state.live, 'returningDraws', 'returning', state.live?.bpEnd)),
-        drawwindow: toTrackItems(liveCal.drawWindows, 'calendar', 'drawwindow', state.live?.bpEnd),
-        // ⚠️ COMPUTED HERE BECAUSE IT IS A FACT ABOUT THE SET, NOT ABOUT ONE DRAW. `dateOnly` means a draw that no calendar window covers — which /calendar then serves as a synthetic entry that never ends. toBoardItems worked it out for the Board and nothing worked it out for the Track, so Repairs' "Draw served synthetic" check reported zero against eleven real ones.
-
-        event: toTrackItems(liveCal.events, 'calendar', 'event', state.live?.bpEnd),
-        playlist: toTrackItems(liveCal.playlists, 'calendar', 'playlist', state.live?.bpEnd),
-    };
+    const trackData = buildTrackData(state.live);
     // The draft rail had the identical bucketing bug as the live rail (state.draft's own keys are newDraws/returningDraws/calendar, not draw/returning/event) -- fixed in the same pass since it's the same reshape, not a second task.
     const draftCal = splitCalendar(state.draft);
     const draftRails = state.draft ? {
@@ -1274,7 +1280,5 @@ export function SeasonRealm({ session }) {
                                     onDay=${setDayOpen}
                                     onClose=${() => setDayOpen(null)} />` : null}`} manifestSlot=${manifestSlot}
                   footSlot=${html`<${OneWay} live=${state.live} draft=${state.draft} session=${session} overlay=${overlay} onStage=${handleOneWay} />`}
-                  traySlot=${html`<${Tray} notices=${notices}
-                                           blocked=${changesets.filter((c) => c.tier >= 3 && !c.exportedAt && c.state !== 'committed' && c.state !== 'discarded').length}
-                                           onUndo=${(id) => setNotices(notices.filter(n => n.changeId !== id))} onDismiss=${(id) => setNotices(notices.filter(n => n.changeId !== id))} />`} />`;
+                  stagedOps=${(changesets || []).filter((c) => c.state === 'staged' || c.state === 'blocked').flatMap((c) => (c.ops || []).map((o) => ({ ...o, changesetId: c.id })))} />`;
 }

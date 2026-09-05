@@ -1517,10 +1517,10 @@ check(
 /* ------------------------ scripts-documented ------------------------ */
 check(
   "scripts-documented",
-  "WARN",
+  "ERROR",
   "every script is mentioned in some rule file or doc",
   () => {
-    // `.claude/rules/scripts-and-migrations.md` is explicitly a POINTER MAP — "which subsystem rule documents each script". So the correct test is "named SOMEWHERE", not "named in that file": `checkEmojiCaptures.js` is documented in rendering-and-ui.md, and a narrower check would have reported it falsely. WARN, because a brand-new script legitimately lands before its docs do.
+    // `.claude/rules/scripts-and-migrations.md` is explicitly a POINTER MAP — "which subsystem rule documents each script". So the correct test is "named SOMEWHERE", not "named in that file": `checkEmojiCaptures.js` is documented in rendering-and-ui.md, and a narrower check would have reported it falsely. 🔴 RAISED WARN → ERROR 2026-09-04 20:18 EDT. The old justification was "a brand-new script legitimately lands before its docs do" — but the documenting edit is in the same working tree as the script, so "before" is a window of minutes that only exists if somebody chooses to leave it open. Against that: **a WARN with a green exit is invisible to this repo's own discipline of reading the exit code and never the tail.** `docs:audit` ran eight times in one session while this check warned about a file that session had just created, and every one of those runs was read as clean. The check was correct and unheard, which is the failure mode a warning has. At the moment of the raise the tree had **0 undocumented scripts of 172**, so this costs nothing today and only ever costs one line in the pointer map.
     const scripts = tracked().filter((f) => f.startsWith("scripts/") && /\.(js|mjs|sh)$/.test(f));
     const corpus = tracked()
       .filter((f) => f === "CLAUDE.md" || f.startsWith(".claude/rules/") || f.startsWith("docs/"))

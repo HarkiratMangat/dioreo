@@ -14,7 +14,7 @@ const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { findChrome } = require('./lib/chromePath.cjs');
 const { resolveViews } = require('./lib/portalRealWalkViews.cjs');
-const { mintSession, assertPastDoor } = require('./lib/portalSession.cjs');
+const { mintSession, assertPastDoor, REALM_ROW_SELECTOR } = require('./lib/portalSession.cjs');
 
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
@@ -54,7 +54,7 @@ try {
     console.log(`  past the door: ${state.realmNodes} realm node(s), ${state.textLen} chars\n`);
 
     const scan = async (label) => {
-        const out = await page.evaluate((src) => {
+        const out = await page.evaluate((src, rowSel) => {
             const re = new RegExp(src);
             const hits = [];
             for (const el of document.querySelectorAll('main *, header *')) {
@@ -62,11 +62,17 @@ try {
                 const t = (el.innerText || '').trim();
                 if (t && re.test(t)) hits.push((typeof el.className === 'string' && el.className ? '.' + el.className.split(/\s+/)[0] : el.tagName.toLowerCase()) + '  ' + t.slice(0, 74));
             }
-            return { hits: [...new Set(hits)].slice(0, 14), rows: document.querySelectorAll('main tr, main .bar, main li, main .rec-row').length, chars: String((document.querySelector('main') || {}).innerText || '').length };
-        }, GARBAGE.source);
-        const ok = out.hits.length === 0;
+            return { hits: [...new Set(hits)].slice(0, 14), rows: document.querySelectorAll(rowSel).length, chars: String((document.querySelector('main') || {}).innerText || '').length };
+        }, GARBAGE.source, REALM_ROW_SELECTOR);
+        // 🔴 THE ROW COUNT WAS PRINTED AND NEVER ASSERTED — `access · By permission` walked at 0 rows and passed. A view with no rows is either a realm whose row shape is missing from `REALM_ROW_SELECTOR` (an instrument gap, which is what the door assertion already exists to stop being invisible) or a view that genuinely rendered nothing (a defect). Both are findings; neither is a pass. Same class as the `sizeIssues` count one file away: a number reported without a rule attached to it is decoration.
+        const noRows = out.rows === 0;
+        const ok = out.hits.length === 0 && !noRows;
         if (!ok) failed = true;
-        console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(9)} ${String(out.rows).padStart(4)} row(s) · ${String(out.chars).padStart(6)} chars${ok ? '' : ` · ${out.hits.length} garbage value(s)`}`);
+        console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(9)} ${String(out.rows).padStart(4)} row(s) · ${String(out.chars).padStart(6)} chars${ok ? '' : ` · ${out.hits.length} garbage value(s)${noRows ? ' · ZERO ROWS' : ''}`}`);
+        if (noRows) {
+            console.log('        ⚠️  no element matched REALM_ROW_SELECTOR on this view. Either the view rendered');
+            console.log('            nothing, or this realm\'s row shape is missing from scripts/lib/portalSession.cjs.');
+        }
         out.hits.forEach((h) => console.log(`        ⚠️  ${h}`));
         return out;
     };

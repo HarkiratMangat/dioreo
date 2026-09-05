@@ -230,12 +230,15 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                 <${Tile} label="RAM at last alert" value=${h.rssPeakMb || '—'} unit=${h.rssPeakMb ? 'MB' : ''}
                          onClick=${onOpenTiming} tone=${h.rssPeakMb > 400 ? 'warn' : ''}
                          sub=${h.rssSampleCount ? `highest of ${h.rssSampleCount} ${h.rssSampleCount === 1 ? 'sample' : 'samples'} in 7d` : 'no alerts fired in 7 days'} />
-                <${Tile} label="Distinct users 24h" value=${(h.distinctUsers24h ?? 0).toLocaleString()}
-                         onClick=${onOpenReach}
-                         sub=${`across ${(h.commands24h ?? 0).toLocaleString()} ${h.commands24h === 1 ? 'command' : 'commands'}`} />
-                <${Tile} label="Quiet alerts 24h" value=${(h.noise24h ?? 0).toLocaleString()}
-                         onClick=${() => onFilterRiver({ kind: 'alert' })}
-                         sub=${`below the ${errors === 1 ? 'one error' : errors + ' errors'} that ping a human`} />
+                <!-- 🔴 TWO TILES, NOT FOUR — 2026-09-04 22:54 EDT. The row held four metrics across three time windows
+                     and three units, and the code comment above records that the first version wired all four to
+                     Timing *because the design wires its four there*: four slots existed, then four numbers were
+                     found to fill them. The rule for which two go is not taste — **a tile whose own subtitle is
+                     defined against a masthead figure is a third statement of that figure.** Distinct users 24h
+                     read "across N commands" beside a masthead reading COMMANDS 24H, and Quiet alerts 24h read
+                     "below the N errors" beside ERRORS 24H. The two that remain say something the masthead
+                     cannot. Their filters are still reachable: the level rows scope the river to alerts, and
+                     Reach is a view tab. -->
             </div>
             <!-- 🔴 ELEVEN FACTS ARE WRITTEN ON EVERY BOOT AND THE PANEL SHOWED TWO. models/BootRecord.js
                  stores the commit, the guild count, how many commands registered and how many emoji synced
@@ -295,13 +298,22 @@ function Health({ health, onOpenTiming, onFilterLevel, onOpenReach, onFilterRive
                     <!-- ⚠️ THE COUNTS MOVED UP INTO A TILE AND ARE NOT REPEATED HERE. Restating them would
                          rebuild the duplication the tiles were just rewritten to remove, one panel lower. -->
                     <p class="hp">A restart is normal after a deploy and is worth a look when it was not one.</p>
-                    <${DailyBars} series=${h.spark?.alerts || []} label="Alerts per day" />
+                    <!-- 🔴 IT PLOTTED ALERTS UNDER A HEADING READING "RESTARTS" — 2026-09-04 22:54 EDT. The heading, the
+                         prose and the series disagreed three ways, and the two figures could not be reconciled: a
+                         tile said 303 restarts in 7d while this chart totalled 6. spark.boots has existed in the
+                         payload all along (portal/api/analytics.js:110). Corrected toward what the heading and the
+                         prose already agree on rather than by retitling, because they are the half that is right. -->
+                    <${DailyBars} series=${h.spark?.boots || []} label="Restarts per day" />
                 </section>
                 <section class="hpanel">
                     <h4>Where these come from</h4>
-                    <p class="hp">Uptime and restarts are read from the <code>BootRecord</code> collection; errors and
-                        the memory figure come from the <code>AlertLog</code> collection; command counts come from${' '}
-                        <code>AnalyticsEvent</code> records, and the river below adds <code>ChangeLog</code> to those three.</p>
+                    <!-- ⚠️ NAMED IN THE READER'S WORDS, NOT THE DATABASE'S — 2026-09-04 20:53 EDT, copy audit §B. This
+                         paragraph printed four collection names to somebody who wants to know whether the numbers
+                         above are trustworthy, which is a question about WHAT is counted, not about where it is
+                         stored. The collections are still the answer; they are just not the reader's vocabulary. -->
+                    <p class="hp">Uptime and restarts come from what the bot writes each time it starts; errors and
+                        the memory figure from its alert log; command counts from what players actually ran, and the${' '}
+                        river below adds every admin change to those three.</p>
                     <${DailyBars} series=${h.spark?.commands || []} label="Commands per day" />
                 </section>
             </div>
@@ -702,7 +714,10 @@ function Search({ rows = [] }) {
 export function AnalyticsRealm({ session }) {
     // 🔴 THE ONE FIGURE AN ADMIN CANNOT GET ANYWHERE ELSE. `/manage`, `/bot` and `/autobuild` are stamped `isAdmin` and excluded from every product count — correctly, because one admin's afternoon would otherwise dominate a small dataset. But that also makes "did my own edit register, and how long did it take" unanswerable from the screen that should answer it. The toggle asks the server again rather than filtering here, because the percentiles and the roll-ups are aggregations: there is no client-side subset of a p95.
     const [includeAdmin, setIncludeAdmin] = useState(false);
-    const load = useAsync(() => fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), [includeAdmin]);
+    // ⚠️ `/api/review` RIDES ALONG for the rail's staged badge, in the SAME `useAsync` so the realm still has one loading phase. Spreading `analytics` first keeps its own `forbidden`/`failed`/`signedOut` keys, so `failureOf` inside `useAsync` still routes a genuine analytics failure to the failbox.
+    const load = useAsync(() => Promise.all([fetchJson(`/api/analytics${includeAdmin ? '?admin=1' : ''}`), fetchJson('/api/review')])
+        .then(([analytics, review]) => ({ ...analytics, stagedOps: (review && review.ops) || [],
+                                          stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), [includeAdmin]);
     const [view, setView] = useState('Health');
     // 🔴 THE DESIGN'S LEVEL ROWS ARE A FILTER CONTROL AND THE PORTAL DREW THEM AS TEXT. analytics.html:228 sets the river to kind=alert plus that level and scrolls it into view, so the distribution and the log are one surface: you read that 258 alerts were cautions and press the row to see them. The portal had the same three rows as inert divs and the same filters sitting unreachable in the Manifest's own chipset. `seq` rather than the filters object is what Manifest keys its effect on -- see its comment.
     const [riverFilter, setRiverFilter] = useState(null);
@@ -774,9 +789,14 @@ export function AnalyticsRealm({ session }) {
                 <ul class="dw-l">${revertable.slice(0, 6).map((r) => html`
                     <li key=${r.id}>${r.summary}</li>`)}
                     ${revertable.length > 6 ? html`<li>…and ${revertable.length - 6} more</li>` : null}</ul>`,
-            onConfirm: () => {
-                revertable.forEach((r) => revert(r.id));
-                overlay.say(`${revertable.length} change${revertable.length === 1 ? '' : 's'} reverted.`);
+            // 🔴 IT CLAIMED SUCCESS BEFORE A SINGLE REQUEST HAD ANSWERED — corrected 2026-09-04 21:57 EDT. `revert` is async and `forEach` discards every promise, so the toast fired synchronously: a server that was down produced BOTH *"3 changes reverted"* and, a moment later, the failure — and since one toast replaces another, the reader's last word was the failure with a success already in their memory. The single-row path was fixed under the comment above calling this the most dangerous button in the portal; the BULK path was the same defect, still live, on the only control that mutates committed production data with no staging step. ⚠️ AND THE WORD WAS WRONG. `analytics.js`'s own rule is one word for the committed sense and it is REVERSE; the button says Reverse and the toast said *reverted*, two lines apart.
+            onConfirm: async () => {
+                const results = await Promise.all(revertable.map((r) => revert(r.id)));
+                const done = results.filter(Boolean).length;
+                if (!done) return;   // every failure has already named itself through reportFailure
+                overlay.say(done === revertable.length
+                    ? `${done} change${done === 1 ? '' : 's'} reversed. Players see the previous value now.`
+                    : `${done} of ${revertable.length} reversed. The rest are unchanged — try them again.`);
             },
         });
     }
@@ -806,10 +826,13 @@ export function AnalyticsRealm({ session }) {
         : 'autocomplete sessions only';
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="analytics" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['Health', 'Usage', 'Timing', 'Reach', 'Search']} onSetView=${setView}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   meta=${viewMeta}
+                  badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
+                  stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   tools=${html`
                       <label class="adminsw">
                           <input type="checkbox" checked=${includeAdmin}
@@ -827,7 +850,7 @@ export function AnalyticsRealm({ session }) {
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}
-                                                    title="One history, both front doors" filterGroups=${RIVER_FILTERS}
+                                                    title="One history, both front doors" label="River" filterGroups=${RIVER_FILTERS}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"

@@ -36,6 +36,14 @@ export function compare(before, after) {
         for (const k of ['examined', 'nearMisses', 'sizeIssues']) {
             if (b.grid[k] !== a.grid[k]) moved.push({ view: v, what: k, was: b.grid[k], now: a.grid[k] });
         }
+        // 🔴 WHICH GROUP MOVED, NOT ONLY THAT THE COUNT DID. The count alone cannot distinguish an intended consequence from an accepted regression — that is the gap this recording was added for, and the first version recorded a 18-item SAMPLE outside the compared keys, so it answered neither. Compared as a SET of (group, dimension) keys: a group that appears or disappears is named by name. A fixture written before this field existed has no `sizeGroups`, and is skipped rather than reported as a wholesale change — otherwise this lands as seven realms of noise on the commit that adds it.
+        if (Array.isArray(b.grid.sizeGroups) && Array.isArray(a.grid.sizeGroups)) {
+            const was = new Set(b.grid.sizeGroups), now = new Set(a.grid.sizeGroups);
+            const gone = [...was].filter((k) => !now.has(k));
+            const born = [...now].filter((k) => !was.has(k));
+            for (const k of gone) moved.push({ view: v, what: 'sizeGroup gone', was: k, now: '—' });
+            for (const k of born) moved.push({ view: v, what: 'sizeGroup new', was: '—', now: k });
+        }
         for (const k of ['h1', 'tabs', 'cols', 'sections']) {
             const s = (x) => (Array.isArray(x) ? x.join(' · ') : String(x ?? ''));
             if (s(b.inventory[k]) !== s(a.inventory[k])) moved.push({ view: v, what: k, was: s(b.inventory[k]), now: s(a.inventory[k]) });
@@ -63,7 +71,8 @@ const READ = function () {
     const g = window.__grid.all();
     const txt = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim() : '');
     return {
-        grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues },
+        // 🔴 THE SAMPLE, NOT ONLY THE COUNT — added 2026-09-04 12:46 EDT. `sizeIssues` was recorded as a bare number, so when Home's went 33 → 35 across four re-records nobody could tell an intended consequence from an accepted regression, and the plan filed it as a gap in this tool. `__grid.all()` has always returned `sizes` (truncated to 18, and the count is still the measurement — the array starts a triage, it does not end one); it was simply thrown away here. ⚠️ Deliberately OUTSIDE the three keys `diff()` compares, so a sample that shifts under a truncation cannot fail a check the counts pass. ⚠️ `sizesSample` IS GONE — it was 18 of up to 480, capped below the motivating case, sat outside the compared keys so nothing read it, and added 3,688 lines across seven tracked fixtures. `sizeGroups` replaces it: complete, bounded, and INSIDE the comparison, so `--check` alone names which group moved.
+        grid: { examined: g.examined, nearMisses: g.nearMisses, sizeIssues: g.sizeIssues, sizeGroups: g.sizeGroups },
         viewport: g.viewport,
         inventory: {
             h1: txt(document.querySelector('main h1')),

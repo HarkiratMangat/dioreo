@@ -105,6 +105,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
         [rows, query, filters, sort]
     );
 
+    // One function for the select-all, because the click path and the key path must not be two implementations of one act — that divergence is what let the keyboard path be missing entirely. Added 2026-09-04 22:43 EDT.
+    const allShown = () => visible.length > 0 && visible.every((r) => selected.has(r.id));
+    const toggleAll = () => setSelected(allShown() ? new Set() : new Set(visible.map((r) => r.id)));
+
     async function commitEdit(row, columnKey) {
         const op = buildEditOp(row, columnKey, editValue);
         setEditingCell(null);
@@ -140,7 +144,13 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
             <div class="mtools">
                 <!-- ⚠️ The chipset wrapper is display:contents, so it groups the chips for a screen reader and for the
                      markup without adding a box that would break the toolbar's own flex row. -->
-                <span class="mlabel"><span>${label || title || 'Rows'}</span></span>
+                <!-- ⚠️ NO || title FALLBACK — removed 2026-09-04 22:06 EDT. The comment nine lines above records that these
+                 two props were deliberately SPLIT so a realm can have a header band and a toolbar word; a fallback
+                 from one to the other re-fuses them, and a realm passing title alone printed the identical
+                 string twice, 45px apart, in two type treatments. Analytics was the only realm doing it, and it
+                 had been on screen through every conformance gate. A prop that falls back to the prop it was
+                 split from is not a default; it is the split undone. -->
+            <span class="mlabel"><span>${label || 'Rows'}</span></span>
                 <span class="srch">
                     <!-- app.css has styled the srch svg as a 14px magnifier at the field's left inset since the
                          sheet was adopted, and nothing ever rendered one: the input carried a 32px left padding
@@ -190,12 +200,17 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </colgroup>
                 <thead><tr>
                     ${selectable ? html`<th><!-- The design's header carries a select-all in the same control the rows use, so
-                        the column has a purpose at its top rather than an empty cell. -->
+                        the column has a purpose at its top rather than an empty cell.
+                        KEYBOARD PARITY ADDED 2026-09-04 22:43 EDT. It was role=checkbox with tabindex=0 and a click handler
+                        only, so Tab reached it and neither Enter nor Space did anything — while the PER-ROW
+                        checkbox fifty lines below has had the handler all along, under a comment explaining that a
+                        real checkbox gives it for free and this has to earn it. Two siblings disagreeing is exactly
+                        what a per-element gate cannot see. -->
                         <span class=${'cb' + (visible.length && visible.every((r) => selected.has(r.id)) ? ' on' : '')}
                               role="checkbox" tabindex="0" aria-label="Select every row shown"
                               aria-checked=${visible.length && visible.every((r) => selected.has(r.id)) ? 'true' : 'false'}
-                              onClick=${() => setSelected(visible.length && visible.every((r) => selected.has(r.id))
-                                  ? new Set() : new Set(visible.map((r) => r.id)))}></span></th>` : null}
+                              onClick=${toggleAll}
+                              onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAll(); } }}></span></th>` : null}
                     <!-- 🔴 A <th> WITH AN onClick IS NOT A CONTROL. Sorting was bound to the header cell
                          itself, which no keyboard can reach and no screen reader announces as actionable
                          — the whole table could be sorted with a mouse and not at all without one. The
@@ -218,7 +233,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </tr></thead>
                 <tbody>
                     ${visible.map(row => html`
-                        <tr class=${(selected.has(row.id) ? 'sel' : '') + (selectedRowId === row.id ? ' preview-sel' : '')}
+                        <tr class=${selected.has(row.id) ? 'sel' : ''}
+                            ${''/* 🔴 `preview-sel` WAS EMITTED HERE AND PAINTED BY NOTHING, ON EITHER SIDE. It marked the row whose preview drawer is open, and no rule in `app.css` or in the package's own sheet ever matched it — so the one row the reader most needs located looked exactly like its neighbours. Removed rather than styled: §0.6a says the portal renders the MOCKUP'S version until every realm matches, and the mockup marks nothing here. ⚠️ The state is real and the design's silence about it is a WEAKNESS — filed, not fixed, because inventing a mark mid-pass is the thing §0.6a exists to stop.
+                                 ⚠️ AND IT CANNOT BE AN HTML COMMENT: this sits inside a tag's PROP LIST, where htm swallows every prop after an `<!-- -->`. The first version of this note did exactly that and would have killed `tabIndex`, `onKeyDown` and `onClick` on every manifest row on every realm. The `${''\/* *\/}` form two lines down is the file's own idiom for the same reason. */}
                             ${''/* 🔴 A CLICKABLE ROW WITH NO ROLE AND NO TABINDEX IS MOUSE-ONLY, ON EVERY REALM THAT PASSES onRowClick. The design caught this on its own event tables and says so in analytics.html:540: "THESE ROWS OPEN A DRAWER AND NOTHING INSIDE THEM COULD TAKE FOCUS -- mouse-only... Season's and Armory's rows escaped the same fault only because they happen to contain a rename input; these hold plain text, so the row itself is the control and has to say so. Enter and Space, because a role=button must answer both." That reasoning is about the SHARED component, not about one realm: Armory's rows have been reachable only by accident, through an input that happens to sit inside them. The attributes appear only when there is something to activate, so a table with no row action does not grow a focus stop that does nothing. */}
                             ${''/* 🔴 NO `role` ON A REAL TABLE ROW, AND THE KEY HANDLER MUST IGNORE ITS OWN CONTENTS. The first version of this copied `analytics.html:540` wholesale, and that note is about the design's DIV-based event table. This is a real `<table>`: `role="button"` on a `<tr>` replaces its implicit `row` role and orphans every `<td>`, whose required parent is a row. `tabIndex` + `onKeyDown` gives the same keyboard reach with no ARIA damage.
                                  🔴 AND THE GUARD IS NOT COSMETIC -- IT WAS BREAKING A SHIPPED REALM. Armory passes `onRowClick` (armory.js:1245) and declares `weaponName`/`buildName` editable, so its rows contain `<input class="edit">`. The `<td>` stops `onClick` and NOT `onKeyDown`, so this handler's `preventDefault()` on Space swallowed the space bar inside every Armory rename field -- on names that contain spaces on essentially every row -- and Enter both committed the edit and re-opened the row editor behind it. The checkbox cell got this right at :240 and the row handler did not. */}

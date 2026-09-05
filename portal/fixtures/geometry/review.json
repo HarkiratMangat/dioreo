@@ -1,7 +1,7 @@
 {
   "realm": "review",
-  "recordedAt": "2026-09-03T03:31:09.000Z",
-  "commit": "70a38cb9",
+  "recordedAt": "2026-09-05T02:54:40.152Z",
+  "commit": "bba9d30e",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,17 @@
   "views": {
     "(single view)": {
       "grid": {
-        "examined": 113,
+        "examined": 117,
         "nearMisses": 2,
-        "sizeIssues": 6
+        "sizeIssues": 6,
+        "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "stat>k|TOP-OFFSET",
+          "stat>k|w",
+          "stat>v|TOP-OFFSET"
+        ]
       },
       "inventory": {
         "h1": "Review & commit",

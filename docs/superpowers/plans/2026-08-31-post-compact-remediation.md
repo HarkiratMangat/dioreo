@@ -1,6 +1,7 @@
 ---
 kind: plan
 status: live
+scope: the WORKING MECHANISMS — guards, hooks, provenance and instrument output. NOT the realm work, which is 2026-08-27-portal-conformance.md
 ---
 
 # Post-compact remediation — ten tasks, then the merge

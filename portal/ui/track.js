@@ -419,7 +419,7 @@ export function Repairs({ data, window: visible, season, onClamp }) {
                             </button>
                         </li>`)}
                 </ul>`
-            : html`<p class="repclean">Nothing to fix. The check still runs; it has nothing to report against this season.</p>`}
+            : null}
         </div>`;
 
     // ⚠️ NO PANEL OF ITS OWN — the third view of the same panel, same as the Track and the Board.

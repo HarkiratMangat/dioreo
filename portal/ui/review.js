@@ -40,8 +40,8 @@ function OpRow({ op, selected, onSelect, onDrop, resolved }) {
                 </span>
             </button>
             <button class="rvdrop" onClick=${(e) => { e.stopPropagation(); onDrop(op); }}
-                    data-tip=${`Discard the changeset holding “${op.name}”`}
-                    aria-label=${`Discard ${op.name}`}><${Icon} name="x" cls="sm" /></button>
+                    data-tip=${`Discard everything staged together with “${op.name}”`}
+                    aria-label=${`Discard ${op.name} and anything staged with it`}><${Icon} name="x" cls="sm" /></button>
         </div>`;
 }
 
@@ -117,7 +117,7 @@ function OpDetail({ op, resolved, onResolve }) {
                 </div>`
             : html`
                 <p class="chint" style="margin-top:16px">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
-                   undone after it commits.</p>`}
+                   reversed after it commits, from the event list in Analytics.</p>`}
         </div>`;
 }
 
@@ -193,14 +193,23 @@ export function ReviewRealm({ session }) {
                 return;
             }
         }
-        setProgress(null); setBusy(false); setConfirmText({}); setResolved({}); setSel(null); refresh();
+        setProgress(null); setBusy(false); setConfirmText({}); setResolved({}); setSel(null);
+        // 🔴 THE COMMIT SAID NOTHING — corrected 2026-09-04 22:49 EDT. Saving an export toasted; writing N changes to live content, which the confirm copy itself calls "live to players within seconds", did not. Worse, commit and discard shared this exact terminal line and landed on the same empty state, so an operator who mis-clicked could not tell from the screen which of the two had happened. The only screen that could answer it is the event river, two realms away.
+        const n = ops.length;
+        overlay.say(commit
+            ? `${n} change${n === 1 ? '' : 's'} committed. Players see ${n === 1 ? 'it' : 'them'} now.`
+            : `${n} change${n === 1 ? '' : 's'} discarded. Nothing reached Discord.`);
+        refresh();
     }
     const commitAll = () => runAll('commit');
     const discardAll = () => runAll('discard');
 
     const viewSlot = ops.length === 0
         ? html`
-            <section class="panel"><div class="ph"><span class="t">Changeset</span></div>
+            <!-- ⚠️ "Staged changes", not "Changeset" — copy audit's vocabulary table, applied 2026-09-04 20:53 EDT.
+                 Changeset is this product's MODEL name and a git word besides; the thing on screen is the set of
+                 changes you have staged, which is what every other surface in the portal already calls it. -->
+            <section class="panel"><div class="ph"><span class="t">Staged changes</span></div>
                 <div class="rvnone">
                     <h4>Nothing is staged</h4>
                     <p>Everything in the portal matches what the bot is serving right now. Changes arrive here when you
@@ -215,7 +224,7 @@ export function ReviewRealm({ session }) {
         : html`
             <section class="panel">
                 <div class="ph">
-                    <span class="t">Changeset</span>
+                    <span class="t">Staged changes</span>
                     <span class="sp">${ops.length} change${ops.length > 1 ? 's' : ''} · ${changesets.length === 1
                         ? 'commits as one transaction' : `${changesets.length} transactions, committed in order`}</span>
                 </div>
@@ -286,8 +295,10 @@ export function ReviewRealm({ session }) {
                 ${progress ? html`<${Progress} ...${progress} />` : null}
             </section>`;
 
+    // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="review" session=${session} busy=${load.hostClass}
+                  badges=${{ review: ops.length }}
                   masthead=${html`<${Masthead} title="Review & commit"
                       sub="Exactly what is about to change, and what it will overwrite, before any of it is written."
                       stats=${stats} />`}

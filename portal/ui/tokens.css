@@ -225,6 +225,21 @@
 
   --ui:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --data:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* 🔴 `--mono` AND `--focus` WERE READ AND NEVER SET, ON BOTH SIDES, UNTIL 2026-09-04 23:34 EDT.
+     Four rules say `font:11px/1.5 var(--mono)` and one says `outline:2px solid var(--focus,#5FD4E8)`.
+     A `font` shorthand whose family resolves to nothing is INVALID AT COMPUTED-VALUE TIME, so the
+     whole declaration is dropped - not just the family: the size, the weight and the line-height go
+     with it. `.fail-d` (the failure diagnostic), `.scope .nm em` (the raw scope token), `.holder`
+     (an admin chip) and `.reph .rt-n` (the repair count) were each rendering at the inherited face
+     and the inherited size. ⚠️ INVISIBLE TO EVERY PIXEL INSTRUMENT: the package reads the same
+     unset token in the same four rules, so both sides were wrong IDENTICALLY and the diff was 0.
+     Found by `portal:reverse-orphans` ②, whose whole job is the rule no element and no value reaches.
+     Corrected in the package too, under the plan's §0.1a test 2 - a sheet that reads a token its own
+     token file never sets is a DEFECT, not a design weakness to reproduce. */
+  --mono:var(--data);
+  /* `--focus` always had the fallback beside it, so it renders; it is set here so the read resolves
+     rather than leaning on a literal repeated at one call site. Same value, zero pixel change. */
+  --focus:#5FD4E8;
 }
 @media (max-width:768px){ :root{ --rail-w:0px; --hdr-h:48px; } }
 
@@ -253,9 +268,19 @@ body {
     margin: 0;
 }
 
-/* Every date, count, id and code is mono so numerals align in columns (spec §9). */
-.mono, .track-ruler, .track-date, .board-id, .manifest-cell[data-kind="date"],
-.manifest-cell[data-kind="id"], .manifest-cell[data-kind="code"] {
+/* Every date, count, id and code is mono so numerals align in columns (spec §9).
+   🔴 THREE ATTRIBUTE FRAGMENTS WERE REMOVED FROM THIS SELECTOR ON 2026-09-04 23:45 EDT - the manifest cell class
+   qualified by a kind of date, id or code. That class was emitted by nothing, in this repo or in the
+   package: a repo-wide search returned these two lines and no others, so portal:reverse-orphans (1)
+   reported the attribute as a selector with no emitter for the life of the branch. It was a
+   portal-invented cell API the Manifest never grew - the real component types its cells through
+   columns[].kind in manifest.js.
+   ⚠️ THE FOUR SELECTORS THAT REMAIN ARE ALSO UNEMITTED, and saying so is the honest half. .mono,
+   .track-ruler, .track-date and .board-id are single-rule selectors, so (3) - which needs two or more
+   rules - cannot see them, and (1) does not cover a class at all. They are filed rather than deleted,
+   because a one-line utility hook costs nothing and widening a deletion to four things to make a point
+   about one is the over-wide slice the batching contract warns about. */
+.mono, .track-ruler, .track-date, .board-id {
     font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 

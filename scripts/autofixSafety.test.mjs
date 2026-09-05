@@ -28,6 +28,8 @@ import { fileURLToPath } from 'node:url';
 const HOOKS = join(dirname(fileURLToPath(import.meta.url)), '..', '.claude', 'hooks');
 const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 const tz = new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', timeZoneName: 'short' }).split(' ').pop();
+// 🔴 A VALID STAMP MUST BE DERIVED, NEVER TYPED — and this file typed one, which made a gate fail every morning. Corrected 2026-09-05 09:48 EDT. The case below hardcoded a fixed clock time as "a correct stamp for TODAY" while the hook it tests DENIES a future date+time (three-minute grace), so the assertion held only from that time until midnight local and failed on every run before it — on any branch, in CI and locally, for the same reason. Found when it failed at 09:48 on a merge that had nothing to do with it. ⚠️ THIS IS THE PROJECT'S OWN STANDING RULE APPLIED TO A TEST: compute every timestamp, never hand-type one. A test is the last place that rule looks optional and the first place a violation hides, because a red suite in the morning and a green one after lunch reads as flakiness rather than as a wrong constant. One minute back clears the future check without depending on how long the suite takes to reach this case.
+const validNow = new Date(Date.now() - 60_000).toLocaleTimeString('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' });
 
 // A near-miss is a value the hook must recognise as NOT its target while a real target sits beside it. Anything listed in `survives` is asserted back byte-identical in the rewritten payload.
 const CASES = {
@@ -50,8 +52,8 @@ const CASES = {
         {
             name: 'a correct stamp for TODAY, beside a placeholder',
             args: ['pre'],
-            input: { new_string: `a ${today} 11:47 ${tz} note, and a ${today} 09:xx ${tz} one` },
-            survives: [`${today} 11:47`],
+            input: { new_string: `a ${today} ${validNow} ${tz} note, and a ${today} 09:xx ${tz} one` },
+            survives: [`${today} ${validNow}`],
             expect: 'rewrite',
         },
     ],

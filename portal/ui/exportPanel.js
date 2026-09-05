@@ -98,8 +98,10 @@ export function ExportStrip({ label, scopes, overlay, open: openProp = null, onT
     const toggle = onToggle || (() => setOpenLocal(!openLocal));
 
     return html`
+        <!-- ⚠️ NO VISIBLE label HERE — removed 2026-09-04 22:39 EDT. It rendered the word EXPORT immediately left of a
+             button reading "Export…", on six realms: a label naming the component, beside the component. The
+             group still CARRIES the label as its accessible name, which is where it does work. -->
         <div class="mh-take" role="group" aria-label=${`Export data from ${label}`}>
-            <span class="mh-add-k">${label}</span>
             <button class="pill sm" aria-expanded=${open ? 'true' : 'false'} onClick=${toggle}>
                 <svg viewBox="0 0 24 24" aria-hidden="true" class="mh-i" fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>
