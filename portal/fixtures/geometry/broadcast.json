@@ -1,7 +1,7 @@
 {
   "realm": "broadcast",
-  "recordedAt": "2026-09-05T02:40:11.265Z",
-  "commit": "c4100bc1",
+  "recordedAt": "2026-09-05T02:43:55.572Z",
+  "commit": "a9b8357e",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -10,7 +10,7 @@
     "Delivery queue": {
       "grid": {
         "examined": 235,
-        "nearMisses": 30,
+        "nearMisses": 32,
         "sizeIssues": 10,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -45,7 +45,7 @@
     "Airtime": {
       "grid": {
         "examined": 231,
-        "nearMisses": 35,
+        "nearMisses": 36,
         "sizeIssues": 7,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",

@@ -105,6 +105,10 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
         [rows, query, filters, sort]
     );
 
+    // One function for the select-all, because the click path and the key path must not be two implementations of one act — that divergence is what let the keyboard path be missing entirely. Added 2026-09-04 22:43 EDT.
+    const allShown = () => visible.length > 0 && visible.every((r) => selected.has(r.id));
+    const toggleAll = () => setSelected(allShown() ? new Set() : new Set(visible.map((r) => r.id)));
+
     async function commitEdit(row, columnKey) {
         const op = buildEditOp(row, columnKey, editValue);
         setEditingCell(null);
@@ -196,12 +200,17 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </colgroup>
                 <thead><tr>
                     ${selectable ? html`<th><!-- The design's header carries a select-all in the same control the rows use, so
-                        the column has a purpose at its top rather than an empty cell. -->
+                        the column has a purpose at its top rather than an empty cell.
+                        KEYBOARD PARITY ADDED 2026-09-04 22:43 EDT. It was role=checkbox with tabindex=0 and a click handler
+                        only, so Tab reached it and neither Enter nor Space did anything — while the PER-ROW
+                        checkbox fifty lines below has had the handler all along, under a comment explaining that a
+                        real checkbox gives it for free and this has to earn it. Two siblings disagreeing is exactly
+                        what a per-element gate cannot see. -->
                         <span class=${'cb' + (visible.length && visible.every((r) => selected.has(r.id)) ? ' on' : '')}
                               role="checkbox" tabindex="0" aria-label="Select every row shown"
                               aria-checked=${visible.length && visible.every((r) => selected.has(r.id)) ? 'true' : 'false'}
-                              onClick=${() => setSelected(visible.length && visible.every((r) => selected.has(r.id))
-                                  ? new Set() : new Set(visible.map((r) => r.id)))}></span></th>` : null}
+                              onClick=${toggleAll}
+                              onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAll(); } }}></span></th>` : null}
                     <!-- 🔴 A <th> WITH AN onClick IS NOT A CONTROL. Sorting was bound to the header cell
                          itself, which no keyboard can reach and no screen reader announces as actionable
                          — the whole table could be sorted with a mouse and not at all without one. The

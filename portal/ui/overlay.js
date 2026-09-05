@@ -19,8 +19,10 @@ export function Drawer({ eyebrow, title, children, actions, wide, side, onClose 
         document.querySelector('.tray'),
     ].filter(Boolean);
 
-    // 🔴 RE-ASSERTED ON EVERY RENDER, WITH NO DEP ARRAY, AND THAT IS THE FIX RATHER THAN A BELT-AND-BRACES. A mount-only effect wrote `inert` once and the attribute kept reading back absent — measured three times, with the property form and the attribute form both. Whatever dropped it (a re-render replacing the node, an engine detail), the honest response is to make the assertion idempotent and continuous instead of trusting a single write. Setting an attribute that is already set costs nothing. 🔴 APPLIED FROM THE ELEMENT REF, NOT FROM AN EFFECT. Three effect-based versions of this were written and all three left the attribute absent when read back — with the property form, the attribute form, and with no dep array at all — while the dialog itself mounted, rendered and closed correctly. Rather than keep guessing at effect timing, the modality is applied by the one callback whose contract is "you are being handed the mounted node": Preact calls a ref with the element on mount and with null on unmount, which is exactly the pair this needs. It is also directly observable, so the test below can assert it instead of trusting it.
+    // 🔴 RE-ASSERTED ON EVERY RENDER, WITH NO DEP ARRAY, AND THAT IS THE FIX RATHER THAN A BELT-AND-BRACES. A mount-only effect wrote `inert` once and the attribute kept reading back absent — measured three times, with the property form and the attribute form both. Whatever dropped it (a re-render replacing the node, an engine detail), the honest response is to make the assertion idempotent and continuous instead of trusting a single write. Setting an attribute that is already set costs nothing. 🔴 APPLIED FROM THE ELEMENT REF, NOT FROM AN EFFECT. Three effect-based versions of this were written and all three left the attribute absent when read back — with the property form, the attribute form, and with no dep array at all — while the dialog itself mounted, rendered and closed correctly. Rather than keep guessing at effect timing, the modality is applied by the one callback whose contract is "you are being handed the mounted node": Preact calls a ref with the element on mount and with null on unmount, which is exactly the pair this needs. It is also directly observable, so the test below can assert it instead of trusting it. 🔴 FOCUS WAS LOST TO `document.body` ON EVERY CLOSE — reproduced on Review's discard-all and Season's typed purge confirm, 2026-09-04 22:43 EDT. The dialog auto-focuses its first control on open (below) and nothing ever put focus back, so cancelling a purge left the reader at document top, 10 tab stops from where they were. WCAG 2.4.3, and the reason no gate caught it is that PASS 4 asks who is focusABLE while a modal is open and never reads `document.activeElement` across an open→close transition. ⚠️ STASHED HERE, NOT IN AN EFFECT: this callback is the one place that is handed the element on mount and `null` on unmount, which is exactly the pair a save/restore needs — the same argument the note below makes for applying `inert` from here rather than from an effect.
+    const opener = useRef(null);
     const applyInert = (el) => {
+        if (el && !opener.current) opener.current = document.activeElement;
         ref.current = el;
         for (const region of shellRegions()) {
             if (el) region.setAttribute('inert', '');
@@ -31,6 +33,12 @@ export function Drawer({ eyebrow, title, children, actions, wide, side, onClose 
         if (el) {
             const first = el.querySelector('button, input, a, textarea, select');
             if (first) first.focus();
+        } else if (opener.current) {
+            // Only if it is still in the document — a drawer whose opener was a row that the commit removed has nowhere to go back to, and focusing a detached node silently sends focus to body anyway.
+            const back = opener.current;
+            opener.current = null;
+            // ⚠️ `preventScroll` — a bare .focus() scrolls the opener into view, which moves the page out from under whatever the reader was reading. It also stalled the states walk twice on Season's identity panel, 2026-09-04 22:45 EDT, which is how this was caught within a minute of writing it.
+            if (back.isConnected && typeof back.focus === 'function') back.focus({ preventScroll: true });
         }
     };
 

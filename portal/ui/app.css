@@ -1086,7 +1086,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   box-shadow:0 24px 60px -14px rgba(0,0,0,.85);overflow:hidden}
 .pbox input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--rule);
   color:var(--ink);font:500 15px/1 var(--ui);padding:16px 18px}
-.pbox input:focus{outline:none}
+/* The palette input keeps a RING rather than nothing — corrected 2026-09-04 22:43 EDT. Of the fifteen `outline:none`
+   rules in this sheet, twelve substitute a border, a box-shadow or a background; `.cb-in` is compensated by
+   `.cmdbar:focus-within` on its parent; this one had neither, and it is the input you land in when the command
+   bar opens. Two reviewers argued about `.cb-in` and neither looked here. */
+.pbox input:focus{outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--patch) 55%,transparent)}
 .plist{max-height:min(52vh,420px);overflow:auto;padding:6px}
 .pitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rad-2);cursor:pointer;
   font-size:13px;color:var(--ink2)}
@@ -3804,7 +3808,11 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    cells keep the alignment and the padding, which are about the CELL and not the column. */
 .mtable td.ra,.mtable th.ra{width:40px;padding-right:8px;text-align:right}
 .mtable col.c-ra{width:40px}
-.rmv{width:28px;height:28px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
+/* 32px, not 28 — 2026-09-04 22:43 EDT. `--tap:44px` is honoured by nine rules and bypassed here, on the one control in
+   Access's ACTION column that destroys. `.mxcell` is also under the floor and has a written exception (a 44px
+   cell in a twelve-column matrix fits on no laptop); this had none. 32 is what the row height allows without
+   reflowing the table, and it is a floor rather than a target. */
+.rmv{width:32px;height:32px;border-radius:var(--rad-2);border:1px solid transparent;background:none;
   color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;
   transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
 .rmv svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;

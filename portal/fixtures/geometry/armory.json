@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-05T02:40:09.974Z",
-  "commit": "c4100bc1",
+  "recordedAt": "2026-09-05T02:43:54.160Z",
+  "commit": "a9b8357e",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -10,7 +10,7 @@
     "Tier board": {
       "grid": {
         "examined": 4293,
-        "nearMisses": 13,
+        "nearMisses": 15,
         "sizeIssues": 480,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -521,7 +521,7 @@
     "Repairs": {
       "grid": {
         "examined": 3629,
-        "nearMisses": 9,
+        "nearMisses": 11,
         "sizeIssues": 281,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -833,7 +833,7 @@
     "Compare": {
       "grid": {
         "examined": 3652,
-        "nearMisses": 21,
+        "nearMisses": 23,
         "sizeIssues": 269,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -1133,7 +1133,7 @@
     "Bulk & export": {
       "grid": {
         "examined": 3597,
-        "nearMisses": 9,
+        "nearMisses": 11,
         "sizeIssues": 264,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
