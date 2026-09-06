@@ -29,6 +29,34 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
+## Pre-Release v3.79.0 — 2026-09-06 (#186) — the deferred list stops lying, and the portal's write path is proven for the first time
+
+**No product code changed except two accepted design fixes. The subject of this entry is that a third of the repo's own work list was false, and it cost real turns before anyone measured it.**
+
+### The write path works, and proving it closed four filed items at once
+
+Harkirat signed in to `dev-portal.dioreo.app` and drove one change end to end. A draw staged at **15:21:38 EDT**, committed at **15:22:08**, landed in `seasonaldatas` (`newDraws` 4 → 5), and was reversed (ChangeLog `#26` add, `#27` delete, with a working inverse). Four entries died on that one action: `/api/review` had *"executed in no environment, ever"*; a changeset had never been given a `baseline` array and this one got `[{count:4}]`; the dev redirect URI's hyphen-versus-dot question was **unanswerable from a terminal** by its own note and is answered by a successful sign-in; and the `[P1]` first-real-boot item. ⚠️ **Reads had been proven since 2026-09-04** by the real-server walks; only writes were untested, and no carrier said so.
+
+### 38 of 107 deferred items were already done or decided
+
+Two isolated sub-agents read every open item **body-first** against the four events that had moved underneath them — the percentage retired as a target (§0.7d, 2026-08-31), the two rendering modes collapsing (2026-08-31), the stand-down rule dying (2026-09-06 00:43 EDT), and the build-out merging (#185). **29 DONE, 9 SUPERSEDED, 7 BUNDLED, 50 genuinely live.** Their ranges overlapped by eleven items by accident, which became the cross-check: **zero contradictions** across eleven independently double-judged entries.
+
+The worst offender was **23,216 characters long and its second line read `Built: ❌ nothing`** for work that shipped in #176 on 2026-08-31. 🔴 **Four items were put in front of Harkirat as live P1 work during the same session and every one was already settled** — 375×812 (DECIDED-NO twice, with a paragraph in its own entry predicting exactly this third occurrence), the pixel-conformance question (decided twice), a heading that bundled a decided half into an undecided one, and the mode collapse. He caught three of the four.
+
+### Two design fixes, both accepted through Live Mode, both portal-ahead
+
+`.hclock` was the only block in `.home` without the page's 24px horizontal inset, so it ran **1080px against every sibling's 1032px** and met the card above it at **exactly 0px**; it now matches the column and carries a divider. `.chip` styles a button and never declared `text-decoration` or a `display`, so the two places an `<a>` wears it rendered as **underlined links with a pill drawn around them**; the base rule now sets both, and `.imgact a.chip` is deleted as redundant. All seven geometry fixtures re-checked and unchanged. Both are cited rows in the ledger, because the mockup package carries the identical defect in each case.
+
+### The thinking pass has a written shape for the first time
+
+Measured across **174 session transcripts: 599 instructions** from Harkirat about how to run one — 128 "find gaps and staleness", 111 "check other angles", 80 "falsify yourself", 47 asking for a thought count. The *when* was written in three places and the *how* nowhere, so it was re-taught every session. `.claude/rules/thinking-pass.md` loads unconditionally and carries it.
+
+### Also
+
+- **`analytics.js:49` can only ever print `DISCORD`** — nothing writes `source` or `via` onto a ChangeLog row, so a two-value column has one reachable value. Found by Harkirat glancing at the event river. Filed.
+- **context-mode's index was a third mislabelled** — 310 of 596 sources labelled by raw absolute path, **110 files indexed twice** under both conventions, 3,404 duplicate chunks. `source_category` exists in the FTS5 schema and is NULL on every row, so the label is the only discriminator. Cleaned to 478 namespaced sources; the `project:` / `vendor:` convention is now in `~/.claude/CLAUDE.md`, `TOOLING.md` and the routing memory.
+- ⚠️ **A `###`-block move can swallow a `##` section heading** — the sweep carried `## 🔔 Reminders / watch-for` into the archive and its items silently re-parented. Caught by an append failing on a missing anchor, not by any of the three asserts the move did run, none of which could see a lost section. Repaired; the assert that finds it is a section count.
+
 ## Pre-Release v3.78.0 — 2026-09-06 (#185) — The portal is built out: every pin, the design queue, fifteen lenses, and the drawer that kept one character
 
 **Harkirat, 2026-09-06 00:43 EDT: *"finish the portal… the conformance is more or less done, it just needs correcting… fix them, any bugs, any gaps, any improvements… awwwards worthy."* The stand-down rule — redesigns return only after all realms match — is superseded by that message, so every resting-frame floor in the decision ledger is history from this entry on, and each deliberate divergence from the mockup package is a cited row in the ledger's new "Superseded 2026-09-06" section.** Built by one orchestrating session and four scoped subagents with exclusive file ownership (Season · Armory · Access + identity · Analytics + Home); the design system, the CSS splice, the states registries and the records were the orchestrator's.

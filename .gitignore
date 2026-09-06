@@ -90,3 +90,4 @@ portal/public/
 # it is ignored, NO GATE SEES IT: docs-audit, the reflow checks and the xref check all resolve their
 # file list from `git ls-files`. Highest trust, zero review. Keep POINTERS in it, never content.
 CLAUDE.local.md
+.impeccable/live/

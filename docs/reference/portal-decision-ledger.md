@@ -449,3 +449,14 @@ The instruments state their own blind spots on every run and a ledger section sh
 | `portalAudit` · `portalDiff` · `portalProbe` · `portalConverge` | Freeze and clear storage. ⚠️ **`--at` must stay at the mockup's own `F.today`, `2026-08-24`** | — |
 | `portalCaptureModes` | **Historical.** No conform-OFF rendering left to photograph; its arrival assertion now refuses every run, which is correct | — |
 | **The triage classifier** | ⚠️ **Regex classification, NOT measurement.** Can report a **false CITED on any `ow-*` row** | — |
+
+## Refinement — 2026-09-06 afternoon, the first two accepted through Live Mode
+
+*Both were picked by Harkirat in the browser from three generated variants, not chosen by me. Both are PORTAL AHEAD: the mockup package carries the identical defect in each case, so fixing only the portal is a deliberate divergence and these rows are what make it one.*
+
+| Surface | Decision | Date | Why | Reopens if |
+|---|---|---|---|---|
+| Home's season clock panel, `.hclock` | ✅ **PORTAL AHEAD** — `margin:0 0 22px` → `margin:22px 24px 0`, and `.hc-cols` gains `border-left:1px solid var(--rule); padding-left:28px`, nulled under 900px where the columns stack | 2026-09-06 15:40 EDT | It was the ONLY block in `.home` without the page's 24px horizontal inset, so it ran **1080px against every sibling's 1032px** and started 24px further left; and with no top margin against `.hres`'s no bottom margin the two cards met at **exactly 0px**. Measured at 1282×888. The divider is the variant's own knob, which he switched on. ⚠️ **The mockup's `app.css` carries the same `margin:0 0 22px`**, so the package still has the defect | The package adopts the inset, or the divider reads as noise at a narrower measure |
+| `.chip`, every realm | ✅ **PORTAL AHEAD** — the base rule gains `text-decoration:none; display:inline-flex; align-items:center; justify-content:center`; `.chip.go` gains a hover transition; `.imgact a.chip` deleted as redundant | 2026-09-06 15:40 EDT | `.chip` styles a BUTTON — fill, 1px ring, pill radius, `min-height:32px` — and never declared a `text-decoration` or a `display`. The two places it is worn by an `<a>` (Home's "Review & commit", Review's "Export in <realm> →") rendered as **underlined text links with a pill drawn around them**, and the min-height had no centred box to act on. `.chip.topic` already declared the same inline-flex, which is the tell that this was always the intended display. Found by Harkirat on the live page. **All seven realms' geometry fixtures re-checked and unchanged** | A chip appears whose content must wrap, where inline-flex would fight it |
+
+⚠️ **`--on-accent` was kept on `.chip.go:hover` rather than the `--sunk` the accepted preview used.** Both are near-black against the light cyan fill and indistinguishable on screen; the token is the semantically correct one. Recorded because it is the one place the shipped rule differs from the variant he approved.
