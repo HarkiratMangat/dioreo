@@ -351,8 +351,10 @@ main{overflow:auto;padding-bottom:140px}
    rewriting 93 markup sites: `.chip` is queried by name in six pages of JS, and a mass rename
    would have traded a styling inconsistency for a functional break. Same rules, same radius,
    same hover lift, same focus ring — one language, and every existing call site inherits it. */
+/* 🔴 `.chip` STYLES A BUTTON AND WAS WORN BY AN `<a>` IN TWO PLACES, so Home's "Review & commit" and Review's "Export in <realm> →" rendered as UNDERLINED TEXT LINKS with a pill ring drawn around them. The rule set a fill, a 1px ring, a pill radius and `min-height:32px` but never `text-decoration` or a `display` — so the underline came through and the min-height had no centred box to act on. `.imgact a.chip` used to patch one instance narrowly and is deleted by this; `.chip.topic` already declared the same inline-flex, which is the tell that this was always the intended display. Found by Harkirat on the live page 2026-09-06 12:30 EDT. */
 .chip{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:var(--t-sm);font-weight:600;
-  padding:6px 11px;border-radius:var(--rad-pill);min-height:32px}
+  padding:6px 11px;border-radius:var(--rad-pill);min-height:32px;
+  text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
 .chip:hover{color:var(--ink)}
 .mtools .rt{margin-left:auto;font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
@@ -1658,7 +1660,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* ══════════ REPAIR QUEUE ══════════ */
 .cact{display:flex;gap:7px;margin-top:4px}
 .cok{font-family:var(--data);font-size:var(--t-micro);color:var(--ok);letter-spacing:.05em}
-.chip.go{border-color:var(--staged);color:var(--staged)}
+.chip.go{border-color:var(--staged);color:var(--staged);transition:background .16s ease,color .16s ease}
 .chip.go:hover{background:var(--staged);color:var(--on-accent)}
 .rep{display:flex;flex-direction:column;gap:6px;margin-top:13px}
 .repr{display:flex;align-items:center;gap:12px;background:var(--sunk);border:1px solid var(--rule);
@@ -2536,7 +2538,6 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .imgbox.failed .imgfail{display:block}
 .imgbox.none .imgnone{display:block}
 .imgact{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}
-.imgact a.chip{text-decoration:none;display:inline-flex;align-items:center}
 .imgact .chip[disabled]{opacity:.45;pointer-events:none}
 .imgnote{font-size:var(--t-xs);color:var(--ink3);line-height:1.55;margin:0}
 .imgnote code{font-family:var(--data);color:var(--ink2)}
@@ -4969,9 +4970,11 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    edge of a two-column grid. Without this every segment, separator and label on Home rendered
    right-aligned — eight of the audit's ④ STYLE rows, all one missing rule. */
 .hclock .sclock{align-items:flex-start;text-align:left}
-.hclock{margin:0 0 22px;padding:22px 24px;background:var(--paper);border:1px solid var(--hi);
+/* 🔴 `.hclock` WAS THE ONLY BLOCK IN `.home` WITHOUT THE PAGE'S 24px HORIZONTAL INSET, and the margin is why. Measured 2026-09-06 10:41 EDT at 1282px: `.hres` above it ran 1032px from x=163 while this ran 1080px from x=139 — 48px wider, 24px further left — and since `.home .hres` sets `margin:16px 24px 0` with no bottom and this set none on top, the two cards met at exactly 0px. One declaration caused both. ⚠️ The mockup package carries the identical rule at its own app.css, so this is a deliberate divergence from the design, not a conformance regression. */
+.hclock{margin:22px 24px 0;padding:22px 24px;background:var(--paper);border:1px solid var(--hi);
   border-radius:var(--rad-3);display:grid;grid-template-columns:auto 1fr;gap:26px 40px;align-items:start}
-.hc-cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;min-width:0}
+/* The rule separates the countdown from the two lists it explains: the face answers "how long", the columns answer "what moves in that time", and without a divider they read as one undifferentiated grid. */
+.hc-cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;min-width:0;border-left:1px solid var(--rule);padding-left:28px}
 .hc-col{min-width:0}
 .hc-col h3{margin:0 0 11px;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);font-weight:500;
@@ -4988,7 +4991,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .hc-none,.hc-more{margin:4px 0 0;font-family:var(--data);font-size:var(--t-xs);color:var(--ink3)}
 @media (max-width:900px){
   .hclock{grid-template-columns:1fr;gap:20px}
-  .hc-cols{grid-template-columns:1fr;gap:18px}
+  .hc-cols{grid-template-columns:1fr;gap:18px;border-left:0;padding-left:0}
 }
 
 /* ═══════════════════ DISCLOSURE, DRAWN NOT TYPED ════════════════════════════
