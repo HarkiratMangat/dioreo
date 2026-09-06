@@ -1135,7 +1135,8 @@ export function ArmoryRealm({ session }) {
         { value: weapons.size, label: 'weapons' },
         // `warn`, not `bad` — armory.html:21 is `<span class="stat warn">`. Builds needing repair are still being served correctly; the alarm tone belongs to something that is failing now.
         { value: stagedHere === null ? '—' : stagedHere, label: 'staged', tone: stagedHere ? 'stg' : undefined },
-        { value: needRepair, label: 'need repair', tone: needRepair ? 'warn' : undefined },
+        // 🔴 MODE-SCOPED AND SILENT ABOUT IT. This counts the ACTIVE MODE, so it reads 60 while Home's attention row reads 66 over the whole collection. Both are correct and they looked like a contradiction. The lead figure two lines up already solved this for itself — `${armMode} builds shown` — so the fix is the one its own neighbour was already using.
+        { value: needRepair, label: `need repair in ${armMode}`, tone: needRepair ? 'warn' : undefined },
         { value: stale, label: 'stale' },
         // The realm's own staged count, in the staged voice — every other realm's masthead says how much of what you are looking at is not live yet, and the Armory's did not.
 

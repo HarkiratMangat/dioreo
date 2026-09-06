@@ -858,7 +858,8 @@ export function AnalyticsRealm({ session }) {
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
-                                                    bulkTier=${3} rowNoun=${['event', 'events']}
+                                                    ${''/* 🔴 WAS 3, AGAINST THE CONFIRM'S OWN `tier: 2` EIGHTY LINES UP, for the same operation. Tier 3 means a TYPED gate in this system (oneway.js:24, access.js:459), and confirmRevert deliberately does not type — its comment says so: the risk is reverting the WRONG row, which naming the rows answers and typing a word does not. So 2 is the true tier and the SelectionBar was the wrong half. Every other realm's pair already agrees: armory 2/2, broadcast 2/2, access 3/3. */}
+                                                    bulkTier=${2} rowNoun=${['event', 'events']}
                                                     bulkActions=${[{ label: 'Reverse', danger: true, onClick: confirmRevert }]}
                                                     onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
                                                     ${''/* The river is capped at 100 server-side, so without a total the count divides by the page and reads 11 of 11 over a collection holding thousands -- a number that can never say something is being withheld. */}

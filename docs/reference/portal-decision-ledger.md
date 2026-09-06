@@ -312,6 +312,30 @@ The instruments state their own blind spots on every run and a ledger section sh
 - **Tab order was not checked.** Moving the masthead inside `.home` changed DOM order; `portalStates` counts focusables (16) but a count is not an order.
 - **A delegated admin's Home is undesigned.** A realm the admin cannot see answers `forbidden`, and its attention row simply does not appear — so a delegated admin sees a smaller `needs you` figure with nothing saying why. Armory's masthead has an explicit ruling that a figure which cannot be known must not read as zero; this list makes the opposite choice by omission. Filed.
 
+### Cross-realm — four filed defects fixed, 2026-09-06 17:53 EDT
+
+*Bucket A of step 3, worked as a LIST of filed items rather than realm by realm. Two more filed items in the same sweep turned out to be already fixed and are closed in `docs/db-deferred-list.md` instead: the delegated-admin under-report (`home.js:313`, an em dash reaches the masthead) and the "live now" label (renamed to "announcements live" 2026-09-06 01:29 EDT).*
+
+| Fix | Was | Is | Falsifier |
+|---|---|---|---|
+| **Armory's repair figure names its mode** | `60 need repair` beside Home's `66` | `60 need repair in MP` | The figure counts the ACTIVE MODE; Home counts the collection. Both were right and read as a contradiction. **The lead figure two lines up had already solved it for itself** — `125 MP builds shown` — so the fix is its own neighbour's. Falsified if the rack stops being mode-scoped |
+| **One revert, one tier** | confirm `tier: 2`, SelectionBar `bulkTier={3}` | both **2** | Tier 3 means a TYPED gate here (`oneway.js:24`, `access.js:459`) and `confirmRevert` deliberately does not type — its own comment says the risk is reverting the wrong ROW, which naming the rows answers. Every other realm's pair agrees: armory 2/2, broadcast 2/2, access 3/3. Falsified if the revert gains a typed gate |
+| **Access's permission counts are derived** | `${scopes.length} permissions: four commands … and eight pages` | `12 permissions: 4 commands … and 8 pages`, both from `s.kind` | A hardcoded number sat beside a live one in one sentence, so a fifth command would have rendered "13 permissions: four commands". `access.js:175` already split by `kind`; the note did not use it. Falsified if `kind` stops being emitted by `/api/access/matrix` |
+| **"1 announcement never ends"** | `never end` for any count | verb agrees with the noun | The noun was pluralised and the verb was not. Invisible while the row was only scanned; exposed the moment it gained an accessible name and had to be read aloud |
+
+### Home — three design forks DERIVED rather than asked, 2026-09-06 17:50 EDT
+
+*Harkirat declined to answer these in a pop-up: "these questions of yours are honestly so self-derivable by you if you just use and consult the correct skills and tools." Each was then settled from a stated rule or an external criterion, never from taste. `design:design-critique` + impeccable `colorize`/`clarify` + a seven-thought falsification pass.*
+
+| Fork | Verdict | The rule that decided it | Reopens if |
+|---|---|---|---|
+| Does the attention list name its severity in words? | **The RUNG is named to assistive tech and on the bar's tip; NO visible word is added** | **WCAG 1.4.1, use of colour** — severity was carried by a 3px swatch alone, and the ordinal does not cover it because `01` is the worst thing PRESENT, not an absolute. A visible kind label was REJECTED: every row's fact already names its kind, so it would restate the sentence beside it. PRODUCT.md's second admin is the user this fails | A visible legend is added elsewhere, making the tip redundant |
+| Is `--ink4` on the lowest rung too dim? | **NO CHANGE** | 3.02:1 clears the 3:1 non-text floor, and once the rung is named the bar is a redundant cue rather than the sole carrier. COMPANION specifies `--ink4` deliberately as the calmest rung | The bar becomes the only carrier again |
+| Should no-expiry render hot? | **NO — `hot` now means proximity in BOTH columns; no-expiry is calm and keeps its words** | `.lrow .lw.hot` is ONE unscoped rule (`app.css:4411`) shared by both columns of `.hlive`, so one orange meant "ends within two days" on the left and "never ends" on the right, adjacent. **DESIGN.md: colour carries topic, shape carries state.** And the old comment refuted itself — it justified hot because no-expiry is "the single defect Broadcast's own attention row exists to report", and that row is 400px above on the same page, so the fill was a second authority on one fact | The attention list stops carrying a `forever` rung |
+| Does the Track collapse too much? | **NO CHANGE — the claim does not reproduce** | The filed item counted ITEMS; `track.js:673` counts ROWS via `assignRows`. Measured from `data-rows`: draw 1, returning 1, drawwindow 3, **event 2 (open)**, playlist 7 (collapsed). Four of five lanes open, 23 items visible. "Hiding 20 of 39" is false | A real season puts a non-playlist lane past three rows |
+
+⚠️ **All three fixes are PORTAL AHEAD** — the mockup renders the colour-only ladder, the inverted urgency colour and the same collapse rule. `portal:audit --realm home` will report them; none should be closed.
+
 ### Home — five reach-and-legibility fixes, PORTAL AHEAD (2026-09-06 17:24 EDT)
 
 *Step 3's first pass: `impeccable harden` + `layout` on `portal/ui/home.js`, acting on the 2026-09-06 critique. Every row below is the portal moving PAST the mockup, so `portal:audit --realm home` will report each one and none should be closed. The two critique findings that are NOT here — a word naming the severity, and never-ends rendering calm — were checked against the package and are the design's own choices, so they stay Harkirat's.*
