@@ -5614,7 +5614,15 @@ button .ic,a .ic{pointer-events:none}
    INITIAL-LETTER FALLBACK rendered when a session has no avatarHash yet (a session predating this field). Adds
    properties only; does not redeclare anything the base rule already sets, so this is additive, not a
    duplicate-selector override. */
-.who .av{display:flex;align-items:center;justify-content:center;font:600 var(--t-xs) var(--ui);color:var(--ink2);
+/* 🔴 THIS IS THE SECOND `.who .av` DECLARATION AND IT IS THE ONE THAT WINS — same specificity, later in the
+   file. The comment above says this block "does not redeclare anything the base rule already sets", and that
+   was true when it was written; a 2026-09-06 17:20 EDT attempt to fix the contrast on the BASE rule at the top
+   of this file therefore changed nothing on screen and the browser check caught it. `portal-editing.md` names
+   exactly this trap: two rules, last one wins, and no gate reports it. Fix the winner.
+   The initial measured 3.70:1 — --ink2 (#9DAAB4) on the gradient's light stop (#3A4C5A), under the 4.5:1 floor.
+   No per-element contrast check could have found it: the element's own background is transparent and the colour
+   comes from the gradient behind it. --ink on the same stop is 7.2:1. */
+.who .av{display:flex;align-items:center;justify-content:center;font:600 var(--t-xs) var(--ui);color:var(--ink);
   text-transform:uppercase}
 .umenu .uav b.uinit{font:600 17px var(--ui);color:var(--ink2)}
 /* .umenu .uav is already display:grid;place-items:center in app.css, so the initial letter is already

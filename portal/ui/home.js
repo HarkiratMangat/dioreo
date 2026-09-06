@@ -183,7 +183,9 @@ function HomeClock({ season, today }) {
         </div>`);
 
     return html`
+        ${''/* The h3s below sat directly under the masthead h1 with no h2 between them, so screen-reader heading navigation skipped a level on the page's own state panel. `.sr` is the visually-hidden utility at app.css:39 — position:absolute, 1px, clipped — so this costs no layout and the design is unchanged. */}
         <section class="hclock" aria-label="Season countdown">
+            <h2 class="sr">Season countdown</h2>
             <div class="sclock hc-face" data-tier=${seasonTier(p.d)}>
                 <${ClockFace} p=${p} />
                 <div class="sc-when">${season?.currentSeasonTitle || 'This season'} · until <b>${fmtDay(next.iso)}</b></div>
@@ -193,12 +195,12 @@ function HomeClock({ season, today }) {
                 <div class="hc-col">
                     <h3>Still to drop <b>${upcoming.length}</b></h3>
                     ${upcoming.length ? rows(upcoming, (i) => i.start) : html`<p class="hc-none">Nothing else releases before then.</p>`}
-                    ${upcoming.length > 4 ? html`<p class="hc-more">${upcoming.length - 4} more</p>` : null}
+                    ${upcoming.length > 4 ? html`<p class="hc-more">${upcoming.length - 4} more${' '}<a href="#/season">open the Track</a></p>` : null}
                 </div>
                 <div class="hc-col">
                     <h3>Stops by then <b>${ending.length}</b></h3>
                     ${ending.length ? rows(ending, (i) => i.end) : html`<p class="hc-none">Nothing running ends before then.</p>`}
-                    ${ending.length > 4 ? html`<p class="hc-more">${ending.length - 4} more</p>` : null}
+                    ${ending.length > 4 ? html`<p class="hc-more">${ending.length - 4} more${' '}<a href="#/season">open the Track</a></p>` : null}
                 </div>
             </div>
         </section>`;
@@ -238,7 +240,7 @@ function LiveNow({ season, broadcast, today }) {
                 ${items.slice(0, SHOW).map((i) => html`
                     <div class="lrow" key=${i.title + i.start} style=${`--c:${i.accent || LANE_ACCENT[i.lane] || 'var(--ink4)'}`}>
                         <i class="ld"></i>
-                        <span class="lt">${i.title}</span>
+                        <span class="lt" data-tip=${i.title}>${i.title}</span>
                         <!-- "hot" is two days out, the same threshold the attention list uses for a deadline. A colour that fires on a different number than the list beside it teaches the reader that neither can be trusted. -->
                         <span class=${'lw' + (i.end && dday(today, i.end) <= 2 ? ' hot' : '')}>
                             ${i.end && i.end !== i.start ? endsIn(i.end, today) : 'today'}
@@ -256,7 +258,8 @@ function LiveNow({ season, broadcast, today }) {
                 ${anns.length ? anns.map((a) => html`
                     <div class="lrow" key=${a._id || a.text} style="--c:var(--patch)">
                         <i class="ld"></i>
-                        <span class="lt">${a.text || a.title || html`<span class="none">untitled announcement</span>`}</span>
+                        ${''/* Measured 2026-09-06 14:15 EDT: both live announcements were cut at 52% and 55% (scrollWidth 707 against clientWidth 339, and 715 against 319) with no way to read the rest. An announcement's whole content IS its text, so the panel could not answer the question it asks. `data-tip` is the portal's own delegated tooltip and this is the pattern broadcast.js:204 already uses for exactly this case. */}
+                        <span class="lt" data-tip=${a.text || a.title || 'untitled announcement'}>${a.text || a.title || html`<span class="none">untitled announcement</span>`}</span>
                         <!-- 🔴 NO EXPIRY IS THE HOT STATE, not the calm one. An announcement with no expiresAt value never stops on its own, which is the single defect Broadcast's own attention row exists to report — so it reads hot here for the same reason. -->
                         <span class=${'lw' + (a.expiresAt ? '' : ' hot')}>
                             ${a.expiresAt ? endsIn(a.expiresAt, today) : 'never ends'}
@@ -275,7 +278,8 @@ function Resume({ ops }) {
     return html`
         <div class="hres">
             <b>${ops.length} staged change${ops.length === 1 ? '' : 's'}</b>
-            <span>across ${realms.size} realm${realms.size === 1 ? '' : 's'} — nothing is live until you commit them.</span>
+            ${''/* It computed the Set and then printed only its size, so the one question the strip could answer for free — WHICH realms — went unasked. Named in delivery-agnostic order (Set insertion), capitalised for prose. */}
+            <span>across ${[...realms].map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')} — nothing is live until you commit them.</span>
             <span class="sp"></span>
             <a class="chip go" href="#/review">Review & commit</a>
         </div>`;
@@ -355,6 +359,7 @@ export function HomeRealm({ session }) {
                                wrong". Reordering only; every component is unchanged. -->
                           <${Resume} ops=${data.review?.ops || []} />
                           <${HomeClock} season=${data.season?.live} today=${today} />
+                          <h2 class="sr">What needs you</h2>
                           <${AttentionList} rows=${rows} />
                           <${LiveNow} season=${data.season?.live} broadcast=${data.broadcast} today=${today} />
                       </div>`} />`;

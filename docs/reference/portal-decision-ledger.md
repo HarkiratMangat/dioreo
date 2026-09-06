@@ -312,6 +312,20 @@ The instruments state their own blind spots on every run and a ledger section sh
 - **Tab order was not checked.** Moving the masthead inside `.home` changed DOM order; `portalStates` counts focusables (16) but a count is not an order.
 - **A delegated admin's Home is undesigned.** A realm the admin cannot see answers `forbidden`, and its attention row simply does not appear — so a delegated admin sees a smaller `needs you` figure with nothing saying why. Armory's masthead has an explicit ruling that a figure which cannot be known must not read as zero; this list makes the opposite choice by omission. Filed.
 
+### Home — five reach-and-legibility fixes, PORTAL AHEAD (2026-09-06 17:24 EDT)
+
+*Step 3's first pass: `impeccable harden` + `layout` on `portal/ui/home.js`, acting on the 2026-09-06 critique. Every row below is the portal moving PAST the mockup, so `portal:audit --realm home` will report each one and none should be closed. The two critique findings that are NOT here — a word naming the severity, and never-ends rendering calm — were checked against the package and are the design's own choices, so they stay Harkirat's.*
+
+| Fix | Package | Portal | Falsifier |
+|---|---|---|---|
+| The clock's **"N more"** reaches the Track | `<p class="hc-more">5 more</p>`, dead text (`index.html:265,269`) | `5 more open the Track` linking `#/season` | Eleven items were NAMED and none reachable. Falsified if `.hc-more a` stops resolving to a realm route |
+| A truncated **`.lt`** carries its own text | no tip | `data-tip` on every running title and announcement | Measured: announcements cut at 52% and 55% (scrollWidth 707 vs 339, 715 vs 319). An announcement's whole content IS its text. Same pattern `broadcast.js:204` already uses. Falsified if `.lrow .lt[data-tip]` count stops matching `.lrow .lt` |
+| Two **visually-hidden `h2`s** | none | `h2.sr` on the clock section and before the attention list | Heading order was h1 then h3, and the page's primary list carried no heading at all. `.sr` is absolute/1px/clipped, so zero layout change — verified `H1 · H2.sr · H3 · H3 · H2.sr · H2 · H2` in the harness. Falsified if any `.sr` gains a box |
+| The identity chip **initial at `--ink`** | `--ink2` | `--ink` | It measured **3.74:1** on the gradient's light stop, under the 4.5:1 floor, and **7.54:1** after — both read from `getComputedStyle` in the harness. ⚠️ No per-element contrast check could find it: the element's own background is transparent and the colour comes from the gradient behind it |
+| The staged strip **names its realms** | `across N realms` | `across Season, Armory` | `Resume` already built the Set and used only `.size`, so the strip withheld a fact it had already computed |
+
+🔴 **And the avatar fix landed on the WRONG of two identical selectors first.** `.who .av` is declared twice in `portal/ui/app.css` — once at the top and once under the D3 identity-chip block, whose own comment claims it "does not redeclare anything the base rule already sets". That was true until the base rule gained a `color`. The first attempt changed nothing on screen, every gate stayed green, and only reading `getComputedStyle` in the browser caught it. This is the duplicate-selector trap `.claude/rules/portal-editing.md` already names; **assert `count == 1` before writing a rule for a class.**
+
 ### Home — what was FIXED rather than cited
 
 | Fix | Evidence |
