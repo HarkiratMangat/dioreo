@@ -157,6 +157,26 @@ The plugin ships four `references/` files and one `SKILL.md` per tool that are *
 
 ---
 
+## 2.4 🔴 WHAT IS ACTUALLY LEFT IN STEP 3 — the nine, at a glance (2026-09-06 19:14 EDT)
+
+*Nine of ~18 bucket-A items are closed. These are the rest. **Six need nothing from Harkirat.***
+
+| # | Item | His input? | Task |
+|---|---|---|---|
+| 1 | **The four Export drawers** — one fix in `exportPanel.js` lands on four realms | No | 3 |
+| 2 | **The accessible name runs two words together** — the htm-whitespace class has three shapes and the gates cover two | No | 2 |
+| 3 | **The season strip draws 37 of 39 bars** — `track.js:644` filters what the design does not | No, but LOOK at the two dropped items first | 5 |
+| 4 | **The §L ⑥ audit's remaining findings** | No — its two decision-shaped ones are now answered | 6 |
+| 5 | **Access: an admin's NOTE cannot be edited** | 🔴 **YES** — a new editor is a FEATURE, and Part 4's scope excluded features | 4 |
+| 6 | **The design queue's seven undone items** | Some — items 5 and 7 are his; the rest are not | 7 |
+| 7 | **78 literal colours + four `transition: width`** animating layout | No | — |
+| 8 | **Nine reverse-orphan classes** accepted into the baseline rather than resolved | No | — |
+| 9 | **`async.js`'s two unreachable request states** and the states harness's missing PASS 5 | No | — |
+
+⚠️ **Batch the ones that share a file or a verify pass.** The Analytics, Access and Armory fixes shipped as one commit with one suite run on 2026-09-06; nine separate open-fix-verify-commit cycles is the retired per-realm loop wearing a different label.
+
+⚠️ **Then step 4**, ~30 items — and **the player-facing work lives there**, not in step 3. Step 3 is entirely admin-facing.
+
 ## 3 · Tasks
 
 ### Task 1: Read the refuted Track item so it is not re-opened

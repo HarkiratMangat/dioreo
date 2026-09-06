@@ -803,6 +803,20 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · M · Opus5-High]` The `/commands` page is LIVE and Harkirat believed it was parked — it still needs work
+
+*Filed 2026-09-06 19:09 EDT, in his words: "it honestly still needs work and in my mind/subconcious I thought it was parked and pending. i didnt even know/remember it was live."*
+
+🔴 **THE DISCOVERY IS THE BELIEF GAP, NOT THE PAGE.** A surface has been publicly reachable while its owner carried it as unfinished-and-unshipped. Everything filed about it was written under the assumption that it was still a draft, so nothing was ever prioritised as *live and wrong*. That is the class this list exists to catch and it missed this one for weeks.
+
+**What is concretely wrong right now.** The landing page's typing animation is `CMD_JS`'s `SPECS` array in `scripts/buildLegalPages.js`, and it has drifted from the real command set: **`/help` is missing entirely** — a public, user-facing command and arguably the one most worth advertising on the front door — and **`/draw calculator` is missing entirely**, shipped in PR #136 and never added. Both were already filed under the landing-page entry; what is new is that they are live to the public, not staged.
+
+**And the product map already declares this a violation.** `map.yaml`'s `commands-page → discord-commands` edge is `must-stay-consistent-with`, which is exactly *"these two must not disagree"*. The map cannot yet report it because no node carries a verify block — see the map-verifiers entry below. When one is written, this becomes a reconciler verdict with file:line evidence rather than a paragraph.
+
+**Do:** a real pass on the page — not just the two missing commands. **Verify:** Harkirat has opened `dioreo.app/commands` and the landing animation himself and either accepted what is there or named what changes; the `SPECS` array and `commands/` agree; and the map's edge reports convergence.
+
+⚠️ **Deliberately NOT scoped here as "add two commands to an array".** He said the page needs work, and the two omissions are the part that happens to be measurable. Treating the measurable part as the whole is the substitution failure this project keeps paying for.
+
 ### `[P2 · S · Sonnet5-Medium]` The product map is DECLARATIVE ONLY — no node verifies itself against reality
 
 *Filed 2026-09-06 18:37 EDT, the day `map.yaml` was written and imported.* `npx -y linksee-memory map status` reports **Health 100% · Needs attention 0 · Verified by reality: 0** — and the third number is the honest one. Ten nodes declare what is true; none declares HOW to check it, so the reconciler has nothing to run and 100% means *nobody looked*.
