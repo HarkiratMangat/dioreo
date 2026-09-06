@@ -70,7 +70,7 @@ if [ -r "$LINKSEE_DB" ] && command -v sqlite3 >/dev/null 2>&1; then
     warn="$warn
   ⚠️ ${frag} memories referencing this repo are filed under PATH-DERIVED junk entities (folder names
      like Application/Containers). Entity-scoped recall MISSES them silently. Root cause is unfixed
-     upstream (no config knob; map_projects is empty). Re-home with the documented UPDATE - see the
+     upstream (no config knob). 🔴 CORRECTED 2026-09-06 18:37 EDT: this line used to blame an empty map_projects table and that is no longer true - Diors-Builds imported a map.yaml that day (10 nodes, 10 edges, linked to anchor #7), so where_am_i and the map CLI both answer. The misfiling is still real; an empty map is not its cause. Re-home with the documented UPDATE - see the
      memory reference_tool_capability_tests. Until then the query-mode rule below is the defence."
   fi
 fi
@@ -121,6 +121,16 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
     "where is X / what calls it". If head_sha lags, run detect_changes (a docs-only lag is harmless).
   · [MEASURED, but on PAYLOAD not on hit rate: a 300-line file cost 5,632 tokens on first Read and
     ~150 on a read_smart re-read, 97% saved, 2026-07-24 23:02 EDT. No hit-rate figure exists.]
+  · 🔴 read_smart IS NOT A RE-READ TOOL AND CALLING IT ONE IS WHY IT GOES UNUSED. Route EVERY read of a
+    file you are not about to Edit through it, first read included: the first read is what builds the AST
+    chunk map that makes every later one ~50 tokens, so it costs the same and buys the 97%. Measured
+    2026-09-06 18:37 EDT: a session read the deferred list, four rule files, 24 vendor doc pages and several dist
+    bundles with zero read_smart calls, because each was a FIRST read and the rule only spoke about re-reads.
+  · linksee publishes FIVE MCP PROMPTS (entity-handoff, summarize-session, extract-caveats, recall-and-write,
+    weekly-consolidation) on a surface neither a skill search nor ToolSearch can see. /linksee:* does NOT
+    route in Claude Code; fetch the body with prompts/get over stdio and follow it. It also publishes four
+    RESOURCES - memory://stats, memory://hot, memory://recent, memory://caveats - none of which had ever
+    been read here, and the docs say to browse the caveats one at the start of any significant session.
   · context-mode ctx_execute/ctx_batch_execute/ctx_execute_file for anything whose output you
     PROCESS; Bash only to observe short fixed output or mutate state.
   · [MEASURED 2026-08-31 12:5x EDT, and this is the strongest routing figure in the system:

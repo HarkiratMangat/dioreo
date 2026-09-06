@@ -97,7 +97,9 @@ So an unreviewed commit on `main` is the thing that must never happen; an unvers
 ~/.local/bin/codebase-memory-mcp cli index_repository --repo_path "/Applications/Claude Code/Diors-Builds"
 ```
 
-then `ctx_index` on `docs/`, `.claude/rules/` and any source tree the merge touched.
+then `ctx_index` on `docs/`, `.claude/rules/` and any source tree the merge touched, and **`npx -y linksee-memory map`** to re-import `map.yaml` if the merge moved a surface or an implementation path.
+
+🔴 **THERE ARE THREE INDEXES NOW, NOT TWO — `map.yaml` WAS ADDED 2026-09-06 18:36 EDT.** It is the repo's product map: ten nodes across five journey stages, ten typed edges, and a link to linksee anchor #7. It answers *what else does changing this implicate* — `where_am_i` reports that touching `admin-portal` implicates five nodes with graded strength, and `npx -y linksee-memory map affects <node>` prints the same as a fix-together list. ⚠️ **A node resolves a FILE only through its `reality.path` / `reality.checks[].path`**; without those the CLI falls back to lexical matching and looks like it is working. Before this the whole drift half of linksee was dark: `where_am_i` had returned *"No Map imported"* for the life of the project.
 
 ⚠️ **`index_repository` DOES NOT WORK THROUGH THE MCP TOOL and its error blames a "culprit file" that does not exist** — it takes `project_path`, the worker requires `repo_path`, and the parameter is never forwarded. Use the CLI form above. When it fails, the real error is in `~/.cache/codebase-memory-mcp/logs/.worker-<pid>.log`, never in the hint it returns.
 

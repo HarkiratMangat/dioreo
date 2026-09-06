@@ -88,6 +88,22 @@ ctx_search({ source: "project:dioreo-docs", queries: ["has <surface> been decide
 
 The plugin ships four `references/` files and one `SKILL.md` per tool that are **never injected**; they live under `~/.claude/plugins/cache/context-mode/context-mode/<version>/`.
 
+### 1.1b linksee — fixed and wired 2026-09-06 18:39 EDT, and it was degraded before
+
+**Two install defects, both fixed:** the installed skill was a month stale (`install-skill` **skips rather than upgrades** — `--force` is required, and only then did `linksee-memory` appear in the session's skill list), and `~/.claude.json` ran the server through `npx -y`, re-resolving the package every session start; it is now the binary.
+
+| Use it for | How |
+|---|---|
+| **Any read of a file you will not `Edit`** | `mcp__linksee__read_smart` — **first read included.** The first read builds the AST chunk map that makes every later one ~50 tokens, so routing it costs nothing. The old "only for re-reads" framing is why it went unused for a whole session |
+| Before touching a surface | `where_am_i` — **the product map now exists.** `map.yaml`, 10 nodes, 10 edges, linked to anchor #7. It answers *touching `admin-portal` implicates 5 nodes*, graded hard/soft/watch |
+| Recalling with precision | Three axes filter every `recall`: `altitude` · `mem_type` · `mem_state`. Open questions are `mem_state:open, mem_type:question` |
+| Writing a pain lesson | `layer: caveat`, **one sentence, verb-first**, and it is protected forever. A paragraph is the wrong shape |
+| Starting significant work | Read the `memory://caveats` resource — the docs' own advice, and it had never been read here |
+
+⚠️ **`/linksee:*` does not route** (`Unknown command`) and the docs never promise it will. Fetch a prompt body with `prompts/get` over stdio and follow it; a prompt is instructions, not a computed result. Recipe in `~/.claude/TOOLING.md`.
+
+⚠️ **`map where <file>` resolves a file only through `reality.path`.** Every node now declares one. But **no node declares a VERIFIER yet**, so `map status` reads *Health 100% · Verified by reality: 0* — and the second number is the honest one. Filed.
+
 ### 1.2 The instruments
 
 | Command | Use |
@@ -115,6 +131,8 @@ The plugin ships four `references/` files and one `SKILL.md` per tool that are *
 | `4eb584b1` | Home's five reach-and-legibility fixes |
 | `a1d04dcb` | Home geometry re-recorded |
 | `676b47ea` | Three design forks derived; four filed defects closed |
+| `2f4b698d` | This plan and the exhaustive handoff |
+| *(this commit)* | linksee fixed and wired: the stale skill, the `npx` launch, the product map, and the tool/skill docs swept |
 
 **`npm test` is GREEN at `676b47ea`, verified 2026-09-06 18:11 EDT** by running it rather than by reading a log line. `docs:reflow`, `docs:reflow-comments` and `docs:audit` all exit 0.
 

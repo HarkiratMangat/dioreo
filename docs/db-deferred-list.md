@@ -803,6 +803,26 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · S · Sonnet5-Medium]` The product map is DECLARATIVE ONLY — no node verifies itself against reality
+
+*Filed 2026-09-06 18:37 EDT, the day `map.yaml` was written and imported.* `npx -y linksee-memory map status` reports **Health 100% · Needs attention 0 · Verified by reality: 0** — and the third number is the honest one. Ten nodes declare what is true; none declares HOW to check it, so the reconciler has nothing to run and 100% means *nobody looked*.
+
+**The mechanism**, read off linksee's own shipped `map-import` and `map-view` modules rather than guessed: a node's `reality` block is stored as opaque JSON. `reality.path` and `reality.checks[].path` are consumed by `where_am_i` and `map where` for FILE RESOLUTION and are now populated. The verify half — the `signal` / `regex` / `section_contains` / file checks the docs describe, which produce a `convergence` / `divergence` verdict that **overrides the hand-declared status** — is not written anywhere yet.
+
+🔴 **There is already a known drift the map should be catching and is not.** The `commands-page → discord-commands` edge is declared `must-stay-consistent-with`, and it is currently VIOLATED: the landing page's typing animation omits `/help` and `/draw calculator`, both shipped. A `section_contains` check on `scripts/buildLegalPages.js`'s `SPECS` array would turn that from a filed item into a reconciler verdict with file:line evidence — which is the entire point of the map.
+
+**Do:** add a verify block to the nodes that have a checkable claim, starting with `commands-page`. **Verify:** `map status` reports a non-zero *Verified by reality*, and `map explain commands-page` prints a divergence with evidence.
+
+### `[P3 · S · Sonnet5-Medium]` linksee's store carries 148 raw utterances and 42 misfiled entities
+
+*Filed 2026-09-06 18:37 EDT. Both surface in the SessionStart banner every session and neither has ever been acted on.*
+
+**148 auto-captured memories are still RAW USER UTTERANCES** filed as learnings or caveats. `dream()` drains up to **8 per call**, so this needs repeat calls; each is rewritten via `remember({memory_id, content})` and **must carry `"distilled": true`** or the next Stop-hook sync wipes the rewrite and the raw utterance returns.
+
+**42 memories referencing this repo sit under PATH-DERIVED junk entities** (folder names like `Application`/`Containers`). Entity-scoped recall MISSES them silently, which is why the standing rule is recall by `query` and never by `entity_name`. ⚠️ **The banner blamed this on `map_projects` being empty and that is now false** — the map is imported; the misfiling has a different cause and the root is unfixed upstream.
+
+**Do:** drain the distill queue and re-home the 42. **Verify:** the SessionStart banner's two counts both read 0.
+
 ### `[P2 · M · Opus5-High]` Home critique — five priority issues, none actioned, and the report they live in is now gitignored
 
 *Filed 2026-09-06 16:14 EDT. The report is `.impeccable/critique/2026-09-06T18-15-03Z__portal-ui-home-js.md`, scored **29/40**. `.impeccable/critique/` was gitignored in the same change because the reports are dated tool output that reflow-prose keeps flagging, so this entry is now the ONLY tracked carrier of what it found — the same rule that puts approved-but-unbuilt work here rather than in `local/`.*
