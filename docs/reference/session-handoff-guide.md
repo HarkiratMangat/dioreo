@@ -259,6 +259,85 @@ The same audit: `.remember`'s **First action** read as something to *do*. It act
 
 ---
 
+## 🔴 THE CONFORMANCE PASS — run it on ANYTHING a generic skill emitted, before it is approved or executed (added 2026-09-06 22:18 EDT)
+
+**This is the interim mechanism.** The real fix is a repo-owned `/plan` skill, filed as Task 14b of `/Applications/Claude Code/2026-08-23-workflow-compliance-plan.md`, itself blocked on that plan's own rewrite (the `⛔ PRE-REQ` entry in `meta-deferred-list.md`). Until that lands, **this section is the whole method** — which is why it is written out here instead of left to be re-derived.
+
+🔴 **WHY IT IS NEEDED, stated once so it is not argued away.** `superpowers:writing-plans` says at `SKILL.md:47` — **"Each step is one action (2-5 minutes)"** — and mentions turn, message and round-trip **zero times**. It was authored without the concept, so its plans get executed one action per message. Measured across this repo: **632 steps written as one action, and 12 of 19 step-bearing plans never say "batch".** On 2026-09-06 a session followed a plan that said *"Mega-batch"* in its constraints and *Step 1 → Step 5* in its tasks, and spent **28 turns on one filed item against an estimate of 7**. It followed the steps. **The steps were the loop.**
+
+⚠️ **The generic skill is not wrong for its own purpose.** Fine-grained steps are the audit trail, the resume point and the verify condition, and all three are worth keeping. The defect is that **granularity of DESCRIPTION got conflated with granularity of EXECUTION**, and the format carries only one of those axes. This pass adds the second. **It never merges steps.**
+
+### When to run it
+
+- Immediately after `writing-plans` or any generic skill emits a plan — **before** the falsification pass signs it off, so the audit log covers the conformed version.
+- Whenever you **amend** an existing plan, handoff or spec. An amendment inherits the shape of what it amends.
+- On a handoff's *Next* section, which is a plan wearing a different name.
+
+### 1 · Add the message-boundary axis — the one thing the generic format lacks
+
+Steps stay exactly as written. A grouping line goes **above** each group, and it is greppable on purpose:
+
+```markdown
+> ⟦ONE MESSAGE⟧ Steps 1–3 — three independent reads plus the git check; nothing here consumes anything above it.
+- [ ] **Step 1: …**
+- [ ] **Step 2: …**
+- [ ] **Step 3: …**
+
+> ⟦ONE MESSAGE⟧ Steps 4–6 — the heredoc, the build and the gate, chained with `&&` in one Bash call.
+- [ ] **Step 4: …**
+- [ ] **Step 5: …**
+- [ ] **Step 6: …**
+```
+
+**Verify by:** `rg -c '⟦ONE MESSAGE⟧' <plan>` returning a number well below its step count. A plan with no grouping lines has not had this pass.
+
+### 2 · Use the test that is answerable — the usual one inverts exactly when it matters
+
+⛔ **Not** *"are these steps independent?"* Under uncertainty that returns *no* for everything, and uncertainty is precisely when a run is longest. It is a loophole that opens when the rule is most needed.
+
+✅ **Ask instead: "can I write this call IN FULL, right now, without seeing the previous result?"** If yes, it shares a message. **"The earlier call might make this one pointless" is speculation about waste, not a dependency** — a pointless command inside a batch costs approximately nothing, while a round trip costs a full transcript replay. **That inverted cost model is the actual defect, and it is stated nowhere in the always-loaded layer.**
+
+### 3 · Step 0 is always EVIDENCE, and it is always one message
+
+Every plan gains a first group gathering **every** unknown at once — file reads, greps, git state, ledger queries, the browser probe. One session issued **14 separate evidence calls** for work that had four unknowns.
+
+⚠️ **A `ctx_batch_execute` carrying ten `commands` is ONE turn.** So is a `browser_batch`. The habit attaches to Bash and does not transfer by itself — check the browser and MCP steps specifically. Measured: `browser_batch` used twice in about ten browser turns.
+
+### 4 · Quote every referenced filed item's **Verify** line INTO the document
+
+A filed item is a claim with a verify condition, not a fact. Paste the Verify line beside the task that cites it.
+
+**Measured cost of not doing this:** a task whose entire work was already finished and recorded in the decision ledger, and **four settled decisions surfaced to Harkirat as live work in one day.**
+
+### 5 · No turn estimate unless the unknowns are enumerated AND verified
+
+An estimate copied from a filed item's own prediction is that prediction wearing your confidence. The 7-against-28 miss came from costing an item whose nine sub-claims had not been checked — **three of the nine turned out misgraded, and one was a live regression.**
+
+### 6 · Carry the repo's known traps as a runnable check, not as prose
+
+`.claude/rules/portal-editing.md` and this file already name them. **Put the assertion inside the heredoc, before the write:**
+
+```python
+import re
+# the build gate's own rule: a backtick inside an HTML comment closes the template literal
+assert not re.search(r'<!--(?:(?!-->).)*`', s, re.S)
+# a comment rewrite must still open with /* and close with */ — CSS comments do not nest, so a raw
+# count of the two tokens is the WRONG instrument when they also appear inside comment prose
+```
+
+Both were documented as things to remember and were hit anyway in one session, for **6 lost turns**. Same principle as this file's *EVERY STEP MUST BE RUNNABLE* section above, applied to the plan's own text.
+
+### What this pass must NEVER change
+
+| Leave alone | Why |
+|---|---|
+| **The content** | Re-shape only. Audit logs record defects found by falsifying a plan; re-deriving them is the expensive mistake |
+| **The checkbox trail, the resume point, the verify condition** | These are what the generic format gets right |
+| **Genuinely chained steps** | TDD's red-before-green is a real sequence and legitimately costs turns. The grouping says what can SHARE a message, never what can be merged |
+| **The falsification pass** | Unchanged — and it now runs on the conformed document |
+
+⚠️ **The honest reach.** Against that 28-turn session: the format explains about 7 turns, an evidence-first batch about 8, the trap preflight 2 of 6 script failures. It does not touch the other four, which were ordinary bugs in hand-written scripts. **Half to two-thirds, structurally, with no new gate** — said plainly, because a method carrying an implied promise of zero is the same overclaim as the estimate that started this.
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
@@ -463,4 +542,4 @@ rg -n '^- `\[P' docs/db-deferred-list.md
 
 ## The completeness sweep, when a handoff closes a session
 
-If the turn also touched tracking lists or records, `.claude/hooks/completeness-sweep.sh` will demand passes 2 and 3. Run them in **one batched command**: external trees (`~/.config/dior`, the meta-deferred list, `~/.claude/settings.json`) · the memory store (`-u --hidden`, or gitignored paths stay invisible) · what moved text still *asserts* · the affected `*.test.sh` individually · `public/` only if a real site source changed. Changelog/DEVLOG-only changes are the **documented exemption** — those pages are withdrawn from the site nav, so a stale local build there is not a live gap.
+If the turn also touched tracking lists or records, `.claude/hooks/commit-completeness-sweep.sh` will demand passes 2 and 3. Run them in **one batched command**: external trees (`~/.config/dior`, the meta-deferred list, `~/.claude/settings.json`) · the memory store (`-u --hidden`, or gitignored paths stay invisible) · what moved text still *asserts* · the affected `*.test.sh` individually · `public/` only if a real site source changed. Changelog/DEVLOG-only changes are the **documented exemption** — those pages are withdrawn from the site nav, so a stale local build there is not a live gap.

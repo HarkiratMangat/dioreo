@@ -5,6 +5,18 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## ⏱️ The completeness sweep moved off `Stop` and onto commits — closed 2026-09-06 22:28 EDT
+
+**It was not "restored", and that distinction is the entry.** The sweep had been disabled by hand (`Stop` → `Stop__OFF`) at Harkirat's permission on 2026-09-06 14:55 EDT because it fired on every turn of a long planning conversation; the filed item asked for it to be switched back on. He answered differently: it *"should only fire before commits/merges"*, not *"after every little run/turn"*.
+
+- **Renamed** `completeness-sweep.sh` → `commit-completeness-sweep.sh`, with its test and its `.git/` stamp file.
+- **Re-registered** from `Stop` onto **`PreToolUse`/Bash**, matching the four commit-or-merge verbs, in a new **`commit` mode**.
+- **It never denies.** `additionalContext` + `hookEventName`, per his standing constraint — *"a gate is better than advisory but i dont want it denying things."* A `permissionDecision:"ask"` would have been stricter and is wrong here: friction on the model is free, friction on him is disqualifying.
+- **Commit mode skips the claim gate deliberately** — a message is not necessarily a claim, but a commit IS one, so demanding a second claim in prose would make the sweep unreachable at the exact moment it was moved to.
+- **36/36 proofs pass**, three new. ⚠️ Two assert on RAW output through a new `runraw()`: `run()` unwraps the JSON, so a "does it deny?" check written against the unwrapped text **could never fail** — the vacuous-check class that file already warns about twice.
+- ⚠️ **The cost, on the record:** a commit is strictly LATER than a claim in prose. A session that claims done and never commits now gets nothing from this gate — which is the 2026-08-06 case that put it on `Stop` in the first place. `gh pr create` remains the `pr`-mode backstop. The hook's own TIMING header carries this trade rather than quietly replacing the old reasoning.
+- ⚠️ **`Stop__OFF` is still OFF and still uncommitted.** Only the sweep left it; the other five Stop hooks are untouched and remain disabled. **That is a separate decision and this closure does not make it.**
+
 ## 🧭 The context layer — closed 2026-09-02 17:02 EDT (PR #181, v3.74.0-pre)
 
 **Original wording, kept verbatim** *(filed 2026-09-02 10:39 EDT)*: `[P1 · M · Opus5-High]` **Context architecture — the INJECTED tier has no budget, and the workflow this repo mandates bypasses the rules layer.** *Do.* (a) `memory-index-check.sh` gates **bytes only** against a locally-invented 40,000 while the platform's law is *"first 200 lines OR first 25KB, whichever comes first"* — make it gate both, at 25,000. (b) Trim the 124 index entries to the ~150-char target `anthropic-skills:consolidate-memory` itself specifies = **−8,499 B**, and move `SILENT MODE` (~5,400 B) to the instruction tier — then delete the `@`-import per its own stated removal condition. (c) Give `.claude/rules/` a per-file byte budget and a gate, and split the four oversized rules into a small injected TRAP plus a reference doc under `docs/reference/`.

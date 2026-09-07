@@ -25,6 +25,14 @@ The measured difference is in the *question*, not the process. Asked to **review
 
 Neither was visible from the plan text. Both came from **going and checking a claim the plan had accepted** — *is `DIORS_COMMIT` actually set?* (it is not, and `utils/logger.js:30` says otherwise) and *what if the pulled file is new?*. That is the whole mechanism: a falsification pass sends you to check things; a review pass does not.
 
+## 🔴 FIRST CONFORM THE SHAPE, THEN FALSIFY THE CONTENT (added 2026-09-06 22:18 EDT)
+
+`superpowers:writing-plans` emits **one-action steps** (`SKILL.md:47`) and never mentions a turn, a message or a round trip — so its plans get executed one call per message. Measured here: **632 one-action steps across 27 plans**, and a session spending **28 turns on one item against an estimate of 7**.
+
+**Run the CONFORMANCE PASS before the falsification pass**, so the audit log covers the conformed document. Full method: `docs/reference/session-handoff-guide.md`, the section headed *THE CONFORMANCE PASS*. In one line: **add a `⟦ONE MESSAGE⟧` grouping line above each set of steps that can share a message · make Step 0 an evidence batch · quote every referenced item's Verify line into the plan · never estimate turns before the unknowns are enumerated and verified.** Shape only, never content.
+
+⚠️ **It applies when you AMEND a plan too** — an amendment inherits the shape of what it amends, and this rule fires on a plan READ, which is the amend moment. ⚠️ **It does NOT merge steps**: a genuinely chained sequence (TDD's red-before-green) still costs its turns.
+
 ## What the pass actually is
 
 1. **`superpowers:writing-plans`** — mandatory whenever there is a plan at all. Its per-task "which exact files does this touch" discipline is itself a defect-finder: it is what forced `utils/logger.js` open in the first place.
