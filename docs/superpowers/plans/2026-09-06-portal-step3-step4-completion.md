@@ -104,6 +104,16 @@ The plugin ships four `references/` files and one `SKILL.md` per tool that are *
 
 ⚠️ **`map where <file>` resolves a file only through `reality.path`.** Every node now declares one. But **no node declares a VERIFIER yet**, so `map status` reads *Health 100% · Verified by reality: 0* — and the second number is the honest one. Filed.
 
+### 1.1c The memory store was cleaned 2026-09-06 20:41 EDT — do not re-run this
+
+**76 memories re-homed** out of path-derived junk entities, **7 entities deleted**, **15 raw utterances distilled**. Entities **63 → 55**; `integrity_check` ok; two dated backups kept beside the DB.
+
+🔴 **The re-home only sticks because `source` was set to NULL in the same statement.** An auto-captured row is wiped and reinserted by the Stop-hook sync, which re-derives the entity from the PATH and recreates the junk — the reason every earlier attempt evaporated.
+
+**21 rows are knowingly left** in `Application` / `Application Support` / `Containers`: all `consolidate` summaries with no project word, so nothing in their content can attribute them. **Leave them.**
+
+⚠️ **Do NOT hand-drain the distill queue.** ~580 undistilled auto-captured rows remain and `dream()` returns 8 per call — about 73 calls to rewrite session echo. The 15 that were done were the ones carrying a real lesson.
+
 ### 1.2 The instruments
 
 | Command | Use |
