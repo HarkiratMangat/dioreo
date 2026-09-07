@@ -18,13 +18,13 @@ status: live
 ```
 Read docs/superpowers/plans/OWED-PROMPT.md IN FULL before any other tool call, then local/handoff/2026-09-07-owed-items-handoff.md.
 
-FOUR owed items: (a) the §L⑥ remainder, (b) a harness delay knob, (c) states registries for broadcast/review/home, (d) 78 literal colours. (b) and (c) are ONE piece of work — the knob is what makes the async states reachable, so registering them without it produces states nothing can walk. That is why the list below has three steps and not four.
+FOUR owed items, in THREE units of work: (a) the §L⑥ remainder, (b) a harness delay knob, (c) states registries for broadcast/review/home, (d) 78 literal colours. **(b) and (c) are one unit** — the knob is what makes the async states reachable, so registering them without it produces states nothing can walk. The list below keeps all four numbered because you do them in that order; steps 2 and 3 are one unit and ship together.
 
 DO THEM IN THIS ORDER:
-  1. TRIAGE the §L⑥ remainder. THEY LIVE IN ONE PLACE: `docs/db-deferred-list.md`, the entry headed "The §L ⑥ two-agent audit's remainder" (around line 939). §L is section L of `docs/superpowers/plans/2026-08-27-portal-conformance.md` and ⑥ is its reader-test condition — you do not need to read either to do this. The entry lists its findings as bullets, each ending in a **Verify:** line. Run ONLY those Verify commands. Record pass/fail as a table in your reply; do not write a file and do not open a source file to fix anything yet. Five of nine filed items were already done on 2026-09-06 — expect roughly half of these to be dead too.
-  2. The harness delay knob. Small, and it unblocks 3.
-  3. States registries for broadcast, review and home — the knob exists by then, so the async states register in the SAME pass.
-  4. The 78 literal colours. Invoke the SKILL — `Skill(skill: "impeccable", args: "extract portal/ui")` — it is not a shell command. `extract` is "pull reusable tokens and components into design system", which is exactly this job. Finish with `node scripts/portalGeometry.mjs --all --check` and a `portalDiff` run, because collapsing a colour ramp CHANGES RENDERED PIXELS and "just declaring them" is a prediction, not a measurement.
+  1. TRIAGE the §L⑥ remainder. THEY LIVE IN ONE PLACE: `docs/db-deferred-list.md`, the entry headed "The §L ⑥ two-agent audit's remainder" (around line 939). §L is section L of `docs/superpowers/plans/2026-08-27-portal-conformance.md` and ⑥ is its reader-test condition — you do not need to read either to do this. The entry lists its findings as bullets, each ending in a **Verify:** line. Run ONLY those Verify commands. Record pass/fail as a table in your reply; do not write a file and do not open a source file to fix anything yet. ⚠️ **The records step is NOT skipped, it is DEFERRED** — an item triage proves dead is closed into `docs/archive/resolved-list.md` per §4c, but AFTER the triage table exists, not during it. On 2026-09-06, five of the NINE step-3 bucket-A items — a DIFFERENT, now-closed set — turned out already done, and two more were refuted by one measurement. That is the base rate to expect here, not a claim about these seven.
+  2. The harness delay knob. WHAT IT IS: `portal/ui/harness/` builds a page that runs the real components against fixtures, with `portal/ui/harness/stub.js` aliased over `httpClient.js` by an import map — so `fetchJson` returns canned data INSTANTLY. Three async states (`refreshing`, `slow`, `progress`) exist only while a request is in flight, so against an instant stub they enter and exit inside one microtask and never survive a render commit. The knob is a way to make that stub resolve slowly on demand. `scripts/portalStates.mjs`'s registry already walks a `slow=4000` case, so a seam may exist — LOOK BEFORE BUILDING ONE. Small, and it unblocks 3.
+  3. States registries for broadcast, review and home. WHAT ONE IS: a JSON file per realm at `portal/fixtures/states/<realm>.json` — `{surface, note, states:[{name, query, expect}]}` — where `expect` is a CSS selector that proves the walk actually reached the state. `node scripts/portalStates.mjs --ci` opens each and runs its passes. Five realms have one (`season` `shell` `armory` `analytics` `access`); these three do not, so nothing has ever opened their drawers in a test. The knob exists by then, so the async states register in the SAME pass.
+  4. The 78 literal colours. Invoke the SKILL — `Skill(skill: "impeccable", args: "extract portal/ui")` — it is not a shell command. `extract` is "pull reusable tokens and components into design system", which is exactly this job. Finish with `node scripts/portalGeometry.mjs --all --check` and `node scripts/portalDiff.mjs --realm <r> --portal harness` on the realms whose colours moved (it takes ONE realm; `npm run portal:sweep` does all seven in a pass), because collapsing a colour ramp CHANGES RENDERED PIXELS and "just declaring them" is a prediction, not a measurement.
 
 A FILED ITEM IS A CLAIM WITH A VERIFY CONDITION, NOT A FACT. Run the Verify before you build anything. Before any pop-up asking Harkirat to decide, ctx_search docs/reference/portal-decision-ledger.md.
 
@@ -47,7 +47,7 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 ## 3 · What the next session must NOT do
 
 - **Do not open a §L⑥ file before its Verify has been run.** Triage is a scripted pass, not seven investigations.
-- **Do not dispatch a subagent yet.** There is exactly ONE opportunity — the §L⑥ items that SURVIVE triage — and it is undecidable until triage runs. Colours, registries and triage itself are all wrong shapes for an agent.
+- **Do not dispatch a subagent yet.** There is exactly ONE opportunity — the §L⑥ items that SURVIVE triage — and the threshold is **≥3 survivors**. Below that, do them inline: an agent re-reads a large transcript to hand back two fixes. Colours, registries and triage itself are all wrong shapes for an agent.
 - **Do not touch reduced motion / PASS 5.** Harkirat dropped it 2026-09-07: *"reduced motion isn't important, skip that."*
 - **Do not commit `.claude/settings.json.impeccable-bak`** — it is the pre-move backup of the settings file and is deliberately untracked.
 - **Do not re-enable `Stop__PARKED_NEEDS_REFINING`.** Two hooks sit there on purpose, each with a filed refinement.
@@ -107,7 +107,8 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 
 | | |
 |---|---|
-| Branch | `docs/build-out-handoff` · **`d702f9cf`** · v3.79.0-pre |
+| Branch | `docs/build-out-handoff` · v3.79.0-pre |
+| **HEAD when this was written** | **`695f356d`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
 | Pushed | **No.** PR #186 open, **do not merge** |
 | Commits this session | `6d57e68d` · `06da92ca` · `ed5ddf66` · `dcc814ef` · `3d355c11` · `b029f541` · `d702f9cf` |
 | **`npm test`** | 🟢 **PASS at `d702f9cf`**, run 2026-09-07 01:01 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |
