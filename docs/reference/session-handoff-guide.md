@@ -436,6 +436,55 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 
 ⚠️ **And one scoping rule from the same test, worth a line because it fails silently in both directions:** a scan over "the source" must **state its scope** when the tree holds duplicates. This repo carries four copies of `app.css` and six of `track.logic.js` across build output, an SSR directory and two worktrees — so an unscoped scan finds phantom emitters and a wrongly-scoped one misses the real files, and neither says so.
 
+### 3d · 🔴 THE FRESH-READER DISPATCH — a NAMED step, and it is NOT the author-run reader test above (added 2026-09-07 01:54 EDT)
+
+**§3b and §3c describe a reader test the AUTHOR runs against the filesystem. This is a different instrument and it finds different defects.** Both are needed. Measured on one handoff, 2026-09-07:
+
+| Instrument | Found | What it caught |
+|---|---|---|
+| The author applying the lens (§3b/§3c) | **6** | contradictions, stale values, a mis-ordered claim |
+| A fresh reader with no context | **13**, incl. **3 blockers** | **every blocker was of the form "this term is never defined"** |
+| A SECOND fresh reader, after those 13 were fixed | **2 more blockers** | both in sections ADDED after the first test |
+
+🔴 **THE AUTHOR CANNOT RUN THIS TEST, AND TRYING HARDER DOES NOT HELP. The knowledge that lets you write the document is the knowledge that stops you seeing what it assumes.** The three blockers were `§L⑥`, "the harness delay knob" and "states registry" — each named as a step and never defined, each invisible to me because I know what they are. That is a blind spot, not a hit rate.
+
+#### How to scope it — the first attempt got this wrong
+
+⛔ **Do NOT tell the agent to load a skill and apply a lens.** `doc-coauthoring`'s reader-testing stage is for YOU to read, so that you know how to scope the dispatch; `.claude/rules/plan-drafting.md` says the lens itself is applied in-head. An agent told to "run the reader test" produces a review, which is not what you need.
+
+✅ **The agent supplies the NAIVETY. You supply the questions.** Scope it as: *you are a fresh session that has just been told to start at X; read ONLY these files; do not follow their links, do not open the repo, do not load a skill; now answer these questions.* Restricting its reading is the whole point — a fresh session would not read the linked files either, so letting the agent read them tests the wrong thing.
+
+#### The questions that earned their place
+
+1. **What is the literal first tool call you would make?** Write it out. If you cannot, say what is missing. *(This is the one that finds blockers.)*
+2. **Walk the steps. At which one could you no longer proceed without opening a third file?**
+3. **For each thing the document says will happen to you — do you know what it looks like and what to do about it?**
+4. **Anything WRONG rather than missing** — numbers that disagree, a stale value, a claim that contradicts another.
+5. **Which rule would you ignore under pressure, and which do you not understand well enough to apply?**
+6. **What would you do FIRST that the document did not tell you to?** — the instinct it failed to pre-empt.
+
+⚠️ **Tell it not to manufacture findings.** *"If a section is genuinely clear, say so plainly — a report that invents problems to look thorough is worse than a short one."* Both runs obeyed this and both flagged what was sound, which is what made the rest credible.
+
+#### 🔴 RE-TEST AFTER ADDING SECTIONS. The second run found two blockers in text written to fix the first.
+
+Fixing a reader test's findings ADDS material, and the additions are the least-tested text in the document. Weight the second dispatch at them explicitly. One of the two blockers the second run found was a count I had introduced an hour earlier while fixing the first run's findings.
+
+### 3e · VALUES THAT GO STALE BY THEMSELVES — derive them, never type them (added 2026-09-07 01:54 EDT)
+
+A handoff carries a small number of values that are wrong the moment the next commit lands. **Every one of them was wrong at least once in a single evening:** the head commit (three different hashes across two files), the suite's status (*"has NOT been run"* — true when written, false ten minutes later), the commit list (typed twice, disagreed with itself and with git), and an item count (**seven**, taken from a plan's summary table when the entry held **eleven**).
+
+**The rule: compute them in the write.**
+
+```python
+import subprocess
+HEAD     = subprocess.check_output(['git','log','-1','--format=%h']).decode().strip()
+COMMITS  = subprocess.check_output(['git','log','--format=%h','<base>..HEAD']).decode().split()
+```
+
+- **ONE authoritative source per value, and say where it is.** Two lists of the same thing WILL disagree; the second copy exists only to be wrong. Where a second document needs the value, point at the first rather than repeating it.
+- **A count from a SUMMARY is not a count.** Count the thing itself. A plan's own §-table said seven; the entry had thirteen bullets, two already closed.
+- **Say which value goes stale**, in the document, next to it: *"if `git log -1` differs, every gate row below is about a tree that no longer exists."*
+
 ### 4 · Shape it for the reader, not the writer
 
 - 🔴 **§0 is THE FIRST ACTION.** One thing, at the top, unmissable. Everything else is reference.

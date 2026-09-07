@@ -145,7 +145,7 @@ That is observable in your own transcript and it can fail. ⚠️ **Reading thes
 | | |
 |---|---|
 | Branch | `docs/build-out-handoff` · v3.79.0-pre |
-| **HEAD when this was written** | **`15fc16a2`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
+| **HEAD when this was written** | **`c8fe88cf`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
 | Pushed | **No.** PR #186 open, **do not merge** |
 | Commits this session | 12 — `6d57e68d` · `06da92ca` · `ed5ddf66` · `dcc814ef` · `3d355c11` · `b029f541` · `d702f9cf` · `695f356d` · `b524f500` · `365c6534` · `55ffc414` · `15fc16a2` |
 | **`npm test`** | 🟢 **PASS at `365c6534`**, run 2026-09-07 01:30 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |

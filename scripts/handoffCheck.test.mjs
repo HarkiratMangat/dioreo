@@ -44,6 +44,16 @@ const start = fs.readFileSync(path.join(ROOT, 'docs/SESSION-START.md'), 'utf8');
 const real = plansNamedIn(start);
 assert.ok(real.length >= 2,
     `SESSION-START names ${real.length} plan(s); this repo has had more than one live plan since 2026-08-31 and the check must see them all — got ${JSON.stringify(real)}`);
+
+// ── THE STALE-HEAD MATCHER, PROVEN BOTH WAYS (added 2026-09-07 01:55 EDT) ───────────────────────── It fired on its FIRST live run against a real stale value — a pin written before an amend, in the document it was built for. That is the can-fail proof; these two cases pin the matcher so a later edit cannot loosen it into something that always passes.
+const headClaims = (body) => [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
+    .map((m) => m[1] || m[2]).filter(Boolean);
+
+assert.deepStrictEqual(headClaims('| **HEAD when this was written** | **`c342a760`** — run `git log -1` |'), ['c342a760'],
+    'a HEAD line must yield its hash');
+assert.deepStrictEqual(headClaims('the fix landed in `6d57e68d` and shipped'), [],
+    'AN ORDINARY COMMIT CITATION IS NOT A HEAD CLAIM — a handoff legitimately names the commit a measurement came from, and flagging those would make this gate fire on every well-written document, which is how a gate gets suppressed rather than obeyed');
+console.log('  ✓ the stale-HEAD matcher reads a HEAD claim and ignores an ordinary citation');
 ok(`the real SESSION-START names ${real.length} plans, and all of them are returned`);
 
 assert.ok(real.some((f) => f.includes('portal-conformance')),

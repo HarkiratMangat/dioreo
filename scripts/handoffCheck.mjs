@@ -75,7 +75,22 @@ else {
     else ok(`.remember names ${named.map((f) => path.basename(f)).join(' · ')}`);
 }
 
-// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it.
+// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it. ── A COMMIT HASH TYPED INTO A HANDOFF IS WRONG BY THE NEXT COMMIT (added 2026-09-07 01:55 EDT) ──────── WHY: on 2026-09-06/07 a single handoff pair carried THREE different values for HEAD, in the file whose own state block calls the head "the one number that goes stale by itself". A fresh-reader test found it as a blocker: a session running the prescribed `git log -1` gets one hash and two answers about what it means. Typing a hash is the defect; this makes typing a WRONG one loud. ⚠️ IT CHECKS SHAPE, NOT INTENT. A hash that names a real ancestor is fine — a handoff legitimately cites the commit a measurement was taken on. What cannot be right is a hash that is not in this branch's history at all, or a line CLAIMING to be the head while naming something else.
+const HEADSHA = sh('git log -1 --format=%h');
+for (const doc of ['docs/superpowers/plans/OWED-PROMPT.md', START]) {
+    const body = read(doc);
+    if (!body) continue;
+    const claims = [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
+        .map((m) => m[1] || m[2]).filter(Boolean);
+    const wrong = [...new Set(claims)].filter((h) => !h.startsWith(HEADSHA) && !HEADSHA.startsWith(h));
+    if (wrong.length) {
+        fail(`${doc} claims HEAD is ${wrong.join(', ')} — git says ${HEADSHA}`,
+            'derive it in the write (git log -1 --format=%h) rather than typing it, and keep ONE such line per document.');
+    } else if (claims.length) {
+        ok(`${doc} names HEAD as ${HEADSHA}, and git agrees`);
+    }
+}
+
 const sinceArg = process.argv.includes('--since') ? process.argv[process.argv.indexOf('--since') + 1] : null;
 const hist = sh('git log --oneline -40 --format=%H').split('\n').filter(Boolean);
 const base = sinceArg || hist[Math.min(hist.length - 1, 19)] || 'HEAD~1';
