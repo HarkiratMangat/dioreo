@@ -52,6 +52,22 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 - **Do not commit `.claude/settings.json.impeccable-bak`** — it is the pre-move backup of the settings file and is deliberately untracked.
 - **Do not re-enable `Stop__PARKED_NEEDS_REFINING`.** Two hooks sit there on purpose, each with a filed refinement.
 - **Do not push, PR or merge** without approval restated at the moment of the action.
+
+## 3b · 🔴 THREE SURFACES THIS SESSION CREATED THAT YOU MEET BLIND
+
+*None of these existed before 2026-09-06. All three will fire on you without warning and are EXPECTED, not errors.*
+
+| Surface | What you will see | Why |
+|---|---|---|
+| **`Stop` is LIVE again with three hooks** | A block if your message says *"left it as-is rather than fixing"*, or gives an effort RANGE like "medium-high" | The bucket was off all of 2026-09-06 and was re-enabled at its end. `DEFERRAL-TELL`, `EFFORT-RANGE` and the impeccable hook are live; **two others are parked** under `Stop__PARKED_NEEDS_REFINING`, a key the harness does not know |
+| **The sweep fires on your FIRST `git commit`** | A long COMPLETENESS SWEEP block listing angles not taken | It moved off `Stop` onto `PreToolUse`/Bash for commit-or-merge verbs. **It never denies** — it emits `additionalContext`. Work through it or say which angles do not apply; do not treat it as a failure |
+| **`.claude/settings.json` is COMMITTED with that new shape** | nothing visible | So a worktree or a fresh clone inherits it. Peer sessions on other branches do NOT have it until this merges — which is why the DEVLOG entry is the only warning anyone gets |
+
+## 3c · A PREDICTION THIS FILE MAKES ABOUT ITSELF, so it can be graded
+
+🔴 **If §4 worked, your FIRST evidence-gathering move is ONE batched call, not four sequential ones.**
+
+That is observable in your own transcript and it can fail. On 2026-09-06 the first four turns were `cat`, `wc`, `cat`, `sed` — four round trips for files named in the user's own message. The last ten turns of that session were mega-batched heredocs with the gate chained on. **Nothing about the rules changed between those two halves; six corrections did.** The working style was acquired per session and decayed at the boundary. This file exists to make the END-of-session style available at the START, and the first ten turns are how you tell whether it did.
 - **Do not give a turn estimate** until the unknowns are enumerated AND verified. Two estimates were wrong by 4× on 2026-09-06.
 
 ## 4 · 🔴 THE COMPLIANCE HALF — every one of these cost real turns on 2026-09-06
@@ -90,6 +106,7 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 | **`echo "gate exit=$?"` after `&&`** | Reports the exit of whatever ran LAST. Use `if npm test; then … else … fi` |
 | **`rg` with a lookbehind** | `(?<!…)` needs `--pcre2`; without it the search fails **silently** |
 | Clicking a toggle **without reading `aria-expanded`** | Half the browser turns went on closing what I meant to open |
+| **A heredoc that writes a MULTI-LINE COMMENT** | 🔴 **Hit THREE times on 2026-09-06/07 and it is the same one every time.** `docs:reflow-comments` is a BLOCKING gate in `npm test`, and a comment block written by a heredoc is hard-wrapped by default, so the suite goes red at a commit with nothing at commit time saying so. **Chain `npm run docs:reflow-comments -- --write` onto any heredoc that writes a comment**, the way the gate is chained onto an edit |
 | **`git add -A`** | Always name paths. `.claude/settings.json.impeccable-bak` must stay untracked |
 | Marking a closed item **`- [x]` in place** | A closed item leaves the active list only by appearing in `docs/archive/resolved-list.md`. `docs-audit` catches it |
 

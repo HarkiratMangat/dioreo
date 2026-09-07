@@ -534,6 +534,22 @@ Harkirat's read was *"4 is what causes the long list of stale deferred items"*. 
 
 ⚠️ **Do not simply delete either hook.** Both encode real, dated misses — five consecutive messages naming the linksee distill queue without filing it (2026-08-02), and two promises to write memory that were discharged by saying them (2026-08-08). The defect is the remedy each prescribes, not the thing each detects.
 
+### 🧨 FOUR CLASS-LEVEL GAPS THAT WERE FIXED ONLY AS INSTANCES — filed 2026-09-07 01:18 EDT `[P2 · M · Opus5-High]`
+
+*Every one of these was found on 2026-09-06, patched where it hurt, and left open as a class with a COMMENT explaining the class. A comment is not a mechanism, and this entry exists because writing one felt like closing the gap.*
+
+#### 1 · A ratchet baseline can swallow a LIVE REGRESSION `[P2 · S]`
+`portal/fixtures/reverse-orphans.json` accepted `bform` as dead debt while `app.css:4118-4119` — the placeholder rule that exists because Harkirat said *"Those placeholder texts look more like real filled in text than placeholder"* — matched nothing. The class re-grade was done for those nine classes; **nothing stops the next `--write` doing it again.** **Do:** make `--write` refuse a class that is EMITTED (④) as opposed to merely unstyled, or require a one-line reason per newly-accepted entry. **Verify:** re-recording a baseline over an emitted-but-unstyled class fails.
+
+#### 2 · A blocking gate can go red at a COMMIT and nothing at commit time says so `[P2 · S]`
+The comment-reflow gate was red for three commits on 2026-09-06 and only `npm run handoff` said so. **Do:** consider adding the cheap gates (`docs:reflow-comments`, `docs:reflow`) to the commit-mode sweep, which already fires there. ⚠️ **Weigh it against the fires-on-everything failure four hooks here warn about** — this may be right to leave alone, and that decision should be made explicitly rather than by omission. **Verify:** a commit made over a hard-wrapped comment block is told so at commit time.
+
+#### 3 · How many other gates are `includes()` over a source file? `[P2 · S]`
+`armoryRealm.test.js` asserted a conservation property between `RANK_KEY` and `app.css` with `css.includes('.t-${k}')`, and it was **GREEN over a class that had no rule** because the token appeared in a COMMENT. Proven on real trees: at `6d57e68d^` there was no `.t-top3` rule, the old gate passed, the tightened one fails. **That one is now fixed. The QUESTION is how many siblings exist.** **Do:** `rg -n '\.includes\(' scripts/*.test.js scripts/*.mjs` and, for each hit that reads a SOURCE file, ask whether a comment or a string literal could satisfy it. **Verify:** each survivor either strips comments or is annotated as deliberately loose.
+
+#### 4 · The author cannot run the author's own reader test `[P2 · S]`
+Applying the reader-test lens to my own handoff found **6** issues. A naive reader agent on the same document found **13**, including three blockers — every one of them of the form *"this term is never defined"*, which is invisible to the person who knows the term. **The knowledge that lets you write the doc is the knowledge that stops you testing it.** **Do:** make the fresh-reader dispatch a named step of the handoff procedure in `docs/reference/session-handoff-guide.md`, not an optional extra — and scope it as a READER answering questions, never as an agent told to run a skill. **Verify:** the guide names it, with the scoping.
+
 ### 🎨 The impeccable design hook is WIRED BY HAND, and it will be silently wrong after any skill move `[P2 · XS]`
 
 *Filed 2026-09-06 00:29 EDT at Harkirat's instruction — "wire it but also file it so its remembered, incase it becomes friction."*
