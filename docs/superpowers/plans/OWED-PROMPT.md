@@ -1,6 +1,7 @@
 ---
 kind: plan
-status: live
+status: superseded
+superseded_by: local/handoff/2026-09-07-portal-step3-remaining.md
 ---
 
 # OWED — the starting prompt for the next session

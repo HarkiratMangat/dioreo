@@ -88,7 +88,7 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;
 header .sp{margin-left:auto}
 .who{display:flex;align-items:center;gap:8px;font-size:var(--t-base);color:var(--ink2)}
 .who .av{width:24px;height:24px;border-radius:var(--rad-round);border:1px solid var(--rule2);flex:none;
-  background:linear-gradient(140deg,#3A4C5A,#1C242C) center/cover no-repeat}
+  background:linear-gradient(140deg,var(--avatar-a),#1C242C) center/cover no-repeat}
 /* The real Discord avatar. It is not decoration: this is the one place the portal says WHOSE
  * session you are in, and a grey disc says nobody's. The CDN URL is derived from the id and the
  * avatar hash exactly the way discord.js builds it (`a_` prefix means animated -> .gif). */
@@ -169,14 +169,14 @@ main{overflow:auto;padding-bottom:140px}
 .bar{position:absolute;top:50%;transform:translateY(-50%);height:22px;border-radius:var(--rad-2);display:flex;align-items:center;
   padding:0 8px;font-size:var(--t-sm);font-weight:600;white-space:nowrap;overflow:hidden;cursor:pointer;z-index:2;
   transition:filter .12s,box-shadow .12s}
-.bar:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(255,255,255,.16)}
+.bar:hover{filter:brightness(1.15);box-shadow:0 0 0 2px var(--inset-16)}
 .bar.saved{background:var(--c);color:var(--on-accent);border:1px solid var(--c)}
 .bar.staged{background:rgba(255,255,255,.02);color:var(--c);border:1.5px dashed var(--c)}
 .bar.conflict{background:transparent;color:var(--warn);border:1.5px dashed var(--warn);
   background-image:repeating-linear-gradient(45deg,transparent 0 4px,rgba(255,122,69,.5) 4px 5px)}
 .bar.sel{box-shadow:0 0 0 2px var(--patch)}
 .bar .gr{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;opacity:0}
-.bar:hover .gr{opacity:1;background:rgba(255,255,255,.35)}
+.bar:hover .gr{opacity:1;background:var(--inset-35)}
 .bar .gr.a{left:0}.bar .gr.b{right:0}
 .pt{position:absolute;top:50%;width:13px;height:13px;margin-top:-6.5px;transform:rotate(45deg);border-radius:var(--rad-1);
   background:var(--c);cursor:pointer;z-index:2}
@@ -295,8 +295,8 @@ main{overflow:auto;padding-bottom:140px}
    objects that drift apart — which is exactly what the loose `.nowt` timestamp did. */
 .now::after{content:attr(data-now);position:absolute;top:-21px;left:-12px;font-family:var(--data);font-size:var(--t-micro);font-weight:600;
   letter-spacing:.1em;color:var(--patch);white-space:nowrap}
-.win{position:absolute;top:0;bottom:0;background:rgba(31,138,94,.10);border-left:1px solid rgba(31,138,94,.45);
-  border-right:1px solid rgba(31,138,94,.45)}
+.win{position:absolute;top:0;bottom:0;background:var(--win-10);border-left:1px solid var(--win-45);
+  border-right:1px solid var(--win-45)}
 .win::after{content:attr(data-l);position:absolute;top:-21px;left:4px;font-family:var(--data);font-size:var(--t-micro);
   letter-spacing:.1em;color:var(--ev-ink);white-space:nowrap}
 
@@ -320,7 +320,7 @@ main{overflow:auto;padding-bottom:140px}
 .col h4 .bad{color:var(--warn)}
 .card{background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:9px 10px;margin-bottom:8px;cursor:grab;
   transition:transform .1s,box-shadow .1s}
-.card:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
+.card:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px var(--scrim-80)}
 .card.drag{opacity:.4}
 .card .ch{display:flex;align-items:center;gap:7px;margin-bottom:4px}
 .card .tr{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.08em;padding:1px 5px;border-radius:var(--rad-1);
@@ -369,7 +369,7 @@ td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);verti
 tbody tr{cursor:pointer}
 tbody tr:hover td{background:#1A222A}
 tbody tr.sel td{background:rgba(242,194,48,.06)}
-tbody tr.on td{background:#20303B;box-shadow:inset 2px 0 0 var(--patch)}
+tbody tr.on td{background:var(--row-selected);box-shadow:inset 2px 0 0 var(--patch)}
 td.n{color:var(--ink);font-weight:500}
 td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space:nowrap}
 .cb{width:16px;height:16px;border:1.5px solid var(--rule2);border-radius:var(--rad-1);display:inline-block;vertical-align:-3px;position:relative;background:var(--sunk)}
@@ -386,14 +386,14 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .bulk button{background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);font-size:var(--t-sm);font-weight:600;
   padding:7px 11px;border-radius:var(--rad-2);min-height:36px}
 .bulk button:hover{color:var(--ink);border-color:var(--ink3)}
-.bulk button.danger{color:var(--danger-ink);border-color:#54322F}
+.bulk button.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
 .bulk .sp{margin-left:auto;font-size:var(--t-sm);color:var(--ink3)}
 .empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:var(--t-md)}
 .empty b{display:block;color:var(--ink2);font-size:var(--t-lg);margin-bottom:6px}
 
 /* ═══ TRAY — the magazine ═══ */
 .tray{position:fixed;right:20px;bottom:20px;width:320px;max-width:calc(100vw - 32px);background:var(--paper);
-  border:1px solid var(--rule2);border-radius:var(--rad-2);box-shadow:0 24px 60px -18px rgba(0,0,0,.9);z-index:50}
+  border:1px solid var(--rule2);border-radius:var(--rad-2);box-shadow:0 24px 60px -18px var(--scrim-90);z-index:50}
 .tray[hidden]{display:none}
 .tray-h{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--rule);cursor:pointer}
 .tray-h .t{font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
@@ -435,14 +435,14 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease)}
 .btn:hover{background:var(--hi);color:var(--ink);border-color:var(--ink3)}
-.btn.go{background:var(--staged);color:#00151A;border:1px solid var(--staged)}
+.btn.go{background:var(--staged);color:var(--on-staged);border:1px solid var(--staged)}
 .btn.go:hover{filter:brightness(1.09)}
 .btn.no{background:none;color:var(--ink3);border:1px solid var(--rule2)}
 .btn.no:hover{color:var(--ink2)}
 .hint{padding:0 12px 10px;font-size:var(--t-sm);color:var(--ink3);line-height:1.4}
 
 /* ═══ PREVIEW DRAWER (the real Discord render) ═══ */
-.scrim{position:fixed;inset:0;background:rgba(6,9,11,.66);backdrop-filter:blur(3px);z-index:44;
+.scrim{position:fixed;inset:0;background:var(--overlay-66);backdrop-filter:blur(3px);z-index:44;
   opacity:0;pointer-events:none;transition:opacity .16s}
 .scrim.on{opacity:1;pointer-events:auto}
 /* A CENTRED DIALOG, not a side rail. The first version squeezed a tier-3 decision into a
@@ -453,7 +453,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
   width:min(560px,calc(100vw - 40px));max-height:min(84vh,860px);display:flex;flex-direction:column;
   background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:45;overflow:hidden;
   opacity:0;pointer-events:none;transition:opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1);
-  box-shadow:0 40px 90px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.04)}
+  box-shadow:0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)}
 .drawer.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
 .drawer.wide{width:min(880px,calc(100vw - 40px))}
 .drawer.side{left:auto;right:0;top:var(--hdr-h);bottom:0;transform:translateX(100%);
@@ -480,13 +480,13 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
   display:flex;align-items:center;gap:8px}
 .drawer h5 em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);margin-left:auto}
 .drawer .x{background:none;border:1px solid var(--rule2);color:var(--ink3);border-radius:var(--rad-2);width:28px;height:28px}
-.dcard{background:#2B2D31;border-radius:8px/* foreign-radius: Discord's own corner, like --dc-*. The preview must look like Discord, not like the portal. */;border-left:4px solid var(--c);padding:11px 13px;color:#DBDEE1;font-size:12.5px}
-.dcard h6{margin:0 0 3px;font-size:14px;color:#F2F3F5;font-weight:700}
-.dcard .sub{font-size:11px;color:#B5BAC1;margin-bottom:8px}
-.dcard .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #3A3C41;font-size:11.5px}
+.dcard{background:var(--dc-bg);border-radius:8px/* foreign-radius: Discord's own corner, like --dc-*. The preview must look like Discord, not like the portal. */;border-left:4px solid var(--c);padding:11px 13px;color:var(--dc-body);font-size:12.5px}
+.dcard h6{margin:0 0 3px;font-size:14px;color:var(--dc-ink);font-weight:700}
+.dcard .sub{font-size:11px;color:var(--dc-mute);margin-bottom:8px}
+.dcard .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--dc-rule);font-size:11.5px}
 .dcard .row:last-of-type{border:0}
-.dcard .row b{color:#F2F3F5;font-weight:500}
-.dcard .row span{color:#949BA4;font-family:var(--data);font-size:10.5px}
+.dcard .row b{color:var(--dc-ink);font-weight:500}
+.dcard .row span{color:var(--dc-dim);font-family:var(--data);font-size:10.5px}
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--rule2);
@@ -601,7 +601,7 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
 /* markers are draggable controls, not decoration */
 .now{touch-action:none}
 .win{cursor:grab;pointer-events:auto;touch-action:none}
-.win:hover{background:rgba(31,138,94,.18)}
+.win:hover{background:var(--win-18)}
 .win .wh{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
 .win .wh.l{left:-4px} .win .wh.r{right:-4px}
 .ov{pointer-events:none}
@@ -619,7 +619,7 @@ header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:now
   padding:9px 10px;margin-bottom:8px;cursor:grab}
 .bcard.staged{background:transparent;border:1.5px dashed var(--c);border-left-width:3px}
 .bcard.ended{opacity:.6}
-.bcard:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(0,0,0,.8)}
+.bcard:hover{transform:translateY(-1px);box-shadow:0 6px 18px -8px var(--scrim-80)}
 .bcard .bn{font-size:var(--t-base);color:var(--ink);font-weight:600;display:block;margin-bottom:3px}
 .bcard .bd{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);display:block}
 .bcard .bmeta{margin-top:6px;font-size:var(--t-xs);color:var(--ink3)}
@@ -717,7 +717,7 @@ main[data-modal]{z-index:auto}
 .mh-stats{gap:clamp(18px,3vw,34px)}
 
 /* panels gain considered elevation instead of sitting flat on the desk */
-.panel,.identity{box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px rgba(0,0,0,.9)}
+.panel,.identity{box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)}
 
 /* ── THE TRACK AS AN INSTRUMENT ─────────────────────────────────────────── */
 .tk-inner{position:relative}
@@ -747,20 +747,20 @@ main[data-modal]{z-index:auto}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
 
 /* bars become objects: elevation, a light top edge, and a real lift on hover */
-.bar{box-shadow:0 1px 0 rgba(255,255,255,.16) inset,0 6px 14px -8px rgba(0,0,0,.85);
+.bar{box-shadow:0 1px 0 var(--inset-16) inset,0 6px 14px -8px var(--scrim-85);
   transition:transform .14s cubic-bezier(.2,.8,.3,1),box-shadow .14s,filter .12s}
 .bar:hover{transform:translateY(calc(-50% - 2px));
-  box-shadow:0 1px 0 rgba(255,255,255,.22) inset,0 12px 22px -10px rgba(0,0,0,.95),0 0 0 2px rgba(255,255,255,.14)}
+  box-shadow:0 1px 0 var(--inset-22) inset,0 12px 22px -10px var(--scrim-95),0 0 0 2px var(--inset-14)}
 .bar.dragging{transform:translateY(calc(-50% - 3px)) scale(1.012);cursor:grabbing}
 .bar.staged{box-shadow:none}
 .bar.conflict{animation:conflictIn .34s cubic-bezier(.2,.8,.3,1)}
 @keyframes conflictIn{from{box-shadow:0 0 0 0 rgba(255,122,69,.55)}to{box-shadow:0 0 0 14px rgba(255,122,69,0)}}
-.pt{box-shadow:0 4px 10px -5px rgba(0,0,0,.9);transition:transform .14s}
+.pt{box-shadow:0 4px 10px -5px var(--scrim-90);transition:transform .14s}
 .pt:hover{transform:rotate(45deg) scale(1.22)}
 
 /* the 2XCP window reads as a lit region, not a grey box */
-.win{background:linear-gradient(180deg,rgba(31,138,94,.20),rgba(31,138,94,.06));
-  box-shadow:inset 0 0 24px rgba(31,138,94,.12)}
+.win{background:linear-gradient(180deg,var(--win-20),var(--win-06));
+  box-shadow:inset 0 0 24px var(--win-12)}
 
 /* ── ORCHESTRATED LOAD — one sequence, not scattered effects ───────────── */
 @media (prefers-reduced-motion:no-preference){
@@ -832,7 +832,7 @@ main[data-modal]{z-index:auto}
   box-shadow:inset 0 0 0 1.5px var(--warn)}
 .spark .nowdot{position:absolute;top:-2px;width:2px;height:10px;background:var(--patch);border-radius:var(--rad-1);
   box-shadow:0 0 6px var(--patch)}
-.spark .done{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
+.spark .done{position:absolute;top:0;bottom:0;background:var(--inset-22);border-radius:var(--rad-1) 0 0 var(--rad-1)}
 
 /* 🗑 `td .wincell` deleted 2026-08-28 — a second name for the manifest's WINDOW cell. manifest.js
    emits `.c-win` for every date-kind column and the mockup's manifest does the same; nothing has ever
@@ -935,7 +935,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .lnsw{display:inline-flex;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:2px;gap:2px}
 .lnsw button{background:transparent;border:none;border-radius:var(--rad-1);color:var(--ink3);cursor:pointer;
   font:600 var(--t-xs)/1 var(--ui);letter-spacing:.04em;padding:6px 12px;display:flex;align-items:center;gap:6px}
-.lnsw button[aria-pressed=true]{background:var(--raised);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.lnsw button[aria-pressed=true]{background:var(--raised);color:var(--ink);box-shadow:0 1px 3px var(--scrim-40)}
 .lnsw button:not([aria-pressed=true]):hover{color:var(--ink2)}
 .lnsw .pip{width:6px;height:6px;border-radius:var(--rad-round);background:var(--ok)}
 .lnsw .pip.draft{background:var(--staged)}
@@ -1077,11 +1077,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .who .av.lg{width:34px;height:34px;flex:none}
 
 /* ── ⌘K palette ── */
-.pwrap{position:fixed;inset:0;background:rgba(6,9,11,.62);backdrop-filter:blur(3px);z-index:200;
+.pwrap{position:fixed;inset:0;background:var(--overlay-62);backdrop-filter:blur(3px);z-index:200;
   display:flex;align-items:flex-start;justify-content:center;padding-top:14vh}
 .pwrap[hidden]{display:none}
 .pbox{width:min(560px,92vw);background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-3);
-  box-shadow:0 24px 60px -14px rgba(0,0,0,.85);overflow:hidden}
+  box-shadow:0 24px 60px -14px var(--scrim-85);overflow:hidden}
 .pbox input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--rule);
   color:var(--ink);font:500 var(--t-lg)/1 var(--ui);padding:16px 18px}
 /* The palette input keeps a RING rather than nothing — corrected 2026-09-04 22:43 EDT. Of the fifteen `outline:none`
@@ -1159,13 +1159,13 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
    reads the same way everywhere. The values always swapped correctly; nothing said so. */
 .draftnote{display:none;align-items:center;gap:8px;margin-bottom:12px;padding:9px 12px;
-  background:rgba(95,212,232,.06);border:1px dashed var(--staged);border-radius:var(--rad-2);
+  background:var(--focus-06);border:1px dashed var(--staged);border-radius:var(--rad-2);
   font-size:var(--t-sm);color:var(--ink2)}
 .draftnote b{color:var(--staged);font-weight:600}
 .identity.editing-draft .draftnote{display:flex}
 .identity.editing-draft{border-color:var(--staged)}
 .identity.editing-draft .f-main input{border-color:var(--rule2)}
-.identity.editing-draft .f-main input:focus{border-color:var(--staged);box-shadow:0 0 0 3px rgba(95,212,232,.13)}
+.identity.editing-draft .f-main input:focus{border-color:var(--staged);box-shadow:0 0 0 3px var(--focus-13)}
 
 /* ══════════ DIFF ══════════ */
 .diff-r .dk{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);letter-spacing:.05em}
@@ -1224,14 +1224,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .smask.l{left:0}
 .winbox{position:absolute;top:0;bottom:0;z-index:4;cursor:grab;
   border:1px solid var(--patch);border-radius:var(--rad-1);
-  box-shadow:0 0 0 1px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.06);
+  box-shadow:0 0 0 1px var(--scrim-45),inset 0 0 0 1px var(--inset-06);
   background:rgba(242,194,48,.06);touch-action:none}
 .winbox:active{cursor:grabbing}
 /* Grips are attached to the window's own edges and are a real 11px target, not a 1px line. */
 .winbox .wh{position:absolute;top:0;bottom:0;width:11px;cursor:ew-resize;touch-action:none;
   display:grid;place-items:center}
 .winbox .wh::before{content:"";width:3px;height:16px;border-radius:var(--rad-1);background:var(--patch);
-  box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+  box-shadow:0 0 0 1px var(--scrim-50)}
 .winbox .wh:hover::before,.winbox .wh:active::before{height:22px;background:#FFDF6B}
 .winbox .wh.l{left:-6px}
 .winbox .wh.r{right:-6px}
@@ -1257,7 +1257,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .scrub-label{flex:none;align-self:center;font-family:var(--data);font-size:var(--t-micro);letter-spacing:.14em;
   text-transform:uppercase;color:var(--ink3);padding-right:2px}
 .scrub-track{position:relative;flex:1;min-width:0;overflow:hidden;border-radius:var(--rad-1);
-  background:rgba(0,0,0,.28);cursor:crosshair}
+  background:var(--scrim-28);cursor:crosshair}
 
 /* ══════════ DEADLINE RAIL — everything that applies to EVERY lane ══════════
    A deadline is a point, a double-CP window is a span; both are global, so both live here
@@ -1284,7 +1284,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   background:var(--sunk);border:1px solid var(--c,var(--rule2));border-radius:var(--rad-2);
   padding:3px 7px;cursor:ew-resize;white-space:nowrap;color:var(--c,var(--ink3));
   font-family:var(--data);font-size:var(--t-micro);letter-spacing:.08em;line-height:1.4;touch-action:none;
-  box-shadow:0 2px 8px -4px rgba(0,0,0,.8)}
+  box-shadow:0 2px 8px -4px var(--scrim-80)}
 .dflag:hover,.dflag:focus-visible{background:var(--hi);z-index:3}
 .dflag.dragging{background:var(--hi);z-index:4}
 /* UPPERCASE here is not decoration, it is agreement. The same deadline is named twice on one screen:
@@ -1375,8 +1375,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    mockup, which the conformance pass stands down; the re-apply phase after all six realms match is
    where it comes back. A duplicate .t-epic block also lived here — invisible to every gate we run. */
 .t-legendary{background:rgba(242,194,48,.15);color:#F2C230;box-shadow:inset 0 0 0 1px rgba(242,194,48,.35)}
-.t-mythic{background:rgba(226,84,222,.15);color:#E254DE;box-shadow:inset 0 0 0 1px rgba(226,84,222,.35)}
-.t-epic{background:rgba(142,107,166,.18);color:#C0A3D4;box-shadow:inset 0 0 0 1px rgba(142,107,166,.4)}
+.t-mythic{background:var(--t-mythic-wash);color:var(--t-mythic);box-shadow:inset 0 0 0 1px var(--t-mythic-edge)}
+.t-epic{background:var(--t-epic-wash);color:var(--t-epic);box-shadow:inset 0 0 0 1px var(--t-epic-edge)}
 .mtable .det .dsub{font-size:var(--t-sm);color:var(--ink3)}
 .mtable .det .none{color:var(--ink3);font-style:italic}
 .thumb{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.05em;padding:1px 5px;border-radius:var(--rad-1);
@@ -1390,14 +1390,14 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .chipset{display:contents}
 .chip.topic{display:inline-flex;align-items:center;gap:7px}
 .chip.topic i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none;
-  box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+  box-shadow:0 0 0 1px var(--scrim-40)}
 .chip.topic:hover{border-color:var(--c);color:var(--ink)}
 .chip.topic[aria-pressed=true]{background:color-mix(in srgb,var(--c) 16%,transparent);
   border-color:var(--c);color:var(--ink)}
 .chip.topic[aria-pressed=true] i{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 35%,transparent)}
 /* "Staged only" filters a STATE, so it wears the state's shape — dashed, not filled. */
 .chip.stagedchip[aria-pressed=true]{border:1.5px dashed var(--staged);color:var(--staged);
-  background:rgba(95,212,232,.08)}
+  background:var(--focus-08)}
 
 /* ══════════ CROSSHAIR — read an exact date anywhere on the track ══════════
    Without this the only way to know when something started was to estimate against the
@@ -1410,7 +1410,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   background:linear-gradient(180deg,rgba(232,237,241,.5),rgba(232,237,241,.12))}
 .xd{position:absolute;top:calc(var(--xtop,60px) - 26px);left:0;white-space:nowrap;
   background:var(--raised);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:3px 9px;
-  box-shadow:0 6px 18px -8px rgba(0,0,0,.9);display:flex;align-items:baseline;gap:8px}
+  box-shadow:0 6px 18px -8px var(--scrim-90);display:flex;align-items:baseline;gap:8px}
 .xd b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink);font-weight:600;letter-spacing:.03em}
 .xd i{font-style:normal;font-size:var(--t-xs);color:var(--ink3)}
 .xhair.on-item::before{background:linear-gradient(180deg,rgba(242,194,48,.6),rgba(242,194,48,.15))}
@@ -1423,11 +1423,11 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    leaving — the staged-changes count is the one fact that makes Sign out a real decision. */
 .umenu{position:absolute;top:calc(100% + 8px);right:0;width:274px;background:var(--raised);
   border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:60;overflow:hidden;
-  box-shadow:0 20px 48px -14px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03)}
+  box-shadow:0 20px 48px -14px var(--scrim-85),0 0 0 1px rgba(255,255,255,.03)}
 .umenu[hidden]{display:none}
 .uav{position:relative;width:38px;height:38px;border-radius:var(--rad-round);flex:none;display:grid;place-items:center;
   background:linear-gradient(140deg,var(--avatar-a),var(--sunk));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+  box-shadow:inset 0 0 0 1px var(--inset-09)}
 .rolebadge{flex:none;font:700 var(--t-micro)/1 var(--data);letter-spacing:.1em;color:var(--patch);
   border:1px solid rgba(242,194,48,.45);background:rgba(242,194,48,.1);border-radius:var(--rad-1);padding:2.5px 5px}
 .usec{padding:5px;border-top:1px solid var(--rule)}
@@ -1631,14 +1631,14 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .t-none{opacity:.86} .t-none .trow-k{color:var(--ink3);font-size:var(--t-sm);width:auto;letter-spacing:.1em}
 .trow-body{display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px;
   transition:background .14s,box-shadow .14s}
-.trow-body.over{background:rgba(95,212,232,.07);box-shadow:inset 0 0 0 1.5px var(--staged)}
+.trow-body.over{background:var(--focus-07);box-shadow:inset 0 0 0 1.5px var(--staged)}
 .trow-empty{margin:0;align-self:center;font-size:var(--t-sm);color:var(--ink3);font-style:italic}
 
 .bchip{display:flex;flex-direction:column;gap:4px;min-width:158px;cursor:grab;
   background:var(--raised);border:1px solid var(--rule2);border-left:2px solid var(--c);
   border-radius:var(--rad-2);padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s}
 .bchip:hover{border-color:var(--c);transform:translateY(-2px);
-  box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
+  box-shadow:0 8px 18px -10px var(--scrim-90)}
 .bchip.dragging{opacity:.6;transform:rotate(-1.5deg) scale(.98);cursor:grabbing}
 .bc-top{display:flex;align-items:center;gap:7px}
 .bc-w{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
@@ -1813,7 +1813,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .is-slow::before{content:attr(data-slow);position:absolute;left:50%;top:12px;transform:translateX(-50%);
   z-index:7;font:500 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--raised);
   border:1px solid var(--rule2);border-radius:var(--rad-pill);padding:7px 12px;white-space:nowrap;
-  box-shadow:0 6px 20px -10px rgba(0,0,0,.9)}
+  box-shadow:0 6px 20px -10px var(--scrim-90)}
 
 /* Rule 4 — an error names WHAT failed, WHAT it means, and the ONE action. Three parts, all
    required: an error missing any of them is the one that gets screenshotted and forwarded. */
@@ -1917,7 +1917,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* ── 10.3 MOTION: three choreographed moments, everything else stays a fade ── */
 @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes stagePulse{0%{box-shadow:0 0 0 0 rgba(95,212,232,.55)}100%{box-shadow:0 0 0 14px rgba(95,212,232,0)}}
+@keyframes stagePulse{0%{box-shadow:0 0 0 0 var(--focus-55)}100%{box-shadow:0 0 0 14px rgba(95,212,232,0)}}
 @keyframes countBump{0%{transform:scale(1)}40%{transform:scale(1.32)}100%{transform:scale(1)}}
 @keyframes settle{0%{transform:scale(1.06)}60%{transform:scale(.985)}100%{transform:scale(1)}}
 
@@ -3020,7 +3020,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .umenu .umenu .uav{margin-top:-24px}
 .umenu .uav{width:46px;height:46px;border-radius:var(--rad-round);flex:none;position:relative;
   background:var(--av-src) center/cover no-repeat,var(--sunk);
-  border:3px solid var(--raised);box-shadow:0 2px 10px -3px rgba(0,0,0,.7)}
+  border:3px solid var(--raised);box-shadow:0 2px 10px -3px var(--scrim-70)}
 /* The dot used to hang half outside the ring at right:-1px/bottom:-1px. Placed on the circle
    instead of beside it: 14.6% in from each edge is where a 46px ring's own curve puts it. */
 .umenu .umenu .umenu .umenu .umenu /* prefers-reduced-motion cannot pause a GIF, so the banner is swapped for a flat wash instead of
@@ -3204,7 +3204,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .mark.stack::before{content:"";position:absolute;inset:0;border-radius:var(--rad-1);background:var(--c);
   opacity:.4;transform:translate(4px,-4px)}
 .mark.stack .n{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-45deg);
-  font:700 var(--t-micro)/1 var(--data);color:var(--on-accent,#08131A)}
+  font:700 var(--t-micro)/1 var(--data);color:var(--on-accent)}
 .mark.tier-mythic{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent),0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
 
 
@@ -3335,7 +3335,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .cmdbar:focus-within kbd{opacity:0}
 .cb-drop{position:absolute;left:0;right:0;top:calc(100% + 7px);background:var(--raised);
   border:1px solid var(--rule2);border-radius:var(--rad-3);z-index:70;overflow:hidden;
-  box-shadow:0 22px 52px -16px rgba(0,0,0,.85)}
+  box-shadow:0 22px 52px -16px var(--scrim-85)}
 .cb-drop[hidden]{display:none}
 .cb-drop .plist{max-height:min(56vh,440px)}
 .cb-drop .pitem{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;
@@ -3454,7 +3454,7 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
   border-left:2px solid var(--c);border-radius:var(--rad-2);overflow:hidden;background:var(--raised);
   transition:transform .13s,box-shadow .13s,border-color .13s}
 .bgrp:hover{border-color:var(--c);border-left-color:var(--c);transform:translateY(-2px);
-  box-shadow:0 8px 18px -10px rgba(0,0,0,.9)}
+  box-shadow:0 8px 18px -10px var(--scrim-90)}
 /* 🔴 THE HEADER IS TWO LINES BY DESIGN. It was one flex row with the count pushed right by
    margin-left:auto — so "SWITCHBLADE X9" wrapped to two lines inside a 182px card and shoved
    "2 builds" off the edge, rendering as "2 buil". A name is variable-length and a count is not,
@@ -5174,11 +5174,12 @@ button .ic,a .ic{pointer-events:none}
  * told a fact about the session, not warned about anything. */
 .doorstate{margin:0 0 4px;font:500 var(--t-sm)/1 var(--data);letter-spacing:.08em;color:var(--ink3);text-transform:uppercase}
 /* The card's own chips and code block. The mockup wrote both as inline `style=` attributes because it
- * was a sketch; they are the Discord surface's colours, not the portal's, which is why they are
- * literals here rather than tokens — this block is a picture OF another product. */
-.dcard .badges span{background:#1E1F22;border-radius:var(--rad-1);padding:2px 7px;font-size:10px;color:#B5BAC1}
-.dcode{margin-top:9px;background:#1E1F22;border-radius:var(--rad-1);padding:6px 8px;
-  font-family:var(--data);font-size:var(--t-xs);color:#A8B0B8;letter-spacing:.04em}
+ * was a sketch; they are the Discord surface's colours, not the portal's — extracted 2026-09-07 into
+ * the --dc-* namespace (tokens.css) so the same foreign values are not re-typed at every call site;
+ * this block is still a picture OF another product, it just no longer duplicates the picture's paint. */
+.dcard .badges span{background:var(--dc-sunk);border-radius:var(--rad-1);padding:2px 7px;font-size:10px;color:var(--dc-mute)}
+.dcode{margin-top:9px;background:var(--dc-sunk);border-radius:var(--rad-1);padding:6px 8px;
+  font-family:var(--data);font-size:var(--t-xs);color:var(--dc-code);letter-spacing:.04em}
 
 
 /* ════ REGISTERED CONFORMANCE DIVERGENCE · the fourth ink tone cannot carry text ════

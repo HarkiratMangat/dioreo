@@ -73,6 +73,8 @@ ctx_search({ source: "project:dioreo-docs", queries: ["has <surface> been decide
 
 **A filed item is a CLAIM WITH A VERIFY CONDITION, not a fact.** The deferred list records INTENT; the ledger records DECISIONS; nothing writes a decision back into the list. Four settled items were put to Harkirat as live work in one day.
 
+⚠️ **ADDENDUM 2026-09-07 11:57 EDT, my own inference from a mistake, not Harkirat's instruction — flagged as such per the handoff guide's rule 3.** A decision can also live in a PLAN'S OWN SECTIONS, not only the ledger — §0.7c's own "fifth bucket" rule was re-asked as a live pop-up fork this session because only the ledger got searched, not this document. `ctx_search` both `docs/reference/portal-decision-ledger.md` AND the governing plan file's own decision sections before framing anything as an open fork.
+
 ---
 
 ## 1 · Tooling — what to use and what it costs

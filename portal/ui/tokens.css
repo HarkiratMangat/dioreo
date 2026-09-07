@@ -93,6 +93,7 @@
   --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
 
   --dsc:#5865F2;                     /* Discord brand, door only */
+  --dsc-hover:#4752C4;               /* the door button's hover shade */
   /* ── REALM ACCENTS — one hue per realm, and the ONLY place they are written ──
    * These existed as five hardcoded hexes inside index.html's CARDS array while four
    * of the five were already tokens under other names (--draw, --patch, --ink2, --ev).
@@ -224,12 +225,42 @@
   --danger-edge:#54322F;
   --avatar-a:#3A4C5A;
 
+  /* ── extracted 2026-09-07 — the black scrim ramp, the white inset ramp and the --focus
+   * alphas found undocumented in app.css: one base colour each, named by the opacity a
+   * caller already needed, so a tenth stop cannot be invented by accident. */
+  --scrim-28:rgba(0,0,0,.28); --scrim-40:rgba(0,0,0,.4); --scrim-45:rgba(0,0,0,.45);
+  --scrim-50:rgba(0,0,0,.5); --scrim-70:rgba(0,0,0,.7); --scrim-80:rgba(0,0,0,.8);
+  --scrim-85:rgba(0,0,0,.85); --scrim-90:rgba(0,0,0,.9); --scrim-95:rgba(0,0,0,.95);
+  --inset-06:rgba(255,255,255,.06); --inset-09:rgba(255,255,255,.09); --inset-14:rgba(255,255,255,.14);
+  --inset-16:rgba(255,255,255,.16); --inset-22:rgba(255,255,255,.22); --inset-35:rgba(255,255,255,.35);
+  --focus-06:rgba(95,212,232,.06); --focus-07:rgba(95,212,232,.07); --focus-08:rgba(95,212,232,.08);
+  --focus-13:rgba(95,212,232,.13); --focus-55:rgba(95,212,232,.55);
+
+  /* the Track's 2XCP window — a season event highlight; not any existing lane or state hue */
+  --win:#1F8A5E;
+  --win-06:rgba(31,138,94,.06); --win-10:rgba(31,138,94,.10); --win-12:rgba(31,138,94,.12);
+  --win-18:rgba(31,138,94,.18); --win-20:rgba(31,138,94,.20); --win-45:rgba(31,138,94,.45);
+
+  --row-selected:#20303B;    /* the Manifest's tbody tr.on, one step past --hi */
+  --on-staged:#00151A;       /* ink ON --staged's cyan fill, parallel to --ev-ink/--warn-ink */
+
+  /* the scrim behind the preview drawer and the command palette — a colder base than --scrim-* */
+  --overlay:#06090B;
+  --overlay-62:rgba(6,9,11,.62); --overlay-66:rgba(6,9,11,.66);
+
+  /* ARMORY rarity tiers beyond legendary, which already reuses --patch */
+  --t-mythic:#E254DE;
+  --t-mythic-wash:rgba(226,84,222,.15); --t-mythic-edge:rgba(226,84,222,.35);
+  --t-epic:#C0A3D4; --t-epic-fill:#8E6BA6;
+  --t-epic-wash:rgba(142,107,166,.18); --t-epic-edge:rgba(142,107,166,.4);
+
   /* ── Discord's OWN palette, deliberately foreign ───────────────────────
    * The preview card must look like Discord, not like the portal, or it stops
    * being a truthful preview. Namespaced --dc-* so a future reader can see
    * these are intentionally outside the portal's system rather than leftovers. */
   --dc-bg:#2B2D31; --dc-ink:#F2F3F5; --dc-body:#DBDEE1; --dc-mute:#B5BAC1;
   --dc-dim:#949BA4; --dc-rule:#3A3C41; --dc-sunk:#1E1F22;
+  --dc-code:#A8B0B8;
 
   /* ── type scale, UI range ──────────────────────────────────────────────
    * The audit found ELEVEN distinct px font-sizes and no scale. These are the
@@ -482,7 +513,7 @@ button[aria-busy="true"]::after {
    original bare selector, and align-items:center is a silent no-op on a non-flex box -- the SVG
    icon sat 3.5px off-center instead of vertically centered. Two classes wins deterministically. */
 .door .door-cta {
-    background: #5865F2;
+    background: var(--dsc);
     color: #fff;
     display: inline-flex;
     align-items: center;
@@ -490,7 +521,7 @@ button[aria-busy="true"]::after {
     gap: 8px;
     border: 0;
 }
-.door .door-cta:hover { background: #4752C4; }
+.door .door-cta:hover { background: var(--dsc-hover); }
 
 /* Accessibility review findings: no visible focus indicator anywhere, and every input relied on
    placeholder text alone (WCAG 2.4.7 / 3.3.2) -- the approved mockup HAD a focus-visible rule that

@@ -5,6 +5,8 @@ status: live
 
 @/Users/harkirat/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md
 
+> 🔴 **`.claude/rules/thinking-pass.md` was briefly `@`-imported here 2026-09-07 12:31–12:34 EDT and reverted at Harkirat's call — "no point loading it twice, leave it as per the original mechanism."** It already loads unconditionally at `session_start` (`unconditional: true`, no `paths:` — confirmed measured in `docs/superpowers/plans/2026-09-02-context-loading-open-problems.md`), same as `silent-mode.md`. Whether unconditional rules survive `/compact` is still genuinely UNKNOWN in this repo's own measurements — that stays an open question, not resolved by adding or removing this import, and not worth re-litigating without a real test.
+
 > 🔴 **THE IMPORT ABOVE WORKS ONLY BECAUSE EXTERNAL INCLUDES ARE NOW APPROVED FOR THIS PROJECT — 2026-09-03 00:08 EDT.**
 >
 > An `@`-import from a non-User-scope `CLAUDE.md` that resolves OUTSIDE the project directory is gated behind a one-time approval, `hasClaudeMdExternalIncludesApproved` in `~/.claude.json`. It was `false` here, and `hasClaudeMdExternalIncludesWarningShown` was `false` too — so the import was skipped in silence and the prompt that would have explained it was never shown. **It was an ungranted permission, never a prohibition:** the published docs are right that both relative and absolute paths are allowed, and they do not mention the gate. Set to `true` for this repo and its eleven worktree entries, so a worktree does not fail the same way; `/Applications/Diors-Builds`, the retired path, was left alone.
