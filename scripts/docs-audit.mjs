@@ -186,23 +186,39 @@ const check = (id, severity, title, run, opts = {}) =>
 //
 // ⚠️ THE PRINCIPLE WAS ALREADY WRITTEN DOWN AND STILL FAILED. `docs/reference/session-handoff-guide.md` has carried "JUDGEMENT DOES NOT COMPRESS -- CARRY A POINTER, NEVER A PARAPHRASE" since 2026-08-30, and the opener was summarised anyway, because the person writing it is the person who knows the content and summarising feels like service. That is the same shape as the timestamp placeholder: a rule everyone agrees with, violated at the moment of writing, so the remedy has to be a check rather than a better sentence.
 //
-// Deliberately narrow: it asserts only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
+// Deliberately narrow in WHAT it asserts, not in what it covers: it checks only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
 check(
   "prompt-antiskim",
   "ERROR",
-  "every realm prompt tells its reader that a short opener is not a summary of it",
+  "every document a session is pointed at says a short opener is not a summary of it",
   () => {
     const out = [];
     let examined = 0;
     const dir = "docs/superpowers/plans";
     const GUARD = /not a summary of (this|that) file|IF YOU WERE HANDED A SHORT OPENER/i;
+
+    // \u{1F534} WIDENED 2026-09-06 20:47 EDT — Harkirat: "why realm prompts only? seems useful for all handoff prompts, no?" He is right, and the original scope was an accident of where the defect was first seen. The failure is not a property of a FILENAME: it is a property of being the document a fresh session is POINTED AT, because that is the document whose opener gets pasted into chat instead of it. A plan named by SESSION-START is exactly as skimmable as a file called *-PROMPT.md, and on the day this widened, the live step-3 plan was named by three carriers and carried no guard at all.
+    //
+    // So the corpus is RELATIONAL rather than nominal: every *-PROMPT.md, PLUS every tracked .md that a session-start carrier names as read-this-first. That cannot go stale when a file is renamed, and it grows by itself when a new carrier starts pointing somewhere. \u26A0\uFE0F `.remember/remember.md` is READ FROM DISK, not from git — it is gitignored and is still the single highest-reach pointer a next session gets, so excluding it would leave the most-read carrier's target unchecked.
+    const targets = new Set();
     for (const f of (existsSync(join(REPO, dir)) ? readdirSync(join(REPO, dir)) : []).filter((n) => /-PROMPT\.md$/.test(n))) {
-      const txt = read(`${dir}/${f}`);
+      targets.add(`${dir}/${f}`);
+    }
+    for (const carrier of ["docs/SESSION-START.md", ".remember/remember.md"]) {
+      const c = read(carrier);
+      if (c === null) continue;
+      // Only the head of a carrier counts: a path named in its history section is not what a session is pointed at.
+      for (const m of c.split("\n").slice(0, 60).join("\n").matchAll(/(docs\/superpowers\/plans\/[\w.\-]+\.md)/g)) {
+        if (existsSync(join(REPO, m[1]))) targets.add(m[1]);
+      }
+    }
+    for (const rel of [...targets].sort()) {
+      const txt = read(rel);
       if (txt === null) continue;
       examined++;
       // Only the opening of the file counts. A guard buried at line 400 is read by somebody who already did not skim.
       if (!GUARD.test(txt.split("\n").slice(0, 40).join("\n"))) {
-        out.push({ msg: `${dir}/${f} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
+        out.push({ msg: `${rel} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
       }
     }
     return { findings: out, examined };

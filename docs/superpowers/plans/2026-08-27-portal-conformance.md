@@ -8,6 +8,8 @@ scope: the portal's REALM-BY-REALM conformance work — the seven realms, their 
 
 **Bring the live portal up to the approved design, one surface at a time, finishing each before starting the next.** Harkirat's bar: *"By the end of your session, I should not be able to see a difference between the mockup's season realm vs the live portal's season realm (except for the obvious requested redesigns)."*
 
+> 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE.** It carries §L's close conditions per realm and §0.7c's four-bucket triage, and **a realm closes on the ENUMERATION of cited differences, never on a percentage** — an opener that quotes a diff number states the one thing this file spends pages saying is not the test. Added 2026-09-06 20:48 EDT.
+>
 > ⚠️ **`status: live`, deliberately — every other plan in this folder is `frozen`.** He asked for a plan that never silently goes out of sync: *"i just want it to at least mark off things that were done, or update the plan/spec if anything changes midway."* A frozen plan cannot do that.
 >
 > **Supersedes `docs/superpowers/plans/2026-08-27-portal-completion.md`**, whose A–S inventory is folded into §A here — **re-verified against source and the running page, not copied.** Its status column claimed `[data-bare]` fixed on the same day the search bar was measurably doubled.

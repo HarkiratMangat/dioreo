@@ -6,6 +6,8 @@ scope: the WORKING MECHANISMS — guards, hooks, provenance and instrument outpu
 
 # Post-compact remediation — ten tasks, then the merge
 
+> 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE.** Its SCOPE line is the load-bearing part: this is the WORKING MECHANISMS — guards, hooks, provenance, instrument output — and **not** the realm work, which is `2026-08-27-portal-conformance.md`. An opener that says "the remediation plan" sends a session at the wrong one, and that has happened. Added 2026-09-06 20:48 EDT.
+>
 > **For agentic workers:** this plan is the FIRST thing to read after the 2026-08-31 compact. It is tracked in git deliberately — Batch H lived only in gitignored `local/` and a default `rg` could not see it, which is why its four remaining steps had to be re-filed by hand.
 
 **Goal:** close ten remediation tasks found by an adversarial audit, then merge a branch that has never had a PR. ⚠️ **This line said "twelve" while the title said ten — a half-fix caught by the SECOND audit.** Two of the original twelve were already done when the plan was written.

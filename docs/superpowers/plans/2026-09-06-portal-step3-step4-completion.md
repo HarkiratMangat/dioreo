@@ -7,6 +7,8 @@ status: live
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` (inline, batched) rather than `subagent-driven-development`. Subagents are a turn-multiplier here and Harkirat's standing rule is explicit-request-only; a dispatched agent also cannot be corrected mid-flight because `SendMessage` is disabled by this build. Steps use `- [ ]` for tracking.
 
+> 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE.** §0.2 names three retired plans and why each died, and §2.4 carries the ownership column that says which of the nine remaining items are Harkirat's — **neither survives a three-bullet paste, and a session without §0.2 will re-propose the per-realm loop within its first ten turns.** Added 2026-09-06 20:48 EDT.
+
 **Goal:** Close the ~14 remaining bucket-A portal items and then step 4, without re-deriving anything already settled and without re-inventing a per-realm loop.
 
 **Architecture:** The unit of work is the FILED ITEM, never the realm and never the component. Read the item, check the ledger, look at the code, fix, verify in the browser, record a ledger row, commit. Several items span realms by construction.
