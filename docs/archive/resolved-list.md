@@ -17,6 +17,31 @@ status: dead
 - ⚠️ **The cost, on the record:** a commit is strictly LATER than a claim in prose. A session that claims done and never commits now gets nothing from this gate — which is the 2026-08-06 case that put it on `Stop` in the first place. `gh pr create` remains the `pr`-mode backstop. The hook's own TIMING header carries this trade rather than quietly replacing the old reasoning.
 - ⚠️ **`Stop__OFF` is still OFF and still uncommitted.** Only the sweep left it; the other five Stop hooks are untouched and remain disabled. **That is a separate decision and this closure does not make it.**
 
+## 🔤 The htm-whitespace third shape — already built as PASS 6, and proven by breaking it — closed 2026-09-07 00:05 EDT
+
+**It was filed as work and it was already done.** The item asked for *"a third check that walks the RENDERED harness rather than the source — for every element whose role computes a name from contents, compare its accessible name against its own textContent joined with spaces"*. That is `scripts/lib/portalStatePasses.cjs`'s **PASS 6 · FUSED ACCESSIBLE NAMES**, verbatim — and stricter than the item asked: it recurses, skips `aria-hidden` children, skips elements carrying an explicit `aria-label`/`aria-labelledby`, and requires a **word character on both sides of the seam** so that `5` + `%` reads as typography rather than a defect.
+
+🔴 **Proven, not assumed — the item's own falsifier was executed.** Its Verify read: *"the new check must NAME `PatchRecord`'s row when the three `${' '}` separators are removed, and stay silent with them in place."* Both halves were run:
+
+| Run | Result |
+|---|---|
+| Separators removed from `season.js`'s `.rec-row`, rebuilt, walk re-run | **exit 1** — `❌ PASS 6  li.rec-row.cur … announced as "Season 7 — TerminatedJul 226 imgcurrent"` |
+| Restored via `git checkout`, rebuilt, walk re-run | **exit 0**, 56 states walked at 1282×888 |
+
+The failing string reproduces the item's own quoted example **character for character**, which is the strongest form this proof takes: the check names the exact defect the item was filed about, and goes quiet when it is fixed.
+
+⚠️ **The two SOURCE gates in `portalUi.test.js` are unchanged and still correct.** Their own comments say why they stop where they do — the identical break before a `${…}` expression is the same defect when the expression yields text and CORRECT when it yields a positioned element, and a source-level gate cannot tell those apart. **137 close-tag-to-open-tag adjacencies exist across 14 files and they are not 137 defects**; the discriminator is the ANCESTOR, which only a rendered walk can see. Three checks, three instruments, none redundant.
+
+## 📊 The season strip's "37 of 39" — REFUTED by counting the rendered page — closed 2026-09-07 00:27 EDT
+
+**Measured, not reasoned.** Harness at `?demo=1&today=2026-08-24`, Season · Track: **`document.querySelectorAll('.mini').length` = 39**, and **zero** bars carry a `NaN` offset. The entry's premise — that `track.js`'s `.filter((i) => i.start && i.end)` drops two the design draws — does not reproduce.
+
+**It was fixed by a later change that named the exact symptom.** `track.js:645-654` concatenates `publications` onto `scrubItems` under a comment reading *"⚠️ THE SCHEMA FIELD IS `releaseDate`. Reading date/startDate alone produced nothing for every publication, so the filter below silently dropped all of them and the strip stayed two short."* The two missing bars were the **patch notes**, and the fix shipped with its own explanation while this entry stayed open.
+
+**Independently confirmed against the fixture data**, which is the check the entry actually asked for: evaluating `assets/fixtures.js` and applying the portal's own field mapping to all four source arrays — `newDraws` 3 · `returningDraws` 11 · `calendar` 23 · `patchNotes` 2 = **39** — yields **0** items lacking both a start and an end. There are no dateless rows left to decide about.
+
+⚠️ **The entry's warning was right and is worth keeping.** An item with no start would position at `NaN%`, and `TL.days` once told a reader something *"ends NaN days after the battle pass"*. The live count of `NaN` offsets is 0, so that hazard is closed too — and it is why the filter existed, and why deleting it blindly would have been the wrong move.
+
 ## 🧭 The context layer — closed 2026-09-02 17:02 EDT (PR #181, v3.74.0-pre)
 
 **Original wording, kept verbatim** *(filed 2026-09-02 10:39 EDT)*: `[P1 · M · Opus5-High]` **Context architecture — the INJECTED tier has no budget, and the workflow this repo mandates bypasses the rules layer.** *Do.* (a) `memory-index-check.sh` gates **bytes only** against a locally-invented 40,000 while the platform's law is *"first 200 lines OR first 25KB, whichever comes first"* — make it gate both, at 25,000. (b) Trim the 124 index entries to the ~150-char target `anthropic-skills:consolidate-memory` itself specifies = **−8,499 B**, and move `SILENT MODE` (~5,400 B) to the instruction tier — then delete the `@`-import per its own stated removal condition. (c) Give `.claude/rules/` a per-file byte budget and a gate, and split the four oversized rules into a small injected TRAP plus a reference doc under `docs/reference/`.
