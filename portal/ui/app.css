@@ -5491,6 +5491,15 @@ button .ic,a .ic{pointer-events:none}
  * so the reverse-orphan scan calling `t-best` new is a false positive, not debt. */
 .bgrp.t-best{border-color:var(--rule2);box-shadow:inset 0 0 0 1px rgba(242,194,48,.16)}
 .bgrp.t-best .bgrp-w b{font-size:var(--t-md)}
+/* 🔴 `t-top3` IS EMITTED AND WAS DECLARED NOWHERE — found 2026-09-07 00:56 EDT by armoryRealm.test.js going red.
+ * RANK_KEY emits best/top3/top5/unranked and only three of the four had a rule; top3 was undimmed by
+ * ABSENCE rather than by decision, which reads identically until someone changes the default.
+ * ⚠️ AND THE GATE IS A SUBSTRING CHECK — `css.includes('.t-top3')` — so the token had been satisfied by a
+ * COMMENT enumerating the old `.trow.t-*` selectors, and rewriting that comment turned the suite red
+ * without touching a single rule. A check that a mention in prose can satisfy is one that can go green
+ * on a stylesheet declaring nothing; recorded here rather than fixed, because tightening it is its own
+ * change with its own can-fail proof. This rule makes the declaration real either way. */
+.bgrp.t-top3{--bc-dim:1}
 .bgrp.t-top4,.bgrp.t-top5{--bc-dim:.86}
 .bgrp.t-unranked{--bc-dim:.74}
 .bgrp-m .bdg.rank{flex:none}
