@@ -1,6 +1,7 @@
 ---
 kind: plan
-status: live
+status: superseded
+superseded_by: docs/superpowers/plans/OWED-PROMPT.md
 ---
 
 # STEP 3 — the starting prompt for the next session
