@@ -339,7 +339,15 @@ function AddBuildForm({ onSubmit, onCancel, mode = 'MP' }) {
                            : 'Stages one operation. Nothing reaches a player until you commit it on Review.'}</span>
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class="btn go" disabled=${blockers.length > 0} onClick=${submit}>Stage this ${f.mode} build</button>`}>
-            <div class="bed">
+            <!-- 🔴 THE bform CLASS IS WHAT THE PLACEHOLDER RULE HANGS OFF, AND THE PORT DROPPED IT (restored
+                 2026-09-06 21:19 EDT). The mockup's drawer body is class "dwbody bform" (armory.html:1078) and this
+                 file's own AddBuildDrawer header already says it is the mockup's bform now — but the markup only ever
+                 said bed, so app.css:4118-4119 matched nothing. Measured in the harness before the fix: the weapon-name
+                 placeholder computed font-style normal and font-weight 500, identical to real input text. That is the
+                 exact defect Harkirat reported and those two rules exist to answer (app.css:4086 quotes him: "Those
+                 placeholder texts look more like real filled in text than placeholder"). The reverse-orphan scan read
+                 bform as a dead class and it was accepted into the baseline as debt; it was a live regression. -->
+            <div class="bed bform">
                 <div class="bed-main">
                     <p class="dw-p">Fill in what you know. A weapon name and a category are all it takes to stage a
                         build — the gunsmith code, the image and the badges can follow later, and none of it reaches
@@ -554,7 +562,11 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
                            : `${changed.length} field${changed.length === 1 ? '' : 's'} changed, staged as one operation.`}</span>
                        <button class="btn" onClick=${onClose}>Cancel</button>
                        <button class="btn go" disabled=${blockers.length > 0} onClick=${stage}>Stage this edit</button>`}>
-            <div class="bed">
+            <!-- The bform class here for the same reason as the add drawer above: it is what carries the real-text
+                 weight and colour onto every input in the editor. This drawer has no placeholders today, so only the
+                 first of the two rules bites here — but the two forms must not diverge again, which is how it
+                 was lost. -->
+            <div class="bed bform">
                 <!-- ⚠️ THE TWO COLUMNS ARE NAMED NOW, and this comment used to say naming them would emit classes that do nothing. That was true of the ADOPTED sheet, which declares neither; it stopped being true when the portal authored rules for both. A zero min-width is what stops a long attachment string from blowing the 1fr column past its track, and the aside sticks so the card stays on screen while a long field list scrolls under it. -->
                 <div class="bed-main">
                     <div class="bed-sec">

@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-06T13:26:44.323Z",
+  "recordedAt": "2026-09-07T01:38:45.260Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [
     "role"
@@ -16,14 +16,11 @@
     "atrow",
     "atruler",
     "att",
-    "bc-mode",
-    "bform",
     "bulk",
     "bulkbar",
     "card",
     "col",
     "colnote",
-    "commit",
     "count-bump",
     "dead",
     "depb",
@@ -59,7 +56,6 @@
     "mrow",
     "mxrole",
     "mxrow",
-    "nw-act",
     "nwhost",
     "on-item",
     "oos",
@@ -76,7 +72,6 @@
     "repw",
     "rfoot",
     "rowin",
-    "rvn-sum",
     "rw",
     "s-conflict",
     "s-error",

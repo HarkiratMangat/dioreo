@@ -496,6 +496,22 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
   - **The class is general, not context-mode-specific.** Every plugin and skill in the standing routing chain — `impeccable`, `linksee`, `codebase-memory`, `superpowers` — may ship reference material the session never surfaces. There is no error when you miss it; there is only a slightly wrong tool, every time.
   - **Do:** for each plugin this repo routes to, run `fd -e md . <plugin root>` once and read what is not injected. **Verify:** a dated note per plugin saying what was found, or that its injected body is the whole of it.
 
+### 🚫 REFUTED SAME DAY — "move the batching text to turn 3" contradicts a tuned, documented decision `[P2 · XS]`
+
+*Filed and refuted 2026-09-06 21:31 EDT. Kept, not deleted, because the proposal is the obvious one and the next session will reach for it too.*
+
+**The claim was:** `usage-guard.mjs` carries the batching guidance at lines 171-192 but only speaks at turn 30, so the trigger is wrong and the check should fire on N consecutive single-tool-call turns instead.
+
+🔴 **Refuted by the hook's own comment, `usage-guard.mjs:129-131`:** *"the efficiency practices themselves are NOT taught here — they live in the always-loaded layer (`~/.claude/CLAUDE.md` Context and Turn Discipline + the `feedback_token_conscious_tool_routing` memory) so they apply from turn 1. **A cost alarm is the wrong place to first learn good practice.**"* Moving the text earlier makes the cost alarm the teaching surface, which is the one thing that comment forbids.
+
+🔴 **And a lower threshold was already tried and RAISED.** `usage-guard.mjs:123` — *"retuned 2026-07-28 11:40 EDT, Harkirat's call: 25 -> 30"*. `docs/CHANGELOG.md:3569` records the earlier retune that made 25 and 60 advisory at all, because the hard wording *"was firing during ordinary multi-file doc work and pushing toward wrapping up mid-task — which is exactly how a version bump, tag, or verification step gets skipped to save turns."* `reference_enforcement_hooks.md:33` states the lesson directly: ***a hook can be too blunt as well as too soft.*** A trigger at 3 is blunter than the 25 that was already found too blunt.
+
+**What is actually true, and it is not a tooling gap:** the rule loaded from five carriers this session — global CLAUDE.md practice 1, `.claude/rules/silent-mode.md` rule 2, the step-3 plan's Global Constraints, the handoff's correction 20, and the `.remember` note injected before the first tool call — and two of them were READ at turns 3 and 5 and violated at turns 4, 5 and 6. **The mechanism worked as designed; compliance did not.** There is nothing here for a hook to fix that the always-loaded layer is not already doing.
+
+⚠️ **`user_working_agreement.md` and `docs/SESSION-START.md` are both silent on batching** (grep: zero hits for batch/sequential/mega). **This is recorded so a later audit does not "discover" it and add a sixth prose copy** — five carriers was never the problem, and duplicated prose is its own anti-pattern.
+
+**Do:** nothing. **Verify by:** if this is ever re-proposed, the three citations above answer it without re-deriving.
+
 ### 🎨 The impeccable design hook is WIRED BY HAND, and it will be silently wrong after any skill move `[P2 · XS]`
 
 *Filed 2026-09-06 00:29 EDT at Harkirat's instruction — "wire it but also file it so its remembered, incase it becomes friction."*
@@ -1694,8 +1710,25 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 
 ## 🧹 Someday / tech-debt
 
-### `[P3 · S · Sonnet5-Medium]` The build-out left nine classes the reverse-orphan scan calls NEW, and they were accepted into the baseline rather than resolved
+### ✅ `[CLOSED 2026-09-06 21:42 EDT]` The nine reverse-orphan classes — re-graded by measurement, and ONE of them was a live regression
 *Filed 2026-09-06 09:26 EDT, PR #185.* `scripts/portalReverseOrphans.mjs --ci` went red on the final suite with nine classes it had never seen: `bc-mode`, `bform`, `commit`, `nw-act`, `nwhost`, `rvn-sum`, `t-best`, `trow-empty`, `trow-note`. The baseline `portal/fixtures/reverse-orphans.json` was re-recorded with `--write` in the same commit, which is the gate's own sanctioned path for accepted debt — ⚠️ and `.claude/rules/portal-editing.md` says exactly what that means: *a ratchet's baseline is by construction a list of things already agreed to live with.* This entry is the agreement, so the next reader knows it was a choice and not a miss. What each one probably is: `nwhost` (32 rules) and `nw-act` (6) styled the composer's old INLINE host, gone since the composer became a drawer (D1) — dead rules; `trow-note` (14) and `trow-empty` (6) styled the tier row the category accordion replaced (D5) — dead; `bc-mode` (4) and `bform` (6) were build-chip and form classes whose emitters went with the rack refactor — check `--why` before deleting, one may be a lookup-table class; `rvn-sum` (4) is Review's — check; `t-best` and `commit` are the lookup-table trap the rule names (RANK_KEY's values, and a word the scan matched as a class) — false positives to annotate, not delete. **Do:** `npm run portal:reverse-orphans -- --why <class>` for each; delete the dead rule sets with a survivor assert per deletion; annotate the two lookup-table ones. **Verify by:** the baseline shrinking by seven entries and `--ci` staying green without `--write`.
+
+🔴 **CLOSED 2026-09-06 21:42 EDT — and the filed prediction (7 dead, 2 lookup-table false positives) was wrong on three of the nine.** Each verdict is from `--why` plus the class opened in the harness, not from reading the code:
+
+| Class | Filed as | Measured | Done |
+|---|---|---|---|
+| `bform` | dead | **LIVE REGRESSION.** `.bf-*` render; the wrapper lost the class in the port | ✅ restored on both build drawers |
+| `t-best` | false positive | `armory.js:127` emits `bgrp t-${tierKey}`; 1 renders per open category | ✅ annotated; `.t-best .trow-k` (the dead tier-row half) deleted |
+| `commit` | false positive | **dead** — Review commits with `.btn.go`; 0 render | ✅ 5 rules deleted |
+| `nwhost` · `nw-act` | dead | dead — the composer is a drawer (D1) | ✅ 16 rules + `@keyframes nwIn` deleted |
+| `bc-mode` · `rvn-sum` | dead | dead; both had comments describing behaviour that no longer exists | ✅ deleted, comments rewritten |
+| `trow-note` · `trow-empty` | dead | **cited divergence, not debt** — `armory.html:287-293` draws them on the tier board the category accordion replaced (D5, Pin 21) | ✅ kept, left in the baseline |
+
+🔴 **`bform` is the one that mattered.** `armory.js:290`'s own comment says *"It is the mockup's `bform` now"* and the markup said `<div class="bed">`; the mockup's is `<div class="dwbody bform">` (`armory.html:1078`). So `app.css:4118-4119` matched nothing. Measured before: placeholder `font-style:normal; font-weight:500` — identical to real input text. After: `italic / 400`. **That is the exact defect Harkirat reported** (`app.css:4086` quotes him) and the reverse-orphan baseline had swallowed the fix as accepted debt.
+
+⚠️ **Deleting the dead host EXPOSED a second one.** `.nw-form` and `.nw-f-name` are emitted by `composer.js` and the mockup styles them only as `.nwhost .nw-form`, so they have had **no matching rule since the composer became a drawer**. The scan could not see it while a `.nwhost`-scoped rule existed. Re-stated as `.nw .nw-form` / `.nw .nw-f-name` with the mockup's own values.
+
+⚠️ **And a mistake worth carrying: two comment rewrites in this change replaced the whole `/* … */` span with a body carrying NEITHER delimiter**, so two rules — `.nw .nw-prev:empty` and `.bgrp.t-best` — sat inside broken syntax. **The build, `portalUi.test.js`, `portalAsync.test.js` and the reverse-orphan `--ci` were all green over it.** Caught by reading the file. A raw `/*` vs `*/` count is the WRONG instrument (the tokens appear inside comment prose here); the right one is a span scan that asks whether a rule is OUTSIDE every comment. Verified after repair in the harness: `.bgrp.t-best` computes `rgba(242,194,48,.16) 0 0 0 1px inset` against `none` on a non-best group.
 
 ### `[P3 · S · Sonnet5-Medium]` 78 literal colours in the portal stylesheets sit outside DESIGN.md's palette, and four `transition: width` sites animate layout
 *Filed 2026-09-06 09:09 EDT, from the impeccable audit run at the end of the build-out (PR #185).*
