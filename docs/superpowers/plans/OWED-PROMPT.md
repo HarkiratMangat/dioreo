@@ -18,13 +18,13 @@ status: live
 ```
 Read docs/superpowers/plans/OWED-PROMPT.md IN FULL before any other tool call, then local/handoff/2026-09-07-owed-items-handoff.md.
 
-Four owed items, and they are really three: the harness delay knob and the three states registries are ONE piece of work.
+FOUR owed items: (a) the §L⑥ remainder, (b) a harness delay knob, (c) states registries for broadcast/review/home, (d) 78 literal colours. (b) and (c) are ONE piece of work — the knob is what makes the async states reachable, so registering them without it produces states nothing can walk. That is why the list below has three steps and not four.
 
 DO THEM IN THIS ORDER:
-  1. TRIAGE the seven §L⑥ items. Run each one's OWN Verify command and record pass/fail. Do not open a file to fix anything yet. Five of nine filed items were already done on 2026-09-06 — expect roughly half of these seven to be dead too.
+  1. TRIAGE the §L⑥ remainder. THEY LIVE IN ONE PLACE: `docs/db-deferred-list.md`, the entry headed "The §L ⑥ two-agent audit's remainder" (around line 939). §L is section L of `docs/superpowers/plans/2026-08-27-portal-conformance.md` and ⑥ is its reader-test condition — you do not need to read either to do this. The entry lists its findings as bullets, each ending in a **Verify:** line. Run ONLY those Verify commands. Record pass/fail as a table in your reply; do not write a file and do not open a source file to fix anything yet. Five of nine filed items were already done on 2026-09-06 — expect roughly half of these to be dead too.
   2. The harness delay knob. Small, and it unblocks 3.
   3. States registries for broadcast, review and home — the knob exists by then, so the async states register in the SAME pass.
-  4. The 78 literal colours: run `impeccable extract portal/ui`. It is the command built for exactly this. End with portalGeometry --check and a diff, because collapsing a colour ramp CHANGES RENDERED PIXELS.
+  4. The 78 literal colours. Invoke the SKILL — `Skill(skill: "impeccable", args: "extract portal/ui")` — it is not a shell command. `extract` is "pull reusable tokens and components into design system", which is exactly this job. Finish with `node scripts/portalGeometry.mjs --all --check` and a `portalDiff` run, because collapsing a colour ramp CHANGES RENDERED PIXELS and "just declaring them" is a prediction, not a measurement.
 
 A FILED ITEM IS A CLAIM WITH A VERIFY CONDITION, NOT A FACT. Run the Verify before you build anything. Before any pop-up asking Harkirat to decide, ctx_search docs/reference/portal-decision-ledger.md.
 
@@ -65,6 +65,7 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 | **Session start is the MOST batchable moment**, not a warm-up | Three `cat`s and a `wc` of files named in Harkirat's own message |
 | **The habit attaches to Bash and does not transfer.** Check the browser and MCP steps | `browser_batch` used twice in ~10 browser turns |
 | **`sequentialthinking`: length follows the question.** Never pad to a preset number | *"why are you wasting so many sequential thinking thoughts on such tiny 1 off questions"* |
+| **Run anything minutes-long with `run_in_background: true`** and do other work while it runs | `npm test` is ~2.5 min and was run in the FOREGROUND twice on 2026-09-06 with nothing else happening. Harkirat: *"so much wasted time on these full suites when you couldve had the agent re-running the entire time"* |
 | **Zero mid-run prose.** Questions go in pop-ups | *"HOLY FUCKING PROSE AND WALLS OF TEXT"* |
 | **Every summary is a TABLE.** Formatted, navigable, scannable | *"I HATE LONG PROSE, idk what to read or where and i get overwhelmed"* |
 
@@ -86,7 +87,7 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 | A comment rewrite that **loses its `/*` or `*/`** | Scan comment SPANS. A raw count of the two tokens is the WRONG instrument — they appear inside comment prose |
 | A **python f-string eating `{display:flex}`** | Do not f-string CSS or JS. Concatenate |
 | **Two heredocs in one command** | Their BODIES appear in the order the redirections do. Put the first heredoc's body first |
-| **`echo "gate exit=$?"` after `&&`** | Reports the exit of whatever ran LAST. Use `if npm run x; then` |
+| **`echo "gate exit=$?"` after `&&`** | Reports the exit of whatever ran LAST. Use `if npm test; then … else … fi` |
 | **`rg` with a lookbehind** | `(?<!…)` needs `--pcre2`; without it the search fails **silently** |
 | Clicking a toggle **without reading `aria-expanded`** | Half the browser turns went on closing what I meant to open |
 | **`git add -A`** | Always name paths. `.claude/settings.json.impeccable-bak` must stay untracked |
@@ -106,8 +107,9 @@ Branch docs/build-out-handoff at ed5ddf66, nothing pushed, PR #186 stays open an
 
 | | |
 |---|---|
-| Branch | `docs/build-out-handoff` · **`ed5ddf66`** · v3.79.0-pre |
+| Branch | `docs/build-out-handoff` · **`d702f9cf`** · v3.79.0-pre |
 | Pushed | **No.** PR #186 open, **do not merge** |
-| Commits this session | `6d57e68d` · `06da92ca` · `ed5ddf66` |
-| Gates | `docs:audit` PASS · hooks **36/36** · states **56 @ exit 0** |
+| Commits this session | `6d57e68d` · `06da92ca` · `ed5ddf66` · `dcc814ef` · `3d355c11` · `b029f541` · `d702f9cf` |
+| **`npm test`** | 🟢 **PASS at `d702f9cf`**, run 2026-09-07 01:01 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |
+| Other gates | `docs:audit` PASS · hooks **36/36** · states **56 @ exit 0** · reverse-orphans matches baseline |
 | Tree | clean except the deliberate `.claude/settings.json.impeccable-bak` |
