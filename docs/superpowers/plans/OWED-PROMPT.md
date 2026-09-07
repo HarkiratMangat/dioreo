@@ -125,9 +125,9 @@ That is observable in your own transcript and it can fail. On 2026-09-06 the fir
 | | |
 |---|---|
 | Branch | `docs/build-out-handoff` · v3.79.0-pre |
-| **HEAD when this was written** | **`695f356d`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
+| **HEAD when this was written** | **`365c6534`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
 | Pushed | **No.** PR #186 open, **do not merge** |
 | Commits this session | `6d57e68d` · `06da92ca` · `ed5ddf66` · `dcc814ef` · `3d355c11` · `b029f541` · `d702f9cf` |
-| **`npm test`** | 🟢 **PASS at `d702f9cf`**, run 2026-09-07 01:01 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |
+| **`npm test`** | 🟢 **PASS at `365c6534`**, run 2026-09-07 01:30 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |
 | Other gates | `docs:audit` PASS · hooks **36/36** · states **56 @ exit 0** · reverse-orphans matches baseline |
 | Tree | clean except the deliberate `.claude/settings.json.impeccable-bak` |
