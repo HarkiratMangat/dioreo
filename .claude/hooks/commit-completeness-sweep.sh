@@ -46,11 +46,7 @@ if [ "$BASE" = main ] && git rev-parse --verify -q v3-pre-release >/dev/null 2>&
 fi
 
 emit() {
-  # ⚠️ COMMIT MODE NEVER DENIES, and the shape is the reason. Harkirat's standing constraint on every gate
-  # in this directory: "a gate is better than advisory but i dont want it denying things." additionalContext
-  # with hookEventName is the only output that reaches Claude without blocking the call or putting a prompt
-  # in front of him — friction on the model is free, friction on him is disqualifying, so permissionDecision
-  # "ask" is wrong here even though it would be stricter.
+  # ⚠️ COMMIT MODE NEVER DENIES, and the shape is the reason. Harkirat's standing constraint on every gate in this directory: "a gate is better than advisory but i dont want it denying things." additionalContext with hookEventName is the only output that reaches Claude without blocking the call or putting a prompt in front of him — friction on the model is free, friction on him is disqualifying, so permissionDecision "ask" is wrong here even though it would be stricter.
   if [ "$MODE" = commit ]; then
     jq -n --arg f "$1" '{hookSpecificOutput:{hookEventName:"PreToolUse", additionalContext:("COMPLETENESS SWEEP -- you are about to commit or merge. These are the checks that normally take three prompts to get.\n\nPass 1 (references) is stale-reference-sweep.sh. Below are passes 2 and 3: what the change may have LOST or left FALSE, and which KIND of check never ran.\n" + $f + "\n\nNone of it is a verdict -- it is what nothing has looked at yet. Work through it and say what each turned up, including \"checked, nothing there\". The commit is NOT blocked: proceeding anyway is a decision you state, not one you skip.")}}'
   elif [ "$MODE" = stop ]; then
@@ -85,10 +81,7 @@ if ! command -v rg >/dev/null 2>&1; then
   exit 0
 fi
 
-# ── COST CONTROL 2: claim gate (stop mode only) ─────────────────────────────────────────────────── ⚠️ DELEGATES to claim-detect.sh. This carried its OWN copy of the completion-claim regex while the gate in settings.json carried a different one — two dialects for one concept, in the same repo whose `notes-open-items.sh` exists precisely because a duplicated regex drifted and one copy went silently unfixed for weeks. Consolidated 2026-08-06 09:47 EDT, found by asking what this hook DUPLICATES — an angle neither earlier pass took. The comment here used to claim it "mirrors" that vocabulary; mirroring by hand is what drift looks like before it drifts.
-# ⚠️ COMMIT MODE DELIBERATELY SKIPS THIS. In stop mode the gate existed because a message is not
-# necessarily a claim; a COMMIT IS the claim, so demanding a second one in prose would make the sweep
-# unreachable at the exact moment it was moved to.
+# ── COST CONTROL 2: claim gate (stop mode only) ─────────────────────────────────────────────────── ⚠️ DELEGATES to claim-detect.sh. This carried its OWN copy of the completion-claim regex while the gate in settings.json carried a different one — two dialects for one concept, in the same repo whose `notes-open-items.sh` exists precisely because a duplicated regex drifted and one copy went silently unfixed for weeks. Consolidated 2026-08-06 09:47 EDT, found by asking what this hook DUPLICATES — an angle neither earlier pass took. The comment here used to claim it "mirrors" that vocabulary; mirroring by hand is what drift looks like before it drifts. ⚠️ COMMIT MODE DELIBERATELY SKIPS THIS. In stop mode the gate existed because a message is not necessarily a claim; a COMMIT IS the claim, so demanding a second one in prose would make the sweep unreachable at the exact moment it was moved to.
 if [ "$MODE" = stop ]; then
   [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] || exit 0
   DETECT="$HOOKDIR/claim-detect.sh"

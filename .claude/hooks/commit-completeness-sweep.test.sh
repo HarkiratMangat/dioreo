@@ -33,9 +33,7 @@ mkrepo() {
   printf '%s' "$d"
 }
 
-# ⚠️ THE ENVELOPE IS ITSELF A PROPERTY, and run() below unwraps it — so a "does it deny?" proof written
-# against run() reads the message text and can never see a `decision:"block"`. That is a check that cannot
-# fail, which this file already warns about twice. runraw() is what the commit-mode cases assert on.
+# ⚠️ THE ENVELOPE IS ITSELF A PROPERTY, and run() below unwraps it — so a "does it deny?" proof written against run() reads the message text and can never see a `decision:"block"`. That is a check that cannot fail, which this file already warns about twice. runraw() is what the commit-mode cases assert on.
 runraw() { CLAUDE_PROJECT_DIR="$1" bash "$HOOK" main "$2" "$3" 2>/dev/null; }
 
 run() { # $1 repo · $2 transcript ("" for none) · $3 mode
@@ -77,14 +75,10 @@ tr_noclaim="$TMP/t-noclaim.jsonl"
 printf '{"type":"assistant","message":{"content":[{"type":"text","text":"still working on it, next I will look at the parser"}]}}\n' > "$tr_noclaim"
 a "stop mode, no completion claim -> silent" "CONSERVATION" no "$(run "$CLAIM" "$tr_noclaim" stop)"
 
-# ---- 🔴 COMMIT MODE: fires WITHOUT a completion claim, and never denies ----
-# The mode this hook was moved to on 2026-09-06. Two properties, and the second is the one
-# Harkirat's standing constraint turns on: a gate here interrupts, it does not deny. A `decision:"block"`
-# reaching a PreToolUse call would refuse the commit, which is the behaviour he ruled out.
+# ---- 🔴 COMMIT MODE: fires WITHOUT a completion claim, and never denies ---- The mode this hook was moved to on 2026-09-06. Two properties, and the second is the one Harkirat's standing constraint turns on: a gate here interrupts, it does not deny. A `decision:"block"` reaching a PreToolUse call would refuse the commit, which is the behaviour he ruled out.
 COMMITM=$(mkrepo commit_mode delete)
 a "commit mode, NO claim -> still fires"      "CONSERVATION" yes "$(run "$COMMITM" "$tr_noclaim" commit)"
-# ⚠️ A SEPARATE FIXTURE, not a second call on the one above — the stamp makes a repeat run on unchanged
-# state silent, and three cases failed exactly that way on this suite's first run.
+# ⚠️ A SEPARATE FIXTURE, not a second call on the one above — the stamp makes a repeat run on unchanged state silent, and three cases failed exactly that way on this suite's first run.
 COMMITR=$(mkrepo commit_raw delete)
 raw_commit=$(runraw "$COMMITR" "$tr_noclaim" commit)
 a "commit mode -> additionalContext envelope" '"additionalContext"' yes "$raw_commit"
