@@ -145,9 +145,9 @@ That is observable in your own transcript and it can fail. ⚠️ **Reading thes
 | | |
 |---|---|
 | Branch | `docs/build-out-handoff` · v3.79.0-pre |
-| **HEAD when this was written** | **`c8fe88cf`** — 🔴 **`git log -1 --format=%h` FIRST. If it differs, every gate row below is about a tree that no longer exists and none of them apply.** This is the one number in this file that goes stale by itself |
+| **What tree is this about?** | 🔴 **This file names NO head commit, on purpose.** Pinning one is unwinnable: the pin is written, the commit is made, and the hash it names is already the parent — that chased its own tail three times on 2026-09-07 and `handoffCheck.mjs` now fails a document that claims a HEAD git disagrees with. **Run `git log -1 --format=%h`.** If it is past the suite commit below, the gate rows are about an older tree and you re-run them |
 | Pushed | **No.** PR #186 open, **do not merge** |
 | Commits this session | 12 — `6d57e68d` · `06da92ca` · `ed5ddf66` · `dcc814ef` · `3d355c11` · `b029f541` · `d702f9cf` · `695f356d` · `b524f500` · `365c6534` · `55ffc414` · `15fc16a2` |
-| **`npm test`** | 🟢 **PASS at `365c6534`**, run 2026-09-07 01:30 EDT. ⚠️ It was RED for three commits before that and nothing at commit time said so — `npm run handoff` caught it |
+| **`npm test`** | 🟢 PASS, measured on `365c6534`. ⚠️ **That is a CITATION, not a claim about your head** — every commit after it is doc-only, so re-run it if `git log -1` shows anything else and you are about to push. It was RED for three commits before that and nothing at commit time said so; `npm run handoff` caught it |
 | Other gates | `docs:audit` PASS · hooks **36/36** · states **56 @ exit 0** · reverse-orphans matches baseline |
 | Tree | clean except the deliberate `.claude/settings.json.impeccable-bak` |
