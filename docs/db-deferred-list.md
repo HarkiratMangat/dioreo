@@ -44,6 +44,12 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+- [ ] **`timestamp-check.test.sh` flakes under `run-all-tests.sh`'s parallel execution** `[P2 · S · Sonnet5-Medium]` (found 2026-09-08 13:17 EDT, context-carriers WP3)
+  - **Fails intermittently inside `npm run test:hooks`** (one failure in three consecutive runs), passes reliably every time run standalone (`bash .claude/hooks/timestamp-check.test.sh`). Neither `timestamp-check.sh` nor `timestamp-check.test.sh` was touched this session — this is pre-existing, surfaced by re-running `test:hooks` several times while verifying an unrelated change.
+  - **Suspect:** `run-all-tests.sh` runs all `*.test.sh` concurrently via `xargs -P 8` in one shared `mktemp -d` working directory; likely a shared-path collision or a `date`-boundary race, same failure CLASS as the `portal:states` ~50% stall race already filed above.
+  - **Do:** re-run `bash .claude/hooks/timestamp-check.test.sh` several times under `HOOK_TEST_JOBS=8` concurrent invocations (mimic the real parallel harness) to reproduce reliably, then find and fix the shared-state race.
+  - **Verify:** `npm run test:hooks` run 10× in a row with zero flakes.
+
 - [ ] **Two design defects the portal reproduces on purpose, whose parking rule no longer exists** `[P2 · S · Sonnet5-Medium]` (2026-09-06 15:33 EDT)
   - **Re-filed out of the supersession sweep, and this entry exists so the work is not lost with the entries that carried it.** Both sat inside items that said *"stay reproduced until the pass ends, then are fixed IN THE PORTAL"* — the stand-down rule, which died 2026-09-06 00:43 EDT. The gating mechanism is gone; the defects are not.
   - **① The day list renders browser-default disc bullets at a 40px indent.** `portal/ui/app.css:5327` sets `list-style:disc; padding-left:40px` **unconditionally** — it was matching the design package, which styles `.daylist` nowhere. Nothing switches it off any more.
