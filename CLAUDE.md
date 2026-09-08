@@ -32,7 +32,7 @@ The dev application had carried the new name since 2026-07-26; the rename went p
   - `docs/ideas/diors-notes.md` — a filename two `SessionStart` hooks parse by path.
 - ⚠️ **The former name is still a Brand Asset** (LICENSE §1.5, §18.3) and TERMS §7.1 still protects it. Retiring a name does not release it.
 
-**Before doing anything else this session, read `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md`** (start of `MEMORY.md`'s index) — it's the living summary of how Harkirat works and what this project expects, with links to every other memory file. This CLAUDE.md **plus the `.claude/rules/*.md` files it maps to** is the deepest source of truth for architecture/design decisions; the working agreement is the collaboration layer on top of it.
+**The working agreement — how Harkirat works — is `~/.claude/WORKING-AGREEMENT.md`, global and `@`-imported by the global CLAUDE.md, so it is already in your context** (check for its `WORKING-AGREEMENT-END` sentinel; retired the per-project `user_working_agreement.md` on 2026-09-08 11:58 EDT — it was reached by a pointer that had drifted out of the auto-loaded preview, and had gone stale). This CLAUDE.md **plus the `.claude/rules/*.md` files it maps to** is the deepest source of truth for architecture/design decisions; the working agreement is the collaboration layer on top of it.
 
 ### 📐 How this repo's context is organized (modularized 2026-07-22)
 This root file used to be ~3,300 lines loaded in full every session. It's now **invariants + a navigation map**. Subsystem detail lives in:
@@ -285,7 +285,7 @@ Editing a source and re-running the build is the ENTIRE update path; no HTML is 
 - **`docs/CHANGELOG.md` / `docs/CHANGELOG-SUMMARY.md` / `docs/DEVLOG.md`** — release log / player-facing "what's new" / narrative journey + lessons.
 - **`docs/ideas/diors-notes.md`** — Harkirat's intake scratchpad (mark items in-file the same session). Resolved + ℋ-confirmed items sweep out to `docs/archive/graveyard.md`, not to a section inside it.
 - **`docs/SESSION-START.md`** — the auto-loaded session-start prompt + NON-NEGOTIABLES glossary.
-- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (start at `user_working_agreement.md`).
+- **Memory** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/` (`MEMORY.md` is the index; the working agreement is global at `~/.claude/WORKING-AGREEMENT.md`).
 - **`docs/db-deferred-list.md`** — **this project's own deferred work**: 🐞 Active Bugs · 🔔 Reminders · 🗂️ Queued (own-session features) · 🧹 Someday/tech-debt · 🚫 Decided-no. If a session working only in this repo would need it, it's here. (Split out of the cross-project tracker 2026-07-25 15:56 EDT; renamed + completed 2026-07-25 21:43 EDT, when its bugs/reminders/resolved items finally moved in too.)
 - **`docs/archive/`** — dead archive, **don't read by default**: `graveyard.md` (swept intake from the notes file — it is no longer a section inside that file) · `resolved-list.md` (closed items from `db-deferred-list.md`) · the dated pre-tidy notes snapshot.
 - **`/Applications/Claude Code/meta-deferred-list.md`** — cross-project tracker ONLY: cross-project bugs (the MarkEdit extensions), Claude/Anthropic product feedback, meta/architecture work, and the canonical Priority·Effort legend. Anything Dior's-Builds-specific belongs in `docs/db-deferred-list.md` above.

@@ -25,7 +25,7 @@ status: live
 >
 > **Cadence he has corrected repeatedly:** mega-batch — one turn carries the fix batch AND its measurement AND its verification · zero narration between tool calls, one structured summary at the end · `sequentialthinking` pre-emptively, to set method · decisions go in an `AskUserQuestion` popup, never prose · fix the CLASS, never the named instance · never write "done".
 
-**This file is auto-loaded into every session by the `SessionStart` hook** in `.claude/settings.json` — it does not need pasting. `user_working_agreement.md` points here as the single source; it is NOT mirrored there, so edit this file directly.
+**This file is auto-loaded into every session by the `SessionStart` hook** in `.claude/settings.json` — it does not need pasting. the global working agreement (`~/.claude/WORKING-AGREEMENT.md`, auto-imported) points here for project-level session-start facts; nothing is mirrored, so edit this file directly.
 
 **Moved to `docs/SESSION-START.md` (2026-07-18)** — this file, `CHANGELOG.md`, `CHANGELOG-SUMMARY.md`, `DEVLOG.md`, and the central notes scratchpad now live tracked in git under `docs/`, no longer gitignored/local-only (Harkirat's request, for real `git diff` history instead of manual snapshots). The hook path in `.claude/settings.json` was updated to match — if you ever see the "NOT FOUND" warning below, check that path first.
 
@@ -40,8 +40,8 @@ Shortcut: even *"New session on Dioreo — follow my standing start prompt (work
 ```
 New session on Dioreo. Before anything else:
 
-1. Read ~/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/user_working_agreement.md
-   in full (it links every other memory). CLAUDE.md (root) holds the invariants + a 🗺️
+1. The working agreement is ALREADY in your context (global `~/.claude/WORKING-AGREEMENT.md`, imported
+   by the global CLAUDE.md since 2026-09-08 11:58 EDT — nothing to read; check its END sentinel). CLAUDE.md (root) holds the invariants + a 🗺️
    navigation map; deep subsystem detail lives in path-scoped `.claude/rules/*.md` (loads
    ONLY when you touch matching code) and `docs/` — modularized 2026-07-22, follow the root
    nav map to find a topic. ⚠️ **Before FILING a new document, read the folder taxonomy** in
@@ -172,7 +172,7 @@ New session on Dioreo. Before anything else:
      (spaced, e.g. `· Jul 16`). Why: the desktop model picker is GLOBAL/live, not per-session,
      so after I use another model elsewhere it shows the wrong one when I come back — the
      session title is the only per-session record of what this session should run. Full spec
-     in the working agreement's model-switch memory.
+     in the `feedback_suggest_model_switch` memory.
    • When work should move to a NEW session (deferred tasks, a contingency effort/model bump —
      new session, NEVER mid-session — end-of-session continuation, or long/near-compaction
      context), proactively hand me a TIGHT, pasteable handoff prompt (+ the /rename string) so it
