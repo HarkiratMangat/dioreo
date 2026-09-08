@@ -333,6 +333,16 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/read-routing-nudge.sh\"; [ -x \"$S\" ] || exit 0; bash \"$S\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [

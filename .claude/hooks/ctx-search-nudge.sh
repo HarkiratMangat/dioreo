@@ -9,6 +9,8 @@
 #
 # WHAT IT DOES NOT CLAIM. rg is still right when you know the literal string — that is why this is advisory, never a block. It exists to make the alternative VISIBLE at the moment of choice, not to win the argument.
 #
+# ⚠️ KNOWN BLIND SPOT, NAMED RATHER THAN REDISCOVERED (2026-09-08 13:26 EDT, context-carriers plan WP7): it goes silent on ANY compound command (&&, ||, ;), and the repo's OWN mandated efficiency practice is to batch independent calls with exactly those operators. So a session that correctly batches several greps together makes itself invisible to this nudge — verified live: two prose-corpus rg calls inside a batched `&&` command produced no nudge. That is the SAME deliberate trade-off already stated above (missing real cases is the correct trade), just confirmed against a specific, common cause rather than left abstract.
+#
 # ⚠️ Emits hookSpecificOutput WITH hookEventName. A hook that omits hookEventName is SILENTLY DISCARDED — it runs, exits 0, prints valid JSON, and reaches nobody (two hooks in the global settings were dead this way). And a pipe-test proves the SCRIPT works, never that the HOOK fires. ⚠️ If a future session finds this annoying: it is here because of the measured 788:4 ratio, so removing it is a DECISION, not a tidy-up.
 
 cmd=$(jq -r '.tool_input.command // empty')
