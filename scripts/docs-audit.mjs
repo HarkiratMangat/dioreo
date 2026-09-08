@@ -125,6 +125,8 @@ const XREF_SKIP_SOURCES = [
   "docs/CHANGELOG-SUMMARY.md",
   "docs/DEVLOG.md",
   "docs/ideas/diors-notes.md",
+  // Moved from a memory file 2026-09-08 (WP5b, context-carriers plan). It documents EXTERNAL MCP servers' own internals (linksee-memory's installed npm package: dist/mcp/server.js, dist/skill/SKILL.md, dist/lib/map-view.js) -- paths that are real on disk inside that package, never inside this repo, and never will be. XREF_IGNORED_OPTIONAL does not fit: it exempts gitignored-and-absent paths, and these are not gitignored, they simply belong to a different codebase entirely.
+  "docs/reference/tool-capability-tests.md",
 ];
 const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
 
