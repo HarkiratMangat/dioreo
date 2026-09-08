@@ -387,3 +387,12 @@ Installed to `/etc/cloudflared/config.yml` on the VM (see `docs/reference/deploy
 | `scripts/portalStatus.mjs` — `npm run portal:status` | **WHAT IS KNOWN** and whether it is stale: per realm, the recorded fixture, the commit it was stamped at, whether `portal/ui` moved since, and the mockup's measured fidelity. It does NOT measure |
 
 🔴 **Governed by `docs/superpowers/plans/2026-08-27-portal-conformance.md` — §0.1a⟷§0.6a, §0.1b, §0.5a, §0.5b, §0.6a, §0.10.** The diff is a FLOOR, never the definition of done.
+
+## The context-carrier instruments — `agreementSize.test.mjs` · `silentContract.test.mjs` · `summaryShape.mjs` (added 2026-09-08 12:05 EDT)
+
+Three scripts from the carriers audit (plan: `~/.claude/plans/okay-so-i-want-majestic-yao.md`), all about how instructions REACH a session rather than about the bot.
+
+- **`agreementSize.test.mjs`** (in `npm test`) — `~/.claude/WORKING-AGREEMENT.md`, the global person-level working agreement, must be present, `@`-imported by the global `CLAUDE.md`, ≤12KB, carry its `**WORKING-AGREEMENT-END**` sentinel and a `last reconciled:` stamp under 60 days old. It replaced the per-project `user_working_agreement`, which was reached only by a pointer that drifted out of the auto-loaded preview (read rate 62% → 16% the week it crossed 2KB). `AGREEMENT_PATH` / `GLOBAL_CLAUDE_PATH` repoint it for a falsifier; CI has no `~/.claude`, so absence there prints a WARN and never passes silently.
+- **`silentContract.test.mjs`** (in `npm test`) — the final-message contract is ONE block carried by TWO files: `.claude/rules/silent-mode.md` (the fallback for a session with the style off) and `~/.claude/output-styles/silent.md` (the primary). The block between the `silent-contract` markers must be byte-identical; the first differing line is printed. Proven to fail on a one-byte flip. `SILENT_RULE_PATH` / `SILENT_STYLE_PATH` repoint it.
+- **`summaryShape.mjs`** — a REPORT, never a gate, and deliberately NOT in `npm test`: per week over the local transcripts, how long each run's final message ran (median, p90), how many broke the ~1,800-char budget, carried more than one table or a 400-char paragraph, and how many of Harkirat's own "too much prose" messages landed. It is the falsifier for the contract rewrite — read the week-over-week delta. Baseline at the time of writing: `local/2026-09-08-carrier-baseline.md`. ⚠️ It counts SHAPE only; it cannot tell a warranted long message from an unwarranted one.
+

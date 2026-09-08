@@ -32,7 +32,7 @@ The dev application had carried the new name since 2026-07-26; the rename went p
   - `docs/ideas/diors-notes.md` — a filename two `SessionStart` hooks parse by path.
 - ⚠️ **The former name is still a Brand Asset** (LICENSE §1.5, §18.3) and TERMS §7.1 still protects it. Retiring a name does not release it.
 
-**The working agreement — how Harkirat works — is `~/.claude/WORKING-AGREEMENT.md`, global and `@`-imported by the global CLAUDE.md, so it is already in your context** (check for its `WORKING-AGREEMENT-END` sentinel; retired the per-project `user_working_agreement.md` on 2026-09-08 11:58 EDT — it was reached by a pointer that had drifted out of the auto-loaded preview, and had gone stale). This CLAUDE.md **plus the `.claude/rules/*.md` files it maps to** is the deepest source of truth for architecture/design decisions; the working agreement is the collaboration layer on top of it.
+**The working agreement — how Harkirat works — is `~/.claude/WORKING-AGREEMENT.md`, global and `@`-imported by the global CLAUDE.md, so it is already in your context** (check for its `WORKING-AGREEMENT-END` sentinel; retired the per-project `user_working_agreement` on 2026-09-08 11:58 EDT — it was reached by a pointer that had drifted out of the auto-loaded preview, and had gone stale). This CLAUDE.md **plus the `.claude/rules/*.md` files it maps to** is the deepest source of truth for architecture/design decisions; the working agreement is the collaboration layer on top of it.
 
 ### 📐 How this repo's context is organized (modularized 2026-07-22)
 This root file used to be ~3,300 lines loaded in full every session. It's now **invariants + a navigation map**. Subsystem detail lives in:
