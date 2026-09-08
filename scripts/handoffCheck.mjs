@@ -28,13 +28,13 @@ const LEDGER = 'docs/reference/portal-decision-ledger.md';
 //
 // SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else. 🔴 ALL OF THEM, NOT THE FIRST ONE — corrected 2026-09-04 14:02 EDT. The comment above has said since it was written that there are legitimately TWO live plans, and this function then returned `match()` — the FIRST path in the file. SESSION-START names the remediation plan first and the conformance work second, so the singular answer was always the remediation plan, and the `.remember` check below dutifully demanded that a session working realms name a plan about working MECHANISMS. That is how "which plan governs?" came to be recorded as an open question in `.remember` and in `docs/db-deferred-list.md` while THREE primary sources already answered it: the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment ("if you were handed a realm prompt, that prompt is your first action and this line is not"), and this very comment. A function contradicting the comment directly above it is the receipt class this repo keeps finding.
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
-function livePlans() {
-    return plansNamedIn(read(START) || '');
-}
 
-// ⚠️ CALLED BELOW, AFTER `START` EXISTS. Assigning here read `START` in its temporal dead zone and threw at import — a live TDZ, written minutes after committing a plan whose Task 1 exists to catch exactly this, and which `node --check` passes. That is the whole argument for the lint rule.
+// ⚠️ CONST DECLARATIONS MOVED ABOVE `livePlans()` ON PURPOSE (2026-09-08 18:17 EDT) -- the same TDZ class the comment below already warns about. `livePlans()` now reads BOTH files: as of a 2026-09-07 SESSION-START redesign (which the WP3 rewrite of this file, done the same day as this fix, preserved rather than caused), SESSION-START.md deliberately carries NO plan pointer any more -- that job moved to `.remember/remember.md`'s auto-injected LAST HANDOFF block. This function's comment below still said "SESSION-START is the ONLY file that decides what governs now", which was already false by the time this was found: the exact "comment contradicts the code" receipt class this file's own header says it has caught twice before, caught a third time by actually running the check rather than trusting it.
 const REMEMBER = '.remember/remember.md';
 const START = 'docs/SESSION-START.md';
+function livePlans() {
+    return plansNamedIn((read(START) || '') + '\n' + (read(REMEMBER) || ''));
+}
 const PLANS = livePlans();
 const PLAN = PLANS[0] || null;   // kept for the messages that name ONE path
 
@@ -49,9 +49,9 @@ console.log('\nhandoff check — a handoff is THREE APPENDS and ONE SHORT REWRIT
 //    hung off .remember, which is gitignored and rewritten wholesale. If the tracked files do not
 //    name the live plan, losing one untracked file strands the work.
 const start = read(START) || '';
-if (!PLANS.length) fail('SESSION-START names no plan at all — there is no first action',
-    `add the governing plan's path to ${START}. Every other check here assumes one exists.`);
-else ok(`SESSION-START names ${PLANS.length} live plan(s): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
+if (!PLANS.length) fail('neither SESSION-START nor .remember names a plan at all — there is no first action',
+    `add the governing plan's path to ${REMEMBER} (SESSION-START deliberately carries none since 2026-09-07 -- session-specific state belongs in .remember, not the tracked file).`);
+else ok(`${PLANS.length} live plan(s) named (SESSION-START and/or .remember): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
 for (const [f, label] of [[LEDGER, 'the decision ledger']]) {
     if (start.includes(path.basename(f)) || start.includes(f)) ok(`SESSION-START names ${label}`);
     else fail(`SESSION-START does NOT name ${label} — the pointer chain runs through .remember alone`,

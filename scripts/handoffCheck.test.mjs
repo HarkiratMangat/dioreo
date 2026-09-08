@@ -39,14 +39,16 @@ ok('a plan named twice (a FIRST ACTION line and its amendment) is one plan, not 
 assert.deepStrictEqual(plansNamedIn('docs/superpowers/plans/a.md'), plansNamedIn('docs/superpowers/plans/a.md'));
 ok('two identical calls agree — no lastIndex carried between them');
 
-// ── the real file, which is what the defect was actually about
+// ── the real files, which is what the defect was actually about ⚠️ CORRECTED 2026-09-08 18:17 EDT: this read ONLY docs/SESSION-START.md and asserted it names >=1 plan. That assumption died the same day it was last "corrected" (12:11 EDT, PR #186) -- WP3 of the context-carriers plan rewrote SESSION-START to deliberately carry NO plan pointer at all, moving that job to `.remember/remember.md`'s auto-injected LAST HANDOFF block (a 2026-09-07 design decision this test predates). `handoffCheck.mjs`'s own `livePlans()` now reads BOTH files concatenated; this test must exercise the same union or it certifies behavior the real check no longer has.
 const start = fs.readFileSync(path.join(ROOT, 'docs/SESSION-START.md'), 'utf8');
-const real = plansNamedIn(start);
-// ⚠️ CORRECTED 2026-09-08 12:11 EDT: this asserted `real.length >= 2` — a COUNT, which went stale the moment PR #186 retired two of the three live plans from SESSION-START and left one. The property the defect was about is "the resolver sees EVERY plan the file names", so the assertion is equality against an independent count of the distinct paths in the real file, with one as the floor (a SESSION-START naming no plan at all is a different defect).
-const independent = [...new Set(start.match(/docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md/g) || [])];
-assert.ok(independent.length >= 1, `SESSION-START names no plan at all — the pointer chain is broken`);
+const rememberPath = path.join(ROOT, '.remember/remember.md');
+const remember = fs.existsSync(rememberPath) ? fs.readFileSync(rememberPath, 'utf8') : '';
+const real = plansNamedIn(start + '\n' + remember);
+const PLAN_RE = /(~\/\.claude\/plans\/[A-Za-z0-9._-]+\.md|docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md)/g;
+const independent = [...new Set((start + '\n' + remember).match(PLAN_RE) || [])];
+assert.ok(independent.length >= 1, `neither SESSION-START nor .remember names a plan at all — the pointer chain is broken`);
 assert.deepStrictEqual(real, independent,
-    `the resolver must see EVERY plan SESSION-START names — resolver ${JSON.stringify(real)} vs the file ${JSON.stringify(independent)}`);
+    `the resolver must see EVERY plan named across SESSION-START + .remember — resolver ${JSON.stringify(real)} vs the files ${JSON.stringify(independent)}`);
 
 // ── THE STALE-HEAD MATCHER, PROVEN BOTH WAYS (added 2026-09-07 01:55 EDT) ───────────────────────── It fired on its FIRST live run against a real stale value — a pin written before an amend, in the document it was built for. That is the can-fail proof; these two cases pin the matcher so a later edit cannot loosen it into something that always passes.
 const headClaims = (body) => [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]

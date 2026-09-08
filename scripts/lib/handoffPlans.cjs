@@ -3,7 +3,12 @@
 // 🔴 EXTRACTED 2026-09-04 14:04 EDT SO IT CAN BE FALSIFIED. `handoffCheck.mjs` carried this inline as a `String.match()` returning the FIRST path, directly beneath a comment of its own asserting that there are legitimately SEVERAL live plans at once. A function contradicting the comment above it is the receipt class this repo keeps finding, and this one had a downstream cost: the singular answer was always whichever plan SESSION-START happens to name first, so the `.remember` assertion demanded that a session working portal realms point at a plan about working MECHANISMS. Three sessions then recorded "which plan governs?" as an open question in `.remember` and in `docs/db-deferred-list.md` while three primary sources already answered it — the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment, and that very comment.
 //
 // ⚠️ ORDER IS PRESERVED AND DUPLICATES ARE DROPPED. The order is SESSION-START's own, which is the only ranking any of this has; de-duplicating matters because a plan named in both the FIRST ACTION line and its amendment is one plan, not two.
-const RE = /docs\/superpowers\/plans\/[\w.-]+\.md/g;
+// 🔴 WIDENED 2026-09-08 18:17 EDT: this repo has TWO plan conventions now, not one. Hand-authored
+// dated specs live under `docs/superpowers/plans/`; a plan produced by Claude Code's own plan-mode
+// saves outside the repo entirely, at `~/.claude/plans/<slug>.md` (this exact session was handed one).
+// The old pattern only matched the first, so a plan-mode plan named in `.remember` or SESSION-START
+// was invisible to this resolver -- not a hypothetical, this is how it was found.
+const RE = /(~\/\.claude\/plans\/[\w.-]+\.md|docs\/superpowers\/plans\/[\w.-]+\.md)/g;
 
 function plansNamedIn(text) {
     // A fresh regex per call: `RE` carries the `g` flag, and a shared lastIndex across calls is the

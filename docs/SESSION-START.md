@@ -13,6 +13,9 @@ The working agreement is already in your context (global `~/.claude/WORKING-AGRE
 
 Session-specific "what to work on next" lives in `.remember/remember.md`'s auto-injected LAST HANDOFF block, not here — that file is rewritten every session; this one deliberately is not, so it can't accumulate stacked "start here" pointers again.
 
+## 🔴 Portal decisions
+`docs/reference/portal-decision-ledger.md` — every settled portal decision with a falsifier per row. Query it before re-deriving one.
+
 ## 📖 MEMORY.md
 Loads in FULL via CLAUDE.md's `@`-import. Check the sentinel: MEMORY.md's penultimate line should read `**MEMORY-INDEX-END**` as visible text. See it → the index is complete. Can't find it → `Read` the file directly and say so.
 
