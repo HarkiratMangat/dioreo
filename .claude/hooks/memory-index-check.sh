@@ -135,9 +135,6 @@ else
   status="MEMORY INDEX: ok - ${n_active} active + ${n_arch} archived, ${n_links} links resolve, MEMORY.md ${size}B/${BUDGET}B, ${lines} lines/${PLATFORM_LINES}."
 fi
 
-# --- the PLATFORM-truncation fallback (TAIL_BYTES re-emit) is RETIRED 2026-09-08 (WP3, context-carriers plan). ------
-# MEMORY.md is delivered via CLAUDE.md's @-import now, not the native memory loader alone, so the platform's
-# ~25KB/200-line read cut no longer applies to what a session actually receives -- the import is proven full and
-# compact-reloading. The byte/line BUDGET check above (this hook's own housekeeping ceiling) is UNCHANGED and still runs.
+# --- the PLATFORM-truncation fallback (TAIL_BYTES re-emit) is RETIRED 2026-09-08 (WP3, context-carriers plan). ------ MEMORY.md is delivered via CLAUDE.md's @-import now, not the native memory loader alone, so the platform's ~25KB/200-line read cut no longer applies to what a session actually receives -- the import is proven full and compact-reloading. The byte/line BUDGET check above (this hook's own housekeeping ceiling) is UNCHANGED and still runs.
 
 printf '%s' "$status" | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'

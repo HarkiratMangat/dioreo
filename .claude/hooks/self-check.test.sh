@@ -199,9 +199,7 @@ fi
 
 
 # ===========================================================================
-# WORKING-AGREEMENT STALENESS (added 2026-09-08 13:05 EDT, WP3/WP7 context-carriers plan). The plan
-# decided this check and it was never built until now -- pin both directions with fixtures so it
-# cannot silently stop firing.
+# WORKING-AGREEMENT STALENESS (added 2026-09-08 13:05 EDT, WP3/WP7 context-carriers plan). The plan decided this check and it was never built until now -- pin both directions with fixtures so it cannot silently stop firing.
 # ===========================================================================
 STALE_FIXTURE="$TMP/stale-agreement.md"
 FRESH_FIXTURE="$TMP/fresh-agreement.md"

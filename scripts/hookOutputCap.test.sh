@@ -3,22 +3,11 @@
 #
 # WHY THIS EXISTS (2026-09-08, context-carriers plan WP3, ~/.claude/plans/okay-so-i-want-majestic-yao.md)
 # ---------------------------------------------------------------------------------------------------
-# Any hook output over ~10KB reaches a session as a silently truncated ~2KB preview -- measured
-# directly against docs/SESSION-START.md, which sat over that line from 2026-07-18 (it crossed 10KB
-# at 4e6af78a) until this WP retired its own cat-hook and switched delivery to an @-import. The
-# harness truncates, not the hook, so the hook's own exit code and JSON stay valid the whole time --
-# nothing about running the hook by hand tells you it degraded. This test parses every command
-# registered under EVERY event in BOTH settings.json files (this repo's tracked one and the global
-# ~/.claude one) and actually RUNS each one, measuring real stdout bytes on a quiet turn.
+# Any hook output over ~10KB reaches a session as a silently truncated ~2KB preview -- measured directly against docs/SESSION-START.md, which sat over that line from 2026-07-18 (it crossed 10KB at 4e6af78a) until this WP retired its own cat-hook and switched delivery to an @-import. The harness truncates, not the hook, so the hook's own exit code and JSON stay valid the whole time -- nothing about running the hook by hand tells you it degraded. This test parses every command registered under EVERY event in BOTH settings.json files (this repo's tracked one and the global ~/.claude one) and actually RUNS each one, measuring real stdout bytes on a quiet turn.
 #
-# ⚠️ Fed a minimal `{}` stdin on purpose. A PreToolUse/PostToolUse guard gating on
-# `.tool_input.command` sees an empty command and no-ops (its normal, safe behavior on a turn that
-# isn't the one it cares about); a SessionStart/SessionEnd hook that reads files from disk regardless
-# of stdin runs for real, which is exactly the class this cap protects.
+# ⚠️ Fed a minimal `{}` stdin on purpose. A PreToolUse/PostToolUse guard gating on `.tool_input.command` sees an empty command and no-ops (its normal, safe behavior on a turn that isn't the one it cares about); a SessionStart/SessionEnd hook that reads files from disk regardless of stdin runs for real, which is exactly the class this cap protects.
 #
-# ⚠️ A command that errors or hangs under this synthetic input is not what this test is FOR -- it
-# is testing OUTPUT SIZE when a hook does produce output, not exercising every real branch. Each
-# command gets a short timeout and a failure/empty result is counted as a skip, never a cap failure.
+# ⚠️ A command that errors or hangs under this synthetic input is not what this test is FOR -- it is testing OUTPUT SIZE when a hook does produce output, not exercising every real branch. Each command gets a short timeout and a failure/empty result is counted as a skip, never a cap failure.
 set -uo pipefail
 
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
@@ -33,9 +22,7 @@ if command -v gtimeout >/dev/null 2>&1; then TIMEOUT_BIN="gtimeout"
 elif command -v timeout >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
 fi
 
-# One command per line, de-duplicated across every event in the file. Newlines inside a command
-# (none exist in this repo's hooks today) are flattened so the line-oriented `while read` below
-# cannot be confused by one.
+# One command per line, de-duplicated across every event in the file. Newlines inside a command (none exist in this repo's hooks today) are flattened so the line-oriented `while read` below cannot be confused by one.
 extract_commands() {
   python3 -c '
 import json, sys

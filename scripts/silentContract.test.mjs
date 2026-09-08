@@ -1,17 +1,9 @@
 #!/usr/bin/env node
-// scripts/silentContract.test.mjs — the final-message contract is ONE block carried by TWO files, and
-// this test is the only thing binding them.
+// scripts/silentContract.test.mjs — the final-message contract is ONE block carried by TWO files, and this test is the only thing binding them.
 //
-// Why (2026-09-08 12:05 EDT): the Silent output style (~/.claude/output-styles/silent.md, outside the
-// repo) is the primary carrier; .claude/rules/silent-mode.md is the complete fallback for a session
-// running with the style off (a Remote Control session can load the style but cannot toggle it). Two
-// complete copies of one rule set drift by construction — the auto-fix-gate lesson: a target written
-// twice — and before this the two said opposite things about the same message. Both files carry the
-// block between <!-- silent-contract:start --> and <!-- silent-contract:end -->; it must be byte-identical.
+// Why (2026-09-08 12:05 EDT): the Silent output style (~/.claude/output-styles/silent.md, outside the repo) is the primary carrier; .claude/rules/silent-mode.md is the complete fallback for a session running with the style off (a Remote Control session can load the style but cannot toggle it). Two complete copies of one rule set drift by construction — the auto-fix-gate lesson: a target written twice — and before this the two said opposite things about the same message. Both files carry the block between <!-- silent-contract:start --> and <!-- silent-contract:end -->; it must be byte-identical.
 //
-// CI has no ~/.claude, so a missing style file there is a printed WARN, never a silent pass. Locally a
-// missing style file FAILS: the style is supposed to be installed on this machine.
-// SILENT_RULE_PATH / SILENT_STYLE_PATH override the paths so the test can be proven to fail on a fixture.
+// CI has no ~/.claude, so a missing style file there is a printed WARN, never a silent pass. Locally a missing style file FAILS: the style is supposed to be installed on this machine. SILENT_RULE_PATH / SILENT_STYLE_PATH override the paths so the test can be proven to fail on a fixture.
 
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";

@@ -1,17 +1,9 @@
 #!/usr/bin/env node
 // scripts/agreementSize.test.mjs — the global working agreement must stay a SHORT, IMPORTED carrier.
 //
-// Why this exists (2026-09-08 11:59 EDT): the per-project user_working_agreement.md grew to 35.6KB, went
-// unedited for 19 days while thirty lessons landed elsewhere, and was reached only by a "read this
-// first" pointer that drifted out of the auto-loaded preview — the read rate fell 62% → 16% the week
-// it crossed the 2KB cut. The replacement, ~/.claude/WORKING-AGREEMENT.md, is @-imported by the
-// global CLAUDE.md (delivery is mechanical) and is kept SHORT by this test rather than by prose:
-// one line per rule, the story lives in the memory file the line names.
+// Why this exists (2026-09-08 11:59 EDT): the per-project user_working_agreement.md grew to 35.6KB, went unedited for 19 days while thirty lessons landed elsewhere, and was reached only by a "read this first" pointer that drifted out of the auto-loaded preview — the read rate fell 62% → 16% the week it crossed the 2KB cut. The replacement, ~/.claude/WORKING-AGREEMENT.md, is @-imported by the global CLAUDE.md (delivery is mechanical) and is kept SHORT by this test rather than by prose: one line per rule, the story lives in the memory file the line names.
 //
-// Checks: present · imported · under the byte cap · carries its END sentinel · reconciled recently.
-// AGREEMENT_PATH / GLOBAL_CLAUDE_PATH override the paths so the test can be proven to FAIL on a
-// fixture (see the falsifier in the commit that added it). CI has no ~/.claude, so absence there is a
-// WARN, never a silent pass — the line is printed.
+// Checks: present · imported · under the byte cap · carries its END sentinel · reconciled recently. AGREEMENT_PATH / GLOBAL_CLAUDE_PATH override the paths so the test can be proven to FAIL on a fixture (see the falsifier in the commit that added it). CI has no ~/.claude, so absence there is a WARN, never a silent pass — the line is printed.
 
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";

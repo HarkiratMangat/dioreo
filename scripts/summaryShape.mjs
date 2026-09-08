@@ -1,21 +1,13 @@
 #!/usr/bin/env node
-// scripts/summaryShape.mjs — a REPORT, never a gate: are the final messages of each run meeting the
-// Silent contract (.claude/rules/silent-mode.md / the Silent output style)?
+// scripts/summaryShape.mjs — a REPORT, never a gate: are the final messages of each run meeting the Silent contract (.claude/rules/silent-mode.md / the Silent output style)?
 //
-// Why (2026-09-08 12:05 EDT): every carrier of the summary rules is prose, and prose rules here have
-// a measured record of not moving behaviour. This is the falsifier for the contract rewrite — read the
-// week-over-week DELTA, not a single row. A Stop gate on the same shape is parked by Harkirat's
-// standing choice (no friction on his loop) until this report says the contract did not move anything.
+// Why (2026-09-08 12:05 EDT): every carrier of the summary rules is prose, and prose rules here have a measured record of not moving behaviour. This is the falsifier for the contract rewrite — read the week-over-week DELTA, not a single row. A Stop gate on the same shape is parked by Harkirat's standing choice (no friction on his loop) until this report says the contract did not move anything.
 //
 //   node scripts/summaryShape.mjs [--days 42] [--project <slug>] [--json]
 //
-// Reads ~/.claude/projects/<slug>/*.jsonl (local session transcripts). A RUN is one user prompt through
-// the assistant messages that follow it; the FINAL message is the last assistant message of the run.
-// Sessions with fewer than 3 prompts are skipped (dispatch / background sessions). Weeks start Monday
-// (UTC) from the session's first timestamp, not the file's mtime — mtimes were bulk-touched once.
+// Reads ~/.claude/projects/<slug>/*.jsonl (local session transcripts). A RUN is one user prompt through the assistant messages that follow it; the FINAL message is the last assistant message of the run. Sessions with fewer than 3 prompts are skipped (dispatch / background sessions). Weeks start Monday (UTC) from the session's first timestamp, not the file's mtime — mtimes were bulk-touched once.
 //
-// What it cannot see, stated so nobody assumes it can: whether a long message was WARRANTED, whether
-// a short one was USEFUL, and any run whose final turn is a popup (no text). It counts shape only.
+// What it cannot see, stated so nobody assumes it can: whether a long message was WARRANTED, whether a short one was USEFUL, and any run whose final turn is a popup (no text). It counts shape only.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";

@@ -3,8 +3,7 @@ kind: guide
 status: live
 ---
 
-@/Users/harkirat/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md
-@docs/SESSION-START.md
+@/Users/harkirat/.claude/projects/-Applications-Claude-Code-Diors-Builds/memory/MEMORY.md @docs/SESSION-START.md
 
 > 🔴 **`.claude/rules/thinking-pass.md` was briefly `@`-imported here 2026-09-07 12:31–12:34 EDT and reverted at Harkirat's call — "no point loading it twice, leave it as per the original mechanism."** It already loads unconditionally at `session_start` (`unconditional: true`, no `paths:` — confirmed measured in `docs/superpowers/plans/2026-09-02-context-loading-open-problems.md`), same as `silent-mode.md`. Whether unconditional rules survive `/compact` is still genuinely UNKNOWN in this repo's own measurements — that stays an open question, not resolved by adding or removing this import, and not worth re-litigating without a real test.
 

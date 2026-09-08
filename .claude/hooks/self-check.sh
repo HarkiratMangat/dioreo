@@ -199,10 +199,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Working-agreement staleness (WP3/WP7, context-carriers plan, 2026-09-08). The plan decided this
-# check and it was never built -- print one line when the global agreement's own `last reconciled:`
-# stamp is more than 30 days old, so a stale agreement is visible at the moment it matters rather
-# than discovered by accident.
+# Working-agreement staleness (WP3/WP7, context-carriers plan, 2026-09-08). The plan decided this check and it was never built -- print one line when the global agreement's own `last reconciled:` stamp is more than 30 days old, so a stale agreement is visible at the moment it matters rather than discovered by accident.
 # ---------------------------------------------------------------------------
 AGREEMENT_FILE="${SELFCHECK_AGREEMENT_FILE:-$HOME/.claude/WORKING-AGREEMENT.md}"
 STALE_AGREEMENT=""

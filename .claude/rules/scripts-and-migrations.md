@@ -390,6 +390,8 @@ Installed to `/etc/cloudflared/config.yml` on the VM (see `docs/reference/deploy
 
 ## The context-carrier instruments — `agreementSize.test.mjs` · `silentContract.test.mjs` · `summaryShape.mjs` (added 2026-09-08 12:05 EDT)
 
+**`hookOutputCap.test.sh`** (`.claude/hooks/`, wired into `npm run test:hooks`) — runs every hook command registered in BOTH `.claude/settings.json` and the global `~/.claude/settings.json` with a minimal `{}` stdin and fails if any one emits over 9,000B of stdout on a quiet turn. Exists because a hook output over ~10KB reaches a session as a silently truncated ~2KB preview — proven red against the old `docs/SESSION-START.md` cat-hook (28KB) before that hook was retired, green after.
+
 Three scripts from the carriers audit (plan: `~/.claude/plans/okay-so-i-want-majestic-yao.md`), all about how instructions REACH a session rather than about the bot.
 
 - **`agreementSize.test.mjs`** (in `npm test`) — `~/.claude/WORKING-AGREEMENT.md`, the global person-level working agreement, must be present, `@`-imported by the global `CLAUDE.md`, ≤12KB, carry its `**WORKING-AGREEMENT-END**` sentinel and a `last reconciled:` stamp under 60 days old. It replaced the per-project `user_working_agreement`, which was reached only by a pointer that drifted out of the auto-loaded preview (read rate 62% → 16% the week it crossed 2KB). `AGREEMENT_PATH` / `GLOBAL_CLAUDE_PATH` repoint it for a falsifier; CI has no `~/.claude`, so absence there prints a WARN and never passes silently.
