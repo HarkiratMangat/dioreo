@@ -938,6 +938,30 @@ check(
   }
 );
 
+/* ----------------------- session-start-size --------------------------- */
+check(
+  "session-start-size",
+  "ERROR",
+  "docs/SESSION-START.md stays under its 8KB delivery budget",
+  () => {
+    const content = read("docs/SESSION-START.md");
+    if (content === null) return { findings: [], examined: 0 };
+    const size = Buffer.byteLength(content, "utf8");
+    const BUDGET = 8000;
+    return {
+      examined: 1,
+      findings:
+        size > BUDGET
+          ? [
+              {
+                msg: `docs/SESSION-START.md is ${size}B, over its ${BUDGET}B delivery budget. It is @-imported into every session via CLAUDE.md, so its size is a permanent per-session tax -- trim it or move detail to a doc read on demand. Never restore the old cat-hook (a hook output over ~10KB reaches a session as a silently truncated ~2KB preview).`,
+              },
+            ]
+          : [],
+    };
+  }
+);
+
 /* --------------------------- secrets-hygiene ------------------------ */
 check(
   "secrets-hygiene",

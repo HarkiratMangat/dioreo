@@ -198,7 +198,31 @@ else
     MODEL_BLOCK="$GRID"
 fi
 
+# ---------------------------------------------------------------------------
+# Working-agreement staleness (WP3/WP7, context-carriers plan, 2026-09-08). The plan decided this
+# check and it was never built -- print one line when the global agreement's own `last reconciled:`
+# stamp is more than 30 days old, so a stale agreement is visible at the moment it matters rather
+# than discovered by accident.
+# ---------------------------------------------------------------------------
+AGREEMENT_FILE="${SELFCHECK_AGREEMENT_FILE:-$HOME/.claude/WORKING-AGREEMENT.md}"
+STALE_AGREEMENT=""
+if [ -f "$AGREEMENT_FILE" ]; then
+    RECONCILED="$(grep -oE 'last reconciled: [0-9]{4}-[0-9]{2}-[0-9]{2}' "$AGREEMENT_FILE" 2>/dev/null | head -1 | sed 's/last reconciled: //')"
+    if [ -n "$RECONCILED" ]; then
+        NOW_EPOCH="$(date '+%s' 2>/dev/null)"
+        RECONCILED_EPOCH="$(date -j -f '%Y-%m-%d' "$RECONCILED" '+%s' 2>/dev/null)"
+        [ -z "$RECONCILED_EPOCH" ] && RECONCILED_EPOCH="$(date -d "$RECONCILED" '+%s' 2>/dev/null)"
+        if [ -n "$NOW_EPOCH" ] && [ -n "$RECONCILED_EPOCH" ]; then
+            DAYS_OLD=$(( (NOW_EPOCH - RECONCILED_EPOCH) / 86400 ))
+            if [ "$DAYS_OLD" -gt 30 ] 2>/dev/null; then
+                STALE_AGREEMENT="[self-check] ⚠️ ~/.claude/WORKING-AGREEMENT.md's 'last reconciled' date is ${DAYS_OLD} days old (${RECONCILED}) -- past the 30-day check-in point. Reconcile it against recent standing preferences, or bump the date if nothing has changed."
+            fi
+        fi
+    fi
+fi
+
 CONTEXT="$(printf '%s\n\n%s' "$SELFCHECK" "$MODEL_BLOCK")"
+[ -n "$STALE_AGREEMENT" ] && CONTEXT="$(printf '%s\n\n%s' "$CONTEXT" "$STALE_AGREEMENT")"
 
 jq -n --arg ctx "$CONTEXT" \
   '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", additionalContext:$ctx}}'

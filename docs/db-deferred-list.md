@@ -1131,16 +1131,20 @@ The read-only audit found three defects that are checkable in principle, and I c
 **Revisit if** the same defect recurs after §0.5c's audit is in force — that would mean the outside reader is not sufficient and the mechanical layer is earning its cost. **Verify:** any of these built has a falsifier proving it fires, per §0.10.
 
 
-### 🔴 DO NOT DELETE ANY LIVE WORKTREE — `draw-calculator-breakdown-146641` AND `outstanding-v3-items-135f3b` ARE BOTH ACTIVE PEER SESSIONS `P1 · XS · standing-instruction`
+### 🔴 DO NOT DELETE ANY LIVE WORKTREE — verify current state with `git worktree list` before touching any of them `P1 · XS · standing-instruction`
 
-⚠️ **`outstanding-v3-items-135f3b` APPEARED DURING THE 2026-08-30 SESSION AND WAS IN NO TRACKED FILE UNTIL 23:2x EDT.** It was named only in `.remember`, which is gitignored and rewritten wholesale each session — so a reader of the durable carriers had no protection for it at all. A second read-only audit caught it. **The count is not fixed: run `git worktree list` and treat every non-primary entry as protected until Harkirat says otherwise.**
-**Harkirat, 2026-08-30 16:28 EDT, emphatically:** *"the draw calculator one, that's an active peer session. Uh, do not. I repeat. Do not delete that. That work is still in progress and will be merged later on."*
+⚠️ **CORRECTED 2026-09-08 13:06 EDT, moved here from `docs/SESSION-START.md` (WP3 of the context-carriers plan) and re-verified against `git worktree list` at the same time.** The roster below is what was true at that moment, not a permanent list — always re-run the command.
 
-It is `claude/draw-calculator-breakdown-146641` at `9d26892`, live work by another session, and it **will be merged later**. `docs-audit` emits a `nested-worktree` WARNING for it — **that warning is expected and must not be "resolved" by removing the worktree.** A future session tidying warnings is the exact route by which this gets destroyed.
+**Currently live (2 worktrees, verified 2026-09-08 13:06 EDT):**
+- `draw-calculator-breakdown-146641` — branch `claude/draw-calculator-breakdown-146641`, an active peer session. **Harkirat, 2026-08-30 16:28 EDT, emphatically:** *"the draw calculator one, that's an active peer session. Uh, do not. I repeat. Do not delete that. That work is still in progress and will be merged later on."* `docs-audit` emits a `nested-worktree` WARNING for it — that warning is EXPECTED and must not be "resolved" by removing the worktree.
+- `output-style-silent-mode-176bcb` — branch `claude/output-style-silent-mode-176bcb`, last commit `95923c9e` 2026-09-03 16:18 EDT ("fix(portal): Review conforms and its commit path..."). ⚠️ **Newly found 2026-09-08 13:06 EDT** — it existed in NO tracked, auto-loaded carrier before this entry (the same blind spot `outstanding-v3-items-135f3b` once had). Treat it as protected the same way pending Harkirat's confirmation of its status.
 
-⚠️ **The sibling half of this entry is CLOSED:** `skills-tools-review-4ecca0` was merged at `898d774`, verified with `git merge-base --is-ancestor 83bde29 HEAD`, its worktree confirmed clean and `HEAD..branch` confirmed empty before anything was touched; worktree removed and branch deleted with `git branch -d` (the safe form, which refuses an unmerged branch) on 2026-08-30 16:3x EDT. **Nothing was forced.**
+**Retired — verified gone, do NOT resurrect from memory of them as "active":**
+- `outstanding-v3-items-135f3b` — absorbed into #176 (its feature/records work matches `v3-pre-release` exactly; `git cherry` reported its 8 commits as unmerged, which was wrong — the work was squashed and patch-id cannot see through a squash; compare CONTENT, never the commit list) and its branch deleted 2026-09-01 17:33 EDT, Harkirat's call, after all seven unique blobs were confirmed byte-identical on `origin/chore/silent-mode-guards-parked` first.
+- `silent-mode-compliance` (the `feat/portal-redesign-session-b` lineage) — re-homed to `chore/silent-mode-guards-parked` (pushed, tests re-verified 30/30 · 14/14 · 9/9, remains PARKED, registered in no settings file) and its own local branch deleted the same day, on the reasoning that an unpushed branch kept "for history" is a fiction if it lives on no remote.
+- `skills-tools-review-4ecca0` — merged at `898d774`, verified with `git merge-base --is-ancestor 83bde29 HEAD`, worktree confirmed clean and `HEAD..branch` confirmed empty before anything was touched; removed with `git branch -d` (the safe form, which refuses an unmerged branch) on 2026-08-30 16:3x EDT. Nothing was forced.
 
-**Verify this entry is still being honoured:** `git worktree list` shows the draw-calculator worktree present, and `git branch --list 'claude/*'` shows its branch alive.
+**Verify this entry before trusting it:** `git worktree list` for the current roster, `git branch --list 'claude/*'` for which branches are still alive.
 
 ### `[🔵 SUPERSEDED 2026-09-06 14:54 EDT]` ~~Is pixel-conformance still the right target for realms 2–6?~~
 

@@ -622,6 +622,10 @@ proves("a core record file going missing", "records-present", (root) => {
   rmSync(join(root, "docs/ROADMAP.md"));
 });
 
+proves("docs/SESSION-START.md growing past its 8KB delivery budget", "session-start-size", (root) => {
+  write(root, "docs/SESSION-START.md", "# Session-start prompt\n\n" + "x".repeat(8200) + "\n");
+});
+
 proves(".env no longer gitignored", "secrets-hygiene", (root) => {
   write(root, ".gitignore", "!.claude/settings.local.json\n");
 });
