@@ -116,9 +116,12 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
     update_memory -> remember({memory_id}) · consolidate -> auto-runs at startup, never call it.
     Deliberate remember() writes have source=NULL so the Stop-hook sync never wipes them; only
     auto-captured session rows are wiped+reinserted.
-  · [UNMEASURED — said so on purpose; see the ctx_search line below for what a measured rule looks like]
-    codebase-memory-mcp DOES index this JS repo — try search_graph BEFORE rg for
-    "where is X / what calls it". If head_sha lags, run detect_changes (a docs-only lag is harmless).
+  · [MEASURED 2026-09-08 13:30 EDT -- 10-symbol replay in local/2026-09-08-carrier-baseline.md]
+    codebase-memory-mcp indexes this JS repo (head_sha matched HEAD exactly at replay time). It WINS
+    over rg specifically for callers/callees, fan-in, dependents, impact and duplicate-definition
+    questions (5/10 clear wins, all of that shape). For a plain "where is X defined" lookup it TIES --
+    ~85% of its own results are destructuring-import noise nodes, so rg is less noisy for that case.
+    The blanket "search_graph before rg for ANY code exploration" instruction overclaims; scope it.
   · [MEASURED, but on PAYLOAD not on hit rate: a 300-line file cost 5,632 tokens on first Read and
     ~150 on a read_smart re-read, 97% saved, 2026-07-24 23:02 EDT. No hit-rate figure exists.]
   · 🔴 read_smart IS NOT A RE-READ TOOL AND CALLING IT ONE IS WHY IT GOES UNUSED. Route EVERY read of a
@@ -129,8 +132,9 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · linksee publishes FIVE MCP PROMPTS (entity-handoff, summarize-session, extract-caveats, recall-and-write,
     weekly-consolidation) on a surface neither a skill search nor ToolSearch can see. /linksee:* does NOT
     route in Claude Code; fetch the body with prompts/get over stdio and follow it. It also publishes four
-    RESOURCES - memory://stats, memory://hot, memory://recent, memory://caveats - none of which had ever
-    been read here, and the docs say to browse the caveats one at the start of any significant session.
+    RESOURCES - memory://stats, memory://hot, memory://recent, memory://caveats. Read memory://caveats at
+    least once, 2026-09-08 13:20 EDT (159 memories across all projects, most Diors-Builds) -- filter by
+    entity/keyword before reading, the raw resource is 300KB+ and will not fit inline.
   · context-mode ctx_execute/ctx_batch_execute/ctx_execute_file for anything whose output you
     PROCESS; Bash only to observe short fixed output or mutate state.
   · [MEASURED 2026-08-31 12:5x EDT, and this is the strongest routing figure in the system:
