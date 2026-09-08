@@ -42,8 +42,11 @@ ok('two identical calls agree — no lastIndex carried between them');
 // ── the real file, which is what the defect was actually about
 const start = fs.readFileSync(path.join(ROOT, 'docs/SESSION-START.md'), 'utf8');
 const real = plansNamedIn(start);
-assert.ok(real.length >= 2,
-    `SESSION-START names ${real.length} plan(s); this repo has had more than one live plan since 2026-08-31 and the check must see them all — got ${JSON.stringify(real)}`);
+// ⚠️ CORRECTED 2026-09-08 12:11 EDT: this asserted `real.length >= 2` — a COUNT, which went stale the moment PR #186 retired two of the three live plans from SESSION-START and left one. The property the defect was about is "the resolver sees EVERY plan the file names", so the assertion is equality against an independent count of the distinct paths in the real file, with one as the floor (a SESSION-START naming no plan at all is a different defect).
+const independent = [...new Set(start.match(/docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md/g) || [])];
+assert.ok(independent.length >= 1, `SESSION-START names no plan at all — the pointer chain is broken`);
+assert.deepStrictEqual(real, independent,
+    `the resolver must see EVERY plan SESSION-START names — resolver ${JSON.stringify(real)} vs the file ${JSON.stringify(independent)}`);
 
 // ── THE STALE-HEAD MATCHER, PROVEN BOTH WAYS (added 2026-09-07 01:55 EDT) ───────────────────────── It fired on its FIRST live run against a real stale value — a pin written before an amend, in the document it was built for. That is the can-fail proof; these two cases pin the matcher so a later edit cannot loosen it into something that always passes.
 const headClaims = (body) => [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
