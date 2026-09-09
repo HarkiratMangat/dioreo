@@ -865,6 +865,21 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+
+### 🔴 `[P1 · S · Opus5-High]` STEP 4 HAS NEVER BEEN SCOPED, and "~30 player-facing items" is a prose estimate four sessions have now repeated
+
+*Filed 2026-09-09 15:13 EDT, on closing step 3.* `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`'s Task 8 opens *"Roughly 30 items"* and then names **five bullets**: the landing page's command animation missing `/help` and `/draw calculator` · the `/manage` + `/bot analytics` click-test findings · the instruments (`portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit) · context architecture (five rules still encyclopedias, the tier ungated) · restoring the `Stop` hook. **The other ~25 are enumerated nowhere.**
+
+🔴 **The number has been carried forward without anyone opening the list** — including by me, three times in one day, in a status report to Harkirat. It is the same shape as the four stale records this week: a figure inherited, repeated, and never checked against the thing it describes.
+
+⚠️ **`docs/db-deferred-list.md` is the authority, and its HEADINGS cannot be trusted for state.** The §L ⑥ entry carried *"twelve findings"* in its title for two days after its body had closed all eleven, which is how the wrong status reached him. **Scope by reading entry BODIES.** A starting sweep, which over-reports closed-in-body entries and under-reports items filed as bullets inside a larger entry:
+
+```bash
+rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPERSEDED'
+```
+
+**Do:** produce the real enumeration as step 4's first unit, replace Task 8's five bullets with it, and give each item a `[P· E · Model]` tag. **Verify by:** Task 8 naming a list whose length is a count somebody derived, with no "roughly" anywhere in it.
+
 ### `[P2 · M · Opus5-High]` The `/commands` page is LIVE and Harkirat believed it was parked — it still needs work
 
 *Filed 2026-09-06 19:09 EDT, in his words: "it honestly still needs work and in my mind/subconcious I thought it was parked and pending. i didnt even know/remember it was live."*
