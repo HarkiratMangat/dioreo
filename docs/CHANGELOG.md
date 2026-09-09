@@ -4377,4 +4377,10 @@ Fixed at three layers rather than at the one caller that was wrong: `adminGrantD
 
 ⚠️ **Nothing could have caught this, and that is filed too:** `portal/ui/harness/stub.js` serves the Access GETs and has no `/api/access/grant` handler at all, so the realm's whole write path is unreachable from the harness.
 
+### Access — an admin's label is editable, in the row and in a drawer
+
+**Two entry points, one commit gate.** The label is a button in the row; clicking it swaps to an input that stages exactly like a permission cell, so a typo is a click and a Save rather than a revoke and a re-grant. A label-only save reaches the same typed confirmation, retitled **Rename …000002?** with a **Save the label** action — asking *"Change what …000002 can do?"* over a rename is one body describing the wrong act. Alongside it, each row gains the design's **Edit** chip, opening the grant form in edit mode: id fixed and read-only, Discord preview card resolving, permission chips and label pre-filled, same typed confirmation.
+
+⚠️ **The edit mode shipped broken in its first draft and only the browser saw it.** It faked the Discord lookup to skip a round-trip, and the preview card reads `lookup.user.avatarUrl` — so the drawer threw before painting anything, with `npm test` green over it. Three states are registered in `portal/fixtures/states/access.json` now, and the middle one exists for exactly that failure; it is proven able to fail by putting the fake back. Server-side rendering could not have caught it, because the effect never runs there and the preview is never reached.
+
 Full plan: `~/.claude/plans/okay-so-i-want-majestic-yao.md`. Route/handoff: `local/handoff/2026-09-08-carriers-wp3-8.md` (gitignored).

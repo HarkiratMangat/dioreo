@@ -26,6 +26,8 @@ function relTime(value) {
 // 🔴 pin32: A DISCORD ID TYPED INTO A BOX WAS NEVER CHECKED AGAINST DISCORD ITSELF. Nothing stopped an admin from granting a typo'd id, or an id for an account that does not exist — the grant would silently succeed and sit in the grid as an unreachable row. GET /api/discord/user (portal/api/access.js) resolves the id against the bot's own Discord API access before Grant is allowed to enable, and the preview card (avatar/username/globalName/id) is the thing that lets a human actually confirm "yes, that's them" rather than trusting a string of digits.
 //
 // Debounced 400ms so every keystroke does not fire a Discord API call, and only once the id LOOKS like a snowflake (17–20 digits) — an in-progress id is not a failed lookup, it is simply not a ready one yet, and treating it as an error would flash a warning on every keystroke.
+const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+
 function useDiscordLookup(discordId) {
     const [state, setState] = useState({ status: 'idle' });
     useEffect(() => {
@@ -47,21 +49,25 @@ function useDiscordLookup(discordId) {
 //
 // ⚠️ THE OWNER-ONLY LOCK IS SHOWN, NOT ENFORCED HERE. `destructive` is excluded from `all` and grantable only by the owner — the server decides that, and a chip that hid it would leave an owner unable to grant the one permission only they can grant. The mark says why it is different.
 //
-// ⚠️ grantReady (access.logic.js) is the single source for when the Grant button may fire and what the `.why` line says when it may not — kept pure and unit-tested (scripts/portalSession.test.js) precisely so this readiness rule can be checked without a DOM.
-function GrantForm({ onGrant, scopes, onCancel }) {
-    const [discordId, setDiscordId] = useState('');
-    const [picked, setPicked] = useState([]);
-    const [note, setNote] = useState('');
+// ⚠️ grantReady (access.logic.js) is the single source for when the Grant button may fire and what the `.why` line says when it may not — kept pure and unit-tested (scripts/portalSession.test.js) precisely so this readiness rule can be checked without a DOM. 🔴 ONE FORM, TWO MODES, BECAUSE THE SECOND ONE IS THE FIRST ONE WITH ITS ID ALREADY DECIDED. Passing an `admin` turns this into the design's Edit drawer: the id is fixed and read-only, the chips arrive pre-filled from what that account already holds, and the label is the value being edited rather than a blank. ⚠️ THE LOOKUP IS SKIPPED IN EDIT MODE, DELIBERATELY. `useDiscordLookup` exists to catch a typo'd or nonexistent id before a grant creates an unreachable row; an id already in the grid was resolved when it was granted and cannot be retyped here, so a second round-trip would buy nothing and would leave the Save button disabled for 400ms every time the drawer opens. `grantReady` is handed `'ok'` for exactly that reason and for no other. ⚠️ AND THE TYPED CONFIRMATION STAYS. An edit replaces the whole permission list — it can revoke as easily as grant — so it is the same act at the same tier as the grant it reuses, and dropping the gate because the row already exists would be reading "edit" as "smaller".
+function GrantForm({ admin, onGrant, scopes, onCancel }) {
+    const editing = Boolean(admin);
+    const scopeKeys = new Set((scopes || []).map((sc) => sc.key));
+    const [discordId, setDiscordId] = useState(editing ? admin.discordId : '');
+    const [picked, setPicked] = useState(editing ? (admin.permissions || []).filter((k) => scopeKeys.has(k)) : []);
+    const [note, setNote] = useState(editing ? (admin.note || '') : '');
     const [confirmText, setConfirmText] = useState('');
     const lookup = useDiscordLookup(discordId);
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
-    const { ready, why } = grantReady({ discordId, lookupStatus: lookup.status, pickedCount: picked.length, confirmText });
+    // 🔴 THE LOOKUP RUNS IN BOTH MODES BUT ONLY GATES ONE, and the first version of this got it backwards twice over. It faked `{status:'ok'}` in edit mode to skip the round-trip — which crashed the drawer outright, because the preview below reads `lookup.user.avatarUrl` and a faked status carries no user. It was also wrong on the merits: the avatar and username are exactly what tell you WHICH HUMAN this row of digits is, which is the whole argument that put the lookup on the grant form. So it runs. What it must NOT do is gate readiness: an id already in the grid was resolved when it was granted, and making a label edit wait on Discord being reachable would mean an outage there locks the owner out of renaming a row here.
+    const { ready, why } = grantReady({ discordId, lookupStatus: editing ? 'ok' : lookup.status, pickedCount: picked.length, confirmText });
 
     return html`
-        <${Drawer} eyebrow="admin.grant · tier 3" title="Grant portal access" onClose=${onCancel}
+        <${Drawer} eyebrow=${editing ? 'admin.grant · tier 3 · replaces the whole list' : 'admin.grant · tier 3'}
+                   title=${editing ? `Edit …${admin.discordId.slice(-6)}` : 'Grant portal access'} onClose=${onCancel}
                    actions=${html`
                        <button class="btn" onClick=${onCancel}>Cancel</button>
-                       <button class="btn go" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText, note)}>Grant now</button>`}>
+                       <button class="btn go" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText, note)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
                 <!-- 🔴 A PLACEHOLDER IS NOT A LABEL, and these two inputs look identical the moment either has
                      text in it — one takes the account to grant, the other takes the SAME id typed back as the
@@ -70,10 +76,14 @@ function GrantForm({ onGrant, scopes, onCancel }) {
                      is the sheet's own labelled field, used by every other form in the portal. -->
                 <div class="dwfield"><label for="grant-discordid">Discord ID</label>
                     <input id="grant-discordid" placeholder="17–20 digits" inputmode="numeric" autocomplete="off"
+                           readOnly=${editing} aria-readonly=${editing ? 'true' : 'false'}
                            value=${discordId} onInput=${(e) => setDiscordId(e.target.value.trim())} /></div>
+                ${editing ? html`<p class="dw-p">Granted by <code>…${(admin.grantedBy || '').slice(-6)}</code>${' '}
+                    ${admin.grantedAt ? html`on <b>${shortDate(admin.grantedAt)}</b>` : null}. Only the owner may grant,
+                    revoke or edit permissions, so this is always you.</p>` : null}
                 ${lookup.status === 'loading' ? html`<p class="dw-p">Looking that id up…</p>` : null}
                 ${lookup.status === 'error' ? html`<p class="dw-p" style="color:var(--warn)">${lookup.reason}</p>` : null}
-                ${lookup.status === 'ok' ? html`
+                ${lookup.status === 'ok' && lookup.user ? html`
                     <div class="grantpreview">
                         <span class="gp-av" aria-hidden="true" style=${`--av-src:url(${lookup.user.avatarUrl})`}></span>
                         <span class="gp-n"><b>${lookup.user.globalName || lookup.user.username}</b>
@@ -96,6 +106,8 @@ function GrantForm({ onGrant, scopes, onCancel }) {
                     screen — typing the id is the entire gate, because there is no data to export and nothing
                     meaningful to preview. The allowlist cache is invalidated on write, so it is live in the bot on
                     their very next click.</p>
+                ${editing ? html`<p class="dw-p">Whatever is picked above becomes the whole list. Anything you
+                    untick is revoked on their very next action.</p>` : null}
                 ${why ? html`<p class="why" role="status">${why}</p>` : null}
             </div>
         <//>
@@ -109,7 +121,6 @@ function GrantForm({ onGrant, scopes, onCancel }) {
 // ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
 const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
 
-const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 function Sessions({ sessions, onEnd, ttlHours }) {
     const now = Date.now();
@@ -168,9 +179,11 @@ function RevokeControl({ discordId, onRevoke }) {
 //
 // 🔴 SO THE CELLS EDIT, AND THEY STAGE RATHER THAN FIRE. A click marks the cell pending — the matrix reads as the state you are about to save, not the one you are leaving — and the row's Save opens the same typed drawer every other destructive act in this realm goes through, with the target's own Discord ID as the word. No new server route: /api/access/grant already replaces the whole permission list, which is exactly what a recomputed set is.
 //
-// ⚠️ AN INHERITED CELL DOES NOT TOGGLE. Holding a bare `manage` covers every page at once, so there is no such thing as revoking one of them — the honest response to that click is to say so, not to quietly rewrite the token into eight explicit ones. Two things the grid does that the string cannot are INHERITANCE (visible rather than remembered) and, in the By-scope view below, SINGLE POINTS OF FAILURE. Data comes from GET /api/access/matrix, built over the same scope enumeration singlePointsOfFailure() uses — never a second list that could drift.
-function ByAdmin({ matrix, spof, onSave, onRevoke, onExplain, isOwnerId, highlightId }) {
+// ⚠️ AN INHERITED CELL DOES NOT TOGGLE. Holding a bare `manage` covers every page at once, so there is no such thing as revoking one of them — the honest response to that click is to say so, not to quietly rewrite the token into eight explicit ones. Two things the grid does that the string cannot are INHERITANCE (visible rather than remembered) and, in the By-scope view below, SINGLE POINTS OF FAILURE. Data comes from GET /api/access/matrix, built over the same scope enumeration singlePointsOfFailure() uses — never a second list that could drift. 🔴 THE LABEL STAGES EXACTLY LIKE A PERMISSION CELL, and that is the whole reason it is here rather than only in the drawer. `note` is the only thing telling `…000001` from `…000003` on a screen of snowflakes, so fixing a typo in it should not cost the same ceremony as handing out a permission — but it commits through the SAME row Save and the SAME typed gate, because it rides on the same request that replaces the permission list. Two entry points, one commit: the row for a quick correction, the Edit drawer for everything at once.
+function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId, highlightId }) {
     const [pending, setPending] = useState({});     // { "discordId|scope": true|false }
+    const [pendingNote, setPendingNote] = useState({});   // { discordId: "the label being typed" }
+    const [editingNote, setEditingNote] = useState(null); // the one row whose label input is open
     const scopes = matrix.scopes || [];
     const commands = scopes.filter((s) => s.kind === 'command');
     const pages = scopes.filter((s) => s.kind === 'page');
@@ -195,8 +208,17 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onExplain, isOwnerId, highlig
         });
     }
 
-    const clearRow = (id) => setPending((prev) => Object.fromEntries(
-        Object.entries(prev).filter(([k]) => !k.startsWith(id + '|'))));
+    const dropNote = (id) => setPendingNote((prev) => Object.fromEntries(
+        Object.entries(prev).filter(([k]) => k !== id)));
+    // ⚠️ DISCARD HAS TO DROP BOTH, or a discarded row keeps a staged label that its own Save button no longer counts — a pending change with nothing on screen offering to commit it.
+    const clearRow = (id) => {
+        setPending((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith(id + '|'))));
+        dropNote(id);
+        setEditingNote((cur) => (cur === id ? null : cur));
+    };
+    // The label as it stands right now: what is being typed if anything is, otherwise what is stored.
+    const noteNow = (a) => (pendingNote[a.discordId] !== undefined ? pendingNote[a.discordId] : (a.note || ''));
+    const noteDirty = (a) => pendingNote[a.discordId] !== undefined && pendingNote[a.discordId] !== (a.note || '');
 
     return html`
         <!-- ⚠️ NO PANEL AND NO HEADER OF ITS OWN. access.html draws ONE .ph — the Shell's view bar — carrying
@@ -258,14 +280,36 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onExplain, isOwnerId, highlig
                             ${matrix.admins.filter((a) => a.discordId !== isOwnerId).map((a) => {
                                 const owner = false;
                                 const rp = rowPending(a.discordId);
-                                const changes = Object.keys(rp).length;
+                                const nv = noteNow(a);
+                                const ndirty = noteDirty(a);
+                                const changes = Object.keys(rp).length + (ndirty ? 1 : 0);
                                 return html`
                                     <tr key=${a.discordId} class=${(owner ? 'ownerrow' : '') + (a.discordId === highlightId ? ' just-granted' : '')}>
                                         <td class="mxwho"><span class="mxid">
-                                            <span class="mxav" aria-hidden="true">${(a.note ? a.note[0] : a.discordId.slice(-1)).toUpperCase()}</span>
+                                            <!-- The initial follows the LABEL BEING TYPED, not the stored one: a preview that ignores the edit in progress is a second authority on the same fact. -->
+                                            <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
                                             <span class="mxn">
                                                 <b>…${a.discordId.slice(-6)}</b>
-                                                <span>${a.note || 'no label'}${a.grantedAt ? ' · granted ' + shortDate(a.grantedAt) : ''}</span>
+                                                <span>
+                                                    ${editingNote === a.discordId ? html`
+                                                        <!-- ⚠️ A REF, NOT THE autofocus ATTRIBUTE, WHICH IS HONOURED ONLY WHILE THE PAGE IS BEING PARSED. On a swap like this one it does nothing at all: measured, the input appeared and the caret stayed where it was. The guard matters as much as the focus -- this callback runs on every render, and focusing an already-focused input would drag the caret to the end on every keystroke. -->
+                                                        <input class="mxlbl-in" value=${nv}
+                                                               ref=${(el) => { if (el && document.activeElement !== el) el.focus(); }}
+                                                               aria-label=${`Label for …${a.discordId.slice(-6)}`}
+                                                               placeholder="How you will recognise them"
+                                                               onInput=${(e) => setPendingNote({ ...pendingNote, [a.discordId]: e.target.value })}
+                                                               onBlur=${() => setEditingNote(null)}
+                                                               onKeyDown=${(e) => {
+                                                                   if (e.key === 'Escape') { dropNote(a.discordId); setEditingNote(null); }
+                                                                   if (e.key === 'Enter') setEditingNote(null);
+                                                               }} />`
+                                                        : html`
+                                                        <button class=${'mxlbl' + (ndirty ? ' pend' : '')}
+                                                                aria-label=${`Edit the label for …${a.discordId.slice(-6)}`}
+                                                                title="Rename this label — it stages like a permission and saves with the row"
+                                                                onClick=${() => setEditingNote(a.discordId)}>${nv || 'no label'}</button>`}
+                                                    ${a.grantedAt ? html`<em class="mxgr">· granted ${shortDate(a.grantedAt)}</em>` : null}
+                                                </span>
                                             </span>
                                         </span></td>
                                         ${ordered.map((sc) => {
@@ -295,10 +339,13 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onExplain, isOwnerId, highlig
                                         <td class="mxact"><span class="mxacts">
                                             ${owner ? html`<span class="holder">locked</span>`
                                                 : changes ? html`
-                                                    <button class="chip go" onClick=${() => onSave(a, rp, () => clearRow(a.discordId))}>
+                                                    <button class="chip go" onClick=${() => onSave(a, rp, ndirty ? nv : undefined, () => clearRow(a.discordId))}>
                                                         Save ${changes} ${changes === 1 ? 'change' : 'changes'}</button>
                                                     <button class="chip" onClick=${() => clearRow(a.discordId)}>Discard</button>`
                                                 : html`
+                                                    <button class="chip" aria-label=${`Edit …${a.discordId.slice(-6)}`}
+                                                            title="Permissions and label, in one drawer"
+                                                            onClick=${() => onEdit(a)}>Edit</button>
                                                     <button class="rmv" title="Revoke entirely"
                                                             aria-label=${`Revoke …${a.discordId.slice(-6)} entirely`}
                                                             onClick=${() => onRevoke(a.discordId)}><${Icon} name="trash-2" cls="sm" /></button>`}
@@ -389,6 +436,7 @@ export function AccessRealm({ session }) {
     const overlay = useOverlay();
     // D1/pin32 — the grant drawer's own open state, and delight/pin5's one-time row highlight after a grant lands. Cleared on a timer rather than on the next render: the grid re-renders on every poll/refresh, and a highlight that survived only until "something else redraws" would flicker on and off unpredictably.
     const [showGrant, setShowGrant] = useState(false);
+    const [editAdmin, setEditAdmin] = useState(null);   // the row whose full Edit drawer is open
     const [highlightId, setHighlightId] = useState(null);
     useEffect(() => {
         if (!highlightId) return undefined;
@@ -421,22 +469,31 @@ export function AccessRealm({ session }) {
     }
 
     // 🔴 THE GRID STAGES; THIS IS WHERE IT WRITES, and it goes through the same typed gate as a full revoke because it is the same act at a smaller scale. `permsAfter` recomputes the whole list, which is exactly the shape /api/access/grant already takes.
-    function confirmSave(admin, rowPending, clear) {
+    function confirmSave(admin, rowPending, nextNote, clear) {
         const labelOf = (key) => (matrix.scopes || []).find((s) => s.key === key)?.label || key;
         const { granted, revoked } = describePending(rowPending, labelOf);
+        const noteChanged = nextNote !== undefined && nextNote !== (admin.note || '');
+        const labelOnly = noteChanged && !granted.length && !revoked.length;
         overlay.confirm({
-            op: 'admin.grant', tier: 3, danger: Boolean(revoked.length), confirmLabel: 'Save permissions',
+            op: 'admin.grant', tier: 3, danger: Boolean(revoked.length),
+            confirmLabel: labelOnly ? 'Save the label' : 'Save permissions',
             typed: admin.discordId,
-            title: `Change what …${admin.discordId.slice(-6)} can do?`,
+            // 🔴 A LABEL-ONLY SAVE CHANGES NOTHING ABOUT WHAT THEY CAN DO, and the first version asked "Change what …000002 can do?" over a rename. Same defect the one-way strip already carries a note about: one body serving several acts and describing the wrong one.
+            title: labelOnly ? `Rename …${admin.discordId.slice(-6)}?` : `Change what …${admin.discordId.slice(-6)} can do?`,
             body: html`
                 <!-- 🔴 GRANTING AND REVOKING READ IDENTICALLY AS TWO BOLD PARAGRAPHS, and they are opposite acts. The drawer's eyebrow already carries the op id in prose; this states it as the identifier the server will see, and splits the two directions into groups whose colour is their direction. -->
-                <div class="idop"><b>admin.grant</b> — replaces the whole permission list for this account</div>
+                <div class="idop"><b>admin.grant</b>${' '}
+                    ${labelOnly ? '— the same write, carrying only a new label; the permission list is unchanged'
+                        : '— replaces the whole permission list for this account'}</div>
                 ${granted.length ? html`
                     <div class="acg"><b class="acg-k on">Granting ${granted.length}</b>
                         <ul class="dw-l">${granted.map((g) => html`<li key=${g}>${g}</li>`)}</ul></div>` : null}
                 ${revoked.length ? html`
                     <div class="acg"><b class="acg-k off">Revoking ${revoked.length}</b>
                         <ul class="dw-l">${revoked.map((g) => html`<li key=${g}>${g}</li>`)}</ul></div>` : null}
+                ${noteChanged ? html`
+                    <div class="acg"><b class="acg-k">Label</b>
+                        <ul class="dw-l"><li>${admin.note || 'no label'} → <b>${nextNote || 'no label'}</b></li></ul></div>` : null}
                 ${revoked.length ? html`
                     <div class="callout dangerous"><b>A revoke takes effect on their very next action.</b> It is not
                         staged and there is no undo button — restoring it means granting it again.</div>` : null}
@@ -445,9 +502,10 @@ export function AccessRealm({ session }) {
                     a portal session already open.</p>`,
             onConfirm: async () => {
                 // ⚠️ THE FOURTH ARGUMENT IS THE WHOLE POINT. `grant()` posts to /api/access/grant, which REPLACES the row — so a save that omits the note is a save that erases it. The server now leaves an absent note alone (portal/api/access.js's adminGrantDoc), and this passes the current one anyway so the intent is visible at the call site rather than resting on a default two files away.
-                await grant(admin.discordId, permsAfter(admin.permissions, rowPending), admin.discordId, admin.note);
+                await grant(admin.discordId, permsAfter(admin.permissions, rowPending), admin.discordId,
+                    nextNote === undefined ? admin.note : nextNote);
                 clear();
-                overlay.say('Permissions saved.');
+                overlay.say(labelOnly ? 'Label saved.' : 'Permissions saved.');
             },
         });
     }
@@ -495,6 +553,19 @@ export function AccessRealm({ session }) {
         setShowGrant(false);
         setHighlightId(discordId);
         overlay.say(`Granted ${permissions.length} permission${permissions.length === 1 ? '' : 's'} to …${discordId.slice(-6)}.`);
+    }
+
+    // The Edit drawer's success path. It posts through the same grant() as everything else — /api/access/grant REPLACES the row, which is exactly what an edit is — and says what changed rather than "saved", because the drawer can move permissions and the label in one act.
+    async function handleEdit(discordId, permissions, confirmText, note) {
+        const before = editAdmin;
+        const body = await grant(discordId, permissions, confirmText, note);
+        if (!body || !body.ok) return;
+        setEditAdmin(null);
+        setHighlightId(discordId);
+        const moved = permissions.length - (before.permissions || []).length;
+        const relabelled = (note || '') !== (before.note || '');
+        overlay.say(relabelled && !moved ? `Label is now “${note || 'no label'}”.`
+            : `…${discordId.slice(-6)} now holds ${permissions.length} permission${permissions.length === 1 ? '' : 's'}.`);
     }
 
     async function revoke(discordId, confirmText) {
@@ -558,7 +629,7 @@ export function AccessRealm({ session }) {
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
-                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} onCancel=${() => setShowGrant(false)} />` : null}`}
+                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} onCancel=${() => setShowGrant(false)} />` : null}${editAdmin ? html`<${GrantForm} admin=${editAdmin} onGrant=${handleEdit} scopes=${matrix.scopes} onCancel=${() => setEditAdmin(null)} />` : null}`}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
@@ -597,7 +668,8 @@ export function AccessRealm({ session }) {
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'
                           ? html`<${ByAdmin} matrix=${matrix} spof=${data.singlePointsOfFailure}
-                                             onRevoke=${confirmRevoke} onSave=${confirmSave} highlightId=${highlightId}
+                                             onRevoke=${confirmRevoke} onSave=${confirmSave} onEdit=${setEditAdmin}
+                                             highlightId=${highlightId}
                                              onExplain=${explainInherited} isOwnerId=${session.discordId} />`
                           : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} ownerId=${session.discordId} />`}
                   `} />

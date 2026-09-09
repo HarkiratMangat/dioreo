@@ -2061,6 +2061,18 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxn{min-width:0}
 .mxn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink)}
 .mxn span{display:block;font:400 var(--t-micro)/1.3 var(--data);color:var(--ink3);margin-top:1px}
+/* The label is the only thing telling one snowflake row from another, so it edits in place — and it
+   STAGES rather than firing, exactly like a permission cell beside it, using the same `--staged` ring
+   that marks every other pending change in this grid. A button rather than a contenteditable: it is a
+   control, it needs a name, and the sheet already knows how to focus one. */
+.mxlbl{font:inherit;color:inherit;background:none;border:0;padding:1px 3px;margin-left:-3px;cursor:text;
+  border-radius:var(--rad-1);text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;transition:background var(--dur-1) var(--ease)}
+.mxlbl:hover{background:var(--hi);color:var(--ink2)}
+.mxlbl.pend{box-shadow:0 0 0 1.5px var(--staged);color:var(--ink)}
+.mxlbl-in{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--staged);
+  border-radius:var(--rad-1);padding:1px 4px;margin-left:-5px;max-width:170px}
+.mxgr{font-style:normal;color:var(--ink4);margin-left:4px}
 .mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
 .mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
