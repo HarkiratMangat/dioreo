@@ -444,7 +444,8 @@ export function AccessRealm({ session }) {
                     they make re-checks server-side — so a revoke takes effect on their very next action, even with
                     a portal session already open.</p>`,
             onConfirm: async () => {
-                await grant(admin.discordId, permsAfter(admin.permissions, rowPending), admin.discordId);
+                // ⚠️ THE FOURTH ARGUMENT IS THE WHOLE POINT. `grant()` posts to /api/access/grant, which REPLACES the row — so a save that omits the note is a save that erases it. The server now leaves an absent note alone (portal/api/access.js's adminGrantDoc), and this passes the current one anyway so the intent is visible at the call site rather than resting on a default two files away.
+                await grant(admin.discordId, permsAfter(admin.permissions, rowPending), admin.discordId, admin.note);
                 clear();
                 overlay.say('Permissions saved.');
             },

@@ -11,6 +11,13 @@ function confirmMatchesTarget(confirmText, discordId) {
     return typeof confirmText === 'string' && confirmText === discordId;
 }
 
+// 🔴 AN ABSENT `note` MEANS "LEAVE IT ALONE", NEVER "SET IT TO EMPTY" — and the difference was live data loss, found 2026-09-09 09:49 EDT. This route has two callers. The Grant drawer always sends a `note` string, because its own field is `useState('')`. The grid's row Save did not: `portal/ui/access.js`'s `confirmSave` called a four-parameter `grant()` with three arguments, `JSON.stringify` drops an `undefined` value rather than sending `null`, so the body arrived with no `note` key at all — and `note: body.note || ''` turned that absence into `''`, which Mongoose writes as a `$set` because the update document carries no operators. **Adjusting anybody's permissions silently erased their label**, which is the only thing telling `…000001` from `…000003` on a screen of Discord snowflakes, under a toast reading "Permissions saved." The doc is built here rather than inline so the distinction is testable without a database, and so the fix defends the SERVER rather than only the one caller that was wrong: an empty string sent on purpose still clears the label, absence never does.
+function adminGrantDoc({ discordId, grantedBy, permissions, note }) {
+    const doc = { discordId, grantedBy, permissions };
+    if (typeof note === 'string') doc.note = note;
+    return doc;
+}
+
 function ownerOnly(handler) {
     return async (req, res, url, session) => {
         if (!isOwner(session.discordId)) return forbidden(res, 'Access is owner-only.');
@@ -154,7 +161,7 @@ function register(route) {
 
         await AdminUser.findOneAndUpdate(
             { discordId: body.discordId },
-            { discordId: body.discordId, grantedBy: session.discordId, permissions, note: body.note || '' },
+            adminGrantDoc({ discordId: body.discordId, grantedBy: session.discordId, permissions, note: body.note }),
             { upsert: true, new: true }
         );
         invalidateAdminCache();
@@ -202,4 +209,4 @@ function register(route) {
     })));
 }
 
-module.exports = { register, singlePointsOfFailure, buildPermissionMatrix };
+module.exports = { register, singlePointsOfFailure, buildPermissionMatrix, adminGrantDoc };
