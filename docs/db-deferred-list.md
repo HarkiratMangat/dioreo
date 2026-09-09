@@ -866,6 +866,19 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ## 🗂️ Queued — worth its own dedicated session
 
 
+### 🔴 `[P1 · M · Opus5-High]` THE v3 LAUNCH SCOPE IS NOT ENUMERATED IN ANY ONE PLACE, and the roadmap has no extractable v3 section
+
+*Filed 2026-09-09 15:36 EDT, after a handoff described finishing the portal plan's step 4 as though it finished v3.* Harkirat: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
+
+🔴 **`awk '/^## .*[Vv]3/,/^## .*[Vv]4/' docs/ROADMAP.md` RETURNS NOTHING.** There is no v3 section to read. The launch scope is scattered across `docs/ROADMAP.md`, `docs/db-deferred-list.md`, root `CLAUDE.md` and `.impeccable/`, and the only way to assemble it is a keyword sweep for `SHIPS WITH v3|v3 LAUNCH|pre-launch|before launch` — which finds items by how they happen to be WORDED, so anything phrased differently is invisible to it.
+
+⚠️ **And what is there is partly stale.** The roadmap still carries splitting `index.js` as *"definitely part of v3 before launch"* `[P1 · L]`, promoted 2026-08-10 — while root `CLAUDE.md` records that split as shipped 2026-08-13 (4,553 → 129 lines, into `bot/` and `handlers/`). A launch checklist carrying a done item is the same failure class as a heading outliving its body.
+
+**A partial sweep found, and this is explicitly NOT the enumeration:** portal Phase 4 verification never started (`:739`, `[P1 · L]`) · six of seven surfaces never critiqued (seven briefs in `.impeccable/surfaces/`, one report in `.impeccable/critique/`) · the `/commands` page's real pass (`:883`) · `/bot analytics` Phase 2's six gaps (`:726`) · TERMS/LICENSE/NOTICE re-check for guild install (`:782`) · prod `.env` missing the two cache-channel ids and the bulk-cache prod run (`:1452`, `:1477`) · the nameplate cache-embed redesign, still owed by Harkirat (`:1478`) · prod at `guild_count: 0`.
+
+**Do:** give the roadmap a real `## v3 — launch scope` section that IS the checklist, built by reading the deferred list's bodies and the roadmap's own entries rather than by keyword; re-verify every entry against the code before listing it; and give each a `[P· E · Model]` tag. **Verify by:** one command printing the launch checklist, every item on it re-checked against the tree on the date it was listed, and no item on it already shipped.
+
+
 ### 🔴 `[P1 · S · Opus5-High]` STEP 4 HAS NEVER BEEN SCOPED, and "~30 player-facing items" is a prose estimate four sessions have now repeated
 
 *Filed 2026-09-09 15:13 EDT, on closing step 3.* `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`'s Task 8 opens *"Roughly 30 items"* and then names **five bullets**: the landing page's command animation missing `/help` and `/draw calculator` · the `/manage` + `/bot analytics` click-test findings · the instruments (`portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit) · context architecture (five rules still encyclopedias, the tier ungated) · restoring the `Stop` hook. **The other ~25 are enumerated nowhere.**
