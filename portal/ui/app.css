@@ -2070,8 +2070,16 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   white-space:nowrap;transition:background var(--dur-1) var(--ease)}
 .mxlbl:hover{background:var(--hi);color:var(--ink2)}
 .mxlbl.pend{box-shadow:0 0 0 1.5px var(--staged);color:var(--ink)}
-.mxlbl-in{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--staged);
-  border-radius:var(--rad-1);padding:1px 4px;margin-left:-5px;max-width:170px}
+/* ⚠️ THE HEIGHT IS PINNED TO THE LINE IT REPLACES, and `data-bare` on the element is the other half.
+   An input carries app.css's own element rule at 0,3,1 — a single class cannot outrank it, and that
+   rule's comment says so in capitals after the same mistake shipped twice on the command bar. So the
+   input opts OUT rather than trying to outrank, and this pins what is left.
+   🔴 AND THE 44px THAT SURVIVES BELOW 900px IS DELIBERATE — tokens.css's tap-target rule, written
+   after measuring that every control on every realm was under 44px. It is not overridden here: on a
+   narrow viewport this input SHOULD be 44px and the row should grow around it. */
+.mxlbl-in{font:inherit;line-height:1.3;color:var(--ink);background:var(--sunk);border:1px solid var(--staged);
+  border-radius:var(--rad-1);padding:0 4px;margin-left:-5px;max-width:170px;height:17px;
+  vertical-align:-3px;box-sizing:border-box}
 .mxgr{font-style:normal;color:var(--ink4);margin-left:4px}
 .mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
