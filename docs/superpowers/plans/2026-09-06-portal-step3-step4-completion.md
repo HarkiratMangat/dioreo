@@ -7,9 +7,11 @@ status: live
 
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:executing-plans` (inline, batched) rather than `subagent-driven-development`. Subagents are a turn-multiplier here and Harkirat's standing rule is explicit-request-only; a dispatched agent also cannot be corrected mid-flight because `SendMessage` is disabled by this build. Steps use `- [ ]` for tracking.
 
+> 🔴 **START AT §0.1 — it is the only place that says what is open, in order.** Everything else here is a record of what closed, or a trap you need before you start.
+
 > 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE.** §0.2 names three retired plans and why each died, and §2.4 carries the ownership column that says which of the nine remaining items are Harkirat's — **neither survives a three-bullet paste, and a session without §0.2 will re-propose the per-realm loop within its first ten turns.** Added 2026-09-06 20:48 EDT.
 
-**Goal:** Close the ~14 remaining bucket-A portal items and then step 4, without re-deriving anything already settled and without re-inventing a per-realm loop.
+**Goal:** Close the ~14 remaining bucket-A portal items and then step 4, without re-deriving anything already settled and without re-inventing a per-realm loop. ⚠️ **"Per-realm loop" means the SHAPE — 35 invocations across seven realms — and NOT the impeccable skills, which are still the method for step 3 and are Task 9.**
 
 **Architecture:** The unit of work is the FILED ITEM, never the realm and never the component. Read the item, check the ledger, look at the code, fix, verify in the browser, record a ledger row, commit. Several items span realms by construction.
 
@@ -40,8 +42,20 @@ status: live
 |---|---|
 | 1 · Prove the portal actually works | ✅ **CLOSED 2026-09-06 15:48 EDT.** Harkirat staged, committed, landed and reversed a real draw. `newDraws` 4 → 5 → 4, ChangeLog `#26` add / `#27` delete, `baseline: [{count:4}]` — the first changeset ever to receive one |
 | 2 · Clean the list | ✅ **CLOSED 2026-09-06 15:48 EDT.** 107 → 69 headings; 38 archived |
-| 3 · Fix the portal's look and feel | 🔄 **IN PROGRESS.** ~18 bucket-A items; 9 closed on 2026-09-06 |
-| 4 · Everything else | ⬜ ~30 items across the bot, the site, the instruments and the docs |
+| 3 · Fix the portal's look and feel | ⚠️ **ITEMS DONE, METHOD NEVER RUN.** All nine open bucket-A items closed 2026-09-09 15:12 EDT (the record is §2.4). **But the five impeccable runs step 3 was DEFINED by have never happened** — one report exists, for Home, generated before step 3 started. → **Task 9** |
+| 4 · Everything else | ⚠️ **FOUR of Task 8's five bullets closed 2026-09-09 19:22 EDT.** The membership of the rest is derived but never written down. → **Task 8** |
+
+🔴 **OPEN, IN ORDER — this list is the whole answer to "what now", and nothing else in this file is.** Every other section is either a record of what closed or a trap you need before you start.
+
+| | What | Where |
+|---|---|---|
+| **1** | **Step 3's impeccable pass** — five runs, all realms per run, components only. `[P1 · M]` | **Task 9** |
+| **2** | **Re-derive step 4's B/C/D membership** against today's list. `[P1 · S]` | **Task 8** |
+| **3** | Four `.claude/rules/` files still over 30,000 B — prose judgements, not lifts | `docs/db-deferred-list.md` |
+| **4** | The `/commands` page, as ONE collective item for a fresh session | `docs/db-deferred-list.md` |
+| — | Everything v3.0.0 needs beyond this plan | `docs/ROADMAP.md` § 🚀 v3.0.0 |
+
+⚠️ **Two things are HARKIRAT'S and are not blocked on work:** a subagent dispatch for the read-only audits (declined 2026-09-09 19:22 EDT — *"skip the reader agents"*), and the catalogue push into prod Mongo.
 
 ### 0.2 🔴 THREE RETIRED PLANS — DO NOT RE-PROPOSE ANY OF THEM
 
@@ -51,13 +65,11 @@ status: live
 | **V2 · three sweeps by component** (18:44 EDT) | Shared CSS primitives → `Drawer`/`Confirm`/`Toast`/`OneWay` → realm-local composition. ~75 turns against V1's ~175 | Died inside its own message. A **94-item backlog already existed** and every sweep was already a filed item — sweep 2 as *"Overlays on the five realms other than Season have never been opened"* `P1·L`, sweep 3 as *"The four untouched realms"* `P1·L`, sweep 1 as *"78 literal colours"* `P3`. **Discovery was never the bottleneck; execution was** |
 | **V3 · audit the list first** (18:48–19:00 EDT) | Two agents read all 101 items body-first | Not wrong — it **RAN and is FINISHED**: 50 LIVE / 33 DONE / 11 SUPERSEDED / 7 BUNDLED, archived under *The supersession sweep*. **Do not re-run it** |
 
-🔴 **THE LESSON BELOW WAS WRITTEN WRONG AND IT COST STEP 3 ITS ENTIRE METHOD — corrected 2026-09-09 18:58 EDT by Harkirat.** It reads as *the tool was retired*, and three sessions read it that way, including the one that closed step 3. **What he actually killed was the LOOP'S SHAPE, not the toolset.** In his words: *"that literally could have been handled as just 5 total skill invokes… critique over all the realms (only on the specific components, not the entire front facing realm — as i had already described when drafting the plan) together as 1 full run, and then similarly clarify, layout, harden and polish in order. Thats what the plan was."*
+🔴 **THE LESSON BELOW WAS WRITTEN WRONG AND IT COST STEP 3 ITS ENTIRE METHOD — corrected 2026-09-09 19:22 EDT by Harkirat.** It reads as *the tool was retired*, and three sessions read it that way, including the one that closed step 3. **What he killed was the LOOP'S SHAPE — 5 skills × 7 realms = 35 invocations, each spinning up fresh subagents — not the toolset.** `clarify`, `layout`, `harden` and `polish` are FIX verbs applied to items already in hand and were never in question; the sentence never mentions them and retired them by implication anyway.
 
-**The approved shape, stated so it cannot be read as a retirement again:** **FIVE invocations in total, in order — `critique`, then `clarify`, `layout`, `harden`, `polish` — each ONE run spanning ALL the realms at once, and scoped to the specific COMPONENTS rather than a whole front-facing realm.** What was costed at 100–175 turns was **5 skills × 7 realms = 35 invocations**, each spinning up fresh subagents that re-derive the same context. The same work is five runs.
+**The approved shape is in Task 9 and is not restated here** — two homes for one fact is how this correction got scattered in the first place.
 
-⚠️ **`clarify`, `layout`, `harden` and `polish` were never in question at all.** They are FIX verbs applied to items already in hand — the ~18 bucket-A items — and the sentence below never mentioned them, yet retired them by implication. **Generalising a shape complaint into a tool complaint is the defect here**, and it is the same substituting-the-near-neighbour shape this repo keeps recording.
-
-*The original, struck:* ~~The load-bearing lesson: `critique` is DISCOVERY, and discovery is not what this project is short of. The Home critique's report still stands as input; what was retired is running it six more times.~~ — the first clause is still true of `critique` ALONE and of the per-realm repetition; it was never true of the other four skills.
+*The original, struck:* ~~The load-bearing lesson: `critique` is DISCOVERY, and discovery is not what this project is short of. The Home critique's report still stands as input; what was retired is running it six more times.~~ — true of `critique` ALONE and of the per-realm repetition; never true of the other four skills.
 
 ### 0.3 Who owns a design fork
 
@@ -177,9 +189,9 @@ The plugin ships four `references/` files and one `SKILL.md` per tool that are *
 
 ---
 
-## 2.4 🔴 WHAT IS ACTUALLY LEFT IN STEP 3 — the nine, at a glance (2026-09-06 19:14 EDT)
+## 2.4 ✅ THE NINE — ALL CLOSED, kept as the record of how (last row closed 2026-09-09 15:12 EDT)
 
-*Nine of ~18 bucket-A items are closed. These are the rest. **Six need nothing from Harkirat.***
+⚠️ **This heading read *"WHAT IS ACTUALLY LEFT IN STEP 3"* until 2026-09-09 19:22 EDT, while every row below it was already closed** — the same heading-outlives-its-body defect this repo keeps paying for. **For what is open, read §0.1 and nothing else.** These rows are kept because each carries how it was closed and what was measured.
 
 | # | Item | His input? | Task |
 |---|---|---|---|
@@ -326,28 +338,6 @@ Not done: (2) Season Board's empty column and Broadcast's `.bed` proportions · 
 
 ---
 
-### 🔴 Task 9: STEP 3's IMPECCABLE PASS — five invocations, all realms per run, components only (added 2026-09-09 19:19 EDT)
-
-**This task exists because the work had no task.** Tasks 1–7 are step 3's filed items and every one is closed; Task 8 is step 4. **The method step 3 was DEFINED by appears nowhere in this list** — it sat only in §0.2's retired-plans table, which is archaeology a reader consults to avoid re-proposing something, not a worklist. Harkirat, 2026-09-09 19:19 EDT, on being shown the correction: *"i dont even see anything in the plan or the handoff stating the corrected impeccable pass."* He was right, and the content being present in §0.2 is not the same as it being findable.
-
-**Checked on disk 2026-09-09 19:19 EDT:** `.impeccable/surfaces/` holds **seven** briefs; `.impeccable/critique/` holds **one** report — `portal-ui-home-js`, generated 2026-09-06 14:15 EDT, **three days before step 3 ran**. `clarify`, `layout`, `harden` and `polish` have never been invoked on anything.
-
-**The shape, in his words:** *"that literally could have been handled as just 5 total skill invokes… critique over all the realms (only on the specific components, not the entire front facing realm — as i had already described when drafting the plan) together as 1 full run, and then similarly clarify, layout, harden and polish in order."*
-
-| # | Run | Scope |
-|---|---|---|
-| 1 | `critique` | ONE run, all realms, the specific components — never a whole front-facing realm |
-| 2 | `clarify` | the confusing labels it named |
-| 3 | `layout` | spacing |
-| 4 | `harden` | empty states |
-| 5 | `polish` | last |
-
-🔴 **WHAT MUST NOT HAPPEN: seven per-realm runs.** That is V1 — 5 skills × 7 realms = **35 invocations**, each spinning up fresh subagents to re-derive the same context — and it is what he killed. §0.2's summary of that retirement (*"`critique` is DISCOVERY"*) generalised a complaint about SHAPE into one about the TOOL, and three sessions read it as a retirement of the whole toolset, including the one that closed step 3. `clarify`/`layout`/`harden`/`polish` are FIX verbs applied to items already in hand — the ~18 bucket-A items — and were never in question.
-
-⚠️ **Step 3's nine filed rows are genuinely done.** What is missing is the method, not the items.
-
-**Verify:** `.impeccable/critique/` carries a run covering every realm rather than seven per-realm reports, and each of `clarify`/`layout`/`harden`/`polish` has produced a result that closed named bucket-A items. Filed as `[P1 · M]` in `docs/db-deferred-list.md`.
-
 ### 🔴 Task 8 IS NOT THE END OF v3 — read the launch checklist first (added 2026-09-09 15:43 EDT)
 
 **`docs/ROADMAP.md` § 🚀 v3.0.0 — THE LAUNCH CHECKLIST** is the enumeration of what the v3.0.0 launch needs. This plan is ONE workstream inside it: section A of that list. Harkirat, 2026-09-09 15:43 EDT: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
@@ -381,6 +371,28 @@ Roughly 30 items. **Player-facing first**, because step 3 is entirely admin-faci
 - [ ] Restore the `Stop` hook
 
 ---
+
+### 🔴 Task 9: STEP 3's IMPECCABLE PASS — five invocations, all realms per run, components only (added 2026-09-09 19:19 EDT)
+
+**This task exists because the work had no task.** Tasks 1–7 are step 3's filed items and every one is closed; Task 8 is step 4. **The method step 3 was DEFINED by appears nowhere in this list** — it sat only in §0.2's retired-plans table, which is archaeology a reader consults to avoid re-proposing something, not a worklist. Harkirat, 2026-09-09 19:19 EDT, on being shown the correction: *"i dont even see anything in the plan or the handoff stating the corrected impeccable pass."* He was right, and the content being present in §0.2 is not the same as it being findable.
+
+**Checked on disk 2026-09-09 19:19 EDT:** `.impeccable/surfaces/` holds **seven** briefs; `.impeccable/critique/` holds **one** report — `portal-ui-home-js`, generated 2026-09-06 14:15 EDT, **three days before step 3 ran**. `clarify`, `layout`, `harden` and `polish` have never been invoked on anything.
+
+**The shape, in his words:** *"that literally could have been handled as just 5 total skill invokes… critique over all the realms (only on the specific components, not the entire front facing realm — as i had already described when drafting the plan) together as 1 full run, and then similarly clarify, layout, harden and polish in order."*
+
+| # | Run | Scope |
+|---|---|---|
+| 1 | `critique` | ONE run, all realms, the specific components — never a whole front-facing realm |
+| 2 | `clarify` | the confusing labels it named |
+| 3 | `layout` | spacing |
+| 4 | `harden` | empty states |
+| 5 | `polish` | last |
+
+🔴 **WHAT MUST NOT HAPPEN: seven per-realm runs.** That is V1 — 5 skills × 7 realms = **35 invocations**, each spinning up fresh subagents to re-derive the same context — and it is what he killed. §0.2's summary of that retirement (*"`critique` is DISCOVERY"*) generalised a complaint about SHAPE into one about the TOOL, and three sessions read it as a retirement of the whole toolset, including the one that closed step 3. `clarify`/`layout`/`harden`/`polish` are FIX verbs applied to items already in hand — the ~18 bucket-A items — and were never in question.
+
+⚠️ **Step 3's nine filed rows are genuinely done.** What is missing is the method, not the items.
+
+**Verify:** `.impeccable/critique/` carries a run covering every realm rather than seven per-realm reports, and each of `clarify`/`layout`/`harden`/`polish` has produced a result that closed named bucket-A items. Filed as `[P1 · M]` in `docs/db-deferred-list.md`.
 
 ## 4 · Self-review
 
