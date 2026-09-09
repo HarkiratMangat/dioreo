@@ -1121,7 +1121,17 @@ check(
         }
         // 🔴 `existsSync`/`join`, NOT `fs.`/`path.` -- this module imports them as NAMED bindings (line 49/51), so the original `fs.existsSync(path.join(ROOT, supersededBy))` referenced three identifiers that do not exist here (`fs`, `path`, and `ROOT` -- the repo root is `REPO`). It threw ReferenceError on the FIRST document to ever use superseded_by, 2026-08-23 11:36 EDT, which is also the first time this branch had ever executed: nothing in the repo carried the field, so the check was written, wired, counted among the passing gates, and never once run. A check that cannot run is not coverage.
         if (!existsSync(join(REPO, supersededBy))) {
-          out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          // 🔴 GITIGNORED-AND-ABSENT IS AMBIGUOUS, NOT BROKEN — found 2026-09-09 when this exact branch failed CI: OWED-PROMPT.md's superseded_by: pointed at a real local/handoff/*.md file that exists on every local checkout and never exists in CI (gitignored, never committed). Blocking on it made this check permanently unsatisfiable in CI for any superseded_by: target under local/ — the same class xref already solved below with a WARN. Reuse that exact treatment instead of re-deriving a second, divergent answer.
+          if (ignoredSet([supersededBy]).has(supersededBy)) {
+            out.push({
+              severity: "WARN",
+              msg: `${f} points superseded_by: at \`${supersededBy}\`, which is gitignored AND not ` +
+                `present. That is either a real local handoff this checkout lacks, or a stale path — ` +
+                `the ignore rule makes the two indistinguishable, so confirm which.`,
+            });
+          } else {
+            out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          }
         }
       }
       declaredPublished.set(f, /^published:\s*true\b/m.test(fm));
