@@ -46,9 +46,14 @@ const remember = fs.existsSync(rememberPath) ? fs.readFileSync(rememberPath, 'ut
 const real = plansNamedIn(start + '\n' + remember);
 const PLAN_RE = /(~\/\.claude\/plans\/[A-Za-z0-9._-]+\.md|docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md)/g;
 const independent = [...new Set((start + '\n' + remember).match(PLAN_RE) || [])];
-assert.ok(independent.length >= 1, `neither SESSION-START nor .remember names a plan at all — the pointer chain is broken`);
-assert.deepStrictEqual(real, independent,
-    `the resolver must see EVERY plan named across SESSION-START + .remember — resolver ${JSON.stringify(real)} vs the files ${JSON.stringify(independent)}`);
+// 🔴 THE COMPLETENESS ASSERTION ONLY HOLDS WHEN .remember EXISTS — added 2026-09-09, found by CI itself failing on a fresh checkout. `.remember/` is gitignored and never committed, so a fresh clone (CI included) has no `.remember/remember.md` at all — and since WP3 made SESSION-START.md deliberately carry no plan pointer, "the pointer chain must resolve to a plan" is a LOCAL, session-handoff invariant (a session forgot to leave one), not something a fresh checkout can ever satisfy. `handoffCheck.mjs` itself already treats a missing `.remember` as its own failure mode (see its `rem === null` check) but this suite deliberately does not assert its exit code — only this test's OWN independent completeness check was still unconditional, which is what broke.
+if (fs.existsSync(rememberPath)) {
+    assert.ok(independent.length >= 1, `neither SESSION-START nor .remember names a plan at all — the pointer chain is broken`);
+    assert.deepStrictEqual(real, independent,
+        `the resolver must see EVERY plan named across SESSION-START + .remember — resolver ${JSON.stringify(real)} vs the files ${JSON.stringify(independent)}`);
+} else {
+    console.log('  ⚠ SKIPPED the pointer-chain completeness check — .remember/remember.md is gitignored and absent in this checkout (fresh clone / CI). This is expected here, not a failure.');
+}
 
 // ── THE STALE-HEAD MATCHER, PROVEN BOTH WAYS (added 2026-09-07 01:55 EDT) ───────────────────────── It fired on its FIRST live run against a real stale value — a pin written before an amend, in the document it was built for. That is the can-fail proof; these two cases pin the matcher so a later edit cannot loosen it into something that always passes.
 const headClaims = (body) => [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
@@ -59,7 +64,7 @@ assert.deepStrictEqual(headClaims('| **HEAD when this was written** | **`c342a76
 assert.deepStrictEqual(headClaims('the fix landed in `6d57e68d` and shipped'), [],
     'AN ORDINARY COMMIT CITATION IS NOT A HEAD CLAIM — a handoff legitimately names the commit a measurement came from, and flagging those would make this gate fire on every well-written document, which is how a gate gets suppressed rather than obeyed');
 console.log('  ✓ the stale-HEAD matcher reads a HEAD claim and ignores an ordinary citation');
-ok(`the real SESSION-START names ${real.length} plans, and all of them are returned`);
+if (fs.existsSync(rememberPath)) ok(`the real SESSION-START + .remember names ${real.length} plans, and all of them are returned`);
 
 // ⚠️ RETIRED 2026-09-08 12:11 EDT: this asserted the conformance plan is named — true while realm work was live, false once PR #186 recorded the build-out as merged and moved that plan to HISTORY. A test that names a specific plan pins the state of the WORK, not the resolver; the completeness assertion above is the one that holds. The order-preservation property it also guarded is pinned by the two-path fixture case above.
 ok('the named-plan assertion is retired — which plan is live is a fact about the work, and the fixture case above pins ordering');
