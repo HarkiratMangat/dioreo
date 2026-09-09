@@ -313,6 +313,9 @@ Previous entries here covered one behaviour: recall by `query`, never `entity_na
 printf '%s\n%s\n' \
  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}' \
  '{"jsonrpc":"2.0","id":2,"method":"prompts/get","params":{"name":"<prompt>","arguments":{...}}}' \
+
+✅ **THE FIVE BODIES ARE DUMPED AND INDEXED — stop writing a `prompts/get` script (2026-09-09 19:26 EDT).** They ship with the package and are byte-identical on every call, so re-fetching them over stdio each session was pure waste. They live at **`~/.claude/linksee-mcp-prompts.md`** and are indexed into context-mode as **`vendor:linksee-prompts`**, so `ctx_search({source: "vendor:linksee-prompts", queries: ["..."]})` answers without a pipe. **Re-dump only after a `linksee-memory` upgrade:** `bash ~/.claude/linksee-dump-prompts.sh`. ⚠️ A prompt is an instruction to FOLLOW, not a tool to call — read the body and act with the ordinary `remember`/`recall`/`dream` tools.
+
  | node $(npm root -g)/<package>/dist/mcp/server.js
 ```
 
