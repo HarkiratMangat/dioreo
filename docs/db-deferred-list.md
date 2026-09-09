@@ -902,6 +902,20 @@ Both nudges were blind to batched searches because they matched only the **`Bash
 
 **Verify condition:** feed each hook a `{tool_input:{commands:[{command:…}]}}` payload carrying the exact input its Bash-shape test already uses, and get the same verdict.
 
+### 🔴 `[P1 · M · Opus5-High]` STEP 3's IMPECCABLE PASS WAS NEVER RUN — five invocations, all realms per run, components only
+
+*Filed 2026-09-09 18:58 EDT, after Harkirat asked whether the impeccable skills had ever actually been used on the portal. **They were not.** Checked on disk the same minute: `.impeccable/surfaces/` holds **seven** briefs and `.impeccable/critique/` holds **one** report — `portal-ui-home-js`, generated 2026-09-06 14:15 EDT, three days BEFORE step 3 ran. `clarify`, `layout`, `harden` and `polish` have never been invoked on anything.*
+
+🔴 **HOW THE METHOD GOT LOST, because the mechanism matters more than the omission.** The plan's §0.2 retired V1 — a loop of five steps per realm across seven realms — and summarised it as *"`critique` is DISCOVERY, and discovery is not what this project is short of."* **That sentence generalised a SHAPE complaint into a TOOL complaint.** What Harkirat killed was 5 skills × 7 realms = **35 invocations with fresh subagents each**; what he had drafted, and what the sentence erased, is this:
+
+**FIVE invocations in total, in order — `critique`, then `clarify`, `layout`, `harden`, `polish` — each ONE run spanning ALL the realms at once, and scoped to the specific COMPONENTS rather than a whole front-facing realm.** What was costed at 100–175 turns was **5 skills × 7 realms = 35 invocations**, each spinning up fresh subagents that re-derive the same context. The same work is five runs.
+
+**So step 3 closed on its nine filed rows — which are genuinely done — using none of the method it was defined by.** Bucket A's ~18 look-and-feel items are what the five verbs exist to fix, and they were worked one filed row at a time instead.
+
+🔗 **This supersedes the ROADMAP row reading *"Six of seven surfaces have never been critiqued"***, which frames the gap as six missing critiques. It is not: it is **one** `critique` run over all realms, then four fix runs. Six per-realm critiques is V1 again in different words.
+
+**Do:** the five runs, in order, each across all realms and scoped to the components named when the plan was drafted. **Verify:** `.impeccable/critique/` carries a run covering every realm rather than seven per-realm reports, and each of `clarify`/`layout`/`harden`/`polish` has produced a result that closed named bucket-A items.
+
 ### 🔴 `[P1 · S · Opus5-High]` STEP 4 needs its B/C/D membership RE-DERIVED — ⚠️ the "~30" has a real derivation and this entry said it had none
 
 🔴 **CORRECTED 2026-09-09 18:44 EDT.** **Verified in this session against the transcript itself, not taken on the peer's word** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/0e478890-6f40-4f6a-be84-06066b7418b8.jsonl`. The bucket table sits at **`2026-09-06T19:10:25.605Z`** and the phrase *"Roughly 30 items"* first appears at **`19:14:33.127Z`** — **four minutes later**, so the table precedes the number rather than being back-fitted to it. It came from the V3 two-agent audit classifying all **101** deferred-list entries, of which **50 were LIVE**:

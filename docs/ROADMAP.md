@@ -62,7 +62,8 @@ status: live
 - [ ] **Step 4 needs its membership RE-DERIVED, not scoped from zero.** ⚠️ **This row said the figure was UNSCOPED and that was wrong, corrected 2026-09-09 18:44 EDT:** the ~30 is `B+C+D+E = 32` from the V3 audit's classification of all 101 deferred entries (transcript `0e478890…`, table at `19:10:25Z`, four minutes BEFORE the phrase was written). Bucket E is not work, so the real load is **B+C+D = 28**, and the derivation also shows *"player-facing"* was a mis-rendering of Task 8's *"player-facing FIRST"*. The classification was never written to a tracked file and is three days stale. → `docs/db-deferred-list.md` 🗂️ Queued, `[P1 · S]`
 - [ ] **Phase 4 — the live portal has never been VERIFIED against its approved mockups.** Phases 1–3 done, 4 not started. → deferred list, `[P1 · L]`
 - [ ] **First real boot against Mongo and OAuth.** → deferred list, `[P1 · M]`
-- [ ] **Six of seven surfaces have never been critiqued.** Seven briefs in `.impeccable/surfaces/`, ONE report in `.impeccable/critique/` (home, 2026-09-06). → the impeccable skill's own commands
+- [ ] 🔴 **Step 3's impeccable pass was never run — FIVE invocations, all realms per run, components only** (corrected 2026-09-09 18:58 EDT). ⚠️ **This row used to read *"six of seven surfaces have never been critiqued"*, which is the retired per-realm loop in different words.** It is ONE `critique` across every realm, then `clarify`, `layout`, `harden`, `polish` in order — not six more critiques. → deferred list, `[P1 · M]`
+- [ ] ~~**Six of seven surfaces have never been critiqued.**~~ Seven briefs in `.impeccable/surfaces/`, ONE report in `.impeccable/critique/` (home, 2026-09-06). → the impeccable skill's own commands
 - [ ] **`portal:states` is non-deterministic**, and CI is where it bites. → deferred list, `[P1 · S]`
 
 **B · The bot and the site**

@@ -51,7 +51,13 @@ status: live
 | **V2 · three sweeps by component** (18:44 EDT) | Shared CSS primitives → `Drawer`/`Confirm`/`Toast`/`OneWay` → realm-local composition. ~75 turns against V1's ~175 | Died inside its own message. A **94-item backlog already existed** and every sweep was already a filed item — sweep 2 as *"Overlays on the five realms other than Season have never been opened"* `P1·L`, sweep 3 as *"The four untouched realms"* `P1·L`, sweep 1 as *"78 literal colours"* `P3`. **Discovery was never the bottleneck; execution was** |
 | **V3 · audit the list first** (18:48–19:00 EDT) | Two agents read all 101 items body-first | Not wrong — it **RAN and is FINISHED**: 50 LIVE / 33 DONE / 11 SUPERSEDED / 7 BUNDLED, archived under *The supersession sweep*. **Do not re-run it** |
 
-🔴 **The load-bearing lesson: `critique` is DISCOVERY, and discovery is not what this project is short of.** The Home critique's report still stands as input; what was retired is running it six more times.
+🔴 **THE LESSON BELOW WAS WRITTEN WRONG AND IT COST STEP 3 ITS ENTIRE METHOD — corrected 2026-09-09 18:58 EDT by Harkirat.** It reads as *the tool was retired*, and three sessions read it that way, including the one that closed step 3. **What he actually killed was the LOOP'S SHAPE, not the toolset.** In his words: *"that literally could have been handled as just 5 total skill invokes… critique over all the realms (only on the specific components, not the entire front facing realm — as i had already described when drafting the plan) together as 1 full run, and then similarly clarify, layout, harden and polish in order. Thats what the plan was."*
+
+**The approved shape, stated so it cannot be read as a retirement again:** **FIVE invocations in total, in order — `critique`, then `clarify`, `layout`, `harden`, `polish` — each ONE run spanning ALL the realms at once, and scoped to the specific COMPONENTS rather than a whole front-facing realm.** What was costed at 100–175 turns was **5 skills × 7 realms = 35 invocations**, each spinning up fresh subagents that re-derive the same context. The same work is five runs.
+
+⚠️ **`clarify`, `layout`, `harden` and `polish` were never in question at all.** They are FIX verbs applied to items already in hand — the ~18 bucket-A items — and the sentence below never mentioned them, yet retired them by implication. **Generalising a shape complaint into a tool complaint is the defect here**, and it is the same substituting-the-near-neighbour shape this repo keeps recording.
+
+*The original, struck:* ~~The load-bearing lesson: `critique` is DISCOVERY, and discovery is not what this project is short of. The Home critique's report still stands as input; what was retired is running it six more times.~~ — the first clause is still true of `critique` ALONE and of the per-realm repetition; it was never true of the other four skills.
 
 ### 0.3 Who owns a design fork
 
