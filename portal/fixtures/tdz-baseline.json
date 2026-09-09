@@ -28,7 +28,6 @@
     "scripts/buildLegalPages.js :: 'MORPH_JS' was used before it was defined.",
     "scripts/buildLegalPages.js :: 'NAV_GROUP_LABELS' was used before it was defined.",
     "scripts/buildLegalPages.js :: 'navGroups' was used before it was defined.",
-    "scripts/handoffCheck.mjs :: 'START' was used before it was defined.",
     "scripts/portalCoverage.mjs :: 'isFragment' was used before it was defined."
   ]
 }

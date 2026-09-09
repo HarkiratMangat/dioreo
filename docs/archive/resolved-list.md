@@ -5,6 +5,16 @@ status: dead
 
 # ✅ Resolved list — closed items from the Dior's Builds deferred list
 
+## `[P2 · M · Sonnet5-High]` WP6 of the context-carriers plan — trim CLAUDE.md's portal nav row `[DONE · 2026-09-08 20:47 EDT]`
+
+*Filed 2026-09-08 13:44 EDT, built 2026-09-08 20:47 EDT.* `CLAUDE.md:199`'s portal nav row went from **9,987B to 1,807B**; the hoisted blockquote above it (3,210B, hoisted 2026-09-01 specifically to work around the row being too long to read directly) was removed, since the row is short enough now that the workaround's own reason is gone.
+
+- **`docs/reference/portal-audit-tools.md`** (new) carries the still-live tool reference: `portal:audit`'s five-section batching contract, `portal:probe`/`portal:converge`/`portal:sweep`, `--open`/`--triggers`/`--hover`/`--focus`, seeding and fixture-day caveats, the harness.
+- **`docs/reference/portal-decision-ledger.md`** § Superseded 2026-09-06 gained a new subsection carrying the retired `?conform=1`/stand-down/enumeration-floor mechanism in full, so a session that runs into a stale reference to it can still find the history.
+- Located via `ctx_execute_file` (byte-offset analysis, never a raw 8KB dump into context), edited via a `python3` heredoc with an anchor assert and a byte-count assert (`col2`/`col3` length checked against the measured baseline before any write) per this item's own filed safety technique.
+- **Closes the context-carriers plan (`~/.claude/plans/okay-so-i-want-majestic-yao.md`) — all 8 work packages now done.**
+
+
 ## ⏱️ The completeness sweep moved off `Stop` and onto commits — closed 2026-09-06 22:28 EDT
 
 **It was not "restored", and that distinction is the entry.** The sweep had been disabled by hand (`Stop` → `Stop__OFF`) at Harkirat's permission on 2026-09-06 14:55 EDT because it fired on every turn of a long planning conversation; the filed item asked for it to be switched back on. He answered differently: it *"should only fire before commits/merges"*, not *"after every little run/turn"*.
