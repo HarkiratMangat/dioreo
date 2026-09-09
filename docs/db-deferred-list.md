@@ -879,6 +879,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 **Do:** give the roadmap a real `## v3 — launch scope` section that IS the checklist, built by reading the deferred list's bodies and the roadmap's own entries rather than by keyword; re-verify every entry against the code before listing it; and give each a `[P· E · Model]` tag. **Verify by:** one command printing the launch checklist, every item on it re-checked against the tree on the date it was listed, and no item on it already shipped.
 
 
+### ⚠️ `[P2 · M]` FOURTEEN `PreToolUse` GATES ARE REGISTERED ON `Bash` ALONE, AND `ctx_batch_execute` ROUTES AROUND EVERY ONE OF THEM
+
+*Filed 2026-09-09 16:14 EDT, from the fix that closed the same hole in the two routing nudges.*
+
+Both nudges were blind to batched searches because they matched only the **`Bash`** tool, while this repo MANDATES `ctx_batch_execute` for gathering — an MCP tool that runs shell without ever touching `Bash`. Both are fixed. **The other fourteen `PreToolUse` hooks on a bare `Bash` matcher have the identical exposure**, and each also reads `.tool_input.command`, which does not exist on the batch payload: `push-approval-gate.sh` · `main-push-guard.sh` · `overwrite-guard.sh` · `rg-flag-guard.sh` · `squash-trailer-gate.sh` · `docs-audit-gate.sh` · `records-close-check.sh` · `release-ready-check.sh` · `merge-delete-branch-autofix.sh` · `stale-reference-sweep.sh` · `devlog-toc-check.sh` · `untracked-doc-guard.sh` · `gate-truncation-guard.sh` · `commit-completeness-sweep.sh`.
+
+🔴 **The exposure is STRUCTURAL and the measured instance count is ZERO — both halves matter.** Replaying this session’s 60 batched commands: no `git push`, `git commit`, `git tag` or `gh pr merge` was ever routed through a batch, and `rg-flag-guard` fires on 0 of the 60 when fed them directly. So nothing has evaded a gate yet; what is true is that nothing would stop it, and the two hooks that WERE bitten only revealed it because their job is to fire often. ⚠️ **Do not read the zero as safety** — the nudges’ own count was zero too, right up until a full day’s prose searching went un-interrupted.
+
+**The work:** give each hook the `judge()` + NUL-separated two-shape driver that `ctx-search-nudge.sh` now carries (read stdin ONCE — two `jq` calls straight off stdin means the first consumes it), widen its matcher, and add the batch-shape proofs to its `*.test.sh`. The driver is copy-shaped; the judgement is per-hook, because a gate that DENIES needs its message to make sense when the offending command is one of six in a batch.
+
+**Verify condition:** feed each hook a `{tool_input:{commands:[{command:…}]}}` payload carrying the exact input its Bash-shape test already uses, and get the same verdict.
+
 ### 🔴 `[P1 · S · Opus5-High]` STEP 4 HAS NEVER BEEN SCOPED, and "~30 player-facing items" is a prose estimate four sessions have now repeated
 
 *Filed 2026-09-09 15:13 EDT, on closing step 3.* `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`'s Task 8 opens *"Roughly 30 items"* and then names **five bullets**: the landing page's command animation missing `/help` and `/draw calculator` · the `/manage` + `/bot analytics` click-test findings · the instruments (`portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit) · context architecture (five rules still encyclopedias, the tier ungated) · restoring the `Stop` hook. **The other ~25 are enumerated nowhere.**
