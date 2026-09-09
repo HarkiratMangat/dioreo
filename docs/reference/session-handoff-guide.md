@@ -367,14 +367,9 @@ Every failure this guide records is a RECEIVING failure, not a writing one — a
 
 *Every rule above this line was extracted from a failure. This one points at a success instead — `local/handoff/2026-09-07-portal-step3-remaining.md`, praised by Harkirat as "what I'd call a good, useful handoff... just about contains everything to continue seamlessly in a fresh session." Read that file, not a paraphrase of it — the pointer is the point, per the rule below about judgement not compressing. This section names WHY it works, so the shape can be reused without re-deriving it.*
 
-⚠️ **THIS SHAPE IS FOR A DETAILED / EXHAUSTIVE HANDOFF SPECIFICALLY — corrected 2026-09-08 21:33 EDT within minutes of writing this section, by Harkirat: "this is what a good *detailed* handoff is... when I specifically ask for a detailed handoff or an exhaustive handoff."** A handoff has (at least) two legitimate shapes and applying the wrong one is its own failure — a bridge dressed up as exhaustive wastes a session re-deriving what already exists; an exhaustive handoff compressed to a bridge drops exactly the reasoning §0 exists to carry.
+⚠️ **THIS SHAPE IS FOR `local/handoff/*.md` FILES, ALWAYS — there is no separate "bridge handoff FILE" type, and inventing one is the exact mistake corrected 2026-09-08 21:37 EDT.** A first draft of this section proposed a second, shorter "bridge" shape for connecting two sessions, with its own example file. Harkirat: *"the handoff should honestly be the detailed version. the remember.md is the short pointer and could easily act as the bridge... you could've just added a note into the original handoff and then wrote up remember.md accordingly as the bridge+pointer."* **That bridge job already has a carrier — `.remember/remember.md`, in the three-carriers table above.** A second `local/handoff/*.md` file created to serve the same job is exactly the carrier-proliferation this guide opens by warning against ("YOU ARE NOT WRITING A NEW PACKAGE, YOU ARE APPENDING TO A STANDING ONE").
 
-| Type | Job | Shape | Example |
-|---|---|---|---|
-| **Detailed / exhaustive** | Stand alone — a fresh session with NO other context can continue seamlessly from this file alone | The six sections below, in full | `local/handoff/2026-09-07-portal-step3-remaining.md` |
-| **Bridge** | Connect two sessions or two already-existing records — the reasoning and backlog live elsewhere and this file says what changed, what still applies, and what does not | State → what happened → what's actually next (a pointer, not a re-derivation) → what's deliberately NOT done | `local/handoff/2026-09-08-carriers-merged-into-build-out-handoff.md` |
-
-**Tell which one you are writing before you start** — the failure mode runs both directions.
+**When a session has nothing exhaustively new, but needs to note a status change against an existing exhaustive handoff** (a merge landed, a plan closed, a PR description got fixed): add a short dated `## Addendum` block to the TOP of the EXISTING `local/handoff/*.md` file, and let `.remember/remember.md` do its normal pointer job — restating what changed and where to read the addendum. Do not create a new `local/handoff/*.md` file for this; that is a bridge wearing the wrong carrier.
 
 | § | Job | Fails if instead it |
 |---|---|---|
