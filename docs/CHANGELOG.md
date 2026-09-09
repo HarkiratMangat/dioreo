@@ -4381,6 +4381,12 @@ Fixed at three layers rather than at the one caller that was wrong: `adminGrantD
 
 **Two entry points, one commit gate.** The label is a button in the row; clicking it swaps to an input that stages exactly like a permission cell, so a typo is a click and a Save rather than a revoke and a re-grant. A label-only save reaches the same typed confirmation, retitled **Rename …000002?** with a **Save the label** action — asking *"Change what …000002 can do?"* over a rename is one body describing the wrong act. Alongside it, each row gains the design's **Edit** chip, opening the grant form in edit mode: id fixed and read-only, Discord preview card resolving, permission chips and label pre-filled, same typed confirmation.
 
+### The row whose details panel is open is marked now
+
+**Shown before it was asked, which is a standing preference from today.** Three options rendered side by side — no mark, a left edge, a tinted row — and Harkirat took the edge: `--c` is already how the page says *this one*, where a tint reads as the bulk-selection state. `preview-sel` is emitted again with the rule it never had (an inset shadow, not `border-left`, because a real border on one `<tr>` shifts every cell in the row and the table stops aligning with its own header). Verified in the harness: exactly one row carries it, every other reads `none`.
+
+⚠️ **The table-role falsifier fired again, symmetrically, and that is the gate working.** Its anchor still reached past `<tr class=${` into the class expression, so restoring the class broke it on a paren — exactly as removing the class broke it on 2026-09-05, in the opposite direction, for the same reason. An anchor that reaches into an expression moves with the expression; it stops at the tag now.
+
 ### Step 3's last three rows, and two of them were never work
 
 **The §L ⑥ audit's twelve findings were already closed and only the heading said otherwise.** Its body has carried eleven ✅ bullets and two struck decisions since 2026-09-07; the title still read *twelve findings*, so every downstream reader counted them as live — including this plan's own §2.4 row and my own status report an hour earlier. The fourth record tonight whose parts disagreed with each other.
