@@ -62,4 +62,19 @@ ab "batch: a non-prose path"                           silent  "cd /x && rg -n '
 # ⚠️ AND THE ORIGINAL PATH, because the first driver read stdin with two jq calls and the FIRST one consumed it — the batch path worked and the Bash path this hook has always covered went silent. A fix that breaks the path it was not about is the half-fix this repo keeps recording.
 a  "bash: the original path still fires"               fires   "rg -n 'two or more words' docs/"
 
+# 🔴 AND THE REGISTRATION, NOT ONLY THE SCRIPT. A `git checkout .claude/settings.json` run to undo an unrelated reformat silently discarded this hook's matcher widening on 2026-09-09 16:24 EDT, and every proof above stayed green because they all invoke the script directly. A correct hook that is not wired to the tool it must watch protects nothing, and nothing in this repo was looking at the wiring.
+if SETTINGS="$(cd "$(dirname "$0")/.." && pwd)/settings.json" python3 -c "
+import json, io, sys, os
+cfg = json.load(io.open(os.environ['SETTINGS'], encoding='utf-8'))
+for h in cfg['hooks']['PreToolUse']:
+    for e in h.get('hooks', []):
+        if 'ctx-search-nudge.sh' in e.get('command', ''):
+            sys.exit(0 if 'ctx_batch_execute' in (h.get('matcher') or '') else 1)
+sys.exit(1)
+"; then
+  printf '  \xe2\x9c\x93 WIRED   settings.json matches ctx-search-nudge.sh on ctx_batch_execute too\n'; pass=$((pass+1))
+else
+  printf '  \xe2\x9c\x97 WIRED   ctx-search-nudge.sh is registered on Bash alone \xe2\x80\x94 batched searches are invisible to it\n'; fail=$((fail+1))
+fi
+
 echo; echo "  $pass passed, $fail failed"; [ "$fail" -eq 0 ] || exit 1

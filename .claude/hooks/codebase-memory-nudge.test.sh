@@ -77,5 +77,20 @@ firesb "batch: a code path behind a cd prefix"  "cd '/Applications/Claude Code/D
 silentb "batch: the PROSE corpus is the sibling's" "cd '/Applications/Claude Code/Diors-Builds' && rg -n 'buildPermissionMatrix' docs/db-deferred-list.md"
 silentb "batch: a genuine chain is still a chain"  "cd '/tmp' && ls && rg -n 'foo' portal/ui/app.js && echo done"
 
+# 🔴 AND THE REGISTRATION, NOT ONLY THE SCRIPT. A `git checkout .claude/settings.json` run to undo an unrelated reformat silently discarded this hook's matcher widening on 2026-09-09 16:24 EDT, and every proof above stayed green because they all invoke the script directly. A correct hook that is not wired to the tool it must watch protects nothing, and nothing in this repo was looking at the wiring.
+if SETTINGS="$(cd "$(dirname "$0")/.." && pwd)/settings.json" python3 -c "
+import json, io, sys, os
+cfg = json.load(io.open(os.environ['SETTINGS'], encoding='utf-8'))
+for h in cfg['hooks']['PreToolUse']:
+    for e in h.get('hooks', []):
+        if 'codebase-memory-nudge.sh' in e.get('command', ''):
+            sys.exit(0 if 'ctx_batch_execute' in (h.get('matcher') or '') else 1)
+sys.exit(1)
+"; then
+  printf '  \xe2\x9c\x93 WIRED   settings.json matches codebase-memory-nudge.sh on ctx_batch_execute too\n'; pass=$((pass+1))
+else
+  printf '  \xe2\x9c\x97 WIRED   codebase-memory-nudge.sh is registered on Bash alone \xe2\x80\x94 batched searches are invisible to it\n'; fail=$((fail+1))
+fi
+
 printf '\n  %s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ] || exit 1
