@@ -866,11 +866,11 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ## 🗂️ Queued — worth its own dedicated session
 
 
-### 🔴 `[P1 · M · Opus5-High]` THE v3 LAUNCH SCOPE IS NOT ENUMERATED IN ANY ONE PLACE, and the roadmap has no extractable v3 section
+### ✅ `[CLOSED 2026-09-09 15:42 EDT]` The v3 launch scope is enumerated now — `docs/ROADMAP.md` § 🚀 v3.0.0 — THE LAUNCH CHECKLIST
 
 *Filed 2026-09-09 15:36 EDT, after a handoff described finishing the portal plan's step 4 as though it finished v3.* Harkirat: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
 
-🔴 **`awk '/^## .*[Vv]3/,/^## .*[Vv]4/' docs/ROADMAP.md` RETURNS NOTHING.** There is no v3 section to read. The launch scope is scattered across `docs/ROADMAP.md`, `docs/db-deferred-list.md`, root `CLAUDE.md` and `.impeccable/`, and the only way to assemble it is a keyword sweep for `SHIPS WITH v3|v3 LAUNCH|pre-launch|before launch` — which finds items by how they happen to be WORDED, so anything phrased differently is invisible to it.
+🔴 **AND TWO OF THIS ENTRY'S OWN CLAIMS WERE WRONG, BOTH ASSERTED FROM A SEARCH RATHER THAN A READ — corrected 2026-09-09 15:42 EDT.** It said *"`awk` over ROADMAP.md returns nothing, there is no v3 section"*: **there is one**, at `### v3 (next MAJOR version)`, and my pattern looked for `^## `. It also said the roadmap *"still lists splitting `index.js` as part of v3"*: **it is struck through and marked SHIPPED**, and my grep had hit body lines under the struck header. **An absence reported from a pattern that never matched is not an absence** — which is the same class as everything else this entry describes. The real gap was narrower and still real: the scope was spread across four files with no single checklist. **There is one now.** The launch scope is scattered across `docs/ROADMAP.md`, `docs/db-deferred-list.md`, root `CLAUDE.md` and `.impeccable/`, and the only way to assemble it is a keyword sweep for `SHIPS WITH v3|v3 LAUNCH|pre-launch|before launch` — which finds items by how they happen to be WORDED, so anything phrased differently is invisible to it.
 
 ⚠️ **And what is there is partly stale.** The roadmap still carries splitting `index.js` as *"definitely part of v3 before launch"* `[P1 · L]`, promoted 2026-08-10 — while root `CLAUDE.md` records that split as shipped 2026-08-13 (4,553 → 129 lines, into `bot/` and `handlers/`). A launch checklist carrying a done item is the same failure class as a heading outliving its body.
 

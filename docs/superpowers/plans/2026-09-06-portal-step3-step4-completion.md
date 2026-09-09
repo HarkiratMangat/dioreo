@@ -320,6 +320,12 @@ Not done: (2) Season Board's empty column and Broadcast's `.bed` proportions · 
 
 ---
 
+### 🔴 Task 8 IS NOT THE END OF v3 — read the launch checklist first (added 2026-09-09 15:43 EDT)
+
+**`docs/ROADMAP.md` § 🚀 v3.0.0 — THE LAUNCH CHECKLIST** is the enumeration of what the v3.0.0 launch needs. This plan is ONE workstream inside it: section A of that list. Harkirat, 2026-09-09 15:43 EDT: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
+
+⚠️ **Task 8's own "roughly 30 items" is an estimate that names five bullets and enumerates nothing else** — filed as `[P1 · S]` in `docs/db-deferred-list.md`. **Scoping it is step 4's first unit.** The checklist's rows carry their PROVENANCE (checked against the tree · asserted by an entry · not checkable from this machine), so do not read a row as verified unless it says so.
+
 ### Task 8: Step 4 — everything else
 
 Roughly 30 items. **Player-facing first**, because step 3 is entirely admin-facing and nothing in it reaches a player:
