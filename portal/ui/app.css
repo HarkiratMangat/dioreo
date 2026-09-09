@@ -2420,6 +2420,10 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
    `portal/api/access.js` already records for `ownerOnly`, where the legend named a mark only the
    harness could draw. ⚠️ The mockup still carries both; that divergence is a ledger row, not a
    reason to keep dead CSS whose subject cannot occur. */
+/* 🔴 THE ROW WHOSE DETAILS PANEL IS OPEN, and it is the portal ahead of the design on purpose. The mockup marks nothing here; Harkirat chose this on 2026-09-09 14:59 EDT from three options RENDERED SIDE BY SIDE — no mark, this edge, or a full row tint — and took the edge because --c is already how this page says "this one", where a tint reads as the bulk-selection state. ⚠️ AN INSET SHADOW, NOT border-left: a real border on one <tr> shifts every cell in that row by its width and the table stops aligning with its own header. An inset shadow paints inside the box and moves nothing. */
+.mx tbody tr.preview-sel td:first-child,
+tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
+
 .mxlegend{display:inline-block;width:13px;height:13px;border-radius:var(--rad-2);border:1px solid var(--ink3);
   vertical-align:-2px;margin-right:5px;position:relative}
 
