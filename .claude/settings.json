@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/ideas/diors-notes.md\"; H=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-followups.sh\"; if [ -f \"$F\" ] && [ -x \"$H\" ]; then out=$(bash \"$H\" \"$F\"); if [ -n \"$out\" ]; then printf 'FOLLOW-UP MARKS AWAITING YOU -- these are \u203b exchanges in docs/ideas/diors-notes.md that are still open. An ANSWERED follow-up whose reply asks Harkirat something is NOT resolved: one sat unseen for ~5 sessions because it was below the open-items scan boundary, was not a \"- [ ]\" item, and no hook matched the mark. RAISE each of these with him in your FIRST message this session -- do not just read them.\\n%s' \"$out\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
+            "command": "F=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/docs/ideas/diors-notes.md\"; H=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/notes-followups.sh\"; if [ -f \"$F\" ] && [ -x \"$H\" ]; then out=$(bash \"$H\" \"$F\"); if [ -n \"$out\" ]; then printf 'FOLLOW-UP MARKS AWAITING YOU -- these are ※ exchanges in docs/ideas/diors-notes.md that are still open. An ANSWERED follow-up whose reply asks Harkirat something is NOT resolved: one sat unseen for ~5 sessions because it was below the open-items scan boundary, was not a \"- [ ]\" item, and no hook matched the mark. RAISE each of these with him in your FIRST message this session -- do not just read them.\\n%s' \"$out\"; fi; fi | jq -Rs 'if . == \"\" then empty else {hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:.}} end'",
             "timeout": 5
           }
         ]
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[clock] Real current time: %s. Use THIS for any timestamp you write \u2014 never estimate elapsed time from how long the session feels. On 2026-08-02 a single date call at 12:57 followed by guessing produced 30 fabricated stamps drifting 4.5h into the future, in a released CHANGELOG and a git tag.\"}}' \"$(date '+%Y-%m-%d %H:%M %Z')\"",
+            "command": "printf '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"[clock] Real current time: %s. Use THIS for any timestamp you write — never estimate elapsed time from how long the session feels. On 2026-08-02 a single date call at 12:57 followed by guessing produced 30 fabricated stamps drifting 4.5h into the future, in a released CHANGELOG and a git tag.\"}}' \"$(date '+%Y-%m-%d %H:%M %Z')\"",
             "timeout": 5
           }
         ]
@@ -370,7 +370,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/timestamp-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"TIMESTAMP CHECK DID NOT RUN \u2014 .claude/hooks/timestamp-check.sh is unreadable, so nothing is checking dates OR catching impossible (future) timestamps. On 2026-08-02 that failure mode put 30 fabricated stamps into records. Verify any timestamp you write by hand.\"}}'; fi",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/timestamp-check.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{hookSpecificOutput:{hookEventName:\"PostToolUse\",additionalContext:\"TIMESTAMP CHECK DID NOT RUN — .claude/hooks/timestamp-check.sh is unreadable, so nothing is checking dates OR catching impossible (future) timestamps. On 2026-08-02 that failure mode put 30 fabricated stamps into records. Verify any timestamp you write by hand.\"}}'; fi",
             "timeout": 8
           },
           {
@@ -454,14 +454,12 @@
             "statusMessage": "Design deep pass"
           }
         ]
-      }
-    ],
-    "Stop__PARKED_NEEDS_REFINING": [
+      },
       {
         "hooks": [
           {
             "type": "command",
-            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; ln=$(grep -n '\"role\":\"user\",\"content\":\"' \"$tp\" | tail -1 | cut -d: -f1); ln=${ln:-1}; vcalls=$(tail -n +\"$ln\" \"$tp\" | grep -cE '\"name\":\"(Bash|Grep|Glob)\"'); last=$(tail -n +\"$ln\" \"$tp\" | grep '\"type\":\"assistant\"' | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null); if printf '%s' \"$last\" | grep -qiE \"$(bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/claim-detect.sh\" --regex)\"; then if [ \"${vcalls:-0}\" -eq 0 ]; then jq -n '{decision:\"block\",reason:\"COMPLETION-CLAIM WITHOUT EVIDENCE: your last message asserts something is done/verified/clean/in-sync/matches, but this turn shows ZERO Bash/Grep/Glob tool calls -- no actual check backs the claim. Harkirat has flagged this exact recurring pattern (having to send you to double-check and catch your own gaps every session). Before restating this claim: run the real verification (git status/diff, grep for residue, node -c, tests, etc.), look at its actual output, and only then assert completion.\"}'; fi; fi",
+            "command": "input=$(cat); active=$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false'); if [ \"$active\" = \"true\" ]; then exit 0; fi; tp=$(printf '%s' \"$input\" | jq -r '.transcript_path // empty'); [ -f \"$tp\" ] || exit 0; ln=$(grep -n '\"role\":\"user\",\"content\":\"' \"$tp\" | tail -1 | cut -d: -f1); ln=${ln:-1}; vcalls=$(tail -n +\"$ln\" \"$tp\" | grep -cE '\"name\":\"(Bash|Grep|Glob)\"'); last=$(tail -n +\"$ln\" \"$tp\" | grep '\"type\":\"assistant\"' | tail -8 | jq -r '.message.content[]? | select(.type==\"text\") | .text' 2>/dev/null); if printf '%s' \"$last\" | grep -qiE \"$(bash \"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/claim-detect.sh\" --regex)\"; then if [ \"${vcalls:-0}\" -eq 0 ]; then jq -n '{decision:\"block\",reason:\"COMPLETION-CLAIM WITHOUT EVIDENCE: your last message asserts something is done/verified/clean/in-sync/matches, but this turn shows ZERO Bash/Grep/Glob tool calls -- no actual check backs the claim. Harkirat has flagged this exact recurring pattern (having to send you to double-check and catch your own gaps every session). Before restating this claim: run THE NARROWEST CHECK THAT COULD PROVE THIS CLAIM AND NOTHING WIDER, read its actual output, and only then assert completion. If you claimed a file changed, diff that file. If you claimed a string is gone, grep for that string. If you claimed a function parses, node --check that one file. DO NOT RUN THE WHOLE SUITE FOR A MID-WORK CLAIM: npm test is a PUSH gate, and Harkirat has said so directly -- why are you running npm test when your still mid work? are we pushing? no. A suite run here costs minutes and proves far more than the sentence you wrote, which is the tell that it is the wrong instrument. Refined 2026-09-09 17:40 EDT: the trigger was always correct and this wording was what sent turns to the suite.\"}'; fi; fi",
             "timeout": 10
           }
         ]
@@ -470,7 +468,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/outstanding-not-filed.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{decision:\"block\",reason:\"OUTSTANDING-NOT-FILED GATE MISSING \u2014 .claude/hooks/outstanding-not-filed.sh is unreadable, so nothing is checking whether items you named as outstanding actually got filed. Restore it or say explicitly that you are proceeding without it.\"}'; fi",
+            "command": "S=\"${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}/.claude/hooks/outstanding-not-filed.sh\"; if [ -r \"$S\" ]; then bash \"$S\"; else jq -n '{decision:\"block\",reason:\"OUTSTANDING-NOT-FILED GATE MISSING — .claude/hooks/outstanding-not-filed.sh is unreadable, so nothing is checking whether items you named as outstanding actually got filed. Restore it or say explicitly that you are proceeding without it.\"}'; fi",
             "timeout": 10
           }
         ]

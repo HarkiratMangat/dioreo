@@ -516,7 +516,15 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 **Do:** nothing. **Verify by:** if this is ever re-proposed, the three citations above answer it without re-deriving.
 
-### 🔧 Two `Stop` hooks are PARKED pending refinement — Harkirat named both, and reading them confirmed both `[P1 · S · Opus5-High]`
+### ✅ `[CLOSED 2026-09-09 17:43 EDT]` Both `Stop` hooks are REFINED and LIVE — the parked key is gone
+
+**1 · COMPLETION-CLAIM.** The trigger was never the problem, so it is untouched; the `reason` was, and it now demands *the narrowest check that could prove THIS claim and nothing wider*, with three worked examples (claimed a file changed → diff that file; claimed a string is gone → grep that string; claimed a function parses → `node --check` that one file). It then forbids the suite outright and quotes Harkirat's own words for why. **Live-fired both directions:** an evidence-free completion claim returns `decision: block`; the identical claim after one `Bash` call is silent. ⚠️ **One deviation from the filed verify condition, stated rather than glossed.** It asked for text *naming no whole-suite command*; the new text names `npm test` — but only inside an explicit prohibition, quoting *"why are you running npm test when your still mid work? are we pushing? no"*. Naming the thing you must not run is clearer than alluding to it, and that judgement is mine rather than the filing's.
+
+**2 · OUTSTANDING-NOT-FILED.** The ratchet is the defect: all three blocking branches ended in *file it NOW* and nothing ever pointed at closing anything, so the list could only grow — it reached 107 items and shrinking it back to 69 became its own workstream. Each of the three reasons now ends with a closing pass: does an existing entry already cover this (amend rather than add a second), and is anything in the same section now done or stale (close it in the same edit, with the date and what it was checked against). ⚠️ **This does not make the gate verify quality** — its own text still admits a gate proves a list was opened, never that the right thing was written in it. It changes what the list-opening moment asks of you.
+
+**Unparked in the same change:** the two blocks moved from `Stop__PARKED_NEEDS_REFINING` into `Stop` and that key no longer exists. `npm run test:hooks` green afterwards.
+
+*Original entry:*
 
 *Filed 2026-09-06 22:46 EDT. They sit in `.claude/settings.json` under `Stop__PARKED_NEEDS_REFINING`, a key the harness does not know and therefore does not run — preserved verbatim and visible in a diff rather than deleted. The other three (`DEFERRAL-TELL`, `EFFORT-RANGE`, the impeccable hook) are back ON.*
 
@@ -1212,8 +1220,7 @@ Run 1 (at `96faa38`) found four defects; all were "fixed". Run 2 (at `aab0853`) 
 
 ⚠️ **The end-to-end condition this entry originally named is NOT what was run.** It asked for a tree where `portal/ui` has a commit newer than a fixture. The unit above certifies the decision rather than the plumbing around it — `git log -1 --format=%ct` reading the right paths is still only proven by the fresh branch. That is a smaller claim than the original wording and is stated rather than glossed.
 
-*Original entry:*
-*Filed 2026-08-30 16:0x EDT. Named in `96faa38`'s message and in no list until now.*
+*Original entry:* *Filed 2026-08-30 16:0x EDT. Named in `96faa38`'s message and in no list until now.*
 
 `scripts/portalStatus.mjs` reports per realm whether `portal/ui` has moved since its geometry fixture was recorded. **The FRESH branch is proven** (all seven report fresh on a tree where nothing moved). **The STALE branch has never fired**, so by this repo's own rule — prove a probe can report PRESENCE before trusting its silence — it is uncertified. Its first version cried stale on all seven at once (a fixture cannot stamp the commit it is about to be committed in); that false positive is fixed and the true positive is untested.
 
