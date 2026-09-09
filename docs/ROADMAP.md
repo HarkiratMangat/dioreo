@@ -67,7 +67,7 @@ status: live
 
 **B · The bot and the site**
 
-- [ ] **The `/commands` page needs a real pass.** ✅ Its measurable half closed 2026-09-09 16:52 EDT: the landing animation was missing **three** commands, not the two filed — `/help`, `/draw calculator` and `/invite` — and `SPECS` now holds 14, matching the page exactly. **The row stays open for the pass itself**, which Harkirat asked to be audited and proposed rather than looked at by him. → deferred list, `[P2 · M]`
+- [ ] 🔴 **The `/commands` page is NOT LIVE** — measured 2026-09-09 17:00 EDT: `public/commands.html` has never been on `origin/main`, so `dioreo.app/commands` serves the homepage. Every other route is correct. **And nothing on the homepage links to it**, so shipping v3 alone does not make it reachable from the front door. **The `/commands` page needs a real pass.** ✅ Its measurable half closed 2026-09-09 16:52 EDT: the landing animation was missing **three** commands, not the two filed — `/help`, `/draw calculator` and `/invite` — and `SPECS` now holds 14, matching the page exactly. **The row stays open for the pass itself**, which Harkirat asked to be audited and proposed rather than looked at by him. → deferred list, `[P2 · M]`
 - [ ] **`/bot analytics` Phase 2** — six gaps a live review filed and did not build. → deferred list, `[P2 · M]`
 - [ ] **`/settings` jump-to options** — land directly on a page. → below
 - [ ] **Update/add new builds + audit loadout data** against the live season. → below. 🔗 Re-run `scripts/exportWeaponIndex.mjs` after any bulk import
