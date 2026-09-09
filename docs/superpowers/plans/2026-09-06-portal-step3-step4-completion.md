@@ -177,14 +177,14 @@ The plugin ships four `references/` files and one `SKILL.md` per tool that are *
 
 | # | Item | His input? | Task |
 |---|---|---|---|
-| 1 | **The four Export drawers** — one fix in `exportPanel.js` lands on four realms | No | 3 |
-| 2 | **The accessible name runs two words together** — the htm-whitespace class has three shapes and the gates cover two | No | 2 |
-| 3 | **The season strip draws 37 of 39 bars** — `track.js:644` filters what the design does not | No, but LOOK at the two dropped items first | 5 |
+| 1 | ✅ **CLOSED 2026-09-08 22:58 EDT — there is no `exportPanel.js` bug.** Deltas re-measured on all four and decomposed member by member: the growth since the recorded figures is the raised type scale reaching into the overlay, and the residue is ~3 rows. See the ledger's Overlay tier | No | 3 |
+| 2 | ✅ **CLOSED 2026-09-08 22:58 EDT.** The third shape is a CLOSING inline tag ending a line before a word — found by an adjacency census over `portal/ui/*.js`, not by guessing. **3 live sites, all in `armory.js`'s empty states**, all rendering as *"…armory yet.A build is a weapon"*. Gate added, proven able to fail on the real tree, sites fixed | No | 2 |
+| 3 | ✅ **REFUTED 2026-09-08 22:58 EDT — the strip draws 39 of 39.** The filter drops nothing: no fixture item lacks a date, and the publications `.concat()` already added the two the lane-walk missed. **Counted in the browser**, not replicated: 39 `.scrub .mini`, six rows (3+11+3+6+14+2), zero `NaN`. The filed premise *"two items have neither a startDate nor a date"* measures zero | No | 5 |
 | 4 | **The §L ⑥ audit's remaining findings** | No — its two decision-shaped ones are now answered | 6 |
 | 5 | **Access: an admin's NOTE cannot be edited** | 🔴 **YES** — a new editor is a FEATURE, and Part 4's scope excluded features | 4 |
 | 6 | **The design queue's seven undone items** | Some — items 5 and 7 are his; the rest are not | 7 |
-| 7 | **78 literal colours + four `transition: width`** animating layout | No | — |
-| 8 | **Nine reverse-orphan classes** accepted into the baseline rather than resolved | No | — |
+| 7 | ⏳ **PART DONE.** Colours ✅ 2026-09-07 (76 → 11). Transitions: `.prog-b i` ✅ moved to `transform`, browser-verified · `.ub .ubt i` 🔴 animates nothing (the whole `.ub` set is a dead reverse-orphan) · the Track's two ⏳ filed, Harkirat's call. Split in `docs/db-deferred-list.md`; the *zero `transition: width`* verify condition is amended | No | — |
+| 8 | ✅ **ALREADY CLOSED 2026-09-06 21:42 EDT** — before this plan's own handoff called it untouched. Six of the nine resolved, three kept by measurement (`t-best` annotated, `trow-note`/`trow-empty` a cited D5 divergence). `docs/db-deferred-list.md` carries the per-class verdict table | No | — |
 | 9 | **`async.js`'s two unreachable request states** and the states harness's missing PASS 5 | No | — |
 
 ⚠️ **Batch the ones that share a file or a verify pass.** The Analytics, Access and Armory fixes shipped as one commit with one suite run on 2026-09-06; nine separate open-fix-verify-commit cycles is the retired per-realm loop wearing a different label.

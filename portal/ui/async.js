@@ -93,7 +93,7 @@ export function Progress({ total, done = 0, current = '', failed = null }) {
     const pct = total ? Math.round((done / total) * 100) : 0;
     return html`
         <div class=${'prog' + (failed ? ' bad' : '')} role="status" aria-live="polite">
-            <div class="prog-b"><i style=${`width:${pct}%`}></i></div>
+            <div class="prog-b"><i style=${`--p:${pct}%`}></i></div>
             <div class="prog-t">
                 ${failed
                     ? html`<b>Stopped at ${done + 1} of ${total}</b> · ${failed}`

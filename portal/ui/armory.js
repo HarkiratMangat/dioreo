@@ -160,7 +160,7 @@ function Rack({ builds, onPick, onAdd }) {
     if (!builds.length) {
         return html`
             <div id="rack">
-                <p class="empty"><b>Nothing in this armory yet.</b>
+                <p class="empty"><b>Nothing in this armory yet.</b>${' '}
                     A build is a weapon, a category and the attachments on it — a gunsmith code, an image and the
                     badges can all arrive later.</p>
                 <div class="racktools"><button class="pill lead" onClick=${onAdd}>Add the first build</button></div>
@@ -796,7 +796,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     if (!options.length) {
         return html`
             <div id="compare">
-                <p class="empty"><b>Nothing to compare yet.</b>
+                <p class="empty"><b>Nothing to compare yet.</b>${' '}
                     Compare lines up every build of one weapon, field by field — so it needs a weapon first.</p>
                 <div class="racktools"><button class="pill lead" onClick=${onAdd}>Add a build</button></div>
             </div>`;
@@ -814,7 +814,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
                     </button>`)}
             </div>
             ${!picked.length ? html`
-                <p class="empty"><b>Type a weapon above.</b>
+                <p class="empty"><b>Type a weapon above.</b>${' '}
                     Every build of it lines up here, field by field, with the rows that differ marked — which is the
                     only way to decide which of two near-duplicates to keep.</p>
                 ${suggest ? html`

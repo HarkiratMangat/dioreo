@@ -1833,8 +1833,16 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    moment "which one" is the only question worth answering. */
 .prog{padding:12px 14px}
 .prog-b{height:4px;border-radius:var(--rad-pill);background:var(--sunk);overflow:hidden}
-.prog-b i{display:block;height:100%;background:var(--patch);border-radius:var(--rad-pill);
-  transition:width var(--dur-2) var(--ease)}
+/* 🔴 THE FILL SLIDES, IT DOES NOT GROW — changed 2026-09-08 22:54 EDT. `transition:width` makes the browser
+   re-run layout on every frame of a 40-op commit; a transform runs on the compositor and touches no
+   layout at all. ⚠️ AND IT IS translateX, NOT scaleX, for one visible reason: this bar carries
+   `border-radius:var(--rad-pill)` and scaling a 4px pill horizontally stretches its cap into an
+   ellipse that grows as the bar fills. Translating a full-width child inside the `overflow:hidden`
+   parent moves the SAME rounded leading edge across, so the pixels are the ones this rule already
+   drew. `--p` is the percentage; at 0% the child sits entirely left of the clip. */
+.prog-b i{display:block;height:100%;width:100%;background:var(--patch);border-radius:var(--rad-pill);
+  transform:translateX(calc(var(--p,0%) - 100%));
+  transition:transform var(--dur-2) var(--ease)}
 .prog.bad .prog-b i{background:var(--danger-ink)}
 .prog-t{margin-top:8px;font:500 var(--t-sm)/1.4 var(--data);color:var(--ink2)}
 .prog.bad .prog-t b{color:var(--danger-ink)}

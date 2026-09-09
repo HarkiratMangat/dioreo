@@ -371,19 +371,35 @@ The instruments state their own blind spots on every run and a ledger section sh
 | Realm · overlay | Delta ② / ③ / ④ | State | Reopens if |
 |---|---|---|---|
 | season · composer, six kinds · export drawer · day drawer · identity editor · record preview | 0.2–1.2% each | **Closed** — Part 1, enumerated | A composer kind is added |
-| armory · `Export…` | 26 / 4 / 51 | **Adjudicated by class** — the shared export drawer. See the row below | — |
+| armory · `Export…` | ~~26 / 4 / 51~~ → **18 / 6 / 183** | **Adjudicated by class** — the shared export drawer. See the row below | — |
 | armory · create (`#mhAdd button:nth-of-type(2)`) | — | ✅ **FIXED, not cited.** The portal switched the rack instead of mounting a form; Harkirat ruled the mockup right | The two armouries stop being separate racks |
-| broadcast · `Export…` | 28 / 5 / 39 | 🔬 **TRIAGED MEMBER BY MEMBER — the reference case for all four export drawers.** 18 of its ② are the settled icon class, the whole-page pairing node and the cited `span.id`; **the remaining 7 were the staged tray, missing from the portal entirely** — now built. Its ③ is the crumb, the identity button, the `✕` glyph, the two cited export-scope notes and the cited `p.expnone`. Its ④ is `main`'s reserve for the tray (reach 234, the largest row), the cited identity widths, the cited crumb separator and the 9 rows of Harkirat's commit-chip decision. **Nothing was left unaccounted for** | The export drawer is redesigned |
+| broadcast · `Export…` | ~~28 / 5 / 39~~ → **24 / 6 / 170** | 🔬 **TRIAGED MEMBER BY MEMBER — the reference case for all four export drawers.** 18 of its ② are the settled icon class, the whole-page pairing node and the cited `span.id`; **the remaining 7 were the staged tray, missing from the portal entirely** — now built. Its ③ is the crumb, the identity button, the `✕` glyph, the two cited export-scope notes and the cited `p.expnone`. Its ④ is `main`'s reserve for the tray (reach 234, the largest row), the cited identity widths, the cited crumb separator and the 9 rows of Harkirat's commit-chip decision. **Nothing was left unaccounted for** | The export drawer is redesigned |
 | broadcast · `+ Post announcement` | 28 / 5 / 43 | **Enumerated; same three classes as the row above plus the post form** | — |
-| access · `Export…` | 22 / 6 / 48 | **Adjudicated by class** — the shared export drawer | — |
+| access · `Export…` | ~~22 / 6 / 48~~ → **18 / 7 / 180** | **Adjudicated by class** — the shared export drawer | — |
 | access · `+ Grant access` | — | **CITED, not work.** The design opens a drawer; the portal does `setView` + `scrollToGrant`, which Harkirat chose. `--open` refuses because the node count does not change — that refusal is the evidence | The inline form is replaced by a drawer |
-| analytics · `Export…` | 18 / 7 / 61 | **Adjudicated by class** — the shared export drawer | — |
+| analytics · `Export…` | ~~18 / 7 / 61~~ → **16 / 8 / 182** | **Adjudicated by class** — the shared export drawer | — |
 | analytics · alert-level chips (`--open-sel ".lvlb"`) | 8 / 2 / 4 | **Closed.** The smallest delta in the tier: the chips filter the river in place rather than opening anything, so the delta is the three standing subtractions and nothing else | A chip starts opening a surface |
 | review · `Discard all` | 18 / 4 / 43 | **Enumerated.** Every member falls in a named class: the icon set, the pairing nodes, the cited identity row, the cited crumb, and the drawer geometry that follows from the copy | — |
 | season · the one-way typed confirm | — | **CITED — it cannot be compared.** The mockup draws `Export first →` ×5 where the portal draws the seven real one-way operations; `--triggers` lists `Purge every draw…` as ONLY IN PORTAL. There is no counterpart to open, and that IS the already-cited `oneway.js` decision | The design gains the seven operations |
 | home | — | **None exist.** Home commits nothing and has no composer — `--triggers` lists only the rail and the view chrome | Home gains a composer |
 
 🔴 **THE FIGURES ABOVE ARE POST-SEEDING AND THE EARLIER SET IS SUPERSEDED — 2026-09-04 21:41 EDT.** Every realm became a SEED realm when the rail badge and the commit chip started rendering on all seven, so every resting baseline moved and every delta taken against an older one is wrong. The four `Export…` deltas are graded as ONE finding by §0.7a's own rule — *a repeated pattern is one finding* — because they are four instances of `exportPanel.js`, and Broadcast's is triaged member by member as the reference. ⚠️ **That is a real inference and it is stated as one**: if `exportPanel.js` ever renders differently per realm, the three by-class rows are unadjudicated again.
+
+🔴 **RE-MEASURED 2026-09-08 22:58 EDT — THE FOUR EXPORT FIGURES ABOVE WERE STALE, AND NOTHING WOULD HAVE NOTICED.** Every one was recorded 2026-09-04 21:41 EDT; the build-out then merged on 2026-09-06 carrying **the raised type scale**, which is itself a cited portal-ahead divergence. A type ramp reaches every element inside an overlay, so the delta it contributes was folded into four numbers that were never re-taken. **The four `Export…` rows keep their state — adjudicated by class, with Broadcast the triaged reference — and only their arithmetic moved.**
+
+| | ② | ③ | ④ |
+|---|---|---|---|
+| **Direction** | improved on all four | ±2 | grew ~3.5× on all four |
+| armory | 26 → 18 | 4 → 6 | 51 → 183 |
+| broadcast | 28 → 24 | 5 → 6 | 39 → 170 |
+| access | 22 → 18 | 6 → 7 | 48 → 180 |
+| analytics | 18 → 16 | 7 → 8 | 61 → 182 |
+
+**Armory's 183 was decomposed member by member rather than accepted as a number:** 97 rows are type (`fontSize`/`lineHeight`/`letterSpacing`, at ratios of 1.10, 1.05 and 1.04 — a ramp, not one multiplier), 49 are the `height`/`width` that larger type causes, and of the remaining 37, `main`'s `paddingBottom` (the tray reserve, reach 5084), `b.crumb-sep`, `a.hdr-commit` ×7 and `span.av` ×7 are each a class this ledger already cites. 🔴 **Eight more are ONE fact, not eight:** `button.x` reads `boxShadow: none → rgba(242,194,48,.16) 0 0 0 5px` while `button.lead.pill.sm` reads the exact inverse, and `outlineStyle`/`outlineWidth`/`outlineColor` invert with it — a **symmetric A→B / B→A pairing artifact** per §0.7c, meaning only that focus lands on the close button in one build and on the primary action in the other. The residue is about three rows.
+
+⚠️ **What was NOT done, stated so the green does not over-read:** ② and ③ were compared as COUNTS, not re-triaged member by member. They fell, which is not a direction that hides new work — but "fewer" is not "all accounted for".
+
+🔴 **AND THE GENERAL LESSON, because this is the fourth instance in one evening.** A recorded measurement has no as-of date tied to the decision that can invalidate it. Four separate records were stale tonight in exactly this way: this table (figures predating the type scale), the plan's *season strip draws 37 of 39* (fixed by the publications `.concat()` before the plan was written), the handoff's *nine reverse-orphan classes, completely untouched* (the tracker had closed it twelve hours earlier), and the handoff's *the transitions are not yet filed* (they were, jointly with the colours). **None of them failed a gate, because no gate compares a number to the change that moved it.**
 
 ## ⑥ UX-COPY — the phase that had no observable, worked 2026-09-04 20:53 EDT
 

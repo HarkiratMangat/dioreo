@@ -273,6 +273,32 @@ check('THE WRAP GATE CAN FAIL: a line ending in a word followed by <b> is caught
     assert.ok(!INLINE_TEXT_TAG.test('${staged ? html`<span class="cnt">'), 'an expression is deliberately NOT gated — see the note above');
 });
 
+// 🔴 THE THIRD QUADRANT OF THE SAME TRAP, AND A CENSUS IS WHY IT IS THIS ONE RATHER THAN A GUESS. The two gates above cover a line ending in a WORD before an inline tag, and one ending in an EXPRESSION before a word — which leaves the third corner unwatched: a line ending in a CLOSING inline tag before a word. Counting every line-end -> line-start pair across `portal/ui/*.js` on 2026-09-08 gave word->word 2691 (never a defect: the text node does not end, so htm keeps the space), expr->word 357 (gated above), expr->expr 78, expr->inlineTag 21 (deliberately declined above), closeTag->expr 8, **closeTag->word 3**, closeTag->inlineTag 1, word->expr 1. All three closeTag->word pairs were real and all three were rendering: Armory's empty states read "Nothing in this armory yet.A build is a weapon". The census is the reason this gate is narrow by measurement rather than by hope — the same file's own note warns that 137 tag adjacencies are not 137 defects, and a gate that says otherwise gets suppressed.
+//
+// ⚠️ THE CLOSING TAG MUST CARRY TEXT, and that one requirement is the difference between this gate and a false-positive machine. `<i style=${…}></i>` is a POSITIONED GRAPHIC — `analytics.js:551` puts one immediately before a `<b class="deadline">` — and a space between two positioned elements means nothing, so an empty tag must never fire. Requiring a word character immediately before the `</…>` is the same discrimination the note above makes for expressions, applied to the other side of the break.
+const CLOSING_TEXT_TAG = /[A-Za-z0-9.,;:!?)\]"']<\/(b|code|em|i|strong|abbr|kbd|sup|sub)>$/;
+check('no closing inline tag wraps straight into a word, losing the space between them', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js') && !n.endsWith('.logic.js'))) {
+        const lines = fs.readFileSync(path.join(dir, f), 'utf8').split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (/^\s*(\/\/|\*|<!--)/.test(lines[i].trim())) continue;
+            if (!CLOSING_TEXT_TAG.test(lines[i].trim())) continue;
+            const next = lines[i + 1].trim();
+            if (!/^[A-Za-z0-9]/.test(next)) continue;
+            offenders.push(`portal/ui/${f}:${i + 1}  …${lines[i].trim().slice(-38)} ⟶ ${next.slice(0, 30)}`);
+        }
+    }
+    assert.deepStrictEqual(offenders, [], "htm eats the line break after a closing tag too — end the line with ${' '}:\n  " + offenders.join('\n  '));
+});
+
+check('THE CLOSING-TAG GATE CAN FAIL, and does not fire on an empty positioned tag', () => {
+    assert.ok(CLOSING_TEXT_TAG.test('<p class="empty"><b>Nothing in this armory yet.</b>'), 'the real defect must be caught');
+    assert.ok(!CLOSING_TEXT_TAG.test('<i style=${`width:${p}%`}></i>'), 'an empty positioned tag must not fire — see the note above');
+    assert.ok(!CLOSING_TEXT_TAG.test("<b>Nothing in this armory yet.</b>${' '}"), 'the explicit fix must not fire');
+});
+
 
 // ── OVERLAPS AND GAPS ────────────────────────────────────────────────────────────────────────
 //
