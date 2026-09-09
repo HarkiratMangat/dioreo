@@ -107,7 +107,7 @@ The `SessionStart` hook injects a **LAST HANDOFF** block from `.remember`. It is
 
 **A stale carrier beats an absent one, because the reader does not know to distrust it.** Two rules follow:
 
-1. **Write the current handoff so it can be told apart from the stale one, from inside the stale one's own framing.** Put a block at the very top that names the OLD handoff by its landmarks — the file it points at, a distinctive phrase it uses, the commit it calls newest — and says plainly that this file supersedes it. Do not write "read the latest handoff": a reader who has been handed a confident stale document does not know which is latest.
+1. **Write the current handoff so it can be told apart from the stale one, from inside the stale one's own framing.** Put a block at the very top that names the OLD handoff by its landmarks — the file it points at, a distinctive phrase it uses, the commit it calls newest — and says plainly that this file supersedes it. Do not write "read the latest handoff": a reader who has been handed a confident stale document does not know which is latest. ⚠️ **Sharper version, added 2026-09-08 21:32 EDT: name the specific WRONG BELIEFS, not just which document is old.** `local/handoff/2026-09-07-portal-step3-remaining.md` opens: *"If your context claims OWED-PROMPT.md's work IS step 3's work, or that SESSION-START.md points at a plan, or that PASS 5 is still owed: all three are wrong and this file is why."* That inoculates against each specific stale belief a reader is likely already holding — sharper than a generic "this supersedes X," which only helps a reader who already suspects something is wrong.
 2. **If the pivot is bigger than the session, it does not belong only in a handoff.** A handoff is gitignored and session-scoped. A method change needs a **tracked** home — a dated spec, the plan's own procedure section, and a line in `CLAUDE.md`'s navigation map, which is the only file re-injected after a compact.
 
 ⚠️ **And check the always-loaded surfaces for a description that is now WRONG rather than merely missing.** The same pass found `CLAUDE.md`'s portal row still describing the superseded method in full confident detail — worse than a gap, because it is authoritative and arrives in every session.
@@ -345,6 +345,7 @@ Not "did I do the steps" — that is the checklist restating itself. Two falsifi
 
 - 🔴 **Could a session that read ONLY this handoff produce the next commit without asking Harkirat a question?** It fails for exactly the right reasons: no stated first action, an unstated approval status, a dangling "we discussed X" with no resolution.
 - 🔴 **Is every OPEN item marked approved-or-not AND built-or-not AND filed-or-not?** Three booleans per item. Miss the first two and the next session redoes approved work or builds something unapproved — **both have happened on this branch.** Miss the third and it cannot tell which items survive the handoff being lost.
+- 🔴 **State coverage HONESTLY, not uniformly, added 2026-09-08 21:32 EDT.** After the falsification pass, say plainly which findings got a MECHANICAL fix and which remain prose-only lessons — `local/handoff/2026-09-07-portal-step3-remaining.md`'s own closing does exactly this ("#1 and #3 have NO mechanical enforcement... say so plainly rather than claim uniform coverage"). A handoff implying every lesson is equally enforced is the same overclaim as a stale green.
 - 🔴 **The reader test is CHEAP TO AUTOMATE and should be.** A ~30-line script that (1) resolves every backticked path, (2) `git cat-file -t`s every commit hash, (3) checks every `§n` against the document's own headings, and (4) re-derives any claimed commit count from its stated range, found two real defects in checkpoint-X in one run. ⚠️ Its false positive was instructive too: a `§16.31` belonging to another document read as a missing local heading, which is the provenance rule below.
 - 🔴 **Did a reader test actually RUN, against the filesystem?** Not a re-read — a pass that opens every path, resolves every section reference, executes every command, and re-runs the document's own headline measurement. On 2026-08-27 that pass found **two blockers in a handoff written by the session that had just spent the day fixing this exact defect class**, including a measurement that had been silently invalidated by the act of writing it down. See §3b.
 
@@ -361,6 +362,35 @@ Every failure this guide records is a RECEIVING failure, not a writing one — a
 **If those numbers disagree with what the handoff says, that disagreement is the most valuable thing in the session** — surface it in the first two minutes, not at the close. A handoff describes a state as of when it was written; the filesystem describes the state now, and only the second one is ground truth.
 
 ⚠️ This guide is already ~15 sections and was growing the same way `docs/superpowers/plans/2026-08-31-post-compact-remediation.md` did before that plan was split off. Adding this section is justified only because it is the first one about RECEIVING rather than writing — do not add another section here without removing one.
+
+## 🔴 THE CANONICAL SHAPE — six named sections, and the ONE job each does (added 2026-09-08 21:32 EDT)
+
+*Every rule above this line was extracted from a failure. This one points at a success instead — `local/handoff/2026-09-07-portal-step3-remaining.md`, praised by Harkirat as "what I'd call a good, useful handoff... just about contains everything to continue seamlessly in a fresh session." Read that file, not a paraphrase of it — the pointer is the point, per the rule below about judgement not compressing. This section names WHY it works, so the shape can be reused without re-deriving it.*
+
+⚠️ **THIS SHAPE IS FOR A DETAILED / EXHAUSTIVE HANDOFF SPECIFICALLY — corrected 2026-09-08 21:33 EDT within minutes of writing this section, by Harkirat: "this is what a good *detailed* handoff is... when I specifically ask for a detailed handoff or an exhaustive handoff."** A handoff has (at least) two legitimate shapes and applying the wrong one is its own failure — a bridge dressed up as exhaustive wastes a session re-deriving what already exists; an exhaustive handoff compressed to a bridge drops exactly the reasoning §0 exists to carry.
+
+| Type | Job | Shape | Example |
+|---|---|---|---|
+| **Detailed / exhaustive** | Stand alone — a fresh session with NO other context can continue seamlessly from this file alone | The six sections below, in full | `local/handoff/2026-09-07-portal-step3-remaining.md` |
+| **Bridge** | Connect two sessions or two already-existing records — the reasoning and backlog live elsewhere and this file says what changed, what still applies, and what does not | State → what happened → what's actually next (a pointer, not a re-derivation) → what's deliberately NOT done | `local/handoff/2026-09-08-carriers-merged-into-build-out-handoff.md` |
+
+**Tell which one you are writing before you start** — the failure mode runs both directions.
+
+| § | Job | Fails if instead it |
+|---|---|---|
+| **§0 — What I got wrong** | The correction, first, loudest — see "A HANDOFF NEEDS A 'WHAT I GOT WRONG' SLOT" above. Prose, not a table: the value is the REASONING connecting the mistakes, which a cell destroys | Reads as a triumphant list, or unifies N mistakes into one tidy root cause without stress-testing whether all N actually fit |
+| **§1 — State** | Derived, not typed — commands in a fenced block, explicit "do not trust the numbers below as current" | Carries a HEAD hash or a suite status as fact, which is wrong within the hour |
+| **§2 — The real backlog** | A table: `# / Item / Status / Approved? / Built? / Filed?` — the three booleans this guide already names, made literal columns | Prose that reads as complete and quietly drops an item, or a status column with no APPROVED/BUILT/FILED distinction |
+| **§3 — What was actually built** | "Verified, not asserted" as the header. Every claim carries the exact command or click-path that proves it | A list of outcomes with no way to reproduce the check |
+| **§4 — Decision forks owed to him** | Separate from the backlog, on purpose. Each one is UNDECIDED, not merely unbuilt — flagged for an `AskUserQuestion`, never built or decided silently | Folded into the backlog table, where "not built" reads as "not gotten to" instead of "not his to build without an answer first" |
+| **§5 — Techniques worth carrying forward** | Its OWN heading, not a bullet buried in "shape it for the reader." A technique that beat the obvious approach is exactly the thing a fresh session cannot rediscover from the diff | Left implicit in the commits, where the NEXT session re-derives the same technique from scratch or never finds it |
+| **§6 — Environment, to actually start** | One tiny code block. States what does NOT need setup, as plainly as what does | Assumes the reader already has the server/credentials/build step running |
+
+**Two judgement calls this shape gets right that a rule stated in isolation does not:**
+- 🔴 **"Tables, not prose" (below) has an exception, and this file is why.** §0's reasoning-heavy content stays prose; §2's discrete per-item state becomes a table. The test is not item count — it is whether the value is a FACT (tabulate it) or an ARGUMENT connecting facts (a table destroys the connective tissue).
+- 🔴 **Closing coverage is stated honestly, not implied uniform.** This file's own §0 closes with exactly which fixes became mechanical and which stayed prose-only lessons — see the DONE checklist below.
+
+---
 
 ---
 
@@ -508,7 +538,7 @@ COMMITS  = subprocess.check_output(['git','log','--format=%h','<base>..HEAD']).d
 - 🔴 **§0 is THE FIRST ACTION.** One thing, at the top, unmissable. Everything else is reference.
 - **Say which parts of the PREVIOUS handoff are now history.** A superseded item table gets re-executed otherwise.
 - **Carry the techniques**, not just the outcomes — the probe that lies, the flag that renders a hidden state, the trap that fired three times.
-- **Tables, not prose.** ~4+ items, or any item with more than one attribute.
+- **Tables, not prose.** ~4+ items, or any item with more than one attribute. ⚠️ **Exception: reasoning-heavy content stays prose.** A root-cause analysis or the argument behind a decision loses its connective tissue in a cell — tabulate discrete per-item STATE (a backlog, a verify status), not the ARGUMENT that explains it.
 - **Operational facts the environment forgets:** which server command, which browser, which port.
 
 ### 5 · Write the file — and file the OPEN work somewhere TRACKED
