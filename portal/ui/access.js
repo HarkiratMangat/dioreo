@@ -28,6 +28,9 @@ function relTime(value) {
 // Debounced 400ms so every keystroke does not fire a Discord API call, and only once the id LOOKS like a snowflake (17–20 digits) — an in-progress id is not a failed lookup, it is simply not a ready one yet, and treating it as an error would flash a warning on every keystroke.
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
+// 🔴 ONE SOURCE FOR A SCOPE'S COLOUR, AND THE DRAWER HAD BEEN READING A SECOND ONE THAT DOES NOT EXIST. The grid has always coloured a cell with this; the permission chips read sc.hex instead, which buildPermissionMatrix has never emitted -- it builds {key, label, kind, ownerOnly, realm}. So --c was unset on every chip, .chip.topic i painted background:var(--c) with nothing in it, and a picked chip's color-mix(in srgb,var(--c) 16%,transparent) was invalid and dropped entirely: twelve identical black pills where the design shows the realm's colour. ⚠️ THE HARNESS FIXTURE DOES SET hex (assets/fixtures.js:1100), which is the whole reason no instrument caught it -- the same shape as the ownerOnly mark recorded in portal/api/access.js, where the legend named a mark only the fixture could draw. Hoisted above its first reader because the TDZ ratchet is right that source order should not be what holds a render up.
+const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
+
 function useDiscordLookup(discordId) {
     const [state, setState] = useState({ status: 'idle' });
     useEffect(() => {
@@ -92,7 +95,7 @@ function GrantForm({ admin, onGrant, scopes, onCancel }) {
                 <div class="tokgrid">
                     ${(scopes || []).map((sc) => html`
                         <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
-                                style=${sc.hex ? `--c:${sc.hex}` : null} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
+                                style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
                                 title=${sc.key} onClick=${() => toggle(sc.key)}>
                             <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}
                         </button>`)}
@@ -119,7 +122,6 @@ function GrantForm({ admin, onGrant, scopes, onCancel }) {
 // 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The row's state was the literal string `'live'` for every session in the table — and a browser session has no logout event unless somebody clicks one, so "signed in now" is DERIVED or it is a guess. Fifteen minutes is the mockup's own window and it is the honest one: a tab left open pings; a closed one stops.
 //
 // ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
-const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
 
 
 function Sessions({ sessions, onEnd, ttlHours }) {
