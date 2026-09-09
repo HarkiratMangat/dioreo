@@ -97,6 +97,7 @@ status: live
 **D · Prod data and environment**
 
 - [ ] **Prod `.env` is missing `NAMEPLATE_CACHE_CHANNEL_ID` and `DECORATION_CACHE_CHANNEL_ID`** — they exist in `.env.dev` only
+- [ ] 🔴 **Push the catalogue into prod Mongo — `node scripts/syncCatalogToMongo.js`.** ⚠️ **This was MISSING from the checklist until 2026-09-09 18:09 EDT, found because Harkirat asked whether it was stated before letting the run happen.** It is the step BEFORE the row below: the bulk-cache reads `CollectibleCatalog` docs and tracks its progress on them, so nothing can run against SKUs that were never flattened in. The JSON was synced 2026-09-09 18:09 EDT (941 → **956** SKUs, two new collections) and prod Mongo does not have the 15 new ones. Additive by construction — descriptive fields `$set` every run, the bot's own `cacheStatus`/`cachedAt`/`lastAttemptAt`/`lastError` `$setOnInsert` only, so a re-run never resets progress for a SKU already processed
 - [ ] **The nameplate/decoration bulk-cache full run against PROD** — an explicit pre-launch item, blocked on C's guild-install flip
 - [ ] 🔴 **The nameplate cache-embed REDESIGN is Harkirat's own and has never been provided.** Nothing can proceed on it until he does
 

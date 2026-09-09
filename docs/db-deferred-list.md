@@ -1215,7 +1215,8 @@ Not built during the conformance pass because a new editor with its own fields, 
 
 
 ### 🔁 A THIRD read-only audit is owed — both prior runs scored 6/10 and the second found the first's fixes were half-fixes `P1 · XS · Sonnet5-Medium`
-*Filed 2026-08-30 17:0x EDT, named in a message and tracked nowhere until now.*
+
+⏸️ **DECLINED BY HARKIRAT 2026-09-09 18:09 EDT — *"skip the reader agents."*** Put to him directly as one of two step-4 items blocked on him rather than on work. It stays filed and is NOT closed: the obligation is real and unchanged, and a subagent is the only mechanism that satisfies it (self-review is what the guide says cannot substitute). **Do not re-raise it as urgent, and do not dispatch one without him asking.** *Filed 2026-08-30 17:0x EDT, named in a message and tracked nowhere until now.*
 
 Run 1 (at `96faa38`) found four defects; all were "fixed". Run 2 (at `aab0853`) scored **the same 6/10** and found those fixes were applied to `.remember` but not to the plan the carriers point at, that three duplicate section numbers were disambiguated without sweeping for a fourth (`§0.7`), and that the peer-worktree DO-NOT-DELETE protection existed in no auto-loaded carrier while `docs-audit` told every reader to remove it. **Those five are now fixed at `5002455` — by the same author, with the same blind spot, and unaudited.**
 
@@ -1311,7 +1312,8 @@ So any recorded value derived from *today* drifts without a code change. Measure
 **Verify:** record a fixture, wait past a boundary the data crosses (or fake it with `--at`), re-check, and confirm it still matches. Today that check fails.
 
 ### 📋 The compact-prep read-only audit did NOT run for the 2026-08-30 handoff `P1 · XS · Sonnet5-Medium`
-*Filed 2026-08-30 23:1x EDT. An obligation, not a defect — and obligations vanish without trace, which is why it is here and not only in the handoff.*
+
+⏸️ **DECLINED BY HARKIRAT 2026-09-09 18:09 EDT — *"skip the reader agents."*** Put to him directly as one of two step-4 items blocked on him rather than on work. It stays filed and is NOT closed: the obligation is real and unchanged, and a subagent is the only mechanism that satisfies it (self-review is what the guide says cannot substitute). **Do not re-raise it as urgent, and do not dispatch one without him asking.** *Filed 2026-08-30 23:1x EDT. An obligation, not a defect — and obligations vanish without trace, which is why it is here and not only in the handoff.*
 
 `docs/reference/session-handoff-guide.md` calls the read-only audit **the last step of compact prep, not an optional extra**, and says plainly that self-review cannot substitute: *"every rule above this line was written by an author who then violated it within the hour; this is the only check that does not depend on the author."* It found four defects on its first run and five more on its second, on a package that had already passed a full day of self-review twice.
 
@@ -1840,7 +1842,7 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 
   - **Verify by:** create an announcement with a future start date, confirm it does NOT render/notify until that date, then confirm it does once the date passes (or via a forced-clock test).
 
-- **DECISION NEEDED: should `/bot analytics`'s Timing panel keep counting `/manage` traffic?** `[P2 · XS · any]` *(filed 2026-08-26 20:0x EDT, out of the portal migration.)* `computeUsageStats` has always filtered `isAdmin: false`; **`computeTimingStats` never filtered it at all** — so the Usage counts and the Timing percentiles, side by side on one screen in both Discord and the portal, have been computed over different populations with nothing saying so. `/manage` is the heaviest thing this bot does, so a "usually 40ms" that includes it is answering a question nobody asked. The shared functions now take `includeAdmin` (default **false**, the consistent reading) and **the two Discord call sites pass `includeAdmin: true` explicitly**, so `/bot analytics` prints exactly what it always has and nothing shipped moved. Closing this is deleting two arguments — but it changes numbers on a live panel, which is Harkirat's call, not a session's.
+- ✅ **DECIDED 2026-09-09 18:09 EDT — YES, it keeps counting `/manage` traffic.** Harkirat: *"/bot analytics counting /manage is fine."* The two `includeAdmin: true` arguments stay as they are; nothing to build, and the before/after p50/p95 comparison the row asked for is not needed because the question is answered rather than measured. ~~DECISION NEEDED: should `/bot analytics`'s Timing panel keep counting `/manage` traffic?~~ `[P2 · XS · any]` *(filed 2026-08-26 20:0x EDT, out of the portal migration.)* `computeUsageStats` has always filtered `isAdmin: false`; **`computeTimingStats` never filtered it at all** — so the Usage counts and the Timing percentiles, side by side on one screen in both Discord and the portal, have been computed over different populations with nothing saying so. `/manage` is the heaviest thing this bot does, so a "usually 40ms" that includes it is answering a question nobody asked. The shared functions now take `includeAdmin` (default **false**, the consistent reading) and **the two Discord call sites pass `includeAdmin: true` explicitly**, so `/bot analytics` prints exactly what it always has and nothing shipped moved. Closing this is deleting two arguments — but it changes numbers on a live panel, which is Harkirat's call, not a session's.
   - **Verify by:** run `/bot analytics` before and after dropping the two `includeAdmin: true` arguments and compare the p50/p95 figures; if `/manage` is a meaningful share of recent traffic they will drop visibly, which is the point.
 
 ## 🧹 Someday / tech-debt
