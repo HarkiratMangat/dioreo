@@ -76,13 +76,23 @@ status: live
 - [ ] **`/invite`: the blocked-context case only.** ⚠️ **The other half of this row was STALE and is corrected 2026-09-09 15:42 EDT: `/invite` IS wired into `/help`** — `commands/help.js:167` places it via `cmd('/invite', …)` and `:31` carries its search aliases. The v3 entry below still reads *"⬜ Also open: wiring `/invite` into `/help`"*; that half is done. The blocked-context case genuinely cannot be solved by a command, by construction. → below
 - [ ] **Different view options for the slash commands** — ⚠️ unspecified in the original notes; **needs Harkirat before it can be scoped**
 
+🔴 **THREE AUTHORITIES THIS CHECKLIST MUST NOT RESTATE, ALL FOUND BY `ctx_search` AND `linksee` AFTER `rg` MISSED THEM — 2026-09-09 15:44 EDT.** A keyword sweep finds documents by how they happen to be WORDED; none of these three carries the phrases I swept for, so all three were invisible to it.
+
+| Authority | What it holds | Why it is not repeated here |
+|---|---|---|
+| `docs/reference/portal-launch-checklist.md` | **The portal's own production launch checklist** — every prod step, and whether it is done | It already exists and says it is *"the single place that tracks whether each one is"*. Two lists of one thing is the defect this repo keeps removing |
+| `docs/superpowers/specs/2026-07-27-v3-development-structure-design.md` § 6 | **The launch mechanics, already specified:** `v3-pre-release` → `main` · `3.0.0-pre` → `3.0.0` · exactly ONE tag · a collective v3 section in `CHANGELOG-SUMMARY.md` · delete `v3-pre-release` after · MAJOR asked separately · deploy separate. Squash-vs-merge-commit deliberately open | Section C below reinvented a worse version of this before the spec was found |
+| linksee, `portal_launch_prep` (2026-08-22) | 🔴 **The VM is still on `main` at `89f1766` and has NEVER run `v3-pre-release`.** Deploying means switching prod off `main` for the first time — not a `git pull`. `cloudflared` is not installed, no systemd units exist, and the Cloudflare Tunnel + DNS for `portal.dioreo.app` were never created | Not written in any tracked file in those words. **It changes what "deploy" means in section C** |
+
+⚠️ **AND TWO THINGS CLAUDE STRUCTURALLY CANNOT DO, by standing decision and by mechanism:** `cloudflared tunnel login` is an interactive browser OAuth flow against Harkirat's Cloudflare account, and **Harkirat creates the Discord OAuth client secret and registers the redirect URI himself — Claude does not handle that credential.** An offer to grant API access for it was declined once already under that decision; do not re-offer.
+
 **C · Launch mechanics — the things only Harkirat can do**
 
 - [ ] **Flip GUILD INSTALL in the Developer Portal** `[P1 · M]`. Per-application, not settable from code. Prod is still `guild_count: 0`. This also makes `/invite`'s "Add to Server" link live, and is the enabler for D below
 - [ ] **Server-admin control surface** `[P1 · L]` — designed 2026-08-10, implementation remains, and it is a **launch blocker for guild install**. "Usage" is parked and undefined
 - [ ] **Update the Discord Developer Portal listing** — name, description, banner
 - [ ] **Re-check TERMS / LICENSE / NOTICE before launch** — v3 ships guild install, which changes the legal surface. → deferred list
-- [ ] **Deploy.** A merge is not a deploy; the VM needs `./scripts/deploy.sh` and `scripts/vmstatus.sh` after it
+- [ ] 🔴 **Deploy — and it is BIGGER than `deploy.sh`.** The VM has never run `v3-pre-release` at all; it sits on `main` at `89f1766`, so the first v3 deploy switches prod off `main` for the first time rather than pulling a newer commit. Everything portal-side (tunnel, DNS, systemd units, `cloudflared` itself) is unstarted. → `docs/reference/portal-launch-checklist.md`, and the mechanics in the v3 structure spec § 6
 
 **D · Prod data and environment**
 
