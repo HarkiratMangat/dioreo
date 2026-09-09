@@ -11,6 +11,10 @@ HOOK="$(cd "$(dirname "$0")" && pwd)/codebase-memory-nudge.sh"
 pass=0; fail=0
 # Feed a command through the hook exactly as the harness does, and return its stdout.
 run() { printf '%s' "$1" | jq -Rs '{tool_input:{command:.}}' | bash "$HOOK" 2>/dev/null; }
+# 🔴 AND THE OTHER PAYLOAD SHAPE, WHICH IS THE ONE THE WORKING CONTRACT ACTUALLY PRODUCES. `ctx_batch_execute` carries `.tool_input.commands[]`, not `.tool_input.command`, and this hook read only the second — so every batched code search was invisible to it. A test suite that only ever builds the Bash shape can never see that, which is why these helpers exist rather than one more Bash case.
+rb() { printf '%s' "$1" | jq -Rs '{tool_input:{commands:[{command:.}]}}' | bash "$HOOK" 2>/dev/null; }
+firesb() { out=$(rb "$2"); if printf '%s' "$out" | grep -q 'CODEBASE-MEMORY NUDGE'; then printf '  \xe2\x9c\x93 FIRES-B %s\n' "$1"; pass=$((pass+1)); else printf '  \xe2\x9c\x97 FIRES-B %s  \xe2\x80\x94 produced nothing\n' "$1"; fail=$((fail+1)); fi; }
+silentb() { out=$(rb "$2"); if [ -z "$out" ]; then printf '  \xe2\x9c\x93 SILENT-B %s\n' "$1"; pass=$((pass+1)); else printf '  \xe2\x9c\x97 SILENT-B %s  \xe2\x80\x94 fired when it must not\n' "$1"; fail=$((fail+1)); fi; }
 
 fires() {  # $1 = label, $2 = command
   out=$(run "$2")
@@ -63,6 +67,15 @@ if [ "$rc" -eq 0 ] && [ -z "$out" ]; then
 else
   printf '  ✗ SILENT  malformed hook input — rc=%s out=%s\n' "$rc" "$out"; fail=$((fail+1))
 fi
+
+# ── a sentence is not a symbol, even in a .js file. Found by replaying real traffic, not by reasoning: `search_graph` cannot answer a query that is prose, so firing on one is the wolf-cry this file's header refuses. The pair pins the boundary — a phrase stays silent, an alternation of symbols still fires.
+silent "a prose sentence inside a test file" "rg -n 'this proof no longer reintroduces anything' scripts/portalUi.test.js"
+fires  "an alternation of real symbols"      "rg -n 'clearRow|ByAdmin|GrantForm' portal/ui/access.js"
+
+# ── the ctx_batch_execute shape, both directions. The `cd …&&` prefix is on every batched command in this repo, so if the strip regressed, the first of these goes silent and says so.
+firesb "batch: a code path behind a cd prefix"  "cd '/Applications/Claude Code/Diors-Builds' && rg -n 'buildPermissionMatrix' portal/api/access.js"
+silentb "batch: the PROSE corpus is the sibling's" "cd '/Applications/Claude Code/Diors-Builds' && rg -n 'buildPermissionMatrix' docs/db-deferred-list.md"
+silentb "batch: a genuine chain is still a chain"  "cd '/tmp' && ls && rg -n 'foo' portal/ui/app.js && echo done"
 
 printf '\n  %s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ] || exit 1
