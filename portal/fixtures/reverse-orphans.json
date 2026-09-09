@@ -1,9 +1,7 @@
 {
-  "recordedAt": "2026-09-09T14:02:38.422Z",
+  "recordedAt": "2026-09-09T18:30:13.378Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
-  "data": [
-    "role"
-  ],
+  "data": [],
   "vars": [],
   "classes": [
     "ackrow",

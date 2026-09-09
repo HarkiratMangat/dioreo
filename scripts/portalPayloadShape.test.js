@@ -1,27 +1,10 @@
 // scripts/portalPayloadShape.test.js — does a component read a field the SERVER never sends?
 //
-// 🔴 THE CLASS, AND IT HAS BITTEN TWICE. A component reads a field off an API payload; the server
-// does not emit it; the HARNESS FIXTURE does. So every rendered instrument — the states walk, the
-// overlay diff, the audit, a screenshot — certifies the surface as working, while production draws
-// a hole. Recorded instance one is `ownerOnly` (portal/api/access.js's own comment: "the grid's lock
-// existed only in the harness … on the real server the legend named a mark the page could not
-// draw"). Instance two is `sc.hex`, found 2026-09-09 13:47 EDT by Harkirat looking at a screenshot I had
-// already looked at: the permission chips read `sc.hex`, `buildPermissionMatrix` has never emitted
-// it, `assets/fixtures.js:1100` does — twelve identical black pills where the design shows the
-// realm's colour, with a full green suite over it.
+// 🔴 THE CLASS, AND IT HAS BITTEN TWICE. A component reads a field off an API payload; the server does not emit it; the HARNESS FIXTURE does. So every rendered instrument — the states walk, the overlay diff, the audit, a screenshot — certifies the surface as working, while production draws a hole. Recorded instance one is `ownerOnly` (portal/api/access.js's own comment: "the grid's lock existed only in the harness … on the real server the legend named a mark the page could not draw"). Instance two is `sc.hex`, found 2026-09-09 13:47 EDT by Harkirat looking at a screenshot I had already looked at: the permission chips read `sc.hex`, `buildPermissionMatrix` has never emitted it, `assets/fixtures.js:1100` does — twelve identical black pills where the design shows the realm's colour, with a full green suite over it.
 //
-// ⚠️ THIS IS THE SIBLING OF scripts/portalHarness.test.js, NOT A DUPLICATE OF IT. That one compares
-// the stub's TOP-LEVEL payload keys against the route's, so the two implementations of one contract
-// cannot drift. It says nothing about the objects INSIDE a payload, and nothing about what the UI
-// reads off them. This one takes the other half: the nested record shapes, checked against their
-// actual consumers.
+// ⚠️ THIS IS THE SIBLING OF scripts/portalHarness.test.js, NOT A DUPLICATE OF IT. That one compares the stub's TOP-LEVEL payload keys against the route's, so the two implementations of one contract cannot drift. It says nothing about the objects INSIDE a payload, and nothing about what the UI reads off them. This one takes the other half: the nested record shapes, checked against their actual consumers.
 //
-// 🔴 IT COVERS **CLOSED** SHAPES ONLY, AND SAYS SO RATHER THAN IMPLYING MORE. A producer that
-// spreads a Mongo document (`{ ...b, coverage: … }`) has a key set nobody can read off the source,
-// so a scan over it would report every real model field as a violation and get suppressed — the
-// failure mode this repo keeps naming. A shape qualifies only when the server builds it from
-// literals with no spread, which the SPREAD ASSERTION below enforces: if one of these gains a
-// `...`, this file fails and the contract has to be re-declared rather than silently weakening.
+// 🔴 IT COVERS **CLOSED** SHAPES ONLY, AND SAYS SO RATHER THAN IMPLYING MORE. A producer that spreads a Mongo document (`{ ...b, coverage: … }`) has a key set nobody can read off the source, so a scan over it would report every real model field as a violation and get suppressed — the failure mode this repo keeps naming. A shape qualifies only when the server builds it from literals with no spread, which the SPREAD ASSERTION below enforces: if one of these gains a `...`, this file fails and the contract has to be re-declared rather than silently weakening.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -38,17 +21,9 @@ say('portalPayloadShape — does a component read a field the server never sends
 const ROOT = path.join(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
-// ⚠️ COMMENTS AND STRINGS ARE BLANKED TO SPACES, NEVER REMOVED, so every index and line number
-// still lines up with the real file. Both matter here and each cost a false positive when it was
-// missing: a comment saying `sc.hex` is prose, and `op: 'admin.grant'` is an op id — the scanner
-// read that string as `admin.grant`, a property access on an admin row, and reported five.
+// ⚠️ COMMENTS AND STRINGS ARE BLANKED TO SPACES, NEVER REMOVED, so every index and line number still lines up with the real file. Both matter here and each cost a false positive when it was missing: a comment saying `sc.hex` is prose, and `op: 'admin.grant'` is an op id — the scanner read that string as `admin.grant`, a property access on an admin row, and reported five.
 function mask(src) {
-    // A STACK, NOT A FLAT LOOP, and the flat version's failure is exactly why. It kept an
-    // interpolation's contents verbatim -- correct, they are code -- and then never re-applied the
-    // string rule inside them, so eyebrow=${editing ? 'admin.grant . tier 3' : ...} handed the
-    // scanner a literal admin.grant and it reported an admin row reading a field called "grant".
-    // An interpolation is code, and code contains strings, so the masker has to RECURSE rather
-    // than special-case one level.
+    // A STACK, NOT A FLAT LOOP, and the flat version's failure is exactly why. It kept an interpolation's contents verbatim -- correct, they are code -- and then never re-applied the string rule inside them, so eyebrow=${editing ? 'admin.grant . tier 3' : ...} handed the scanner a literal admin.grant and it reported an admin row reading a field called "grant". An interpolation is code, and code contains strings, so the masker has to RECURSE rather than special-case one level.
     let out = '';
     let i = 0;
     const stack = [{ kind: 'code', braces: 0 }];
@@ -101,10 +76,7 @@ function keysOf(literal) {
     return out;
 }
 
-// 🔴 EACH ENTRY IS A CLAIM THAT GETS CHECKED, in the shape portalOpsReach.test.js already uses — not
-// a list of things to trust. The anchors are TEXT, never line numbers: a line number in a gate rots
-// the first time somebody reflows the file above it, which this repo measured on its own deferred
-// list the day before this was written.
+// 🔴 EACH ENTRY IS A CLAIM THAT GETS CHECKED, in the shape portalOpsReach.test.js already uses — not a list of things to trust. The anchors are TEXT, never line numbers: a line number in a gate rots the first time somebody reflows the file above it, which this repo measured on its own deferred list the day before this was written.
 const CONTRACTS = [
     {
         name: 'access · a scope',
@@ -165,10 +137,7 @@ for (const c of CONTRACTS) {
     });
 }
 
-// 🔴 THE GATE'S OWN FALSIFIER, and it is not decoration: a scan whose receivers never match anything
-// compares [] against [] and passes forever, which is indistinguishable from a clean tree. This
-// rebuilds the exact defect that was live this morning — a chip reading `sc.hex` against a producer
-// that emits key/label/kind/ownerOnly/realm — and asserts the scanner reports it.
+// 🔴 THE GATE'S OWN FALSIFIER, and it is not decoration: a scan whose receivers never match anything compares [] against [] and passes forever, which is indistinguishable from a clean tree. This rebuilds the exact defect that was live this morning — a chip reading `sc.hex` against a producer that emits key/label/kind/ownerOnly/realm — and asserts the scanner reports it.
 check('THE SHAPE GATE CAN FAIL: a chip reading sc.hex against a producer that never emits it', () => {
     const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'shape-'));
     fs.mkdirSync(path.join(dir, 'api'), { recursive: true });

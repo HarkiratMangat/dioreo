@@ -2410,16 +2410,18 @@ button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
 .mxrow:hover{color:var(--ink);border-color:var(--ink3)}
 .mxrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 
-/* An EDITOR's grant is the scope minus its destructive actions — a different thing from
- * an admin's, and the Role column alone could not say so about any individual cell.
- * A hollow ring rather than a filled check: same colour (topic), different SHAPE. */
-.mx tbody tr[data-role=editor] .mxcell[aria-checked=true]{background:transparent;border-color:var(--c)}
-.mx tbody tr[data-role=editor] .mxcell[aria-checked=true]::after{
-  content:"";width:8px;height:8px;border:2px solid var(--c);border-radius:var(--rad-round);transform:none}
+/* 🔴 THE EDITOR ROLE DOES NOT EXIST IN THIS SYSTEM, so the two rules that drew its cells and the
+   legend swatch that named them are deleted rather than kept as debt — removed 2026-09-09 14:29 EDT.
+   `utils/adminAccess.js`, `models/AdminUser.js` and `portal/api/access.js` mention no such role;
+   the design's own fixture header records the same thing ("an `editor` role that exists nowhere in
+   this system at all") as one of the reasons Access moved onto exported data. A rule for a state the
+   permission model cannot produce is not debt, it is a promise — and the legend was the worse half,
+   because a legend entry is a claim that the mark is somewhere on the page. That is the exact shape
+   `portal/api/access.js` already records for `ownerOnly`, where the legend named a mark only the
+   harness could draw. ⚠️ The mockup still carries both; that divergence is a ledger row, not a
+   reason to keep dead CSS whose subject cannot occur. */
 .mxlegend{display:inline-block;width:13px;height:13px;border-radius:var(--rad-2);border:1px solid var(--ink3);
   vertical-align:-2px;margin-right:5px;position:relative}
-.mxlegend.ed::after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;
-  border:1.5px solid var(--ink3);border-radius:var(--rad-round)}
 
 /* ── Review: one op can leave the changeset ───────────────────────────────
  * Staging four things and being able to commit only all-four-or-none is a receipt,
