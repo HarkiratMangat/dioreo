@@ -917,6 +917,10 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 **Do:** a real pass on the page — not just the two missing commands. **Verify:** Harkirat has opened `dioreo.app/commands` and the landing animation himself and either accepted what is there or named what changes; the `SPECS` array and `commands/` agree; and the map's edge reports convergence.
 
+✅ **THE ARRAY HALF IS CLOSED 2026-09-09 16:52 EDT — and the count was WRONG IN THIS ENTRY.** It named `/help` and `/draw calculator`; the real gap was **three**, because `/invite` is on the `/commands` page and was never in the animation. Measured by reading both surfaces rather than the filing: `SPECS` held **11**, `public/commands.html` lists **14**. Harkirat chose to match the two exactly, so `SPECS` is now 14 and the only public command on neither surface is `/admin`, which is the server-admin one. Proven by running the page's OWN `render()` over 20,000 draws — each new command appears bare and decorated, and no line exceeds `MAXLEN`; `/draw calculator` needed its pairs chosen for the cap, since `region` + `10 CP Region` is 18 characters against 15 of room and would have been filtered SILENTLY. 🔗 **This also clears the `map.yaml` violation** the entry below records: `commands-page → discord-commands` is `must-stay-consistent-with`, and the two sets now agree.
+
+🔴 **THE ENTRY STAYS OPEN, because its Verify condition is about HIM, not the array.** He has asked for an audit-and-propose on the page itself (2026-09-09 16:52 EDT), which is the "real pass" half. Closing this on the array would be exactly the substitution the paragraph below warns about.
+
 ⚠️ **Deliberately NOT scoped here as "add two commands to an array".** He said the page needs work, and the two omissions are the part that happens to be measurable. Treating the measurable part as the whole is the substitution failure this project keeps paying for.
 
 ### `[P2 · S · Sonnet5-Medium]` The product map is DECLARATIVE ONLY — no node verifies itself against reality

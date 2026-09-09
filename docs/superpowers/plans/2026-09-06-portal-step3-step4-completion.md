@@ -330,7 +330,7 @@ Not done: (2) Season Board's empty column and Broadcast's `.bed` proportions · 
 
 Roughly 30 items. **Player-facing first**, because step 3 is entirely admin-facing and nothing in it reaches a player:
 
-- [ ] The landing page's command animation is missing `/help` and `/draw calculator` (`scripts/buildLegalPages.js`, `CMD_JS`'s `SPECS`)
+- [x] ~~The landing page's command animation is missing `/help` and `/draw calculator`~~ — **done 2026-09-09 16:52 EDT, and it was THREE not two**: `/invite` was on the `/commands` page and never in the animation. `SPECS` went 11 → 14, matching `public/commands.html` exactly on Harkirat's call. Verified by running the page's own `render()` 20,000 times, not by arithmetic
 - [ ] The `/manage` + `/bot analytics` click-test findings
 - [ ] The instruments: `portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit
 - [ ] Context architecture — five rules are still encyclopedias and the tier is ungated (P1)
