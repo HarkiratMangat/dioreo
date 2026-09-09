@@ -926,6 +926,8 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 📌 What was checked and is FINE (2026-09-09 17:00 EDT): all five invariants are intact in `scripts/lib/commandsPage.js` — `solveOn` ×6, `MP_CATEGORY_ACCENT` ×7, `scroll-margin-top` ×2, the 0.1791 luminance crossover, the `#8A8494` quiet grey. `scripts/data/weapon-index.json` was **regenerated against live data and is byte-identical bar its date stamp** (68 MP + 7 DMZ), so the page's one named staleness risk is clean. ⚠️ `@media print` has **zero** rules, so print is unstyled as well as unrun.
 
+📄 **The full audit behind this item is `local/2026-09-09-commands-page-audit.md`.** ⚠️ `local/` is gitignored, so that file reaches no fresh clone and no other machine — **every finding it carries is written out in this entry above, and this entry is the authority.** The path is named only so the working copy on Harkirat's Mac can be opened; if the two ever disagree, this one wins.
+
 🔴 **THIS IS NOW THE COLLECTIVE `/commands` ITEM — Harkirat's call, 2026-09-09 17:04 EDT: *"add the /commands page and all its pending work, including adding it to the home page, as a collective deferred item. I want a fresh session to focus on it instead of doing it partly this session."*** Everything below is ONE session's scope. **Do not pick a row off it.** The reason is the failure this page has already had twice: a session does the measurable part, the entry loses the wording that would have shown what was skipped, and the rest reads as handled.
 
 **In scope, all of it:**
@@ -1880,7 +1882,7 @@ The deterministic detector's `design-system-color` rule fires 78 times across `p
 - ⚠️ **THE FILED VERIFY CONDITION IS AMENDED.** It read *"zero `transition: width` in `app.css`"*. Three remain by decision, so the condition is now: **`app.css` contains exactly three `transition: width` sites — the two Track rules and the dead `.ub .ubt i` — and each is named in this entry.**
 
 
-- [ ] **The design marks nothing when a Manifest row's preview drawer is open** `[P2 · XS]` (2026-09-04 23:46 EDT)
+- [x] ~~**The design marks nothing when a Manifest row's preview drawer is open** `[P2 · XS]` (2026-09-04 23:46 EDT)~~ — **closed 2026-09-09 17:57 EDT**: `preview-sel` is emitted by `portal/ui/manifest.js` and painted by `portal/ui/app.css` (two occurrences each, checked today), as an inset left rule in `--patch`. It had been emitted-but-unpainted for the life of the branch, which is why it was removed rather than styled at the time
   - The portal emitted `preview-sel` on that row for the life of the branch and no rule in either stylesheet ever painted it, so the class was removed rather than styled — §0.6a says the portal renders the mockup's version until every realm matches. **The underlying state is real and neither side draws it**: a reader with a drawer open cannot tell which row it came from. This is a post-conformance design item, not a conformance gap.
   - **Verify by:** opening a Manifest row's preview on any realm and being able to say which row is open without closing the drawer.
 - [x] ✅ **`[data-role=editor]` — CLOSED 2026-09-09 14:31 EDT BY DELETION, not by building it** `[P3 · S]` (filed 2026-09-04 23:46 EDT)
