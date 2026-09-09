@@ -104,6 +104,9 @@ Verified 2026-09-01 20:45 EDT: exit 0, `skipped_count: 0`, **9,763 nodes / 20,76
 **Verify:** `index_repository` succeeds through the MCP tool with `project_path`, without the CLI workaround.
 
 ### `[P2 · M]` `portal:states` is non-deterministic, and it now blocks a §L ④ claim
+
+✅ **THE FILED *Do* IS DONE 2026-09-09 17:38 EDT — the retry is a different experiment now, not the same one twice.** It offered two options and this is the first: `walk()` takes a `patience`, the retry runs at **3**, and patience adds a 500ms wait **before every step** plus a tripled `preSettleMs`. ⚠️ **The varied thing is deliberately NOT the deadline** — this entry rules a fourth raise out and the file's own diagnosis is that a step clicks *before* its target mounts, so the missing wait was the one in front of the step. At patience 1 the pause is exactly zero, so **the first attempt of every state is byte-for-byte the run it always was** and a green suite keeps its old meaning. Proven by `stepPause(1) === 0` / `stepPause(3) === 500` plus a source assertion that the retry call still passes a patience above 1 — falsified by reverting that call, which turns the suite red. `portal:states --ci` walked **71 states, 0 FLAKED, exit 0** afterwards. 🔴 **THE RACE ITSELF IS NOT FIXED AND THIS ENTRY STAYS OPEN.** Three `npm test` runs on one unchanged tree today stalled on three *different* states — season identity, the broadcast composer, the Grant drawer — which is the signature this entry already describes. What changed is that a twice-stall now means something stronger than a coin flipped twice.
+
 *Filed 2026-09-01 20:01 EDT by the Access session, which could not claim its machine floor because of it.*
 
 Measured on `feat/access-portal-conformance` at `c41e8e0`, a tree whose only portal changes are Access-scoped:
@@ -1203,7 +1206,13 @@ Run 1 (at `96faa38`) found four defects; all were "fixed". Run 2 (at `aab0853`) 
 **Verify:** the run reports the five as verified-fixed, finds no new duplicate `§` number, no carrier disagreement, and scores above 6/10 — or its findings are fixed and a further run is owed.
 
 
-### 🧪 `portalStatus`'s stale branch is UNPROVEN — the falsifier that would prove it is what destroyed a turn's work `P2 · XS · Sonnet5-Medium`
+### ✅ `[CLOSED 2026-09-09 17:38 EDT]` `portalStatus`'s stale branch is CERTIFIED — and without the falsifier that destroyed a turn's work
+
+**How:** the decision was extracted as an exported pure function, `isStale(lastUiCt, lastFixCt)`, so it takes two commit timestamps and needs no tree, no worktree and no `git reset --hard` — which is what the entry warned about, having cost four uncommitted edits on 2026-08-30. `scripts/portalStatus.test.mjs` (new, wired into `npm test` and `portal:status:test`) proves **five** cases: stale fires when `portal/ui` is newer; fresh when the fixture is newer; **fresh when the two are equal**, which is the real tree's own shape since a fixture and the change it measures are committed together; a missing timestamp is never stale, so a fresh clone cannot cry wolf on all seven; and the comparison is numeric rather than lexical.
+
+⚠️ **The end-to-end condition this entry originally named is NOT what was run.** It asked for a tree where `portal/ui` has a commit newer than a fixture. The unit above certifies the decision rather than the plumbing around it — `git log -1 --format=%ct` reading the right paths is still only proven by the fresh branch. That is a smaller claim than the original wording and is stated rather than glossed.
+
+*Original entry:*
 *Filed 2026-08-30 16:0x EDT. Named in `96faa38`'s message and in no list until now.*
 
 `scripts/portalStatus.mjs` reports per realm whether `portal/ui` has moved since its geometry fixture was recorded. **The FRESH branch is proven** (all seven report fresh on a tree where nothing moved). **The STALE branch has never fired**, so by this repo's own rule — prove a probe can report PRESENCE before trusting its silence — it is uncertified. Its first version cried stale on all seven at once (a fixture cannot stamp the commit it is about to be committed in); that false positive is fixed and the true positive is untested.

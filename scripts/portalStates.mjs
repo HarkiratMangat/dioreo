@@ -127,12 +127,17 @@ const COLLECT = function () {
     return { controls, clipped, overflow, unreachable, modal, animations, fusedNames, counts: { controls: controls.length, focusables: focusables.length, elements: document.querySelectorAll('main *').length } };
 };
 
-// 🔴 EXPORTED AND NARROW ON PURPOSE. The retry below re-runs a state whose subject never appeared, and the ONE thing that must not happen is retrying a genuine crash -- a TypeError inside a pass would be run twice, could pass the second time, and would then be reported as a race. So the predicate matches only the two sentences this file itself throws for an unreached subject, and its test proves it is silent on everything else.
+// 🔴 EXPORTED AND NARROW ON PURPOSE. The retry below re-runs a state whose subject never appeared, and the ONE thing that must not happen is retrying a genuine crash -- a TypeError inside a pass would be run twice, could pass the second time, and would then be reported as a race. So the predicate matches only the two sentences this file itself throws for an unreached subject, and its test proves it is silent on everything else. Exported so the retry's ONE promise is testable without a browser: at patience 1 it must be exactly zero, so the first attempt of every state is byte-for-byte the run it has always been and a green suite keeps its old meaning. Added 2026-09-09 17:28 EDT.
+export function stepPause(patience) {
+    return Math.max(0, (Number(patience) || 1) - 1) * 250;
+}
+
 export function isStall(message) {
     return /did not reach its own subject|stalled: nothing matched/.test(String(message || ''));
 }
 
-async function walk(page, state, port) {
+// 🔴 `patience` IS WHAT MAKES THE RETRY A DIFFERENT EXPERIMENT RATHER THAN THE SAME ONE TWICE — added 2026-09-09 17:28 EDT, closing the filed [P2 · M] entry's own first option. The retry below used to re-run `walk` with identical arguments, and the filed measurement is that the stall fires roughly half the time, so two consecutive failures happen about a quarter of the time by chance: repeating an experiment cannot separate the two cases it claims to separate. ⚠️ AND THE VARIED THING IS DELIBERATELY **NOT THE DEADLINE**. This file's history raised the subject wait 4000 → 12000 → 45000 and it still failed; the entry rules a fourth raise out explicitly. The diagnosis written fourteen lines below is that a step CLICKS BEFORE ITS TARGET MOUNTS, so the wait that was missing is the one BEFORE the step, not after it. `patience` buys exactly that, and leaves every deadline where it is.
+async function walk(page, state, port, patience = 1) {
     // ⚠️ SET BEFORE THE NAVIGATION, and cleared for every state that did not ask — an emulated media feature is sticky on the page, so one reduced-motion state would silently put every state after it into reduced motion and their clean results would mean something else entirely.
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: state.reduceMotion ? 'reduce' : 'no-preference' }]);
     const q = new URLSearchParams(state.flags || {});
@@ -141,8 +146,11 @@ async function walk(page, state, port) {
     await page.evaluate(() => document.fonts.ready);                                     // never rAF: it does not fire off-screen, and a pass gated on it reports pending forever
     await page.waitForSelector('main', { timeout: 15000 });
     // ⚠️ `slow` DELAYS THE FIRST LOAD TOO, so a state that injects it and then clicks something immediately clicks into a skeleton. `preSettleMs` waits for the data to arrive BEFORE the steps run — which is the whole point of the refreshing state: it only exists when there is already data on screen to keep.
-    if (state.preSettleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.preSettleMs);
+    if (state.preSettleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.preSettleMs * patience);
     for (const step of state.steps || []) {
+        // The pre-step wait, and it exists only on a retry: at patience 1 this is zero and the first attempt is byte-for-byte the run it always was, so a green suite keeps meaning what it meant.
+        const pause = stepPause(patience);
+        if (pause) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), pause);
         if (step.key) await page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, metaKey: !!k.meta, bubbles: true })), step);
         if (step.click) await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, step.click);
         // ⚠️ A MENU ITEM IS IDENTIFIED BY ITS WORDS, NOT ITS POSITION. `.who [role=menuitem]` matched the FIRST item — "What you can do", which navigates away — so the state named "toast after an account action" walked to a different realm and reported clean. A registry that addresses controls positionally breaks every time a menu gains an entry, silently.
@@ -301,12 +309,12 @@ async function run() {
                 } catch (e) {
                     if (!isStall(e.message)) throw e;
                     try {
-                        records = await walk(page, state, port);
+                        records = await walk(page, state, port, 3);
                         flaked.push(state.name);
-                        console.log(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled once, reached its subject on the retry — not a defect, and not silent`);
+                        console.log(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled at patience 1, reached its subject at patience 3 — a slower run gets there, which is the race, not a defect`);
                     } catch (again) {
                         // 🔴 THE SENTENCE THIS THROW USED TO CARRY WAS AN INVALID INFERENCE, corrected 2026-09-05 09:34 EDT. It asserted that two failures prove the stall is not the filed race. The filed entry measures that stall at roughly 50% in-suite, so two consecutive failures happen about a quarter of the time by chance alone: the retry cannot separate the two cases it claimed to separate. ⚠️ THE DISPROOF WAS ALREADY WRITTEN FOURTEEN LINES ABOVE AND THE CLAIM WAS MADE ANYWAY — four failures across four runs on FOUR DIFFERENT states is the signature of a race, not of one broken subject. ⚠️ IT COST A REAL INVESTIGATION ON 2026-09-05: CI failed here while the same tree passed 44/44 locally, and this sentence asserted the one thing that would have made that a defect. Re-running settled it in one command — the failing state MOVED, which is the only observation that discriminates, and it is named in the message now so the next reader has it at the point of failure rather than in a tracker they would have to already suspect.
-                        throw new Error(`${again.message}\n           ⚠️ The retry did not clear it — which is consistent with BOTH a genuinely unreachable subject AND the filed ~50% stall (docs/db-deferred-list.md, [P1 · S]). Two failures of a coin-flip are not evidence against a coin.\n           ⚠️ WHAT DISCRIMINATES: does this state's selector belong to anything you edited? If not, re-run — and if the failing STATE changes between runs on the same tree, it is the race.`);
+                        throw new Error(`${again.message}\n           ⚠️ The retry ran at PATIENCE 3 — a 500ms wait before every step and a tripled pre-settle — and still did not reach the subject. That is a stronger signal than the identical re-run this used to do, but it is still not proof: the filed stall is ~50% in-suite, so two failures happen about a quarter of the time by chance (docs/db-deferred-list.md, [P2 · M]).\n           ⚠️ WHAT DISCRIMINATES: does this state's selector belong to anything you edited? If not, re-run — and if the failing STATE changes between runs on the same tree, it is the race.`);
                     }
                 }
                 const findings = runPasses(records);
