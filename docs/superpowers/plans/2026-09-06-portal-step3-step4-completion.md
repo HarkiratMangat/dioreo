@@ -326,6 +326,28 @@ Not done: (2) Season Board's empty column and Broadcast's `.bed` proportions · 
 
 ---
 
+### 🔴 Task 9: STEP 3's IMPECCABLE PASS — five invocations, all realms per run, components only (added 2026-09-09 19:19 EDT)
+
+**This task exists because the work had no task.** Tasks 1–7 are step 3's filed items and every one is closed; Task 8 is step 4. **The method step 3 was DEFINED by appears nowhere in this list** — it sat only in §0.2's retired-plans table, which is archaeology a reader consults to avoid re-proposing something, not a worklist. Harkirat, 2026-09-09 19:19 EDT, on being shown the correction: *"i dont even see anything in the plan or the handoff stating the corrected impeccable pass."* He was right, and the content being present in §0.2 is not the same as it being findable.
+
+**Checked on disk 2026-09-09 19:19 EDT:** `.impeccable/surfaces/` holds **seven** briefs; `.impeccable/critique/` holds **one** report — `portal-ui-home-js`, generated 2026-09-06 14:15 EDT, **three days before step 3 ran**. `clarify`, `layout`, `harden` and `polish` have never been invoked on anything.
+
+**The shape, in his words:** *"that literally could have been handled as just 5 total skill invokes… critique over all the realms (only on the specific components, not the entire front facing realm — as i had already described when drafting the plan) together as 1 full run, and then similarly clarify, layout, harden and polish in order."*
+
+| # | Run | Scope |
+|---|---|---|
+| 1 | `critique` | ONE run, all realms, the specific components — never a whole front-facing realm |
+| 2 | `clarify` | the confusing labels it named |
+| 3 | `layout` | spacing |
+| 4 | `harden` | empty states |
+| 5 | `polish` | last |
+
+🔴 **WHAT MUST NOT HAPPEN: seven per-realm runs.** That is V1 — 5 skills × 7 realms = **35 invocations**, each spinning up fresh subagents to re-derive the same context — and it is what he killed. §0.2's summary of that retirement (*"`critique` is DISCOVERY"*) generalised a complaint about SHAPE into one about the TOOL, and three sessions read it as a retirement of the whole toolset, including the one that closed step 3. `clarify`/`layout`/`harden`/`polish` are FIX verbs applied to items already in hand — the ~18 bucket-A items — and were never in question.
+
+⚠️ **Step 3's nine filed rows are genuinely done.** What is missing is the method, not the items.
+
+**Verify:** `.impeccable/critique/` carries a run covering every realm rather than seven per-realm reports, and each of `clarify`/`layout`/`harden`/`polish` has produced a result that closed named bucket-A items. Filed as `[P1 · M]` in `docs/db-deferred-list.md`.
+
 ### 🔴 Task 8 IS NOT THE END OF v3 — read the launch checklist first (added 2026-09-09 15:43 EDT)
 
 **`docs/ROADMAP.md` § 🚀 v3.0.0 — THE LAUNCH CHECKLIST** is the enumeration of what the v3.0.0 launch needs. This plan is ONE workstream inside it: section A of that list. Harkirat, 2026-09-09 15:43 EDT: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
