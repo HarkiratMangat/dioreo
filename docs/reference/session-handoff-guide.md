@@ -383,9 +383,7 @@ Every failure this guide records is a RECEIVING failure, not a writing one — a
 
 **Two judgement calls this shape gets right that a rule stated in isolation does not:**
 - 🔴 **"Tables, not prose" (below) has an exception, and this file is why.** §0's reasoning-heavy content stays prose; §2's discrete per-item state becomes a table. The test is not item count — it is whether the value is a FACT (tabulate it) or an ARGUMENT connecting facts (a table destroys the connective tissue).
-- 🔴 **Closing coverage is stated honestly, not implied uniform.** This file's own §0 closes with exactly which fixes became mechanical and which stayed prose-only lessons — see the DONE checklist below.
-
----
+- 🔴 **Closing coverage is stated honestly, not implied uniform.** This file's own §0 closes with exactly which fixes became mechanical and which stayed prose-only lessons — see the DONE checklist above ("How to know the handoff is DONE").
 
 ---
 

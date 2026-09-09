@@ -4347,7 +4347,7 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 
 **Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and no hash** — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead; that model is retired now that all work flows through a branch first.)
 
-## Proposed v3.80.0 — branch `chore/context-carriers` off `docs/build-out-handoff`, no PR yet — how instructions and memory actually reach a session, made checkable
+## Proposed v3.80.0 — merged into `docs/build-out-handoff` (PR #186, open into `v3-pre-release`) — how instructions and memory actually reach a session, made checkable
 
 **Every rule in this repo about which file, hook, or memory reaches a session was prose asserting a guarantee nothing enforced. This branch replaces the highest-cost guesses with `@`-imports (proven full, cap-free) and instruments that measure instead of nudges that restate.**
 
