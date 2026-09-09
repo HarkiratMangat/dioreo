@@ -915,6 +915,23 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 📌 What was checked and is FINE (2026-09-09 17:00 EDT): all five invariants are intact in `scripts/lib/commandsPage.js` — `solveOn` ×6, `MP_CATEGORY_ACCENT` ×7, `scroll-margin-top` ×2, the 0.1791 luminance crossover, the `#8A8494` quiet grey. `scripts/data/weapon-index.json` was **regenerated against live data and is byte-identical bar its date stamp** (68 MP + 7 DMZ), so the page's one named staleness risk is clean. ⚠️ `@media print` has **zero** rules, so print is unstyled as well as unrun.
 
+🔴 **THIS IS NOW THE COLLECTIVE `/commands` ITEM — Harkirat's call, 2026-09-09 17:04 EDT: *"add the /commands page and all its pending work, including adding it to the home page, as a collective deferred item. I want a fresh session to focus on it instead of doing it partly this session."*** Everything below is ONE session's scope. **Do not pick a row off it.** The reason is the failure this page has already had twice: a session does the measurable part, the entry loses the wording that would have shown what was skipped, and the rest reads as handled.
+
+**In scope, all of it:**
+
+| # | The work | State |
+|---|---|---|
+| 1 | **Reach it from the front door.** `public/index.html` links to the six document pages and not to Commands; only the document pages' nav carries `./commands.html`. Placement is a DESIGN fork — render the options and put the popup under them | not started |
+| 2 | **Finish the ux-copy pass.** The load-bearing strings were rewritten in round 3; the page lede in `TOOL_PAGES`, the group labels and several aria-labels were left as already-correct rather than reviewed | not started, and Harkirat selected it 2026-09-09 17:04 EDT |
+| 3 | **A print stylesheet, pending his call.** `@media print` has **zero** rules, so printing the page today gives whatever the screen CSS happens to do — dark ground, the pinned command line, the rail. He asked for it in plain terms before deciding | awaiting his decision |
+| 4 | **The `/colors` swatch is decorative** — it hue-cycles squares, demonstrating colour but not *your* colours, and the build cannot reach a reader's real palette. An open question, never a defect | open question |
+| 5 | **Does `/admin` belong on the page?** It registers `[0, 1]`, so server admins can run it, and it is on neither the page nor the landing animation. Nobody has made that judgement | never asked |
+| 6 | **The prose is unverified by construction** — 14 purpose lines, ~30 option blurbs, 14 ask lines, 14 keyword sets, all written from reading source. Only someone running each command in Discord can confirm they are true | needs Discord, not a session |
+
+⏭️ **DEPRIORITISED BY HIM, 2026-09-09 17:04 EDT — keyboard-only and screen-reader end-to-end are "far future items".** They stay recorded so nobody re-raises them as urgent, and they are NOT part of this item's done condition.
+
+**Verify:** the page is reachable from the homepage, the ux-copy pass is complete rather than partial, rows 3–5 each carry a decision rather than a note, and Harkirat has opened the page and either accepted it or named what changes.
+
 ⚠️ **The original framing, kept because it is the history:** THE DISCOVERY IS THE BELIEF GAP, NOT THE PAGE. A surface has been publicly reachable while its owner carried it as unfinished-and-unshipped. Everything filed about it was written under the assumption that it was still a draft, so nothing was ever prioritised as *live and wrong*. That is the class this list exists to catch and it missed this one for weeks.
 
 **What is concretely wrong right now.** The landing page's typing animation is `CMD_JS`'s `SPECS` array in `scripts/buildLegalPages.js`, and it has drifted from the real command set: **`/help` is missing entirely** — a public, user-facing command and arguably the one most worth advertising on the front door — and **`/draw calculator` is missing entirely**, shipped in PR #136 and never added. Both were already filed under the landing-page entry; what is new is that they are live to the public, not staged.
