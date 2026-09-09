@@ -324,7 +324,23 @@ Not done: (2) Season Board's empty column and Broadcast's `.bed` proportions · 
 
 **`docs/ROADMAP.md` § 🚀 v3.0.0 — THE LAUNCH CHECKLIST** is the enumeration of what the v3.0.0 launch needs. This plan is ONE workstream inside it: section A of that list. Harkirat, 2026-09-09 15:43 EDT: *"id hardly call finishing step 4 the end of v3 pre release… and i've likely missed listing many things here."*
 
-⚠️ **Task 8's own "roughly 30 items" is an estimate that names five bullets and enumerates nothing else** — filed as `[P1 · S]` in `docs/db-deferred-list.md`. **Scoping it is step 4's first unit.** The checklist's rows carry their PROVENANCE (checked against the tree · asserted by an entry · not checkable from this machine), so do not read a row as verified unless it says so.
+🔴 **CORRECTED 2026-09-09 18:44 EDT — the line below was wrong and is struck.** **Verified in this session against the transcript itself, not taken on the peer's word** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/0e478890-6f40-4f6a-be84-06066b7418b8.jsonl`. The bucket table sits at **`2026-09-06T19:10:25.605Z`** and the phrase *"Roughly 30 items"* first appears at **`19:14:33.127Z`** — **four minutes later**, so the table precedes the number rather than being back-fitted to it. It came from the V3 two-agent audit classifying all **101** deferred-list entries, of which **50 were LIVE**:
+
+| Bucket | Count | |
+|---|---|---|
+| A · Portal UI and UX | ~18 | **this is step 3** |
+| B · Instruments and gates | ~10 | ordinary code |
+| C · Records, carriers, context | ~8 | docs work |
+| D · Infra and non-portal | ~10 | bot, site, OAuth, MongoDB |
+| E · Standing, no action | ~4 | caveats and decided-not-now |
+
+**B+C+D+E = 32.** That is the ~30.
+
+🔴 **TWO CORRECTIONS THE DERIVATION ITSELF FORCES, and neither was in the message that brought it.** **(1) Bucket E is not work** — it is caveats and decided-not-now — so the workload is **B+C+D = 28**, and 32 counts entries rather than things to do. **(2) "Player-facing" is not supported by it.** C is docs work and D is bot/site/OAuth/MongoDB; Task 8's actual words are *"Roughly 30 items. **Player-facing first**"*, which is an ORDERING instruction. The phrase *"~30 player-facing items"* that four carriers have been repeating mis-renders it, and the buckets are what make that visible.
+
+**So the real gap is narrower than "no basis": the classification was never written to a tracked file, so it survives as counts and themes rather than a checkable list — and it is now three days stale**, taken before step 3 closed its nine rows and before today's closures. **The filed unit is therefore a RE-DERIVE of B/C/D membership against today's list, not a scope-from-zero.**
+
+*Struck:* ~~Task 8's own "roughly 30 items" is an estimate that names five bullets and enumerates nothing else — filed as `[P1 · S]` in `docs/db-deferred-list.md`. Scoping it is step 4's first unit. The checklist's rows carry their PROVENANCE (checked against the tree · asserted by an entry · not checkable from this machine), so do not read a row as verified unless it says so.~~
 
 ### Task 8: Step 4 — everything else
 

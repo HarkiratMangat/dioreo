@@ -902,9 +902,27 @@ Both nudges were blind to batched searches because they matched only the **`Bash
 
 **Verify condition:** feed each hook a `{tool_input:{commands:[{command:…}]}}` payload carrying the exact input its Bash-shape test already uses, and get the same verdict.
 
-### 🔴 `[P1 · S · Opus5-High]` STEP 4 HAS NEVER BEEN SCOPED, and "~30 player-facing items" is a prose estimate four sessions have now repeated
+### 🔴 `[P1 · S · Opus5-High]` STEP 4 needs its B/C/D membership RE-DERIVED — ⚠️ the "~30" has a real derivation and this entry said it had none
 
-*Filed 2026-09-09 15:13 EDT, on closing step 3.* `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`'s Task 8 opens *"Roughly 30 items"* and then names **five bullets**: the landing page's command animation missing `/help` and `/draw calculator` · the `/manage` + `/bot analytics` click-test findings · the instruments (`portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit) · context architecture (five rules still encyclopedias, the tier ungated) · restoring the `Stop` hook. **The other ~25 are enumerated nowhere.**
+🔴 **CORRECTED 2026-09-09 18:44 EDT.** **Verified in this session against the transcript itself, not taken on the peer's word** — `~/.claude/projects/-Applications-Claude-Code-Diors-Builds/0e478890-6f40-4f6a-be84-06066b7418b8.jsonl`. The bucket table sits at **`2026-09-06T19:10:25.605Z`** and the phrase *"Roughly 30 items"* first appears at **`19:14:33.127Z`** — **four minutes later**, so the table precedes the number rather than being back-fitted to it. It came from the V3 two-agent audit classifying all **101** deferred-list entries, of which **50 were LIVE**:
+
+| Bucket | Count | |
+|---|---|---|
+| A · Portal UI and UX | ~18 | **this is step 3** |
+| B · Instruments and gates | ~10 | ordinary code |
+| C · Records, carriers, context | ~8 | docs work |
+| D · Infra and non-portal | ~10 | bot, site, OAuth, MongoDB |
+| E · Standing, no action | ~4 | caveats and decided-not-now |
+
+**B+C+D+E = 32.** That is the ~30.
+
+🔴 **TWO CORRECTIONS THE DERIVATION ITSELF FORCES, and neither was in the message that brought it.** **(1) Bucket E is not work** — it is caveats and decided-not-now — so the workload is **B+C+D = 28**, and 32 counts entries rather than things to do. **(2) "Player-facing" is not supported by it.** C is docs work and D is bot/site/OAuth/MongoDB; Task 8's actual words are *"Roughly 30 items. **Player-facing first**"*, which is an ORDERING instruction. The phrase *"~30 player-facing items"* that four carriers have been repeating mis-renders it, and the buckets are what make that visible.
+
+**So the real gap is narrower than "no basis": the classification was never written to a tracked file, so it survives as counts and themes rather than a checkable list — and it is now three days stale**, taken before step 3 closed its nine rows and before today's closures. **The filed unit is therefore a RE-DERIVE of B/C/D membership against today's list, not a scope-from-zero.**
+
+*The original heading, kept because the wrong claim is the point:* ~~STEP 4 HAS NEVER BEEN SCOPED, and "~30 player-facing items" is a prose estimate four sessions have now repeated~~
+
+*Filed 2026-09-09 15:13 EDT, on closing step 3.* `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`'s Task 8 opens *"Roughly 30 items"* and then names **five bullets**: the landing page's command animation missing `/help` and `/draw calculator` · the `/manage` + `/bot analytics` click-test findings · the instruments (`portal:states` non-determinism, `portalStatus`'s unproven stale branch, the third read-only audit) · context architecture (five rules still encyclopedias, the tier ungated) · restoring the `Stop` hook. **~~The other ~25 are enumerated nowhere.~~ ⚠️ **Wrong — see the correction at the head of this entry.** They were classified into buckets B/C/D/E on 2026-09-06; what was never done is writing that classification into a tracked file.**
 
 🔴 **The number has been carried forward without anyone opening the list** — including by me, three times in one day, in a status report to Harkirat. It is the same shape as the four stale records this week: a figure inherited, repeated, and never checked against the thing it describes.
 
