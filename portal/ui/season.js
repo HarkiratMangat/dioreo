@@ -15,7 +15,7 @@ import { Board } from './board.js';
 import { Manifest, StatePill } from './manifest.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { DiscordCard } from './v2Render.js';
-import { Composer } from './composer.js';
+import { Composer, SmartDate } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused. ⚠️ A READABLE MAP, NOT A BUILT STRING. The design's markup emits the full tier word, and writing that as `t-${tier}` makes the three rules it needs invisible to the reverse-orphan scan — which reads source, not a running page, and correctly reported them as rules nothing triggers. Spelling them out costs three lines and keeps the gate able to see what is emitted.
@@ -766,8 +766,8 @@ function RecordPreview({ note, onClose }) {
     return html`
         <${Drawer} eyebrow=${`Patch notes · saved · ${note.current ? 'live now' : 'ended'}`}
                    title=${note.title} onClose=${onClose}
-                   actions=${html`<button class="btn" onClick=${onClose}>Cancel</button>
-                                  <button class="btn go" onClick=${onClose}>Stage these dates</button>`}>
+                   ${''/* 🔴 THE PRIMARY BUTTON PROMISED TO STAGE AND CALLED onClose (found 2026-09-10 17:47 EDT). It read "Stage these dates" beside two date inputs that had no onInput and no state, in a component whose only props are note and onClose — there is no stage path threaded into it at all, so nothing could have been staged even if the fields had been bound. A control that lies about what it does is worse than a missing one, and this one lied on the realm whose entire subject is staging. The dates are edited in PatchEditor, which owns releaseDateText, binds it, and stages through onStage(ops). A preview previews. */}
+                   actions=${html`<button class="btn go" onClick=${onClose}>Close</button>`}>
             <p class="dw-p">This is the card <b>as Discord renders it</b> — the same builder the
                bot calls, so the preview cannot drift from what ships.</p>
             <${DiscordCard} accent="var(--patch)" title=${note.title}
@@ -775,10 +775,9 @@ function RecordPreview({ note, onClose }) {
                             rows=${[['Window', `${day} → ${day}`], ['Duration', '1 day'],
                                     ['Detail', note.images.length ? `${note.images.length} image${note.images.length === 1 ? '' : 's'}` : '—'],
                                     ['Thumbnail', note.thumb || '—']]} />
-            <div class="dwfield" style="margin-top:var(--s4)"><label for="p-start">Starts</label>
-                <input id="p-start" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
-            <div class="dwfield"><label for="p-end">Ends</label>
-                <input id="p-end" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
+            ${''/* The two inert date inputs that stood here are gone with the button that promised to stage them. They carried no onInput and no state, so typing into either changed nothing; and the window they described is already stated above, in the card, as Discord will render it. */}
+            <p class="dw-p">The dates are edited in the record's own editor, where they are read by the
+               same parser the bot uses — this drawer shows what is already saved.</p>
         <//>`;
 }
 
@@ -800,9 +799,11 @@ function PatchEditor({ entry, onStage, onClose }) {
                 <label class="dwfield"><span>Title override <i>blank keeps the season title it was published under</i></span>
                     <input value=${draft.titleOverride} placeholder=${entry.title}
                            onInput=${(e) => set({ titleOverride: e.target.value })} /></label>
-                <label class="dwfield"><span>Release date <i>read by the same parser the bot uses</i></span>
-                    <input value=${draft.releaseDateText} spellcheck="false" placeholder="July 22, 2026 7:20 AM"
-                           onInput=${(e) => set({ releaseDateText: e.target.value })} /></label>
+                ${''/* 🔴 THE LABEL CLAIMED THE PARSER AND THE FIELD NEVER SHOWED IT. "read by the same parser the bot uses" is true — the text is sent verbatim and parsed server-side — but a bare input gives you no way to see WHAT it resolved to, so a typo reads exactly like a date until the record is saved. SmartDate asks /api/parse-date as you type and echoes the answer, which turns the label's claim into something visible. The payload is unchanged: the TEXT is still what ships, because the server is the parser. Pin pmtvp9ur7. */}
+                <${SmartDate} chrome="drawer" id="pe-date" label="Release date"
+                              placeholder="July 22, 2026 7:20 AM"
+                              value=${draft.releaseDateText} iso=${draft.releaseDateIso}
+                              onChange=${(v, i) => set({ releaseDateText: v, releaseDateIso: i })} />
             </div>
             <label class="dwfield"><span>Additional info <i>rendered under the images; b:, n: and f: become the buff, nerf and fix marks</i></span>
                 <textarea rows="4" value=${draft.description} onInput=${(e) => set({ description: e.target.value })}></textarea></label>
