@@ -159,7 +159,10 @@
             region = r; region.info = describeRegion(r); frozen = null;
             openPop(r, 'region ' + Math.round(r.width) + '\u00d7' + Math.round(r.height) + ' in ' + region.info.owner);
         } else {
-            frozen = down.el; region = null; draw(frozen);
+            // ⚠️ RESOLVE THE ELEMENT FROM THE POINT, NOT FROM `e.target` (2026-09-09 22:03 EDT). A mousedown whose target is not an Element — the document itself, an SVG node in some browsers — has no `getBoundingClientRect`, and the handler threw before the popup could open, which reads as a dead tool rather than an error. `elementFromPoint` always answers with an Element or null, and null is a no-op rather than a throw.
+            var hit = document.elementFromPoint(down.x, down.y);
+            if (!hit || mine(hit)) { hide(); return; }
+            frozen = hit; region = null; draw(frozen);
             openPop(frozen.getBoundingClientRect(), selectorFor(frozen));
         }
         down = null; dragging = false;
@@ -167,7 +170,7 @@
     document.addEventListener('click', function (e) { if (ON && !mine(e.target)) { e.preventDefault(); e.stopPropagation(); } }, true);
 
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ON) setMode(false); }, true);
-    pop.addEventListener('click', function (e) { e.stopPropagation(); }, true);
+    // 🔴 A `pop.addEventListener` CLICK HANDLER IN CAPTURE PHASE STOOD HERE AND IT KILLED BOTH BUTTONS (removed 2026-09-09 22:03 EDT). Harkirat: *"umm nothing happens when i click Save pin or Cancel."* Capture runs from the document DOWN to the target, so calling stopPropagation on the popup meant the event never reached the buttons inside it — Save and Cancel had listeners that could not fire. It was unnecessary as well as harmful: every document-level handler above already returns early on `mine(e.target)`, so a click inside the popup was never going to be read as a pin. ⚠️ AND MY OWN CHECK WALKED STRAIGHT PAST IT. I "verified" cancel by invoking the button and reading back a literal `ready: true` I had written into the same expression — a value that could not have come out false. The EFFECT was never asserted: whether the popup closed, whether a note landed. Assert the effect, never a constant you wrote beside it.
     document.getElementById('__pincancel').addEventListener('click', function () { frozen = null; region = null; shotData = null; pop.style.display = 'none'; hide(); });
 
     // 🔴 THE BROWSER CANNOT SCREENSHOT ITSELF, SO THE CROP ARRIVES BY CLIPBOARD (2026-09-09 21:57 EDT). Harkirat: *"can it also give me an option to take and attach a cropped screenshot… so you have the issue presented to you straight up, instead you having to frantically go search for it in the code."* ⌘⇧4 crops with whatever padding he wants included, and this takes the paste. It also beats anything the page could render of itself: it captures what the COMPOSITOR drew — font rendering, subpixel AA, a GPU-composited shadow — none of which a DOM-to-canvas trick reproduces.
