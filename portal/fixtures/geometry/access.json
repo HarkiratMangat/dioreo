@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-10T18:59:11.224Z",
-  "commit": "fb1c1a5a",
+  "recordedAt": "2026-09-10T21:21:30.466Z",
+  "commit": "f004d1eb",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,10 +9,11 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 361,
+        "examined": 365,
         "nearMisses": 12,
-        "sizeIssues": 16,
+        "sizeIssues": 17,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "l>i|TOP-OFFSET",
           "mxfoot>span|TOP-OFFSET",
@@ -43,18 +44,18 @@
           "/manage pages",
           "",
           "Admin",
-          "1Manage",
-          "0Autobuild",
-          "1Bot",
-          "1Destructive🔒",
-          "1Draws",
-          "2Calendar",
-          "2MP",
-          "2DMZ",
-          "1Patch Notes",
-          "1Season Draft",
-          "1Season",
-          "2Announcement",
+          "Manage1",
+          "Autobuild0",
+          "Bot1",
+          "Destructive1",
+          "Draws1",
+          "Calendar2",
+          "MP2",
+          "DMZ2",
+          "Patch Notes1",
+          "Season Draft1",
+          "Season1",
+          "Announcement2",
           "Action"
         ],
         "sections": []
@@ -62,13 +63,12 @@
     },
     "By permission": {
       "grid": {
-        "examined": 234,
+        "examined": 229,
         "nearMisses": 10,
-        "sizeIssues": 8,
+        "sizeIssues": 7,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
-          "[object>[object.SVGAnimatedString]|h",
-          "[object>[object.SVGAnimatedString]|w",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "l>i|TOP-OFFSET",
           "mxfoot>span|TOP-OFFSET",
           "root>b|TOP-OFFSET",

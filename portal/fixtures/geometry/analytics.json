@@ -1,7 +1,7 @@
 {
   "realm": "analytics",
-  "recordedAt": "2026-09-10T18:59:14.503Z",
-  "commit": "fb1c1a5a",
+  "recordedAt": "2026-09-10T21:21:35.638Z",
+  "commit": "f004d1eb",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,9 @@
   "views": {
     "Health": {
       "grid": {
-        "examined": 472,
+        "examined": 476,
         "nearMisses": 5,
-        "sizeIssues": 109,
+        "sizeIssues": 110,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -28,6 +28,7 @@
           "bootgrid>span|TOP-OFFSET",
           "bootgrid>span|TOP-OFFSET",
           "bootgrid>span|TOP-OFFSET",
+          "chipset>mlabel|w",
           "hp>b|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
@@ -146,13 +147,14 @@
     },
     "Usage": {
       "grid": {
-        "examined": 415,
+        "examined": 419,
         "nearMisses": 5,
-        "sizeIssues": 154,
+        "sizeIssues": 155,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
+          "chipset>mlabel|w",
           "diff-r>dk|TOP-OFFSET",
           "diff-r>dk|TOP-OFFSET",
           "diff-r>span|TOP-OFFSET",
@@ -328,9 +330,9 @@
     },
     "Timing": {
       "grid": {
-        "examined": 396,
+        "examined": 400,
         "nearMisses": 5,
-        "sizeIssues": 161,
+        "sizeIssues": 162,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -355,6 +357,7 @@
           "ackrow>av|TOP-OFFSET",
           "ackscale>ackrow.danger|TOP-OFFSET",
           "ackscale>ackrow.zero|TOP-OFFSET",
+          "chipset>mlabel|w",
           "dt2>i|TOP-OFFSET",
           "dt2>i|TOP-OFFSET",
           "dt2>i|TOP-OFFSET",
@@ -517,13 +520,14 @@
     },
     "Reach": {
       "grid": {
-        "examined": 339,
+        "examined": 343,
         "nearMisses": 7,
-        "sizeIssues": 94,
+        "sizeIssues": 95,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
+          "chipset>mlabel|w",
           "n>ncell|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
@@ -639,13 +643,14 @@
     },
     "Search": {
       "grid": {
-        "examined": 336,
+        "examined": 340,
         "nearMisses": 24,
-        "sizeIssues": 94,
+        "sizeIssues": 95,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
+          "chipset>mlabel|w",
           "n>ncell|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
           "n>ncell|TOP-OFFSET",
