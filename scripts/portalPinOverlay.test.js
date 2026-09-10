@@ -4,7 +4,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { pinEnabled, injectPin } = require('../portal/server');
+const { pinEnabled, injectPin, PIN_SHOTS, PIN_NOTES, PUBLIC_DIR } = require('../portal/server');
 
 let failures = 0;
 function check(name, fn) {
@@ -49,6 +49,18 @@ check('the BUILT index.html does not carry the tag — it is injected at serve t
     if (!fs.existsSync(built)) return;                    // a fresh clone before the first build
     const html = fs.readFileSync(built, 'utf8');
     assert.ok(!html.includes('__pin'), 'a built artifact that carries the tag would ship the overlay');
+});
+
+check('a pasted crop lands OUTSIDE portal/public, so it can never be served', () => {
+    // 🔴 THE RISK IS NOT DISK, IT IS DISCLOSURE. `serveStatic` hands anything under PUBLIC_DIR to whoever reaches the origin, and a pin crop is a photograph of an admin console showing real records — the exact thing that must not become a URL. `local/` is gitignored AND unserved, which is why both.
+    assert.ok(!PIN_SHOTS.startsWith(PUBLIC_DIR), `crops must not live under ${PUBLIC_DIR} — got ${PIN_SHOTS}`);
+    assert.ok(!PIN_NOTES.startsWith(PUBLIC_DIR), 'and neither may the notes file');
+    assert.ok(PIN_SHOTS.includes(`${path.sep}local${path.sep}`), 'they belong under local/, which .gitignore covers');
+});
+
+check('THE LOCATION CHECK CAN FAIL: a path under public is rejected by the same assertion', () => {
+    const bad = path.join(PUBLIC_DIR, 'portal-pins');
+    assert.ok(bad.startsWith(PUBLIC_DIR), 'the check reads the property it claims to read');
 });
 
 process.exit(failures ? 1 : 0);

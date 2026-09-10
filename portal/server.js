@@ -61,6 +61,10 @@ function serveStatic(req, res, url, env) {
 function pinEnabled(env) { return env !== 'production'; }
 const PIN_SCRIPT = path.join(__dirname, 'dev', 'pin.js');
 const PIN_NOTES = path.join(__dirname, '..', 'local', 'portal-sync-notes.md');
+// ⚠️ THE CAP ROSE FROM 20KB TO 8MB BECAUSE A NOTE CAN NOW CARRY A CROP, and it is still a cap: a paste is a base64 PNG, and an unbounded body on a route this permissive is how a dev convenience becomes a way to fill a disk. A ⌘⇧4 crop of a panel runs a few hundred KB.
+const PIN_MAX = 8 * 1024 * 1024;
+// 🔴 CROPS LAND OUTSIDE `portal/public`, DELIBERATELY. Everything under that directory is handed to anyone who reaches the origin by `serveStatic`; a screenshot of an admin console showing real records is precisely the thing that must not become a URL. `local/` is gitignored and unserved.
+const PIN_SHOTS = path.join(__dirname, '..', 'local', 'portal-pins');
 
 function servePinScript(res) {
     fs.readFile(PIN_SCRIPT, (err, data) => {
@@ -72,16 +76,42 @@ function servePinScript(res) {
 
 function readPinNote(req, res) {
     let body = '';
-    req.on('data', (c) => { body += c; if (body.length > 20000) req.destroy(); });
+    req.on('data', (c) => { body += c; if (body.length > PIN_MAX) req.destroy(); });
     req.on('end', () => {
         let n;
         try { n = JSON.parse(body); } catch { res.writeHead(400); return res.end('bad json'); }
-        const stamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false });
-        const entry = `\n## ${n.realm || 'unknown'} — ${stamp} EDT · from the dev-portal overlay\n`
-            + `**Element:** \`${n.selector || '?'}\` · ${n.rect || ''} · route ${n.route || ''}\n`
-            + `**It shows:** ${(n.shows || '').replace(/\n/g, ' ')}\n\n${n.text || ''}\n`;
+        // ⚠️ `YYYY-MM-DD HH:MM TZ`, WHICH IS THE ONLY TIMESTAMP SHAPE THIS REPO USES. The first version wrote `toLocaleString('en-US')`, which produced `9/9/2026, 21:58:06 EDT` — a US-locale string in a file every other line of which is ISO-first, and unsortable next to them. The zone is READ rather than hardcoded, so this stays correct across the EDT/EST boundary instead of lying for four months of the year.
+        const now = new Date(), TZ = 'America/New_York';
+        const stamp = now.toLocaleDateString('en-CA', { timeZone: TZ })
+            + ' ' + now.toLocaleTimeString('en-GB', { timeZone: TZ, hour12: false }).slice(0, 5)
+            + ' ' + now.toLocaleTimeString('en-US', { timeZone: TZ, timeZoneName: 'short' }).split(' ').pop();
+        const id = 'p' + Date.now().toString(36);
+
+        let shotLine = '';
+        if (typeof n.shot === 'string' && n.shot.startsWith('data:image/')) {
+            try {
+                fs.mkdirSync(PIN_SHOTS, { recursive: true });
+                const ext = (n.shot.slice(11).split(';')[0] || 'png').replace(/[^a-z0-9]/g, '') || 'png';
+                fs.writeFileSync(path.join(PIN_SHOTS, `${id}.${ext}`), Buffer.from(n.shot.split(',')[1] || '', 'base64'));
+                shotLine = `\n![pin ${id}](portal-pins/${id}.${ext})\n`;
+            } catch { /* a missing crop makes a worse note, never a failed one */ }
+        }
+
+        // A REGION names whose space it is; an ELEMENT names itself. Both carry the frame.
+        const where = n.kind === 'region' && n.region
+            ? `**Region** ${n.rect || ''} inside \`${n.region.owner}\`\n`
+                + `**Its spacing:** ${n.region.spacing}\n`
+                + `**Between:** above ${n.region.above} · below ${n.region.below} · left ${n.region.left} · right ${n.region.right}\n`
+            : `**Element:** \`${n.selector || '?'}\` · ${n.rect || ''}\n`
+                + `**It shows:** ${(n.shows || '').replace(/\n/g, ' ')}\n`;
+
+        const entry = `\n## ${n.realm || 'unknown'} — ${stamp} · ${id} · from the dev-portal overlay\n`
+            + where
+            + `**Frame:** route ${n.route || ''} · scroll ${n.scroll || '?'} · viewport ${n.viewport || '?'}\n`
+            + shotLine
+            + `\n${n.text || ''}\n`;
         try { fs.appendFileSync(PIN_NOTES, entry); } catch { /* a scratch note is never worth a 500 */ }
-        res.writeHead(204); res.end();
+        res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ id }));
     });
 }
 
@@ -116,7 +146,7 @@ function createServer({ port, mongoUri, env }) {
     return server;
 }
 
-module.exports = { createServer, assertEnvironment, route, ROUTES, pinEnabled, injectPin };
+module.exports = { createServer, assertEnvironment, route, ROUTES, pinEnabled, injectPin, PIN_SHOTS, PIN_NOTES, PUBLIC_DIR };
 
 // Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same hazard: these modules require('../auth') and this file's `route`, so if they were required before module.exports was assigned, `route` would still be undefined at the moment they read it.
 require('./auth').registerAuthRoutes(route);

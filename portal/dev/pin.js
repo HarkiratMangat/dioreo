@@ -9,7 +9,7 @@
     if (window.__dioreoPin) return;                       // a reload of the SPA must not mount two overlays
     window.__dioreoPin = true;
 
-    var ON = false, frozen = null, count = 0;
+    var ON = false, frozen = null, region = null, shotData = null, count = 0;
     var css = document.createElement('style');
     css.textContent = [
         '#__pinbar{position:fixed;right:14px;bottom:14px;z-index:2147483000;display:flex;gap:8px;align-items:center;',
@@ -24,6 +24,12 @@
         '#__pinpop .row{display:flex;gap:7px;margin-top:8px}',
         '#__pinpop .row button{flex:1;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;padding:8px;border-radius:6px;border:1px solid #3A4752;background:transparent;color:#E8EDF1;cursor:pointer}',
         '#__pinpop .row button.save{background:#FF5D3B;border-color:#FF5D3B;color:#fff}',
+        '#__pinbox.region{border-style:dashed;background:rgba(95,212,232,.10);border-color:#5FD4E8}',
+        '#__pinlab.region{background:#5FD4E8;color:#00151A}',
+        '#__pinpop .shot{margin-top:8px;border:1px dashed #3A4752;border-radius:6px;padding:9px;text-align:center;',
+        '  font:600 10.5px/1.4 ui-sans-serif,system-ui,sans-serif;color:#5C6A75;cursor:text}',
+        '#__pinpop .shot.has{border-style:solid;border-color:#5FD4E8;color:#5FD4E8;padding:5px}',
+        '#__pinpop .shot img{max-width:100%;border-radius:4px;display:block}',
         'body.__pinning, body.__pinning *{cursor:crosshair !important}',
     ].join('\n');
     document.head.appendChild(css);
@@ -35,6 +41,7 @@
     var box = el('div', '__pinbox'), lab = el('div', '__pinlab'), pop = el('div', '__pinpop');
     document.body.appendChild(box); document.body.appendChild(lab); document.body.appendChild(pop);
     pop.innerHTML = '<div class="sel" id="__pinsel"></div><textarea id="__pintext" placeholder="What is wrong here?"></textarea>'
+        + '<div class="shot" id="__pinshot">\u2318\u21e7 4 to crop, then \u2318V here to attach it</div>'
         + '<div class="row"><button class="save" id="__pinsave">Save pin</button><button id="__pincancel">Cancel</button></div>';
 
     function el(tag, id) { var n = document.createElement(tag); n.id = id; return n; }
@@ -77,47 +84,131 @@
     btn.addEventListener('click', function (e) { e.stopPropagation(); setMode(!ON); });
 
     document.addEventListener('mousemove', function (e) {
-        if (!ON || frozen) return;
+        if (!ON) return;
+        // A drag past six pixels is a REGION, and the box switches to a dashed cyan so the two kinds are never confused on screen.
+        if (down && (Math.abs(e.clientX - down.x) > 6 || Math.abs(e.clientY - down.y) > 6)) {
+            dragging = true;
+            var l = Math.min(down.x, e.clientX), t = Math.min(down.y, e.clientY);
+            var w = Math.abs(e.clientX - down.x), h = Math.abs(e.clientY - down.y);
+            box.className = 'region'; lab.className = 'region';
+            box.style.cssText += ';display:block;left:' + l + 'px;top:' + t + 'px;width:' + w + 'px;height:' + h + 'px';
+            lab.textContent = 'region ' + Math.round(w) + '\u00d7' + Math.round(h);
+            lab.style.display = 'block'; lab.style.left = Math.max(4, l) + 'px'; lab.style.top = (t > 22 ? t - 20 : t + h + 4) + 'px';
+            return;
+        }
+        if (frozen || region) return;
+        box.className = ''; lab.className = '';
         var n = document.elementFromPoint(e.clientX, e.clientY);
         if (!n || mine(n)) return hide();
         draw(n);
     }, true);
 
-    // Capture phase, and it must be: the portal's own handlers open drawers and stage changes, and a pin is not a click on the app.
-    document.addEventListener('click', function (e) {
-        if (!ON || mine(e.target)) return;
-        e.preventDefault(); e.stopPropagation();
-        frozen = e.target;
-        draw(frozen);
-        document.getElementById('__pinsel').textContent = selectorFor(frozen);
-        var r = frozen.getBoundingClientRect();
+    // 🔴 BLANK SPACE IS ALWAYS SOME ELEMENT'S PADDING, GAP OR MARGIN, AND NAMING WHICH IS THE WHOLE ANSWER (2026-09-09 21:55 EDT). Harkirat: *"what if i want to annotate an area that doesn't fall within an element? such as a blank space area?"* A rectangle at x,y would send a reader hunting; the OWNER of the space plus its two neighbours is a line that can be acted on. The owner is the nearest common ancestor of what surrounds the region — not `elementFromPoint`, which in a gap returns the container but tells you nothing about what the gap is BETWEEN.
+    function ancestors(n) { var a = []; while (n && n !== document.body) { a.push(n); n = n.parentElement; } return a; }
+    function ownerOf(rect) {
+        var pts = [[rect.left + 2, rect.top + 2], [rect.right - 2, rect.top + 2], [rect.left + 2, rect.bottom - 2],
+            [rect.right - 2, rect.bottom - 2], [rect.left + rect.width / 2, rect.top + rect.height / 2]];
+        var chains = pts.map(function (p) { var n = document.elementFromPoint(p[0], p[1]); return mine(n) ? [] : ancestors(n); }).filter(function (c) { return c.length; });
+        if (!chains.length) return document.body;
+        return chains[0].find(function (n) { return chains.every(function (c) { return c.indexOf(n) >= 0; }); }) || document.body;
+    }
+    function neighbour(rect, dx, dy) {
+        var x = rect.left + rect.width / 2 + dx, y = rect.top + rect.height / 2 + dy;
+        if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) return null;
+        var n = document.elementFromPoint(x, y);
+        return (!n || mine(n)) ? null : n;
+    }
+    function describeRegion(rect) {
+        var own = ownerOf(rect), cs = getComputedStyle(own);
+        var above = neighbour(rect, 0, -(rect.height / 2 + 6)), below = neighbour(rect, 0, rect.height / 2 + 6);
+        var left = neighbour(rect, -(rect.width / 2 + 6), 0), right = neighbour(rect, rect.width / 2 + 6, 0);
+        var one = function (n) { return n ? selectorFor(n).split(' > ').pop() + (n.textContent.trim() ? ' "' + n.textContent.trim().slice(0, 24) + '"' : '') : '\u2014'; };
+        return {
+            owner: selectorFor(own),
+            spacing: 'padding ' + cs.padding + ' · gap ' + (cs.gap === 'normal' ? '\u2014' : cs.gap) + ' · margin ' + cs.margin,
+            above: one(above), below: one(below), left: one(left), right: one(right),
+        };
+    }
+
+    function openPop(anchorRect, selText) {
+        document.getElementById('__pinsel').textContent = selText;
         pop.style.display = 'block';
-        pop.style.left = Math.min(window.innerWidth - 336, Math.max(8, r.left)) + 'px';
-        pop.style.top = Math.min(window.innerHeight - 210, r.bottom + 8) + 'px';
+        pop.style.left = Math.min(window.innerWidth - 336, Math.max(8, anchorRect.left)) + 'px';
+        pop.style.top = Math.min(window.innerHeight - 300, anchorRect.bottom + 8) + 'px';
+        shotData = null;
+        var sz = document.getElementById('__pinshot');
+        sz.className = 'shot'; sz.textContent = '\u2318\u21e7 4 to crop, then \u2318V here to attach it';
         document.getElementById('__pintext').value = '';
         document.getElementById('__pintext').focus();
+    }
+
+    // 🔴 EVERY PIN PATH RUNS ON MOUSEUP, NOT CLICK. A drag that starts on an element and ends in a gap fires a click on their common ancestor, so a click-driven tool cannot tell a pin from a region at all. `click` below only BLOCKS — the portal's own handlers open drawers and stage changes, and a pin must never be a click on the app.
+    var down = null, dragging = false;
+    document.addEventListener('mousedown', function (e) {
+        if (!ON || mine(e.target)) return;
+        e.preventDefault(); e.stopPropagation();
+        down = { x: e.clientX, y: e.clientY, el: e.target }; dragging = false;
     }, true);
+    document.addEventListener('mouseup', function (e) {
+        if (!ON || !down || mine(e.target)) { down = null; return; }
+        e.preventDefault(); e.stopPropagation();
+        if (dragging) {
+            var r = { left: Math.min(down.x, e.clientX), top: Math.min(down.y, e.clientY) };
+            r.width = Math.abs(e.clientX - down.x); r.height = Math.abs(e.clientY - down.y);
+            r.right = r.left + r.width; r.bottom = r.top + r.height;
+            region = r; region.info = describeRegion(r); frozen = null;
+            openPop(r, 'region ' + Math.round(r.width) + '\u00d7' + Math.round(r.height) + ' in ' + region.info.owner);
+        } else {
+            frozen = down.el; region = null; draw(frozen);
+            openPop(frozen.getBoundingClientRect(), selectorFor(frozen));
+        }
+        down = null; dragging = false;
+    }, true);
+    document.addEventListener('click', function (e) { if (ON && !mine(e.target)) { e.preventDefault(); e.stopPropagation(); } }, true);
 
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ON) setMode(false); }, true);
     pop.addEventListener('click', function (e) { e.stopPropagation(); }, true);
-    document.getElementById('__pincancel').addEventListener('click', function () { frozen = null; pop.style.display = 'none'; hide(); });
+    document.getElementById('__pincancel').addEventListener('click', function () { frozen = null; region = null; shotData = null; pop.style.display = 'none'; hide(); });
+
+    // 🔴 THE BROWSER CANNOT SCREENSHOT ITSELF, SO THE CROP ARRIVES BY CLIPBOARD (2026-09-09 21:57 EDT). Harkirat: *"can it also give me an option to take and attach a cropped screenshot… so you have the issue presented to you straight up, instead you having to frantically go search for it in the code."* ⌘⇧4 crops with whatever padding he wants included, and this takes the paste. It also beats anything the page could render of itself: it captures what the COMPOSITOR drew — font rendering, subpixel AA, a GPU-composited shadow — none of which a DOM-to-canvas trick reproduces.
+    pop.addEventListener('paste', function (e) {
+        var items = (e.clipboardData || {}).items || [];
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== 0) continue;
+            e.preventDefault();
+            var fr = new FileReader();
+            fr.onload = function () {
+                shotData = fr.result;
+                var z = document.getElementById('__pinshot');
+                z.className = 'shot has'; z.innerHTML = '';
+                var img = document.createElement('img'); img.src = shotData; z.appendChild(img);
+            };
+            fr.readAsDataURL(items[i].getAsFile());
+            return;
+        }
+    }, true);
+    document.getElementById('__pinshot').addEventListener('click', function () { document.getElementById('__pintext').focus(); });
     document.getElementById('__pinsave').addEventListener('click', async function () {
         var text = document.getElementById('__pintext').value.trim();
-        if (!text || !frozen) return;
-        var r = frozen.getBoundingClientRect();
+        if (!text || (!frozen && !region)) return;
         var app = document.querySelector('.app');
-        await fetch('/__pin/note', {
-            method: 'POST', headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-                realm: (app && app.dataset.realm) || 'unknown',
-                route: location.hash || '#/',
-                selector: selectorFor(frozen),
-                shows: (frozen.textContent || '').trim().slice(0, 120),
-                rect: Math.round(r.width) + '×' + Math.round(r.height) + ' at ' + Math.round(r.left) + ',' + Math.round(r.top),
-                text: text,
-            }),
-        }).catch(function () {});
+        var r = region || frozen.getBoundingClientRect();
+        // 🔴 FIVE FIELDS PIN A FRAME EXACTLY, AND THREE OF THEM WERE MISSING. Selector and rect say WHERE on the page; scroll and viewport say WHICH page — the same selector sits somewhere else, and sometimes in a different layout, at another width or scroll offset. Without them a reader reproduces an approximation and then argues with it.
+        var body = {
+            kind: region ? 'region' : 'element',
+            realm: (app && app.dataset.realm) || 'unknown',
+            route: location.hash || '#/',
+            selector: region ? region.info.owner : selectorFor(frozen),
+            shows: region ? '' : (frozen.textContent || '').trim().slice(0, 120),
+            rect: Math.round(r.width) + '×' + Math.round(r.height) + ' at ' + Math.round(r.left) + ',' + Math.round(r.top),
+            scroll: Math.round(window.scrollX) + ',' + Math.round(window.scrollY),
+            viewport: window.innerWidth + '×' + window.innerHeight,
+            region: region ? region.info : null,
+            shot: shotData || null,
+            text: text,
+        };
+        await fetch('/__pin/note', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(function () {});
         count++; tally.textContent = count + (count === 1 ? ' pin' : ' pins');
-        frozen = null; pop.style.display = 'none'; hide();
+        frozen = null; region = null; shotData = null; pop.style.display = 'none'; hide();
     });
 })();
