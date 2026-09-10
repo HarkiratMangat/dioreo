@@ -1249,7 +1249,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    38+210+118+170+130+190+104 = 960 against a 902px content area. Trimmed to 832 so the table
    fits the narrowest DESKTOP width and still scrolls on a phone, which is the design. */
 .mtable col.c-cb{width:38px}
-.mtable col.c-item{width:17%;min-width:168px}
+/* 🔴 MEASURED, NOT CHOSEN — 2026-09-10 18:38 EDT, fork 03. Harkirat: "proportional is correct but the actual proportions of it are what are incorrect." Rendered both tables at 1148px and compared what each column is GIVEN against what its longest real value NEEDS: Armory's Weapon was given 195 and needed 257, Attachments given 298 and needed 514, while Build and Gunsmith code were given 174 EACH and needed 92 and 76.
+   🔴 THE CAUSE IS THE FALLBACK, NOT THE NUMBERS. `c-detail` is what a column gets when the table does not recognise it — width:auto — so two unrecognised columns on one realm split the leftovers evenly and neither can be sized for its own content. A gunsmith code is a KNOWN shape (ten characters, one line, mono), so it is recognised now and takes a fixed column; the identity column gets the width it was measured to need.
+   ⚠️ The measurement reads TEXT width, so a column holding a graphic reports zero and is not evidence of slack. Every number above is a text column. */
+.mtable col.c-item{width:23%;min-width:220px}
 /* Was 30%/180px, then 22%/150px, then briefly 15%/110px -- that last cut was measured against the
    HARNESS's fixture weapon names (LOCUS, BAL-27, AK117, all under 10 characters), not the real dev
    catalogue. Querying the actual data: real names run up to 16 characters ("KILO BOLT-ACTION",
@@ -1258,7 +1261,9 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    every fixture screenshot. 150px is the safe floor for real data; the PERCENTAGE still dropped from
    22% to 15%, so a wide viewport still hands the freed space to Build/Gunsmith-code as intended --
    only the floor for a narrow one changed back. */
-.mtable col.c-type{width:100px}
+.mtable col.c-type{width:124px}
+/* A gunsmith code is exactly ten mono characters plus the cell's own padding — a fixed column, because its content cannot vary. Until now it fell through to c-detail and took 174px for 76px of text, twice over on Armory. */
+.mtable col.c-code{width:108px}
 .mtable col.c-win{width:150px}
 .mtable col.c-spark{width:26%;min-width:200px}
 .mtable col.c-detail{width:auto;min-width:150px}
@@ -5588,6 +5593,14 @@ button .ic,a .ic{pointer-events:none}
 .dwfield textarea{min-height:88px;resize:vertical;font-family:var(--data);font-size:var(--t-sm);line-height:var(--lh-body)}
 .dwfield textarea:focus,.dwfield select:focus{outline:none;border-color:var(--patch)}
 .dwfield .hint{padding:0;font-size:var(--t-xs);color:var(--ink3);line-height:var(--lh-ui)}
+/* 🔴 THE FORMAT ARRIVES WHEN YOU ARE IN THE FIELD — Harkirat's pick, 2026-09-10 18:36 EDT, fork 07 option E. A permanently visible hint under every field is the "hint line" he refused ("is a hint line REALLY the best design decision you could make??"); a disclosure makes you work for something the field could hand you. This is neither: nothing at rest, the rule on focus, gone on blur.
+   🔴 IT IS CLIPPED, NEVER `display:none`. `aria-describedby` points at these, and a display:none element is not in the accessibility tree — hiding it that way would silently remove the description from every screen reader while looking identical. This is the `.sr` clip, so the hint is announced at all times and drawn only while the field has focus. */
+.dwfield .bf-hint{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.dwfield:focus-within .bf-hint{position:static;width:auto;height:auto;overflow:visible;clip:auto;
+  white-space:normal;display:block;background:var(--hi);border-left:2px solid var(--patch);
+  border-radius:0 var(--rad-1) var(--rad-1) 0;padding:6px 9px;margin-top:var(--s1);
+  font-family:var(--data);font-size:var(--t-micro);font-style:normal;color:var(--ink3);line-height:1.6}
 .dw-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s3)}
 /* ink3 at rest, warn only when it BLOCKS: most of the time the line reports how many fields changed, which is not a problem. */
 .dw-f .why{margin-right:auto;font-size:var(--t-sm);color:var(--ink3);line-height:var(--lh-ui);align-self:center;max-width:52%}
