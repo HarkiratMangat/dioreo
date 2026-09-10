@@ -18,7 +18,17 @@ const fmtDay = (iso) => new Date(iso + 'T12:00:00Z').toLocaleDateString(undefine
 // 🔴 THE DATE IS PARSED BY THE SERVER, WHICH IS THE POINT RATHER THAN AN IMPLEMENTATION DETAIL. `chrono-node` has understood "in 3 weeks" for this bot since /manage was built, and the portal was the one surface that made you click through a calendar instead. Shipping a second parser to the browser would put two implementations behind one promise — the echo would show what the CLIENT resolved while the server stored what chrono resolved — so this asks /api/parse-date, which calls the bot's own parseAdminDate. See portal/api/dates.js.
 //
 // ⚠️ Debounced, and every reply is checked against the value that is in the field NOW. Typing "sep" then "sep 21" fires two requests, and nothing guarantees they come back in that order; without the guard the slower "sep" reply overwrites the newer "sep 21" answer and the echo contradicts the field it sits under.
-function SmartDate({ id, label, value, iso, placeholder, onChange }) {
+// 🔴 EXPORTED 2026-09-10 17:43 EDT, AND THE REASON IS PIN pmtvp9ur7. Harkirat asked for *"a pop-up date
+// picker on every date field portal-wide"*. The portal already has something strictly better than a picker
+// and it was reachable from exactly TWO fields, both inside this file: seven other date inputs across
+// Season and Broadcast were raw `<input type="date">`, which cannot take "in 3 weeks" and cannot take a
+// paste out of a patch note. So the answer to that pin is not a new control — it is this one, everywhere.
+// ⚠️ `chrome` EXISTS BECAUSE THE CLASSES ARE THE COMPOSER'S, NOT THE FIELD'S. `nw-l` / `nw-i` /
+// `nw-date-echo` are the composer's own form vocabulary; a drawer's is `.dwfield` + `label` + `input`.
+// Carrying the composer's classes into a drawer would put a second form language inside one drawer, which
+// is the defect `.dwfield` was created to end. Same component, same parser, the host's own chrome.
+export function SmartDate({ id, label, value, iso, placeholder, onChange, chrome = 'composer' }) {
+    const drawer = chrome === 'drawer';
     const latest = useRef(value);
     latest.current = value;
     useEffect(() => {
@@ -36,9 +46,9 @@ function SmartDate({ id, label, value, iso, placeholder, onChange }) {
     return html`
         <!-- The design wraps only the NAME field in nw-f; a date field is a bare div, and the extra class
              carried the form's own column padding onto two boxes that are already inside nw-dates. -->
-        <div>
-            <label class="nw-l" for=${id}>${label}</label>
-            <input class="nw-i nw-smart" id=${id} type="text" autocomplete="off" spellcheck="false"
+        <div class=${drawer ? 'dwfield' : null}>
+            <label class=${drawer ? null : 'nw-l'} for=${id}>${label}</label>
+            <input class=${drawer ? 'nw-smart' : 'nw-i nw-smart'} id=${id} type="text" autocomplete="off" spellcheck="false"
                    placeholder=${placeholder} value=${value}
                    onInput=${(e) => onChange(e.target.value, null)} />
             <!-- ⚠️ NOT the generic hint class. The sheet draws this specific line — nw-date-echo, with ok and

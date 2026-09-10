@@ -12,6 +12,7 @@ import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay, Drawer } from './overlay.js';
+import { SmartDate } from './composer.js';
 
 // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
 const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
@@ -260,13 +261,24 @@ function PostForm({ onSubmit, onCancel }) {
     const [text, setText] = useState('');
     const [startsAt, setStartsAt] = useState('');
     const [expiresAt, setExpiresAt] = useState('');
-    const ready = text.trim();
+    // 🔴 THE RESOLVED INSTANT IS STATE, NOT A CLIENT-SIDE PARSE AT SUBMIT TIME. This used to send
+    //    `new Date(startsAt).toISOString()`, which is the browser's parser reading a value the BOT will
+    //    later read with chrono-node — two implementations behind one promise, which is the exact
+    //    argument composer.js's own header makes for asking the server. The iso here is what
+    //    /api/parse-date returned, so what the preview says and what the record holds cannot differ.
+    const [startsIso, setStartsIso] = useState(null);
+    const [expiresIso, setExpiresIso] = useState(null);
+    // ⚠️ TEXT WITHOUT A RESOLUTION MUST BLOCK, NOT SILENTLY SEND NULL. A field reading "next tuseday"
+    //    resolves to nothing; submitting it would post an announcement that starts immediately and say
+    //    nothing about why. The `why` line below names which field, in the drawer footer's own voice.
+    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', expiresAt.trim() && !expiresIso ? 'the end' : ''].filter(Boolean);
+    const ready = text.trim() && !unresolved.length;
 
     function submit() {
         onSubmit(buildBroadcastAddOp({
             text,
-            startsAt: startsAt.trim() ? new Date(startsAt).toISOString() : null,
-            expiresAt: expiresAt.trim() ? new Date(expiresAt).toISOString() : null,
+            startsAt: startsIso || null,
+            expiresAt: expiresIso || null,
         }));
     }
 
@@ -276,16 +288,22 @@ function PostForm({ onSubmit, onCancel }) {
                    actions=${html`
                        <span role="status" class=${'why' + (ready ? '' : ' blocked')}>${ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.' : 'Write the announcement first.'}</span>
                        <button class="btn" onClick=${onCancel}>Cancel</button>
+                       ${unresolved.length ? html`<span class="why blocked">${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet</span>` : null}
                        <button class="btn go" disabled=${!ready} onClick=${submit}>Stage post</button>`}>
             <div class="dwbody">
                 <div class="dwfield"><label for="post-text">Text</label>
                     <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
                               value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
                 <div class="dw-grid2">
-                    <div class="dwfield"><label for="post-starts">Starts (blank = immediately)</label>
-                        <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></div>
-                    <div class="dwfield"><label for="post-expires">Ends</label>
-                        <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} /></div>
+                        ${''/* 🔴 PIN pmtvp9ur7 ASKED FOR A DATE PICKER AND THE ANSWER WAS ALREADY BUILT. A native date input cannot take "in 3 days", cannot take a paste out of a patch note, and renders a different widget in every browser. SmartDate asks the bot's own chrono-node through /api/parse-date and echoes what it resolved, which is what /manage has understood since it was built. */}
+                    <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
+                                  placeholder="blank = the moment you commit, or “in 3 days”, or Sep 21"
+                                  value=${startsAt} iso=${startsIso}
+                                  onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
+                    <${SmartDate} chrome="drawer" id="post-expires" label="Ends"
+                                  placeholder="blank = the server’s 60-day default, not never"
+                                  value=${expiresAt} iso=${expiresIso}
+                                  onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />
                 </div>
                 <p class="dw-p">A blank start shows it the moment you commit. A blank end takes the server's
                     60-day default, not never.</p>
