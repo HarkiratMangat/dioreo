@@ -54,4 +54,24 @@ function coverageGaps(sourceText, pattern, carriers) {
 const PASS_HEADING = /^#{2,4}\s*[^\n]*\b(audit log|falsif|what the pass found|correction|corrections|got wrong|was wrong|where this is wrong|what i missed|standing lessons|mistakes?)\b/im;
 function hasPassRecord(text) { return PASS_HEADING.test(text || ''); }
 
-module.exports = { coverageDirective, coverageGaps, hasPassRecord };
+// Does this document look like it SUMMARISES an id-bearing list? Used to decide whether the absence of
+// a coverage directive is worth mentioning at all.
+//
+// 🔴 THIS EXISTS BECAUSE I CUT THE HOLE MYSELF AND HAD TO BE ASKED ABOUT IT (2026-09-10 13:32 EDT). The first
+// version advised on EVERY handoff with no directive, which measured 108 of 109 with no signal, so I
+// deleted it — and thereby removed the only thing that would ever cause the coverage check to fire. An
+// instrument that cannot emit a failure unless it is invited is the cousin of the vacuous pass guarded
+// against forty lines above, inside the same file.
+//
+// ⚠️ THE MEASUREMENT SAID THE *UNCONDITIONAL* ADVISORY WAS NOISE. It did not say a conditional one was.
+// Measured over all 109 handoffs with this discriminator — a token of 8+ lowercase alphanumerics
+// containing at least one digit, which pin ids and commit hashes satisfy and English prose does not —
+// **8 fire**, and the top two are the round-2 handoff (28) and the previous session's pin handoff (24),
+// which is the one that actually dropped an item. Ranking the two genuine cases first and second out of
+// 109 is what earns the advisory its place back.
+const IDLIKE = /\b(?=[a-z0-9]{8,}\b)(?=[a-z0-9]*[0-9])[a-z0-9]+\b/g;
+function looksLikeASummary(text, threshold = 5) {
+    return new Set(String(text || '').match(IDLIKE) || []).size >= threshold;
+}
+
+module.exports = { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary };

@@ -28,7 +28,7 @@ const LEDGER = 'docs/reference/portal-decision-ledger.md';
 //
 // SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else. 🔴 ALL OF THEM, NOT THE FIRST ONE — corrected 2026-09-04 14:02 EDT. The comment above has said since it was written that there are legitimately TWO live plans, and this function then returned `match()` — the FIRST path in the file. SESSION-START names the remediation plan first and the conformance work second, so the singular answer was always the remediation plan, and the `.remember` check below dutifully demanded that a session working realms name a plan about working MECHANISMS. That is how "which plan governs?" came to be recorded as an open question in `.remember` and in `docs/db-deferred-list.md` while THREE primary sources already answered it: the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment ("if you were handed a realm prompt, that prompt is your first action and this line is not"), and this very comment. A function contradicting the comment directly above it is the receipt class this repo keeps finding.
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
-const { coverageDirective, coverageGaps, hasPassRecord } = require_('./lib/handoffCoverage.cjs');
+const { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary } = require_('./lib/handoffCoverage.cjs');
 
 // ⚠️ CONST DECLARATIONS MOVED ABOVE `livePlans()` ON PURPOSE (2026-09-08 18:17 EDT) -- the same TDZ class the comment below already warns about. `livePlans()` now reads BOTH files: as of a 2026-09-07 SESSION-START redesign (which the WP3 rewrite of this file, done the same day as this fix, preserved rather than caused), SESSION-START.md deliberately carries NO plan pointer any more -- that job moved to `.remember/remember.md`'s auto-injected LAST HANDOFF block. This function's comment below still said "SESSION-START is the ONLY file that decides what governs now", which was already false by the time this was found: the exact "comment contradicts the code" receipt class this file's own header says it has caught twice before, caught a third time by actually running the check rather than trusting it.
 const REMEMBER = '.remember/remember.md';
@@ -150,7 +150,11 @@ for (const hp of handoffPaths) {
     //    summarise a list at all. An advisory with a 1-in-109 hit rate is noise, and noise is how a
     //    check stops being read. The guide tells you to add a directive when you summarise something;
     //    this stays silent until one exists, and does real arithmetic once it does.
-    if (!dir) { /* nothing to conserve, and saying so every time would be the noise above */ } else {
+    if (!dir) {
+        // Conditional, not universal — see looksLikeASummary's own note for the measurement that earned this back after I deleted it and left the check unable to fire.
+        if (looksLikeASummary(doc)) soft(`${path.basename(hp)} looks like it summarises a list and declares no source`,
+            'add one line so the arithmetic runs instead of your eyes:\n        <!-- coverage: <path> · <regex with one capture group> -->\n        Pointed at the previous session\'s handoff, this check named the exact pin its table had dropped.');
+    } else {
         const src = read(dir.source);
         if (src === null) fail(`${path.basename(hp)} declares a coverage source that does not exist: ${dir.source}`, 'fix the path.');
         else {

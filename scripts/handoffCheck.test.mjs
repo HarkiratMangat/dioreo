@@ -12,7 +12,7 @@ import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
-const { coverageDirective, coverageGaps, hasPassRecord } = require_('./lib/handoffCoverage.cjs');
+const { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary } = require_('./lib/handoffCoverage.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 let n = 0; const ok = (m) => { n++; console.log(`  ✓ ${m}`); };
@@ -131,5 +131,11 @@ assert.strictEqual(hasPassRecord('# H\n\nbody only'), false);
 assert.strictEqual(hasPassRecord('# H\n\n## Audit log\n\nno gaps found'), true);
 assert.strictEqual(hasPassRecord('# H\n\n### What the pass found\n\n- one'), true);
 ok('THE GATE CAN FAIL: a handoff with no record of a pass over itself is detected, and "no gaps found" is writable');
+
+// 🔴 BOTH DIRECTIONS, because the first version of this advisory was unconditional and I deleted it rather than conditioning it — which left the coverage check unable to fire at all.
+assert.strictEqual(looksLikeASummary('## State\nBranch feat/x, 3 commits, suite green. Next: push.'), false);
+assert.strictEqual(looksLikeASummary(fs.readFileSync(path.join(ROOT, 'local/handoff/2026-09-10-portal-round2.md'), 'utf8')), true);
+assert.strictEqual(looksLikeASummary(fs.readFileSync(path.join(ROOT, 'local/handoff/2026-09-10-portal-pin-fixes-full-handoff.md'), 'utf8')), true);
+ok('THE ADVISORY IS CONDITIONAL AND THE CONDITION DISCRIMINATES: silent on a prose handoff, fires on both real list-summarising ones');
 
 console.log(`\n${n} assertion group(s) passed`);

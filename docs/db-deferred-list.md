@@ -533,6 +533,16 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
+### `[P1 · S · Sonnet5-High]` The handoff requirements reach a session too LATE — put them at the WRITE, not at the end
+
+**Filed 2026-09-10 13:32 EDT, from a measurement about my own additions rather than a theory.** `npm run handoff` now requires a `## Audit log` in a handoff and does set arithmetic against the list it summarises, and `docs/reference/session-handoff-guide.md` gained four steps. **Both channels are weak by this session's own evidence:** the guide already contained four warnings about that exact failure class and I read past all four on the same day, and the check runs at the END, by which point the document feels finished and restructuring it is expensive enough to rationalise past.
+
+**The stronger channel is a `PostToolUse` hook on a write to `local/handoff/*.md`**, emitting `additionalContext` — the moment the two requirements are cheap to satisfy. The repo already proves that shape reaches Claude (`additionalContext` + `hookEventName`; `warn`/`systemMessage` does NOT).
+
+⚠️ **Not built in the last minutes before a compact, and the reason is this session's own rule:** every hook here needs a `<name>.test.sh` wired into `npm run test:hooks` — that convention exists because six self-tests were once found that nothing invoked — and an untested hook shipped in a hurry is the speculative instrument this session already refused once over the CSS gate.
+
+**Verify:** writing a handoff with no `## Audit log` produces a reminder at the moment of the write, the hook has a self-test that fails when the detector is reverted, and it is registered in the TRACKED `.claude/settings.json`.
+
 - [ ] **THREE PORTAL PLANS WERE PROPOSED AND RETIRED ON 2026-09-06 — do not re-derive any of them** `[standing-instruction]` (2026-09-06 17:17 EDT)
   - **V1, the critique loop:** `impeccable critique` with two isolated subagents per realm, then five steps per realm across seven realms, costed at **100-175 turns**. Killed by Harkirat — *"this is just a waste of turns, sequencing it to 5 steps for each realm, in a loop"* — because it was **instrument-shaped**: `critique` takes a target, so the tool picked the unit instead of the problem picking it. It was also calibrated on Home, the one realm with no drawers.
   - **V2, three sweeps by component:** shared CSS primitives, then the overlay components, then realm-local composition, at ~75 turns. Died inside its own message: a **94-item backlog already existed** and all three sweeps were already filed items. **Discovery was never the bottleneck.**
