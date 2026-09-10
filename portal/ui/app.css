@@ -1213,12 +1213,15 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    38+210+118+170+130+190+104 = 960 against a 902px content area. Trimmed to 832 so the table
    fits the narrowest DESKTOP width and still scrolls on a phone, which is the design. */
 .mtable col.c-cb{width:38px}
-.mtable col.c-item{width:15%;min-width:110px}
-/* Was 30%/180px, then 22%/150px -- still "not fixed" per Harkirat checking live: Armory's own weapon
-   names (LOCUS, BAL-27, AK117) are all under 10 characters, so 150px min-width was itself the real
-   floor keeping this column oversized regardless of the percentage. 110px min-width fits every real
-   name with room to spare; the freed space (now ~35% more of the table) goes to .c-detail's own
-   width:auto, which is Build/Gunsmith-code -- the columns actually cramped enough to need it. */
+.mtable col.c-item{width:15%;min-width:150px}
+/* Was 30%/180px, then 22%/150px, then briefly 15%/110px -- that last cut was measured against the
+   HARNESS's fixture weapon names (LOCUS, BAL-27, AK117, all under 10 characters), not the real dev
+   catalogue. Querying the actual data: real names run up to 16 characters ("KILO BOLT-ACTION",
+   "SWITCHBLADE X9", "MACHINE PISTOL"), which renders at ~122px in the Manifest's own font before
+   cell padding -- 110px would have wrapped or truncated the longest real names while looking fine on
+   every fixture screenshot. 150px is the safe floor for real data; the PERCENTAGE still dropped from
+   22% to 15%, so a wide viewport still hands the freed space to Build/Gunsmith-code as intended --
+   only the floor for a narrow one changed back. */
 .mtable col.c-type{width:100px}
 .mtable col.c-win{width:150px}
 .mtable col.c-spark{width:18%;min-width:110px}
