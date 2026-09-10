@@ -48,7 +48,8 @@ async function previewSet(ops, live) {
     }));
 }
 
-async function commitSet(ops, { actorId }) {
+// ⚠️ `source` DEFAULTS TO 'discord' BECAUSE EVERY EXISTING CALLER IS ONE -- handlers/manage/* and core/revert.js reached from /bot. The portal passes 'portal' explicitly (portal/api/changesets.js). A new non-Discord caller that forgets will be mislabelled, which is why the portal's own path is asserted in scripts/portalApi.test.js rather than left to prose.
+async function commitSet(ops, { actorId, source = 'discord' }) {
     // 🔴 FLATTEN BEFORE VALIDATING, not just before applying. A single-element `ops` array whose one element is ITSELF an array (any op's invert() may return an array -- draw.bulkDelete/purge and loadout.bulkAdd/bulkReplace all do) used to reach validateSet un-flattened: resolveOp(op.type) on an array has op.type === undefined, throws "unknown op type", and commitSet returned {ok:false} before the apply loop's own .flat() call ever ran -- so reverting any of those ops always failed. Found by the plan-1-range code review, confirmed by tracing revertChange's `commitSet([row.inverse], ...)` call against those invert() shapes.
     const v = validateSet(ops.flat());
     if (!v.ok) return { ok: false, failures: v.failures };
@@ -70,7 +71,7 @@ async function commitSet(ops, { actorId }) {
                 if (!res.ok) { failedAt = { index, reason: res.reason }; throw new Error(`op ${index} failed: ${res.reason}`); }
                 // apply() is the ONLY writer and it ALWAYS audits — the caller cannot opt out. 🔴 `page` is DERIVED FROM THE OP TYPE, never hardcoded. An earlier draft wrote `page: 'draws'` here, which would have stamped every calendar, loadout, patchnote, season and announcement row as `draws` the moment plan 2 lands — breaking getRecentChanges({filterPage}) in /bot analytics AND core/revert.js's ON_CORE.has(row.page) branch, which is the whole mechanism this design added.
                 const row = await recordChangeIn(session, {
-                    ...res.change, actorId, page: pageForOp(op),
+                    ...res.change, actorId, source, page: pageForOp(op),
                     inverse: impl.invert({ ...res.change, applied: res.applied })
                 });
                 changeIds.push(row.changeId);

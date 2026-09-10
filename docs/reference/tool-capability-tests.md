@@ -380,3 +380,13 @@ printf '%s\n%s\n' \
 ⚠️ **A directory target works**: `critique portal/ui` slugs to `portal-ui` and spans every realm in one run. **Never seven per-realm runs** — that is V1, which Harkirat killed.
 
 ⚠️ **`show_widget`'s host restyles `<button>` and drops CSS custom properties declared on a wrapper.** Three rendered comparisons in a row came back visually identical because `background`, `color` and `border` were being overridden — the design fork was unanswerable until the markup became `<span>` elements carrying **literal hex in inline `style=` attributes**. Measured 2026-09-09 20:35 EDT. For any comparison where the COLOUR is the subject, do not use `<button>` and do not put the palette in `:root`-style variables.
+
+## `codebase-memory-mcp` reports READY over an index that holds almost nothing — measured 2026-09-10 15:05 EDT
+
+`index_status` returned `status: "ready"`, `nodes: 410`, `edges: 440`, and a `head_sha` matching HEAD exactly. The index actually held **15 File nodes and 12 Function nodes**, all from three `.mjs`/`.cjs` files plus some markdown, JSON and one CSS file. `core/` (11 files), `utils/` (73), `handlers/` (24), `portal/ui` (44) and every `.mjs` under `scripts/` (60) were absent, so `search_graph(name_pattern: 'recordChange.*')` and `trace_path('commitSet')` — both correctly invoked — returned nothing for functions that are exported and called a dozen times.
+
+**Re-indexing via the documented CLI form is a no-op that reports success**: `index_repository --repo_path …` exited 0 with `"status":"indexed"` and `"skipped_count":0`, and produced the identical 410/440. The worker log recorded one skip, a transient probe file.
+
+**The tell is the magnitude, and it is only visible against an older number.** This file's own earlier entry recorded 2,260 nodes on live HEAD (2026-08-02). 410 is not a stale index; it is a different thing wearing the same status field — `head_sha` is stamped when the run happens and proves WHEN it ran, never WHAT it covered. A nastier variant of the 2026-08-09 corrupt-index case, where `list_projects` at least returned an empty array.
+
+⚠️ **So `CLAUDE.md`'s Code Discovery Protocol — "ALWAYS use codebase-memory-mcp tools FIRST for ANY code exploration" — currently points at an index that cannot answer a question about this repo's code, and reports nothing wrong.** Before trusting it, run `search_graph(name_pattern: '.*', label: 'File')` and look at whether the files you care about are listed. A node COUNT is not evidence; the file list is.

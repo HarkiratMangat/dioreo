@@ -17,12 +17,12 @@ function canRevert(row) {
     return { ok: true };
 }
 
-async function revertChange(changeId, { actorId }) {
+async function revertChange(changeId, { actorId, source = 'discord' }) {
     const row = await getChange(changeId);
     const gate = canRevert(row);
     if (!gate.ok) return { ok: false, reason: gate.reason };
 
-    const result = await commitSet([row.inverse], { actorId });
+    const result = await commitSet([row.inverse], { actorId, source });
     if (!result.ok) return { ok: false, reason: result.error || 'The revert could not be applied.' };
 
     await markUndone(changeId);

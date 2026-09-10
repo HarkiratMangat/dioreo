@@ -46,7 +46,9 @@ const fmtMs = (ms) => (ms == null || Number.isNaN(ms) ? '—'
 // Where the event came from, which is the column that makes "one history, two front doors" true rather than asserted: a ChangeLog row written by the portal and one written by /manage are the same kind of thing from different surfaces, and you can only see that if the surface is a column.
 function sourceOf(row) {
     if (row.kind !== 'change') return '—';
-    return (row.source || row.via || '').toLowerCase() === 'portal' ? 'PORTAL' : 'DISCORD';
+    const s = (row.source || row.via || '').toLowerCase();
+    // 🔴 THREE READINGS, NOT TWO. Until 2026-09-10 15:06 EDT this was a ternary over a field nothing wrote, so it answered DISCORD for every row including changes made in this very window. Rows from before models/ChangeLog.js gained `source` genuinely have no origin recorded, and an em dash says so -- the portal's own rule that a figure it does not have is never a figure it guesses.
+    return s === 'portal' ? 'PORTAL' : s === 'discord' ? 'DISCORD' : '—';
 }
 
 function summaryOf(row) {
@@ -75,6 +77,16 @@ const RIVER_COLUMNS = [
     } },
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
+
+// 🔴 A NAME IF ONE EXISTS, AND A HONEST SHORT ID IF NOT -- never nineteen digits truncated to six, which is what
+// this column showed until 2026-09-10 15:08 EDT. The map comes from portal/api/analytics.js and holds only what
+// the codebase actually stores: `owner`, plus each granted admin's own note. An unknown id keeps its last six
+// digits behind an ellipsis, which at least reads as an identifier rather than as a number that means something.
+function actorLabel(actorId, actors) {
+    if (!actorId) return 'system';
+    const named = actors && actors[actorId];
+    return named || ('…' + String(actorId).slice(-6));
+}
 
 const RIVER_FILTERS = [
     // 🔴 "no color identity within these buttons" — pin pmtuxqsk4, on the `alerts` chip. Armory's category chips have carried a topic swatch since the Manifest gained `topic: true`; Analytics never passed it, so the one realm whose whole subject IS three colour-coded kinds rendered its filter as three grey words. The hexes are `.rivk`'s, not new ones — the chip and the badge it filters to now agree. ⚠️ Level is deliberately left neutral: `lv-error`/`lv-warn`/`lv-caution`/`lv-info` are a SEVERITY ramp rather than a topic vocabulary, and inventing a fourth mapping for them is how a third vocabulary starts. If that ramp should reach the chips it is one line, and it is a decision.
@@ -811,7 +823,7 @@ export function AnalyticsRealm({ session }) {
     // The row dot carries the event's KIND, matching its chip. Left ungated it rendered 100 identical grey squares, which is a column of noise -- colour has to mean something or it should not be drawn. --patch/--warn/--ret are the same three signals the chips use, so the dot and the chip never disagree. 🔴 ONE KIND, TWO COLOURS, ON ONE ROW (2026-09-10 11:01 EDT). This map paints the row's topic dot and `.rivk` paints the row's KIND BADGE two columns away — and they disagreed: a change was --patch (gold) at the dot and --info (blue) at the badge, a restart --ret (pink) against --sched (violet). `.rivk` is the one a reader actually reads the word off, so it is the authority and this follows it.
     const KIND_VAR = { change: '--info', alert: '--warn', boot: '--sched' };
     // The level default is not cosmetic: a change or a boot carries no level, and an undefined value would make the Level filter silently hide every non-alert row the moment it is touched.
-    const rows = data.river.map(r => ({ ...r, id: r.changeId || r.alertId || r._id, state: 'live', topicVar: KIND_VAR[r.kind], summary: summaryOf(r), source: sourceOf(r), actor: r.actorId || 'system', level: r.level || (r.kind === 'alert' ? 'info' : '—') }));
+    const rows = data.river.map(r => ({ ...r, id: r.changeId || r.alertId || r._id, state: 'live', topicVar: KIND_VAR[r.kind], summary: summaryOf(r), source: sourceOf(r), actor: actorLabel(r.actorId, data.actors), level: r.level || (r.kind === 'alert' ? 'info' : '—') }));
     const h = data.health || {};
 
     // A lookup, not a ternary chain: three views nested two deep was already at the edge of readable, and this is five.
@@ -857,7 +869,7 @@ export function AnalyticsRealm({ session }) {
                                                ]} />`}
                   viewSlot=${viewSlot}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}
-                                                    title="One history, both front doors" label="River" filterGroups=${RIVER_FILTERS}
+                                                    title="One history, both front doors" label="Events" filterGroups=${RIVER_FILTERS}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
