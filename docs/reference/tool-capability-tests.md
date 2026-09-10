@@ -28,6 +28,18 @@ I had disabled plugins using "never invoked" as evidence of uselessness. **That 
 
 **Superseded bug (was FIXED 2026-07-25 00:33 EDT):** it was indexing the **wrong root** — `Project: /Applications/Claude Code` (the parent), 4,131 files / 868,277 lines / 20,978 functions, sweeping in `.remember`, `local/`, and unrelated projects. The actual repo is **55** JS/JSON files — a ~75× over-index. Cause: `server.py:221`, `os.environ.get("PROJECT_ROOT", os.getcwd())`, and the server's cwd was the parent. Fixed by adding `"env": {"PROJECT_ROOT": "/Applications/Claude Code/Diors-Builds"}` to its entry in `~/.claude.json`. **Takes effect on next session restart.**
 
+## 🔴 `codebase-memory-mcp` IS HEALTHY FOR THIS REPO — the 2026-09-10 17:31 EDT measurement, refuting a note that reached every session
+
+**Measured by calling it, not by reading a status field.** `list_projects` reports `Applications-Claude-Code-Diors-Builds` at **11,003 nodes / 22,953 edges**, `head_sha` matching HEAD exactly. `search_graph` answered `StatePill` and `inkOn` on the first call and returned **`in_degree: 5` on `inkOnTopic`** — the caller count `rg` structurally cannot produce, and the whole reason to reach for the graph.
+
+⚠️ **The claim it refutes was carried by three separate files and told the next session not to trust the tool at all:** *"codebase-memory's index for this repo holds 15 files… do not trust a graph query here."* It was written 2026-09-10 after three empty queries. Whatever caused those, the index is complete now, and **a note saying a working tool is broken costs more than no note** — it routed most of a session back onto `rg` while the graph was answering correctly.
+
+**Two real gotchas, both of which cost a call:**
+- **`search_graph` REQUIRES a `project` argument**, and its error names `list_projects` rather than the value you need — so the first call always fails unless you already know.
+- **`index_repository` still fails through the MCP tool** (it takes `project_path`, the worker wants `repo_path`). The CLI form remains the way to rebuild.
+
+**The falsifier for this entry:** ask for a symbol you know exists and read `in_degree`. If `list_projects` returns an empty array or a node count in the tens, the index really has collapsed — and that is a different fact from the tool being broken.
+
 ## `codebase-memory-mcp` — ✅ MOSTLY WORKS, replaced codebase-index (tested 2026-07-25 01:05 EDT)
 v0.9.0, MIT, `DeusData/codebase-memory-mcp`. tree-sitter AST over 158 languages with Hybrid LSP for **JS/TS/JSX/TSX** — the gap codebase-index could not fill. Installed via **`npm install -g`, deliberately NOT the `curl | bash` one-liner**: piping a remote script into a shell is off-limits, and their installer auto-rewrites agent config files. Audited `install.js` first — downloads only from the project's own GitHub releases, **verifies checksums**, touches no agent config. Registered manually as a project MCP.
 
