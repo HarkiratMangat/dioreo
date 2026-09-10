@@ -34,7 +34,7 @@ const route = (method, pattern, handler) => ROUTES.push({ method, pattern, handl
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
-function serveStatic(req, res, url) {
+function serveStatic(req, res, url, env) {
     // Reject any path segment that could escape PUBLIC_DIR (../, encoded or not) BEFORE resolving — resolving first and comparing after is the classic path-traversal mistake this avoids.
     const decoded = decodeURIComponent(url.pathname);
     if (decoded.includes('..')) { res.writeHead(400); return res.end('Bad request'); }
@@ -47,9 +47,47 @@ function serveStatic(req, res, url) {
         const headers = { 'content-type': MIME[ext] || 'application/octet-stream' };
         // The document and everything it executes. A stale one of these is a portal that silently disagrees with its own source.
         if (ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css') headers['cache-control'] = 'no-cache, must-revalidate';
+        const out = (ext === '.html' && pinEnabled(env)) ? Buffer.from(injectPin(data.toString('utf8'))) : data;
         res.writeHead(200, headers);
+        res.end(out);
+    });
+}
+
+// ── THE ANNOTATION OVERLAY — DEV ONLY, and every branch below is gated on this one function (2026-09-09 21:39 EDT).
+//
+// 🔴 IT IS MOUNTED IN THE PAGE BECAUSE IT CANNOT BE A PROXY. `portal/auth.js` derives the origin from the REQUEST: the session cookie is host-only by design and the OAuth redirect_uri must be an origin registered on the Discord application. Serving the live portal under a second origin breaks sign-in and needs a redirect URI only Harkirat can register. In the page there is no second origin.
+//
+// ⚠️ THIS IS THE ONE PLACE THIS FILE REACHES OUTSIDE `portal/public`, against its own header rule. It is deliberate and it is fenced: the note file is a developer's scratch file, the branch cannot be reached in production, and a failed write is swallowed rather than answered as an error, because losing a note must not look like a broken portal.
+function pinEnabled(env) { return env !== 'production'; }
+const PIN_SCRIPT = path.join(__dirname, 'dev', 'pin.js');
+const PIN_NOTES = path.join(__dirname, '..', 'local', 'portal-sync-notes.md');
+
+function servePinScript(res) {
+    fs.readFile(PIN_SCRIPT, (err, data) => {
+        if (err) { res.writeHead(404); return res.end('Not found'); }
+        res.writeHead(200, { 'content-type': 'text/javascript', 'cache-control': 'no-cache, must-revalidate' });
         res.end(data);
     });
+}
+
+function readPinNote(req, res) {
+    let body = '';
+    req.on('data', (c) => { body += c; if (body.length > 20000) req.destroy(); });
+    req.on('end', () => {
+        let n;
+        try { n = JSON.parse(body); } catch { res.writeHead(400); return res.end('bad json'); }
+        const stamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false });
+        const entry = `\n## ${n.realm || 'unknown'} — ${stamp} EDT · from the dev-portal overlay\n`
+            + `**Element:** \`${n.selector || '?'}\` · ${n.rect || ''} · route ${n.route || ''}\n`
+            + `**It shows:** ${(n.shows || '').replace(/\n/g, ' ')}\n\n${n.text || ''}\n`;
+        try { fs.appendFileSync(PIN_NOTES, entry); } catch { /* a scratch note is never worth a 500 */ }
+        res.writeHead(204); res.end();
+    });
+}
+
+// The tag is injected rather than built into index.html, so `scripts/buildPortal.js` stays ignorant of it and a production build cannot carry it even by accident.
+function injectPin(html) {
+    return html.replace('</body>', '<script src="/__pin.js" defer></script>\n</body>');
 }
 
 function createServer({ port, mongoUri, env }) {
@@ -60,8 +98,10 @@ function createServer({ port, mongoUri, env }) {
             const url = new URL(req.url, `http://${req.headers.host}`);
             const match = ROUTES.find(r => r.method === req.method && r.pattern.test(url.pathname));
             if (!match) {
+                if (pinEnabled(env) && req.method === 'GET' && url.pathname === '/__pin.js') return servePinScript(res);
+                if (pinEnabled(env) && req.method === 'POST' && url.pathname === '/__pin/note') return readPinNote(req, res);
                 if (req.method === 'GET' && !url.pathname.startsWith('/api/') && !url.pathname.startsWith('/auth/')) {
-                    return serveStatic(req, res, url);
+                    return serveStatic(req, res, url, env);
                 }
                 res.writeHead(404); return res.end('Not found');
             }
@@ -76,7 +116,7 @@ function createServer({ port, mongoUri, env }) {
     return server;
 }
 
-module.exports = { createServer, assertEnvironment, route, ROUTES };
+module.exports = { createServer, assertEnvironment, route, ROUTES, pinEnabled, injectPin };
 
 // Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same hazard: these modules require('../auth') and this file's `route`, so if they were required before module.exports was assigned, `route` would still be undefined at the moment they read it.
 require('./auth').registerAuthRoutes(route);
