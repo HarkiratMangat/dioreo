@@ -21,7 +21,12 @@ export function CommandBar({ commands = [], realmLabel }) {
     // ⌘K / Ctrl-K. Bound to the document because that is what a global shortcut means, and guarded by paletteBlocked because `inert` on the header stops the pointer and the tab order but not this listener — see palette.logic.js for the full note.
     useEffect(() => {
         const onKey = (e) => {
-            if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'k') return;
+            // ⌘/ RATHER THAN ⌘K — pin pmtvpmxsx, 2026-09-10 11:59 EDT: "i have cmd+K binded to something
+            // else on my mac." The portal has exactly one reader and his machine already owns ⌘K, so a
+            // shortcut he cannot press is not a shortcut. `/` needs no shift on his layout and no browser
+            // claims ⌘/. ⚠️ The <kbd> below renders the same key, and COMPANION §5.1 says the bar opens on
+            // INTENT — pointerdown, typing, or this chord — and never on focus; that is unchanged.
+            if (!(e.metaKey || e.ctrlKey) || e.key !== '/') return;
             if (paletteBlocked(document)) return;
             e.preventDefault();
             const el = inputRef.current;
@@ -67,7 +72,7 @@ export function CommandBar({ commands = [], realmLabel }) {
                    onInput=${(e) => { setQuery(e.target.value); setSel(0); setOpen(true); }}
                    onKeyDown=${onKeyDown}
                    onBlur=${() => setTimeout(() => setOpen(false), 130)} />
-            <kbd>⌘K</kbd>
+            <kbd>⌘/</kbd>
             <div class="cb-drop" hidden=${!open}>
                 <div class="plist" id="cbList" role="listbox" ref=${listRef}
                      aria-label="Commands and pages">

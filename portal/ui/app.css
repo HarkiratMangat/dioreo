@@ -5828,3 +5828,17 @@ button .ic,a .ic{pointer-events:none}
  * extends the target 4px each way; ::after stays the checkmark. */
 .mxcell{position:relative}
 .mxcell::before{content:"";position:absolute;inset:-4px}
+
+/* ── Pin fixes, round 2 · 2026-09-10 15:31 EDT ─────────────────────────────────
+   The Manifest's create verb leaves the filter set (pin pmtvqhfxh). `.mtools` wraps, so
+   margin-left:auto pushes it to the trailing edge on a wide toolbar and it simply starts
+   the next line when the chips fill the row — no fixed position to break at 820px. */
+.mtools .madd{margin-left:auto}
+
+/* The tier board's weapon name is a real <button> now (pin 60): it had no handler at all, so a
+   reader clicking the most obvious target on the card got nothing. It must look exactly as it
+   did — a button element carries a UA background, border, padding and font that would redraw
+   the whole rack — so this strips those and nothing else. `text-align:left` because a button
+   centres by default and the header is a left-aligned grid area. */
+button.bgrp-w{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-1)}

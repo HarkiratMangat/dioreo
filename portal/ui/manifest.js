@@ -197,7 +197,16 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 <!-- The add control sits BEFORE the count, which is the design's order and the useful one: the
                      count is a readout at the end of the row and the verb is a control among the other controls.
                      Measured 256px apart when they were the other way round. -->
-                ${onAdd ? html`<button class="chip go" onClick=${onAdd}>${addLabel}</button>` : null}
+                <!-- 🔴 A CREATION ACTION IS NOT A FILTER, and it was wearing a filter's clothes in a filter's
+                     row. Harkirat, pin pmtvqhfxh, 2026-09-10 12:26 EDT: "why is the add build button in line
+                     with them when it should be its own static component, it's not a filter, it's a creation
+                     action." The madd class pushes it to the end of the toolbar with an auto left margin, so
+                     the chips read as one set and the verb sits apart from them. A class rather than an inline
+                     style so portal:orphans can see it.
+                     ⚠️ NO BACKTICKS IN HERE. This comment lives inside a template literal, so one backtick ends
+                     the string and the build dies pointing at the markup — which is exactly what it just did
+                     to me, on the trap portal-editing.md names first. -->
+                ${onAdd ? html`<button class="chip go madd" onClick=${onAdd}>${addLabel}</button>` : null}
                 <!-- ⚠️ THE DENOMINATOR IS THE CATALOGUE, NOT THE ROWS HANDED IN. Armory pre-filters by armoury before
                      the Manifest ever sees a row, so dividing by the handed-in rows read "125 of 125" over a
                      133-build collection — a count that can never tell you something is being withheld. The design's

@@ -100,9 +100,15 @@ function RepairNote({ builds }) {
 function BuildChip({ b, onPick }) {
     const { faults, aged } = splitCoverage(b);
     return html`
+        <!-- 🔴 A role=button WITH tabindex=0 AND NO KEY HANDLER IS KEYBOARD-INERT, and this repo bans that
+             by name. It reached the tab order, announced itself as a button, and did nothing on Enter or
+             Space — the half of pin 60 ("clicking on these weapons or their builds does absolutely nothing",
+             2026-09-10 13:01 EDT) that is mine and mechanical. Space is preventDefault'd because on a focused
+             element it scrolls the page, which on an 9,353px tier board is the worst possible answer. -->
         <article class="bchip" data-id=${b._id || b.id} tabindex="0" role="button"
                  style=${`--c:${b.accent || 'var(--ink3)'}`}
                  onClick=${() => onPick(b.weaponName)}
+                 onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(b.weaponName); } }}
                  aria-label=${`${b.weaponName} ${b.buildName}, ${RANK_LABEL[String(rankOf(b))]}`}>
             <span class="bc-top"><span class="bc-w">${b.weaponName}</span>
                 ${b.isMeta ? html`<span class="bc-meta" title="Meta">META</span>` : null}</span>
@@ -125,8 +131,12 @@ function WeaponGroup({ group, onPick }) {
     const short = group.tier === 'best' ? 'BEST' : String(group.tier).toUpperCase();
     return html`
         <div class=${`bgrp t-${group.tierKey}`} style=${`--c:${group.builds[0].accent || 'var(--ink3)'}`}>
+            <!-- 🔴 THE WEAPON HEADER HAD NO HANDLER AT ALL — the other half of pin 60. A reader who clicks
+                 the weapon's NAME is asking for that weapon, and the group carries the same answer its chips
+                 do. It is a real button rather than a div with a role, so Enter and Space come free. -->
             <div class="bgrp-h">
-                <span class="bgrp-w"><i aria-hidden="true"></i><b>${group.weapon}</b></span>
+                <button type="button" class="bgrp-w" onClick=${() => onPick(group.weapon)}
+                        aria-label=${`Filter the Manifest to ${group.weapon}`}><i aria-hidden="true"></i><b>${group.weapon}</b></button>
                 <span class="bgrp-m">
                     ${group.builds.some((b) => b.isMeta) ? html`<span class="bc-meta">META</span>` : null}
                     ${group.tier ? html`<b class="bdg rank">${short}</b>` : null}
