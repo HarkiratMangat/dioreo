@@ -4889,12 +4889,15 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    🔴 IT STILL DOES NOT SAY "17 DAYS LEFT". That is the clock's job; this shows
    the dates AS STORED, because this is the record you edit.                  */
 .srec{display:flex;flex-direction:column;gap:9px;width:100%;min-width:0}
-.srec-grid{border-top:1px solid var(--rule);padding-top:var(--s3);margin-top:2px}
-/* "the season titles and the calendar banner items ALL LOOK LIKE THE SAME THING... they all read as
-   part of the same element, same design, same area, same importance" (Harkirat, pin pmtuxcp3b,
-   2026-09-09, echoing pins from 2026-09-05). A rule + top padding is the smallest change that reads
-   as two things rather than one -- the grid itself already carries the per-row --c colour, so the
-   fix is separation, not a second identity system. */
+/* 2026-09-10 00:33 EDT -- THE FIRST VERSION OF THIS FIX WAS A HAIRLINE AND IT WAS NOT ENOUGH. "a fucking
+   divider line" (Harkirat, after checking the live portal) -- a 1px border-top in --rule reads as
+   nothing next to a page full of other 1px rules. This is the .hpanel-style treatment instead:
+   its own bordered, raised surface, which is what actually reads as a separate zone rather than a
+   line someone has to notice. "the season titles and the calendar banner items ALL LOOK LIKE THE
+   SAME THING... same element, same design, same area, same importance" (pin pmtuxcp3b, 2026-09-09,
+   echoing pins from 2026-09-05 -- his third or fourth time raising this exact complaint). */
+.srec-grid{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);
+  padding:14px 16px;margin-top:var(--s3)}
 .srec-top{display:flex;align-items:baseline;gap:12px}
 .srec-kind{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
@@ -5157,9 +5160,17 @@ button .ic,a .ic{pointer-events:none}
    2px ring that painted on top of the `.ptc.mark.stack.same::after` ring already defined up there —
    two rings on one mark, neither aware of the other. The surviving rule lives beside its family. */
 
-.rec{margin:var(--s5) 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:var(--s4) 18px 18px}
+.rec{margin:var(--s5) 22px 0;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper);padding:var(--s5) 22px 22px}
+/* Was padding:var(--s4) 18px 18px (16/18/18) -- "the actual panel is literally touching the border of
+   the parent panel" (Harkirat, pin pmtuxfud2, 2026-09-09). Widened to match .rec's own OUTER margin
+   (var(--s5) 22px), so the panel's inside and outside breathing room are the same number rather than
+   the inside being visibly tighter. */
 /* center, not baseline (pin 8): the CTA is a 30px box beside a 10.5px eyebrow, and a baseline row hung it 8px low. */
-.rec-h{display:flex;align-items:center;gap:12px;margin-bottom:var(--s3)}
+.rec-h{display:flex;align-items:center;gap:12px;padding-bottom:var(--s3);margin-bottom:var(--s3);
+  border-bottom:1px solid var(--rule)}
+/* Was margin-bottom:var(--s3) alone, no border -- "the +new patch note button is literally touching
+   the line below it" (Harkirat, pin pmtuxfud2, 2026-09-09). There was no LINE for it to touch or not
+   touch; this draws a real one, with padding on both sides of it instead of a bare margin. */
 .rec-t{font:600 var(--t-xs)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
 .rec-n{font-size:var(--t-sm);color:var(--ink3)}
 .rec-cta{margin-left:auto;background:none;border:1px dashed var(--rule2);color:var(--ink3);border-radius:var(--rad-2);
