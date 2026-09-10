@@ -461,7 +461,10 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .drawer.side{left:auto;right:0;top:var(--hdr-h);bottom:0;transform:translateX(100%);
   width:min(420px,100vw);max-height:none;border-radius:0;border-right:0;border-top:0}
 .drawer.side.open{transform:none}
-.dw-h{display:flex;align-items:flex-start;gap:14px;padding:18px 20px 14px;flex:none;
+/* 🔴 THE DRAWER CHROME IS ON THE SCALE (2026-09-09 20:31 EDT). It was 18/20/14 · 18/20 · 14/20 with a 9px footer gap — six values, not one of them a step, on the chrome behind every drawer in the product (overlay.js's Drawer is imported by six of seven realms). Harkirat chose snap-to-the-nearest-step over tokenising at today's values.
+   ⚠️ TWO OF THE SIX ARE EQUIDISTANT (20 sits 4 from both --s4 and --s5; 14 sits 2 from both --s3 and --s4), so a nearest-step rule alone does not decide them. The tie rule, and it is a rule rather than a preference so the rest of the sweep can follow it: HORIZONTAL ties go UP, VERTICAL ties go DOWN. Breathability was the thing asked for and it is a horizontal property; height is what pushes a drawer's footer toward the fold, and the 880px creation drawer already runs to the 756px cap. Net: gutters +4px each side, the drawer 12px shorter.
+   ⛔ THE MASTHEAD'S 23px IS NOT IN THIS SWEEP AND MUST NOT BE. COMPANION §16.28 measured it: .panel sits at margin 22 + a 1px border, so 23 is the number the realm title shares with every panel heading below it, verified across six realms after a 1px rag that ran the height of the page. Snapping it to --s5 would re-open a defect that was closed by measurement. */
+.dw-h{display:flex;align-items:flex-start;gap:14px;padding:var(--s4) var(--s5) var(--s3);flex:none;
   border-bottom:1px solid var(--rule);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
 .dw-ttl{min-width:0;display:flex;flex-direction:column;gap:6px}
 .dw-eye{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.09em;color:var(--ink3);
@@ -470,13 +473,13 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);
   color:var(--ink3);border-radius:var(--rad-2);width:30px;height:30px;cursor:pointer;font-size:var(--t-sm)}
 .dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
-.dw-b{padding:18px 20px;overflow:auto;flex:1 1 auto}
+.dw-b{padding:var(--s4) var(--s5);overflow:auto;flex:1 1 auto}
 /* `.btn{flex:1}` above was written for a 420px drawer. On a `wide` one it produced two
    400px-wide buttons — a button's width should follow its label, not the dialog. Scoped to
    `.wide` so every existing confirm dialog is untouched. */
 /* one footer rule for every drawer width: the buttons hug the right at a fixed minimum, never stretch to a 50/50 split in a narrow drawer. */
 .dw-f .btn{flex:0 0 auto;min-width:132px}
-.dw-f{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;flex:none;
+.dw-f{display:flex;gap:var(--s2);justify-content:flex-end;padding:var(--s3) var(--s5);flex:none;
   border-top:1px solid var(--rule);background:var(--sunk)}
 .drawer h5{margin:0 0 10px;font-size:var(--t-micro);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;
   display:flex;align-items:center;gap:8px}
