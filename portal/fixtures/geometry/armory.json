@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-09T18:59:58.240Z",
-  "commit": "aa1ba19e",
+  "recordedAt": "2026-09-10T01:19:34.965Z",
+  "commit": "ff7ea4a7",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -300,7 +300,7 @@
     "Repairs": {
       "grid": {
         "examined": 3629,
-        "nearMisses": 16,
+        "nearMisses": 15,
         "sizeIssues": 268,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",

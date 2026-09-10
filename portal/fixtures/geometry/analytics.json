@@ -1,7 +1,7 @@
 {
   "realm": "analytics",
-  "recordedAt": "2026-09-09T19:00:04.714Z",
-  "commit": "aa1ba19e",
+  "recordedAt": "2026-09-10T01:19:24.953Z",
+  "commit": "ff7ea4a7",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -445,7 +445,7 @@
     "Reach": {
       "grid": {
         "examined": 326,
-        "nearMisses": 26,
+        "nearMisses": 28,
         "sizeIssues": 70,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
