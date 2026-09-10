@@ -612,17 +612,19 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
 // A long Manifest (Armory's catalogue is 133+ rows) had no way back to the top except scrolling back up by hand -- "why is there no 'to the top' button on such a LONG scrolling page?" (Harkirat, pin pmtux6x74, 2026-09-09). One component covers every realm for free, because they all share this one <main> scroll container (spec's own contract) -- no per-realm wiring needed.
 function BackToTop() {
     const [show, setShow] = useState(false);
+    // 🔴 Found while writing the 2026-09-10 handoff, not by a new pin, and it took TWO wrong attempts. Attempt 1: `document.querySelector('main')` grabbed the wrong one of two `<main>` elements present on a signed-in page. Attempt 2: picking "whichever main currently overflows" at mount time was STILL wrong, because this app replaces the `<main>` DOM node itself as the page moves from its loading skeleton to real content -- confirmed by adding a console.log: the effect ran twice with two DIFFERENT small scrollHeight/clientHeight pairs, neither matching the real 17000px-tall content main that existed once data had actually loaded. Any approach that grabs a `main` reference ONCE at mount is fragile here for that reason. The fix is CAPTURE-PHASE delegation on `document`: scroll events do not bubble, but they ARE dispatched in the capture phase, so listening there sees a scroll on ANY element, whichever `<main>` instance currently exists, with no reference to hold onto or invalidate.
     useEffect(() => {
-        const m = document.querySelector('main');
-        if (!m) return undefined;
-        const onScroll = () => setShow(m.scrollTop > 480);
-        m.addEventListener('scroll', onScroll, { passive: true });
-        return () => m.removeEventListener('scroll', onScroll);
+        const onScroll = (e) => {
+            const t = e.target;
+            if (t && t.tagName === 'MAIN') setShow(t.scrollTop > 480);
+        };
+        document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+        return () => document.removeEventListener('scroll', onScroll, { capture: true });
     }, []);
     if (!show) return null;
     return html`
         <button type="button" id="__backtotop" aria-label="Back to top"
-                onClick=${() => document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })}>
+                onClick=${() => [...document.querySelectorAll('main')].find((el) => el.scrollHeight > el.clientHeight)?.scrollTo({ top: 0, behavior: 'smooth' })}>
             <${Icon} name="chevron-up" size=${18} />
         </button>`;
 }
