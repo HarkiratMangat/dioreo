@@ -364,7 +364,8 @@ th.sortable{user-select:none;padding:0}
 th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
   padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
 th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-1)}
-th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:var(--t-xs)}
+th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:var(--t-sm)}
+/* Was --t-xs -- "the sort icons are SOOO tiny, i could barely tell what they were" (Harkirat, pin pmtuwz0d6, 2026-09-09). */
 th.sorted-asc::after{content:"↑";color:var(--patch)} th.sorted-desc::after{content:"↓";color:var(--patch)}
 td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);vertical-align:middle}
 tbody tr{cursor:pointer}
@@ -1199,7 +1200,10 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    38+210+118+170+130+190+104 = 960 against a 902px content area. Trimmed to 832 so the table
    fits the narrowest DESKTOP width and still scrolls on a phone, which is the design. */
 .mtable col.c-cb{width:38px}
-.mtable col.c-item{width:30%;min-width:180px}
+.mtable col.c-item{width:22%;min-width:150px}
+/* Was 30%/180px -- "so much wasted space on the width of the weapon names" while Attachments/Badges blended
+   together (Harkirat, pins pmtuwxox9/pmtux33r1, 2026-09-09). table-layout:fixed means giving this column less
+   hands the freed space straight to .c-detail (width:auto), which is exactly where it was needed. */
 .mtable col.c-type{width:100px}
 .mtable col.c-win{width:150px}
 .mtable col.c-spark{width:18%;min-width:110px}
@@ -2066,7 +2070,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-.mx .mxs i{display:block;width:100%;height:3px;border-radius:var(--rad-1);background:var(--c);margin:0 0 6px}
+.mx .mxs i{display:block;width:100%;height:4px;border-radius:var(--rad-1);background:var(--c);margin:0 0 6px;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
+/* Was height:3px, no glow -- "I CAN'T EVEN SEE THEM unless I literally manually zoom into the page"
+   (Harkirat, pin pmtuxn6we, 2026-09-09). The redundancy question (the permission square below already
+   shows the same thing) stays his call, filed in db-deferred-list.md -- this fix answers only the
+   half that's a rendering defect, not the half that's a removal decision. */
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
@@ -3869,7 +3878,11 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    decoration; a hazard hatch is a real-world convention for a boundary you are about to cross,
    it costs one pseudo-element, and it lets the panel itself stay quiet enough to read. This is
    the strip's one accessory — everything else inside it is ordinary type. */
-.ow{position:relative;margin-top:26px;border:1px solid var(--danger-edge);border-radius:var(--rad-3);
+/* .panel and .identity both use margin:0 22px to inset from the page edge; .ow only ever set
+   margin-top, so it was the one section on the page touching both edges -- "why does this area
+   touch the edges of the entire page width while literally every other panel has padding to the
+   left/right?" (Harkirat, pin pmtuxhnkb, 2026-09-09). */
+.ow{position:relative;margin:26px 22px 0;border:1px solid var(--danger-edge);border-radius:var(--rad-3);
   overflow:hidden;padding-left:9px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--del) 9%,transparent),transparent 58%),var(--paper)}
 .ow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:9px;
@@ -4867,6 +4880,12 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    🔴 IT STILL DOES NOT SAY "17 DAYS LEFT". That is the clock's job; this shows
    the dates AS STORED, because this is the record you edit.                  */
 .srec{display:flex;flex-direction:column;gap:9px;width:100%;min-width:0}
+.srec-grid{border-top:1px solid var(--rule);padding-top:var(--s3);margin-top:2px}
+/* "the season titles and the calendar banner items ALL LOOK LIKE THE SAME THING... they all read as
+   part of the same element, same design, same area, same importance" (Harkirat, pin pmtuxcp3b,
+   2026-09-09, echoing pins from 2026-09-05). A rule + top padding is the smallest change that reads
+   as two things rather than one -- the grid itself already carries the per-row --c colour, so the
+   fix is separation, not a second identity system. */
 .srec-top{display:flex;align-items:baseline;gap:12px}
 .srec-kind{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
@@ -5539,7 +5558,13 @@ button .ic,a .ic{pointer-events:none}
  * 🗑 `.t-best .trow-k` was the last of the tier-row rules and is deleted (2026-09-06 21:37 EDT); the report that named them
  * was right and the edit it deferred is made. `.bgrp.t-best` below is LIVE — `armory.js` emits `bgrp t-${tierKey}`,
  * so the reverse-orphan scan calling `t-best` new is a false positive, not debt. */
-.bgrp.t-best{border-color:var(--rule2);box-shadow:inset 0 0 0 1px rgba(242,194,48,.16)}
+.bgrp.t-best{border-color:var(--rule2);border-left-color:var(--c);box-shadow:inset 0 0 0 1px rgba(242,194,48,.16)}
+/* border-color above is a SHORTHAND -- it resets all four sides including the left edge that .bgrp's own
+   base rule set to var(--c), which is exactly why the BEST-tier card (always sorted first in its category,
+   the one every reader sees) was the one with zero visible identity color while lower tiers kept theirs.
+   Restoring border-left-color after the shorthand keeps the gold accent-glow intent for the other three
+   sides. Harkirat, pins pmtuwp8zi (SWITCHBLADE X9, BEST) and the 2026-09-09 23:21 follow-up (BAL-27, BEST):
+   "the first weapon card displayed under each weapon category lacks all border color and identity." */
 .bgrp.t-best .bgrp-w b{font-size:var(--t-md)}
 /* 🔴 `t-top3` IS EMITTED AND WAS DECLARED NOWHERE — found 2026-09-07 00:56 EDT by armoryRealm.test.js going red.
  * RANK_KEY emits best/top3/top5/unranked and only three of the four had a rule; top3 was undimmed by

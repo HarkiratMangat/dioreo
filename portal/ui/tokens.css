@@ -187,7 +187,8 @@
   --dur-toast-out:260ms; /* …and leaves faster than it came, or it reads as stuck */
   --ease-soft:cubic-bezier(.22,1,.36,1);  /* long travel, no overshoot spike */
 
-  --rail-w:76px; --hdr-h:52px; --gap:14px;
+  --rail-w:88px; --hdr-h:52px; --gap:14px; /* was 76px -- "Broadcast" had no breathing room and the
+  page gained a side-scroll it shouldn't need (Harkirat, pin pmtuwiocm, 2026-09-09) */
   /* ── SPACING SCALE — added 2026-09-06 01:21 EDT, decision D6 (`layout`). It did not exist: app.css carried
    * 10px×63 · 9px×61 · 8px×52 · 7px×51 · 12px×47 · 6px×42 · 3px×34, each individually reasonable,
    * and pin 14 read the sum as "no breathing room in this entire design". Six steps. Structural

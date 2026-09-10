@@ -9,6 +9,18 @@ status: live
 
 **History:** split out of the cross-project tracker on **2026-07-25 15:56 EDT** (tracked in-repo, so it gets real `git diff`/`git log` history like the rest of `docs/`), then **renamed and completed 2026-07-25 21:43 EDT** — that first pass moved only the tech-debt list and left this project's bugs, reminders, and resolved items sitting in the cross-project file, which defeated the point. This pass pulled all of them in, added the priority legend, and moved resolved entries out to `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is now `/Applications/Claude Code/meta-deferred-list.md`.
 
+### `[P2 · S · Sonnet5-Medium]` Armory/analytics panel-to-panel spacing — the tier board/Manifest gap and two Analytics regions
+
+**2026-09-09 23:23 EDT — narrowed after fixing `.ow`'s missing side margin (a real class-level bug, now fixed) and the srec identity/calendar divider (also fixed).** Three sites remain unresolved because they didn't share that same clean cause on inspection: Armory's gap between the tier board and the Manifest (`pmtuwu4fo`), and two Analytics regions where an inner panel sits close to its parent's edge (`pmtuxoquy`, `pmtuxpbrx`). Verify condition: open each cited pin id's element and check its actual computed padding against a sibling `.panel` before guessing at a number.
+
+### `[P3 · S]` Armory's long Manifest has no back-to-top control and no pagination
+
+Pin `pmtux6x74`, 2026-09-09: "why is there no 'to the top' button on such a LONG scrolling page? and why is it always displayed in full list mode?" A feature request, not a bug — genuinely new UI (a floating control, and/or a per-page row-count preference), not a fix to something broken, so it's filed rather than built in the same pass as the rendering defects.
+
+### `[P3 · XS]` Whether the Access permission-column underline should exist at all, once it's actually visible
+
+Pin `pmtuxn6we`, 2026-09-09. **The visibility half is fixed** (the bar was 3px with no glow; now 4px with a colour-matched ring). What's still his call: "do they even serve any useful purpose? like i can already see what permissions a person has by looking at the square below" — removing it as redundant with the permission-square grid is a design decision, not a rendering fix.
+
 ## Closing the loop back to the notes file
 When a Queued/bug item here that was **filed FROM `docs/ideas/diors-notes.md`** ships or gets fixed, go back and check off (or reply to) the original bullet in the SAME session — don't let it wait for a separate sweep. Added 2026-08-03 19:36 EDT after the calendar-banner feature (filed here 2026-07-31, shipped as v2.46.0 the same day) sat unmarked in the notes file for 3 days and multiple sessions, because closing THIS file's entry was treated as the finish line and the originating bullet was never revisited — even though the shipping commit's own code comment cited the notes-file line number. A filed item's real origin is worth a quick grep for ("notes L###" or the item's own wording) whenever you check something off here.
 

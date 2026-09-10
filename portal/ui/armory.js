@@ -939,8 +939,12 @@ function ArmoryAddChips({ onAdd }) {
         <div class="mh-add" id="mhAdd" role="group" aria-label="Add a build">
             <span class="mh-add-k">Add</span>
             ${MODES.map((m) => html`
+                <!-- MP/DMZ used to borrow Season's --draw/--ret tokens (purple/pink), which read as arbitrary
+                     here -- "purple/pink don't make sense for these modes" (Harkirat, pin pmtux8b12, 2026-09-09).
+                     MP takes the same crimson as its own AR category accent; DMZ gets a clear blue, matching how
+                     the mode reads everywhere else in the Manifest's MP/DMZ scope chips. -->
                 <button type="button" key=${m} class="pill mh-t"
-                        style=${`--c:var(--${m === 'DMZ' ? 'ret' : 'draw'})`}
+                        style=${`--c:${m === 'DMZ' ? '#3DA5F5' : '#FF3B5C'}`}
                         onClick=${() => onAdd(m)}>
                     <span class="dot"></span>New ${m} build${' '}
                     <kbd class="mh-k" aria-label=${`Keyboard shortcut: ${ADD_KEY[m].toUpperCase()}`}>${ADD_KEY[m].toUpperCase()}</kbd>

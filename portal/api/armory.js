@@ -37,7 +37,15 @@ function register(route) {
         const mpBuilds = all.filter(b => b.mode === 'MP');
         // 🔴 THE URL IS BUILT BY THE BOT'S OWN HELPER, NOT BY THE BROWSER. utils/loadoutRender.js's buildImageUrl is the one place that knows this convention — a bare key becomes a Cloudinary path with `f_auto,q_auto` baked in, and a value that is already a full URL passes through untouched (two LOCUS rows imported from imgur still rely on that). A client-side copy would hardcode the cloud name and would be the second place the transform convention lives, which is exactly what utils/cloudinaryDeliveryUrl.js was written to stop.
         const builds = all.map(b => ({
-            ...b, coverage: coverageFlags(b, mpBuilds), accent: getMpCategoryAccent(b.category),
+            ...b, coverage: coverageFlags(b, mpBuilds),
+            // getMpCategoryAccent() returns a DECIMAL Discord-embed-color int (e.g. 16726876), because its other
+            // caller (buildLoadoutCard's preview, line ~54) feeds a Discord embed's `color` field, which wants exactly
+            // that shape. This response only ever reaches the frontend's CSS (`--c:${accent}` in armory.js), and a bare
+            // decimal there is invalid at computed-value time -- `background:var(--c)` silently resolves to nothing,
+            // which is why every category dot, weapon-card border and topic-chip dot rendered with zero color identity
+            // (Harkirat, pins pmtuwnt2v/pmtuwp8zi/pmtuws6zz/pmtuwwb7p, 2026-09-09). Convert to a hex string at this
+            // boundary, once, so the Discord-color contract at line 54 stays untouched.
+            accent: `#${getMpCategoryAccent(b.category).toString(16).padStart(6, '0')}`,
             imageUrl: b.imageKey ? buildImageUrl(b.imageKey) : null,
         }));
         sendJson(res, 200, { builds, grantedPages });
