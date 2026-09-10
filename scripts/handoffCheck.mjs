@@ -172,9 +172,10 @@ console.log('  ℹ️  record layers this window: '
 //    discharge it. Four consecutive sessions were flagged and did nothing.
 const notes = read('docs/ideas/diors-notes.md');
 if (notes) {
+    // ⚠️ TWO COUNTS OF ONE THING, AND THEY DISAGREE ON PURPOSE. This counts EVERY unchecked box in the file; the SessionStart hook counts only those inside its working sections, so it reports one fewer. Neither is wrong — they measure different sets — but an unexplained 8-vs-9 is the duplicated-state defect this repo keeps removing, so the message below says which set it is.
     const openItems = (notes.match(/^\s*-\s*\[ \]/gm) || []).length;
     if (openItems && !touched.includes('docs/ideas/diors-notes.md')) {
-        soft(`docs/ideas/diors-notes.md has ${openItems} open item(s) and was not touched this window`,
+        soft(`docs/ideas/diors-notes.md has ${openItems} unchecked box(es) file-wide and was not touched this window`,
             'this is the LAST moment this session can act on it. Answer or mark them, or state in the handoff that they are deliberately untouched and why — working-agreement rule 7.');
     } else if (openItems) ok(`the notes file was touched (${openItems} still open)`);
     else ok('the notes file has no open items');
