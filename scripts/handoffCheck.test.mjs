@@ -116,6 +116,17 @@ const SRC = '## a — · pmtAAA ·\n## b — · pmtBBB ·\n## c — · pmtCCC ·
     ok('an invalid regex is reported rather than thrown');
 }
 
+// 🔴 THE VOCABULARY CASES, from the REAL corpus rather than from my own heading. Measured across all 109 handoffs on disk: the first predicate matched 1 (the one written to satisfy it) and 23 carry a genuine self-critical section under words they chose. Each string below is lifted from a real file.
+assert.strictEqual(hasPassRecord('# H\n\n## 0. Important correction\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## Two standing lessons\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## \u26a0\ufe0f Where the spec was WRONG or incomplete — corrections\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## The two corrections\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## What the previous handoffs got wrong\n\n...'), true);
+ok('THE PREDICATE IS NOT TUNED TO MY OWN HEADING: five real headings from the 109-file corpus pass');
+assert.strictEqual(hasPassRecord('# H\n\n## State\n\n## Next\n\n## Context'), false);
+assert.strictEqual(hasPassRecord('# H\n\n## Where things live\n\n## The surfaces'), false);
+ok('...and a handoff that only describes the WORK still fails — widening did not make it vacuous');
+
 assert.strictEqual(hasPassRecord('# H\n\nbody only'), false);
 assert.strictEqual(hasPassRecord('# H\n\n## Audit log\n\nno gaps found'), true);
 assert.strictEqual(hasPassRecord('# H\n\n### What the pass found\n\n- one'), true);

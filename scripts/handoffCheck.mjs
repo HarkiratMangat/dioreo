@@ -129,7 +129,11 @@ else if (logGrew) ok('the changelog grew');
 const handoffPaths = [...new Set((rem || '').match(/local\/handoff\/[\w.\-]+\.md/g) || [])];
 if (!handoffPaths.length) soft('.remember names no handoff file',
     'a handoff nothing points at is a handoff nobody opens — name it in .remember, or say plainly that this session produced none.');
+// ⚠️ DATED FLOOR, the same carve-out `docs-audit`'s plan-audit-log makes. The 109 handoffs written before this convention existed are not defective for lacking it, and failing them would only teach the next reader that the check lies.
+const HANDOFF_AUDIT_FROM = '2026-09-10';
 for (const hp of handoffPaths) {
+    const dated = /(\d{4}-\d{2}-\d{2})/.exec(path.basename(hp));
+    if (dated && dated[1] < HANDOFF_AUDIT_FROM) { ok(`${path.basename(hp)} predates the audit-log floor — exempt`); continue; }
     const doc = read(hp);
     if (doc === null) { fail(`${hp} is named in .remember and does not exist`, 'fix the pointer or write the file.'); continue; }
 
@@ -140,10 +144,13 @@ for (const hp of handoffPaths) {
 
     // (b) Does it conserve the list it summarises?
     const dir = coverageDirective(doc);
-    if (!dir) {
-        soft(`${path.basename(hp)} declares no source list`,
-            'if it summarises one (a pin file, a findings list, a backlog), declare it:\n        <!-- coverage: <path> · <regex with one capture group> -->\n        and this check will name anything the summary dropped. If it summarises nothing, say so in a comment so the absence is deliberate.');
-    } else {
+    // 🔴 THE "declares no source list" ADVISORY IS DELETED, AND THE MEASUREMENT IS WHY. It fired on
+    //    every handoff without a directive — and across all 109 in `local/handoff/`, **zero** name five
+    //    or more id-bearing items, so the round-2 handoff is the first in this project's history to
+    //    summarise a list at all. An advisory with a 1-in-109 hit rate is noise, and noise is how a
+    //    check stops being read. The guide tells you to add a directive when you summarise something;
+    //    this stays silent until one exists, and does real arithmetic once it does.
+    if (!dir) { /* nothing to conserve, and saying so every time would be the noise above */ } else {
         const src = read(dir.source);
         if (src === null) fail(`${path.basename(hp)} declares a coverage source that does not exist: ${dir.source}`, 'fix the path.');
         else {
