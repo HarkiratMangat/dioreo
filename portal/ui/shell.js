@@ -282,7 +282,7 @@ function Account({ session, staged, onSignOut, chrome }) {
                 <span class="cv" aria-hidden="true"></span>
             </button>
             <div class="umenu" role="menu" aria-label="Account" hidden=${!open}>
-                <div class="ubanner" style="--banner:none" aria-hidden="true"></div>
+                ${''/* 🔴 THE BANNER SLOT IS GONE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 08. It was `--banner:none` hardcoded: a 38px strip reserving room for an image the session payload has never carried, so it rendered as a grey band that read as a broken header. A REAL banner needs a new field on /auth and a Discord fetch, and reserving space for a feature with no date is exactly how this strip came to exist. It returns with an image in it, the next time that payload is touched for something else. */}
                 <div class="uid">
                     <!-- D3 — the real Discord avatar and name, replacing a grey disc and the literal string
                          "Dioreo admin" that named nobody. globalName is the display line; the muted line
@@ -299,6 +299,15 @@ function Account({ session, staged, onSignOut, chrome }) {
                 </div>
                 <div class="usec">
                     <div class="ustat"><span>Session</span><b class="live">${sessionLeft(session.sessionExpiresAt)}</b></div>
+                </div>
+                ${''/* 🔴 THE WAYS OUT — fork 08, and the menu had none. A panel that names who you are and then offers only "sign out" is a dead end; the two places an admin actually goes from here are their own Discord profile and the public site the bot serves. Each names its destination rather than a count, because that is the fact you want before clicking away. */}
+                <div class="usec">
+                    <a class="mi mi-out" role="menuitem" href=${`https://discord.com/users/${id}`} target="_blank" rel="noopener noreferrer">
+                        Your Discord profile<span class="mnote">discord.com ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://dioreo.app" target="_blank" rel="noopener noreferrer">
+                        Dioreo<span class="mnote">dioreo.app ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://dioreo.app/terms" target="_blank" rel="noopener noreferrer">
+                        Terms and privacy<span class="mnote">dioreo.app ↗</span></a>
                 </div>
                 <div class="usec">
                     <!-- The reach is a NOTE on the row it qualifies rather than a stat of its own: "what you can do"

@@ -12,6 +12,16 @@ import { Icon } from './icons.js';
 const KIND_ICON = { realm: 'layout-grid', view: 'eye', account: 'log-out', commit: 'check', home: 'triangle-alert',
     armory: 'square-pen', broadcast: 'square-pen' };
 
+// The four things a result can BE, in the order a reader wants them. `account` is last and carries a rule above it: it is the only section holding an act that ends the session, and a destructive act must not be reachable by momentum from a navigation list.
+const SECTIONS = [
+    { key: 'here', label: 'On this page', groups: ['view'] },
+    { key: 'go', label: 'Go to', groups: ['realm', 'home'] },
+    { key: 'do', label: 'Do', groups: ['commit', 'armory', 'broadcast'] },
+    { key: 'account', label: 'Account', groups: ['account'] },
+];
+const SECTION_OF = (c) => (SECTIONS.find((s) => s.groups.includes(c.group)) || SECTIONS[2]);
+const SECTION_RANK = (c) => SECTIONS.indexOf(SECTION_OF(c));
+
 // A command is { label, group, accent, keywords, local, run }. `run` is the whole contract: the bar never navigates by convention or by parsing the label, so a command that goes nowhere is a command somebody forgot to give a body — visible in the source rather than at the moment somebody presses Enter on it.
 export function CommandBar({ commands = [], realmLabel }) {
     const [query, setQuery] = useState('');
@@ -20,7 +30,8 @@ export function CommandBar({ commands = [], realmLabel }) {
     const inputRef = useRef(null);
     const listRef = useRef(null);
 
-    const hits = paletteHits(commands, query);
+    // 🔴 GROUPED, AND SIGN OUT IS SET APART — Harkirat's pick, 2026-09-10 18:22 EDT, fork 04. The icons fixed the dot; this fixes what the dot was a symptom of. Every result had identical weight in a keyboard-driven list, so "Sign out" sat one arrow-key from a page you were merely browsing to. ⚠️ THE SORT IS APPLIED TO `hits` ITSELF, NOT AT RENDER TIME, because `active` indexes this array — grouping only in the markup would make the arrow keys jump between sections while the highlight moved in relevance order. Stable within a section, so relevance still decides the order of what is inside one.
+    const hits = [...paletteHits(commands, query)].sort((a, b) => SECTION_RANK(a) - SECTION_RANK(b));
     const active = Math.min(sel, Math.max(0, hits.length - 1));
 
     // ⌘K / Ctrl-K. Bound to the document because that is what a global shortcut means, and guarded by paletteBlocked because `inert` on the header stops the pointer and the tab order but not this listener — see palette.logic.js for the full note.
@@ -78,6 +89,8 @@ export function CommandBar({ commands = [], realmLabel }) {
                 <div class="plist" id="cbList" role="listbox" ref=${listRef}
                      aria-label="Commands and pages">
                     ${hits.length ? hits.map((c, i) => html`
+                        ${SECTION_OF(c) !== SECTION_OF(hits[i - 1] || {}) || i === 0 ? html`
+                            <p class=${'psec' + (SECTION_OF(c).key === 'account' ? ' psec-cut' : '')} role="presentation">${SECTION_OF(c).label}</p>` : null}
                         <button class="pitem" role="option" key=${c.label} aria-selected=${i === active ? 'true' : 'false'}
                                 style=${`--c:${c.accent || 'var(--ink3)'}`}
                                 onMouseEnter=${() => setSel(i)}

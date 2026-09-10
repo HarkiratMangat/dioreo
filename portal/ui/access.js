@@ -373,15 +373,19 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                     </table>
                 </div>
                 <div class="mxfoot">
-                    <span><span class="mxlegend on"></span>granted <b>directly</b> — revoking it removes exactly this.</span>
-                    <span><span class="mxlegend inh"></span><b>inherited</b> — holding <code>manage</code> covers every page at once, so these cells cannot be turned off one at a time.</span>
+                    ${''/* 🔴 A KEY NAMES THE MARKS; A SENTENCE CARRIES THE CONSEQUENCE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 05, against his own verdict on the current build: "UGLY and broken — look at the alignment, the spacing, the actual style." Two of the three sentences here described a MARK, which a key does in a fraction of the width and without a paragraph under a grid. The third describes what happens if you click — that turning an inherited cell off means revoking `manage` — and a key cannot hold the one line that stops a wrong action. ⚠️ HE MARKED THIS PROVISIONAL: "I'll need to see it in the actual portal to verify i made the right choice." It is not settled until he has. */}
+                    <span class="mxkey">
+                        <span><span class="mxlegend on"></span>direct</span>
+                        <span><span class="mxlegend inh"></span>inherited</span>
+                    </span>
+                    <span><b>An inherited cell cannot be turned off on its own</b> — switching it off means revoking the thing that covers it, which is <code>manage</code></span>
                     <!-- 🔴 THE THIRD SENTENCE, AND IT ANSWERS A QUESTION RATHER THAN RESTATING A FACT. Pin pmtuxn6we
                          asked what the bar over each column name is FOR, given the squares below already show who holds
                          what. It was never the same fact: the squares are per person, the bar is the portal realm the
                          scope belongs to, and the amber ring is a single point of failure. Both were carried only by a
                          title attribute (no backtick on that word: this comment lives inside a template literal and
                          the build gate refuses one), which is invisible until you hover the 7px strip you cannot see. -->
-                    <span>a filled square takes its colour from the realm that scope reaches, and <b>By permission</b> names that realm in words for every scope.</span>
+                    ${''/* The third sentence stood here and it described a MARK — that a filled square takes the realm's colour — which is what the key above now does in a fraction of the width. Fork 05's whole point is that a key names marks and a sentence carries a consequence; leaving this one would have kept the paragraph the pin was about. The realm each scope reaches is still named in words on By permission, which is where a reader asking that question already is. */}
                     <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
                          removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
                          states with a locked chip on every cell — two authorities for one fact, which is the defect

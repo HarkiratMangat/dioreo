@@ -1610,6 +1610,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    real distinctions: a FAULT is orange, AGE is neutral because time passing is not a fault, and
    an empty meter has no colour to argue about. */
 .cmeter i{display:block;height:100%;background:var(--rule2);border-radius:var(--rad-1)}
+/* 🔴 AN EMPTY METER IS AN EMPTY BAR, NOT A HAIRLINE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 09: "why is the empty bar showing as a dashed line instead of a proper fill-bar?" The track sat on --rule inside a --sunk card at .72 opacity, which at 4px reads as a rule rather than as a container. One step brighter and it reads as the bar it is. ⚠️ A FULL BAR WAS THE OTHER CANDIDATE AND IT WAS REFUSED: on every other card the fill is the share AFFECTED, so a full bar meaning "100% clean" would make one shape say opposite things on two cards in the same row. The count and the sentence carry the good news; the meter keeps one meaning. */
+.cmeter.clean{background:var(--rule2)}
 .cmeter.bad i{background:var(--warn)}
 .cmeter.age i{background:var(--ink4)}
 
@@ -2181,6 +2183,22 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxrole.owner{border-color:var(--patch);color:var(--patch)}
 .mxrole.admin{border-color:var(--info);color:var(--info)}
 .mxrole.editor{border-color:var(--ink3);color:var(--ink3)}
+/* The key row for the matrix foot (fork 05). Inline, on one line, so the marks are named beside the grid rather than described under it — the sentence that survives beneath is the one about a CONSEQUENCE, not about a mark. */
+/* The Add row's group name (fork 06). Same eyebrow voice as .mh-add-k beside it, one step quieter, and it sits IN the flex row rather than above it — the row lives in the masthead, and a stacked version would push the Track down to hold a label. */
+.mh-add-g{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink3);align-self:center;margin-left:var(--s2)}
+.mh-add-g:first-of-type{margin-left:0}
+/* A menu row that LEAVES the console (fork 08). Same shape as .mi so the panel keeps one rhythm; the note carries the destination rather than a count. */
+.mi-out{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);text-decoration:none}
+.mi-out .mnote{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.06em;color:var(--ink3)}
+.mi-out:hover .mnote{color:var(--ink2)}
+/* The command bar's section heading (fork 04). An eyebrow, not a row: it is never selectable and never counted, so it takes no hover, no focus and no min-height. `.psec-cut` carries the rule above Account — the one section that can end your session. */
+.psec{margin:var(--s3) 0 var(--s1);padding:0 9px;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.pal-list > .psec:first-child,.psec:first-child{margin-top:var(--s1)}
+.psec-cut{border-top:1px solid var(--rule);padding-top:var(--s3);margin-top:var(--s3)}
+.mxkey{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center;
+  font-family:var(--data);font-size:var(--t-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
 .mxfoot{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--rule);
   font-size:var(--t-sm);color:var(--ink3);flex-wrap:wrap}
 
@@ -3263,8 +3281,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* A check reporting zero is CLEAN, and must look it. It used to draw the same green stub a count
  * of 1 draws, so "0" and "1" were visually indistinguishable at a glance — which defeats the
  * only reason to put a meter beside a number. */
-.cmeter.clean{background:transparent;border:1px dashed var(--rule2)}
-.cmeter.clean i{display:none}
+/* 🔴 THE DASHED EMPTY METER WAS HERE, AND IT WAS EXACTLY WHAT THE PIN NAMED. `.cmeter.clean{background:transparent;border:1px dashed var(--rule2)}` plus `i{display:none}` drew the zero state as a dotted outline — Harkirat, fork 09: "why is the empty bar showing as a dashed line instead of a proper fill-bar?" A dashed edge is this console's STAGED shape (solid live, dashed staged, hatched conflict), so an empty meter was wearing the vocabulary of a pending change. ⚠️ AND IT WON BY POSITION, NOT BY INTENT: an identical `.cmeter.clean` sits ~1,670 lines above, so two rules of equal specificity fought over one property and the later one silently took it. The value lives on ONE selector now, which is what `.claude/rules/portal-editing.md` says to do when this happens. */
 
 
 /* ══════════ THE COMPOSER (Shell.compose) ══════════

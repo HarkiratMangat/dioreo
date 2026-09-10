@@ -339,13 +339,18 @@ function SeasonClock({ season, today }) {
                 <!-- The face is ClockFace's, not a second copy of it. Season and Home render the same four
                      segments from the same code; only what surrounds them differs. -->
                 <${ClockFace} p=${p} />
-                <div class="sc-when">until <b>${fmtDay(next.iso)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
+                ${''/* 🔴 THE LOCAL WALL, NOT A BARE DATE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 01. "until Sep 10" is true and useless: the same four words whether the boundary is Sep 9 at 8pm or Sep 10 at 8pm his time, and that ambiguity is exactly what hid the countdown bug for a day. `next.at` is the stored instant, so this reads it in the VIEWER's zone and the reader and the record can no longer differ silently. */}
+                <div class="sc-when">until <b>${fmtWall(next.at)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
             </div>`;
     }
 }
 
 // A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset.
+// The deadline as a person reads a clock: the day, then the hour it actually falls, in the viewer's own zone. A deadline stored at 00:00Z is 8pm the previous evening in Toronto — the whole point of fork 01 — so the DAY alone is not the answer and neither is the raw instant.
+const fmtWall = (at) => (at == null ? '—' : new Date(at).toLocaleString(undefined,
+    { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
+
 const daysUntil = (iso) => Math.max(0, Math.round(
     (new Date(String(iso).slice(0, 10) + 'T00:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')) / 86400000));
 
@@ -406,11 +411,12 @@ const COMPOSE_TYPES = [
 ];
 
 // 🔴 FOUR CHIPS, AND TWO WERE REMOVED FOR DIFFERENT REASONS. `drawwindow` is no longer a kind at all (see COMPOSE_TYPES above). `patchnote` still is — but it had TWO entry points, this one and the Season Record panel's own CTA, and the record panel's is the one that sits beside the list it adds to. A control that creates a publication belongs next to the publications, not in a row of season-schedule chips it shares nothing with. The masthead keeps the four kinds that land on the Track.
+// 🔴 GROUPED, AND ON ONE LINE — Harkirat, 2026-09-10 18:22 EDT, fork 06: "B is the right direction but i dont want a vertical row of them, i still want them in line in 1 line." The captions this replaces were "one date" / "a window", repeated across four chips to say a thing the GROUPING says once: a draw happens on a date, a calendar row runs between two. The group name is the word `/manage` already uses, so nothing new is taught. ⚠️ A VERTICAL STACK WAS THE OBVIOUS RENDERING AND IT IS REFUSED — this row lives in the masthead beside three other controls, and turning it into three stacked rows would push the Track down for a label.
 const ADD_CHIPS = [
-    { key: 'draw', label: 'Draw', accent: 'var(--draw)' },
-    { key: 'returning', label: 'Returning draw', accent: 'var(--ret)' },
-    { key: 'event', label: 'Event', accent: 'var(--ev)' },
-    { key: 'playlist', label: 'Playlist', accent: 'var(--play)' },
+    { key: 'draw', label: 'Draw', accent: 'var(--draw)', group: 'Draws' },
+    { key: 'returning', label: 'Returning draw', accent: 'var(--ret)', group: 'Draws' },
+    { key: 'event', label: 'Event', accent: 'var(--ev)', group: 'Calendar' },
+    { key: 'playlist', label: 'Playlist', accent: 'var(--play)', group: 'Calendar' },
 ];
 
 // ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT MERELY BOUND -- the same rule MastheadNew follows, and the mockup draws the `N` badge for exactly this reason. `n` opens the composer with no type chosen, which is the right default for a group of six: picking the type is the composer's first field, so a shortcut per chip would be six shortcuts for one act. useCreateKey already refuses to fire while somebody is typing, so the letter cannot be swallowed mid-title.
@@ -419,7 +425,8 @@ function AddChips({ onAdd }) {
     return html`
         <div class="mh-add" role="group" aria-label="Add to this season">
             <span class="mh-add-k">Add</span>
-            ${ADD_CHIPS.map((c) => html`
+            ${ADD_CHIPS.map((c, i) => html`
+                ${c.group !== (ADD_CHIPS[i - 1] || {}).group ? html`<span class="mh-add-g">${c.group}</span>` : null}
                 <button class="pill mh-t" style=${`--c:${c.accent}`} onClick=${() => onAdd(c.key)}>
                     <span class="dot"></span>${c.label}
                 </button>`)}
