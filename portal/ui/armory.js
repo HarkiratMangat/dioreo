@@ -64,6 +64,7 @@ const ARMORY_FILTERS = [];
 const COVERAGE_LABEL = {
     'missing-image': 'Missing image', 'no-badges': 'No badges', 'wrong-attachment-count': 'Wrong attachment count',
     'stale-90d': 'Not updated in 90 days', 'near-duplicate': 'Near-duplicate code',
+    'no-code': 'No gunsmith code',
 };
 
 // Rack — what exists, in the bot's REAL per-category accent (spec §8.2).
@@ -97,37 +98,50 @@ function RepairNote({ builds }) {
     return html`<span class="rt">${faults} need repair${aged ? ` · ${aged} merely old` : ''}</span>`;
 }
 
-function BuildChip({ b, onPick }) {
+function BuildChip({ b, onPick, onEdit }) {
     const { faults, aged } = splitCoverage(b);
+    const [copied, setCopied] = useState(false);
+    const code = b.shareCode || '';
+    const dmz = b.mode === 'DMZ';
+    const noCode = !dmz && !code;
+    // 🔴 THE CODE IS THE ROW. Harkirat, 2026-09-10 16:32 EDT: "why not provide the gunsmith code directly in
+    // each row, with a method to copy that code, as well as a button to actual signal that THIS IS A
+    // CLICKABLE, ACTIONABLE item... nothing about it currently implies i could click it and directly edit."
+    // Measured against the dev catalogue: 123 of 133 builds carry a shareCode, all exactly ten characters,
+    // while buildName is an INDEX on almost all of them ("Build 1") that the COMPANION already calls
+    // meaningless. So the code is the identity and the name is not.
+    // ⚠️ THE NAME NEVER STANDS IN FOR THE CODE — his correction at 16:34 EDT. An MP build with no code shows
+    // that it has no code, because that is a real gap the new no-code flag now reports; DMZ shows no code
+    // SLOT at all, because DMZ has none by design and an em dash there would invent a defect.
+    const copy = (e) => {
+        e.stopPropagation();
+        if (!code || !navigator.clipboard) return;
+        navigator.clipboard.writeText(code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }, () => {});
+    };
+    const open = () => onEdit && onEdit(b);
     return html`
-        <!-- 🔴 A role=button WITH tabindex=0 AND NO KEY HANDLER IS KEYBOARD-INERT, and this repo bans that
-             by name. It reached the tab order, announced itself as a button, and did nothing on Enter or
-             Space — the half of pin 60 ("clicking on these weapons or their builds does absolutely nothing",
-             2026-09-10 13:01 EDT) that is mine and mechanical. Space is preventDefault'd because on a focused
-             element it scrolls the page, which on an 9,353px tier board is the worst possible answer. -->
-        <article class="bchip" data-id=${b._id || b.id} tabindex="0" role="button"
-                 style=${`--c:${b.accent || 'var(--ink3)'}`}
-                 onClick=${() => onPick(b.weaponName)}
-                 onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(b.weaponName); } }}
-                 aria-label=${`${b.weaponName} ${b.buildName}, ${RANK_LABEL[String(rankOf(b))]}`}>
-            <span class="bc-top"><span class="bc-w">${b.weaponName}</span>
-                ${b.isMeta ? html`<span class="bc-meta" title="Meta">META</span>` : null}</span>
-            <span class="bc-b">${b.buildName}</span>
-            <span class="bc-foot">
-                <span class="modetag">${b.mode}</span>
-                ${b.dmzRangeRank ? html`<span class="bc-dmz">${b.dmzRangeRank}</span>` : null}
-                ${b.isToxic ? html`<span class="bc-tox" title="Toxic"><${Icon} name="skull" cls="sm" label="toxic" /></span>` : null}
-                <span class="bc-att" data-tip=${`${(b.attachments || []).length} attachments`}>${(b.attachments || []).length}×</span>
-                ${faults.length ? html`<span class="bc-bad" data-tip=${faults.map((f) => COVERAGE_LABEL[f] || f).join(' · ')}>${faults.length}</span>` : null}
-                ${aged ? html`<span class="bc-age" data-tip="Not updated in 90 days" aria-label="stale">·</span>` : null}
-            </span>
-        </article>`;
+        <div class=${'brow' + (faults.length ? ' bad' : '') + (aged ? ' aged' : '') + (noCode ? ' nocode' : '')}
+             data-id=${b._id || b.id} tabindex="0" role="button"
+             onClick=${open}
+             onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }}
+             aria-label=${`Edit ${b.weaponName} ${code || b.buildName}`}>
+            ${dmz ? html`<span class="brow-n">${b.buildName}</span>`
+                : noCode ? html`<span class="brow-none">no code</span><span class="brow-n sec">${b.buildName}</span>`
+                : html`<code class=${'brow-c' + (copied ? ' ok' : '')}>${copied ? 'copied' : code}</code>
+                       <button class="brow-cp" onClick=${copy} title="Copy the gunsmith code"
+                               aria-label=${`Copy the gunsmith code ${code}`}>
+                           <${Icon} name=${copied ? 'check' : 'copy'} cls="sm" /></button>`}
+            <span class="brow-a">${(b.attachments || []).length}</span>
+            ${b.isToxic ? html`<${Icon} name="skull" cls="sm" label="toxic" />` : null}
+            <span class="brow-e" aria-hidden="true"><${Icon} name="square-pen" cls="sm" /><b>Edit</b></span>
+        </div>`;
 }
 
 // 🔴 ONE CARD SHAPE, ALWAYS — a weapon with one build is a group of one. Returning a bare chip for singles and a group for multiples put two visual languages side by side for the same kind of object, which Harkirat read as a rendering bug rather than as a distinction. And siblings genuinely ARE a group: six pairs of adjacent cards differed only by a stored buildName that is an index ("Build 1", "Build 2"), so the rack was asking a reader to spot a one-character difference between two identical rectangles.
 //
 // ⚠️ THE TIER RIDES HERE NOW. With categories as the top axis, a weapon's rank has to be visible on the weapon or it is nowhere — so the group carries `t-<tierKey>` (the class names app.css grades) and prints the tier in the Manifest's own short spelling, TOP3 rather than "Top 3", because one field wearing two spellings on one screen is the defect the Category column already had to have fixed once.
-function WeaponGroup({ group, onPick }) {
+function WeaponGroup({ group, onPick, onEdit }) {
+    const hurt = group.builds.filter((b) => splitCoverage(b).faults.length).length;
     const short = group.tier === 'best' ? 'BEST' : String(group.tier).toUpperCase();
     return html`
         <div class=${`bgrp t-${group.tierKey}`} style=${`--c:${group.builds[0].accent || 'var(--ink3)'}`}>
@@ -143,14 +157,14 @@ function WeaponGroup({ group, onPick }) {
                     <span class="bgrp-n">${group.builds.length} build${group.builds.length > 1 ? 's' : ''}</span>
                 </span>
             </div>
-            ${group.builds.map((b) => html`<${BuildChip} key=${b._id || b.id} b=${b} onPick=${onPick} />`)}
+            ${group.builds.map((b) => html`<${BuildChip} key=${b._id || b.id} b=${b} onPick=${onPick} onEdit=${onEdit} />`)}
         </div>`;
 }
 
 // 🔴 THE VIEW PANELS USED TO CARRY THEIR OWN `.ph`, so the page drew TWO view headers where every design draws one: the Shell's bar (mode · views · legend) and then a second strip repeating the view's name and its count. The design puts that count in the Shell bar's own right-aligned `.sp` meta line (armory.html's `#viewMeta`), and the Shell has had a `meta` prop for it since Broadcast needed one — Armory simply never passed it. RackNote/RepairNote survive as the derivations behind that line, which is the point of them: the panel and the masthead cannot disagree.
 //
 // ⚠️ THE BODY IS NOT RENDERED WHILE A CATEGORY IS CLOSED, which is a second mechanism on top of `.trow.tclosed .trow-body{display:none}` and is deliberate rather than redundant: closed is the resting state of every category now, so always-rendering would leave the whole catalogue in the DOM — a hundred and thirty cards, every one of them a tab stop's worth of markup — to draw a page that shows seven headers.
-function Rack({ builds, onPick, onAdd }) {
+function Rack({ builds, onPick, onAdd, onEdit }) {
     const [copen, setCOpen] = useState(loadCOpen);
     const cats = rackCategories(builds);
     const toggle = (k) => setCOpen((prev) => {
@@ -207,7 +221,7 @@ function Rack({ builds, onPick, onAdd }) {
                                 <${Fold} open=${open} cls="sm trow-i" />
                             </button>
                             <div class="trow-body">
-                                ${open ? c.groups.map((g) => html`<${WeaponGroup} key=${g.weapon} group=${g} onPick=${onPick} />`) : null}
+                                ${open ? c.groups.map((g) => html`<${WeaponGroup} key=${g.weapon} group=${g} onPick=${onPick} onEdit=${onEdit} />`) : null}
                             </div>
                         </div>`;
                 })}
@@ -1350,6 +1364,7 @@ export function ArmoryRealm({ session }) {
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === VIEWS.rack
                           ? html`<${Rack} builds=${inMode}
+                                          onEdit=${(b) => setEditingId(String(b._id || b.id))}
                                           onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)}
                                           onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} />`
                           : view === VIEWS.compare

@@ -5906,3 +5906,36 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
    single dot had been doing both jobs and neither. `Icon` accepts name/cls/label only, so the accent rides
    the button and the svg inherits it here rather than being passed a style prop that is dropped. */
 .pitem .ic{color:var(--c,var(--ink3));flex:none}
+
+/* ── The tier board's build row ─── 2026-09-10 16:38 EDT ──────────────────────
+   Replaces .bchip, which stacked the weapon name and the META badge the group header had ALREADY printed,
+   plus the mode the realm switch already scopes — six copies of one name inside a 479px group. This row
+   carries only what differs between siblings, and the gunsmith code is the identity because 123 of 133
+   builds have one and buildName is an index on nearly all of them.
+   🔴 IT IS A CONTROL AND IT LOOKS LIKE ONE AT REST. The old chip called onPick, which filtered a table
+   thousands of pixels below the fold, so a working click read as a dead one. This opens the editor, and the
+   copy button and the pencil are both present unhovered so the row states its two verbs before you touch it. */
+.brow{display:flex;align-items:center;gap:7px;padding:7px 8px 7px 10px;border-top:1px solid var(--rule3);
+  cursor:pointer;background:none;transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.brow:hover,.brow:focus-visible{background:var(--hi);box-shadow:inset 2px 0 0 var(--c,var(--ink3));outline:none}
+.brow:focus-visible{outline:2px solid var(--patch);outline-offset:-2px}
+.brow-c{flex:1;min-width:0;font:400 var(--t-sm)/1 var(--data);color:var(--ink2);letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow-c.ok{color:var(--ok)}
+.brow-n{flex:1;min-width:0;font:400 var(--t-sm)/1.2 var(--ui);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow-n.sec{flex:none;color:var(--ink3);font-style:italic}
+/* An MP build with no code is a GAP, and the no-code coverage flag now reports it. DMZ never draws this. */
+.brow-none{flex:1;font:400 var(--t-sm)/1 var(--data);color:var(--warn)}
+.brow.nocode{box-shadow:inset 2px 0 0 var(--warn)}
+.brow.aged .brow-c,.brow.aged .brow-n{opacity:.72}
+.brow.bad{box-shadow:inset 2px 0 0 var(--del)}
+.brow.bad .brow-a{color:var(--del)}
+.brow-cp{background:none;border:0;padding:0;min-height:0;display:inline-flex;color:var(--ink3);cursor:pointer;flex:none}
+.brow:hover .brow-cp,.brow-cp:focus-visible{color:var(--ink2)}
+.brow-a{font:400 var(--t-micro)/1 var(--data);color:var(--ink3);flex:none;font-variant-numeric:tabular-nums}
+/* The pencil is always there; the WORD arrives with the pointer, so the column stays quiet at rest and
+   unambiguous under the cursor. */
+.brow-e{display:inline-flex;align-items:center;gap:4px;color:var(--ink3);flex:none}
+.brow-e b{display:none;font:400 var(--t-micro)/1 var(--ui);font-weight:400}
+.brow:hover .brow-e,.brow:focus-visible .brow-e{color:var(--ink);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px}
+.brow:hover .brow-e b,.brow:focus-visible .brow-e b{display:inline}
