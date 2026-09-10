@@ -1163,7 +1163,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .identity.collapsed .idbody{display:none}
 .identity:not(.collapsed) .idsum{display:none}
 /* 16px on FOUR sides, not three. The idhead bar is inset horizontally by this padding and was flush at the top, so it read as welded to the panel border. Pin pmtvpoz7u, fixed 2026-09-10 14:46 EDT. */
-.idbody{padding:16px}
+.idbody{padding:var(--s4)}
 .identity .ph{padding:12px 16px}
 /* Stacked deadline captions (see maskCollidingTicks): each level drops one chip-height so
    two dates four days apart both stay readable at a season-wide zoom. */
@@ -3304,7 +3304,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .pill.lead{border-color:var(--patch);background:color-mix(in srgb,var(--patch) 14%,transparent);color:var(--ink);
   font-weight:600;font-size:var(--t-base);padding:10px 15px}
 .pill.lead:hover{background:color-mix(in srgb,var(--patch) 24%,transparent)}
-.pill.sm{padding:5px 10px;font-size:var(--t-sm);gap:5px}
+/* 🔴 A BUTTON IS A HIT AREA, NOT A FONT SIZE. `.pill.sm` set padding and type and nothing else, so it
+   rendered 24px tall against `.btn`'s var(--tap) -- measured on the one-way list at 131x24 (pin
+   pmtvq210l, 2026-09-10 12:20 EDT). Harkirat: "SO many of the buttons across various surfaces of the
+   portal read as in-line components rather than actual actionable buttons due to their poor
+   hierarchy... each button should equally FEEL like a button." A small pill may be smaller; it may not
+   stop being pressable. Same rule reaches pin pmtvqfvu9's bulk-view cards, which use this class. */
+.pill.sm{padding:5px 12px;font-size:var(--t-sm);gap:5px;min-height:var(--tap)}
 .pill[disabled]{opacity:.45;cursor:default;transform:none}
 /* 🔴 `[hidden]` IS A UA RULE AT SPECIFICITY 0,0,1 AND ANY CLASS BEATS IT. `.pill` sets
    `display:inline-flex` at 0,1,0, so a `<button class="pill" hidden>` stays on screen — which

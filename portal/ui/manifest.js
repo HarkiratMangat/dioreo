@@ -101,7 +101,27 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     const [filters, setFilters] = useState({});
     useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
-    const [sort, setSort] = useState({ column: defaultSort || null, direction: 'asc' });
+    //
+    // 🔴 AND THE READER'S OWN CHOICE OUTRANKS THE REALM'S. Harkirat, pin pmtvpy8bi, 2026-09-10 12:07 EDT:
+    // "why can't i set a default sort-by method in the manifest? like every time i reload the page, it resets
+    // to sorting by the window increasing. Its my portal and i want to view it my way so why am i restricted
+    // to setting MY preference?" So the realm's `defaultSort` becomes the opening sort only for a reader who
+    // has never sorted this realm; once they do, that is the sort this realm opens with.
+    // ⚠️ KEYED PER REALM, because one manifest component serves seven of them and a single key would make
+    // sorting Armory silently re-sort Season by a column Season does not have. ⚠️ Wrapped in try/catch and
+    // falling back to `defaultSort`: a private window, cleared site data or a browser blocking storage throws
+    // on ACCESS, not just on write, and a sort preference is never worth taking a realm down for.
+    const sortKey = 'dioreo.sort.' + (realm || 'default');
+    const [sort, setSort] = useState(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem(sortKey) || 'null');
+            if (saved && saved.column && (saved.direction === 'asc' || saved.direction === 'desc')) return saved;
+        } catch { /* storage unavailable or unparseable — the realm's own default is the right answer */ }
+        return { column: defaultSort || null, direction: 'asc' };
+    });
+    useEffect(() => {
+        try { localStorage.setItem(sortKey, JSON.stringify(sort)); } catch { /* nothing to do; the sort still works for this visit */ }
+    }, [sortKey, sort.column, sort.direction]);
     const [selected, setSelected] = useState(new Set());
     const [editingCell, setEditingCell] = useState(null); // {rowId, columnKey} | null
     const [editValue, setEditValue] = useState('');
