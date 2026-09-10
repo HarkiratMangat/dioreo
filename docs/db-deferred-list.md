@@ -84,6 +84,26 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+### 🔴 `[P0 · M · Opus5-XHigh]` A stored season deadline is a DATE being read as an INSTANT, and the bot tells players the same thing
+
+**Filed 2026-09-10 12:49 EDT from pin `pmtvptx4u`.** Harkirat: *"the entire date/time system is registering incorrectly. I had set the end of the season as sept 10 in the data, but that was sept 10 midnight UTC, meaning the season was over last night, Sept 9, 8 pm EST toronto time."*
+
+This is the only item in portal pin round 2 whose blast radius leaves the portal. `bpEnd` / `rankEnd` / `dmzEnd` are read by the season clock, the Track, the masthead's *"until Sep 10"* line **and the bot's own player-facing timers** — so a portal that is wrong by four hours means players were told the same wrong thing. Every other round-2 pin is appearance; this one is correctness.
+
+⚠️ **It needs a decision before a fix, and the decision changes the shape of the fix.** Is a stored deadline (a) a UTC instant, which is what the schema does today, (b) a Toronto-local instant, or (c) a DATE whose time is inferred from CODM's own daily reset? (a) and (b) are a render change; (c) is a migration. **Do not "fix the timezone"** — measure what is stored, enumerate every reader in the bot AND the portal, then put the three readings to Harkirat.
+
+**Verify:** the season clock, the Track's own boundary, the masthead line and whatever the bot renders for the same season all agree with each other AND with the hour Harkirat names as correct, on a season whose stored value has not been touched.
+
+### `[P1 · S · Sonnet5-High]` The dev portal cannot tell Harkirat that the build he is looking at is stale — and it contaminated a whole review round
+
+**Found 2026-09-10 12:49 EDT while reading portal pin round 2, and it is not one of the pins.** Two of his 36 pins are against code that was already live: `pmtvq6x1g` asks where the armory sort icon is (six were in the DOM, shipped 10:48) and `pmtvqrti6`'s crop shows the Access depth numerals from the 11:39 bundle with the column captions that were replaced at 11:42.
+
+**Not a server bug** — `portal/server.js:49` already sends `no-cache, must-revalidate` on every `.js`, with a comment recording that exact fix on 2026-08-28. The cause is structural: an SPA fetches its module graph **once per document load**, so a rebuild lands on disk and the open tab keeps running what it loaded an hour ago. Nothing on the page says so.
+
+The portal already renders a `bootcard` carrying Version and Commit. Polling the built commit and showing *"a newer build is available — reload"* on the dev surface would end this class of noise permanently. Until it exists, **every review round is contaminated by an unknown amount**, and the session receiving those pins has to spend its first hour re-verifying instead of fixing.
+
+**Verify:** with the tab open, rebuild, and the page says a newer build exists without being reloaded.
+
 - [ ] **`timestamp-check.test.sh` flakes under `run-all-tests.sh`'s parallel execution** `[P2 · S · Sonnet5-Medium]` (found 2026-09-08 13:17 EDT, context-carriers WP3)
   - **Fails intermittently inside `npm run test:hooks`** (one failure in three consecutive runs), passes reliably every time run standalone (`bash .claude/hooks/timestamp-check.test.sh`). Neither `timestamp-check.sh` nor `timestamp-check.test.sh` was touched this session — this is pre-existing, surfaced by re-running `test:hooks` several times while verifying an unrelated change.
   - **Suspect:** `run-all-tests.sh` runs all `*.test.sh` concurrently via `xargs -P 8` in one shared `mktemp -d` working directory; likely a shared-path collision or a `date`-boundary race, same failure CLASS as the `portal:states` ~50% stall race already filed above.
@@ -915,6 +935,28 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+### `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — 36 pins, ~9 pieces of work
+
+**Filed 2026-09-10 12:49 EDT.** Harkirat's second review pass, pins **#24–59** in `local/portal-sync-notes.md` (his numbering is that file's own order — round 1 was #1–23). Crops for most of them are in `local/portal-pins/`. **The route, the method and the traps are `local/handoff/2026-09-10-portal-round2.md`**; that file is gitignored, which is why this entry exists.
+
+🔴 **The first unit is a RE-VERIFY sweep, not a fix sweep** — see the build-staleness bug filed under Active Bugs. An unknown subset of these 36 is already closed.
+
+| Group | Pins | The work |
+|---|---|---|
+| **A · panel-chrome seam** *(class)* | `pmtvpoz7u` `pmtvp3kih` `pmtvqu75g` `pmtvqujif` `pmtvqvbfd` `pmtvqazpj` | *"the borders are touching"* five times across three realms, and he generalised it himself. One rule about what a `.ph` and a panel's first/last child owe the panel edge. **Falsifier: if one rule does not move all six, it is not one cause — split it** |
+| **B · the Manifest, properly** | `pmtvpwaqj` `pmtvql4hf` `pmtvqmx17` `pmtvqy8du` | Column labels not aligned with their cells, and width given to columns that never use it — pinned on four realms. ⚠️ Armory's widths were reallocated 2026-09-10 10:48 EDT and he re-pinned it 90 minutes later; establish whether that was too narrow or simply stale **before** redesigning. He asked for a real `/design-critique` |
+| **C · buttons do not read as buttons** *(class)* | `pmtvq210l` `pmtvqfvu9` `pmtvqezgz` `pmtvq8kpe` | *"each button should equally feel like a button"* — colour may differ, weight and hit area may not |
+| **D · creation drawers** | `pmtvp7tqy` `pmtvp9ur7` `pmtvpcfp1` `pmtvpd6it` `pmtvpi2jh` | Field alignment (he says check it as a CLASS across drawers) · a pop-up date picker on **every date field portal-wide** · group the creation chips · what "one date"/"a window" is for · integrate the `/manage` guides, assistive not bloated |
+| **E · analytics vocabulary** | `pmtvr01ji` `pmtvr0mzb` `pmtvqy8du` | Two "All" chips and uncoloured level chips · *"wtf does River mean"* · **Source reports `discord` for portal actions** · the "who" column prints a raw Discord id · sort icons missing |
+| **F · Access** | `pmtvqrti6` `pmtvqt8bp` | His header crop is STALE — show him the current build and let him re-verdict rather than arguing staleness. **By permission** is unaffected and the critique is fair: eight identical amber single-point pills and six *"reaches season"* lines is repetition, not information |
+| **G · armory surfaces** | `pmtvq5x6k` `pmtvq8kpe` `pmtvqc9fx` `pmtvqdnb3` `pmtvqezgz` `pmtvqhfxh` | Weapon cards too tall and what do they tell you · MP/DMZ toggle prominence · the empty coverage bar draws dashed instead of filled · Compare looks broken · the export block · Secondaries and "Add build" wrap left, and Add build is not a filter |
+| **H · shell** | `pmtvplcuz` `pmtvpmxsx` `pmtvr49fi` | Command bar needs a real visual design (icons, not dots) · **⌘K → ⌘/**, because ⌘K is bound on his Mac, and this is a one-liner that should not wait for the redesign · the account menu has no banner and no links out |
+| **I · not design** | `pmtvpy8bi` `pmtvp4nod` `pmtvpqtqq` | A persisted default sort on the Manifest · why "patch notes" is missing from Season's Add row · the DATE/TBD toggle style changed — it did, on 2026-09-09 21:14 EDT, because the old topic-hex fill measured 4.3:1 and failed AA; restoring the look means finding a treatment that passes, and which one is his call |
+
+**HIS, and shown before asked:** the DATE/TBD treatment · what a weapon card carries and how tall it is · what the command bar becomes · whether "one date"/"a window" goes or gets explained · whether the Access header survives once he has seen the current build.
+
+**Verify:** each group closes on Harkirat's eye against the CURRENT build at 1268×779 on the signed-in dev portal, not on a computed-value check — that is the failure mode round 1 was called out for.
 
 - 💬 **`[P2 · S]` The pin overlay records a comment but cannot hold a CONVERSATION — no threads, no replies, no resolved state** *(filed 2026-09-09 21:42 EDT)* The overlay shipped 2026-09-09 21:42 EDT (`portal/dev/pin.js`) does the half Harkirat asked for first: hover highlights the element under the cursor with a box and a selector label, a click freezes it, and the note lands in `local/portal-sync-notes.md` with a selector that survives a re-render. **What it does not do is the half he named when he compared it to claude.ai's artifact comments** — *"leave comment threads which get back to you"*. A pin today is one utterance: I read it, act on it, and nothing on the page ever says so.
   **Do:** give each note an id and a `resolved` flag; render an existing pin as a dot on the element it belongs to when the overlay mounts, so a realm shows what has already been said about it; let a reply be appended under a pin and let either side mark it resolved. The file is already Markdown with a heading per note, so a stable `<!-- pin:<id> -->` marker is enough structure — no database.
