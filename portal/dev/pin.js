@@ -19,6 +19,9 @@
         '#__pinbox{position:fixed;z-index:2147482000;pointer-events:none;border:2px solid #FF5D3B;border-radius:3px;background:rgba(255,93,59,.10);display:none}',
         '#__pinlab{position:fixed;z-index:2147482001;pointer-events:none;background:#FF5D3B;color:#fff;font:600 10.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 6px;border-radius:3px;white-space:nowrap;display:none;max-width:60vw;overflow:hidden;text-overflow:ellipsis}',
         '#__pinpop{position:fixed;z-index:2147483001;width:320px;background:#141A1F;border:1px solid #FF5D3B;border-radius:9px;padding:11px;display:none;box-shadow:0 14px 40px rgba(0,0,0,.7);font:400 13px/1.5 ui-sans-serif,system-ui,sans-serif;color:#E8EDF1}',
+        '#__pinpop .grab{margin:-4px -4px 7px;padding:5px 6px;border-radius:6px;background:#0B0F12;cursor:grab;',
+        '  font:600 10px/1.4 ui-sans-serif,system-ui,sans-serif;color:#5C6A75;letter-spacing:.06em;text-align:center;user-select:none}',
+        '#__pinpop.dragging .grab{cursor:grabbing}',
         '#__pinpop .sel{font:600 10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#FF9F45;word-break:break-all;margin-bottom:7px}',
         '#__pinpop textarea{width:100%;height:86px;background:#0B0F12;border:1px solid #3A4752;border-radius:6px;color:#E8EDF1;font:inherit;padding:7px;resize:vertical}',
         '#__pinpop .row{display:flex;gap:7px;margin-top:8px}',
@@ -40,7 +43,8 @@
     bar.appendChild(btn); bar.appendChild(tally); document.body.appendChild(bar);
     var box = el('div', '__pinbox'), lab = el('div', '__pinlab'), pop = el('div', '__pinpop');
     document.body.appendChild(box); document.body.appendChild(lab); document.body.appendChild(pop);
-    pop.innerHTML = '<div class="sel" id="__pinsel"></div><textarea id="__pintext" placeholder="What is wrong here?"></textarea>'
+    pop.innerHTML = '<div class="grab" id="__pingrab">\u283f drag me out of the way</div>'
+        + '<div class="sel" id="__pinsel"></div><textarea id="__pintext" placeholder="What is wrong here?"></textarea>'
         + '<div class="shot" id="__pinshot">\u2318\u21e7 4 to crop, then \u2318V here to attach it</div>'
         + '<div class="row"><button class="save" id="__pinsave">Save pin</button><button id="__pincancel">Cancel</button></div>';
 
@@ -130,11 +134,25 @@
         };
     }
 
+    // 🔴 THE POPUP SAT ON TOP OF THE THING BEING PINNED (@@S@@). Harkirat: *"please allow me to move/drag away this pop up, because it blocks areas around the element that i might want screenshotted."* His own test crop is the proof — he pasted a slice of the popup instead of the element. Two fixes, because either alone leaves the case the other covers: it now OPENS on whichever side of the element has room, and it can be DRAGGED, with the dragged position kept for the rest of the session so a deliberate placement is not undone by the next pin.
+    var popPos = null;
     function openPop(anchorRect, selText) {
         document.getElementById('__pinsel').textContent = selText;
         pop.style.display = 'block';
-        pop.style.left = Math.min(window.innerWidth - 336, Math.max(8, anchorRect.left)) + 'px';
-        pop.style.top = Math.min(window.innerHeight - 300, anchorRect.bottom + 8) + 'px';
+        if (popPos) { pop.style.left = popPos.x + 'px'; pop.style.top = popPos.y + 'px'; }
+        else {
+            var W = 336, H = 300, m = 10;
+            var below = window.innerHeight - anchorRect.bottom, above = anchorRect.top;
+            var right = window.innerWidth - anchorRect.right, left = anchorRect.left;
+            var x, y;
+            if (right > W + m) { x = anchorRect.right + m; y = anchorRect.top; }
+            else if (left > W + m) { x = anchorRect.left - W - m; y = anchorRect.top; }
+            else if (below > H + m) { x = anchorRect.left; y = anchorRect.bottom + m; }
+            else if (above > H + m) { x = anchorRect.left; y = anchorRect.top - H - m; }
+            else { x = anchorRect.left; y = anchorRect.bottom + m; }     // nowhere fits: fall back, and the drag bar is why that is survivable
+            pop.style.left = Math.min(window.innerWidth - W - 4, Math.max(4, x)) + 'px';
+            pop.style.top = Math.min(window.innerHeight - 140, Math.max(4, y)) + 'px';
+        }
         shotData = null;
         var sz = document.getElementById('__pinshot');
         sz.className = 'shot'; sz.textContent = '\u2318\u21e7 4 to crop, then \u2318V here to attach it';
@@ -174,6 +192,28 @@
     document.getElementById('__pincancel').addEventListener('click', function () { frozen = null; region = null; shotData = null; pop.style.display = 'none'; hide(); });
 
     // 🔴 THE BROWSER CANNOT SCREENSHOT ITSELF, SO THE CROP ARRIVES BY CLIPBOARD (2026-09-09 21:57 EDT). Harkirat: *"can it also give me an option to take and attach a cropped screenshot… so you have the issue presented to you straight up, instead you having to frantically go search for it in the code."* ⌘⇧4 crops with whatever padding he wants included, and this takes the paste. It also beats anything the page could render of itself: it captures what the COMPOSITOR drew — font rendering, subpixel AA, a GPU-composited shadow — none of which a DOM-to-canvas trick reproduces.
+    (function () {
+        var g = document.getElementById('__pingrab'), from = null;
+        g.addEventListener('mousedown', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            from = { x: e.clientX, y: e.clientY, l: parseFloat(pop.style.left) || 0, t: parseFloat(pop.style.top) || 0 };
+            pop.classList.add('dragging');
+        });
+        // On the WINDOW, not the popup: a fast drag outruns the cursor and the pointer leaves the element it started on, which is how a drag that only listens on its handle sticks halfway.
+        window.addEventListener('mousemove', function (e) {
+            if (!from) return;
+            e.preventDefault();
+            var x = Math.min(window.innerWidth - 60, Math.max(-280, from.l + e.clientX - from.x));
+            var y = Math.min(window.innerHeight - 40, Math.max(0, from.t + e.clientY - from.y));
+            pop.style.left = x + 'px'; pop.style.top = y + 'px';
+        }, true);
+        window.addEventListener('mouseup', function () {
+            if (!from) return;
+            from = null; pop.classList.remove('dragging');
+            popPos = { x: parseFloat(pop.style.left), y: parseFloat(pop.style.top) };
+        }, true);
+    })();
+
     pop.addEventListener('paste', function (e) {
         var items = (e.clipboardData || {}).items || [];
         for (var i = 0; i < items.length; i++) {
