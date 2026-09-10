@@ -62,6 +62,16 @@ button{cursor:pointer;background:none;border:0;color:inherit;font:inherit}
 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]),
 select:not([data-bare]),textarea:not([data-bare]){
   background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);padding:8px 10px;min-height:var(--tap)}
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]){padding-left:var(--ctl-pl,10px)}
+/* FIX THE CLASS, NOT THE INSTANCE (2026-09-10): this rule's own padding SHORTHAND is exactly the
+   specificity trap documented three lines above for .cmdbar's search bar -- any `.foo input{padding-
+   left:Npx}` anywhere in this file loses to this rule's 0,4,1 no matter what specificity it tries to
+   reach, because a shorthand here always re-sets padding-left too. Measured live 2026-09-10: the
+   Manifest search icon (`.srch input{--ctl-pl:32px}`, two copies below) computed to 10px in
+   the browser despite the source reading 32px -- the icon and the first two letters of typed text
+   overlapped on EVERY realm's Manifest, not just Armory's. A --ctl-pl variable, read by a longhand
+   declared AFTER the shorthand in this SAME rule, means any future component sets one custom
+   property instead of re-fighting a specificity war it cannot see coming. */
 input:hover,select:hover,textarea:hover{border-color:var(--ink4)}
 input:focus,select:focus,textarea:focus{border-color:var(--patch);outline:none}
 input::placeholder{color:var(--ink3)}
@@ -340,7 +350,7 @@ main{overflow:auto;padding-bottom:140px}
 /* ═══ MANIFEST — always present, never switches ═══ */
 .mtools{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3);border-bottom:1px solid var(--rule);flex-wrap:wrap}
 .srch{position:relative;flex:1 1 240px;max-width:300px}
-.srch input{width:100%;padding-left:32px}
+.srch input{width:100%;--ctl-pl:32px}
 .srch svg{position:absolute;left:10px;top:50%;margin-top:-7px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
 /* 🔴 `.chip` AND `.seg button` ARE `.pill` NOW — measured before this: one `.pill` on the whole
    portal against 93 hand-rolled chips, because building a component and then not adopting it is
@@ -364,7 +374,10 @@ th.sortable{user-select:none;padding:0}
 th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
   padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
 th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-1)}
-th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:var(--t-sm)}
+th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:16px}
+/* Was --t-sm (12px), still reported as not fixed after that first bump -- "SOOO tiny" per the
+   original pin needed more than one token step. A literal 16px here, matching the header text's
+   own size rather than a smaller data-scale token. */
 /* Was --t-xs -- "the sort icons are SOOO tiny, i could barely tell what they were" (Harkirat, pin pmtuwz0d6, 2026-09-09). */
 th.sorted-asc::after{content:"↑";color:var(--patch)} th.sorted-desc::after{content:"↓";color:var(--patch)}
 td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);vertical-align:middle}
@@ -1531,7 +1544,9 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .rfoot b{color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
 .rmeta{color:var(--patch)}
 .rbad{color:var(--warn)}
-.racknote{margin:0;padding:0 16px 14px;font-size:var(--t-sm);color:var(--ink3)}
+.racknote{margin:0;padding:0 16px 32px;font-size:var(--t-sm);color:var(--ink3)}
+/* Was 14px bottom -- a deliberate breathing-room increase, not a bug fix (Harkirat, pin pmtuwu4fo,
+   2026-09-09, restated 2026-09-10: "it wasn't a bug, it was a preference. a design adjustment"). */
 
 .cov{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px;padding:14px 16px}
 .ccard{display:flex;flex-direction:column;gap:9px;text-align:left;cursor:pointer;color:inherit;
@@ -1630,7 +1645,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .srch{position:relative;display:flex;align-items:center}
 .srch svg{position:absolute;left:11px;width:14px;height:14px;fill:none;stroke:var(--ink4);stroke-width:1.6;
   pointer-events:none}
-.srch input{padding-left:32px}
+.srch input{--ctl-pl:32px}
 
 /* ══════════════════ ARMORY · TIER BOARD ══════════════════
    `categoryRank` is S/A/B and this audience thinks in tier lists, so the field gets a
@@ -2079,12 +2094,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-.mx .mxs i{display:block;width:100%;height:4px;border-radius:var(--rad-1);background:var(--c);margin:0 0 6px;
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 30%,transparent)}
-/* Was height:3px, no glow -- "I CAN'T EVEN SEE THEM unless I literally manually zoom into the page"
-   (Harkirat, pin pmtuxn6we, 2026-09-09). The redundancy question (the permission square below already
-   shows the same thing) stays his call, filed in db-deferred-list.md -- this fix answers only the
-   half that's a rendering defect, not the half that's a removal decision. */
+.mx .mxs i{display:block;width:100%;height:7px;border-radius:var(--rad-1);background:var(--c);margin:0 0 8px;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent)}
+/* Was height:3px then 4px+a 1px glow -- verified live via getComputedStyle and it still read as
+   "STILL THE SAME" (Harkirat, 2026-09-10). A 1px change with a faint ring is not a fix at the size
+   this pin actually called for; 7px plus a wider, stronger ring is a real, unmissable bar rather than
+   a technically-different one. */
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
@@ -2148,7 +2163,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   color:var(--ok);border:1px solid var(--ok);border-radius:var(--rad-1);padding:3px 7px}
 
 /* ── ANALYTICS · health tiles ──────────────────────────────────────────────*/
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:28px 16px 16px}
+/* Top padding 16px -> 28px -- a deliberate breathing-room increase between this and whatever sits
+   above it (the admin-traffic toggle), not a bug fix (Harkirat, pins pmtuxoquy/pmtuxpbrx, restated
+   2026-09-10 as a preference, not a hunt for a missing rule). */
 .tile{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:15px 16px}
 .tile .tl-k{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
@@ -2683,7 +2701,9 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 
 .hsplit,.tim2,.reach{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
 @media (max-width:1000px){ .hsplit,.tim2,.reach{grid-template-columns:1fr} }
-.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px}
+.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px;margin-top:14px}
+/* Added margin-top -- same deliberate breathing-room increase as .tiles above, between this panel
+   and whatever hsplit section precedes it (Harkirat, pin pmtuxpbrx). */
 .hpanel h4{font:600 var(--t-lg)/1.25 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
 .hpanel h5{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ink3);margin:16px 0 9px}
@@ -2936,8 +2956,14 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   padding:8px 15px;min-height:34px;transition:all var(--dur-1) var(--ease)}
 .modesw button+button{border-left:1px solid var(--rule2)}
 .modesw button:hover{color:var(--ink);background:var(--hi)}
-.modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:var(--draw);color:var(--on-accent)}
-.modesw button[data-arm=DMZ][aria-pressed=true]{background:var(--ret)}
+/* This rule painted MP/DMZ in Season's --draw/--ret purple/pink. "the mp/dmz toggles in the tier board
+   are still the purple color" (Harkirat, 2026-09-10, after checking live). First attempt at this fix
+   split aria-selected from aria-pressed and colored the wrong one -- the live tier-board MP/DMZ switch
+   is `role="tab" aria-selected=true`, verified via the harness's own DOM, not `aria-pressed`. Both
+   states now get the same crimson/blue pair as the ADD buttons, since nothing calls for two different
+   MP/DMZ colour schemes depending on which toggle shape renders it. */
+.modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:#FF3B5C;color:var(--on-accent)}
+.modesw button[data-arm=DMZ][aria-pressed=true],.modesw button[data-arm=DMZ][aria-selected=true]{background:#3DA5F5}
 .modesw button:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
 .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
   margin-left:5px}
@@ -4896,8 +4922,13 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    line someone has to notice. "the season titles and the calendar banner items ALL LOOK LIKE THE
    SAME THING... same element, same design, same area, same importance" (pin pmtuxcp3b, 2026-09-09,
    echoing pins from 2026-09-05 -- his third or fourth time raising this exact complaint). */
-.srec-grid{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);
+.srec-grid{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
   padding:14px 16px;margin-top:var(--s3)}
+/* Was --raised (#1F272E against .identity's own #171E24) -- measured live via getComputedStyle and it
+   WAS a different colour, just not different ENOUGH to read as separate at a glance: an 8-per-channel
+   shift on two dark grays. "STILL DEFINITELY NOT FIXED" (Harkirat, 2026-09-10, after checking live).
+   --sunk is #0B0F12 -- the same recessed surface .idsum:hover already uses in this file -- a real,
+   unmistakable jump rather than a technically-correct one nobody can see. */
 .srec-top{display:flex;align-items:baseline;gap:12px}
 .srec-kind{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
