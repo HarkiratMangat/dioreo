@@ -260,28 +260,17 @@ The same audit: `.remember`'s **First action** read as something to *do*. It act
 
 ---
 
-## 🔴 I ADDED FOUR PROSE STEPS HERE AND DELETED THEM AN HOUR LATER — %s
+## 🔴 DO NOT ADD A RULE TO THIS FILE — added 2026-09-10 13:39 EDT, by deleting four I had just added
 
-**Because this file already said all four, and line 158 predicted exactly what I did with them.** Harkirat: *"you didn't ask the unconsidered angles, the blindspots, the files not specifically handoffs."* Looking rather than recalling found that the answer to every one of my "new" steps was already in this document:
+I added four steps here on 2026-09-10 and removed them the same hour: **every one was already in this file.** Conservation is **§3b #5**. The pass over the finished document is **§3b's meta-rule** and **§3d**. Labelling an unmeasured claim is **§3c #4**. Re-reading the top against source is **§3c #1**. And **line 158**, written before that day: *"If a rule is checkable it belongs in a tool or a gate — every rule that stayed prose was re-violated."* I read past it and appended prose a hundred lines below it.
 
-| What I "added" | Where it already was |
-|---|---|
-| Conserve the list you summarise | **§3b #5** — *"An open-work table that is not the whole open list… a reader treating one table as complete drops them silently"*, with a convention attached. I did not follow a convention that was already written |
-| Run the pass over the finished document | **§3b's meta-rule** (*"re-run the document's own headline measurement"*) and **§3d**, the fresh-reader dispatch |
-| Label a claim as unmeasured | **§3c #4** (a falsifier is itself a claim) and the DONE checklist's *"state coverage HONESTLY, not uniformly"* |
-| Re-read the top against source | **§3c #1** — *"THE OPENING SECTION IS THE STALEST PART OF ANY DOCUMENT WRITTEN WHILE THE WORK CONTINUES"* |
+**So: a new lesson is checkable → a gate. Not checkable → a SECTION in the canonical shape below, never a warning.** Measured: `docs/db-deferred-list.md` holds 89 entries and 90 `**Verify**` lines with nothing enforcing it, while four warnings in this file were read past in one day. Shape holds; prose does not.
 
-🔴 **AND LINE 158 OF THIS FILE, WRITTEN BEFORE TODAY:** *"If a rule is checkable, it does not belong in the handoff at all — it belongs in a tool or a gate. Every rule that became mechanical stuck; every rule that stayed prose was re-violated."* I read past it and appended four prose rules a hundred lines below it. **The file was not missing rules. It is 635 lines, and I appended instead of reading.**
-
-**So the only genuinely new thing survives, and it is mechanical:** §3b #5's conservation convention is now ARITHMETIC. Declare the list a handoff summarises and `npm run handoff` names anything dropped:
+**The one genuinely new thing is mechanical** — §3b #5 is arithmetic now. Declare what a handoff summarises and `npm run handoff` names anything dropped, and it also requires an `## Audit log`:
 
 ```
 <!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
 ```
-
-Pointed at the previous session's handoff — a document it did not author — it named the exact pin that table had dropped. It also requires an `## Audit log` section, the same rule `docs-audit`'s `plan-audit-log` applies to plans.
-
-⚠️ **The standing lesson for this file specifically: it does not need more rules. Adding one is now evidence you did not read it.** If a new failure is checkable, it goes in a gate; if it is not, it goes in the CANONICAL SHAPE below as a SECTION, because a missing section is a visible hole and a missing warning leaves no trace. **The measurement behind that:** `docs/db-deferred-list.md` has 89 entries and 90 `**Verify**` lines with no gate enforcing it, while four warnings in this file were read past in a single day. Shape holds; prose does not.
 
 ---
 
