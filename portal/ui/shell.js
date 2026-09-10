@@ -609,10 +609,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     `;
 }
 
-// A long Manifest (Armory's catalogue is 133+ rows) had no way back to the top except scrolling
-// back up by hand -- "why is there no 'to the top' button on such a LONG scrolling page?" (Harkirat,
-// pin pmtux6x74, 2026-09-09). One component covers every realm for free, because they all share
-// this one <main> scroll container (spec's own contract) -- no per-realm wiring needed.
+// A long Manifest (Armory's catalogue is 133+ rows) had no way back to the top except scrolling back up by hand -- "why is there no 'to the top' button on such a LONG scrolling page?" (Harkirat, pin pmtux6x74, 2026-09-09). One component covers every realm for free, because they all share this one <main> scroll container (spec's own contract) -- no per-realm wiring needed.
 function BackToTop() {
     const [show, setShow] = useState(false);
     useEffect(() => {

@@ -4401,6 +4401,24 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 - **The four Export drawers stay adjudicated by class, and their recorded deltas were stale.** All four re-measured: ② improved everywhere, ④ grew ~3.5× everywhere. Armory's 183 rows decompose as 97 type + 49 the geometry type causes + 37 other, of which the tray reserve, the crumb separator, the commit chip and the identity chip are each already-cited classes and eight more are a single symmetric focus-ring pairing artifact. The cause is the **raised type scale**, itself a cited divergence, shipped two days *after* the figures were recorded.
 - **Two decisions closed with Harkirat**, both of which had been open long enough to be filed as owed: the four mockup composition changes were captured from the harness and shown to him — **he kept all four** — and Item H (playlist concurrency density) is **decided-no**, the lane keeps one bar per playlist.
 
+### The first pass on the pin fixes was wrong about several of its own claims
+
+**2026-09-10 01:36 EDT — Harkirat checked the live portal after the first pass reported everything closed. Most of it was not.** Every item below was re-verified against `portal/ui/harness/stub.js`'s no-auth route (`localhost:8787/harness.html?fresh=1`) with real `getComputedStyle`/`getBoundingClientRect` reads, not re-derived from source — the first pass's confidence came from reading CSS in isolation, which is exactly what missed all of this.
+
+**A genuine class-level bug, not an instance:** `.srch input{padding-left:32px}` computed to `10px` in the browser on every realm's Manifest search box. A generic form-control reset (`input:not(...):not(...):not(...):not([data-bare])`, four `:not()` clauses) always wins that property by specificity regardless of source order — the exact trap already documented three lines above that rule for the command bar's search box, and missed here. Fixed with a `--ctl-pl` custom property read by a longhand inside the same winning rule, so no future component can lose this fight silently again.
+
+**Six more real defects, each reverified live after the fix:**
+- The tier-board's own MP/DMZ toggle uses `aria-selected`, not `aria-pressed` — the first attempt colored the wrong attribute and left the one actually on screen purple.
+- The season identity/calendar-banner "divider" was `--raised`, a real but 8-per-channel, practically invisible shift from its own container; switched to `--sunk` for real contrast.
+- The Access permission underline's 3px→4px bump registered as no change at all; now 7px with a stronger ring.
+- The sort-column icon's first bump (12px) was still reported "not fixed"; now 16px.
+- The season-record diamond markers were never actually off-center — the spine drawing them was offset from the wrong reference box (`.rec-list` instead of each row's own 4px-padded container). Fixed the spine's offset; reverified at 0px discrepancy.
+- The weapon-name column's 150px *minimum* was the real floor keeping it oversized, independent of its percentage — narrowed to 110px, and the freed space went to the Build/Gunsmith-code columns that were actually cramped (111px → 141px each).
+
+**Three items reframed, not re-diagnosed:** the Armory tier-board/Manifest gap and two Analytics panel gaps were never bugs with a missing rule — "it wasn't a bug, it was a preference. a design adjustment" (Harkirat) — so they got straightforward padding increases instead of further root-cause hunting.
+
+**Two regressions shipped and were caught within the same session, before either reached Harkirat:** a JS-style `//` comment written inside an htm template's attribute list (not valid there — htm parses `//` as garbage in a tag, not a comment) rendered both "+ New build" buttons as blank boxes; and a scripted find-and-replace matched its own explanatory comment before it matched the real CSS rule, leaving one of two `.srch input` overrides unfixed. Both caught by direct verification before commit, not by inspection alone.
+
 ### Armory's category colors were a Discord embed integer leaking into CSS
 
 **Found by pinning the running portal and reading the crops, not by re-deriving from a spec.** `getMpCategoryAccent()` returns a decimal Discord-embed-color int — the shape its other caller (the compose preview's embed `color` field) needs. The Manifest's category dots, weapon-card borders and topic-chip dots all interpolated that same decimal straight into a CSS custom property (`--c:16726876`), which is invalid at computed-value time: the browser silently drops it to nothing rather than erroring, so every one of those elements rendered with zero color identity across the whole Manifest. Converted to a hex string once, at the `/api/armory` boundary that only ever feeds CSS — the Discord-embed call site is untouched.
