@@ -2114,12 +2114,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-.mx .mxs i{display:block;width:100%;height:7px;border-radius:var(--rad-1);background:var(--c);margin:0 0 8px;
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent)}
-/* Was height:3px then 4px+a 1px glow -- verified live via getComputedStyle and it still read as
-   "STILL THE SAME" (Harkirat, 2026-09-10). A 1px change with a faint ring is not a fix at the size
-   this pin actually called for; 7px plus a wider, stronger ring is a real, unmissable bar rather than
-   a technically-different one. */
+/* The 7px realm bar that stood here is gone (2026-09-10 11:39 EDT). Two marks were tried on it and both
+   were rejected; the third mark was never the answer. It was a third copy of a colour already in
+   every granted cell of its own column, and it was crowding out the count — the one fact this view
+   alone answers at a glance. See the note at the header markup in access.js. */
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
@@ -2465,14 +2463,26 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
  * The grid used to offer exactly ONE interaction, repeated 28 times. A column
  * header now grants/revokes a scope for everyone and each row has all/none —
  * both tier 2, because N writes that must land together are one changeset. */
-button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;
+button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;position:relative;z-index:1;
   color:var(--ink3);border-radius:var(--rad-2);transition:color var(--dur-1) var(--ease),
   background var(--dur-1) var(--ease)}
 button.mxs.mxcol:hover{color:var(--ink);background:var(--hi)}
 button.mxs.mxcol:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
-.mxn2{display:block;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);margin-top:3px;
-  letter-spacing:.04em;font-variant-numeric:tabular-nums}
-button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
+/* DEPTH IS THE HEADER NOW: how many people besides the owner hold this scope. 0 is a gap, 1 is a
+   single point of failure, 2+ is covered — so the number is the risk and needs no second mark beside
+   it. Tabular so twelve of them line up, and the two states that matter take ink rather than shape,
+   because SHAPE is spoken for by the cells below (filled = direct, ring = inherited). */
+.mxdepth{display:block;font:600 var(--t-lg)/1 var(--data);color:var(--ink3);
+  font-variant-numeric:tabular-nums;letter-spacing:0;margin:0 0 5px;text-transform:none}
+.mxdepth.one{color:var(--warn)}
+.mxdepth.none{color:var(--del)}
+.mxcn{display:block;font:600 var(--t-micro)/1.3 var(--ui);letter-spacing:.01em;
+  text-transform:none;color:var(--ink3);white-space:nowrap}
+/* Equal pitch. The columns used to be sized by their LABELS — measured live at 29px for BOT against
+   105px for SEASON DRAFT — so the cells fell on twelve irregular intervals and the eye could not run
+   down a column, which is half of what a matrix is for. */
+.mx thead th.sc{width:72px;max-width:72px;z-index:3}
+button.mxs.mxcol:hover .mxcn{color:var(--ink)}
 .mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:var(--rad-1);
   color:var(--ink3);font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:4px 7px;cursor:pointer;opacity:0;
@@ -3031,8 +3041,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    The shape: an offset copy of the bar 3px lower and 1px narrower reads as a slightly fuzzy edge.
    An opaque 2px RING is the same language the non-spof columns already use for their realm glow —
    one grammar, two states — and it keeps both carriers, which was the point of the original rule. */
-.mxs.mxcol.spof i{box-shadow:0 0 0 2px var(--warn)}
-.mxlegend.bar{width:16px;height:7px;background:var(--r-season);vertical-align:0}
 
 .mxlegend{display:inline-block;width:12px;height:12px;border-radius:var(--rad-1);vertical-align:-2px;margin-right:5px}
 .mxlegend.on{background:var(--ink2)}
@@ -4810,10 +4818,9 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .lsum.load{box-shadow:inset 0 -1px 0 0 rgba(133,147,159,.20)}
 /* The ring key, beside the marks it explains. Its swatch IS the mark — a ringed pill at chip
  * scale — so the legend and the thing are visibly the same object rather than a description of it. */
-.key .l.spofk i{background:var(--ink3);box-shadow:0 3px 0 -1px var(--warn);border-radius:var(--rad-pill)}
 .key .l.spofk b{color:var(--warn);font-weight:600}
 /* …and the ringed column's own count agrees with the ring, so the mark is never the only carrier. */
-.mxcol.spof .mxn2{color:var(--warn)}
+.key .l.dk .mxdepth{display:inline;margin:0 2px 0 0;font-size:var(--t-sm)}
 /* A countdown inside its last stretch stops being neutral. The lead keeps its size either way —
  * size is the hierarchy, colour is the meaning (§16.3) — so this only changes the ink. */
 .mh-stats .stat.lead .v.hot{color:var(--warn)}

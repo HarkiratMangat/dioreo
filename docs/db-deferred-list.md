@@ -35,9 +35,11 @@ Pin `pmtuxn6we` asked two questions and only the visibility one had been answere
 
 Pin `pmtuxn6we`, 2026-09-09. **The visibility half is fixed** (the bar was 3px with no glow; now 4px with a colour-matched ring). What's still his call: "do they even serve any useful purpose? like i can already see what permissions a person has by looking at the square below" — removing it as redundant with the permission-square grid is a design decision, not a rendering fix.
 
-### ✅ CLOSED 2026-09-10 11:09 EDT — the `.spof` column now carries an opaque amber RING, the same shape language as the non-spof realm glow
+### ✅ CLOSED 2026-09-10 11:44 EDT — the whole bar is gone, and with it both of the marks that were argued over
 
-The old mark was `box-shadow:0 3px 0 -1px var(--warn)` — an offset copy of the 7px bar, 3px lower and 1px narrower, which reads as a slightly fuzzy edge rather than a state. It is `0 0 0 2px var(--warn)` now: both carriers survive (the realm colour inside, the warning outside) and it uses the ring shape the non-spof columns already use for their realm glow, so the two states are one grammar. The key line above the table was reworded from "underlined" — a treatment nobody could identify — to "ringed in amber".
+🔴 **The amber ring I shipped at 11:09 was a design Harkirat had ALREADY rejected** — *"the ring was what existed before it was changed to the underline, because both are equally terrible visual indicators."* I reintroduced a superseded answer while citing consistency as the reason, having read `app.css`'s own note about the warn rule without reading it as the record of that supersession.
+
+A `/design-critique` pass over the whole `By admin` panel found the bar was a **third copy** of a fact already carried twice — `.mxcell.on` fills every granted cell with the realm hue, and the `By permission` tab names the realm in words next to an explicit single-point pill — while the header's own holder count was the real risk carrier, rendered smallest and quietest. The bar is deleted; the count is the header, tiered `0` --del / `1` --warn / `2+` quiet; the columns are an even 66px pitch; the caption is sentence case; a column click opens `By permission`. `portalUi`, `portalReverseOrphans` and the rendered contrast walk (8,057 elements over 7 realms at 4.5:1) all exit 0.
 
 > ### `[P3 · XS]` The Access underline's colored glow doesn't show on `.spof` (warning) columns
 

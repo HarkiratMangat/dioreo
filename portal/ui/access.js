@@ -244,14 +244,28 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                             <tr>
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
                                 ${ordered.map((sc) => html`
-                                    <th key=${sc.key}>
-                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
+                                    ${/* 🔴 THE HEADER'S SUBJECT IS DEPTH, AND IT USED TO BE A 7px COLOUR BAR. Two marks were
+                                          tried on that bar and both were rejected — a 3/4/7px underline, then a ring — and the third
+                                          mark was never the answer. Two findings settled it. (1) The bar was a THIRD copy: the realm
+                                          hue is already painted into every granted cell in the column below it, up to four times, and
+                                          the By-permission tab one click away states the realm in words ("reaches armory"). (2) The
+                                          count under the name was already carrying the whole risk story — 0 nobody but you, 1 a single
+                                          point, 2+ covered — at the smallest size in the header, in the quietest ink, while the
+                                          masthead calls SINGLE POINTS out in red. The most important fact on a page whose own
+                                          subtitle is "where you are the only one who can do it" was the least visible thing on it.
+                                          So the bar goes and the number becomes the header. Realm survives in the cells and in words
+                                          next door; nothing is lost, one illegible carrier is. */ null}
+                                    <th key=${sc.key} class="sc">
+                                        <button type="button" class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
-                                              title=${spofScopes.has(sc.key)
-                                                  ? `${sc.label} — single point of failure: exactly one person besides the owner holds it`
-                                                  : `${sc.key} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides the owner${sc.realm ? ' · portal realm: ' + sc.realm : ' · Discord only, no portal realm'}`}>
-                                            <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
-                                        </span>
+                                              onClick=${() => setView('By permission')}
+                                              title=${holdersOf(sc) === 0
+                                                  ? `${sc.label} — nobody but you holds this${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`
+                                                  : holdersOf(sc) === 1
+                                                  ? `${sc.label} — a single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`
+                                                  : `${sc.label} — ${holdersOf(sc)} people besides you hold it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`}>
+                                            <em class=${'mxdepth' + (holdersOf(sc) === 0 ? ' none' : holdersOf(sc) === 1 ? ' one' : '')}>${holdersOf(sc)}</em><span class="mxcn" lang="en">${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}</span>
+                                        </button>
                                     </th>`)}
                                 <th><span class="mxs">Action</span></th>
                             </tr>
@@ -367,7 +381,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                          scope belongs to, and the amber ring is a single point of failure. Both were carried only by a
                          title attribute (no backtick on that word: this comment lives inside a template literal and
                          the build gate refuses one), which is invisible until you hover the 7px strip you cannot see. -->
-                    <span><span class="mxlegend bar"></span>the bar over a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
+                    <span>a filled square takes its colour from the realm that scope reaches, and <b>By permission</b> names that realm in words for every scope.</span>
                     <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
                          removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
                          states with a locked chip on every cell — two authorities for one fact, which is the defect
@@ -625,7 +639,7 @@ export function AccessRealm({ session }) {
         <span class="key">
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
-            ${spofSet.size ? html`<span class="l spofk" data-note><i></i>ringed in amber — held by <b>one person</b> besides you</span>` : null}
+            ${anyGrid ? html`<span class="l dk" data-note>the number over a column is how many people besides you hold it — <em class="mxdepth none">0</em> nobody, <em class="mxdepth one">1</em> a single point</span>` : null}
             ${anyLock ? html`<span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>` : null}
         </span>`;
 

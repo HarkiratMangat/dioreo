@@ -4414,8 +4414,13 @@ Two of Harkirat's corrections on this strip look opposed and are not. *"The cale
 
 MP had borrowed the **Assault category's** crimson, so one hue meant two things on one screen and the mode read pink; it is the bot's own MP red now (`#FF3430`, the value the fixtures sample from its Ranked emoji), with both modes named as tokens instead of literals. On Analytics the row's topic dot and the row's kind badge disagreed for the same event — a change was gold at the dot and blue at the badge — and the filter chips carried no colour at all on the one realm whose whole subject is three colour-coded kinds. One vocabulary now, taken from the badge.
 
-The Access permission column's bar answers the second half of pin `pmtuxn6we` — *"do they even serve any useful purpose?"* It was never the same fact as the squares below it: it is the **portal realm** the scope belongs to, and when the column is a single point of failure it carries that too. Both were stated only in a `title` attribute, invisible until you hover a 7px strip you cannot see. The legend names the realm now, and the single-point-of-failure mark is an opaque amber ring rather than an offset copy of the bar 3px lower.
-### Portal step 3 — one gate, one fix, and four records that had stopped being true
+### Access: the third mark was never the answer
+
+**Two marks had been tried on the same 7px strip and Harkirat rejected both** — a 3/4/7px underline, then a ring, *"the ring was what existed before it was changed to the underline, because both are equally terrible visual indicators."* Proposing a third was the loop. A design pass over the whole `By admin` panel found two things instead.
+
+The bar was a **third copy**. `.mxcell.on` already fills every granted cell with the same realm hue, up to four times per column, and the sibling `By permission` tab states the realm in words — *"reaches armory"*, *"Discord only"* — beside an explicit `single point — only 000001 besides you` pill. There is no mark that beats a sentence one click away.
+
+And the header's own **count was already the risk**, rendered at the smallest size in the quietest ink: `0` nobody but you, `1` a single point, `2+` covered. On a screen whose subtitle is *"and where you are the only one who can do it"* and whose masthead prints **SINGLE POINTS 6** in red, the most important fact was the least visible element. So the bar is gone and the number is the header — 16.5px tabular, amber at 1, red at 0 — and six amber numerals now agree with the masthead's six at a glance. The columns are an even 66px pitch too (they were sized by their labels, 29px for BOT against 105px for SEASON DRAFT, so the cells fell on twelve irregular intervals), the caption dropped to sentence case because it is a caption under a number now rather than an eyebrow, and clicking a column opens `By permission`, where the detail already lives.
 
 **Four of the remaining step-3 items turned out to be already closed, already filed, or refuted by measurement — and every one of them still read as open work.** None had failed a gate, because no gate compares a recorded number to the change that moved it.
 
