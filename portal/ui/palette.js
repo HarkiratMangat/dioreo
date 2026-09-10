@@ -8,9 +8,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { Icon } from './icons.js';
 
-// The command bar's own kind vocabulary — five groups, five shapes. `commit` takes a check because that is
-// the verb; `home` takes the alert triangle because the only home entry is "What needs you", which is a
-// warning by construction. Kept beside the component that reads it: these groups are the palette's, not shared.
+// The command bar's own kind vocabulary — five groups, five shapes. `commit` takes a check because that is the verb; `home` takes the alert triangle because the only home entry is "What needs you", which is a warning by construction. Kept beside the component that reads it: these groups are the palette's, not shared.
 const KIND_ICON = { realm: 'layout-grid', view: 'eye', account: 'log-out', commit: 'check', home: 'triangle-alert',
     armory: 'square-pen', broadcast: 'square-pen' };
 
@@ -28,11 +26,7 @@ export function CommandBar({ commands = [], realmLabel }) {
     // ⌘K / Ctrl-K. Bound to the document because that is what a global shortcut means, and guarded by paletteBlocked because `inert` on the header stops the pointer and the tab order but not this listener — see palette.logic.js for the full note.
     useEffect(() => {
         const onKey = (e) => {
-            // ⌘/ RATHER THAN ⌘K — pin pmtvpmxsx, 2026-09-10 11:59 EDT: "i have cmd+K binded to something
-            // else on my mac." The portal has exactly one reader and his machine already owns ⌘K, so a
-            // shortcut he cannot press is not a shortcut. `/` needs no shift on his layout and no browser
-            // claims ⌘/. ⚠️ The <kbd> below renders the same key, and COMPANION §5.1 says the bar opens on
-            // INTENT — pointerdown, typing, or this chord — and never on focus; that is unchanged.
+            // ⌘/ RATHER THAN ⌘K — pin pmtvpmxsx, 2026-09-10 11:59 EDT: "i have cmd+K binded to something else on my mac." The portal has exactly one reader and his machine already owns ⌘K, so a shortcut he cannot press is not a shortcut. `/` needs no shift on his layout and no browser claims ⌘/. ⚠️ The <kbd> below renders the same key, and COMPANION §5.1 says the bar opens on INTENT — pointerdown, typing, or this chord — and never on focus; that is unchanged.
             if (!(e.metaKey || e.ctrlKey) || e.key !== '/') return;
             if (paletteBlocked(document)) return;
             e.preventDefault();

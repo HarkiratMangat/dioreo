@@ -104,15 +104,7 @@ function BuildChip({ b, onPick, onEdit }) {
     const code = b.shareCode || '';
     const dmz = b.mode === 'DMZ';
     const noCode = !dmz && !code;
-    // 🔴 THE CODE IS THE ROW. Harkirat, 2026-09-10 16:32 EDT: "why not provide the gunsmith code directly in
-    // each row, with a method to copy that code, as well as a button to actual signal that THIS IS A
-    // CLICKABLE, ACTIONABLE item... nothing about it currently implies i could click it and directly edit."
-    // Measured against the dev catalogue: 123 of 133 builds carry a shareCode, all exactly ten characters,
-    // while buildName is an INDEX on almost all of them ("Build 1") that the COMPANION already calls
-    // meaningless. So the code is the identity and the name is not.
-    // ⚠️ THE NAME NEVER STANDS IN FOR THE CODE — his correction at 16:34 EDT. An MP build with no code shows
-    // that it has no code, because that is a real gap the new no-code flag now reports; DMZ shows no code
-    // SLOT at all, because DMZ has none by design and an em dash there would invent a defect.
+    // 🔴 THE CODE IS THE ROW. Harkirat, 2026-09-10 16:32 EDT: "why not provide the gunsmith code directly in each row, with a method to copy that code, as well as a button to actual signal that THIS IS A CLICKABLE, ACTIONABLE item... nothing about it currently implies i could click it and directly edit." Measured against the dev catalogue: 123 of 133 builds carry a shareCode, all exactly ten characters, while buildName is an INDEX on almost all of them ("Build 1") that the COMPANION already calls meaningless. So the code is the identity and the name is not. ⚠️ THE NAME NEVER STANDS IN FOR THE CODE — his correction at 16:34 EDT. An MP build with no code shows that it has no code, because that is a real gap the new no-code flag now reports; DMZ shows no code SLOT at all, because DMZ has none by design and an em dash there would invent a defect.
     const copy = (e) => {
         e.stopPropagation();
         if (!code || !navigator.clipboard) return;
@@ -770,9 +762,7 @@ function WeaponSearch({ options, picked, onPick }) {
     const [q, setQ] = useState('');
     const [hi, setHi] = useState(0);
     const full = picked.length >= MAX_COMPARE_WEAPONS;
-    // Two is a deliberate limit — six build columns is what fits the screen the table is read on — and the
-    // input below already says so: it is `disabled` at the cap with its own placeholder. Checked 2026-09-10
-    // 15:51 EDT after I had written a comment here claiming this failed silently; it does not.
+    // Two is a deliberate limit — six build columns is what fits the screen the table is read on — and the input below already says so: it is `disabled` at the cap with its own placeholder. Checked 2026-09-10 15:51 EDT after I had written a comment here claiming this failed silently; it does not.
     const matches = full ? [] : matchWeapons(options, q, picked);
     const at = Math.min(hi, Math.max(0, matches.length - 1));
     const take = (w) => { onPick(w); setQ(''); setHi(0); };
@@ -816,16 +806,7 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     const all = picked.flatMap((w) => optionOf(w).builds);
     const chosen = all.slice(0, MAX_COMPARE_COLUMNS);
     const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
-    // 🔴 THE SUGGESTION OFFERED ONE WEAPON ON A PANEL CALLED COMPARE. Harkirat, 2026-09-10 15:50 EDT:
-    // "IT'S LITERALLY TITLED *COMPARE* yet the mechanism takes 1 weapon only? and what's the point of the
-    // single 'try bal-27 button'??" The mechanism was never one-weapon — MAX_COMPARE_WEAPONS is 2 and the
-    // chip row above holds the second — but every affordance on the empty screen described one, so the
-    // capability was there and hidden. A suggestion that seeds ONE weapon teaches the wrong shape on the
-    // first use of the panel.
-    // Two weapons IN THE SAME CATEGORY is the comparison worth offering: cross-category is apples to
-    // oranges (an AR against a sniper shares almost no field worth lining up), and same-category is exactly
-    // the "which of these two do I keep" question the near-duplicate flag is about. Falls back to the two
-    // with the most builds when no category has two, and to one weapon when the armory has only one.
+    // 🔴 THE SUGGESTION OFFERED ONE WEAPON ON A PANEL CALLED COMPARE. Harkirat, 2026-09-10 15:50 EDT: "IT'S LITERALLY TITLED *COMPARE* yet the mechanism takes 1 weapon only? and what's the point of the single 'try bal-27 button'??" The mechanism was never one-weapon — MAX_COMPARE_WEAPONS is 2 and the chip row above holds the second — but every affordance on the empty screen described one, so the capability was there and hidden. A suggestion that seeds ONE weapon teaches the wrong shape on the first use of the panel. Two weapons IN THE SAME CATEGORY is the comparison worth offering: cross-category is apples to oranges (an AR against a sniper shares almost no field worth lining up), and same-category is exactly the "which of these two do I keep" question the near-duplicate flag is about. Falls back to the two with the most builds when no category has two, and to one weapon when the armory has only one.
     const withSiblings = options.filter((o) => o.builds.length > 1);
     const catOf = (o) => (o.builds[0] && o.builds[0].category) || '';
     const pair = (() => {

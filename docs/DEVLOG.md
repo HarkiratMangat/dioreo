@@ -238,6 +238,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-07 01:18 EDT — the plan artifact beat five prose carriers, and a gate that never worked (v3.79.0-pre)
 - 2026-09-08 13:47 EDT — Context carriers WP3-WP8: SESSION-START.md moves to an @import, a compliance self-audit finds and fixes a real Read-tool gap, and a stale plan finding gets checked before being acted on (unreleased on `chore/context-carriers`, proposed v3.80.0)
 - 2026-09-10 13:09 EDT — the pin round that corrected its own handoff
+- 2026-09-10 16:44 EDT — portal pin round 2, second half — six corrections, one root cause (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4216,6 +4217,18 @@ The Manifest was re-allocated against the real dev database rather than the fixt
 Two other corrections are worth keeping. The Access column bar went through a third mark before the right answer surfaced, which was that a strip on which two marks had failed should not exist: it was a third copy of a colour already in every cell of its own column, and the holder count underneath it was the real signal all along. And I filed a confident build-staleness theory, wrote *"Proof, not a theory"* into a handoff, and he falsified it in one message — the entry is retracted rather than left filed, because a filed non-problem grows a list that reached 107 items once already.
 
 **The round-2 handoff then failed the same way its own method section warns about.** A coverage count over the thirty-six pin ids found one in neither carrier and another in no worklist, and three double-counted — an authoritative table nobody had checked against its source, which is precisely what the previous session's handoff was. It now ships with a two-line script that re-runs that count, because a script is the only protection here that does not depend on remembering to be careful.
+
+## 2026-09-10 16:44 EDT — portal pin round 2, second half — six corrections, one root cause (v3.79.0-pre)
+
+Harkirat corrected me six times in ninety minutes and every one was right. Written down because the corrections are the content of the session, not a footnote to it.
+
+**He asked for a self-check and I wrote a document about my failures instead of changing behaviour** — the same shape as the guide edits deleted this morning. **He said `/design-critique` and I reached for subagents**, which this repo's own `thinking-pass.md` calls "dispatching an auditor is not auditing". **He asked whether I had run the thinking-pass before starting: I had not**, and four of its five named triggers had already happened. And when I finally ran it, **I re-derived the nine-group split from scratch inside the pass** — ignoring the grouping I had written before the compact for exactly this purpose.
+
+🔴 **The root cause is one thing: I generate before I look.** Six instances in five hours, each an answer already sitting in a file — the handoff guide already had the four rules I "added" to it, `db-deferred-list` already had the SOURCE bug fully diagnosed, `DESIGN.md` already stated the spacing rule I was about to present as a discovery, and `season.js:406` already explained the pin I was about to "fix" by undoing his own round-1 decision. **The fix is measured rather than asserted: one `ctx_search` before deriving anything — tested against four questions from this session, 4 of 4 came back with the answer in a single call.**
+
+The pass, once it actually ran, produced two things worth keeping. **Ordering rule:** reach-per-edit, not ease-of-closing — `StatePill` is one component across seven realms, a weapon card is one card. **And what success is:** pins arrive in rounds of about thirty, so they are a sample, not a queue. Closing 37 does not mean the portal is right; it means this sample is exhausted. The measure is whether round 3 is smaller than round 2, which is why the class fixes (one seam rule for five pins, `.pill.sm` for every small pill in seven realms, the filter group label for every realm with two filter groups) are the ones worth the turns.
+
+Three defects surfaced that nobody was looking for. **`npm test` had been red since 11:45 EDT across three commits** because `portalGeometry --all --check` lives only inside the full suite that the routing table reserves for a push. **`coverageFlags` had no check for an MP build with no gunsmith code**, and two exist. **codebase-memory's index for this repo holds 15 files** while `index_status` reports `ready` with the correct head_sha and re-indexing changes nothing — which is why three graph queries came back empty and I wrongly blamed my own usage before measuring.
 
 # Part B — Lessons Ledger (thematic)
 

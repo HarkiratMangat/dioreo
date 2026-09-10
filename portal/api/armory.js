@@ -18,12 +18,7 @@ function coverageFlags(build, mpBuilds) {
     const expected = build.mode === 'DMZ' ? 9 : 5;
     if ((build.attachments || []).length !== expected) flags.push('wrong-attachment-count');
     if (build.lastUpdated && Date.now() - new Date(build.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
-    // 🔴 AN MP BUILD WITH NO GUNSMITH CODE WAS UNFLAGGABLE. The eight checks covered image, badges, attachment
-    // count, staleness and near-duplicates, and none of them asked whether the code — the one field a player
-    // actually copies out of the bot — exists at all. Measured against the dev catalogue 2026-09-10 16:35 EDT:
-    // 10 of 133 builds have no shareCode, and 8 of those are DMZ, which HAS no code by design (see the build
-    // form's own note: "DMZ has no code — the card omits it"). The other 2 are MP, where it is a real gap,
-    // and the only way to find them was to scroll the tier board and notice.
+    // 🔴 AN MP BUILD WITH NO GUNSMITH CODE WAS UNFLAGGABLE. The eight checks covered image, badges, attachment count, staleness and near-duplicates, and none of them asked whether the code — the one field a player actually copies out of the bot — exists at all. Measured against the dev catalogue 2026-09-10 16:35 EDT: 10 of 133 builds have no shareCode, and 8 of those are DMZ, which HAS no code by design (see the build form's own note: "DMZ has no code — the card omits it"). The other 2 are MP, where it is a real gap, and the only way to find them was to scroll the tier board and notice.
     if (build.mode === 'MP' && !build.shareCode) flags.push('no-code');
     if (build.mode === 'MP' && build.shareCode) {
         // 🔴 EXCLUDE THE BUILD FROM ITS OWN COMPARISON SET. `mpBuilds` is every MP build including this one — findDuplicateLoadouts's exact-code check trivially matches a build against itself (same shareCode, 100% attachment overlap), so every build with a shareCode and >=4 attachments always found at least one "duplicate": itself. That is what flagged 131 of 133 builds — measured against the real ported catalogue, not a design number.

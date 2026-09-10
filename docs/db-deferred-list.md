@@ -948,7 +948,17 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — 36 pins, ~9 pieces of work
+### `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — 37 items, **21 CLOSED 2026-09-10 16:43 EDT**, 16 open
+
+🔴 **STATUS, and the closed ones are struck through in the group table below rather than deleted, so the count stays reconcilable.** Closed: group A entire (five pins, one asymmetry — a bordered box inset horizontally and 0px vertically) · `pmtvqy8du`'s SOURCE and WHO defects · `pmtvr01ji`'s doubled All chips · `pmtvr0mzb` (River → Events) · `pmtvpmxsx` (⌘K → ⌘/) · pin 60 (the tier board opens the editor now) · `pmtvqhfxh` · `pmtvpy8bi` · `pmtvq210l` + `pmtvqfvu9` (`.pill.sm` had no height at all) · `pmtvpqtqq` (his own spec, from three rendered options) · `pmtvqdnb3` (the mechanism always took two weapons and every affordance said one) · `pmtvqt8bp` (six identical pills → three bands) · `pmtvqezgz` · `pmtvq5x6k` (479 → 224px, the gunsmith code is the row, the click opens the editor) · `pmtvqrti6` PARTIAL (lock glyph and header order; the legend is still a run-on sentence) · `pmtvplcuz` PARTIAL (result icons shipped, the wider redesign did not).
+
+⚠️ **`pmtvp4nod` is ANSWERED, not fixed** — the patch-note chip was dropped from the masthead deliberately in the build-out, because he asked in round 1 *"what is the point of two buttons"*. Editing it back would undo his own decision.
+
+🔴 **AND HE REJECTED FOUR PROPOSALS THIS SESSION. Do not re-propose them:** dropping the Owner row from By admin (*"dont drop the owner row"*) · a hint line under drawer fields (*"is a hint line REALLY the best design decision you could make??"*) · the first weapon-card and MP/DMZ treatments (*"both ugly and lazy fixes"*) · a build name standing in for a missing gunsmith code (*"the human readable build name should not replace the gunsmith code"*).
+
+🔴 **A NEW COVERAGE FLAG CAME OUT OF THE CARD WORK:** `coverageFlags` had no check for an MP build with no gunsmith code, and two exist — Repairs could not surface either. `no-code` added, MP only, because 8 of the 10 codeless builds are DMZ, which has none by design.
+
+**Full record:** `local/handoff/2026-09-10-portal-round2-continued.md` (gitignored) — the six corrections he had to make, the traps, and why each of the 16 is still open.
 
 **Filed 2026-09-10 12:49 EDT.** Harkirat's second review pass, pins **#24–59** in `local/portal-sync-notes.md` (his numbering is that file's own order — round 1 was #1–23). Crops for most of them are in `local/portal-pins/`. **The route, the method and the traps are `local/handoff/2026-09-10-portal-round2.md`**; that file is gitignored, which is why this entry exists.
 

@@ -78,10 +78,7 @@ const RIVER_COLUMNS = [
     { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
 
-// 🔴 A NAME IF ONE EXISTS, AND A HONEST SHORT ID IF NOT -- never nineteen digits truncated to six, which is what
-// this column showed until 2026-09-10 15:08 EDT. The map comes from portal/api/analytics.js and holds only what
-// the codebase actually stores: `owner`, plus each granted admin's own note. An unknown id keeps its last six
-// digits behind an ellipsis, which at least reads as an identifier rather than as a number that means something.
+// 🔴 A NAME IF ONE EXISTS, AND A HONEST SHORT ID IF NOT -- never nineteen digits truncated to six, which is what this column showed until 2026-09-10 15:08 EDT. The map comes from portal/api/analytics.js and holds only what the codebase actually stores: `owner`, plus each granted admin's own note. An unknown id keeps its last six digits behind an ellipsis, which at least reads as an identifier rather than as a number that means something.
 function actorLabel(actorId, actors) {
     if (!actorId) return 'system';
     const named = actors && actors[actorId];

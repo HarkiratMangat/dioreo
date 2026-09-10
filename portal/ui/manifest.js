@@ -26,12 +26,7 @@ function FilterChips({ groups, filters, onChange }) {
     return groups.map((g) => {
         const options = [{ value: 'all', label: 'All' }, ...g.options];
         const current = filters[g.key] || 'all';
-        // 🔴 THE GROUP'S OWN NAME, ACCEPTED BY THIS COMPONENT AND THROWN AWAY. Every group prepends its own
-        // "All", so two groups draw two identical All chips in one unbroken row with nothing saying what
-        // either governs. Harkirat, pin pmtvr01ji, 2026-09-10 12:35 EDT: "Why are there 2 'all' filter
-        // toggles... I'm just so confused how the analytic's manifest filtering toggles work." Both groups
-        // ALREADY declare a label (Kind, Level) and it reached nothing but a tooltip. Guarded on g.label so a
-        // realm passing an unlabelled group keeps today's shape instead of gaining an empty span.
+        // 🔴 THE GROUP'S OWN NAME, ACCEPTED BY THIS COMPONENT AND THROWN AWAY. Every group prepends its own "All", so two groups draw two identical All chips in one unbroken row with nothing saying what either governs. Harkirat, pin pmtvr01ji, 2026-09-10 12:35 EDT: "Why are there 2 'all' filter toggles... I'm just so confused how the analytic's manifest filtering toggles work." Both groups ALREADY declare a label (Kind, Level) and it reached nothing but a tooltip. Guarded on g.label so a realm passing an unlabelled group keeps today's shape instead of gaining an empty span.
         return [g.label ? html`<span class="mlabel" key=${g.key + ':label'}><span>${g.label}</span></span>` : null,
             ...options.map((o) => html`
             <!-- ⚠️ A TOPIC FILTER IS NOT A STATE FILTER, and both used to render as the same neutral chip.
@@ -102,15 +97,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
     // The design's table opens sorted — its Window header carries `sorted-asc` — because a season read in entry order is a list and read in date order is a schedule. A realm names its own opening sort.
     //
-    // 🔴 AND THE READER'S OWN CHOICE OUTRANKS THE REALM'S. Harkirat, pin pmtvpy8bi, 2026-09-10 12:07 EDT:
-    // "why can't i set a default sort-by method in the manifest? like every time i reload the page, it resets
-    // to sorting by the window increasing. Its my portal and i want to view it my way so why am i restricted
-    // to setting MY preference?" So the realm's `defaultSort` becomes the opening sort only for a reader who
-    // has never sorted this realm; once they do, that is the sort this realm opens with.
-    // ⚠️ KEYED PER REALM, because one manifest component serves seven of them and a single key would make
-    // sorting Armory silently re-sort Season by a column Season does not have. ⚠️ Wrapped in try/catch and
-    // falling back to `defaultSort`: a private window, cleared site data or a browser blocking storage throws
-    // on ACCESS, not just on write, and a sort preference is never worth taking a realm down for.
+    // 🔴 AND THE READER'S OWN CHOICE OUTRANKS THE REALM'S. Harkirat, pin pmtvpy8bi, 2026-09-10 12:07 EDT: "why can't i set a default sort-by method in the manifest? like every time i reload the page, it resets to sorting by the window increasing. Its my portal and i want to view it my way so why am i restricted to setting MY preference?" So the realm's `defaultSort` becomes the opening sort only for a reader who has never sorted this realm; once they do, that is the sort this realm opens with. ⚠️ KEYED PER REALM, because one manifest component serves seven of them and a single key would make sorting Armory silently re-sort Season by a column Season does not have. ⚠️ Wrapped in try/catch and falling back to `defaultSort`: a private window, cleared site data or a browser blocking storage throws on ACCESS, not just on write, and a sort preference is never worth taking a realm down for.
     const sortKey = 'dioreo.sort.' + (realm || 'default');
     const [sort, setSort] = useState(() => {
         try {
