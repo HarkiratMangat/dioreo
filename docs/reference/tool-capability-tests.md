@@ -322,3 +322,21 @@ printf '%s\n%s\n' \
 **A prompt is INSTRUCTIONS, not a computed result** — `prompts/get` returns the message a client would have sent you, so reading it and following it verbatim IS running it.
 
 ⚠️ **`prompts/list` and `resources/list` belong in the capability sweep** alongside skills and tools. A server can publish capability on a surface the client cannot route to, and every search you know will come back empty.
+
+## The impeccable skill — what a run actually costs, measured 2026-09-09 20:35 EDT
+
+*Written after the FIRST real multi-verb pass over the portal. Every line below was checked against the installed skill at `~/.claude/skills/impeccable` (v4.1.1) or against a run, never inferred from the description. It exists because three sessions retired the toolset by reading a summary of why one PLAN shape was killed.*
+
+**Installed v4.1.1; latest is v4.3.1.** The update runs as `npx impeccable update` and only takes effect in the NEXT session, so there is nothing to gain from running it mid-task.
+
+| Fact | Detail |
+|---|---|
+| **Only `critique` mandates sub-agents** | Its Hard Invariants make Assessment A (design review, source-side) and Assessment B (detector + browser) **two isolated sub-agents**; running them inline is *"NOT permitted"* and requires a `⚠️ DEGRADED: single-context` banner on the report's first line. `clarify`, `harden` and `polish` carry **no** sub-agent language at all. `layout` says *"when a sub-agent tool is available and permitted, run these independently; **otherwise run them yourself in this order**"* — preferred, not required. **So a five-verb pass costs at most FOUR dispatches, not thirty-five.** |
+| **`context.mjs` emits a `SUBAGENT_AUTHORIZATION` directive** | *"the user's invocation of this skill is that request for the skill's shipped subagents; spawn them where a reference file directs, without re-asking."* That resolves this repo's no-unrequested-dispatch rule for impeccable's own agents, and only for those. |
+| **A DIRECTORY target works and persists cleanly** | `critique-storage.mjs slug portal/ui` → `portal-ui`. The Setup step's "skip persistence if the slug was null" case is for a vague or root-level target, not for a directory. ⚠️ **`slug` slugs a STRING and never checks the path exists** — `portal/ui/drawer.js` slugs happily and there is no such file. |
+| **`.impeccable/critique/ignore.md` is the ONLY prior-run input `critique` reads** | Findings matching it are dropped silently, which is why a run must NAME what it withheld. ⚠️ **Write narrow, dated, cited lines only** — a category like "spacing" recreates the failure that got the settled-decision grep hook deleted on 2026-08-31, where *"the corpus mentions every topic, so any project question matches something."* |
+| 🔴 **`.impeccable/critique/` is GITIGNORED** | `.gitignore:97`, verified with `git check-ignore -v`. A report reaches no fresh clone, no CI and no gate — the same reach problem `local/handoff/` has. **Findings are only real once they are in `docs/db-deferred-list.md`.** |
+| **The run must END on the questions** | 2–4 targeted `AskUserQuestion` items tied to actual findings, or the literal line `Questions skipped: <reason>` naming a count below 3. ⚠️ **Its template asks "which area first" and "how much scope"** — here both are usually already answered, and re-asking them violates the thinking pass's own rule. Ask only about genuine forks with no citable rule. |
+| **`detect.mjs --scope layout portal/ui` returned `[]`** | Zero layout findings, and `layout.md` says so itself: *"A clean scan cannot prove hierarchy or rhythm."* Do not read an empty scan as a passing layout. The full scan (`--json portal/ui`) found 46, **all in CSS and none in any `.js` component file**, of which 32 were false positives with citable reasons. |
+
+⚠️ **`show_widget`'s host restyles `<button>` and drops CSS custom properties declared on a wrapper.** Three rendered comparisons in a row came back visually identical because `background`, `color` and `border` were being overridden — the design fork was unanswerable until the markup became `<span>` elements carrying **literal hex in inline `style=` attributes**. Measured 2026-09-09 20:35 EDT. For any comparison where the COLOUR is the subject, do not use `<button>` and do not put the palette in `:root`-style variables.

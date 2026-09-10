@@ -49,7 +49,7 @@ status: live
 
 | | What | Where |
 |---|---|---|
-| **1** | **Step 3's impeccable pass** — five runs, all realms per run, components only. `[P1 · M]` | **Task 9** |
+| **1** | ◐ **Step 3's impeccable pass** — `critique` and `clarify` done, `layout` half done, **`harden` and `polish` not run**. `[P1 · M]` | **Task 9** |
 | **2** | **Re-derive step 4's B/C/D membership** against today's list. `[P1 · S]` | **Task 8** |
 | **3** | Four `.claude/rules/` files still over 30,000 B — prose judgements, not lifts | `docs/db-deferred-list.md` |
 | **4** | The `/commands` page, as ONE collective item for a fresh session | `docs/db-deferred-list.md` |
@@ -392,7 +392,11 @@ Roughly 30 items. **Player-facing first**, because step 3 is entirely admin-faci
 
 ⚠️ **Step 3's nine filed rows are genuinely done.** What is missing is the method, not the items.
 
-**Verify:** `.impeccable/critique/` carries a run covering every realm rather than seven per-realm reports, and each of `clarify`/`layout`/`harden`/`polish` has produced a result that closed named bucket-A items. Filed as `[P1 · M]` in `docs/db-deferred-list.md`.
+🔴 **THIS TASK'S OWN VERIFY CONDITION WAS UNSATISFIABLE AS WRITTEN, AND THE PASS THAT FOUND IT WAS THE ONE RUNNING IT (corrected 2026-09-09 20:33 EDT).** It required each fix verb to have *"closed named bucket-A items"* — but §0.1's own row says all nine open bucket-A items closed at 15:12 EDT, four hours BEFORE this task was written at 19:19. There were none left to close. That is the same stale-number defect this session has been chasing all day, sitting inside the task about to be executed.
+
+**Verify:** `.impeccable/critique/` carries ONE run whose target is the component layer and whose evidence spans every realm that mounts it — never seven per-realm reports. Each of `clarify`, `layout`, `harden`, `polish` has produced either a landed change in `portal/ui/` or `app.css`, or a filed row carrying its own verify condition. ⚠️ **`.impeccable/critique/` is GITIGNORED**, so the findings are only real once they are in `docs/db-deferred-list.md`. Filed as `[P1 · M]` there.
+
+**State, 2026-09-09 20:33 EDT:** `critique` ✅ run — 32/40, two isolated sub-agents, one run across the component layer; the eight open findings filed. `clarify` ✅ — the expired-session screen, `1fef14c4`. `layout` ◐ — the drawer chrome snapped, `d0f35d94`; tray, `.mtools` and the rail filed. `harden` and `polish` NOT RUN.
 
 ## 4 · Self-review
 
