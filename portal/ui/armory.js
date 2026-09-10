@@ -756,6 +756,9 @@ function WeaponSearch({ options, picked, onPick }) {
     const [q, setQ] = useState('');
     const [hi, setHi] = useState(0);
     const full = picked.length >= MAX_COMPARE_WEAPONS;
+    // Two is a deliberate limit — six build columns is what fits the screen the table is read on — and the
+    // input below already says so: it is `disabled` at the cap with its own placeholder. Checked 2026-09-10
+    // 15:51 EDT after I had written a comment here claiming this failed silently; it does not.
     const matches = full ? [] : matchWeapons(options, q, picked);
     const at = Math.min(hi, Math.max(0, matches.length - 1));
     const take = (w) => { onPick(w); setQ(''); setHi(0); };
@@ -799,8 +802,27 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     const all = picked.flatMap((w) => optionOf(w).builds);
     const chosen = all.slice(0, MAX_COMPARE_COLUMNS);
     const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
-    // The suggestion is the point of the empty state: "type a weapon name" is an instruction, and a button carrying a weapon that actually has siblings is the thing the instruction was for.
-    const suggest = options.find((o) => o.builds.length > 1) || null;
+    // 🔴 THE SUGGESTION OFFERED ONE WEAPON ON A PANEL CALLED COMPARE. Harkirat, 2026-09-10 15:50 EDT:
+    // "IT'S LITERALLY TITLED *COMPARE* yet the mechanism takes 1 weapon only? and what's the point of the
+    // single 'try bal-27 button'??" The mechanism was never one-weapon — MAX_COMPARE_WEAPONS is 2 and the
+    // chip row above holds the second — but every affordance on the empty screen described one, so the
+    // capability was there and hidden. A suggestion that seeds ONE weapon teaches the wrong shape on the
+    // first use of the panel.
+    // Two weapons IN THE SAME CATEGORY is the comparison worth offering: cross-category is apples to
+    // oranges (an AR against a sniper shares almost no field worth lining up), and same-category is exactly
+    // the "which of these two do I keep" question the near-duplicate flag is about. Falls back to the two
+    // with the most builds when no category has two, and to one weapon when the armory has only one.
+    const withSiblings = options.filter((o) => o.builds.length > 1);
+    const catOf = (o) => (o.builds[0] && o.builds[0].category) || '';
+    const pair = (() => {
+        for (const a of withSiblings) {
+            const b = withSiblings.find((x) => x.weapon !== a.weapon && catOf(x) && catOf(x) === catOf(a));
+            if (b) return [a, b];
+        }
+        const two = [...options].sort((x, y) => y.builds.length - x.builds.length).slice(0, 2);
+        return two.length === 2 ? two : null;
+    })();
+    const suggest = withSiblings[0] || null;
     const singles = picked.map(optionOf).filter((o) => o.builds.length === 1);
 
     if (!options.length) {
@@ -824,13 +846,17 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
                     </button>`)}
             </div>
             ${!picked.length ? html`
-                <p class="empty"><b>Type a weapon above.</b>${' '}
-                    Every build of it lines up here, field by field, with the rows that differ marked — which is the
-                    only way to decide which of two near-duplicates to keep.</p>
-                ${suggest ? html`
-                    <div class="racktools">
-                        <button class="pill lead" onClick=${() => onSetWeapons([suggest.weapon])}>Try ${suggest.weapon} — ${suggest.builds.length} builds</button>
-                    </div>` : null}`
+                <p class="empty"><b>Pick one weapon, or two.</b>${' '}
+                    Every build of each lines up here field by field, with the rows that differ marked — one weapon
+                    to choose between its own near-duplicates, two to decide which of them earns the slot.</p>
+                <div class="racktools">
+                    ${pair ? html`
+                        <button class="pill lead" onClick=${() => onSetWeapons([pair[0].weapon, pair[1].weapon])}>
+                            Compare ${pair[0].weapon} against ${pair[1].weapon}</button>` : null}
+                    ${suggest ? html`
+                        <button class="pill" onClick=${() => onSetWeapons([suggest.weapon])}>
+                            Or just ${suggest.weapon} — ${suggest.builds.length} builds</button>` : null}
+                </div>`
             : html`
                 <div class="cmp">
                     ${singles.map((o) => html`

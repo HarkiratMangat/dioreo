@@ -97,7 +97,7 @@ function GrantForm({ admin, onGrant, scopes, onCancel }) {
                         <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
                                 style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
                                 title=${sc.key} onClick=${() => toggle(sc.key)}>
-                            <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}
+                            <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
                         </button>`)}
                 </div>
                 <div class="dwfield" style="margin-top:14px"><label for="grant-note">Label (optional)</label>
@@ -264,7 +264,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                                   : holdersOf(sc) === 1
                                                   ? `${sc.label} — a single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`
                                                   : `${sc.label} — ${holdersOf(sc)} people besides you hold it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`}>
-                                            <em class=${'mxdepth' + (holdersOf(sc) === 0 ? ' none' : holdersOf(sc) === 1 ? ' one' : '')}>${holdersOf(sc)}</em><span class="mxcn" lang="en">${sc.label}${sc.ownerOnly ? html`<b class="ownly-k" aria-label="owner-grantable only">🔒</b>` : null}</span>
+                                            <span class="mxcn" lang="en">${sc.label}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}</span><em class=${'mxdepth' + (holdersOf(sc) === 0 ? ' none' : holdersOf(sc) === 1 ? ' one' : '')}>${holdersOf(sc)}</em>
                                         </button>
                                     </th>`)}
                                 <th><span class="mxs">Action</span></th>
@@ -640,7 +640,7 @@ export function AccessRealm({ session }) {
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
             ${anyGrid ? html`<span class="l dk" data-note>the number over a column is how many people besides you hold it — <em class="mxdepth none">0</em> nobody, <em class="mxdepth one">1</em> a single point</span>` : null}
-            ${anyLock ? html`<span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>` : null}
+            ${anyLock ? html`<span class="l" data-note><i style="background:none"><${Icon} name="lock" cls="sm" /></i>owner-grantable only</span>` : null}
         </span>`;
 
     // A session is "signed in now" if it was seen in the last 15 minutes -- the same rough threshold 06-access-and-analytics.html's own "2 signed in now" stat line implies. Not a stored flag: a browser session has no logout event unless someone clicks it, so recency is the only honest signal there is.
