@@ -260,6 +260,40 @@ The same audit: `.remember`'s **First action** read as something to *do*. It act
 
 ---
 
+## 🔴 FOUR STEPS ADDED %s, AND THEY ARE STEPS BECAUSE THIS FILE'S WARNINGS DID NOT WORK
+
+*Written after a handoff shipped with one of the 36 items it organises in NEITHER carrier, two of the user's four stated objectives missing, and nine causal claims that were clusters of his vocabulary. **This guide already warned about that class in four places and I read past all four on the same day.** So these are numbered steps with an artifact, not prose to agree with.*
+
+### A · Re-read the OPENING PROMPT and tick each ask
+
+Before enumerating threads, open the session's first user message and **list its imperatives**. For each, write where the answer lives — a file path, not "I said it". The thread enumeration in step 3 walks your MEMORY of the session, and memory cannot distinguish *answered in chat* from *carried in a document*: both feel done.
+
+**Test:** every ask in the opening prompt maps to a path in the handoff. An ask that maps to "I told him" is not carried.
+
+### B · Conserve the list you summarise, with a script
+
+If the handoff groups, ranks or summarises a list — pins, findings, a backlog — **declare the source in the file** and let the check do the arithmetic:
+
+```
+<!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
+```
+
+`npm run handoff` then names anything the summary dropped and **fails when the pattern matches zero ids**, because "no items, all covered" is the vacuous pass. ⚠️ **Do not verify a table you wrote by re-reading it** — that is the same act that produced the gap. On 2026-09-10 re-reading found nothing and a five-line count found three defects in a minute.
+
+### C · Label a grouping as a hypothesis until it is measured
+
+Grouping is how a 36-item list becomes workable, and it is also how a guess acquires the authority of a table. **For every causal sentence — "these six are one cause", "this is a class bug", "fixing X moves Y" — cite the measurement or write the falsifier.** If you can do neither, the sentence says it is a guess.
+
+**Test:** a reader can tell, per group, what would prove it wrong. Clustering on the user's VOCABULARY (six pins say "borders are touching") is a hypothesis, not a finding — it is the same move as answering *"no clean single cause found"* from the CSS instead of the render, and it earns the same trust.
+
+### D · Run the falsification pass over the FINISHED handoff, and record it
+
+A pass over the plan before writing does not audit the artifact. Ask *where is this document wrong*, then write a **`## Audit log`** section saying what it found. **`npm run handoff` fails without one** — the same rule `docs-audit`'s `plan-audit-log` applies to plans, for the identical reason: a handoff with no audit log is a handoff nobody tried to break, and that is invisible afterwards. *"No gaps found"* is a legitimate entry and must stay writable.
+
+⚠️ **The honest limit:** the check can see whether a pass was RECORDED. It cannot see whether it was good. The real failure on 2026-09-10 was that verification effort scaled with pushback rather than self-discipline, and no script fixes that.
+
+---
+
 ## 🔴 THE CONFORMANCE PASS — run it on ANYTHING a generic skill emitted, before it is approved or executed (added 2026-09-06 22:18 EDT)
 
 **This is the interim mechanism.** The real fix is a repo-owned `/plan` skill, filed as Task 14b of `/Applications/Claude Code/2026-08-23-workflow-compliance-plan.md`, itself blocked on that plan's own rewrite (the `⛔ PRE-REQ` entry in `meta-deferred-list.md`). Until that lands, **this section is the whole method** — which is why it is written out here instead of left to be re-derived.
@@ -428,6 +462,7 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 | **Stale verification** | A green you cannot honestly quote |
 | **Corrections and friction** | A handoff that carries the work and drops the *friction* produces a session that repeats the friction |
 | **Claims of yours that turned out WRONG** | Stated confidently, corrected quietly. Say them once, plainly |
+| 🔴 **THE ASK ITSELF** | Added 2026-09-10 13:20 EDT. Four of the rows above are about the WORLD and none is about what he actually SAID. On 2026-09-10 his opening prompt named four objectives; the handoff carried two, because the enumeration above walks the SESSION — and in my memory of the session I had answered all four, in chat. **A chat message is not a carrier** |
 
 ### 3b · The seven ways a handoff misleads a reader who TRUSTS it
 

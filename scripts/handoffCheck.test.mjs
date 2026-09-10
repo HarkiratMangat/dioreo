@@ -12,6 +12,7 @@ import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
+const { coverageDirective, coverageGaps, hasPassRecord } = require_('./lib/handoffCoverage.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 let n = 0; const ok = (m) => { n++; console.log(`  ✓ ${m}`); };
@@ -79,3 +80,45 @@ assert.ok(/handoff check/.test(out),
 ok('handoffCheck.mjs RUNS and reports — the resolver had a test and the program had none');
 
 console.log(`\nhandoffCheck plans — ${n} passed`);
+
+// ── COVERAGE AND THE SELF-AUDIT, added 2026-09-10 13:17 EDT. 🔴 EVERY ONE OF THESE CAN FAIL, and the fourth is the reason the file exists. A handoff shipped on 2026-09-10 with one of its 36 items in neither carrier while every gate was green, because nothing compared the summary to its source. The vacuous case is the one that would have made the fix useless: a pattern matching nothing reports full coverage forever, which is a check that manufactures confidence — strictly worse than no check.
+
+assert.deepStrictEqual(coverageDirective('nothing here'), null);
+assert.deepStrictEqual(
+    coverageDirective('intro\n<!-- coverage: local/pins.md · · (pmt\\w+) · -->\nrest'),
+    { source: 'local/pins.md', pattern: '· (pmt\\w+) ·' });
+ok('the coverage directive is parsed, and its absence is null rather than a throw');
+
+const SRC = '## a — · pmtAAA ·\n## b — · pmtBBB ·\n## c — · pmtCCC ·';
+{
+    const r = coverageGaps(SRC, '· (pmt\\w+) ·', ['pmtAAA pmtBBB pmtCCC']);
+    assert.deepStrictEqual(r.ids, ['pmtAAA', 'pmtBBB', 'pmtCCC']);
+    assert.deepStrictEqual(r.missing, []);
+    assert.strictEqual(r.vacuous, false);
+    ok('a summary that names every id reports no gap');
+}
+{
+    // THE REAL 2026-09-10 CASE: one id present in the second carrier only, one in neither.
+    const r = coverageGaps(SRC, '· (pmt\\w+) ·', ['pmtAAA only', 'deferred list mentions pmtBBB']);
+    assert.deepStrictEqual(r.missing, ['pmtCCC']);
+    ok('THE GATE CAN FAIL: an id in neither carrier is named, and one in EITHER carrier counts as covered');
+}
+{
+    // 🔴 THE VACUOUS PASS. A wrong pattern extracts nothing and would otherwise report success.
+    const r = coverageGaps(SRC, '· (nope\\w+) ·', ['']);
+    assert.deepStrictEqual(r.missing, []);
+    assert.strictEqual(r.vacuous, true, 'zero ids must be flagged vacuous, never reported as covered');
+    ok('THE GATE CANNOT PASS VACUOUSLY: a pattern matching zero ids is a failure, not full coverage');
+}
+{
+    const r = coverageGaps(SRC, '· (pmt\\w+ ·', ['']);
+    assert.strictEqual(r.badPattern, true);
+    ok('an invalid regex is reported rather than thrown');
+}
+
+assert.strictEqual(hasPassRecord('# H\n\nbody only'), false);
+assert.strictEqual(hasPassRecord('# H\n\n## Audit log\n\nno gaps found'), true);
+assert.strictEqual(hasPassRecord('# H\n\n### What the pass found\n\n- one'), true);
+ok('THE GATE CAN FAIL: a handoff with no record of a pass over itself is detected, and "no gaps found" is writable');
+
+console.log(`\n${n} assertion group(s) passed`);
