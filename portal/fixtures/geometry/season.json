@@ -1,7 +1,7 @@
 {
   "realm": "season",
-  "recordedAt": "2026-09-09T18:59:50.191Z",
-  "commit": "aa1ba19e",
+  "recordedAt": "2026-09-10T18:59:00.082Z",
+  "commit": "fb1c1a5a",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,13 +9,12 @@
   "views": {
     "Track": {
       "grid": {
-        "examined": 1419,
+        "examined": 1459,
         "nearMisses": 3,
-        "sizeIssues": 34,
+        "sizeIssues": 27,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
-          "[object>[object.SVGAnimatedString]|w",
           "bar>bl|TOP-OFFSET",
           "bar>bl|TOP-OFFSET",
           "bar>bl|TOP-OFFSET",
@@ -37,13 +36,7 @@
           "scrub-track>mini|TOP-OFFSET",
           "scrub-track>mini|TOP-OFFSET",
           "scrub-track>mini|TOP-OFFSET",
-          "sortable>sortbtn|TOP-OFFSET",
-          "srec-c>d|TOP-OFFSET",
-          "srec-c>k|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
           "stg-strip>chip|w",
-          "tiers>t-legendary|TOP-OFFSET",
           "tk>bar.saved|TOP-OFFSET",
           "tk>bar.saved|TOP-OFFSET",
           "tk>bar.saved|TOP-OFFSET"
@@ -73,13 +66,12 @@
     },
     "Board": {
       "grid": {
-        "examined": 1599,
+        "examined": 1639,
         "nearMisses": 0,
-        "sizeIssues": 103,
+        "sizeIssues": 95,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
-          "[object>[object.SVGAnimatedString]|w",
           "bcard>bd|TOP-OFFSET",
           "bcard>bd|TOP-OFFSET",
           "bcard>bd|TOP-OFFSET",
@@ -156,10 +148,8 @@
           "bmeta>b|TOP-OFFSET",
           "bmeta>b|w",
           "ow-l>ow-i|h",
-          "root>panel.rise|h",
           "sc-u>i|TOP-OFFSET",
           "sc-u>i|w",
-          "sortable>sortbtn|TOP-OFFSET",
           "spark>saved|TOP-OFFSET",
           "spark>saved|TOP-OFFSET",
           "spark>saved|TOP-OFFSET",
@@ -174,12 +164,7 @@
           "sparkwrap>spark|TOP-OFFSET",
           "sparkwrap>spark|TOP-OFFSET",
           "sparkwrap>spark|TOP-OFFSET",
-          "srec-c>d|TOP-OFFSET",
-          "srec-c>k|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
-          "stg-strip>chip|w",
-          "tiers>t-legendary|TOP-OFFSET"
+          "stg-strip>chip|w"
         ]
       },
       "inventory": {
@@ -206,13 +191,12 @@
     },
     "Repairs": {
       "grid": {
-        "examined": 1350,
+        "examined": 1390,
         "nearMisses": 0,
-        "sizeIssues": 62,
+        "sizeIssues": 55,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
-          "[object>[object.SVGAnimatedString]|w",
           "ow-l>ow-i|h",
           "reph>rt-k|w",
           "rephits>li|TOP-OFFSET",
@@ -265,13 +249,7 @@
           "root>span|TOP-OFFSET",
           "sc-u>i|TOP-OFFSET",
           "sc-u>i|w",
-          "sortable>sortbtn|TOP-OFFSET",
-          "srec-c>d|TOP-OFFSET",
-          "srec-c>k|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
-          "srec-c>t|TOP-OFFSET",
-          "stg-strip>chip|w",
-          "tiers>t-legendary|TOP-OFFSET"
+          "stg-strip>chip|w"
         ]
       },
       "inventory": {
