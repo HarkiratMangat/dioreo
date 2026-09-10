@@ -72,7 +72,7 @@ export function SelectionBar({ count, noun, summary, badge, tier, actions, onCle
                 </div>
                 <button class="selbar-x" onClick=${onClear}>Clear</button>
             </div>
-        </section>
+        </div>
     `;
 }
 

@@ -872,4 +872,15 @@ check('findingBarIds marks only what a machine can be sure of — not the judgem
     assert.ok(!ids.has('e4'), 'looks-like-2xCP is a judgement call and must not mark');
 });
 
+// 🔴 THE ONE THING THAT STOPS A COMMIT WAS INSIDE THE COLLAPSED DEFAULT. `tray.js` defaults COLLAPSED — measured, because defaulting open put a 269px floating panel over page content on every realm — and `.tray.collapsed .rounds,.tray.collapsed .hint{display:none}` took `.hint` with it. `.hint` is the sentence saying N tier-3 changes need an export before they will commit, which is the only thing standing between staged work and a commit. The rounds list is detail and still collapses; the blocker is status, and status is what a collapsed tray is FOR.
+check('the tray\'s blocking hint is not hidden by a collapsed tray', () => {
+    const hidesHint = (sheet) => sheet.split('\n').filter((l) =>
+        /\.tray\.collapsed/.test(l) && /\.hint\b/.test(l) && /display\s*:\s*none/.test(l));
+    const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
+    assert.deepStrictEqual(hidesHint(css), [], 'no rule may hide .hint while the tray is collapsed');
+    // THE GATE CAN FAIL: the real rule, exactly as it shipped until 2026-09-09 20:51 EDT.
+    assert.strictEqual(hidesHint('.tray.collapsed .rounds,.tray.collapsed .hint{display:none}').length, 1,
+        'the scanner must recognise the rule it exists to forbid');
+});
+
 process.exit(failures ? 1 : 0);

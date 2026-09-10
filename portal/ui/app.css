@@ -95,7 +95,7 @@ header .sp{margin-left:auto}
 .who .av[data-src]{background-image:var(--av-src)}
 
 nav.rail{background:var(--sunk);border-right:1px solid var(--rule);display:flex;flex-direction:column;padding-top:8px;gap:2px;overflow:auto}
-.realm{background:none;border:0;color:var(--ink3);padding:11px 4px;display:grid;gap:5px;justify-items:center;
+.realm{background:none;border:0;color:var(--ink3);padding:var(--s3) var(--s1);display:grid;gap:var(--s1);justify-items:center;
   position:relative;font-size:var(--t-xs);letter-spacing:.12em;text-transform:uppercase;font-weight:700;text-decoration:none;min-height:var(--tap)}
 .realm svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}
 .realm:hover{color:var(--ink2);background:rgba(255,255,255,.03)}
@@ -110,6 +110,7 @@ main{overflow:auto;padding-bottom:140px}
    The masthead has no border, so its padding has to carry the whole distance itself or the
    realm title and every panel heading below it sit on two different left edges. Measured on
    2026-08-25 with a grid overlay: masthead content 24->1180, panel content 23->1181. */
+/* ⛔ THE MASTHEAD IS DELIBERATELY NOT IN THE SNAP (2026-09-09 20:51 EDT), and the reason is a finding rather than caution: `.masthead` is declared FIVE times at top level in this file and the browser renders `30px 23px 20px`, which is none of them. The value is not knowable by reading any one rule, so snapping one of five would move a number nobody could predict. It belongs to the duplicate-selector item in docs/db-deferred-list.md and can only be done after those five are consolidated. ⛔ AND THE 23px HORIZONTAL IS EXCLUDED PERMANENTLY EITHER WAY — COMPANION §16.28 measured it as the column `.panel` (margin 22 + 1px border) shares with every heading below. */
 .masthead{padding:20px 23px 14px}
 .masthead h1{margin:0 0 3px;font-size:var(--t-hero);font-weight:600;letter-spacing:-.015em}
 .masthead .job{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.11em;color:var(--patch);text-transform:uppercase}
@@ -337,7 +338,7 @@ main{overflow:auto;padding-bottom:140px}
    and a `.commit`, and neither of these two has ever had an element in either codebase. */
 
 /* ═══ MANIFEST — always present, never switches ═══ */
-.mtools{display:flex;align-items:center;gap:9px;padding:11px 12px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.mtools{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3);border-bottom:1px solid var(--rule);flex-wrap:wrap}
 .srch{position:relative;flex:1 1 240px;max-width:300px}
 .srch input{width:100%;padding-left:32px}
 .srch svg{position:absolute;left:10px;top:50%;margin-top:-7px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
@@ -397,7 +398,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .tray{position:fixed;right:20px;bottom:20px;width:320px;max-width:calc(100vw - 32px);background:var(--paper);
   border:1px solid var(--rule2);border-radius:var(--rad-2);box-shadow:0 24px 60px -18px var(--scrim-90);z-index:50}
 .tray[hidden]{display:none}
-.tray-h{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--rule);cursor:pointer}
+.tray-h{display:flex;align-items:center;gap:var(--s2);padding:var(--s2) var(--s3);border-bottom:1px solid var(--rule);cursor:pointer}
 .tray-h .t{font-size:var(--t-xs);letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--ink2)}
 .tray-h .n{margin-left:auto;font-family:var(--data);font-size:var(--t-sm);color:var(--staged)}
 .rounds{display:flex;flex-direction:column-reverse;padding:6px 0;max-height:220px;overflow:auto}
@@ -431,7 +432,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .mtools .mlabel{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.16em;
   text-transform:uppercase;color:var(--ink3);flex:none;align-self:center;margin-right:2px}
 @media (max-width:768px){ .mtools .mlabel{display:none} }
-.tray-f{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--rule)}
+.tray-f{display:flex;gap:var(--s2);padding:var(--s2) var(--s3);border-top:1px solid var(--rule)}
 .btn{flex:1;border-radius:var(--rad-2);font-size:var(--t-base);font-weight:700;padding:9px;min-height:var(--tap);
   background:var(--raised);color:var(--ink2);border:1px solid var(--rule2);
   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
@@ -458,6 +459,7 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
   box-shadow:0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)}
 .drawer.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
 .drawer.wide{width:min(880px,calc(100vw - 40px))}
+/* ⚠️ RESERVED, NOT DEAD — do not let a reverse-orphan sweep delete this (2026-09-09 20:52 EDT). `Drawer`'s `side` prop is passed by ZERO call sites today, which is exactly what an orphan looks like. It is the alternative the ledger's Season-composer row keeps open: the composer is a wide centred drawer BECAUSE `side` is 420px and the tier preview wants to sit beside the items box, and that row's reopens-if is "he wants the form beside the Track rather than over it". Deleting it turns a one-prop reversal into a rebuild. */
 .drawer.side{left:auto;right:0;top:var(--hdr-h);bottom:0;transform:translateX(100%);
   width:min(420px,100vw);max-height:none;border-radius:0;border-right:0;border-top:0}
 .drawer.side.open{transform:none}
@@ -1055,7 +1057,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .whobtn .cv{font-size:var(--t-micro);color:var(--ink3)}
 .umenu[hidden]{display:none}
 .umenu button.mi.danger{color:var(--danger-ink)}
-.umenu button.mi.danger:hover{background:var(--danger-edge)}
+/* One rule, one token. This selector was declared THREE times at top level — `var(--danger-edge)` (#54322F) here, `rgba(255,107,107,.12)` and `rgba(255,107,107,.10)` later — so the sign-out item's hover was decided by source order and no reader could tell which. Broadened from `button.mi.danger` to `.mi.danger` so deleting the other two changes nothing about which elements match (2026-09-09 20:52 EDT). */
+.umenu .mi.danger:hover{background:var(--danger-edge)}
 
 /* ── confirm drawer (Shell.confirm) ── */
 .opline{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.06em;color:var(--ink3);
@@ -1447,7 +1450,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   border:1px solid var(--rule);border-bottom-width:2px;border-radius:var(--rad-1);padding:2px 5px}
 .umenu .mi .mnote{margin-left:auto;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3)}
 .umenu .mi.danger{color:var(--danger-ink)}
-.umenu .mi.danger:hover{background:rgba(255,107,107,.12)}
 .ustat{display:flex;align-items:center;justify-content:space-between;padding:6px 9px;
   font-size:var(--t-sm);color:var(--ink3)}
 .ustat b{font-family:var(--data);font-size:var(--t-xs);color:var(--ink2);font-weight:600;
@@ -2342,7 +2344,8 @@ body:has(.tray:not([hidden])) main{padding-bottom:250px}
    on top of the matrix's last three scope columns and both row controls, so the realm's own
    data was unreachable behind a status panel. A persistent status object should state the
    summary and keep its verbs; the detail is what folds away. */
-.tray.collapsed .rounds,.tray.collapsed .hint{display:none}
+/* 🔴 `.hint` NO LONGER HIDES ON COLLAPSE (2026-09-09 20:51 EDT). The tray defaults COLLAPSED (tray.js:14, and that default is measured — defaulting open put a 269px panel over page content on every realm), so the sentence saying "N tier-3 changes need an export before they will commit" — the single thing standing between staged work and a commit — was invisible in the state a reader actually meets. The rounds list is genuinely detail and still collapses; the blocker is status, which is what a collapsed tray is FOR. */
+.tray.collapsed .rounds{display:none}
 .tray.collapsed{padding-bottom:0}
 /* Two docked surfaces at once is the portal shouting. While a selection bar is up, the tray
    folds to its summary — the bar is the thing being acted on, and the tray still says how
@@ -4494,7 +4497,6 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
 .ustat b{font-family:var(--data);color:var(--ink2);font-weight:500}
 .ustat b.live{color:var(--ink)}
 .umenu .mi.danger{color:var(--danger-ink)}
-.umenu .mi.danger:hover{background:rgba(255,107,107,.10)}
 /* The header slot the sign-out button used to hold, spent on the most frequent act instead
  * of the rarest — and ABSENT at zero, so it is never a permanent duplicate of the tray. */
 /* 🔴 IT RENDERED AS AN UNDERLINED TEXT LINK. It is an `a`, this rule never said `text-decoration:none`,

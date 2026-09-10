@@ -100,17 +100,22 @@ export function Confirm({ op, tier, title, body, confirmLabel, danger, typed, on
         <//>`;
 }
 
-// ⚠️ A TOAST THAT ARRIVES SMOOTHLY AND VANISHES INSTANTLY READS AS BROKEN, NOT AS FAST. The mockup's first version played an entry animation and then called el.remove() mid-frame, so half of every toast's life had no motion in it. The leaving class drives the exit in CSS and the node outlives it — Harkirat: "toasts settle needs a MUCH smoother animation."
-export function Toast({ message, actionLabel, onAction, onDone, ms = 5200 }) {
+// ⚠️ A TOAST THAT ARRIVES SMOOTHLY AND VANISHES INSTANTLY READS AS BROKEN, NOT AS FAST. The mockup's first version played an entry animation and then called el.remove() mid-frame, so half of every toast's life had no motion in it. The leaving class drives the exit in CSS and the node outlives it — Harkirat: "toasts settle needs a MUCH smoother animation." 🔴 A FAILED WRITE'S ONLY RECOVERY CONTROL LIVED 5.2 SECONDS AND NOTHING COULD REACH IT (2026-09-09 20:52 EDT). `reportFailure` routes EVERY failed mutation through here WITH an action, `useOverlay` holds one toast at a time so two rapid failures show one, and the button sits inside `role="status"` — announced, never in the tab order, gone before a screen-reader user could get to it. Two changes, both minimal: a toast carrying an action gets 12s rather than 5.2s, and ANY toast holds while the pointer is over it or focus is inside it. Holding also clears `leaving`, so a toast caught mid-exit comes back rather than fading under the cursor. The timer restarts in full on release, which is what a reader expects from every other toast they have used.
+export function Toast({ message, actionLabel, onAction, onDone, ms = null }) {
     const [leaving, setLeaving] = useState(false);
+    const [held, setHeld] = useState(false);
+    const life = ms != null ? ms : (actionLabel ? 12000 : 5200);
     useEffect(() => {
-        const t1 = setTimeout(() => setLeaving(true), ms);
-        const t2 = setTimeout(onDone, ms + 420);
+        if (held) { setLeaving(false); return undefined; }
+        const t1 = setTimeout(() => setLeaving(true), life);
+        const t2 = setTimeout(onDone, life + 420);
         return () => { clearTimeout(t1); clearTimeout(t2); };
-    }, []);
+    }, [held, life]);
     if (!message) return null;
     return html`
-        <div class=${'toast' + (leaving ? ' leaving' : '')} role="status" aria-live="polite">
+        <div class=${'toast' + (leaving ? ' leaving' : '')} role="status" aria-live="polite"
+             onPointerEnter=${() => setHeld(true)} onPointerLeave=${() => setHeld(false)}
+             onFocusCapture=${() => setHeld(true)} onBlurCapture=${() => setHeld(false)}>
             <span>${message}</span>
             ${actionLabel ? html`<button class="btn" onClick=${() => { onAction(); onDone(); }}>${actionLabel}</button>` : null}
         </div>`;
