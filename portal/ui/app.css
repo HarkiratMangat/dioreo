@@ -969,9 +969,23 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    segmented choice, not a stray button hanging off the date field. */
 .tbdsw{display:inline-flex;border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden;flex:none}
 .tbdsw button{background:transparent;border:none;color:var(--ink3);cursor:pointer;
-  font:600 var(--t-micro)/1 var(--data);letter-spacing:.07em;padding:6px 7px;transition:background .13s,color .13s}
+  font:600 var(--t-micro)/1 var(--data);letter-spacing:.07em;padding:10px 14px;min-height:34px;transition:background .13s,color .13s}
 /* 🔴 THE TOPIC HEX AS A FILL FAILED UNDER ITS OWN INK — measured live on Season at **4.3:1** (2026-09-09 21:14 EDT), `--on-accent` #07090A on DMZ's #337BA6 at 9.5px/600, which is not large text under WCAG so 4.5 applies. This is the FILL sibling of the "topic hex is a bar, never the text" rule `.dpin` and `.srec-c .k` both record: the darkest topic hexes cannot carry near-black ink at micro sizes. ⚠️ MIXING THE FILL LIGHTER WAS TRIED FIRST AND WAS WRONG TWICE OVER: `color-mix()` computes to a colour function the probe's `rgba()` parser cannot read, so the measurement fell through to the ancestor and reported 1.04:1 — worse, and against a ground the button was not on. The gate caught it on the next run. **The arithmetic also refuses the obvious fix:** on DMZ's #337BA6 pure white is 4.66:1 and `--ink` is only 3.95:1, so no palette ink passes on that fill. So the fill goes, and the topic colour becomes a 2px inset bar — the identical move `.dpin` and `.srec-c .k` already made. Pressed now reads `--hi` ground + full `--ink` + the lane's own bar, which is a stronger state difference than a tint and needs no new literal. ⚠️ Changing the hue itself is Harkirat's; changing how much light is behind the ink is a contrast fix. */
-.tbdsw button[aria-pressed=true]{background:var(--hi);color:var(--ink);box-shadow:inset 2px 0 0 var(--c)}
+/* 🔴 THE BAR POINTS OUTWARD, AND PRESSED NO LONGER LOOKS LIKE HOVER. Harkirat, 2026-09-10 15:38 EDT,
+   choosing from three rendered treatments: "keep the 2px bar but instead of it being on the left side for
+   both date/tbd, make it left side for date and on the right side for tbd. expand the toggle's overall size
+   so the text has some breathing room inside and add a slight tint when hovering and on whichever one is
+   toggled." Both segments used to draw the bar on their LEFT, so on TBD it sat between the two words and
+   read as a divider rather than as a marker of which side is chosen.
+   ⚠️ AND THE PRESSED GROUND WAS var(--hi) WHILE HOVER WAS ALSO var(--hi) — the chosen state and a passing
+   cursor were the same colour, which is why "add a tint" was the ask. Pressed takes --raised, one step
+   above hover, so the two are distinguishable without touching the topic hue.
+   ⚠️ NOT color-mix: the note above records that it computes to a colour function the contrast probe's
+   rgba() parser cannot read, which once produced a FABRICATED 1.04:1 against the wrong ground. Two named
+   ground tokens stay measurable. */
+.tbdsw button[aria-pressed=true]{background:var(--raised);color:var(--ink)}
+.tbdsw button:first-child[aria-pressed=true]{box-shadow:inset 2px 0 0 var(--c)}
+.tbdsw button:last-child[aria-pressed=true]{box-shadow:inset -2px 0 0 var(--c)}
 .tbdsw button:not([aria-pressed=true]):hover{color:var(--ink2);background:var(--hi)}
 .dline .dl-left{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);text-align:right;white-space:nowrap}
 .dline .left b{color:var(--ink);font-weight:600}
@@ -5842,3 +5856,19 @@ button .ic,a .ic{pointer-events:none}
    centres by default and the header is a left-aligned grid area. */
 button.bgrp-w{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
 button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;border-radius:var(--rad-1)}
+
+/* 🔴 COMPARE'S EMPTY STATE WAS THREE ALIGNMENTS IN ONE PANEL, and the useful control was stranded.
+   Harkirat, pin pmtvqdnb3, 2026-09-10 12:21 EDT — "is the compare sub-panel correct? this looks broken
+   to me" — and on being asked, 15:38 EDT: "the issue isn't with the column, the issue is HOW IT
+   CURRENTLY DISPLAYS without any weapon selected." His screenshot is the whole diagnosis: the Weapon
+   label and field sit left at ~480px, then `.empty` centres a 1,800px-wide sentence across the panel,
+   then the "Try BAL-27 - 5 builds" button lands back at the left edge roughly 400px below the field it
+   belongs to. Left, centre, left, in one panel about 530px tall holding one input and two sentences.
+   The suggestion button is the POINT of this state — armory.js:802 says so in words — and it was the
+   element furthest from the thing it completes. Distance, not absence: a control far enough from its
+   context is missing, which is the same finding as the selection bar 1,682px below the fold.
+   So the sentence takes the input's own alignment and a readable measure, and the button follows it
+   directly instead of after a void. Scoped to #compare: the centred `.empty` is right on a realm whose
+   empty state IS the whole page, and wrong here where it interrupts a form. */
+#compare .empty{text-align:left;max-width:64ch;padding:var(--s5) 16px var(--s3);font-size:var(--t-base)}
+#compare .empty + .racktools{padding:0 16px var(--s5);margin:0}
