@@ -1,15 +1,9 @@
 'use strict';
 // The season countdown reads a STORED INSTANT, and for the life of the portal it did not.
 //
-// `models/SeasonalData.js` stores `bpEnd` / `rankEnd` / `dmzEnd` as Mongoose `Date`s. What Harkirat types as
-// "sept 10" is stored as `2026-09-10T00:00:00.000Z` — 8pm Sep 9 in Toronto — and both dev and prod held exactly
-// that value when this was filed. `countdownParts` took the instant, threw it away with `.slice(0, 10)`, and
-// counted to `T23:59:59Z` of the same day, adding 23h 59m 59s. The clock read **8h 52m remaining at 11:07 EDT
-// on Sep 10**, a full day after the season had ended, and the bot's player-facing timers read the same field.
+// `models/SeasonalData.js` stores `bpEnd` / `rankEnd` / `dmzEnd` as Mongoose `Date`s. What Harkirat types as "sept 10" is stored as `2026-09-10T00:00:00.000Z` — 8pm Sep 9 in Toronto — and both dev and prod held exactly that value when this was filed. `countdownParts` took the instant, threw it away with `.slice(0, 10)`, and counted to `T23:59:59Z` of the same day, adding 23h 59m 59s. The clock read **8h 52m remaining at 11:07 EDT on Sep 10**, a full day after the season had ended, and the bot's player-facing timers read the same field.
 //
-// 🔴 EVERY ASSERTION BELOW IS PAIRED WITH THE OLD EXPRESSION, computed inline, so the file cannot become a
-// vacuous pass. If someone reintroduces the end-of-day coercion the first case goes red; and `oldEnd()` proves
-// the case DISCRIMINATES rather than merely agreeing with whatever the code currently does.
+// 🔴 EVERY ASSERTION BELOW IS PAIRED WITH THE OLD EXPRESSION, computed inline, so the file cannot become a vacuous pass. If someone reintroduces the end-of-day coercion the first case goes red; and `oldEnd()` proves the case DISCRIMINATES rather than merely agreeing with whatever the code currently does.
 const assert = require('assert');
 const { seasonMoments, countdownParts, seasonTier } = require('../portal/ui/season.logic');
 
@@ -43,8 +37,7 @@ const split = seasonMoments({
 assert.strictEqual(split[0].at, Date.parse('2026-09-10T06:00:00.000Z'),
     'a merged wall falls when its FIRST line falls, never when its last does');
 
-// ── 3 · THE DEFECT ITSELF ─────────────────────────────────────────────────────────────────────
-// 2026-09-10T15:07Z is 11:07 EDT — the hour the wrong reading was observed at.
+// ── 3 · THE DEFECT ITSELF ───────────────────────────────────────────────────────────────────── 2026-09-10T15:07Z is 11:07 EDT, the hour the wrong reading was observed at. (The divider above and this sentence are two comments on purpose: reflow-comments merges a prose line into the rule when they share a block, which is trap 6 in .claude/rules/portal-editing.md wearing a harmless coat.)
 const OBSERVED = Date.UTC(2026, 8, 10, 15, 7, 0);
 const p = countdownParts(next.at, OBSERVED);
 assert.strictEqual(p.past, true, 'a season stored at 00:00Z has ENDED by 15:07Z the same day');
