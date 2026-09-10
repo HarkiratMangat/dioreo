@@ -1213,10 +1213,12 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    38+210+118+170+130+190+104 = 960 against a 902px content area. Trimmed to 832 so the table
    fits the narrowest DESKTOP width and still scrolls on a phone, which is the design. */
 .mtable col.c-cb{width:38px}
-.mtable col.c-item{width:22%;min-width:150px}
-/* Was 30%/180px -- "so much wasted space on the width of the weapon names" while Attachments/Badges blended
-   together (Harkirat, pins pmtuwxox9/pmtux33r1, 2026-09-09). table-layout:fixed means giving this column less
-   hands the freed space straight to .c-detail (width:auto), which is exactly where it was needed. */
+.mtable col.c-item{width:15%;min-width:110px}
+/* Was 30%/180px, then 22%/150px -- still "not fixed" per Harkirat checking live: Armory's own weapon
+   names (LOCUS, BAL-27, AK117) are all under 10 characters, so 150px min-width was itself the real
+   floor keeping this column oversized regardless of the percentage. 110px min-width fits every real
+   name with room to spare; the freed space (now ~35% more of the table) goes to .c-detail's own
+   width:auto, which is Build/Gunsmith-code -- the columns actually cramped enough to need it. */
 .mtable col.c-type{width:100px}
 .mtable col.c-win{width:150px}
 .mtable col.c-spark{width:18%;min-width:110px}
@@ -5213,8 +5215,13 @@ button .ic,a .ic{pointer-events:none}
    and left every diamond off-centre. --rec-x is the single source for both, and the spine runs from
    the FIRST marker to the LAST rather than from an arbitrary inset — a spine that starts above its
    first bead is a line pointing at nothing. */
-.rec-list::before{content:"";position:absolute;left:var(--rec-x);top:22px;bottom:22px;width:1px;
+.rec-list::before{content:"";position:absolute;left:calc(var(--rec-x) + 4px);top:22px;bottom:22px;width:1px;
   background:var(--rule2);transform:translateX(-.5px)}
+/* +4px -- the spine is positioned relative to .rec-list, but .rec-row (each marker's actual
+   container) carries its own padding:9px 4px, so a marker centred at --rec-x WITHIN its row
+   sits 4px to the right of a spine drawn at --rec-x from .rec-list's edge. Measured live via
+   getBoundingClientRect 2026-09-10: spine at listLeft+10, marker centers at listLeft+14 on every
+   row. The markers were never off -- the spine was drawn from the wrong box. */
 .rec-row{display:grid;grid-template-columns:calc(var(--rec-x) * 2) 1fr auto auto auto;align-items:center;gap:12px;
   padding:9px 4px;border-bottom:1px solid var(--rule);cursor:pointer}
 .rec-row:last-child{border-bottom:0}
