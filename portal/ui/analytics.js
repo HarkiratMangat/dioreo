@@ -199,7 +199,7 @@ function EventDrawer({ row, onClose, onRevert }) {
                     ${eventRows(row).map(([k, v]) => html`
                         <div class="diff-r" key=${k}><span class="dk">${k}</span><span>${v}</span></div>`)}
                 </div>
-                <p class="dw-p" style="margin-top:16px">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
+                <p class="dw-p" style="margin-top:var(--s4)">${EVENT_NOTE[row.kind] || EVENT_NOTE.alert}</p>
             </div>
         <//>`;
 }

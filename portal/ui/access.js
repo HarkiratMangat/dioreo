@@ -100,7 +100,7 @@ function GrantForm({ admin, onGrant, scopes, onCancel }) {
                             <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
                         </button>`)}
                 </div>
-                <div class="dwfield" style="margin-top:14px"><label for="grant-note">Label (optional)</label>
+                <div class="dwfield" style="margin-top:var(--s3)"><label for="grant-note">Label (optional)</label>
                     <input id="grant-note" placeholder="How you will recognise them" value=${note} onInput=${(e) => setNote(e.target.value)} /></div>
                 <div class="dwfield"><label for="grant-confirm">Type the Discord ID again to confirm</label>
                     <input id="grant-confirm" placeholder=${discordId || 'the same digits'} autocomplete="off"

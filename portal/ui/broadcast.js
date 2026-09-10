@@ -6,7 +6,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, Masthead, MastheadNew } from './shell.js';
 import { DiscordCard } from './v2Render.js';
-import { Manifest } from './manifest.js';
+import { Manifest, StatePill } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
@@ -35,9 +35,20 @@ const BROADCAST_COLUMNS = [
     { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<b style="color:var(--warn)">never</b>`) },
     // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
     { key: 'state', label: 'State', dataKind: 'right',
-      render: (r) => html`<span class=${'stt ' + (r.state === 'staged' ? 'staged' : 'saved')}>${r.state === 'staged' ? 'STAGED' : 'SAVED'}</span>
-          <span class="rowmeta" style="margin-left:6px">${({ live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' })[r.state] || String(r.state || '').toUpperCase()}</span>` },
+      // 🔴 THE CHIP IS `StatePill`, NOT A SECOND COPY OF IT (2026-09-10 17:24 EDT). This rendered its own
+      //    `<span class="stt …">` with its own STAGED/SAVED words — a hand-rolled duplicate of the component
+      //    that `manifest.js` exports for exactly this reason, and the reason it is exported at all is that
+      //    Season did the same thing and lost the pill entirely. Two copies of one vocabulary is how
+      //    `.stt.stag` / `.stt.sched` / `.stt.exp` came to be emitted against classes no stylesheet defines.
+      //    Harkirat, pin pmtvqq1xg: *"the state column's labels are so poorly implemented"* — and his own
+      //    standing rule, *fix the class, not just the instance*. The SECOND axis stays, because it is a
+      //    different fact: the chip is the STAGING state, the meta is the CONTENT lifecycle.
+      render: (r) => html`<${StatePill} state=${r.state === 'staged' ? 'staged' : 'saved'} accent=${accentOf(r)} />
+          <span class="rowmeta" style="margin-left:6px">${LIFECYCLE_WORD[r.state] || String(r.state || '').toUpperCase()}</span>` },
 ];
+
+// ⚠️ THE CONTENT LIFECYCLE, NAMED. An inline object literal inside a render closure is a vocabulary nothing else can see, and this column carries TWO of them — the staging state (StatePill) and this. Kept apart on purpose: `LIVE NOW` is not `SAVED`, and a reader who cannot tell a written-and-over post from a staged-and-not-yet-real one has been told half the answer.
+const LIFECYCLE_WORD = { live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' };
 
 const BROADCAST_FILTERS = [
     { key: 'state', label: 'State', options: [
@@ -123,7 +134,7 @@ function NowShowing({ live, counts, cap }) {
                      when there is one. The portal printed nothing at all under the cap, so the one fact a
                      reader most needs here — that position is delivery order and cannot be changed — appeared
                      only in the failure case. -->
-                <p class="chint" style="margin-top:12px">
+                <p class="chint" style="margin-top:var(--s3)">
                     Position is <b>delivery order</b> — oldest first, and nothing else. There is no way
                     to reorder announcements.${cap && live.length > cap ? html`${' '}<b style="color:var(--warn)">${live.length - cap} of these will not
                     be shown</b> until something above ${live.length - cap === 1 ? 'it' : 'them'} ends.` : null}
@@ -234,7 +245,7 @@ function HeadsUp({ all }) {
              reason. The design wraps it in a plain div for exactly this, so the callout stays raised and
              the Manifest's adjacency is to the view panel it is subordinate to. Margins collapse through
              a div with no border or padding, so it costs no space. -->
-        <div class="panel" style="margin-top:16px"><div class="callout">
+        <div class="panel" style="margin-top:var(--s4)"><div class="callout">
             <b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}”
             has no expiry and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${' '}
             ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}${' '}
@@ -270,7 +281,7 @@ function PostForm({ onSubmit, onCancel }) {
                 <div class="dwfield"><label for="post-text">Text</label>
                     <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
                               value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="dw-grid2">
                     <div class="dwfield"><label for="post-starts">Starts (blank = immediately)</label>
                         <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></div>
                     <div class="dwfield"><label for="post-expires">Ends</label>

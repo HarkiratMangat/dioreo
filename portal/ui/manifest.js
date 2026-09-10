@@ -13,9 +13,19 @@ const PILL = { live: 'saved', saved: 'saved', staged: 'staged', conflict: 'confl
 const STATE_LABEL = { live: 'SAVED', saved: 'SAVED', staged: 'STAGED', conflict: 'CONFLICT' };
 export function StatePill({ state, accent }) {
     const key = String(state == null ? '' : state);
-    // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic. A filled pill needs its own ink for the same reason a filled bar does: --on-accent is near-black and a draw window's plum takes it to 2.86:1. inkOnTopic derives it from the accent's luminance; a realm that passes a literal colour, or none, falls back to the stylesheet's global.
-    const ink = accent && typeof inkOnTopic === 'function' && /^var\((--[\w-]+)\)$/.test(accent)
-        ? inkOnTopic(accent.replace(/^var\(|\)$/g, '')) : '';
+    // 🔴 A LITERAL HEX GETS ITS INK COMPUTED TOO — 2026-09-10 17:27 EDT, and the gate caught this within
+    //    one build of shipping it. This handled `var(--topic)` only, so a realm passing its own stored colour
+    //    fell through to the stylesheet's `--on-accent`, which is near-black: routing Broadcast's state column
+    //    through this component painted `rgb(7,9,10)` on an announcement's own `#337BA6` at **4.3:1**, below AA.
+    //    The comment below already named the failure — *"a filled pill needs its own ink… a draw window's plum
+    //    takes it to 2.86:1"* — and named only the `var()` path as covered, which is the half that made the
+    //    limitation look like a decision. `inkOn` takes a raw hex and computes BOTH candidates rather than
+    //    thresholding, so a stored colour is no worse served than a token.
+    // ⚠️ THE ACCENT IS A CUSTOM PROPERTY THE STYLESHEET ALREADY READS. `.stt.saved` fills from --c, so without one every pill fell back to plain text — the one column whose entire job is to carry state as a shape had no shape. The design sets it per row, from the row's own topic. inkOnTopic derives it from a topic TOKEN; inkOn derives it from a literal; a realm passing neither falls back to the stylesheet's global.
+    const ink = !accent ? ''
+        : /^var\((--[\w-]+)\)$/.test(accent)
+            ? (typeof inkOnTopic === 'function' ? inkOnTopic(accent.replace(/^var\(|\)$/g, '')) : '')
+            : (/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(accent) && typeof inkOn === 'function' ? inkOn(accent) : '');
     return html`<span class=${'stt ' + (PILL[state] || 'conflict')} style=${accent ? `--c:${accent}` + (ink ? `;--ci:${ink}` : '') : null}>${STATE_LABEL[key] || key.toUpperCase()}</span>`;
 }
 

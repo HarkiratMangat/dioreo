@@ -230,7 +230,7 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
                     </ul>`
                 : html`<p class="dw-p">Nothing is scheduled on this day.</p>`}
                 ${draft ? html`
-                    <label class="dwcheck" style="margin-top:12px">
+                    <label class="dwcheck" style="margin-top:var(--s3)">
                         <input type="checkbox" checked=${withDraft} onChange=${(e) => onWithDraft(e.target.checked)} />
                         <span>Include the staged next-season draft. Players cannot see these.</span>
                     </label>` : null}
@@ -775,7 +775,7 @@ function RecordPreview({ note, onClose }) {
                             rows=${[['Window', `${day} → ${day}`], ['Duration', '1 day'],
                                     ['Detail', note.images.length ? `${note.images.length} image${note.images.length === 1 ? '' : 's'}` : '—'],
                                     ['Thumbnail', note.thumb || '—']]} />
-            <div class="dwfield" style="margin-top:16px"><label for="p-start">Starts</label>
+            <div class="dwfield" style="margin-top:var(--s4)"><label for="p-start">Starts</label>
                 <input id="p-start" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
             <div class="dwfield"><label for="p-end">Ends</label>
                 <input id="p-end" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>

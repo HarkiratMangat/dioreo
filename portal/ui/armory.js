@@ -377,7 +377,7 @@ function AddBuildForm({ onSubmit, onCancel, mode = 'MP' }) {
                             <button key=${m} data-arm=${m} aria-pressed=${f.mode === m ? 'true' : 'false'}
                                     onClick=${() => set({ mode: m, rank: '' })}>${m}</button>`)}
                     </div>
-                    <div class="bed-g2" style="margin-top:11px">
+                    <div class="bed-g2" style="margin-top:var(--s3)">
                         <div class="dwfield"><label for="ab-weapon"><span>Weapon name <span class="req">*</span></span></label>
                             <input id="ab-weapon" aria-describedby="ab-weapon-hint" value=${f.weaponName} placeholder="AK117" autocomplete="off"
                                    onInput=${(e) => set({ weaponName: e.target.value })} />
@@ -652,7 +652,7 @@ function BuildEditor({ build, csrfToken, onStage, onClose }) {
                             <button class=${'bgt' + (draft.isMeta ? ' on' : '')} onClick=${() => set({ isMeta: !draft.isMeta })}>Meta</button>
                             <button class=${'bgt tox' + (draft.isToxic ? ' on' : '')} onClick=${() => set({ isToxic: !draft.isToxic })}>Toxic</button>
                         </div>
-                        <label class="dwfield" style="margin-top:11px">
+                        <label class="dwfield" style="margin-top:var(--s3)">
                             <span>${dmz ? 'DMZ range rank' : 'Category rank'} <i>the vocabulary adminParser validates</i></span>
                             <input value=${(dmz ? draft.dmzRangeRank : draft.categoryRank) || ''}
                                    placeholder=${dmz ? 'best-close, top3-midlong' : 'best, top3, top5'} spellcheck="false"
