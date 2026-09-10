@@ -183,6 +183,7 @@ function fixtureHtml(css) {
     let failures = 0;
     try {
         const page = await browser.newPage();
+        // 🔴 THIS WALKS A HAND-WRITTEN CHROME FIXTURE AGAINST THE REAL STYLESHEET — NOT THE SEVEN REALMS, and the name does not say so (2026-09-09 20:57 EDT). It can only catch a failure on markup somebody remembered to put in `fixtureHtml`. Measured: it was GREEN while `.stg-strip .ss-sep` rendered 3.46:1 on Season and `em.mxgr` rendered 3.02:1 on Access, because neither selector appears in the fixture. Both were found by pixel-sampling the live harness instead, and both are fixed. ⚠️ An instrument that never finds anything outside its frame makes the FRAME the finding — walking the harness realms is filed in `docs/db-deferred-list.md`; until then read this line as "the chrome fixture is clean", never as "the portal is clean".
         await page.setContent(fixtureHtml(css), { waitUntil: 'load' });
 
         const { out: findings, skipped } = await page.evaluate((MIN) => {
@@ -220,11 +221,11 @@ function fixtureHtml(css) {
 
         const measured = await page.evaluate(() => document.querySelectorAll('body *').length);
         if (findings.length) {
-            console.error(`  ✗ ${findings.length} rendered element(s) below ${CONTRAST_MIN}:1 (of ${measured} walked):`);
+            console.error(`  ✗ ${findings.length} element(s) in the chrome fixture below ${CONTRAST_MIN}:1 (of ${measured} walked):`);
             for (const f of findings) console.error(`      ${f.ratio}:1  ${f.what}  ${f.color} on ${f.bg}  ${f.size}  “${f.text}”`);
             failures = 1;
         } else {
-            console.log(`  ✓ every rendered element painting text meets ${CONTRAST_MIN}:1 (${measured} elements walked, ${skipped} skipped over a gradient)`);
+            console.log(`  ✓ every element in the CHROME FIXTURE painting text meets ${CONTRAST_MIN}:1 (${measured} walked, ${skipped} skipped over a gradient) — fixture only, NOT the seven realms`);
         }
 
         // 🔴 THE FALSIFIER. A gate that cannot fail manufactures confidence, and this one is easy to write vacuously — a selector typo, an over-eager `continue`, a transparent-background rule that swallows everything. Inject the original login button and require it to be caught.

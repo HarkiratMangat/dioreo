@@ -472,8 +472,11 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .dw-eye{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.09em;color:var(--ink3);
   text-transform:uppercase}
 .dw-h h2{margin:0;font:600 var(--t-xl)/1.25 var(--ui);color:var(--ink);letter-spacing:-.015em}
-.dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);
+/* 🔴 THE HIT AREA REACHES `--tap`; THE MARK DOES NOT GROW (2026-09-09 20:55 EDT). Measured across nine live drawer instances on five realms, this rendered 28×28 against a `--tap` of 44 — on the close control of every drawer in the product, `overlay.js`'s `Drawer` being imported by six of seven realms. Two things made it a defect rather than a preference: Season's typed-confirm renders its OWN controls at exactly 44, so the rule is live where someone thought about it, and `app.css`'s 32px bypass elsewhere carries a dated comment saying why — so the convention is honour it or document it, and this did neither.
+   ⚠️ THE BOX IS NOT RESIZED, DELIBERATELY. A 44px square in a header padded 16/12 grows the header on every drawer, which is a density change and therefore Harkirat's. `layout.md`'s own line is "keep touch targets usable even when their visible marks are small" — the transparent ::after extends the target 8px past a 28px mark in every direction, which is 44. */
+.dw-h .x{margin-left:auto;flex:none;background:transparent;border:1px solid var(--rule2);position:relative;
   color:var(--ink3);border-radius:var(--rad-2);width:30px;height:30px;cursor:pointer;font-size:var(--t-sm)}
+.dw-h .x::after{content:"";position:absolute;inset:-8px;border-radius:inherit}
 .dw-h .x:hover{color:var(--ink);border-color:var(--ink4);background:var(--hi)}
 .dw-b{padding:var(--s4) var(--s5);overflow:auto;flex:1 1 auto}
 /* `.btn{flex:1}` above was written for a 420px drawer. On a `wide` one it produced two
@@ -2087,7 +2090,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxlbl-in{font:inherit;line-height:1.3;color:var(--ink);background:var(--sunk);border:1px solid var(--staged);
   border-radius:var(--rad-1);padding:0 4px;margin-left:-5px;max-width:170px;height:17px;
   vertical-align:-3px;box-sizing:border-box}
-.mxgr{font-style:normal;color:var(--ink4);margin-left:4px}
+.mxgr{font-style:normal;color:var(--ink3);margin-left:4px}
 .mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
 .mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
@@ -5167,7 +5170,7 @@ button .ic,a .ic{pointer-events:none}
  * flex/grid child is the difference between an ellipsis and a blown-out column, and the two-column
  * splits below are the layout the mockup drew with inline styles. */
 .nw-f{min-width:0}
-.crumb-sep{display:inline-flex;align-items:center;color:var(--ink4);vertical-align:middle}
+.crumb-sep{display:inline-flex;align-items:center;color:var(--ink3);vertical-align:middle}
 .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 /* Home's clock is the page's lead and sits above a two-column live panel, so it centres its own
  * measure instead of running the full width the way Season's does — same component, one page's
@@ -5410,7 +5413,7 @@ button .ic,a .ic{pointer-events:none}
 .stg-strip .ss-n{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.06em;
   text-transform:uppercase;color:var(--ink3);white-space:nowrap}
 .stg-strip .ss-n b{color:var(--ink);font-weight:700;font-size:var(--t-base)}
-.stg-strip .ss-sep{color:var(--ink4);flex:none}
+.stg-strip .ss-sep{color:var(--ink3);flex:none}
 /* The summary is the part that can be long, so it is the only part allowed to shrink and ellipsize —
    truncating the count or the actions would remove the two things this strip exists for. */
 .stg-strip .ss-d{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}

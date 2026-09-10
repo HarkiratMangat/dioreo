@@ -883,4 +883,17 @@ check('the tray\'s blocking hint is not hidden by a collapsed tray', () => {
         'the scanner must recognise the rule it exists to forbid');
 });
 
+// 🔴 `--ink4` IS A NON-TEXT TOKEN AND THREE RULES USED IT AS TEXT. `DESIGN.md` forbids `color:var(--ink4)` in bold, `tokens.css` repeats it, and `app.css` restates it in a comment while deleting a batch of the same violations on 2026-09-04 — and three survived, two of them measured failing by pixel-sampling the composited render (`.stg-strip .ss-sep` 3.46:1 on Season, `em.mxgr` 3.02:1 on Access). Prose said it three times and nothing checked it. ⚠️ THE SCANNER STRIPS COMMENTS FIRST. Two lines of `app.css` QUOTE this rule while explaining it, and a source-shape gate that cannot tell code from prose fires hardest on the file that documents the bug best — which trains the next reader to delete the comment rather than keep the rule. ⚠️ AND IT MATCHES THE `color` PROPERTY ONLY. `border-color:var(--ink4)`, `border-left-color` and `text-decoration-color` are all legitimate and all contain the same substring; nine rules use it correctly that way.
+check('no rule paints TEXT with --ink4', () => {
+    const textInk4 = (sheet) => sheet.replace(/\/\*[\s\S]*?\*\//g, '')
+        .split('\n').filter((l) => /(^|[;{\s])color\s*:\s*var\(--ink4\)/.test(l));
+    const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
+    assert.deepStrictEqual(textInk4(css), [], '--ink4 is not a text tone; use --ink3');
+    // THE GATE CAN FAIL: the real rule, exactly as it shipped until 2026-09-09 20:54 EDT.
+    assert.strictEqual(textInk4('.stg-strip .ss-sep{color:var(--ink4);flex:none}').length, 1, 'the scanner must catch a real one');
+    // AND IT MUST NOT FIRE ON THE NINE LEGITIMATE USES, nor on prose that quotes the rule.
+    assert.strictEqual(textInk4('.flag.info{border-left-color:var(--ink4)}').length, 0, 'a border colour is not text');
+    assert.strictEqual(textInk4('/* DESIGN.md forbids color:var(--ink4) in bold */').length, 0, 'a comment quoting the rule is not a violation');
+});
+
 process.exit(failures ? 1 : 0);

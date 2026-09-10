@@ -49,7 +49,7 @@ status: live
 
 | | What | Where |
 |---|---|---|
-| **1** | ◐ **Step 3's impeccable pass** — `critique` and `clarify` done, `layout` half done, **`harden` and `polish` not run**. `[P1 · M]` | **Task 9** |
+| **1** | ✅ **Step 3's impeccable pass RAN — all five verbs, 2026-09-09 20:57 EDT.** 32/40 · 4 of 8 findings closed · 4 filed with verify conditions | **Task 9** |
 | **2** | **Re-derive step 4's B/C/D membership** against today's list. `[P1 · S]` | **Task 8** |
 | **3** | Four `.claude/rules/` files still over 30,000 B — prose judgements, not lifts | `docs/db-deferred-list.md` |
 | **4** | The `/commands` page, as ONE collective item for a fresh session | `docs/db-deferred-list.md` |
@@ -396,7 +396,7 @@ Roughly 30 items. **Player-facing first**, because step 3 is entirely admin-faci
 
 **Verify:** `.impeccable/critique/` carries ONE run whose target is the component layer and whose evidence spans every realm that mounts it — never seven per-realm reports. Each of `clarify`, `layout`, `harden`, `polish` has produced either a landed change in `portal/ui/` or `app.css`, or a filed row carrying its own verify condition. ⚠️ **`.impeccable/critique/` is GITIGNORED**, so the findings are only real once they are in `docs/db-deferred-list.md`. Filed as `[P1 · M]` there.
 
-**State, 2026-09-09 20:33 EDT:** `critique` ✅ run — 32/40, two isolated sub-agents, one run across the component layer; the eight open findings filed. `clarify` ✅ — the expired-session screen, `1fef14c4`. `layout` ◐ — the drawer chrome snapped, `d0f35d94`; tray, `.mtools` and the rail filed. `harden` and `polish` NOT RUN.
+**State, 2026-09-09 20:57 EDT:** all five verbs have run. `critique` ✅ 32/40, one run across the component layer, two isolated sub-agents. `clarify` ✅ the expired-session screen (`1fef14c4`). `layout` ✅ drawer chrome, tray, `.mtools` and the rail (`d0f35d94`, `5814deae`); the masthead is deliberately excluded and blocked on the duplicate-selector item. `harden` ✅ the tray's blocking hint, the toast's recovery control, and three `--ink4`-as-text contrast failures. `polish` ✅ the close button's hit area, three duplicate hover declarations collapsed to one, `SelectionBar`'s close tag, and `.drawer.side` annotated as reserved rather than deleted. **Four of the eight filed findings are closed, one is part done, and one NEW `[P1 · S]` came out of it: `portalContrastRendered.test.js` walks a fixture rather than the seven realms, which is why two live contrast failures survived a green gate.**
 
 ## 4 · Self-review
 
