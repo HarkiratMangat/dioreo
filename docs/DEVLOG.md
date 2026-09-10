@@ -237,6 +237,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-06 01:53 EDT — the portal build-out: every pin, the design queue, the fifteen lenses, and the drawer that kept one character (v3.78.0-pre)
 - 2026-09-07 01:18 EDT — the plan artifact beat five prose carriers, and a gate that never worked (v3.79.0-pre)
 - 2026-09-08 13:47 EDT — Context carriers WP3-WP8: SESSION-START.md moves to an @import, a compliance self-audit finds and fixes a real Read-tool gap, and a stale plan finding gets checked before being acted on (unreleased on `chore/context-carriers`, proposed v3.80.0)
+- 2026-09-10 13:09 EDT — the pin round that corrected its own handoff (v3.80.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4203,6 +4204,18 @@ Harkirat handed off a plan (`~/.claude/plans/okay-so-i-want-majestic-yao.md`) bu
 **What's filed, not built.** WP6 — trimming the project `CLAUDE.md`'s 10KB portal-navigation table row down from history it no longer needs — was scoped, found genuinely risky to do quickly (one soft-wrapped line, the highest-reach file in the repo, re-injected every session), and filed as a precise, ready-to-execute item in `docs/db-deferred-list.md` rather than rushed.
 
 Every commit in this run was verified against the real gates before landing: `docs:audit`, `docs:audit:test`, `test:hooks`, `memory-index-check.sh`, the affected hook self-tests individually, re-read from disk rather than trusted from a script's own print statements.
+
+## 2026-09-10 13:09 EDT — the pin round that corrected its own handoff (v3.80.0-pre)
+
+Harkirat's first pin round came back with **most of the previous session's "fixed" claims wrong**, and the useful part of today was finding out why. Three of those fixes were genuinely in the file and never on the page — a duplicate `.srch` block thirteen hundred lines below the first, `.srec-c{display:contents}` beating `.srec-tile{display:flex}` on source order, and `#manifest{margin-top:16px}` — an ID — quietly overriding the spacing scale `DESIGN.md` records as a decision. **No gate in this repo can see any of the three.**
+
+The Manifest was re-allocated against the real dev database rather than the fixtures: attachments needed 212px and had 204, which *is* the cut-off badge he pinned, and the row height fell 81.5 → 57.3px once the chips fit two-up. The sort indicator turned out to be a typed character — the one thing this repo bans by name — bumped 12→16px by an earlier pass and reported not fixed again, because size was never the problem.
+
+**Then the same failure ate my own work.** I replaced that glyph with a real Lucide icon, verified it by reading the DOM for `<svg class="sortic"><use href="#i-chevrons-up-down">`, and shipped. `icons.js` stores each sprite entry as full markup and I had added a bare `d` string, so it landed in the `<symbol>` as text: the symbol existed, the href resolved, the element measured 14×14, and `getBBox()` was **0×0**. Six invisible icons on every realm. Harkirat found them by looking at the page. That is a single-property proof — the exact failure I had spent the morning writing up — committed hours later by its author.
+
+Two other corrections are worth keeping. The Access column bar went through a third mark before the right answer surfaced, which was that a strip on which two marks had failed should not exist: it was a third copy of a colour already in every cell of its own column, and the holder count underneath it was the real signal all along. And I filed a confident build-staleness theory, wrote *"Proof, not a theory"* into a handoff, and he falsified it in one message — the entry is retracted rather than left filed, because a filed non-problem grows a list that reached 107 items once already.
+
+**The round-2 handoff then failed the same way its own method section warns about.** A coverage count over the thirty-six pin ids found one in neither carrier and another in no worklist, and three double-counted — an authoritative table nobody had checked against its source, which is precisely what the previous session's handoff was. It now ships with a two-line script that re-runs that count, because a script is the only protection here that does not depend on remembering to be careful.
 
 # Part B — Lessons Ledger (thematic)
 
