@@ -608,9 +608,17 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     `;
 }
 
-// Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6).
-export function NoAccess() {
-    return html`<p class="empty" style="padding:24px">You do not have access to this realm.</p>`;
+// Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6). 🔴 ONE SENTENCE WAS SERVING TWO DIFFERENT FACTS AND ONE OF THEM WAS WRONG (2026-09-09 20:26 EDT). An expired session is a TIMEOUT and this screen told it that it lacked PERMISSION — on a console whose sessions last twelve hours, which makes it the failure a reader meets most often. The routing here is deliberate and stays: async.js sends both `expired` and `forbidden` to this screen because there is nothing to keep the chrome FOR. What was wrong is that the screen ignored the error it was routed WITH. `failureOf` has produced the true copy since the async layer was built — what / means / action, with "Sign in again" for `expired` — and none of it was reachable from here.
+//
+// ⚠️ THIS COMPONENT ADDS NO COPY OF ITS OWN, deliberately. Writing the expired sentence here would put one fact on two surfaces, which is the defect being fixed rather than a second helping of it. The bare sentence survives only as the guard for an error with no `what`.
+export function NoAccess({ error = null }) {
+    if (!error || !error.what) return html`<p class="empty">You do not have access to this realm.</p>`;
+    return html`
+        <div class="empty" role="alert">
+            <b>${error.what}</b>
+            <p>${error.means}</p>
+            ${error.kind === 'expired' ? html`<a class="pill sm" href="/auth/login">${error.action}</a>` : null}
+        </div>`;
 }
 
 export function Door({ forbidden }) {

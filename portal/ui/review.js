@@ -6,7 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead, realmLabelOf } from './shell.js';
+import { Shell, Masthead, realmLabelOf } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { exportChangeset } from './composeClient.js';
 import { useAsync, RealmShell, Progress, Failure } from './async.js';

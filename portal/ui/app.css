@@ -390,6 +390,8 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .bulk .sp{margin-left:auto;font-size:var(--t-sm);color:var(--ink3)}
 .empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:var(--t-md)}
 .empty b{display:block;color:var(--ink2);font-size:var(--t-lg);margin-bottom:6px}
+/* The one action an empty state may carry (today: Sign in again, on an expired session). --s3 rather than a literal: Harkirat chose snap-to-the-nearest-step on 2026-09-09 20:26 EDT, and a NEW gap is the one case with no argument for adding another literal. */
+.empty .pill{margin-top:var(--s3)}
 
 /* ═══ TRAY — the magazine ═══ */
 .tray{position:fixed;right:20px;bottom:20px;width:320px;max-width:calc(100vw - 32px);background:var(--paper);

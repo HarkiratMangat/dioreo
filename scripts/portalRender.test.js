@@ -66,7 +66,7 @@ const SEASON_COLUMNS = [
     installLogicGlobals();
     const { render } = await import('preact-render-to-string');
     const { html } = await import('../portal/public/.ssr/vendor/htm-preact.mjs');
-    const { Shell, Masthead, Rail, Door } = await import('../portal/public/.ssr/ui/shell.js');
+    const { Shell, Masthead, Rail, Door, NoAccess } = await import('../portal/public/.ssr/ui/shell.js');
     const { Manifest, SelectionBar } = await import('../portal/public/.ssr/ui/manifest.js');
     const { Board } = await import('../portal/public/.ssr/ui/board.js');
     const { Track } = await import('../portal/public/.ssr/ui/track.js');
@@ -165,6 +165,19 @@ const SEASON_COLUMNS = [
         assert.ok(neverGranted.includes('not an admin'), 'and the signed-in person is told why they see nothing');
         const stranger = render(html`<${Door} />`);
         assert.ok(!stranger.includes('not an admin'), 'a stranger is told nothing about any account');
+    });
+
+    check('an expired session and a forbidden one do not share one sentence', () => {
+        // \u{1f534} THE GATE CAN FAIL, and it failed for real until 2026-09-09 20:27 EDT. NoAccess took no props and rendered ONE line — "You do not have access to this realm." — for both kinds, so a twelve-hour timeout was reported as a permissions problem and the correct copy in async.logic.js was unreachable. The subject here is that the two kinds render DIFFERENTLY and that the expired one offers the way back; the wording itself belongs to FAILURE_COPY and is deliberately not duplicated into this assertion.
+        const expired = render(html`<${NoAccess} error=${{ kind: 'expired', k: 'SIGNED OUT', what: 'This session expired.', means: 'Portal sessions last 12 hours.', action: 'Sign in again' }} />`);
+        const forbidden = render(html`<${NoAccess} error=${{ kind: 'forbidden', k: 'NO ACCESS', what: 'Your account is not allowed to see this.', means: 'Signing in worked; the permission did not.', action: 'Back to home' }} />`);
+        assert.notStrictEqual(expired, forbidden, 'the two kinds must not render identically');
+        assert.ok(expired.includes('This session expired.'), 'the expired screen says the session ended');
+        assert.ok(expired.includes('/auth/login'), 'and carries the one route that fixes it');
+        assert.ok(!forbidden.includes('/auth/login'), 'a forbidden account is not offered a sign-in it has already done');
+        assert.ok(forbidden.includes('the permission did not'), 'and is told which half failed');
+        const bare = render(html`<${NoAccess} />`);
+        assert.ok(bare.includes('do not have access'), 'a call with no error still renders the guard sentence');
     });
 
     check('the Manifest renders one row per record, with its topic dot and state pill', () => {
