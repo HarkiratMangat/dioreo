@@ -9,13 +9,17 @@ status: live
 
 **History:** split out of the cross-project tracker on **2026-07-25 15:56 EDT** (tracked in-repo, so it gets real `git diff`/`git log` history like the rest of `docs/`), then **renamed and completed 2026-07-25 21:43 EDT** — that first pass moved only the tech-debt list and left this project's bugs, reminders, and resolved items sitting in the cross-project file, which defeated the point. This pass pulled all of them in, added the priority legend, and moved resolved entries out to `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is now `/Applications/Claude Code/meta-deferred-list.md`.
 
-### `[P2 · S · Sonnet5-Medium]` Armory/analytics panel-to-panel spacing — the tier board/Manifest gap and two Analytics regions
+### `[P2 · S · Sonnet5-Medium]` Armory/analytics panel-to-panel spacing — checked, no clean single cause found
 
-**2026-09-09 23:23 EDT — narrowed after fixing `.ow`'s missing side margin (a real class-level bug, now fixed) and the srec identity/calendar divider (also fixed).** Three sites remain unresolved because they didn't share that same clean cause on inspection: Armory's gap between the tier board and the Manifest (`pmtuwu4fo`), and two Analytics regions where an inner panel sits close to its parent's edge (`pmtuxoquy`, `pmtuxpbrx`). Verify condition: open each cited pin id's element and check its actual computed padding against a sibling `.panel` before guessing at a number.
+**2026-09-09 23:45 EDT — re-checked in the follow-up pass.** `.racknote{padding:0 16px 14px}` and `.mtools{padding:var(--s3) var(--s3)}` both look like ordinary values on inspection, not an obvious missing-rule bug the way `.ow`'s missing side margin was. Same for the two Analytics regions (`.adminsw`, `.tiles{padding:16px}`, `.hpanel{padding:16px 17px}`) — nothing reads as clearly wrong from the CSS alone. **Deliberately not guess-fixed**: adjusting a margin/padding number without seeing the actual render risks making it worse, which is the exact failure this repo's own measured-not-modeled rule exists to prevent. Verify condition: reopen each cited pin id (`pmtuwu4fo`, `pmtuxoquy`, `pmtuxpbrx`) live in the dev portal with the pin tool and measure the actual rendered gap against a sibling `.panel`'s gap, rather than reading the CSS source.
 
-### `[P3 · S]` Armory's long Manifest has no back-to-top control and no pagination
+### ✅ `[CLOSED 2026-09-09 23:45 EDT]` Back-to-top — BUILT, shell-level, every realm
 
-Pin `pmtux6x74`, 2026-09-09: "why is there no 'to the top' button on such a LONG scrolling page? and why is it always displayed in full list mode?" A feature request, not a bug — genuinely new UI (a floating control, and/or a per-page row-count preference), not a fix to something broken, so it's filed rather than built in the same pass as the rendering defects.
+Pin `pmtux6x74`, 2026-09-09: "why is there no 'to the top' button on such a LONG scrolling page?" `<${BackToTop} />` in `portal/ui/shell.js`, mounted once beside `<${StagedTray}>` so all seven realms get it for free rather than wiring it per-realm — appears past 480px of scroll on `main`, smooth-scrolls back to 0.
+
+### `[P3 · M]` Per-page row-count pagination on the Armory Manifest — still open, a real feature not a quick add
+
+The other half of pin `pmtux6x74`: "why is it always displayed in full list mode?" Unlike back-to-top, this touches `manifest.js`'s shared row-rendering path (used by 6+ realms), needs a persisted preference and a page-size control, and re-slicing interacts with the existing search/filter state. Sized as its own session, not folded into a mixed batch of rendering-defect fixes.
 
 ### `[P3 · XS]` Whether the Access permission-column underline should exist at all, once it's actually visible
 

@@ -1223,6 +1223,15 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
  * one call site is the point: the next manifest would have hit it again. */
 .mtable .rowmeta{display:block;margin-top:2px}
 .mtable td .spark{width:100%}
+#__backtotop{position:fixed;right:26px;bottom:26px;z-index:40;width:42px;height:42px;
+  border-radius:var(--rad-round);border:1px solid var(--rule2);background:var(--raised);
+  color:var(--ink2);display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 8px 22px -8px var(--scrim-90);transition:background var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+#__backtotop:hover{background:var(--hi);border-color:var(--rule);transform:translateY(-2px)}
+#__backtotop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+@media (max-width:768px){ #__backtotop{bottom:64px} }  /* clears the mobile rail, which docks at the bottom */
+
 .mtable tbody tr{transition:background .12s}
 .mtable tbody tr:hover{background:var(--sunk)}
 

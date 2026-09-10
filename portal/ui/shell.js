@@ -600,12 +600,34 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             <${StagedTray} ops=${stagedOps} onDiscardAll=${onDiscardAll || discardAllStaged} busy=${Boolean(busy)}
                            inert=${exportOpen} />
             ${traySlot || null}
+            <${BackToTop} />
             ${overlaySlot || null}
             ${exportScopes && exportScopes.length && exportOpen
                 ? html`<${ExportDrawer} scopes=${exportScopes} overlay=${overlayFor || chrome} onClose=${() => setExportOpen(false)} />` : null}
             ${chrome.render()}
         </div>
     `;
+}
+
+// A long Manifest (Armory's catalogue is 133+ rows) had no way back to the top except scrolling
+// back up by hand -- "why is there no 'to the top' button on such a LONG scrolling page?" (Harkirat,
+// pin pmtux6x74, 2026-09-09). One component covers every realm for free, because they all share
+// this one <main> scroll container (spec's own contract) -- no per-realm wiring needed.
+function BackToTop() {
+    const [show, setShow] = useState(false);
+    useEffect(() => {
+        const m = document.querySelector('main');
+        if (!m) return undefined;
+        const onScroll = () => setShow(m.scrollTop > 480);
+        m.addEventListener('scroll', onScroll, { passive: true });
+        return () => m.removeEventListener('scroll', onScroll);
+    }, []);
+    if (!show) return null;
+    return html`
+        <button type="button" id="__backtotop" aria-label="Back to top"
+                onClick=${() => document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <${Icon} name="chevron-up" size=${18} />
+        </button>`;
 }
 
 // Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6). 🔴 ONE SENTENCE WAS SERVING TWO DIFFERENT FACTS AND ONE OF THEM WAS WRONG (2026-09-09 20:26 EDT). An expired session is a TIMEOUT and this screen told it that it lacked PERMISSION — on a console whose sessions last twelve hours, which makes it the failure a reader meets most often. The routing here is deliberate and stays: async.js sends both `expired` and `forbidden` to this screen because there is nothing to keep the chrome FOR. What was wrong is that the screen ignored the error it was routed WITH. `failureOf` has produced the true copy since the async layer was built — what / means / action, with "Sign in again" for `expired` — and none of it was reachable from here.
