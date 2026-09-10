@@ -236,6 +236,7 @@ const COVERAGE_WHY = {
     'wrong-attachment-count': 'Discord shows five attachment slots; this build fills a different number.',
     'stale-90d': 'Still served, still correct as far as anything here knows — just not looked at in a while.',
     'near-duplicate': 'Two builds share a gunsmith code, so one of them is showing the other one’s guns.',
+    'no-code': 'No gunsmith code, so a player reading this build has nothing to paste into the game.',
 };
 
 function Coverage({ builds, active, onFilter }) {

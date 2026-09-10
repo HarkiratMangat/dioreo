@@ -58,6 +58,7 @@ function armoryBuild(b) {
     if (!(b.isMeta || b.categoryRank || b.dmzRangeRank || b.isToxic)) flags.push('no-badges');
     if ((b.attachments || []).length !== (b.mode === 'DMZ' ? 9 : 5)) flags.push('wrong-attachment-count');
     if (b.lastUpdated && Date.now() - new Date(b.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
+    if (b.mode === 'MP' && !b.shareCode) flags.push('no-code');
     if (b.mode === 'MP' && b.shareCode && (MP_CODES.get(b.shareCode) || 0) > 1) flags.push('near-duplicate');
     return { ...b, _id: b._id || b.id, coverage: flags, accent: CAT_HEX[b.category] || 'var(--ink3)' };
 }
@@ -131,6 +132,7 @@ function analyticsPayload() {
         usageStats: usageStatsShape(F_), timingStats: timingStatsShape(F_),
         reach: F_.reachStats || [],
         searches: F_.searchTerms || [],
+        actors: { [F_.OWNER_ID || '1139845545754632283']: 'owner' },
         outcomeKeys: F_.OUTCOMES || [], entryKeys: F_.ENTRIES || [],
     };
 }

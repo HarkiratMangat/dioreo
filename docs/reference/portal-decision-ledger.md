@@ -539,3 +539,17 @@ Under the two-mode system, "a stood-down redesign" meant: as of 2026-08-31, 35 d
 ⛔ **THE MASTHEAD'S 23px HORIZONTAL PADDING IS EXCLUDED FROM THE SNAP, PERMANENTLY UNTIL RE-MEASURED.** COMPANION §16.28 measured it: `.panel` sits at `margin:22` plus a 1px border, so 23 is the number the realm title shares with every panel heading beneath it, verified across six realms after a 1px rag that ran the height of the page. Snapping it to `--s5` re-opens a defect closed by measurement. **Reopens if:** `.panel`'s margin or border changes.
 
 ⚠️ **A BREADCRUMB IN THIS FILE WAS ALREADY STALE BEFORE TONIGHT, AND CHECKING WHICH MATTERED.** The identity row cited `shell.js:267`; the id renders at **`shell.js:281`**, and `git show HEAD~1` confirms line 267 was blank *before* this evening's comment reflow — so the reflow did not cause it and no other breadcrumb in this file moved. Corrected above. **The lesson is that a line number in prose has no gate**, which is the same finding `docs/db-deferred-list.md:161` already records for `shell.js`.
+
+## Decided 2026-09-10 — portal pin round 2, from his own verdicts
+
+*These are HIS calls made live while looking at rendered options, not derivations. The ledger is the file `CLAUDE.md` tells a session to query before re-deriving a portal decision, and skipping it is how the amber ring was re-proposed on a strip where two marks had already failed.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Access By admin — the Owner row | ✅ **STAYS.** *"dont drop the owner row."* | Proposed for deletion as constant-and-locked; he refused. Reverted by resetting the file so the same commit's lock-glyph and header-order fixes survived | He says otherwise |
+| DATE/TBD toggle | ✅ **2px bar, MIRRORED per side** — left on DATE, right on TBD; 34px; pressed takes `--raised` while hover keeps `--hi` | Chosen from three rendered treatments. Both segments drew the bar on their LEFT, so on TBD it read as a divider; and pressed and hover were the SAME colour | A topic hex is used as a fill here again — it measured 4.3:1 and failed AA |
+| Drawer field guides | 🚫 **NOT a hint line.** *"is a hint line REALLY the best design decision you could make??"* | A muted line of text under a field is bloat, and it is read before it is understood | Someone proposes prose under a field again |
+| A missing gunsmith code | ✅ **The build name never stands in for it.** MP without a code says `no code`; DMZ has NO code slot at all | 8 of the 10 codeless builds are DMZ, where none exists by design; the other 2 are MP, where it is a real gap. An em dash on DMZ would invent a defect | DMZ ever gains codes |
+| Tier board build row | ✅ **The gunsmith code is the row, and the row opens the editor** | 123 of 133 builds carry a ten-character `shareCode`; `buildName` is an index. The old chip reprinted the group header's own weapon name and META five times and its click filtered a table below the fold | `buildName` stops being an index on most builds |
+| Access By permission | ✅ **Grouped by holder count, risk stated once per band** | Six byte-identical amber pills and twelve identical `owner` chips: when half the rows shout one sentence, none of them discriminates | A band ever holds one row, where a band header costs more than it saves |
+| Weapon-card v1, MP/DMZ toggle v1 | 🚫 **REJECTED** — *"both ugly and lazy fixes"* | Recorded so neither is re-proposed. MP/DMZ is still OPEN and needs a real answer | — |

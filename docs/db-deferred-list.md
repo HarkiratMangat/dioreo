@@ -948,7 +948,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — 37 items, **21 CLOSED 2026-09-10 16:43 EDT**, 16 open
+### `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — 37 items, **21 SHIPPED AGAINST, 0 VERDICTED 2026-09-10 16:43 EDT**, 16 open
 
 🔴 **STATUS, and the closed ones are struck through in the group table below rather than deleted, so the count stays reconcilable.** Closed: group A entire (five pins, one asymmetry — a bordered box inset horizontally and 0px vertically) · `pmtvqy8du`'s SOURCE and WHO defects · `pmtvr01ji`'s doubled All chips · `pmtvr0mzb` (River → Events) · `pmtvpmxsx` (⌘K → ⌘/) · pin 60 (the tier board opens the editor now) · `pmtvqhfxh` · `pmtvpy8bi` · `pmtvq210l` + `pmtvqfvu9` (`.pill.sm` had no height at all) · `pmtvpqtqq` (his own spec, from three rendered options) · `pmtvqdnb3` (the mechanism always took two weapons and every affordance said one) · `pmtvqt8bp` (six identical pills → three bands) · `pmtvqezgz` · `pmtvq5x6k` (479 → 224px, the gunsmith code is the row, the click opens the editor) · `pmtvqrti6` PARTIAL (lock glyph and header order; the legend is still a run-on sentence) · `pmtvplcuz` PARTIAL (result icons shipped, the wider redesign did not).
 
