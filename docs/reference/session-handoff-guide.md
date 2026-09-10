@@ -260,37 +260,28 @@ The same audit: `.remember`'s **First action** read as something to *do*. It act
 
 ---
 
-## 🔴 FOUR STEPS ADDED %s, AND THEY ARE STEPS BECAUSE THIS FILE'S WARNINGS DID NOT WORK
+## 🔴 I ADDED FOUR PROSE STEPS HERE AND DELETED THEM AN HOUR LATER — %s
 
-*Written after a handoff shipped with one of the 36 items it organises in NEITHER carrier, two of the user's four stated objectives missing, and nine causal claims that were clusters of his vocabulary. **This guide already warned about that class in four places and I read past all four on the same day.** So these are numbered steps with an artifact, not prose to agree with.*
+**Because this file already said all four, and line 158 predicted exactly what I did with them.** Harkirat: *"you didn't ask the unconsidered angles, the blindspots, the files not specifically handoffs."* Looking rather than recalling found that the answer to every one of my "new" steps was already in this document:
 
-### A · Re-read the OPENING PROMPT and tick each ask
+| What I "added" | Where it already was |
+|---|---|
+| Conserve the list you summarise | **§3b #5** — *"An open-work table that is not the whole open list… a reader treating one table as complete drops them silently"*, with a convention attached. I did not follow a convention that was already written |
+| Run the pass over the finished document | **§3b's meta-rule** (*"re-run the document's own headline measurement"*) and **§3d**, the fresh-reader dispatch |
+| Label a claim as unmeasured | **§3c #4** (a falsifier is itself a claim) and the DONE checklist's *"state coverage HONESTLY, not uniformly"* |
+| Re-read the top against source | **§3c #1** — *"THE OPENING SECTION IS THE STALEST PART OF ANY DOCUMENT WRITTEN WHILE THE WORK CONTINUES"* |
 
-Before enumerating threads, open the session's first user message and **list its imperatives**. For each, write where the answer lives — a file path, not "I said it". The thread enumeration in step 3 walks your MEMORY of the session, and memory cannot distinguish *answered in chat* from *carried in a document*: both feel done.
+🔴 **AND LINE 158 OF THIS FILE, WRITTEN BEFORE TODAY:** *"If a rule is checkable, it does not belong in the handoff at all — it belongs in a tool or a gate. Every rule that became mechanical stuck; every rule that stayed prose was re-violated."* I read past it and appended four prose rules a hundred lines below it. **The file was not missing rules. It is 635 lines, and I appended instead of reading.**
 
-**Test:** every ask in the opening prompt maps to a path in the handoff. An ask that maps to "I told him" is not carried.
-
-### B · Conserve the list you summarise, with a script
-
-If the handoff groups, ranks or summarises a list — pins, findings, a backlog — **declare the source in the file** and let the check do the arithmetic:
+**So the only genuinely new thing survives, and it is mechanical:** §3b #5's conservation convention is now ARITHMETIC. Declare the list a handoff summarises and `npm run handoff` names anything dropped:
 
 ```
 <!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
 ```
 
-`npm run handoff` then names anything the summary dropped and **fails when the pattern matches zero ids**, because "no items, all covered" is the vacuous pass. ⚠️ **Do not verify a table you wrote by re-reading it** — that is the same act that produced the gap. On 2026-09-10 re-reading found nothing and a five-line count found three defects in a minute.
+Pointed at the previous session's handoff — a document it did not author — it named the exact pin that table had dropped. It also requires an `## Audit log` section, the same rule `docs-audit`'s `plan-audit-log` applies to plans.
 
-### C · Label a grouping as a hypothesis until it is measured
-
-Grouping is how a 36-item list becomes workable, and it is also how a guess acquires the authority of a table. **For every causal sentence — "these six are one cause", "this is a class bug", "fixing X moves Y" — cite the measurement or write the falsifier.** If you can do neither, the sentence says it is a guess.
-
-**Test:** a reader can tell, per group, what would prove it wrong. Clustering on the user's VOCABULARY (six pins say "borders are touching") is a hypothesis, not a finding — it is the same move as answering *"no clean single cause found"* from the CSS instead of the render, and it earns the same trust.
-
-### D · Run the falsification pass over the FINISHED handoff, and record it
-
-A pass over the plan before writing does not audit the artifact. Ask *where is this document wrong*, then write a **`## Audit log`** section saying what it found. **`npm run handoff` fails without one** — the same rule `docs-audit`'s `plan-audit-log` applies to plans, for the identical reason: a handoff with no audit log is a handoff nobody tried to break, and that is invisible afterwards. *"No gaps found"* is a legitimate entry and must stay writable.
-
-⚠️ **The honest limit:** the check can see whether a pass was RECORDED. It cannot see whether it was good. The real failure on 2026-09-10 was that verification effort scaled with pushback rather than self-discipline, and no script fixes that.
+⚠️ **The standing lesson for this file specifically: it does not need more rules. Adding one is now evidence you did not read it.** If a new failure is checkable, it goes in a gate; if it is not, it goes in the CANONICAL SHAPE below as a SECTION, because a missing section is a visible hole and a missing warning leaves no trace. **The measurement behind that:** `docs/db-deferred-list.md` has 89 entries and 90 `**Verify**` lines with no gate enforcing it, while four warnings in this file were read past in a single day. Shape holds; prose does not.
 
 ---
 
