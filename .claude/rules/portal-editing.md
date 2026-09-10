@@ -70,3 +70,13 @@ Each one cost a wasted verification round, and none is visible from the file you
 **6 · `reflow-comments` DESTROYS A COMMENT THAT A TOOL READS BY POSITION, AND IT DOES IT AGAIN ON EVERY RUN.** Measured 2026-09-03 23:13 EDT on `scripts/portalSweep.sh`: a `# shellcheck disable=SC2086` line was merged into the prose comment above it, stopped being a directive, and the check it suppressed went red. **Restoring it to its own line did not survive** — the very next `--write` merged it back. A reflow is a shape transform and a directive IS a shape. **The durable fix is to need no directive** (there, an array expands correctly quoted and raises no SC2086 at all). ⚠️ **The class is wider than shellcheck**: `eslint-disable`, `prettier-ignore`, `@ts-expect-error`, `istanbul ignore`, a `#!` that is not on line 1 — anything a tool reads by POSITION. Neither `bash -n` nor `node --check` says a word, because the file is still valid; only the suppressed check going red reveals it, and only if something runs it.
 
 ⚠️ **And an assert is scoped to the EDIT, not to the file.** Asserting that a short declaration is absent from a 5,000-line stylesheet fails on any unrelated rule that happens to end the same way. Assert the exact text you removed, and assert a SURVIVOR beside it.
+
+## 🎨 The impeccable verbs are REACHABLE HERE, and only one of them is expensive
+
+*Added 2026-09-09 21:17 EDT. Measured against the installed skill, not inferred.*
+
+🔴 **Only `critique` spawns sub-agents (two, mandatory). Every other verb is an ordinary inline edit.** `clarify` · `layout` · `typeset` · `harden` · `polish` · `distill` · `onboard` · `adapt` · `optimize` · `animate` · `colorize` · `bolder` · `quieter` · `delight` · `audit` · `extract` · `document` cost no more than the edit they make. **Reach for one on one component** — `layout` on a single drawer is a normal edit, not an event.
+
+**The order when you want the full pass:** `critique` → `clarify` → `layout` → `harden` → `polish`. **The full table, with what each verb is for and where it fits, is `docs/reference/tool-capability-tests.md` § The impeccable skill.**
+
+⚠️ **`new-work` is the one heavy verb** — comp producers, a finish reviewer and a documenter — and it is for a NEW surface or a replacement visual world, never a refinement.

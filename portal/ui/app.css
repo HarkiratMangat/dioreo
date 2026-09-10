@@ -389,6 +389,9 @@ td.d{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3);white-space
 .bulk button:hover{color:var(--ink);border-color:var(--ink3)}
 .bulk button.danger{color:var(--danger-ink);border-color:var(--danger-edge)}
 .bulk .sp{margin-left:auto;font-size:var(--t-sm);color:var(--ink3)}
+/* 🔴 NOTHING IN THIS FILE STYLED A BARE `<a>`, so three links on HOME rendered the browser default `#0000EE` on a dark panel — **1.79:1**, on the arrival surface, and every gate was green because the contrast gate walked a fixture that has no unclassed link in it (2026-09-09 21:11 EDT). `home.js:203`, `:208` and `:255` all read "open the Track". A base rule rather than a class on those three: the next unclassed anchor anyone writes is covered too, which is the difference between fixing an instance and fixing the class. */
+main a:not([class]){color:var(--ink);text-decoration:underline;text-decoration-color:var(--rule2);text-underline-offset:2px}
+main a:not([class]):hover{text-decoration-color:var(--ink3)}
 .empty{padding:34px 16px;text-align:center;color:var(--ink3);font-size:var(--t-md)}
 .empty b{display:block;color:var(--ink2);font-size:var(--t-lg);margin-bottom:6px}
 /* The one action an empty state may carry (today: Sign in again, on an expired session). --s3 rather than a literal: Harkirat chose snap-to-the-nearest-step on 2026-09-09 20:26 EDT, and a NEW gap is the one case with no argument for adding another literal. */
@@ -914,7 +917,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   border-radius:var(--rad-2);padding:9px 12px 9px 11px;transition:border-color .15s,background .15s}
 .dline:focus-within{border-color:var(--rule2);border-left-color:var(--c);background:var(--desk)}
 .dline.dirty{border-color:var(--staged)}
-.dline .trk{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.1em;color:var(--c);font-weight:600}
+/* 🔴 THE TOPIC HEX IS A BAR, NEVER THE TEXT — and this file says so in two other places while this rule broke it (2026-09-09 21:11 EDT). `.dpin` records the same measurement — *"TEXT WAS var(--c) AND MEASURED 3.63:1 for DMZ (#337BA6 at 9.5px/600), below AA… the dashed border already carries the topic colour and the chip's own text reads DMZ, so the colour on the glyphs was a redundant second copy of the identity, and it was the redundant copy that failed"* — and `.srec-c .k` repeats it verbatim. `.dline` already carries `border-left:2px solid var(--c)`, so this was that same redundant copy: measured live on Season at **4.15:1** for DMZ. Now `--ink2`. Found by the contrast gate's new realm pass, which no fixture could have caught. */
+.dline .trk{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.1em;color:var(--ink2);font-weight:600}
 .dline input[type=text]{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;
   color:var(--ink);font:500 var(--t-md)/1.4 var(--ui);padding:3px 0}
 .dline input[type=text]:hover{border-bottom-color:var(--rule2)}
@@ -931,7 +935,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .tbdsw{display:inline-flex;border:1px solid var(--rule);border-radius:var(--rad-2);overflow:hidden;flex:none}
 .tbdsw button{background:transparent;border:none;color:var(--ink3);cursor:pointer;
   font:600 var(--t-micro)/1 var(--data);letter-spacing:.07em;padding:6px 7px;transition:background .13s,color .13s}
-.tbdsw button[aria-pressed=true]{background:var(--c);color:var(--on-accent)}
+/* 🔴 THE TOPIC HEX AS A FILL FAILED UNDER ITS OWN INK — measured live on Season at **4.3:1** (2026-09-09 21:14 EDT), `--on-accent` #07090A on DMZ's #337BA6 at 9.5px/600, which is not large text under WCAG so 4.5 applies. This is the FILL sibling of the "topic hex is a bar, never the text" rule `.dpin` and `.srec-c .k` both record: the darkest topic hexes cannot carry near-black ink at micro sizes. ⚠️ MIXING THE FILL LIGHTER WAS TRIED FIRST AND WAS WRONG TWICE OVER: `color-mix()` computes to a colour function the probe's `rgba()` parser cannot read, so the measurement fell through to the ancestor and reported 1.04:1 — worse, and against a ground the button was not on. The gate caught it on the next run. **The arithmetic also refuses the obvious fix:** on DMZ's #337BA6 pure white is 4.66:1 and `--ink` is only 3.95:1, so no palette ink passes on that fill. So the fill goes, and the topic colour becomes a 2px inset bar — the identical move `.dpin` and `.srec-c .k` already made. Pressed now reads `--hi` ground + full `--ink` + the lane's own bar, which is a stronger state difference than a tint and needs no new literal. ⚠️ Changing the hue itself is Harkirat's; changing how much light is behind the ink is a contrast fix. */
+.tbdsw button[aria-pressed=true]{background:var(--hi);color:var(--ink);box-shadow:inset 2px 0 0 var(--c)}
 .tbdsw button:not([aria-pressed=true]):hover{color:var(--ink2);background:var(--hi)}
 .dline .dl-left{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);text-align:right;white-space:nowrap}
 .dline .left b{color:var(--ink);font-weight:600}
@@ -5654,7 +5659,8 @@ button .ic,a .ic{pointer-events:none}
    comes from the gradient behind it. --ink on the same stop is 7.2:1. */
 .who .av{display:flex;align-items:center;justify-content:center;font:600 var(--t-xs) var(--ui);color:var(--ink);
   text-transform:uppercase}
-.umenu .uav b.uinit{font:600 17px var(--ui);color:var(--ink2)}
+/* ⚠️ NOT THE INITIAL THE PLAN ALREADY FIXED, and reading it as a regression would have been wrong (2026-09-09 21:11 EDT). §2.2's row 4 raised the MASTHEAD identity chip's initial 3.74:1 → 7.54:1; this is the ACCOUNT MENU's avatar initial, a different element with the same defect that the first fix never reached — measured at 3.74:1 on all seven realms. `--ink2` on the avatar's own `#3A4C5A` ground is the same pairing, in a second place. */
+.umenu .uav b.uinit{font:600 17px var(--ui);color:var(--ink)}
 /* .umenu .uav is already display:grid;place-items:center in app.css, so the initial letter is already
    centred there with no new rule needed. */
 

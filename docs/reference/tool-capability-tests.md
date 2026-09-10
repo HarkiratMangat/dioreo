@@ -339,4 +339,44 @@ printf '%s\n%s\n' \
 | **The run must END on the questions** | 2–4 targeted `AskUserQuestion` items tied to actual findings, or the literal line `Questions skipped: <reason>` naming a count below 3. ⚠️ **Its template asks "which area first" and "how much scope"** — here both are usually already answered, and re-asking them violates the thinking pass's own rule. Ask only about genuine forks with no citable rule. |
 | **`detect.mjs --scope layout portal/ui` returned `[]`** | Zero layout findings, and `layout.md` says so itself: *"A clean scan cannot prove hierarchy or rhythm."* Do not read an empty scan as a passing layout. The full scan (`--json portal/ui`) found 46, **all in CSS and none in any `.js` component file**, of which 32 were false positives with citable reasons. |
 
+### The 23 verbs, what each costs, and where it fits — measured 2026-09-09 21:17 EDT
+
+🔴 **ONLY `critique` IS GATED. Every other verb is an ordinary inline edit, and the whole reason step 3 lost its method is that nobody checked this.** The count that killed V1 was **5 skills × 7 realms = 35 sub-agent spawns**; the real ceiling for a full five-verb pass is **four**.
+
+| Verb | Group | Sub-agents | Where it fits on a portal (or any web) surface |
+|---|---|---|---|
+| `critique` | Evaluate | 🔴 **2, MANDATORY** — inline is *"NOT permitted"* and needs a `⚠️ DEGRADED` banner | **Step 1.** Only when you want discovery. Ends on `AskUserQuestion` |
+| `audit` | Evaluate | none | a11y / perf / responsive, mechanically. Complements `critique`, does not replace it |
+| `clarify` | Fix | none | **Step 2.** Labels, errors, empty-state copy, terminology |
+| `layout` | Enhance | 2 *preferred*, inline explicitly permitted | **Step 3.** Spacing, rhythm, grouping, hierarchy |
+| `typeset` | Enhance | 2 *preferred*, inline explicitly permitted | Type scale and hierarchy. Same shape as `layout` |
+| `harden` | Refine | none | **Step 4.** Empty / error / edge / long-content / i18n |
+| `polish` | Refine | none | **Step 5, last.** Reads the persisted critique's priorities natively |
+| `distill` | Refine | none | A surface carrying too much. The opposite of `bolder` |
+| `onboard` | Refine | none | First-run flows and activation — not the same as `harden`'s empty states |
+| `adapt` | Fix | none | Viewports and input modes |
+| `optimize` | Fix | none | Rendering performance |
+| `animate` | Enhance | none | Purposeful motion |
+| `colorize` | Enhance | none | Strategic colour into a monochrome surface |
+| `bolder` · `quieter` | Refine | none | Amplitude, in either direction |
+| `delight` · `overdrive` | Enhance | none | Personality; past conventional limits |
+| `shape` | Plan | none | Before any code exists |
+| `extract` | Build | none | Pull reusable tokens and components into the system |
+| `document` | Build | none | Regenerate `DESIGN.md` from what is actually built |
+| `init` | Build | none | Capture product context into `PRODUCT.md` |
+| `live` | Iterate | delegates edit application when available, inline otherwise | Pick an element in the browser, generate variants |
+| `new-work` | — | 🔴 **HEAVY** — comp producers, a finish reviewer, a documenter | **Only a NEW surface or a replacement visual world.** Never a refinement |
+| `doctor` · `hooks` | Meta | none | Artifact drift; the design detector hook |
+
+**The standing routine for a portal surface**, and none of it needs ceremony:
+
+1. `node ~/.claude/skills/impeccable/scripts/context.mjs --target portal/ui/<file>.js` — **once per session**, never re-run.
+2. `critique` only when you want discovery. If the defects are already filed, skip straight to the fix verbs.
+3. `clarify` → `layout` → `harden` → `polish`, **in that order**. All four are inline edits; batch each into one `python3` heredoc with the build and the scoped gates chained on `&&`.
+4. `audit` before a surface ships.
+
+⚠️ **Reach for ONE verb on ONE component without running the whole sequence.** `layout` on a single drawer is a normal edit, not an event — treating these as a ceremony is what left four of them unused for three days.
+
+⚠️ **A directory target works**: `critique portal/ui` slugs to `portal-ui` and spans every realm in one run. **Never seven per-realm runs** — that is V1, which Harkirat killed.
+
 ⚠️ **`show_widget`'s host restyles `<button>` and drops CSS custom properties declared on a wrapper.** Three rendered comparisons in a row came back visually identical because `background`, `color` and `border` were being overridden — the design fork was unanswerable until the markup became `<span>` elements carrying **literal hex in inline `style=` attributes**. Measured 2026-09-09 20:35 EDT. For any comparison where the COLOUR is the subject, do not use `<button>` and do not put the palette in `:root`-style variables.

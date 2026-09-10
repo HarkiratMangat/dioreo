@@ -2,12 +2,15 @@
 //
 // The gap audit's §8, in full. `scripts/buildPortal.js`'s portalContrastAudit checks the token table and every rule that declares a `color`, resolving var() chains statically — 157 pairs, and it found three real defects. What it structurally cannot see is a fallback that fires on ONE element while the same rule is fine on another, because whether `--topic-accent` is set is decided by JS at render time, not by the stylesheet. Measured: `--topic-accent` is set 0 times in CSS and 4 times inline from JS, against 14 fallback references.
 //
-// So this renders the real components, walks every element that paints text, and reads the COMPUTED colour against the nearest ancestor that actually paints a background — which is the only way to know what a reader sees.
+// So this walks every element that paints text and reads the COMPUTED colour against the nearest ancestor that actually paints a background — the only way to know what a reader sees.
+//
+// 🔴 TWO PASSES SINCE 2026-09-09 21:07 EDT, AND THE SECOND EXISTS BECAUSE THE FIRST WAS MISTAKEN FOR IT. Pass 1 is the chrome FIXTURE: hand-written markup covering the cases no realm renders at rest. Pass 2 is the SEVEN REALMS on the harness. For weeks the name and the success line said "rendered" while only the fixture was walked, and two live failures — 3.46:1 on Season, 3.02:1 on Access — sat under a green gate the whole time.
 //
 // ⚠️ puppeteer-core, not puppeteer: it uses a Chrome already on the machine instead of downloading its own (~150MB). PUPPETEER_EXECUTABLE_PATH overrides the search; on GitHub Actions' ubuntu images Chrome is preinstalled at a known path. If no browser resolves, this SKIPS LOUDLY rather than passing — a contrast gate that silently checks nothing is the failure mode it exists to prevent.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
 const { build } = require('./buildPortal');
 
 const CONTRAST_MIN = 4.5;
@@ -15,6 +18,60 @@ const ROOT = path.join(__dirname, '..');
 
 // ⚠️ THE CANDIDATE LIST MOVED TO scripts/lib/chromePath.cjs so `portalGeometry.mjs` reads the identical one. Two copies would drift, and the drift is silent: a machine where one resolves Chrome and the other does not shows a green suite beside a "no browser" skip, with nothing saying they disagree.
 const { CHROME_CANDIDATES, findChrome } = require('./lib/chromePath.cjs');
+
+// 🔴 THE SEVEN REALMS, WALKED — added 2026-09-09 21:07 EDT because this gate covered a FIXTURE and its name did not say so. `page.setContent(fixtureHtml(css))` renders hand-written chrome against the real stylesheet, so it could only catch a failure on markup somebody remembered to include. It was GREEN for weeks while `.stg-strip .ss-sep` rendered 3.46:1 on Season and `em.mxgr` rendered 3.02:1 on Access — neither selector is in the fixture, and both were found by pixel-sampling the live harness instead. ⚠️ THE FIXTURE PASS IS KEPT, NOT REPLACED, and that is the whole design. It covers what no realm renders AT REST: a row whose `--topic-accent` IS set beside one where it is not, every state pill, the door, the legacy Track vocabulary. The realms cover what a reader actually meets. Either alone leaves a hole, and the hole the fixture left is the one that shipped.
+const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
+const PUBLIC = path.join(ROOT, 'portal', 'public');
+
+// The same no-store static server portalGeometry.mjs uses, and for the reason its own comment records: a cached fixtures.js made several verification runs measure yesterday's assets and read as bugs.
+function serve() {
+    const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
+    const server = http.createServer((req, res) => {
+        const rel = decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'harness.html';
+        const file = path.join(PUBLIC, rel);
+        if (!file.startsWith(PUBLIC) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end('not found'); }
+        res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store, must-revalidate' });
+        res.end(fs.readFileSync(file));
+    });
+    return new Promise((r) => server.listen(0, '127.0.0.1', () => r({ server, port: server.address().port })));
+}
+
+// ONE probe, run by both passes. Lifted out of the fixture call so the realms cannot drift from it — two copies of a measurement is how a gate ends up green on one surface and blind on another.
+const PROBE = (MIN) => {
+            const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
+                const p = m[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
+            const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+                return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+            const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+            // The background a reader actually sees: the nearest ancestor painting a non-transparent colour. ⚠️ THE 0.85 THRESHOLD IS A DELIBERATE LIMIT, stated rather than silent: a row tint like `tr.sel td` (alpha .06) is walked PAST rather than composited, so the probe reports the panel's colour beneath it. At that alpha the effective luminance shift is under a percent, but a future tint heavy enough to matter would be measured against the wrong ground -- if one is ever added, composite here instead of skipping. A transparent element shows its parent's, which is the whole reason a rule-level static check cannot answer this.
+            const paintedBg = (el) => { for (let n = el; n; n = n.parentElement) {
+                const cs = getComputedStyle(n);
+                // 🔴 A GRADIENT MAKES THE BACKGROUND UNKNOWABLE HERE, and reporting it anyway is a FALSE POSITIVE -- computed backgroundColor for a gradient is transparent, so the walk falls through to the panel and measures text against a colour it is not on. Caught live: `.air .bar.forever`'s black label reported 1.25:1 while actually sitting on the solid gold end of its own gradient. Skipped, and COUNTED, because a silent skip is how a gate quietly stops covering something.
+                if (cs.backgroundImage && cs.backgroundImage !== 'none') return null;
+                // 🔴 AN UNPARSEABLE BACKGROUND IS A SKIP, NEVER A WALK-PAST (2026-09-09 21:15 EDT). `parse()` reads `rgb()`/`rgba()` only, and a modern colour function — `color-mix()`, `oklab()`, `color(srgb …)` — computes to something it returns null for. The loop then continued to the ancestor and measured the text against a ground it is NOT on: a real `color-mix()` fill reported **1.04:1** against the page beneath it, which is a fabricated number rather than a missing one. Same family as the gradient case directly above, and worse because it was silent.
+                const raw = cs.backgroundColor;
+                if (raw && raw !== 'transparent' && !/^rgba?\(/.test(raw)) return null;
+                const c = parse(raw); if (c && c.a > 0.85) return c; }
+                return { r: 15, g: 20, b: 24, a: 1 }; };
+            const out = []; let skipped = 0;
+            for (const el of document.querySelectorAll('body *')) {
+                const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+                if (!own) continue;                                   // only elements painting their OWN text
+                const cs = getComputedStyle(el);
+                if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue;
+                if (el.closest('.sr-only')) continue;
+                const fg = parse(cs.color); if (!fg || fg.a < 0.85) continue;
+                const bg = paintedBg(el);
+                if (!bg) { skipped++; continue; }
+                const r = ratio(fg, bg);
+                if (r < MIN) out.push({
+                    what: el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).replace(/\s+/g, '.') : ''),
+                    text: el.textContent.trim().slice(0, 30), color: cs.color, bg: `rgb(${Object.values(bg).slice(0, 3).join(',')})`,
+                    ratio: Math.round(r * 100) / 100, size: cs.fontSize,
+                });
+            }
+            return { out, skipped };
+};
 
 // The fixture is a real portal page: the built stylesheet, plus markup covering the cases the static pass cannot reach — a row whose topic accent IS set beside one where it is not, every state pill, the kind chips, the KPI tiles, the access grid cells and the review gate.
 function fixtureHtml(css) {
@@ -186,38 +243,7 @@ function fixtureHtml(css) {
         // 🔴 THIS WALKS A HAND-WRITTEN CHROME FIXTURE AGAINST THE REAL STYLESHEET — NOT THE SEVEN REALMS, and the name does not say so (2026-09-09 20:57 EDT). It can only catch a failure on markup somebody remembered to put in `fixtureHtml`. Measured: it was GREEN while `.stg-strip .ss-sep` rendered 3.46:1 on Season and `em.mxgr` rendered 3.02:1 on Access, because neither selector appears in the fixture. Both were found by pixel-sampling the live harness instead, and both are fixed. ⚠️ An instrument that never finds anything outside its frame makes the FRAME the finding — walking the harness realms is filed in `docs/db-deferred-list.md`; until then read this line as "the chrome fixture is clean", never as "the portal is clean".
         await page.setContent(fixtureHtml(css), { waitUntil: 'load' });
 
-        const { out: findings, skipped } = await page.evaluate((MIN) => {
-            const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
-                const p = m[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
-            const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
-                return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
-            const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
-            // The background a reader actually sees: the nearest ancestor painting a non-transparent colour. ⚠️ THE 0.85 THRESHOLD IS A DELIBERATE LIMIT, stated rather than silent: a row tint like `tr.sel td` (alpha .06) is walked PAST rather than composited, so the probe reports the panel's colour beneath it. At that alpha the effective luminance shift is under a percent, but a future tint heavy enough to matter would be measured against the wrong ground -- if one is ever added, composite here instead of skipping. A transparent element shows its parent's, which is the whole reason a rule-level static check cannot answer this.
-            const paintedBg = (el) => { for (let n = el; n; n = n.parentElement) {
-                const cs = getComputedStyle(n);
-                // 🔴 A GRADIENT MAKES THE BACKGROUND UNKNOWABLE HERE, and reporting it anyway is a FALSE POSITIVE -- computed backgroundColor for a gradient is transparent, so the walk falls through to the panel and measures text against a colour it is not on. Caught live: `.air .bar.forever`'s black label reported 1.25:1 while actually sitting on the solid gold end of its own gradient. Skipped, and COUNTED, because a silent skip is how a gate quietly stops covering something.
-                if (cs.backgroundImage && cs.backgroundImage !== 'none') return null;
-                const c = parse(cs.backgroundColor); if (c && c.a > 0.85) return c; }
-                return { r: 15, g: 20, b: 24, a: 1 }; };
-            const out = []; let skipped = 0;
-            for (const el of document.querySelectorAll('body *')) {
-                const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
-                if (!own) continue;                                   // only elements painting their OWN text
-                const cs = getComputedStyle(el);
-                if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue;
-                if (el.closest('.sr-only')) continue;
-                const fg = parse(cs.color); if (!fg || fg.a < 0.85) continue;
-                const bg = paintedBg(el);
-                if (!bg) { skipped++; continue; }
-                const r = ratio(fg, bg);
-                if (r < MIN) out.push({
-                    what: el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).replace(/\s+/g, '.') : ''),
-                    text: el.textContent.trim().slice(0, 30), color: cs.color, bg: `rgb(${Object.values(bg).slice(0, 3).join(',')})`,
-                    ratio: Math.round(r * 100) / 100, size: cs.fontSize,
-                });
-            }
-            return { out, skipped };
-        }, CONTRAST_MIN);
+        const { out: findings, skipped } = await page.evaluate(PROBE, CONTRAST_MIN);
 
         const measured = await page.evaluate(() => document.querySelectorAll('body *').length);
         if (findings.length) {
@@ -226,6 +252,48 @@ function fixtureHtml(css) {
             failures = 1;
         } else {
             console.log(`  ✓ every element in the CHROME FIXTURE painting text meets ${CONTRAST_MIN}:1 (${measured} walked, ${skipped} skipped over a gradient) — fixture only, NOT the seven realms`);
+        }
+
+        // ── PASS 2 · THE SEVEN REALMS ──────────────────────────────────────────────────────────
+        const { server, port } = await serve();
+        try {
+            const realmPage = await browser.newPage();
+            await realmPage.setViewport({ width: 1282, height: 900 });
+            let realmFindings = 0, realmWalked = 0;
+            for (const realm of REALMS) {
+                await realmPage.goto(`http://127.0.0.1:${port}/harness.html?demo=1&b=${Date.now()}#/${realm}`, { waitUntil: 'load' });
+                await realmPage.evaluate(() => document.fonts.ready);
+                await realmPage.waitForSelector('main h1, main .ph', { timeout: 15000 });
+                const r = await realmPage.evaluate(PROBE, CONTRAST_MIN);
+                const n = await realmPage.evaluate(() => document.querySelectorAll('body *').length);
+                realmWalked += n;
+                if (r.out.length) {
+                    realmFindings += r.out.length;
+                    console.error(`  ✗ ${realm}: ${r.out.length} element(s) below ${CONTRAST_MIN}:1 (of ${n} walked)`);
+                    for (const f of r.out) console.error(`      ${f.ratio}:1  ${f.what}  ${f.color} on ${f.bg}  ${f.size}  “${f.text}”`);
+                    failures = 1;
+                }
+            }
+            if (!realmFindings) console.log(`  ✓ every element painting text on all ${REALMS.length} REALMS meets ${CONTRAST_MIN}:1 (${realmWalked} walked at 1282x900)`);
+
+            // 🔴 THE REALM PASS HAS ITS OWN FALSIFIER, because the fixture's proves nothing about it. Paint --ink4 onto a real realm element — the exact token that shipped at 3.46:1 — and require this pass to catch it.
+            await realmPage.goto(`http://127.0.0.1:${port}/harness.html?demo=1&b=${Date.now()}#/season`, { waitUntil: 'load' });
+            await realmPage.waitForSelector('main h1, main .ph', { timeout: 15000 });
+            // ⚠️ IT MUST PAINT SOMETHING THE PROBE ACTUALLY MEASURES, and the first version did not (2026-09-09 21:16 EDT). It took the first text-painting element in `main`, which on Season is inside `.masthead` — and `.masthead` carries a radial-gradient, so `paintedBg` skips it by design. The falsifier then failed while the pass was working, which is the most expensive kind of wrong: a green surface reported as a broken instrument. Paint every own-text element inside a `.panel` instead, where the ground is a flat colour, and require at least one to be caught.
+            const injected = await realmPage.evaluate(() => {
+                const els = [...document.querySelectorAll('main .panel *')].filter((n) =>
+                    [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim().length > 2));
+                if (!els.length) return { ok: false, why: 'no text-painting element inside a .panel on season' };
+                for (const el of els) el.style.setProperty('color', '#5C6A75', 'important');
+                return { ok: true, tag: els[0].tagName.toLowerCase(), n: els.length };
+            });
+            assert.ok(injected.ok, injected.why);
+            const after = await realmPage.evaluate(PROBE, CONTRAST_MIN);
+            assert.ok(after.out.length >= 1, 'the realm pass did not catch --ink4 painted onto a real realm element — it is not measuring the realms');
+            console.log(`  ✓ THE REALM PASS CAN FAIL: --ink4 on ${injected.n} live panel element(s) is caught — ${after.out.length} reported, lowest ${Math.min(...after.out.map((f) => f.ratio))}:1`);
+            await realmPage.close();
+        } finally {
+            server.close();
         }
 
         // 🔴 THE FALSIFIER. A gate that cannot fail manufactures confidence, and this one is easy to write vacuously — a selector typo, an over-eager `continue`, a transparent-background rule that swallows everything. Inject the original login button and require it to be caught.
