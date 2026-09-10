@@ -91,6 +91,13 @@
   /* the three season deadlines are distinct TOPICS, so each gets its own hue;
      they read as vertical dashed markers, never as lane bars */
   --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
+  /* The two ARMORY MODES, named because they were literals in app.css and one of them was the ASSAULT
+     CATEGORY's hue — one colour meaning two things on one screen, which is why the MP toggle read as
+     pink. MP is the bot's own MP red (#FF3430, the value fixtures.js samples from the Ranked emoji).
+     DMZ stays the brighter #3DA5F5 rather than the bot's #337BA6: a #337BA6 fill measures 4.25:1
+     under --on-accent and app.css already records that exact failure twice.
+     ⚠️ --dmz above is a DIFFERENT token (the DMZ calendar line's amber) and must not be reused here. */
+  --mode-mp:#FF3430; --mode-dmz:#3DA5F5;
 
   --dsc:#5865F2;                     /* Discord brand, door only */
   --dsc-hover:#4752C4;               /* the door button's hover shade */

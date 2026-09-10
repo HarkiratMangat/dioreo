@@ -226,7 +226,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                             ${c.sortable === false ? html`${c.label}` : html`
                             <button type="button" class="sortbtn"
                                     onClick=${() => setSort({ column: c.key, direction: sort.column === c.key && sort.direction === 'asc' ? 'desc' : 'asc' })}>
-                                ${c.label}
+                                ${c.label}${' '}<${Icon} cls="sortic" name=${sort.column === c.key ? (sort.direction === 'asc' ? 'chevron-up' : 'chevron-down') : 'chevrons-up-down'} />
                             </button>`}
                         </th>`)}
                     ${onRemove ? html`<th class="ra"><span class="sr">${removeLabel}</span></th>` : null}

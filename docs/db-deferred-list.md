@@ -9,7 +9,13 @@ status: live
 
 **History:** split out of the cross-project tracker on **2026-07-25 15:56 EDT** (tracked in-repo, so it gets real `git diff`/`git log` history like the rest of `docs/`), then **renamed and completed 2026-07-25 21:43 EDT** — that first pass moved only the tech-debt list and left this project's bugs, reminders, and resolved items sitting in the cross-project file, which defeated the point. This pass pulled all of them in, added the priority legend, and moved resolved entries out to `docs/archive/resolved-list.md`. `deferred-items.md` → `db-deferred-list.md`; the cross-project file is now `/Applications/Claude Code/meta-deferred-list.md`.
 
-### `[P2 · S · Sonnet5-Medium]` Armory/analytics panel-to-panel spacing — checked, no clean single cause found
+### ✅ CLOSED 2026-09-10 11:09 EDT — Armory/analytics panel-to-panel spacing. There WAS a single cause, and the entry below asked the wrong question
+
+🔴 **Harkirat, 2026-09-10 10:25 EDT: "wdym no clear single cause found? IT WASN'T A BUG, IT WAS A PREFERENCE. A DESIGN ADJUSTMENT!"** He is right that the request was for more breathing room, not a bug report — and the entry below went looking for a broken rule, found none, and filed the absence as an answer. **There was also a real defect underneath it.** `#manifest,#sessions{margin-top:16px}` is an ID selector (0,1,0,0) and had been silently beating `.panel + .panel{margin-top:var(--s5)}` (0,0,2,0), so the spacing scale `DESIGN.md` records as build-out decision D6 never reached the seam between the tier board and the Manifest on any realm. Structural seams are `--s6` (32px) now, measured live at 16 → 32 on Armory and Analytics, and `.hpanel` 14 → `--s5`.
+
+*The original entry, kept because its reasoning is the lesson:*
+
+> ### `[P2 · S]` Armory/analytics panel-to-panel spacing — checked, no clean single cause found
 
 **2026-09-09 23:45 EDT — re-checked in the follow-up pass.** `.racknote{padding:0 16px 14px}` and `.mtools{padding:var(--s3) var(--s3)}` both look like ordinary values on inspection, not an obvious missing-rule bug the way `.ow`'s missing side margin was. Same for the two Analytics regions (`.adminsw`, `.tiles{padding:16px}`, `.hpanel{padding:16px 17px}`) — nothing reads as clearly wrong from the CSS alone. **Deliberately not guess-fixed**: adjusting a margin/padding number without seeing the actual render risks making it worse, which is the exact failure this repo's own measured-not-modeled rule exists to prevent. Verify condition: reopen each cited pin id (`pmtuwu4fo`, `pmtuxoquy`, `pmtuxpbrx`) live in the dev portal with the pin tool and measure the actual rendered gap against a sibling `.panel`'s gap, rather than reading the CSS source.
 
@@ -21,11 +27,19 @@ Pin `pmtux6x74`, 2026-09-09: "why is there no 'to the top' button on such a LONG
 
 The other half of pin `pmtux6x74`: "why is it always displayed in full list mode?" Unlike back-to-top, this touches `manifest.js`'s shared row-rendering path (used by 6+ realms), needs a persisted preference and a page-size control, and re-slicing interacts with the existing search/filter state. Sized as its own session, not folded into a mixed batch of rendering-defect fixes.
 
-### `[P3 · XS]` Whether the Access permission-column underline should exist at all, once it's actually visible
+### ✅ ANSWERED 2026-09-10 11:09 EDT — it stays, because it was never redundant. It was UNLABELLED
+
+Pin `pmtuxn6we` asked two questions and only the visibility one had been answered. The bar is not the per-person grant — the squares below it are that — it is the **portal realm** the scope belongs to, plus a single-point-of-failure mark. Both facts lived only in a `title` attribute, invisible until you hover the exact 7px strip you cannot see. The foot legend states the realm now and the key states the ring, so the column says what it means without hovering. ⚠️ **If Harkirat still wants it gone once it is legible, that is a one-line removal and remains his call** — this closes the "is it redundant" half, not the taste half.
+
+> ### `[P3 · XS]` Whether the Access permission-column underline should exist at all, once it's actually visible
 
 Pin `pmtuxn6we`, 2026-09-09. **The visibility half is fixed** (the bar was 3px with no glow; now 4px with a colour-matched ring). What's still his call: "do they even serve any useful purpose? like i can already see what permissions a person has by looking at the square below" — removing it as redundant with the permission-square grid is a design decision, not a rendering fix.
 
-### `[P3 · XS]` The Access underline's colored glow doesn't show on `.spof` (warning) columns
+### ✅ CLOSED 2026-09-10 11:09 EDT — the `.spof` column now carries an opaque amber RING, the same shape language as the non-spof realm glow
+
+The old mark was `box-shadow:0 3px 0 -1px var(--warn)` — an offset copy of the 7px bar, 3px lower and 1px narrower, which reads as a slightly fuzzy edge rather than a state. It is `0 0 0 2px var(--warn)` now: both carriers survive (the realm colour inside, the warning outside) and it uses the ring shape the non-spof columns already use for their realm glow, so the two states are one grammar. The key line above the table was reworded from "underlined" — a treatment nobody could identify — to "ringed in amber".
+
+> ### `[P3 · XS]` The Access underline's colored glow doesn't show on `.spof` (warning) columns
 
 Found 2026-09-10 01:41 EDT while writing the session handoff, not by a new pin. `.mxs.mxcol.spof i{box-shadow:0 3px 0 -1px var(--warn)}` (a pre-existing, likely deliberate warning-state treatment) has higher specificity than the underline visibility fix's `.mx .mxs i` glow ring, so a spof column gets the new 7px height but not the colored ring — a small, real inconsistency between spof and non-spof permission columns. Not raised to Harkirat, not decided whether spof should get its own matching ring or is fine as-is with just the warn shadow.
 

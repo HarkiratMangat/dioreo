@@ -67,7 +67,8 @@ input:not([type=checkbox]):not([type=radio]):not([type=range]):not([data-bare]){
    specificity trap documented three lines above for .cmdbar's search bar -- any `.foo input{padding-
    left:Npx}` anywhere in this file loses to this rule's 0,4,1 no matter what specificity it tries to
    reach, because a shorthand here always re-sets padding-left too. Measured live 2026-09-10: the
-   Manifest search icon (`.srch input{--ctl-pl:32px}`, two copies below) computed to 10px in
+   Manifest search icon (ONE `.srch input` rule now, and it used to be two -- note at that rule)
+   computed to 10px in
    the browser despite the source reading 32px -- the icon and the first two letters of typed text
    overlapped on EVERY realm's Manifest, not just Armory's. A --ctl-pl variable, read by a longhand
    declared AFTER the shorthand in this SAME rule, means any future component sets one custom
@@ -349,9 +350,16 @@ main{overflow:auto;padding-bottom:140px}
 
 /* ═══ MANIFEST — always present, never switches ═══ */
 .mtools{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3);border-bottom:1px solid var(--rule);flex-wrap:wrap}
-.srch{position:relative;flex:1 1 240px;max-width:300px}
-.srch input{width:100%;--ctl-pl:32px}
-.srch svg{position:absolute;left:10px;top:50%;margin-top:-7px;width:14px;height:14px;stroke:var(--ink4);fill:none;stroke-width:2}
+.srch{position:relative;display:flex;align-items:center;flex:1 1 240px;max-width:300px}
+.srch input{width:100%;--ctl-pl:40px}
+.srch svg{position:absolute;left:13px;top:50%;margin-top:-8px;width:16px;height:16px;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none}
+/* 🔴 ONE .srch BLOCK NOW, NOT TWO (2026-09-10 10:51 EDT). A second copy sat ~1300 lines below this one
+   carrying a 32px control padding and a 14px icon, and won on source order -- so raising the
+   padding HERE changed the file and not the page, which is how a verified-looking fix ships and
+   still reads as broken. Its two unique declarations (display:flex/align-items on the host, and
+   pointer-events:none on the icon so it cannot eat a click aimed at the field) are folded in
+   above; the duplicate is deleted. ⚠️ Nothing gates a duplicate selector -- portal-editing.md
+   lists this exact trap -- so the only defence is grepping the selector before editing it. */
 /* 🔴 `.chip` AND `.seg button` ARE `.pill` NOW — measured before this: one `.pill` on the whole
    portal against 93 hand-rolled chips, because building a component and then not adopting it is
    the same defect as not building one. Adopted by REDEFINING these selectors rather than
@@ -374,12 +382,23 @@ th.sortable{user-select:none;padding:0}
 th.sortable .sortbtn{all:unset;display:block;width:100%;box-sizing:border-box;cursor:pointer;
   padding:inherit;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
 th.sortable .sortbtn:focus-visible{outline:2px solid var(--patch);outline-offset:-2px;border-radius:var(--rad-1)}
-th.sortable .sortbtn::after{content:"↕";margin-left:6px;color:var(--ink3);font-size:16px}
+/* 🔴 THE SORT INDICATOR WAS A TYPED CHARACTER, WHICH THIS REPO BANS BY NAME (2026-09-10 10:48 EDT).
+   Harkirat, 2026-08-25: "NEVER USE TEXT GLYPHS FOR ICONS. ICONS ARE ICONS." A pseudo-element fed a
+   double-headed arrow character, bumped 12px -> 16px by an earlier pass and reported not fixed
+   again, because SIZE was never the problem: a glyph hands its stroke weight, baseline and hinting
+   to whatever font resolves it, and the three states were three DIFFERENT characters with three
+   different optical weights, so they never read as one control changing. It is a real Lucide icon
+   now, rendered by manifest.js, and the unsorted state is chevrons-up-down.
+   ⚠️ The assert that proves this landed checks for the SELECTOR, not for the character: an earlier
+   run of this same edit failed because the sentence you are reading quoted the glyph it removed. */
+th.sortable .sortbtn .sortic{margin-left:6px;width:14px;height:14px;color:var(--ink3);
+  vertical-align:-3px;flex:none;transition:color var(--dur-1) var(--ease)}
+th.sortable .sortbtn:hover .sortic{color:var(--ink2)}
 /* Was --t-sm (12px), still reported as not fixed after that first bump -- "SOOO tiny" per the
    original pin needed more than one token step. A literal 16px here, matching the header text's
    own size rather than a smaller data-scale token. */
 /* Was --t-xs -- "the sort icons are SOOO tiny, i could barely tell what they were" (Harkirat, pin pmtuwz0d6, 2026-09-09). */
-th.sorted-asc::after{content:"↑";color:var(--patch)} th.sorted-desc::after{content:"↓";color:var(--patch)}
+th.sorted-asc .sortic,th.sorted-desc .sortic{color:var(--patch)}
 td{padding:9px 11px;border-bottom:1px solid var(--rule3);color:var(--ink2);vertical-align:middle}
 tbody tr{cursor:pointer}
 tbody tr:hover td{background:#1A222A}
@@ -1213,7 +1232,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    38+210+118+170+130+190+104 = 960 against a 902px content area. Trimmed to 832 so the table
    fits the narrowest DESKTOP width and still scrolls on a phone, which is the design. */
 .mtable col.c-cb{width:38px}
-.mtable col.c-item{width:15%;min-width:150px}
+.mtable col.c-item{width:17%;min-width:168px}
 /* Was 30%/180px, then 22%/150px, then briefly 15%/110px -- that last cut was measured against the
    HARNESS's fixture weapon names (LOCUS, BAL-27, AK117, all under 10 characters), not the real dev
    catalogue. Querying the actual data: real names run up to 16 characters ("KILO BOLT-ACTION",
@@ -1224,7 +1243,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    only the floor for a narrow one changed back. */
 .mtable col.c-type{width:100px}
 .mtable col.c-win{width:150px}
-.mtable col.c-spark{width:18%;min-width:110px}
+.mtable col.c-spark{width:26%;min-width:200px}
 .mtable col.c-detail{width:auto;min-width:150px}
 .mtable col.c-state{width:104px}
 .mtable th,.mtable td{padding:8px 12px}
@@ -1647,10 +1666,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   cursor:pointer;font:500 var(--t-sm)/1 var(--ui);padding:6px 11px}
 .bulkbar button:hover{color:var(--ink);border-color:var(--ink4)}
 .bulkbar .x{margin-left:auto;border:none;color:var(--ink3)}
-.srch{position:relative;display:flex;align-items:center}
-.srch svg{position:absolute;left:11px;width:14px;height:14px;fill:none;stroke:var(--ink4);stroke-width:1.6;
-  pointer-events:none}
-.srch input{--ctl-pl:32px}
 
 /* ══════════════════ ARMORY · TIER BOARD ══════════════════
    `categoryRank` is S/A/B and this audience thinks in tier lists, so the field gets a
@@ -1960,11 +1975,11 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    whatever the element above happened to contribute — on Broadcast a spacer div that had been added
    for the purpose, and on a realm with nothing between the view panel and the Manifest, none at all.
    A margin that belongs to a component does not belong to its neighbours. */
-#manifest,#sessions{margin-top:16px}
+#manifest,#sessions{margin-top:var(--s6)}
 
 /* margin-top added 2026-09-06 01:21 EDT (pin 14): the view layer and the Manifest sat flush, so the recessive
    panel read as the hero's footer rather than as the mechanism beneath it. One step of air says which is which. */
-.panel + .panel{border-color:var(--rule);background:transparent;margin-top:var(--s5)}
+.panel + .panel{border-color:var(--rule);background:transparent;margin-top:var(--s6)}
 .panel + .panel > .ph,.panel + .panel > .mtools{background:transparent}
 
 /* ── 10.2 TYPE: panel and dialog headings step up ── */
@@ -2706,7 +2721,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 
 .hsplit,.tim2,.reach{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 18px}
 @media (max-width:1000px){ .hsplit,.tim2,.reach{grid-template-columns:1fr} }
-.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px;margin-top:14px}
+.hpanel{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:16px 17px;margin-top:var(--s5)}
 /* Added margin-top -- same deliberate breathing-room increase as .tiles above, between this panel
    and whatever hsplit section precedes it (Harkirat, pin pmtuxpbrx). */
 .hpanel h4{font:600 var(--t-lg)/1.25 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink);margin:0 0 7px}
@@ -2967,8 +2982,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    is `role="tab" aria-selected=true`, verified via the harness's own DOM, not `aria-pressed`. Both
    states now get the same crimson/blue pair as the ADD buttons, since nothing calls for two different
    MP/DMZ colour schemes depending on which toggle shape renders it. */
-.modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:#FF3B5C;color:var(--on-accent)}
-.modesw button[data-arm=DMZ][aria-pressed=true],.modesw button[data-arm=DMZ][aria-selected=true]{background:#3DA5F5}
+.modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:var(--mode-mp);color:var(--on-accent)}
+.modesw button[data-arm=DMZ][aria-pressed=true],.modesw button[data-arm=DMZ][aria-selected=true]{background:var(--mode-dmz)}
 .modesw button:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
 .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
   margin-left:5px}
@@ -3006,7 +3021,19 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    Track's deadline notch got: a mark may point at content it does not cross. The topic colour
    is now untouched at full area, and the state is a warn rule directly beneath it — plus the
    holder count in warn, so the fact has two carriers and neither is destructive. */
-.mxs.mxcol.spof i{box-shadow:0 3px 0 -1px var(--warn)}
+/* 🔴 THE MOST IMPORTANT FACT ON THIS HEADER WAS DRAWN AS A DROP SHADOW (2026-09-10 10:56 EDT). Pin
+   pmtuxn6we: "THE UNDERLINES ARE TERRIBLE. i can't even see them unless i literally manually zoom
+   into the page. And honestly, do they even serve any useful purpose? like i can already see what
+   permissions a person has by looking at the square below." Two questions, and the second is the
+   one that was never answered: the bar is NOT the per-person grant — the squares below are that —
+   it is the PORTAL REALM the scope belongs to, and when the column is a single point of failure it
+   also carries that. Neither was said anywhere a reader could see, so a legend now says both.
+   The shape: an offset copy of the bar 3px lower and 1px narrower reads as a slightly fuzzy edge.
+   An opaque 2px RING is the same language the non-spof columns already use for their realm glow —
+   one grammar, two states — and it keeps both carriers, which was the point of the original rule. */
+.mxs.mxcol.spof i{box-shadow:0 0 0 2px var(--warn)}
+.mxlegend.bar{width:16px;height:7px;background:var(--r-season);vertical-align:0}
+
 .mxlegend{display:inline-block;width:12px;height:12px;border-radius:var(--rad-1);vertical-align:-2px;margin-right:5px}
 .mxlegend.on{background:var(--ink2)}
 .mxlegend.inh{background:transparent;border:2px solid var(--ink2)}
@@ -3896,7 +3923,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    column with 8px of padding put its ring 0px from the table edge. 12px in, and the column wide enough that the
    ring never touches the rule. */
 .mtable td.ra,.mtable th.ra{width:52px;padding-right:12px;text-align:right}
-.mtable col.c-ra{width:52px}
+.mtable col.c-ra{width:64px}
 /* 32px, not 28 — 2026-09-04 22:43 EDT. `--tap:44px` is honoured by nine rules and bypassed here, on the one control in
    Access's ACTION column that destroys. `.mxcell` is also under the floor and has a written exception (a 44px
    cell in a twelve-column matrix fits on no laptop); this had none. 32 is what the row height allows without
@@ -4928,7 +4955,7 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    SAME THING... same element, same design, same area, same importance" (pin pmtuxcp3b, 2026-09-09,
    echoing pins from 2026-09-05 -- his third or fourth time raising this exact complaint). */
 .srec-grid{background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);
-  padding:14px 16px;margin-top:var(--s3)}
+  padding:14px 16px;margin-top:var(--s3);display:flex;flex-direction:column;gap:var(--s5)}
 /* Was --raised (#1F272E against .identity's own #171E24) -- measured live via getComputedStyle and it
    WAS a different colour, just not different ENOUGH to read as separate at a glance: an 8-per-channel
    shift on two dark grays. "STILL DEFINITELY NOT FIXED" (Harkirat, 2026-09-10, after checking live).
@@ -4962,8 +4989,32 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    grid. The label column is then sized by the widest label ACROSS ALL SIX, so
    every title starts at the same offset in its third and every state ends at
    the same right edge — in both rows, because it is one grid.               */
-.srec-grid{display:grid;grid-template-columns:repeat(3,max-content minmax(0,1fr) max-content);
+/* The alignment win above is unchanged and now lives on .srec-rows: the three DEADLINE cells still
+   dissolve into ONE grid, so their labels, titles and dates line up across all three. What changed is
+   that the three BANNERS left that grid — they were never the same shape as a dated row, and forcing
+   them through it is what made the two kinds indistinguishable. See the note in season.js. */
+.srec-rows{display:grid;grid-template-columns:repeat(3,max-content minmax(0,1fr) max-content);
   gap:7px 20px;align-items:baseline}
+.srec-band{display:flex;flex-direction:column;gap:9px;min-width:0}
+/* The band label names the KIND. It is the same eyebrow voice as .srec-kind rather than a heading,
+   because naming these two must not put either of them above the other — the rule runs the full
+   width so both bands read as one surface divided, not as a section and a sub-section. */
+.srec-bl{display:flex;align-items:center;gap:10px;font-family:var(--data);font-size:var(--t-micro);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3)}
+.srec-bl::after{content:"";flex:1 1 auto;height:1px;background:var(--rule)}
+.srec-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+/* A tile, not a row. .srec-c is display:contents so its parts join the deadline grid; a banner
+   overrides that and keeps its own box, which is the whole point — the shape is what says "this is
+   a picture, not a date". Every .srec-c .k / .t / .d rule below still applies, so the topic bar,
+   the unset italic and the dead-image warning are inherited rather than re-declared. */
+/* 🔴 `.srec-c.srec-tile`, NOT `.srec-tile` (2026-09-10 10:56 EDT). `.srec-c{display:contents}` is declared
+   below this rule at the SAME specificity, so a bare .srec-tile lost on source order and all three
+   tiles dissolved back into the deadline grid — the fix built, deployed, and changed nothing on
+   screen. Two class names on one element is the cheapest way to win it without moving either rule. */
+.srec-c.srec-tile{display:flex;flex-direction:column;gap:7px;min-width:0;background:var(--paper);
+  border:1px solid var(--rule);border-radius:var(--rad-2);padding:9px 10px}
+.srec-c.srec-tile .t{white-space:normal}
+.srec-c.srec-tile .d{justify-self:start}
 .srec-c{display:contents}
 /* The topic hex is a BAR, never the text — DMZ's #337BA6 measures 3.63:1 at 9px. */
 .srec-c .k{font-family:var(--data);font-size:var(--t-micro);letter-spacing:var(--tr-micro);
@@ -4998,7 +5049,9 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
    strip. Kind is carried by ANATOMY now (a deadline row is three text parts; a banner row is a picture),
    which leaves state to the marks that already carry it, and leaves the two rows peers in weight without
    being peers in shape. ⚠️ The height increase is the banner row's alone — the deadline row is untouched. */
-.srec-thumb{display:block;width:132px;height:34px;object-fit:cover;border-radius:var(--rad-2);
+/* 132x34 was a sliver wedged into a text row — "stop feeling like a foot note" was answered with a
+   thumbnail too small to be looked at. In a tile the image is the cell, so it takes the full width. */
+.srec-thumb{display:block;width:100%;height:56px;object-fit:cover;border-radius:var(--rad-2);
   border:1px solid var(--rule2);background:var(--sunk)}
 /* 🔴 AND THE STATUS DOT IS GONE ON A ROW THAT IS SHOWING ITS IMAGE. 16.32 and the conformance plan both
    say item B "kills the grey dot"; it was still shipping beside a visible thumbnail, so the cell asserted
@@ -5011,8 +5064,11 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 .srec-c.dead .d em{background:transparent;border-color:var(--warn-ink)}
 /* The banner row is separated by a rule that spans the whole grid rather than by a
    second grid — a second grid was what let the two rows' columns drift apart. */
-.srec-grid::before{content:"";grid-column:1/-1;height:1px;background:var(--rule);
-  order:0;margin:2px 0}
+/* The hairline that used to sit here is gone (2026-09-10 11:03 EDT). It was the first, failed answer to
+   "they all look like the same thing" -- a 1px --rule line, in a console whose every panel edge is a
+   1px --rule line -- and when the bordered surface replaced it nobody deleted it, so it kept drawing
+   a full-width rule across the top of the box, above the first label, dividing the box from its own
+   padding. The two named bands are the division now, and each carries its own labelled rule. */
 .srec-c:nth-child(-n+3){order:-1}
 .srec-c:nth-child(n+4){order:1}
 /* 🔴 THE SIXTH TITLE SAT 8px ABOVE ITS OWN ROW. The grid is `align-items:baseline`, and a banner

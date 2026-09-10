@@ -9,13 +9,17 @@
     if (window.__dioreoPin) return;                       // a reload of the SPA must not mount two overlays
     window.__dioreoPin = true;
 
-    var ON = false, frozen = null, region = null, shotData = null, count = 0;
+    var ON = false, USE = false, altHeld = false, frozen = null, region = null, shotData = null, count = 0;
+    // 🔴 PIN MODE OWNED EVERY CLICK, SO A DRAWER COULD NOT BE OPENED AT ALL (2026-09-10 10:47 EDT). Harkirat: *"when i have it enabled, i'm unable to click open a drawer, and if i open it prior to clicking the pins toggle, it'll auto close the drawer. As such, none of my prior pins were able to review drawer items."* Interception is right for pinning and fatal for REACHING the thing to pin, so the mode has a third state now: `USE` suspends interception without leaving pin mode — the tally, the popup position and the pin count all survive — and holding Option does the same for one click. `interacting()` is the single predicate every handler below asks.
+    function interacting() { return USE || altHeld; }
     var css = document.createElement('style');
     css.textContent = [
         '#__pinbar{position:fixed;right:14px;bottom:14px;z-index:2147483000;display:flex;gap:8px;align-items:center;',
         '  background:#141A1F;border:1px solid #2A343D;border-radius:9px;padding:8px 10px;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;color:#9DAAB4;box-shadow:0 10px 34px rgba(0,0,0,.6)}',
         '#__pinbar button{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #3A4752;background:transparent;color:#E8EDF1;cursor:pointer}',
         '#__pinbar button.on{background:#FF5D3B;border-color:#FF5D3B;color:#fff}',
+        '#__pinbar button.use.on{background:#5FD4E8;border-color:#5FD4E8;color:#00151A}',
+        '#__pinbar .hint{font:500 10.5px/1.4 ui-sans-serif,system-ui,sans-serif;color:#5C6A75;max-width:154px}',
         '#__pinbox{position:fixed;z-index:2147482000;pointer-events:none;border:2px solid #FF5D3B;border-radius:3px;background:rgba(255,93,59,.10);display:none}',
         '#__pinlab{position:fixed;z-index:2147482001;pointer-events:none;background:#FF5D3B;color:#fff;font:600 10.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 6px;border-radius:3px;white-space:nowrap;display:none;max-width:60vw;overflow:hidden;text-overflow:ellipsis}',
         '#__pinpop{position:fixed;z-index:2147483001;width:320px;background:#141A1F;border:1px solid #FF5D3B;border-radius:9px;padding:11px;display:none;box-shadow:0 14px 40px rgba(0,0,0,.7);font:400 13px/1.5 ui-sans-serif,system-ui,sans-serif;color:#E8EDF1}',
@@ -39,8 +43,13 @@
 
     var bar = el('div', '__pinbar');
     var btn = document.createElement('button'); btn.textContent = '📍 pin mode OFF';
+    // The second control is what makes a drawer reachable. It shows only while pin mode is on, because outside pin mode the page is already usable and a button that changes nothing is noise.
+    var useBtn = document.createElement('button'); useBtn.className = 'use';
+    useBtn.textContent = '🖱 use the page'; useBtn.style.display = 'none';
+    var hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = '';
     var tally = document.createElement('span'); tally.textContent = '0 pins';
-    bar.appendChild(btn); bar.appendChild(tally); document.body.appendChild(bar);
+    bar.appendChild(btn); bar.appendChild(useBtn); bar.appendChild(hint); bar.appendChild(tally);
+    document.body.appendChild(bar);
     var box = el('div', '__pinbox'), lab = el('div', '__pinlab'), pop = el('div', '__pinpop');
     document.body.appendChild(box); document.body.appendChild(lab); document.body.appendChild(pop);
     pop.innerHTML = '<div class="grab" id="__pingrab">\u283f drag me out of the way</div>'
@@ -79,16 +88,34 @@
     }
     function hide() { box.style.display = 'none'; lab.style.display = 'none'; }
 
-    function setMode(on) {
-        ON = on; frozen = null; hide(); pop.style.display = 'none';
-        btn.classList.toggle('on', on);
-        btn.textContent = on ? '📍 pin mode ON — click an element' : '📍 pin mode OFF';
-        document.body.classList.toggle('__pinning', on);
+    function paint() {
+        btn.classList.toggle('on', ON);
+        btn.textContent = ON ? '📍 pin mode ON' : '📍 pin mode OFF';
+        useBtn.style.display = ON ? '' : 'none';
+        useBtn.classList.toggle('on', USE);
+        hint.textContent = !ON ? '' : (USE ? 'clicks go to the page — open a drawer, then switch back'
+                                           : 'click to pin • hold ⌥ to use the page');
+        // The crosshair has to tell the truth about which state you are in, or the first click is a guess.
+        document.body.classList.toggle('__pinning', ON && !interacting());
     }
+    function setMode(on) {
+        ON = on; if (!on) USE = false;
+        frozen = null; hide(); pop.style.display = 'none';
+        paint();
+    }
+    function setUse(on) { USE = on; frozen = null; region = null; hide(); pop.style.display = 'none'; paint(); }
     btn.addEventListener('click', function (e) { e.stopPropagation(); setMode(!ON); });
+    useBtn.addEventListener('click', function (e) { e.stopPropagation(); setUse(!USE); });
+
+    // 🔴 THE APP'S OWN DISMISS LISTENERS SIT ON `document` IN THE BUBBLE PHASE (shell.js:263 is one: `document.addEventListener('pointerdown', away)`), and this overlay only ever swallowed `click`. So pressing the pin toggle sent a pointerdown all the way up to document and closed whatever was open — which is exactly the "it'll auto close the drawer" symptom, and it is a DIFFERENT cause from the interception above. Stopping it on OUR OWN elements in the BUBBLE phase is what fixes it without repeating this file's own capture-phase mistake: the event still reaches the button inside the bar, and is stopped only once it has finished bubbling through our own UI.
+    ['pointerdown', 'mousedown', 'mouseup', 'click', 'dblclick'].forEach(function (t) {
+        bar.addEventListener(t, function (e) { e.stopPropagation(); });
+        pop.addEventListener(t, function (e) { e.stopPropagation(); });
+    });
 
     document.addEventListener('mousemove', function (e) {
         if (!ON) return;
+        if (interacting()) return hide();
         // A drag past six pixels is a REGION, and the box switches to a dashed cyan so the two kinds are never confused on screen.
         if (down && (Math.abs(e.clientX - down.x) > 6 || Math.abs(e.clientY - down.y) > 6)) {
             dragging = true;
@@ -163,12 +190,12 @@
     // 🔴 EVERY PIN PATH RUNS ON MOUSEUP, NOT CLICK. A drag that starts on an element and ends in a gap fires a click on their common ancestor, so a click-driven tool cannot tell a pin from a region at all. `click` below only BLOCKS — the portal's own handlers open drawers and stage changes, and a pin must never be a click on the app.
     var down = null, dragging = false;
     document.addEventListener('mousedown', function (e) {
-        if (!ON || mine(e.target)) return;
+        if (!ON || interacting() || mine(e.target)) return;
         e.preventDefault(); e.stopPropagation();
         down = { x: e.clientX, y: e.clientY, el: e.target }; dragging = false;
     }, true);
     document.addEventListener('mouseup', function (e) {
-        if (!ON || !down || mine(e.target)) { down = null; return; }
+        if (!ON || interacting() || !down || mine(e.target)) { down = null; return; }
         e.preventDefault(); e.stopPropagation();
         if (dragging) {
             var r = { left: Math.min(down.x, e.clientX), top: Math.min(down.y, e.clientY) };
@@ -185,9 +212,16 @@
         }
         down = null; dragging = false;
     }, true);
-    document.addEventListener('click', function (e) { if (ON && !mine(e.target)) { e.preventDefault(); e.stopPropagation(); } }, true);
+    document.addEventListener('click', function (e) { if (ON && !interacting() && !mine(e.target)) { e.preventDefault(); e.stopPropagation(); } }, true);
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && ON) setMode(false); }, true);
+    // Escape steps back ONE state rather than always killing the mode: from "use the page" it returns to pinning, and only from pinning does it turn the overlay off. Option held is the same suspend for one click, so it repaints on the way in and on the way out; a window blur has to clear it or the flag survives an app-switch and the tool looks dead on return.
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Alt' && ON && !altHeld) { altHeld = true; paint(); return; }
+        if (e.key !== 'Escape' || !ON) return;
+        if (USE) setUse(false); else setMode(false);
+    }, true);
+    document.addEventListener('keyup', function (e) { if (e.key === 'Alt' && altHeld) { altHeld = false; paint(); } }, true);
+    window.addEventListener('blur', function () { if (altHeld) { altHeld = false; paint(); } });
     // 🔴 A `pop.addEventListener` CLICK HANDLER IN CAPTURE PHASE STOOD HERE AND IT KILLED BOTH BUTTONS (removed 2026-09-09 22:03 EDT). Harkirat: *"umm nothing happens when i click Save pin or Cancel."* Capture runs from the document DOWN to the target, so calling stopPropagation on the popup meant the event never reached the buttons inside it — Save and Cancel had listeners that could not fire. It was unnecessary as well as harmful: every document-level handler above already returns early on `mine(e.target)`, so a click inside the popup was never going to be read as a pin. ⚠️ AND MY OWN CHECK WALKED STRAIGHT PAST IT. I "verified" cancel by invoking the button and reading back a literal `ready: true` I had written into the same expression — a value that could not have come out false. The EFFECT was never asserted: whether the popup closed, whether a note landed. Assert the effect, never a constant you wrote beside it.
     document.getElementById('__pincancel').addEventListener('click', function () { frozen = null; region = null; shotData = null; pop.style.display = 'none'; hide(); });
 

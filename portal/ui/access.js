@@ -361,6 +361,13 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                 <div class="mxfoot">
                     <span><span class="mxlegend on"></span>granted <b>directly</b> — revoking it removes exactly this.</span>
                     <span><span class="mxlegend inh"></span><b>inherited</b> — holding <code>manage</code> covers every page at once, so these cells cannot be turned off one at a time.</span>
+                    <!-- 🔴 THE THIRD SENTENCE, AND IT ANSWERS A QUESTION RATHER THAN RESTATING A FACT. Pin pmtuxn6we
+                         asked what the bar over each column name is FOR, given the squares below already show who holds
+                         what. It was never the same fact: the squares are per person, the bar is the portal realm the
+                         scope belongs to, and the amber ring is a single point of failure. Both were carried only by a
+                         title attribute (no backtick on that word: this comment lives inside a template literal and
+                         the build gate refuses one), which is invisible until you hover the 7px strip you cannot see. -->
+                    <span><span class="mxlegend bar"></span>the bar over a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
                     <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
                          removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
                          states with a locked chip on every cell — two authorities for one fact, which is the defect
@@ -618,7 +625,7 @@ export function AccessRealm({ session }) {
         <span class="key">
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
-            ${spofSet.size ? html`<span class="l spofk" data-note><i></i>underlined — held by <b>one person</b> besides you</span>` : null}
+            ${spofSet.size ? html`<span class="l spofk" data-note><i></i>ringed in amber — held by <b>one person</b> besides you</span>` : null}
             ${anyLock ? html`<span class="l" data-note><i style="background:none">🔒</i>owner-grantable only</span>` : null}
         </span>`;
 

@@ -77,8 +77,11 @@ const RIVER_COLUMNS = [
 ];
 
 const RIVER_FILTERS = [
-    { key: 'kind', label: 'Kind', options: [
-        { value: 'change', label: 'changes' }, { value: 'alert', label: 'alerts' }, { value: 'boot', label: 'restarts' },
+    // 🔴 "no color identity within these buttons" — pin pmtuxqsk4, on the `alerts` chip. Armory's category chips have carried a topic swatch since the Manifest gained `topic: true`; Analytics never passed it, so the one realm whose whole subject IS three colour-coded kinds rendered its filter as three grey words. The hexes are `.rivk`'s, not new ones — the chip and the badge it filters to now agree. ⚠️ Level is deliberately left neutral: `lv-error`/`lv-warn`/`lv-caution`/`lv-info` are a SEVERITY ramp rather than a topic vocabulary, and inventing a fourth mapping for them is how a third vocabulary starts. If that ramp should reach the chips it is one line, and it is a decision.
+    { key: 'kind', label: 'Kind', topic: true, options: [
+        { value: 'change', label: 'changes', hex: 'var(--info)' },
+        { value: 'alert', label: 'alerts', hex: 'var(--warn)' },
+        { value: 'boot', label: 'restarts', hex: 'var(--sched)' },
     ] },
     // 🔴 THIS FILTER IS WHERE THE DELETED ALERT EXPORT WENT. The Alerts pre block held the level and the describe() detail of every alert, and the river was already fetching whole AlertLog documents and throwing both away. Deleting a redundant layer is right; deleting the facts it carried is not — so level becomes a filter and detail becomes searchable, which is strictly more useful than the prose block was, because both compose with the kind filter and the search box.
     { key: 'level', label: 'Level', options: [
@@ -805,8 +808,8 @@ export function AnalyticsRealm({ session }) {
         });
     }
 
-    // The row dot carries the event's KIND, matching its chip. Left ungated it rendered 100 identical grey squares, which is a column of noise -- colour has to mean something or it should not be drawn. --patch/--warn/--ret are the same three signals the chips use, so the dot and the chip never disagree.
-    const KIND_VAR = { change: '--patch', alert: '--warn', boot: '--ret' };
+    // The row dot carries the event's KIND, matching its chip. Left ungated it rendered 100 identical grey squares, which is a column of noise -- colour has to mean something or it should not be drawn. --patch/--warn/--ret are the same three signals the chips use, so the dot and the chip never disagree. 🔴 ONE KIND, TWO COLOURS, ON ONE ROW (2026-09-10 11:01 EDT). This map paints the row's topic dot and `.rivk` paints the row's KIND BADGE two columns away — and they disagreed: a change was --patch (gold) at the dot and --info (blue) at the badge, a restart --ret (pink) against --sched (violet). `.rivk` is the one a reader actually reads the word off, so it is the authority and this follows it.
+    const KIND_VAR = { change: '--info', alert: '--warn', boot: '--sched' };
     // The level default is not cosmetic: a change or a boot carries no level, and an undefined value would make the Level filter silently hide every non-alert row the moment it is touched.
     const rows = data.river.map(r => ({ ...r, id: r.changeId || r.alertId || r._id, state: 'live', topicVar: KIND_VAR[r.kind], summary: summaryOf(r), source: sourceOf(r), actor: r.actorId || 'system', level: r.level || (r.kind === 'alert' ? 'info' : '—') }));
     const h = data.health || {};

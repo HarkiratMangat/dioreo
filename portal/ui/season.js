@@ -457,7 +457,20 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                 <span class=${'srec-state' + (editingDraft ? ' staged' : '')}>${editingDraft ? 'staged draft' : 'live'}</span>
             </div>
             <p class=${'srec-title' + (titled ? '' : ' untitled')}>${titled || 'No season title set'}</p>
+${''/* 🔴 PEERS, NOT TWINS — 2026-09-10 10:55 EDT. Two of Harkirat's corrections on this strip look
+                     opposed and are not. 2026-08-25: "the calendar banners portion needs to stop feeling like a
+                     'foot note'. it's literally one of the main elements of the strip." 2026-09-09, pin pmtuxcp3b,
+                     his third or fourth time: "the season titles and the calendar banner items ALL LOOK LIKE THE
+                     SAME THING... same element, same design, same area, same importance." The first was answered by
+                     giving all six cells one identical treatment, which is what produced the second. Equal STANDING
+                     was never the same thing as equal FORM: three dated deadlines and three pictures are different
+                     KINDS, and the previous layout made the banner rows read as deadline rows with the date missing.
+                     Two named bands of equal weight — same surface, same width, neither nested in the other — and
+                     the banners get a real tile with a 56px image instead of a 34px sliver in a text row. */}
             <div class="srec-grid">
+                <div class="srec-band">
+                <span class="srec-bl">Deadlines</span>
+                <div class="srec-rows">
                 ${SEASON_LINES.map((L) => {
                     const t = (season?.[L.titleKey] || '').trim();
                     const tbd = season?.[L.tbdKey], iso = season?.[L.endKey];
@@ -468,6 +481,10 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                             <span class=${'d' + (tbd || !iso ? ' tbd' : '')}>${tbd ? 'TBD' : (iso ? fmtDay(iso) : 'no date')}</span>
                         </div>`;
                 })}
+                </div></div>
+                <div class="srec-band">
+                <span class="srec-bl">Calendar banners</span>
+                <div class="srec-tiles">
                 <!-- 🔴 A DOT, NOT THE WORD "set". A short word at the end of a row reads as a BUTTON —
                      "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
                      in the rows above, so a verb here also broke the peerage the shared treatment
@@ -485,7 +502,7 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                     const on = (season?.[b.k] || '').trim();
                     const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c srec-tile' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
                             <span class=${'t' + (on ? '' : ' unset')}>
                                 <!-- 🔴 THE WHOLE MECHANISM IS KEPT, AND THE CLASSIFICATION THAT SPLIT IT WAS WRONG. The design
@@ -494,14 +511,26 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                                      class, the status words and the d aria-label all read that state. Adopt the design's
                                      no-image version and nothing ever fires the error, so a broken banner asserts its own
                                      health — a falsehood about live data. The three sites are ONE decision and it is (b). -->
-                                ${shows
-                                    ? html`<img class="srec-thumb" src=${on} alt="" loading="lazy" decoding="async"
+                                ${/* 🔴 THE LAZY-LOADING ATTRIBUTE IS WHY ALL THREE BANNERS RENDERED AS EMPTY BOXES.
+                                     Measured on the live dev portal 2026-09-10: fetch() of the exact same URL returned 200 with
+                                     250KB of real JPEG, and a fresh img built in the console with the same src loaded instantly
+                                     at 2048px wide — while these three sat at complete:false and naturalWidth:0 twelve seconds
+                                     after load, through a scroll and back. The only difference was the deferred-load attribute.
+                                     main is the scroll container and this panel is mid-rise transform when the browser evaluates
+                                     intersection, so the load is deferred and never re-armed. That also explains why it looked
+                                     intermittent: a slow render occasionally let one through. Three images ABOVE THE FOLD on
+                                     every visit to this realm buy nothing from deferral and were paying a blank panel for it.
+                                     No backtick and no attribute spelled out in here: this comment sits inside a template
+                                     literal, where a backtick closes it and where my own assert matched its own prose twice. */
+                                 shows
+                                    ? html`<img class="srec-thumb" src=${on} alt="" decoding="async"
                                                 onError=${() => setBrokenBanner((m) => ({ ...m, [b.k]: true }))} />`
                                     : (on ? 'set, but the image will not load' : 'no image set')}
                             </span>
                             <span class="d" role="img" aria-label=${on ? (shows ? 'set' : 'set but not loading') : 'not set'}><em></em></span>
                         </div>`;
                 })}
+                </div></div>
             </div>
             <!-- 🔴 THE LATENESS NUDGE MOVED ONTO THE LINE THAT CARRIES THE CONTROL, and the first attempt at
                  this got it wrong in a way worth recording: it deleted the nudge as a duplicate of the
