@@ -174,7 +174,7 @@ function HomeClock({ season, today }) {
     // ⚠️ ONBOARD, 2026-09-06 — both empty states now name the next action rather than leaving the reader to already know Season is where a deadline gets set. Home's build-out row asks for exactly this: an empty state carries a button/link to the realm that would fix it.
     if (!moments.length) return html`<section class="hclock"><span class="sc-none">No season deadline set. <a href="#/season">Set one in Season</a>.</span></section>`;
     const next = moments[0], rest = moments.slice(1);
-    const p = countdownParts(next.iso, Date.now());
+    const p = countdownParts(next.at, Date.now());
     if (!p || p.past) return html`<section class="hclock"><span class="sc-none">This season has ended. <a href="#/season">Start the next one in Season</a>.</span></section>`;
 
     const items = seasonItems(season);

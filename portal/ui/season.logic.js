@@ -417,17 +417,25 @@ function seasonMoments(season, today) {
         const iso = season[L.endKey];
         if (season[L.tbdKey] || !iso) continue;
         const day = String(iso).slice(0, 10);
-        if (!by[day]) { by[day] = { iso: day, lines: [] }; out.push(by[day]); }
+        // 🔴 THE STORED INSTANT IS CARRIED, NOT ONLY ITS DAY (2026-09-10 17:11 EDT). `bpEnd` is a Mongoose `Date`: what Harkirat types as "sept 10" is stored as `2026-09-10T00:00:00.000Z`, which is 8pm Sep 9 in Toronto. Grouping threw that instant away and left every consumer to re-manufacture one out of the day string — which is exactly how the clock came to count to the END of a day the season had already ended at the START of. `iso` stays the day because that is what `fmtDay` and `daysUntil` render; `at` is what anything measuring TIME must read.
+        const ms = new Date(iso).getTime();
+        const at = Number.isNaN(ms) ? new Date(day + 'T00:00:00Z').getTime() : ms;
+        // ⚠️ TWO LINES ON ONE DAY ARE ONE WALL, AND THE WALL IS THE EARLIER OF THEM. Today bpEnd and rankEnd hold the identical instant so it cannot matter; if they ever diverge within a day, the moment has to be the first one that actually falls, or the clock promises time that the earlier line has already taken.
+        if (!by[day]) { by[day] = { iso: day, at, lines: [] }; out.push(by[day]); }
+        else if (at < by[day].at) by[day].at = at;
         by[day].lines.push(L);
     }
     const t = new Date(String(today).slice(0, 10) + 'T00:00:00Z').getTime();
     return out.filter((m) => new Date(m.iso + 'T23:59:59Z').getTime() >= t).sort((a, b) => (a.iso < b.iso ? -1 : 1));
 }
 
-// A deadline lands at the END of its day — a season ending "Sep 10" is live all through Sep 10. Counting to midnight AT THE START of that day loses a full day, which on a two-day warning is half the warning.
-function countdownParts(iso, nowMs) {
-    if (!iso) return null;
-    const end = new Date(String(iso).slice(0, 10) + 'T23:59:59Z').getTime();
+// 🔴 IT COUNTS TO THE STORED INSTANT, AND UNTIL 2026-09-10 17:11 EDT IT DID NOT. This read `new Date(String(iso).slice(0, 10) + 'T23:59:59Z')` — it took an instant, threw it away, and manufactured a different one 23h 59m 59s later. Measured: with `bpEnd` stored as `2026-09-10T00:00:00.000Z`, the clock read **8h 52m remaining at 11:07 EDT on Sep 10**, a full day after the season had actually ended, and `23:59:59 − 15:07 UTC` is that figure exactly.
+// 🔴 THE COMMENT THAT STOOD HERE WAS THE DEFECT IN PROSE, WHICH IS WHY IT SURVIVED: *"A deadline lands at the END of its day — a season ending 'Sep 10' is live all through Sep 10. Counting to midnight AT THE START of that day loses a full day."* That is sound reasoning about a CALENDAR DATE. `models/SeasonalData.js` stores a `Date`, Harkirat sets the hour deliberately, and the bot's player-facing timers read the same field — so adding a day here told players the same wrong thing.
+// ⚠️ Accepts an instant as a number or an ISO string. A bare `YYYY-MM-DD` still resolves to that day's UTC midnight, because that is what the value denotes — never to the end of it.
+function countdownParts(at, nowMs) {
+    if (at === null || at === undefined || at === '') return null;
+    const end = typeof at === 'number' ? at : new Date(at).getTime();
+    if (Number.isNaN(end)) return null;
     let ms = end - nowMs;
     if (ms <= 0) return { past: true, d: 0, h: 0, m: 0, s: 0 };
     const d = Math.floor(ms / 86400000); ms -= d * 86400000;

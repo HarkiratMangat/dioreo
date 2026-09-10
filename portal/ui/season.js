@@ -317,11 +317,13 @@ function SeasonClock({ season, today }) {
     }
     const next = moments[0];
     const rest = moments.slice(1);
-    // 🔴 THE INSTANT, NOT THE START OF THE DAY. The design's clock is called with its fixture's own date, so it
-    //    reads 23h 59m 59s at every hour of that day — which is what made two captures seconds apart comparable,
-    //    and is not a clock for a console that is running. The READOUT below is the design's; this line is not,
-    //    and the two sat in one paragraph of code pointing in opposite directions.
-    const p = countdownParts(next.iso, Date.now());
+    // 🔴 THE INSTANT, NOT THE START OF THE DAY — and until 2026-09-10 17:11 EDT this comment was true of the INTENT and false of the
+    //    CODE, because it passed `next.iso`, a day string, into a helper that then counted to the end of that day.
+    //    The design's clock is called with its fixture's own date, so it reads 23h 59m 59s at every hour of that day —
+    //    which is what made two captures seconds apart comparable, and is not a clock for a console that is running.
+    //    The READOUT below is the design's; this line is not, and the two sat in one paragraph of code pointing in
+    //    opposite directions. `next.at` is the value `seasonMoments` now carries off the season document unmodified.
+    const p = countdownParts(next.at, Date.now());
     if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
 
     // 🔴 THE HERO-FIGURE CLOCK WAS DELETED HERE, DELIBERATELY, AND ITS ONLY RECORD IS A PUBLISHED ARTIFACT.

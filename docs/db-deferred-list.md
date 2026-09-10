@@ -84,7 +84,26 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
-### 🔴 `[P0 · M · Opus5-XHigh]` A stored season deadline is a DATE being read as an INSTANT, and the bot tells players the same thing
+### ◐ `[P0 · M · Opus5-XHigh]` A stored season deadline is a DATE being read as an INSTANT — **THE READER IS FIXED %s; the DISPLAY half is still Harkirat's**
+
+🔴 **HYPOTHESIS CONFIRMED FROM THE DATA, THEN THE READER FOUND BY ARITHMETIC.** Dev and prod both hold `bpEnd` and `rankEnd` at exactly `2026-09-10T00:00:00.000Z` and `dmzEnd` at `2026-11-11T00:00:00.000Z`, all three with `TBD:false` — byte-identical, so a fix verified on dev is verified against what players' timers read. The storage was right and the escape hatch below (*"if it is NOT UTC midnight this is a schema question"*) does not fire.
+
+🔴 **THE READER WAS `countdownParts` IN `portal/ui/season.logic.js`, AND IT WAS NOT AN OFF-BY-ONE-DAY.** It read `new Date(String(iso).slice(0, 10) + 'T23:59:59Z')` — it took the instant, threw it away, and manufactured one **23h 59m 59s** later. Against the observation: `23:59:59 − 15:07 UTC` = **8h 52m**, which is the figure that was on screen at 11:07 EDT, exactly. The filed guess said *"off-by-one-day / end-of-day coercion"*; the second half was right and the first was not, and only the arithmetic separated them.
+
+🔴 **THE COMMENT ABOVE IT WAS THE DEFECT IN PROSE, WHICH IS WHY IT SURVIVED REVIEW** — *"A deadline lands at the END of its day — a season ending 'Sep 10' is live all through Sep 10."* Sound reasoning about a calendar date; `models/SeasonalData.js` stores a `Date`. [[feedback_comment_is_a_receipt]]: a comment that let everyone stop looking, sitting on the line that was wrong.
+
+**Shipped:** `seasonMoments` now carries `at`, the stored instant, off the document unmodified (`iso` stays the day, because that is what `fmtDay`/`daysUntil` render); `countdownParts` counts to it; `season.js` and `home.js` pass `next.at`. `scripts/seasonCountdown.test.js` is new and wired into `npm test` — six groups, each paired with the removed expression computed inline so the file cannot become a vacuous pass. **Verified rendered** at 1268×779: both clocks read *"This season has ended."*, tier `today`, zero console errors.
+
+⚠️ **STILL OPEN, AND BOTH ARE HIS:**
+1. **The display half of the original recommendation** — *"until Sep 10"* is what made this invisible, and rendering the local date AND time is a visible masthead change. Shipping it inside a correctness fix would have been a design decision smuggled under a bug ticket. **Show him rendered options.**
+2. **Found by the fix, not by the pin: the page now says "This season has ended" while DMZ runs for another 62 days.** `p.past` on the nearest wall returns before `rest` is rendered, so the next wall is never reached. The copy is his and the behaviour question — does the clock advance to the next wall, or is the season over when its first line falls — is a design fork, not a bug.
+
+⚠️ **A THIRD FINDING, filed rather than fixed:** the same three fields have **eight readers across five files and no shared helper**. `season.js`'s `daysUntil` uses `T00:00:00Z` while `countdownParts` used `T23:59:59Z` — two conventions, one field, two files apart. And **seven sites do `String(bpEnd).slice(0, 10)`**, which is safe only while the value arrives as an ISO string; `season.logic.js` also runs under Node, where a real `Date` object stringifies to `"Wed Sep 09 2026 …"` and `.slice(0,10)` yields `"Wed Sep 09"` — lexically compared against `"2026-09-14"`, silently, with every gate green. Reachability unproven; worth one check.
+
+---
+
+**THE ORIGINAL ENTRY, kept because its escape hatch is what made the confirmation cheap:**
+
 
 **Filed 2026-09-10 12:49 EDT from pin `pmtvptx4u`.** Harkirat: *"the entire date/time system is registering incorrectly. I had set the end of the season as sept 10 in the data, but that was sept 10 midnight UTC, meaning the season was over last night, Sept 9, 8 pm EST toronto time."*
 
