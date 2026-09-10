@@ -6,6 +6,13 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
+import { Icon } from './icons.js';
+
+// The command bar's own kind vocabulary — five groups, five shapes. `commit` takes a check because that is
+// the verb; `home` takes the alert triangle because the only home entry is "What needs you", which is a
+// warning by construction. Kept beside the component that reads it: these groups are the palette's, not shared.
+const KIND_ICON = { realm: 'layout-grid', view: 'eye', account: 'log-out', commit: 'check', home: 'triangle-alert',
+    armory: 'square-pen', broadcast: 'square-pen' };
 
 // A command is { label, group, accent, keywords, local, run }. `run` is the whole contract: the bar never navigates by convention or by parsing the label, so a command that goes nowhere is a command somebody forgot to give a body — visible in the source rather than at the moment somebody presses Enter on it.
 export function CommandBar({ commands = [], realmLabel }) {
@@ -78,10 +85,12 @@ export function CommandBar({ commands = [], realmLabel }) {
                      aria-label="Commands and pages">
                     ${hits.length ? hits.map((c, i) => html`
                         <button class="pitem" role="option" key=${c.label} aria-selected=${i === active ? 'true' : 'false'}
+                                style=${`--c:${c.accent || 'var(--ink3)'}`}
                                 onMouseEnter=${() => setSel(i)}
                                 onMouseDown=${(e) => e.preventDefault()}
                                 onClick=${() => runCommand(c)}>
-                            <i style=${`--c:${c.accent || 'var(--ink3)'}`} aria-hidden="true"></i>
+                            ${'' /* 🔴 FIVE KINDS OF RESULT WORE ONE DOT. Harkirat, pin pmtvplcuz, 2026-09-10 11:57 EDT: "why is 'sign out' have a dot beside it when it could have easily had an actual log-out icon." Measured on the rendered palette: every .pitem drew the same 8px disc and no svg, so a realm, a view, an action, a commit and sign-out were told apart only by the muted group word at the far right of the row. SHAPE carries kind and COLOUR carries topic is this console's own law — the dot was colour doing both jobs and neither well. The icon is the kind; --c still tints it, so a realm keeps its hue. */}
+                            <${Icon} name=${KIND_ICON[c.group] || 'square-pen'} cls="sm" />
                             ${c.label}
                             ${c.group ? html`<span class="pk">${c.group}</span>` : null}
                         </button>`)

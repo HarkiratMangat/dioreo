@@ -5890,3 +5890,19 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
 .scbandh span{font:400 var(--t-sm)/1.4 var(--ui);color:var(--ink3)}
 .scbandh em{margin-left:auto;font:400 var(--t-micro)/1 var(--data);color:var(--ink3);font-style:normal}
 .scbandh.b0 b{color:var(--warn)}
+
+/* 🔴 ONE CARD, TWO CONTROL HEIGHTS, TWELVE PIXELS APART. Harkirat, pins pmtvqezgz and pmtvqfvu9: the export
+   block is "half-ass", and "look at these buttons, do they feel like actionable items? no." Measured on the
+   rendered page 2026-09-10 15:58 EDT: the Bulk view's `.chip` buttons sit at 32px beside a native `select`
+   at 44px, inside the same card. A control that is shorter than the control next to it does not read as its
+   peer, it reads as a label with a border — which is exactly the sentence he wrote. --tap is what the rest
+   of the portal uses and what a pointer expects, so the card's controls take it. */
+.bvcard .chip,.bvcard select{min-height:var(--tap)}
+.bvcard .chip{padding:0 14px;display:inline-flex;align-items:center;gap:8px}
+.bvcard .bvrow{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.bvcard .bvrow select{flex:1 1 200px}
+
+/* The command bar result's KIND is its icon and its TOPIC is the colour — the console's own law, where a
+   single dot had been doing both jobs and neither. `Icon` accepts name/cls/label only, so the accent rides
+   the button and the svg inherits it here rather than being passed a style prop that is dropped. */
+.pitem .ic{color:var(--c,var(--ink3));flex:none}

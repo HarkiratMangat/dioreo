@@ -1079,7 +1079,7 @@ function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
                         <code>npm run portal:roundtrip</code> checks that against the real parser. This is what makes a
                         staged deletion recoverable: the export you take first re-imports through the same grammar.</p>
                     <div class="bvexp">
-                        <button class="chip" onClick=${() => runExport('mode')}>All ${inMode.length} ${mode} builds</button>
+                        <button class="chip" onClick=${() => runExport('mode')}><${Icon} name="download" cls="sm" />Export all ${inMode.length} ${mode} builds</button>
                         <label class="sr" for="bv-cat">Category to export</label>
                         <select id="bv-cat" value=${exportCat}
                                 onChange=${(e) => { setExportCat(e.target.value); if (e.target.value) runExport('category', e.target.value); }}>
