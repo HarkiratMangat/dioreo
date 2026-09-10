@@ -415,12 +415,34 @@ function ByScope({ matrix, spof, ownerId }) {
                  tabs of one screen is the duplicate-authority defect this realm's own comments keep recording.
                  What this view needed instead was for each ROW to say which realm it reaches — which it now
                  does, in words, rather than in a title attribute you have to hover to read. -->
+            <!-- 🔴 THE WARNING WAS ON SIX OF TWELVE ROWS, WORD FOR WORD, AND THE owner CHIP WAS ON ALL TWELVE.
+                 Harkirat, pin pmtvqt8bp, 2026-09-10 12:29 EDT: "this shit is ugly and not intuitive at all."
+                 When half the rows carry an identical amber pill and one chip is a constant, neither
+                 discriminates and the reader learns to skip both. Holder COUNT is the question this list
+                 actually answers, so it becomes the structure: three bands, each stating its risk once, rows
+                 carrying only what differs. The owner holds everything by definition, so it is said in the
+                 band note rather than stamped on every row. -->
             <div class="scopes">
-                ${(matrix.scopes || []).map((sc) => {
-                    const holders = matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);
-                    const alone = spofScopes.has(sc.key);
-                    const lone = !alone && !holders.length;
-                    return html`
+                ${(() => {
+                    const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).map((a) => a.discordId);
+                    const bandOf = (sc) => (spofScopes.has(sc.key) ? 0 : holdersOf(sc).length === 0 ? 1 : 2);
+                    const BANDS = [
+                        { k: 0, t: 'Only one person besides you', n: 'If they go, you are the only one left who can do it.' },
+                        { k: 1, t: 'Nobody but you', n: 'The resting state of a solo-maintained bot.' },
+                        { k: 2, t: 'You and two or more', n: 'Covered if someone leaves.' },
+                    ];
+                    const every = matrix.scopes || [];
+                    return BANDS.map((b) => {
+                        const rows = every.filter((sc) => bandOf(sc) === b.k);
+                        if (!rows.length) return null;
+                        return html`<div class=${'scbandh b' + b.k} key=${'h' + b.k}>
+                                <b>${b.t}</b><span>${b.n}</span><em>${rows.length} of ${every.length}</em>
+                            </div>
+                            ${rows.map((sc) => {
+                                const holders = holdersOf(sc);
+                                const alone = b.k === 0;
+                                const lone = b.k === 1;
+                                return html`
                         <div class=${'scope' + (alone ? ' spof' : lone ? ' lone' : '')} style=${`--c:${accentOf(sc)}`}>
                             <!-- The name is the LABEL with the raw token beside it, not the token alone: the token
                                  is what you type into a grant and the label is what it means, and a list showing
@@ -429,15 +451,14 @@ function ByScope({ matrix, spof, ownerId }) {
                             <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
                             <span class="rl">${sc.realm ? html`reaches <b>${sc.realm}</b>` : html`<span class="none">Discord only</span>`}</span>
                             <span class="hs">
-                                ${ownerId ? html`<span class="holder owner" title="The owner holds every permission implicitly">owner</span>` : null}
-                                ${holders.map((h) => html`<span class="holder" key=${h}>…${h.slice(-6)}</span>`)}
+                                ${holders.length ? holders.map((h) => html`<span class="holder" key=${h}>…${h.slice(-6)}</span>`)
+                                    : html`<span class="holder none">nobody else</span>`}
                             </span>
-                            <!-- ⚠️ "nobody but you" IS QUIET, and "single point" IS NOT. Sole ownership by the owner is the resting state of a solo-maintained bot; one OTHER person holding it alone is the thing that goes wrong when they leave. Painting both in warning colour would make the common case shout and teach the reader to skip the mark. -->
-                            ${alone ? html`<span class="flag">single point — only ${String(holders[0] || '').slice(-6)} besides you</span>`
-                                : lone ? html`<span class="flag quiet">nobody but you</span>` : null}
                         </div>
                     `;
-                })}
+                            })}`;
+                    });
+                })()}
             </div>
             <!-- The two flags this list draws, named where the list ends. Same rule as the grid's foot: a mark
                  that is on screen is named on screen, and only the marks that ARE on screen. -->
