@@ -143,13 +143,15 @@ function Figure({ value, zero = false }) {
 // 🔴 `actions` IS A GRID CHILD OF `.masthead`, NOT A CHILD OF `.mh-id`, AND MOVING IT THERE FIXED A VISIBLE DEFECT NO GATE COULD SEE. `.mh-add` has carried `grid-column / grid-row / justify-self:end` since the mockup, and inside `.mh-id` every one of those declarations was inert — the element was not a grid item. So the ADD row right-aligned to `.mh-id`'s edge instead of the masthead's: measured on Season at 1282, the ADD row ended at x=995 while `.mh-take`, the export line directly beneath it, ended at x=1260. Two right-aligned rows, 265px apart, one above the other. `portal:orphans` was quiet because the class exists and has a rule; `portal:coverage` was quiet because the rule has an element. A consumer whose producer is in the wrong parent is this port's signature defect, and it is invisible to every scanner that asks only whether both ends exist.
 //
 // ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
-export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null, below = null }) {
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null, below = null, idBelow = null }) {
     return html`
         <div class="masthead">
             <div class="mh-id">
                 ${eyebrow}
                 <h1>${title}</h1>
                 ${sub ? html`<span class="job">${sub}</span>` : null}
+                ${''/* 🔴 UNDER THE JOB LINE, NOT BESIDE THE TITLE — Harkirat, 2026-09-10 19:16 EDT, closing fork 02. A control that decides WHAT THE REALM IS goes here: after the realm has said its name and what it does, before the figures that control rewrites. Beside the title it competed with the h1 for the same eye; below the sentence it is the first thing you meet after reading what the page is for. It is deliberately LARGER than a view tab, because it is a larger statement than one — Armory's MP/DMZ rewrites every number in the stat block (125 builds to 8, 106 stale to 0) while a view only redraws the same set. */}
+                ${idBelow}
             </div>
             <!-- ⚠️ THE WRAPPER IS A PORTAL ADDITION AND IT IS A GRID CHILD. The design puts the clock
                  in the masthead grid itself, carrying the mh-stats and sclock classes on one element; wrapping it added a

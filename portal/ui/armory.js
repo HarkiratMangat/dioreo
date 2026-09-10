@@ -1305,7 +1305,7 @@ export function ArmoryRealm({ session }) {
     return html`
         <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView}
                   meta=${viewMeta}
-                  modeOptions=${MODES} mode=${armMode} onSetMode=${setArmMode} modeLabel="Which armory"
+                  ${''/* OPTION 1 for fork 02: the mode no longer goes to the view bar. It sat there as a role=tablist beside the VIEW tablist — the same kind of thing to a screen reader and to the eye — while switching it rewrites every figure in the masthead. It lives next to those figures now, and the bar is unambiguously views. */}
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
                   badges=${{ review: load.data.stagedUnknown ? 0 : (load.data.stagedOps || []).length }}
                   stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
@@ -1333,6 +1333,12 @@ export function ArmoryRealm({ session }) {
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
                   masthead=${html`<${Masthead} title="Armory"
+                                               idBelow=${html`
+                                                   <div class="mh-mode" role="radiogroup" aria-label="Which armory">
+                                                       ${['MP', 'DMZ'].map((m) => html`
+                                                           <button key=${m} role="radio" data-arm=${m} aria-checked=${m === armMode ? 'true' : 'false'}
+                                                                   onClick=${() => setArmMode(m)}>${m}</button>`)}
+                                                   </div>`}
                                                sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
                                                stats=${armoryStats}
                                                actions=${html`

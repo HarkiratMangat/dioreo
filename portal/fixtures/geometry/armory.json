@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-10T22:40:42.600Z",
-  "commit": "b7648fbe",
+  "recordedAt": "2026-09-10T23:19:25.599Z",
+  "commit": "3294a0c2",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -10,10 +10,9 @@
     "Tier board": {
       "grid": {
         "examined": 3665,
-        "nearMisses": 12,
-        "sizeIssues": 230,
+        "nearMisses": 14,
+        "sizeIssues": 229,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -248,8 +247,6 @@
       "inventory": {
         "h1": "Armory",
         "tabs": [
-          "MP",
-          "DMZ",
           "Tier board",
           "Repairs",
           "Compare",
@@ -271,10 +268,9 @@
     "Repairs": {
       "grid": {
         "examined": 3648,
-        "nearMisses": 13,
-        "sizeIssues": 247,
+        "nearMisses": 11,
+        "sizeIssues": 246,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -526,8 +522,6 @@
       "inventory": {
         "h1": "Armory",
         "tabs": [
-          "MP",
-          "DMZ",
           "Tier board",
           "Repairs",
           "Compare",
@@ -549,10 +543,9 @@
     "Compare": {
       "grid": {
         "examined": 3594,
-        "nearMisses": 22,
-        "sizeIssues": 230,
+        "nearMisses": 9,
+        "sizeIssues": 229,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -787,8 +780,6 @@
       "inventory": {
         "h1": "Armory",
         "tabs": [
-          "MP",
-          "DMZ",
           "Tier board",
           "Repairs",
           "Compare",
@@ -810,10 +801,9 @@
     "Bulk & export": {
       "grid": {
         "examined": 3613,
-        "nearMisses": 8,
-        "sizeIssues": 233,
+        "nearMisses": 9,
+        "sizeIssues": 232,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -1051,8 +1041,6 @@
       "inventory": {
         "h1": "Armory",
         "tabs": [
-          "MP",
-          "DMZ",
           "Tier board",
           "Repairs",
           "Compare",
