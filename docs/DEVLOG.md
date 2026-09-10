@@ -237,7 +237,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-06 01:53 EDT — the portal build-out: every pin, the design queue, the fifteen lenses, and the drawer that kept one character (v3.78.0-pre)
 - 2026-09-07 01:18 EDT — the plan artifact beat five prose carriers, and a gate that never worked (v3.79.0-pre)
 - 2026-09-08 13:47 EDT — Context carriers WP3-WP8: SESSION-START.md moves to an @import, a compliance self-audit finds and fixes a real Read-tool gap, and a stale plan finding gets checked before being acted on (unreleased on `chore/context-carriers`, proposed v3.80.0)
-- 2026-09-10 13:09 EDT — the pin round that corrected its own handoff (v3.80.0-pre)
+- 2026-09-10 13:09 EDT — the pin round that corrected its own handoff
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4205,7 +4205,7 @@ Harkirat handed off a plan (`~/.claude/plans/okay-so-i-want-majestic-yao.md`) bu
 
 Every commit in this run was verified against the real gates before landing: `docs:audit`, `docs:audit:test`, `test:hooks`, `memory-index-check.sh`, the affected hook self-tests individually, re-read from disk rather than trusted from a script's own print statements.
 
-## 2026-09-10 13:09 EDT — the pin round that corrected its own handoff (v3.80.0-pre)
+## 2026-09-10 13:09 EDT — the pin round that corrected its own handoff
 
 Harkirat's first pin round came back with **most of the previous session's "fixed" claims wrong**, and the useful part of today was finding out why. Three of those fixes were genuinely in the file and never on the page — a duplicate `.srch` block thirteen hundred lines below the first, `.srec-c{display:contents}` beating `.srec-tile{display:flex}` on source order, and `#manifest{margin-top:16px}` — an ID — quietly overriding the spacing scale `DESIGN.md` records as a decision. **No gate in this repo can see any of the three.**
 
