@@ -986,6 +986,8 @@ The column head opens `onEdit` now and the Edit and Revoke chips went with it, s
 
 **CLOSED AS BUILT, 2026-09-11 16:56 EDT, and the question it asked is now moot in both directions.** It asked whether to build an editor for the free-text label or leave it writable only at grant time. The Edit drawer edits it, and the field it asked about has since become two: a required public **Title** that names the admin on the grid, and an optional private **Note**. Both are editable in the drawer, both are stored on `AdminUser`, and a wrong one is a correction rather than a revoke-and-regrant. **Verify by:** opening any admin's drawer and changing either field without touching a permission. The matching linksee fork is superseded by this row.
 
+⚠️ **One noun in the original scope shipped DIFFERENTLY, and it is named here rather than left to look delivered.** The filing asked for a drawer with its own fields, *validation* and a *typed confirm*. Fields and validation shipped as written — Title is required and gates the Save button. The typed confirm did **not**: Harkirat replaced it with a two-step "are you sure" click on 2026-09-11 16:40 EDT, because retyping an 18-digit snowflake confirms the clipboard rather than the intent. The server-side gate is unchanged; only the human-facing half moved.
+
 ### `[P3 | S | Sonnet5-Medium]` TOOLTIP REDESIGN - the runtime is disabled, not deleted - filed 2026-09-11 14:27 EDT
 
 `installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.
