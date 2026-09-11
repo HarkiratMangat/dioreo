@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-11T13:50:21.450Z",
+  "recordedAt": "2026-09-11T15:24:14.555Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [],
   "vars": [
@@ -35,7 +35,6 @@
     "flagged",
     "fxc",
     "good",
-    "grp",
     "hcard",
     "hdr-out",
     "health",

@@ -190,6 +190,11 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
     const commands = scopes.filter((s) => s.kind === 'command');
     const pages = scopes.filter((s) => s.kind === 'page');
     const ordered = [...commands, ...pages];
+    // The gutter between the two groups is a REAL COLUMN, not padding on the boundary cells: padding
+    // would eat into those two columns' content boxes and leave their swatches narrower than the
+    // other ten, which is the ragged edge this pass exists to remove. Emitted after the last command.
+    const GAP = (i) => (i === commands.length - 1 ? html`<td class="mxgap"></td>` : null);
+    const GAPH = (i) => (i === commands.length - 1 ? html`<th class="mxgap"></th>` : null);
     const spofScopes = new Set((spof || []).map((x) => x.scope));
     const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).length;
 
@@ -234,6 +239,16 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
             ${matrix.admins.length === 0 ? html`<p class="empty">Nobody else has been granted access. You are the only admin.</p>` : html`
                 <div class="mxwrap">
                     <table class="mx">
+                        <!-- The pitch lives in a colgroup because table-layout:fixed reads its widths from the
+                             FIRST ROW, and the first row here is the group band with its colspans -- so sizing from
+                             the markup itself would size every column from the wrong cells.
+                             NO BACKTICKS IN THIS COMMENT: it sits inside a template literal, where even a matched
+                             pair closes and reopens the literal and the text between is parsed as JavaScript. -->
+                        <colgroup>
+                            <col class="mxc-who" />
+                            ${ordered.flatMap((sc, i) => [html`<col key=${sc.key} class="mxc-sc" />`, i === commands.length - 1 ? html`<col key="gapc" class="mxc-gap" />` : null])}
+                            <col class="mxc-act" />
+                        </colgroup>
                         <thead>
                             <!-- 2026-09-11 09:11 EDT: the boundary between the two groups is now a real vertical line,
                                  not just the two span labels -- Harkirat, direct: "those command/manage pages
@@ -241,22 +256,23 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                  40px above twelve columns, does not say WHERE one group ends -- the line does. -->
                             <tr class="mxgrp">
                                 <th class="mxwho"></th>
-                                <th class="grpend" colspan=${commands.length}><span>Commands</span></th>
-                                <th colspan=${pages.length}><span>/manage pages</span></th>
+                                <th class="grp" colspan=${commands.length}><span>Commands</span></th>
+                                <th class="mxgap"></th>
+                                <th class="grp" colspan=${pages.length}><span>/manage pages</span></th>
                                 <th></th>
                             </tr>
                             <tr>
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
-                                ${ordered.map((sc) => html`
-                                    <th key=${sc.key} class=${'sc' + (sc === commands[commands.length - 1] ? ' grpend' : '')}>
+                                ${ordered.flatMap((sc, mxi) => [html`
+                                    <th key=${sc.key} class="sc">
                                         <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
                                               title=${spofScopes.has(sc.key)
                                                   ? `${sc.label} — single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`
                                                   : `${sc.label} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides you${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`}>
-                                            <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
+                                            ${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<span class="mxl">${sc.label}</span><i></i><em class="mxn2">${holdersOf(sc)}</em>
                                         </span>
-                                    </th>`)}
+                                    </th>`, GAPH(mxi)])}
                                 <th><span class="mxs">Action</span></th>
                             </tr>
                         </thead>
@@ -277,10 +293,10 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                     <span class="mxav" aria-hidden="true"><${Icon} name="user" cls="sm" /></span>
                                     <span class="mxn"><b>Owner</b><span>…${String(isOwnerId || '').slice(-6)} · built in</span></span>
                                 </span></td>
-                                ${ordered.map((sc) => html`
+                                ${ordered.flatMap((sc, mxi) => [html`
                                     <td key=${sc.key}><span class="mxcell on locked" style=${`--c:${accentOf(sc)}`}
                                         role="img" aria-label=${`${sc.label}: held by the owner, not editable`}
-                                        title="The owner short-circuits every check"></span></td>`)}
+                                        title="The owner short-circuits every check"></span></td>`, GAP(mxi)])}
                                 <td class="mxact"><span class="mxacts"><span class="holder">locked</span></span></td>
                             </tr>
                             ${matrix.admins.filter((a) => a.discordId !== isOwnerId).map((a) => {
@@ -319,7 +335,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                                 </span>
                                             </span>
                                         </span></td>
-                                        ${ordered.map((sc) => {
+                                        ${ordered.flatMap((sc, mxi) => {
                                             const g = a.grants[sc.key] || {};
                                             const pend = rp[sc.key];
                                             const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
@@ -333,15 +349,15 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                             const willBe = pend === true ? ' — pending: will be granted'
                                                 : pend === false ? ' — pending: will be revoked' : '';
                                             if (owner) {
-                                                return html`<td key=${sc.key}><span class=${cls} role="img" aria-checked="true" style=${`--c:${accentOf(sc)}`}
+                                                return [html`<td key=${sc.key}><span class=${cls} role="img" aria-checked="true" style=${`--c:${accentOf(sc)}`}
                                                     aria-label=${`${sc.label}: held by the owner, not editable`}
-                                                    title="The owner short-circuits every check"></span></td>`;
+                                                    title="The owner short-circuits every check"></span></td>`, GAP(mxi)];
                                             }
-                                            return html`<td key=${sc.key}><button class=${cls} style=${`--c:${accentOf(sc)}`}
+                                            return [html`<td key=${sc.key}><button class=${cls} style=${`--c:${accentOf(sc)}`}
                                                 role="checkbox" aria-checked=${on ? 'true' : 'false'}
                                                 aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
                                                 title=${`${sc.label} — ${what}${willBe}`}
-                                                onClick=${() => toggle(a, sc)}></button></td>`;
+                                                onClick=${() => toggle(a, sc)}></button></td>`, GAP(mxi)];
                                         })}
                                         <td class="mxact"><span class="mxacts">
                                             ${owner ? html`<span class="holder">locked</span>`
@@ -379,7 +395,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                          and never actually visible without zooming in. The amber-coloured count under the label,
                          which already existed alongside the ring as a second carrier of the same fact, is what marks
                          a single point of failure now; the key below names it in words. -->
-                    <span><span class="mxlegend bar"></span>the bar over a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
+                    <span><span class="mxlegend bar"></span>the swatch under a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
                     <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
                          removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
                          states with a locked chip on every cell — two authorities for one fact, which is the defect

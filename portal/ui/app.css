@@ -3065,10 +3065,76 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx thead tr.mxgrp th{padding:0 0 9px;border:0;border-bottom:1px solid var(--rule2)}
 .mxgrp th span{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink3);text-align:center}
-/* The line between "Commands" and "/manage pages" that the labels alone do not draw -- it answers
-   which columns a group name covers, running from the group row down through the column labels. */
-.mxgrp th.grpend{border-right:1px solid var(--rule2)}
-.mx thead tr:not(.mxgrp) th.grpend{border-right:1px solid var(--rule2);padding-right:8px}
+/* ══ 2026-09-11 11:16 EDT — THE GROUP IS THE PRIMARY STRUCTURE OF THIS GRID; THE COLUMN IS SECONDARY ══
+   Harkirat, 2026-09-11 09:11 EDT: "those command/manage pages heads are so confusing, what do they
+   even correspond to?" A hairline answered WHERE one group ends. It did not answer why the grid is
+   hard to read, and measuring it did:
+
+     · The twelve columns were sized BY THEIR LABELS. Measured before this change, at 1282px:
+       MP 24px against Destructive 98.8px -- a 4x spread, so the cells below them fell on twelve
+       irregular intervals and the matrix read as ragged rather than as a grid. The ledger records an
+       "even 66px pitch" as already done; it was not in the code, and nothing had re-measured it.
+     · The group name and the column labels were BOTH 9.5px uppercase --ink3. At a squint nothing led,
+       so the two groups -- the one fact this header exists to state -- were the weakest signal on it.
+     · The gutter rule that would have separated them, `.mxgrp + .mxgrp`, matched NOTHING: `.mxgrp` is
+       the ROW class and there is only one such row, and `.grp` was never emitted. Its own comment says
+       "a group needs a gutter, not just a caption" -- correct, and it never ran.
+
+   So: an even pitch declared once in a colgroup, a real gutter COLUMN between the groups with the
+   boundary drawn down its middle, and the group name raised a step and given a band over exactly the
+   columns it governs. The band is the answer to "what do they correspond to" -- it is the width of its
+   own group, so membership is read rather than inferred. */
+.mx{table-layout:fixed}
+.mxc-who{width:190px}
+.mxc-gap{width:20px}
+.mxc-act{width:84px}
+.mxc-sc{width:auto}
+/* A REAL COLUMN, not padding on the two boundary cells: padding would eat into their content boxes and
+   leave those two swatches narrower than the other ten, re-creating the ragged edge in miniature. */
+.mx .mxgap{background:linear-gradient(var(--rule2),var(--rule2)) center/1px 100% no-repeat}
+/* The band already states the split on the group row; a second line through it would be saying it twice. */
+.mx thead tr.mxgrp th.mxgap{background:none}
+.mxgrp th.grp span{font-size:var(--t-xs);letter-spacing:.12em;color:var(--ink2);
+  background:var(--sunk);border:1px solid var(--rule);border-bottom:0;
+  border-radius:var(--rad-2) var(--rad-2) 0 0;padding:6px 10px 7px}
+/* 🔴 THE STICKY HEADER HAD NEVER WORKED ONCE, AND MY FIRST FIX HERE CLAIMED OTHERWISE.
+   `.mx thead th` has carried `position:sticky;top:0` since the matrix was written. Sticky resolves
+   against the nearest SCROLL CONTAINER, and `.mxwrap{overflow-x:auto}` is one -- `overflow-y` computes
+   to `auto` alongside it -- but `.mxwrap` has no bounded height, so it never scrolls vertically and the
+   header had nothing to stick inside. Measured after scrolling 120px: both header rows sat at -104px and
+   -70px, i.e. gone. On a permission matrix that is the whole usability question, and it is worse now the
+   labels are turned: scroll four rows and you are reading an unlabelled grid of coloured squares.
+   The wrapper only needs to scroll horizontally when the table cannot fit, and since the pitch became
+   fixed it always fits above the restack breakpoint -- so above it the wrapper stops being a scroll
+   container at all and sticky resolves against `main`, which is the element that actually scrolls.
+   ⚠️ I first wrote a two-row `top` offset here and described it as the fix. It was not: with sticky inert
+   both rules were dead, and the offset only matters once the rows can stick at all. Both are below. */
+@media (min-width:901px){.mxwrap{overflow:visible}}
+.mx thead tr.mxgrp th{top:0}
+.mx thead tr:not(.mxgrp) th{top:34.5px}
+/* 🔴 THE LABEL TURNS, BECAUSE AN EVEN PITCH AND A HORIZONTAL LABEL CANNOT BOTH BE HAD HERE.
+   Twelve scope columns share ~564px, so a column is 47px. DESTRUCTIVE and ANNOUNCEMENT measure ~79px
+   and ~86px at 9.5px with .1em tracking -- they do not fit, they contain no break opportunity, and
+   letting them size their own column is the ragged grid this pass removed. Truncation was the other
+   option and it hides the one thing this screen exists to state, so the label turns instead: every
+   one of the twelve is fully legible, at a pitch narrow enough that the two groups read as blocks.
+   ⚠️ The mockup does not answer this -- access.html sizes these columns by their labels too, so the
+   portal is deliberately ahead here rather than divergent by accident (ledger, Superseded 2026-09-06). */
+.mx .sc .mxl{display:block;writing-mode:vertical-rl;transform:rotate(180deg);
+  white-space:nowrap;margin:0 auto var(--s2);color:var(--ink3)}
+/* 🔴 THE LOCK IS A GLYPH, AND A GLYPH INSIDE TURNED TEXT READS AS A TYPO. Counter-rotating it inside
+   the label put a raised mark after DESTRUCTIVE that looked like a degree sign, not a lock. It is a
+   marker on ONE of twelve columns, so it belongs at the head of its column rather than inside the
+   word: upright, centred, above the turned label, where it reads as an annotation on the column. */
+.mx .sc .ownly-k{display:block;margin:0 auto var(--s1);line-height:0}
+/* The swatch and the count sit BELOW the turned label, hard against the grid they annotate, so all
+   twelve align on one line however long their labels are (thead th is vertical-align:bottom). */
+.mx .sc .mxs i{margin:0 0 var(--s1)}
+/* 🔴 THE COUNT IS THE HEADER -- the 2026-09-10 decision said so and the code never carried it.
+   The ledger and the v3.79.0 changelog both record "16.5px tabular, --del at 0, --warn at 1"; the
+   rule in this file read var(--t-micro), 9.5px, which is the smallest size on the page. The most
+   important fact in the column was rendered as its quietest element for a day. --t-lg IS 16.5px. */
+.mx .sc .mxn2{font-size:var(--t-lg);line-height:1;color:var(--ink2);margin-top:var(--s1)}
 .mx .ownerrow td{background:rgba(255,255,255,.018)}
 .mx .ownerrow .mxav{background:var(--sunk);color:var(--ink2)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
@@ -3796,8 +3862,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    bar's text colour behind with it. */
 .bar.lbl-out .bl,.bar.lbl-out-l .bl,
 .bar.saved.lbl-out .bl,.bar.saved.lbl-out-l .bl{color:var(--ink)}
-/* the two column groups ran into each other; a group needs a gutter, not just a caption */
-.mx thead .grp + .grp,.mxgrp + .mxgrp{padding-left:14px}
 
 .klg.spofk{display:inline-flex;align-items:center;gap:7px;margin-left:16px;color:var(--ink3);font-size:var(--t-base)}
 .klg.spofk i{width:22px;height:7px;border-radius:var(--rad-pill);background:var(--ink4);

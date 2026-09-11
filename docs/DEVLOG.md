@@ -240,6 +240,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-10 13:09 EDT — the pin round that corrected its own handoff
 - 2026-09-10 16:44 EDT — portal pin round 2, second half — six corrections, one root cause (v3.79.0-pre)
 - 2026-09-11 10:50 EDT — the masthead's row-1 height is governed, and the filed fix was the wrong lever (v3.79.0-pre)
+- 2026-09-11 11:27 EDT — the Access matrix is a grid again, and four defects no gate could see (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4238,6 +4239,16 @@ The gap above each realm's create button had never been chosen. `.masthead` is a
 **The entry filed for this yesterday recommended a `min-height` on `.mh-stats` or `.mh-id`, and that would not have worked.** A floor on one column leaves the other free to exceed it, so row 1 goes on varying. The lever is the row track: one declaration, `@media (min-width:901px){.masthead{grid-template-rows:minmax(108px,auto)}}`, governs all seven realms. Worth recording because the wrong recommendation was written by the same process that measured the problem correctly — the diagnosis was right and the prescription was one level off it.
 
 Two constraints came out of measuring rather than reasoning. Season renders no `.mh-stats` at all — its clock takes that grid area — and measures 162.9px, so a hard `108px` track would have pushed the clock into row 2 and onto the add row; `minmax` pins the floor and still grows. And the floor is gated on `min-width:901px` because below that the masthead restacks to one column, where the floor is dead space — a `max-width` reset could not do that job, because the stacking rule sits about 800 lines above the grid rule and loses the cascade to it. `.masthead` is declared seven times in one stylesheet; which one wins is not knowable from reading any one of them, which is the file's own standing warning and it held again here.
+
+## 2026-09-11 11:27 EDT — the Access matrix is a grid again, and four defects no gate could see (v3.79.0-pre)
+
+An `impeccable layout` pass on Access's `By admin`, on Harkirat's direct brief, found four defects and none of them was visible to the suite that was green over them.
+
+The columns were sized by their labels — MP 24px against Destructive 98.8px — so twelve irregular intervals made a matrix read as a ragged list. The group name and the column labels were the same 9.5px in the same ink, so the one fact the header exists to state was its weakest signal. The rule written to separate the two groups matched nothing and never had: `.mxgrp + .mxgrp`, where `.mxgrp` is the row class and there is exactly one such row. And `position:sticky` on the header had never worked in the life of the matrix, because `.mxwrap{overflow-x:auto}` is a scroll container with no bounded height — measured after a 120px scroll, both header rows sat at -104px and -70px.
+
+**The pattern underneath all four is the same one this repo keeps paying for, in a new costume.** Three records describe this exact surface as already fixed: the ledger says the realm bar was deleted (it renders), the ledger says the columns are on an even 66px pitch (they were on twelve different ones), and both the ledger and the v3.79.0 changelog say the holder count is 16.5px tabular (it was rendering at 9.5px, the smallest size on the page). Every one of those was written in good faith by a session that made the decision and then did not measure the result. A record of a decision is not a record of a landing, and on this surface the gap between the two had grown to three claims — which is also why Harkirat kept looking at a screen he had been told was fixed and calling it ugly and broken.
+
+The layout answer itself was mostly forced rather than chosen. Turning the labels is the only way twelve columns of that length fit an even pitch without truncation, and truncation hides the thing the screen exists to state. The mockup gives no answer — `access.html` sizes its columns by their labels too — so this is one of the places the portal is deliberately ahead of the package, and it carries a ledger row saying so.
 
 # Part B — Lessons Ledger (thematic)
 

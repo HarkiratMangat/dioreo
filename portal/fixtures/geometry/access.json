@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T14:46:09.911Z",
-  "commit": "280974ac",
+  "recordedAt": "2026-09-11T15:24:49.589Z",
+  "commit": "c6feaa83",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,23 +9,39 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 367,
-        "nearMisses": 13,
-        "sizeIssues": 15,
+        "examined": 401,
+        "nearMisses": 34,
+        "sizeIssues": 31,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "l>i|TOP-OFFSET",
           "mxfoot>span|TOP-OFFSET",
-          "mxid>mxn|h",
-          "mxn>span|h",
-          "mxwho>mxid|h",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
+          "mxs>mxl|TOP-OFFSET",
           "racknote>b|TOP-OFFSET",
           "racknote>code|TOP-OFFSET",
           "root>b|TOP-OFFSET",
           "root>code|TOP-OFFSET",
-          "root>mxwho|h",
-          "root>tr|h",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
+          "sc>mxs.mxcol|TOP-OFFSET",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]
@@ -39,6 +55,7 @@
         "cols": [
           "",
           "Commands",
+          "",
           "/manage pages",
           "",
           "Admin",
@@ -46,6 +63,7 @@
           "Autobuild0",
           "Bot1",
           "Destructive1",
+          "",
           "Draws1",
           "Calendar2",
           "MP2",
