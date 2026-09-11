@@ -2119,10 +2119,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * realms, so every colour on the page is borrowed from the scope it governs
  * rather than invented for the page itself. */
 .mxwrap{margin:16px;padding:14px 16px 6px;overflow-x:auto;border:1px solid var(--rule);
-  border-radius:var(--rad-2);background:var(--sunk)}
+  border-radius:var(--rad-2);background:var(--raised)}
 .mx{border-collapse:separate;border-spacing:0;width:100%;min-width:640px}
 .mx th,.mx td{border-bottom:1px solid var(--rule3);padding:0}
-.mx thead th{position:sticky;top:0;background:var(--paper);z-index:2;
+.mx thead th{position:sticky;top:0;background:var(--raised);z-index:2;
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
@@ -3055,8 +3055,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx thead th.mxc-name .mxs{text-align:left}
 .mx td.mxc-name{text-align:left}
 .mx tbody.grp .gh td{text-align:left}
-.mx thead th.mxc-held{text-align:right;padding-right:16px}
-.mx thead th.mxc-held .mxs{text-align:right;padding-right:0}
+.mx thead th.mxc-held,.mx td.mxc-held{text-align:right;padding-right:16px}
+.mx thead th.mxc-held .mxs{text-align:right;padding:0}
 .mx tbody tr.prow td{height:38px}
 
 /* THE GROUP HEADING is a rule, a name and a figure — and NOT a chip. Border, fill and radius each say
@@ -3065,12 +3065,16 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    MEANS is on the heading's own hover, because the fact is needed once rather than on every read. */
 .mx tbody.grp .gh td{border-bottom:0;height:auto;padding:0}
 .mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 45px}
-.mx tbody.grp .ghead h4{margin:0;display:flex;align-items:center;gap:12px;flex:1;
+.mx tbody.grp .ghead{gap:0}
+.mx tbody.grp .ghead h4{margin:0;display:flex;align-items:center;gap:10px;flex:1;
   font:700 13px/1 var(--data);letter-spacing:.18em;text-transform:uppercase;color:var(--ink2)}
 /* the rule runs from the name to the far edge, so the title opens a section instead of labelling a row */
 .mx tbody.grp .ghead h4::after{content:"";flex:1;height:1px;background:var(--rule)}
 .mx tbody[data-grp=command] .ghead h4{color:var(--ink);font-size:14px}
-.mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
+/* Beside its own title, before the rule -- in the Held column's x it read as a Held number for a row
+   that does not exist. */
+.mx tbody.grp .ghead .fig{order:-1;margin-right:10px;font:500 var(--t-sm)/1 var(--data);
+  color:var(--ink3);font-variant-numeric:tabular-nums}
 /* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
    a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
 .mx tbody[data-grp=command] .gh td{border-top:0}
@@ -3086,27 +3090,24 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   left:-1px;width:12px;background:var(--rule2)}
 .mx tbody[data-grp=command] tr[data-last] td.mxc-name::after{left:-2px;width:14px;height:2px;background:var(--rule2)}
 
-/* 🔴 THE HOVER, AS A SECTION STATE RATHER THAN A HINT. He asked for a touch that IMPLIES the hierarchy
-   when the pointer is on Commands or its four labels -- not a tooltip, which is what I reached for first
-   and what he then had removed portal-wide. Hovering either tier recedes the other, so the containment is
-   shown by behaviour: the eight pages dim while you are reading the four commands that can cover them.
-   ⛔ Scoped to the NAME column, never the whole row, so moving down a column of cells does not strobe the
-   page; eased, and skipped entirely under prefers-reduced-motion. */
-.mx tbody.grp{transition:opacity var(--dur-2) var(--ease)}
-.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=page]{opacity:.42}
-.mx:has(tbody[data-grp=page] td.mxc-name:hover) tbody[data-grp=command]{opacity:.42}
-.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=command] .pname b,
-.mx:has(tbody[data-grp=page] td.mxc-name:hover) tbody[data-grp=page] .pname b{color:var(--ink)}
-.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=command] td.mxc-name{border-left-color:var(--ink3)}
-@media (prefers-reduced-motion:reduce){.mx tbody.grp{transition:none}}
+/* 🔴 THE HOVER LIVES ON THE LABEL. A first version dropped the opposite tier to 42% opacity -- a
+   page-wide dimming event on every pointer move, which is not what he asked for and is the "scattered
+   effect" the craft floor warns about. The signal is on the thing you are pointing at: the name reaches
+   full ink, its swatch takes a ring in its own colour, and the tier's bracket lights for as long as you
+   are inside it. Nothing else moves, nothing changes size, nothing below reflows. */
+.pname b,.pname i{transition:color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.mx td.mxc-name:hover .pname b{color:var(--ink)}
+.mx td.mxc-name:hover .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
+.mx tbody[data-grp=command]:hover td.mxc-name{border-left-color:var(--ink3)}
+.mx tbody[data-grp=page]:hover td.mxc-name{border-left-color:var(--ink4)}
+@media (prefers-reduced-motion:reduce){.pname b,.pname i{transition:none}}
 
 /* a permission is a swatch and a name, on one baseline */
 .pname{display:flex;align-items:center;gap:10px;cursor:help}
 .pname i{display:block;width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .pname b{font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink);letter-spacing:.01em}
 .pname .ownly-k{display:inline-flex;font-style:normal;line-height:0;color:var(--danger-ink)}
-.mx td.held{text-align:right;padding-right:16px;font:500 var(--t-lg)/1 var(--data);color:var(--ink2);
-  font-variant-numeric:tabular-nums}
+.mx td.held{font:500 var(--t-lg)/1 var(--data);color:var(--ink2);font-variant-numeric:tabular-nums}
 .mx td.held.spof{color:var(--warn)}
 .mx td.held.zero{color:var(--del)}
 
@@ -3114,7 +3115,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* The whole head opens the drawer -- the Edit and Revoke chips on it were a third affordance for a thing
    the block itself should do. Harkirat, 2026-09-11 13:53 EDT: "those buttons are useless since the entire
    box should be opening their detailed drawer anyway." */
-.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 8px 9px;width:100%;
+.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 7px;width:100%;
   border:1px solid transparent;border-radius:var(--rad-2) var(--rad-2) 0 0;position:relative;
   background:none;cursor:pointer;font:inherit;color:inherit;text-align:center}
 .colh:hover{background:var(--hi);border-color:var(--rule)}
@@ -3139,9 +3140,17 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    portal everything is --paper, so a --paper box on a --paper panel is an invisible box with a border
    around it -- which is exactly what "you just slapped them in" looks like. Both the grid and the legend
    are inset surfaces now. Harkirat, 2026-09-11 14:15 EDT. */
-.mxlegend-box{display:flex;flex-direction:column;gap:10px;margin:0 16px var(--s4);padding:15px 17px;
-  border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk)}
-.mxlegend-box .lrow{display:flex;align-items:center;gap:12px;font-size:var(--t-sm);color:var(--ink3)}
+/* ⛔ NOT A SECOND BOX. A bordered card inside a bordered panel is the nested-card defect, and on one ground
+   its border encloses nothing. The legend is a FOOTER REGION: one rule above it, the panel's own ground,
+   and the space doing the separating. */
+.mxlegend-box{display:flex;flex-direction:column;gap:var(--s2);margin:var(--s5) 16px var(--s4);
+  padding:var(--s4) 2px 0;border-top:1px solid var(--rule)}
+.mxlegend-box .lrow{display:flex;align-items:center;gap:14px;min-height:0;line-height:1.45;
+  font-size:var(--t-sm);color:var(--ink3)}
+/* the marks were sized for the old foot, where each sat alone on a line; here they set the row height */
+.mxlegend-box .mxlegend{flex:none;width:14px;height:14px;margin:0}
+.mxlegend-box .k{line-height:1}
+.mxlegend-box .k svg{width:13px;height:13px}
 .mxlegend-box .lrow b{color:var(--ink);font-weight:600}
 .mxlegend-box .k{display:flex;align-items:center;gap:7px;flex:none;min-width:124px;color:var(--ink2);
   font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase}

@@ -377,7 +377,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                                 <span class=${'mxav' + (u && u.avatarUrl ? ' has' : '')} aria-hidden="true"
                                                       style=${u && u.avatarUrl ? `--av-src:url(${u.avatarUrl})` : ''}>${u && u.avatarUrl ? '' : name.slice(0, 1).toUpperCase()}</span>
                                                 <b>${name}</b>
-                                                <span class="clbl">${isOwner ? 'owner' : (u ? `@${u.username}` : nv || '')}</span>
+                                                <span class="clbl">${isOwner ? 'owner' : (u ? `@${u.username}` : html`…${a.discordId.slice(-6)}`)}</span>
                                             </button>
                                         </th>`;
                                 })}
@@ -746,7 +746,8 @@ export function AccessRealm({ session }) {
     // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By permission']} onSetView=${setView}
-                  meta=${viewMeta} realmKey=${accessKey}
+                  ${''/* ⛔ NO realmKey. The view bar carried direct / inherited / the amber count / owner-grantable -- the same four marks the foot legend states better, a few hundred pixels above it. Two authorities for one fact is the defect this realm's own comments keep recording being fixed, and this pass added the second one without removing the first. */}
+                  meta=${viewMeta}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}

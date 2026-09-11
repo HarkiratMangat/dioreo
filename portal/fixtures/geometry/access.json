@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T18:50:46.034Z",
-  "commit": "2d088585",
+  "recordedAt": "2026-09-11T19:09:44.697Z",
+  "commit": "5edbf194",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,12 +9,13 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 366,
+        "examined": 354,
         "nearMisses": 12,
-        "sizeIssues": 117,
+        "sizeIssues": 119,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
           "gh>td|h",
           "ghead>h4|h",
           "grp>gh|h",
@@ -28,7 +29,7 @@
           "grp>prow|TOP-OFFSET",
           "grp>prow|TOP-OFFSET",
           "grp>prow|TOP-OFFSET",
-          "l>i|TOP-OFFSET",
+          "lrow>k|TOP-OFFSET",
           "lrow>k|h",
           "mxc-name>pname|TOP-OFFSET",
           "mxc-name>pname|TOP-OFFSET",
@@ -128,6 +129,7 @@
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
+          "root>ghead|h",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]
@@ -140,10 +142,10 @@
         ],
         "cols": [
           "Permission",
-          "Dior (fixture)owner",
-          "Dior (fixture)@diorswrld",
-          "Dior (fixture)@diorswrld",
-          "Dior (fixture)@diorswrld",
+          "Gunsmithowner",
+          "Moddy@moddy",
+          "Calhelper@calhelper",
+          "Gunsmith@gunsmith",
           "Held"
         ],
         "sections": []
@@ -151,14 +153,14 @@
     },
     "By permission": {
       "grid": {
-        "examined": 229,
+        "examined": 217,
         "nearMisses": 10,
         "sizeIssues": 8,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|h",
+          "[object>[object.SVGAnimatedString]|w",
           "hs>holder|w",
-          "l>i|TOP-OFFSET",
           "mxfoot>span|TOP-OFFSET",
           "root>b|TOP-OFFSET",
           "stat>k|TOP-OFFSET",
