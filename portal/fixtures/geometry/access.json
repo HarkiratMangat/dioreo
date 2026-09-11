@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T21:31:52.691Z",
-  "commit": "2ea353bd",
+  "recordedAt": "2026-09-11T21:37:36.669Z",
+  "commit": "9b3f469a",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -11,15 +11,13 @@
       "grid": {
         "examined": 402,
         "nearMisses": 13,
-        "sizeIssues": 140,
+        "sizeIssues": 138,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
           "[object>[object.SVGAnimatedString]|w",
           "callout>b|TOP-OFFSET",
-          "gh>td|h",
           "ghead>h4|h",
-          "grp>gh|h",
           "grp>prow|TOP-OFFSET",
           "grp>prow|TOP-OFFSET",
           "grp>prow|TOP-OFFSET",

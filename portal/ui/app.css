@@ -3091,12 +3091,20 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
    a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
 .mx tbody[data-grp=command] .gh td{border-top:0}
-.mx tbody[data-grp=page] .gh td{border-top:1px solid var(--rule)}
+/* 🔴 THE BRIGHT LINE UNDER THE LAST COMMAND ROW WAS THIS, NOT THAT ROW'S OWN BORDER. The page group's heading carried `border-top:1px solid var(--rule)` while every ordinary row border is `--rule3`, so a separator meant to be quiet landed brighter than the twelve rules above it and read as a panel edge halfway down the grid. The gap between the two groups already separates them, and the heading's own weight says where the second tier starts. Harkirat, 2026-09-11 17:34 EDT. */
+.mx tbody[data-grp=page] .gh td{border-top:0}
 .mx tbody[data-grp=page] .ghead h4{font-size:13.5px;color:var(--ink2)}
 .mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--rule2);padding-left:20px}
 .mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--rule2)}
-.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:34px}
-.mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:14px}
+/* 🔴 ONE LEFT EDGE FOR ALL TWELVE, AND THE BRACKET'S WEIGHT CARRIES THE TIER INSTEAD. The page tier was
+   indented 13px further than the command tier -- 2px border + 20px against 1px + 34px -- so the two blocks
+   of left-aligned text started at different x and read as an accident rather than as a hierarchy. Measured
+   2026-09-11 17:33 EDT, and measured against the pre-change tree first: these numbers are IDENTICAL on both
+   sides, so this is not a regression from today's work, it is a thing that has been wrong since the tier
+   brackets went in and he is the first to look at it straight. The signal that remains is the bracket being
+   2px against 1px, plus the heading's own size and ink -- both of which say "tier" without moving the text. */
+.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:21px}
+.mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:1px}
 /* the bracket closes with a foot on the group's last row, so it encloses rather than merely runs alongside */
 .mx tbody.grp tr[data-last] td.mxc-name{position:relative}
 .mx tbody.grp tr[data-last] td.mxc-name::after{content:"";position:absolute;bottom:-1px;height:1px;
@@ -3119,11 +3127,12 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    its permissions into the row hover state and runs the bracket from the first of them up past the heading
    itself, so the thing the label names is outlined rather than merely described. `:has` is what makes a
    heading reach its own later siblings; verified supported in the harness Chrome before this was written,
+   ⚠️ AND THE TRIGGER IS THE HEADING ROW, NOT THE WORDS IN IT. It used to be the h4 alone, so the gesture died in the padding left of the label and over the figure at the right -- a band the eye reads as one object, responding on only part of itself. `.gh td` is the colspan cell, so the hover is the full width. Harkirat, 2026-09-11 17:34 EDT.
    rather than assumed. */
-.mx tbody.grp:has(.ghead h4:hover) .pname b{color:var(--ink)}
-.mx tbody.grp:has(.ghead h4:hover) .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-.mx tbody.grp:has(.ghead h4:hover) td.mxc-name,
-.mx tbody.grp:has(.ghead h4:hover) .gh td:first-child{border-left-color:var(--ink3)}
+.mx tbody.grp:has(.gh td:hover) .pname b{color:var(--ink)}
+.mx tbody.grp:has(.gh td:hover) .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
+.mx tbody.grp:has(.gh td:hover) td.mxc-name,
+.mx tbody.grp:has(.gh td:hover) .gh td:first-child{border-left-color:var(--ink3)}
 @media (prefers-reduced-motion:reduce){.pname b,.pname i{transition:none}}
 
 /* a permission is a swatch and a name, on one baseline */
