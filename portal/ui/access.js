@@ -628,13 +628,14 @@ function ByScope({ matrix, spof, ownerId, nameOf, who }) {
                                 const alone = b.k === 0;
                                 const lone = b.k === 1;
                                 return html`
-                        <div class=${'scope' + (alone ? ' spof' : lone ? ' lone' : '')} style=${`--c:${accentOf(sc)}`}>
+                        <div class=${'scope' + (alone ? ' spof' : lone ? ' lone' : '')} data-kind=${sc.kind}
+                             style=${`--c:${accentOf(sc)}`}>
                             <!-- The name is the LABEL with the raw token beside it, not the token alone: the token
                                  is what you type into a grant and the label is what it means, and a list showing
                                  only the token asks the reader to translate twelve of them. -->
-                            <span class="nm"><i></i><b>${sc.label || sc.key}</b><em>${sc.key}</em></span>
-                            <!-- The tier, which this list could not say at all. The grid carries it structurally, in two labelled blocks with brackets of different weight; a flat list ordered by holder count cannot, so it says it in a word per row. -->
-                            <span class="tk" data-kind=${sc.kind}>${sc.kind === 'command' ? 'command' : '/manage page'}</span>
+                            <!-- 🔴 THE TIER IS THE BRACKET, NOT A CHIP, and the first version got this exactly backwards. The grid carries command-versus-page in a left bracket -- 2px against 1px, running the height of the group -- and I brought over a bordered box in a column of its own instead, which Harkirat called "slapped on" and was: a new component saying a thing the realm already has a device for. The row wears the same bracket the grid does, and the WORD rides in the token line, where the technical detail already lives, rather than in a box. 2026-09-11 18:35 EDT. -->
+                            <span class="nm"><i></i><b>${sc.label || sc.key}</b>
+                                <em>${sc.key}<s>${sc.kind === 'command' ? 'command' : '/manage page'}</s></em></span>
                             <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
                             <span class="rl">${sc.realm ? html`reaches <b>${sc.realm}</b>` : html`<span class="none">Discord only</span>`}</span>
                             <span class="hs">

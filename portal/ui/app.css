@@ -3176,7 +3176,12 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* 🔴 THE BRIGHT LINE UNDER THE LAST COMMAND ROW WAS THIS, NOT THAT ROW'S OWN BORDER. The page group's heading carried `border-top:1px solid var(--rule)` while every ordinary row border is `--rule3`, so a separator meant to be quiet landed brighter than the twelve rules above it and read as a panel edge halfway down the grid. The gap between the two groups already separates them, and the heading's own weight says where the second tier starts. Harkirat, 2026-09-11 17:34 EDT. */
 .mx tbody[data-grp=page] .gh td{border-top:0}
 .mx tbody[data-grp=page] .ghead h4{font-size:13.5px;color:var(--ink2)}
-.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--rule2);padding-left:20px}
+/* 🔴 THE BRACKET WEARS THE PERMISSION'S OWN COLOUR HERE TOO. Harkirat, 2026-09-11 18:36 EDT, having seen it
+   on By permission: "1 thing i do like is the left border being accent color, can you do that same thing on
+   the by admin panel as well?" It also tidies the realm's own rule rather than bending it -- WEIGHT carries
+   the tier, 2px against 1px, and COLOUR carries the topic, which is the split this grid states everywhere
+   else. `--c` comes from `tr.prow`'s own style, set for the HELD count, so nothing new is threaded through. */
+.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--c,var(--rule2));padding-left:20px}
 .mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--rule2)}
 /* 🔴 ONE LEFT EDGE FOR ALL TWELVE, AND THE BRACKET'S WEIGHT CARRIES THE TIER INSTEAD. The page tier was
    indented 13px further than the command tier -- 2px border + 20px against 1px + 34px -- so the two blocks
@@ -3185,7 +3190,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    sides, so this is not a regression from today's work, it is a thing that has been wrong since the tier
    brackets went in and he is the first to look at it straight. The signal that remains is the bracket being
    2px against 1px, plus the heading's own size and ink -- both of which say "tier" without moving the text. */
-.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:21px}
+.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--c,var(--rule2));padding-left:21px}
 .mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:1px}
 /* the bracket closes with a foot on the group's last row, so it encloses rather than merely runs alongside */
 .mx tbody.grp tr[data-last] td.mxc-name{position:relative}
@@ -3204,7 +3209,9 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    the row under the pointer, where it used to light every row in the tier at once. Harkirat, 2026-09-11 17:01 EDT. */
 .mx tbody.grp tr.prow:hover .pname b{color:var(--ink)}
 .mx tbody.grp tr.prow:hover .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-.mx tbody.grp tr.prow:hover td.mxc-name{border-left-color:var(--ink3)}
+/* The bracket is already the permission's colour at rest, so the hover cannot be "light the bracket" any
+   more -- it THICKENS instead, which is the one change that reads without introducing a second colour. */
+.mx tbody.grp tr.prow:hover td.mxc-name{box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 60%,transparent)}
 /* 🔴 AND THE SECTION HEADING IS THE SAME GESTURE AT THE TIER'S SCALE: hovering "Commands" puts all four of
    its permissions into the row hover state and runs the bracket from the first of them up past the heading
    itself, so the thing the label names is outlined rather than merely described. `:has` is what makes a
@@ -3213,7 +3220,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    rather than assumed. */
 .mx tbody.grp:has(.gh td:hover) .pname b{color:var(--ink)}
 .mx tbody.grp:has(.gh td:hover) .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-.mx tbody.grp:has(.gh td:hover) td.mxc-name,
+.mx tbody.grp:has(.gh td:hover) td.mxc-name{box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 60%,transparent)}
 .mx tbody.grp:has(.gh td:hover) .gh td:first-child{border-left-color:var(--ink3)}
 @media (prefers-reduced-motion:reduce){.pname b,.pname i{transition:none}}
 
@@ -3381,22 +3388,42 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mxlegend.on{background:var(--ink2)}
 .mxlegend.inh{background:transparent;border:2px solid var(--ink2)}
 .scopes{display:flex;flex-direction:column;gap:1px;padding:12px 16px;background:var(--rule3)}
-.scope{display:grid;grid-template-columns:210px auto 1fr auto;gap:12px;align-items:center;
-  padding:9px 12px;background:var(--paper);border-left:2px solid var(--c)}
-/* 🔴 THE SWATCH IS BACK, AND IT IS THE GRID'S OWN. `.scope .nm i{display:none}` hid it, so this list had a
-   `--c` on every row and nothing wearing it -- twelve permissions the grid tells apart by colour, rendered
-   here as twelve identical lines of text. Same 15x8 pill as `.pname i`, same lift on hover, because it is the
-   same object seen from the other axis. Harkirat, 2026-09-11 18:14 EDT. */
-.scope .nm{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:1px 10px;
-  align-items:center;font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
+/* ══ BY PERMISSION — the same objects as the grid, seen down the other axis ═══════════════════════════
+   🔴 `.scope` WAS DECLARED TWICE, 12 LINES APART, AND THE SECOND ERASED THE FIRST'S BRACKET. One set
+   `border-left:2px solid var(--c)`; the one I added for the hover set it `transparent`, won on source order,
+   and left every row with an invisible 2px inset lining up with nothing -- which is the "left side border of
+   the fill isn't aligned" he saw at 2026-09-11 18:35 EDT. Exactly the duplicate-selector defect this
+   stylesheet has a filed item about, written fresh by me the same afternoon. One declaration now.
+   🔴 AND THE TIER IS THE BRACKET, WHICH IS WHAT "TRICKLE IT DOWN" ACTUALLY MEANT. The grid says
+   command-versus-page with a left bracket, 2px against 1px. I brought over a BORDERED CHIP in a column of
+   its own -- a new component restating a thing the realm already has a device for, which is what "slapped
+   on" means. The bracket does it here too; the word moves into the token line beside the raw scope, where
+   the technical detail already lives; the chip is deleted.
+   ⚠️ THE TWO WEIGHTS MUST NOT MOVE THE TEXT. 2px+18 and 1px+19 both put the swatch 20px from the row's edge,
+   so twelve rows share one left edge whatever their tier -- the same correction the grid's own tiers needed
+   at 17:33 today. */
+.scope{display:grid;grid-template-columns:250px 1fr auto;gap:14px;align-items:center;
+  padding:9px 12px 9px 18px;background:var(--paper);
+  border-left:2px solid var(--c);
+  transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.scope[data-kind=page]{border-left-width:1px;padding-left:19px}
+.scope:hover{background:var(--hi);box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 55%,transparent)}
+/* 🔴 THE SWATCH IS BACK. `.scope .nm i{display:none}` hid it, so this list had a `--c` on every row and
+   nothing wearing it -- twelve permissions the grid tells apart by colour, rendered as twelve identical lines
+   of text. Same 15x8 pill as `.pname i`, same ring on hover, because it is the same object. */
+.scope .nm{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:2px 10px;
+  align-items:center;min-width:0}
 .scope .nm i{grid-row:1 / span 2;display:block;width:15px;height:8px;border-radius:var(--rad-1);
   background:var(--c);flex:none;transition:box-shadow var(--dur-1) var(--ease)}
-.scope .nm b{font:inherit}
+.scope .nm b{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink);letter-spacing:.01em}
+/* The token and the tier on one line: what you would type, and what kind of thing it is. */
+.scope .nm em{display:flex;align-items:center;gap:7px;min-width:0;font-style:normal;
+  font:500 var(--t-xs)/1.3 var(--mono);color:var(--ink3);letter-spacing:.02em}
+.scope .nm em s{text-decoration:none;font-family:var(--ui);font-weight:600;font-size:var(--t-micro);
+  letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink3);
+  padding-left:7px;border-left:1px solid var(--rule2)}
+.scope[data-kind=command] .nm em s{color:var(--ink2)}
 .scope:hover .nm i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-/* A bracket in the row's own colour, lit from anywhere in the row -- the grid's hover, corrected the same
-   way: the unit a reader is asking about is the ROW, not the cell their pointer happens to be over. */
-.scope{border-left:2px solid transparent;transition:border-color var(--dur-1) var(--ease)}
-.scope:hover{border-left-color:color-mix(in srgb,var(--c) 55%,transparent)}
 @media (prefers-reduced-motion:reduce){.scope,.scope .nm i{transition:none}}
 .scope .nm em{font:500 var(--t-xs)/1 var(--mono);font-style:normal;color:var(--ink3);letter-spacing:.02em}
 /* A holder is a FACE and a name. The same shared identity this realm resolves once for the grid, the bars,
@@ -3410,12 +3437,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .scope .holder .hav.has{background:var(--av-src) center/cover no-repeat;color:transparent}
 .scope .holder.none{padding:3px 9px}
 .scope .rl{font-size:var(--t-sm);color:var(--ink3);white-space:nowrap}
-/* The tier, as a word, because a flat list ordered by holder count cannot carry it structurally the way the
-   grid's two labelled blocks do. Quiet by design: it is a qualifier on the name, not a third status. */
-.scope .tk{justify-self:start;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
-  text-transform:uppercase;color:var(--ink3);border:1px solid var(--rule);border-radius:var(--rad-1);
-  padding:3px 6px;white-space:nowrap}
-.scope .tk[data-kind=command]{color:var(--ink2);border-color:var(--rule2)}
+/* `.tk` lived here until 2026-09-11 18:35 EDT -- a bordered chip in a column of its own, restating what the
+   row's bracket now says. Removed with its emitter rather than left behind as an orphan. */
 /* The flag sits INLINE at the end of the row, not on a full-width line of its own — a short
  * string stretched across 1400px reads as an empty bar and takes more visual weight than the
  * finding deserves. It wraps under only when the row itself collapses at narrow widths. */
@@ -6335,7 +6358,11 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
    a GROUP of scopes, so it is said once above the group and the rows carry only what differs. */
 /* The grid's group-heading shape: a name, a rule running the width, the figure at the far end. It was a name, a sentence and a number with nothing tying them together. The rule is the note's own ::after rather than an extra element, so nothing is emitted that a class scan would have to know about. */
 .scbandh span::after{content:"";display:inline-block;width:100%}
-.scbandh{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4) var(--s2);
+/* 🔴 THE BAND HEADING SHARES THE ROWS' TEXT EDGE. It sat on the list's generic gutter, so a heading started
+   27px left of the names it was heading -- two left edges on one block, which is half of what "nothing feels
+   naturally implemented" was pointing at. 45px is the row's 20px content inset plus the 15px swatch plus its
+   10px gap: the grid's own `.ghead` arithmetic, not a number picked to look right. */
+.scbandh{display:flex;align-items:center;gap:var(--s2);padding:var(--s4) var(--s4) var(--s2) 45px;
   background:var(--raised);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .scbandh b{font:600 var(--t-micro)/1.3 var(--data);letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink2)}
 .scbandh span{font:400 var(--t-sm)/1.4 var(--ui);color:var(--ink3)}
