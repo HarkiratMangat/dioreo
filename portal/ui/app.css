@@ -2231,8 +2231,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    not, and the glow, the pulsar and the age all read it -- so a session going quiet cannot turn red in two
    places and stay green in a third. That failure mode is not hypothetical on this surface: the row already
    carried a `.stale` class that changed the dot and nothing else.
-   ⚠️ THE AVATAR IS EDGE TO EDGE, which is why the padding lives on the CONTENT and not on the row, and why
-   the row clips. A square that stops short of the border is a thumbnail; one that meets it is a face. */
+   ⚠️ AND IT IS NOT EDGE TO EDGE, WHICH WAS MY IDEA AND HIS CORRECTION. "a square that meets the border is a face" was a nice line and wrong in practice: a portrait avatar square-cropped to the full row height cuts the head off, and the image then fights the row's own rounded corner for the same pixels. Inset, rounded to 42px and given a hairline in the state's colour, it reads as a portrait rather than as a panel somebody pasted a photo into. Harkirat, 2026-09-11 18:08 EDT. */
 .sess{--live:var(--ok);
   display:grid;grid-template-columns:auto 18px 1fr auto auto;gap:0 14px;align-items:center;
   background:
@@ -2240,12 +2239,13 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
     radial-gradient(34% 220% at 22% 0%, color-mix(in srgb,var(--live) 9%,var(--sunk)) 0%, transparent 70%),
     var(--sunk);
   border:1px solid color-mix(in srgb,var(--live) 22%,var(--rule));border-radius:var(--rad-2);
-  padding:0 14px 0 0;min-height:64px;overflow:hidden}
+  padding:11px 14px;min-height:64px}
 .sess.stale{--live:var(--del)}
-.sess .savatar{align-self:stretch;width:64px;flex:none;display:grid;place-items:center;
-  background:var(--sunk);border-right:1px solid color-mix(in srgb,var(--live) 18%,var(--rule))}
+.sess .savatar{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:var(--rad-2);
+  background:var(--sunk);border:1px solid color-mix(in srgb,var(--live) 30%,var(--rule2));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 7%,transparent)}
 .sess .savatar.has{background:var(--av-src) center/cover no-repeat,var(--sunk)}
-.sess .savatar b{font:600 var(--t-lg)/1 var(--data);color:var(--ink3)}
+.sess .savatar b{font:600 var(--t-md)/1 var(--data);color:var(--ink3)}
 /* A session that is gone should not have a face lit like one that is here. */
 .sess.stale .savatar.has{filter:grayscale(.55) brightness(.78)}
 .sess:hover{border-color:color-mix(in srgb,var(--live) 42%,var(--rule))}
@@ -2253,63 +2253,54 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    bounded result. `--raised` here instead of `--sunk` because that is this row's own ground. */
 /* The avatar-derived mesh lived here from 2026-09-11 17:44 until 18:03 EDT and is deliberately gone: the
    ground states the SESSION'S state now, and the avatar states whose it is. See SessionRow's own note. */
-/* 🔴 A LIVE DOT THAT DOES NOT MOVE IS A PAINTED CLAIM. ⚠️ TWO CARDS OF HIS DESIGN SYSTEM ARE MIXED HERE ON
-   PURPOSE, AND I NAMED THE WRONG ONE FIRST. The brief is card #04 HAWKING PULSAR -- a pulsing glow, a slow
-   ring, a black core with a white hairline, a small bright centre -- but #04 has no CSS of its own: it is
-   Tailwind's `animate-pulse` over `animate-spin` on a UNIFORM border, which cannot show rotation at all. The
-   mechanism that makes the ring readable comes from card #01's `.accretion-disk-3d`, a conic gradient with a
-   bright white lead, blurred and spun. #04 is the brief; #01 is how it is drawn. Harkirat sent a
-   Tailwind snippet, then the gif, then the source it came from -- `local/reference/2026-09-11-void-black-hole-
-   design-system.html`, his own file, copied in before being cited. 2026-09-11 17:47-17:52 EDT.
-   🔴 THE SOURCE SETTLED SOMETHING I HAD ALREADY GOT RIGHT AND THEN TALKED MYSELF OUT OF. My first build made
-   the outer ring a spinning conic ARC, reasoning that a uniform border cannot show rotation. The gif then
-   looked like a static ring with a breathing core, so I deleted the arc and animated the core instead. The
-   source says the arc was correct: `.accretion-disk-3d` IS a conic gradient with a bright white lead, blurred
-   and spinning at 1.8s, and it only READ as static because it is tilted 74 degrees and blurred into a haze.
-   Reverse-engineering a render is a guess; the file is the fact. ⚠️ The lesson is not "trust the source" --
-   it is that I dropped a correct mechanism on the evidence of a low-resolution render, and the render could
-   not have distinguished the two.
-   Three layers, the source's own three, and no extra markup: ::before is the accretion disk, ::after is the
-   lensing halo fused with the singularity core, and the element carries the outward glow.
-   ⚠️ TWO DELIBERATE DEPARTURES AT 18px AGAINST THE SOURCE'S 140px. The disk is NOT given the source's
-   `rotateX(74deg)`: an 18px disk tilted to 74 degrees is a 5px line, which is a smudge rather than a disk.
-   And the halo is not blurred 1.5px -- a blurred hairline at this size is not a hairline, it is a grey fog.
-   Both are scale adaptations, not corrections; the conic lead, the white ring, the black core and the two
-   periods are the source's. */
+/* 🔴 A LIVE DOT THAT DOES NOT MOVE IS A PAINTED CLAIM, AND THIS ONE PULSES. Harkirat's brief is card #04
+   HAWKING PULSAR from `local/reference/2026-09-11-void-black-hole-design-system.html` -- a pulsing glow, a
+   ring, a black core with a white hairline, a small bright centre.
+   ⚠️ I BUILT THIS TWICE AND SHIPPED THE WRONG ONE. The second build made the ring a spinning conic arc,
+   borrowed from card #01's accretion disk, on the reasoning that the reference's own `animate-spin` over a
+   uniform border cannot show rotation -- true, and beside the point: he asked for a PULSE and the argument
+   about what a spin can and cannot show is an argument about a mechanism nobody wanted. 2026-09-11 18:07 EDT,
+   "i liked the pulse better." The spin is gone and is not coming back on my initiative.
+   Three layers, no extra markup: the element is the outer ring, the breathing halo and the departing ping;
+   ::before is the black core with its white hairline; ::after is the bloom inside it.
+   🔴 WHAT IS MINE RATHER THAN THE REFERENCE'S IS THE PING AND THE IGNITION, and both are arguments about
+   meaning. The reference throbs in place, which says "something is lit"; this row has to say "someone is
+   HERE, NOW", so a second ring departs the core and fades -- direction rather than oscillation, and the one
+   motion that still reads at 18px. And the bloom CONTRACTS as it brightens rather than swelling: measured
+   frame by frame off his own gif, the core goes from a diffuse wash to a small white-hot point, which reads
+   as ignition where swelling reads as a throb.
+   🔴 THE PERIODS LOCK 2:1 -- 2.4s and 1.2s -- so exactly two ignitions fall inside one ping. They were 2.8s
+   and 1.9s, which realign only every 53 seconds, and that drift is what made the two layers look like two
+   animations sharing a box rather than one object. Harkirat, "make the animation better sync." */
 .sess .sdot{position:relative;width:18px;height:18px;border-radius:var(--rad-round);
-  box-shadow:0 0 10px 1px color-mix(in srgb,var(--live) 22%,transparent)}
-.sess .sdot::before{content:"";position:absolute;inset:-2px;border-radius:inherit;
-  background:conic-gradient(from 0deg,#fff 0%,var(--live) 22%,
-    color-mix(in srgb,var(--live) 22%,transparent) 48%,transparent 64%,
-    color-mix(in srgb,var(--live) 70%,transparent) 86%,#fff 100%);
-  filter:blur(1.6px);opacity:.85;
-  animation:void-spin 2.4s linear infinite}
-.sess .sdot::after{content:"";position:absolute;inset:3px;border-radius:inherit;
-  background:var(--desk);border:1.5px solid color-mix(in srgb,#fff 82%,transparent);
-  box-shadow:0 0 7px 1px color-mix(in srgb,var(--live) 55%,transparent),
-             inset 0 0 6px 0 color-mix(in srgb,var(--live) 60%,transparent);
-  animation:void-shimmer 2.4s ease-in-out infinite alternate}
-/* 🔴 THE TWO PERIODS LOCK 2:1 RATHER THAN DRIFTING, and that is the whole of the "better sync" he asked for
-   at 2026-09-11 17:55 EDT. They were 1.8s and 3s: the shimmer ALTERNATES, so its true period is 6s against a
-   1.8s rotation -- a 10:3 relationship that only realigns every 18 seconds, which is why the disk and the
-   core looked like two animations sharing a box rather than one object. At 2.4s each, the shimmer's full
-   round trip is 4.8s = exactly two rotations, so the bright lobe returns to the top at every extreme of the
-   breath: brightest on one pass, dimmest on the next, forever. Nothing drifts and nothing repeats too
-   obviously. */
-@keyframes void-spin{to{transform:rotate(360deg)}}
-@keyframes void-shimmer{
-  0%{transform:scale(.97);box-shadow:0 0 5px 0 color-mix(in srgb,var(--live) 42%,transparent),
-       inset 0 0 4px 0 color-mix(in srgb,var(--live) 45%,transparent)}
-  100%{transform:scale(1.04);box-shadow:0 0 10px 2px color-mix(in srgb,var(--live) 70%,transparent),
-        inset 0 0 8px 0 color-mix(in srgb,var(--live) 75%,transparent)}}
-/* A session last seen an hour ago is not live, and nothing about it should breathe. */
+  border:1px solid color-mix(in srgb,var(--live) 32%,transparent);
+  animation:sess-ping 2.4s ease-out infinite}
+.sess .sdot::before{content:"";position:absolute;inset:3.5px;border-radius:inherit;
+  background:var(--desk);border:1px solid color-mix(in srgb,#fff 80%,transparent);
+  box-shadow:0 0 9px -2px var(--live)}
+.sess .sdot::after{content:"";position:absolute;inset:5.5px;border-radius:inherit;
+  background:radial-gradient(circle,#fff 0%,color-mix(in srgb,var(--live) 88%,#fff) 34%,
+    color-mix(in srgb,var(--live) 52%,transparent) 68%,transparent 100%);
+  animation:sess-bloom 1.2s ease-in-out infinite}
+@keyframes sess-ping{
+  0%{border-color:color-mix(in srgb,var(--live) 32%,transparent);
+     box-shadow:0 0 8px 0 color-mix(in srgb,var(--live) 16%,transparent),0 0 0 0 color-mix(in srgb,var(--live) 46%,transparent)}
+  55%{border-color:color-mix(in srgb,var(--live) 54%,transparent);
+      box-shadow:0 0 14px 2px color-mix(in srgb,var(--live) 30%,transparent),0 0 0 6px color-mix(in srgb,var(--live) 6%,transparent)}
+  100%{border-color:color-mix(in srgb,var(--live) 32%,transparent);
+       box-shadow:0 0 8px 0 color-mix(in srgb,var(--live) 16%,transparent),0 0 0 9px transparent}}
+@keyframes sess-bloom{
+  0%,100%{opacity:.58;transform:scale(1.18);filter:blur(2.3px)}
+  50%{opacity:1;transform:scale(.6);filter:blur(.5px)}}
 /* 🔴 THE SAME OBJECT, FROZEN AND RED -- not a different, smaller dot. Replacing it with a grey pip made the
    two states two unrelated marks, so a reader had to learn both; a stopped pulsar is legible as the live one
    with the life taken out of it, which is exactly the fact. Harkirat, 2026-09-11 18:03 EDT: "the animation
    would stop animating and change to a static version of it in red shading." */
 .sess.stale .sdot,.sess.stale .sdot::before,.sess.stale .sdot::after{animation:none}
-.sess.stale .sdot::before{opacity:.55;transform:rotate(38deg)}
-.sess.stale .sdot::after{transform:scale(1)}
+/* Frozen at the bloom's own resting frame -- diffuse and dim, which is what a core looks like when nothing
+   is igniting it -- rather than at an arbitrary point mid-pulse. */
+.sess.stale .sdot::after{opacity:.5;transform:scale(1.18);filter:blur(2.3px)}
+.sess.stale .sdot{box-shadow:0 0 8px 0 color-mix(in srgb,var(--live) 14%,transparent)}
 /* Frozen, not removed: the pulsar's resting frame is still a lit core inside a ring, which is the fact. */
 /* Frozen, not removed: the resting frame is still a lit core inside a ring, which is the fact it states. */
 @media (prefers-reduced-motion:reduce){
