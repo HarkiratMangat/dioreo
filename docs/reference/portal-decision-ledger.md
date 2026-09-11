@@ -585,6 +585,27 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 
 **Two gates moved with it, and neither was relaxed.** `portalApi`'s grant-arity tripwire now pins the parameter NAMES and separates the declared arity (5) from the required floor (4), because `title`'s absence is what tells the server to leave a stored label alone — the same rule `note` already had, now with its own three checks. `portalHarness` was **red on clean HEAD**: the `/api/discord/user` stub's own comment promised an `ok`/`reason` superset it never emitted. Fixed rather than filed, since the gate's whole subject is the stub agreeing with the route.
 
+## ✅ ACCESS IS DONE — his verdict, 2026-09-11 18:45 EDT
+
+> *"consider access realm basically complete at this point. it needs no major changes. a few tweaks here or there in the future before launch, but nothing serious. this is the first realm i can confidently mark 'done'."*
+
+🔴 **NOTHING IN THIS REPO TRACKED PER-REALM COMPLETION UNTIL THIS ROW.** `docs/ROADMAP.md`'s launch checklist tracks deploy steps, `portal-launch-checklist.md` tracks production, the conformance plan tracked its own passes — and a realm being *finished as a design* had no home, so the first time he said it there was nowhere to put it. The table below is that home.
+
+| Realm | Status | Whose call, when |
+|---|---|---|
+| **access** | ✅ **DONE** — no major changes expected before launch | Harkirat, 2026-09-11 18:45 EDT |
+| season · armory · broadcast · review · analytics · home | conformed and built; **not declared done** | — |
+
+⚠️ **"DONE" IS A DESIGN VERDICT AND IT CLOSES NOTHING THAT WAS ALREADY OPEN.** Writing it down without this boundary is how a filed item disappears into a status word. Still live, all of them on or adjacent to Access:
+
+| Still open | Why "done" does not close it |
+|---|---|
+| `[P1]` which commands confer which `/manage` pages | A permission MODEL, not a surface — and it must be answered identically in `portal/api/access.js` and the bot's `utils/adminAccess.js` |
+| `[P2]` session history + the `portal/auth.js` age check | A security finding and a data-retention change, neither visible on the page |
+| `[P3]` By permission behind its flag | He asked for it hidden, not decided |
+| `[P3]` the tooltip redesign | Portal-wide, disabled everywhere, not Access's own |
+| §L condition ⑥ — the reader test | Never run on Access or Broadcast. His verdict is a reader test by the only reader who matters, which is **better evidence than the procedure**, but it is not the procedure having run |
+
 ## Decided 2026-09-11 18:42 EDT — Access loses a view, and the bracket settles
 
 | The decision | Falsifier |

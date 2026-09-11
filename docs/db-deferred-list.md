@@ -1481,7 +1481,13 @@ Registered on `Edit|Write` only, so a heredoc write never reaches them: `clock-i
 ### `[P3 · XS]` Access — three cosmetic residuals from the conformance pass
 *Filed 2026-09-01 19:44 EDT. None ships a wrong result; all three are recorded so they are not re-derived.*
 
-① `access.js:266`'s racknote hardcodes *"four commands … and eight /manage pages"* beside a dynamic `${matrix.scopes.length}` — a fifth `ADMIN_COMMANDS` entry makes it read "13 permissions: four commands". Inherited verbatim from `access.html:230`, so a faithful port. ② The export declares `count: data.admins.length` and writes `m.admins`, neither of which contains the owner, while the grid shows `admins + 1` — defensible, but "who can do what" ships without the row the screen paints as holding everything. ③ The Sessions command-palette entry went with the view tab: `shell.js:341-344` derives palette commands from `viewOptions`.
+**RE-READ AGAINST THE TREE 2026-09-11 18:45 EDT, on his "Access is done" verdict — one of the three is gone and one was overstated.**
+
+① ✅ **CLOSED.** The racknote that hardcoded *"four commands … and eight /manage pages"* was deleted on 2026-09-11 in the pin round; its one live fact moved into the legend. Confirmed absent: no `racknote`, no "four commands", no "eight /manage" anywhere in `portal/ui/access.js`.
+
+② ⚠️ **OVERSTATED AND DOWNGRADED TO A LABEL QUESTION.** `portal/api/access.js:125` still returns `count: admins.length`, and that is the correct count OF WHAT THE EXPORT CONTAINS — the granted admins, which is what the `AdminUser` collection holds. The grid shows one more because it draws a SYNTHETIC owner column; the owner is built into `utils/owner.js`, not granted, so there is no row to export. The filing read a deliberate difference as a data defect. What remains is whether the export should SAY so in its header rather than leave a reader to reconcile 3 against 4 — a wording tweak, not a missing row.
+
+③ Still true: the Sessions command-palette entry went with the view tab, since `shell.js` derives palette commands from `viewOptions`. ⚠️ Now compounded — Access has ONE view as of 2026-09-11 18:45 EDT, so the palette's view group is a single entry.
 
 **Verify:** each either fixed or carrying a row in `docs/reference/portal-decision-ledger.md`'s Access section.
 
