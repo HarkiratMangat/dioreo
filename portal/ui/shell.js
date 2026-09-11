@@ -306,12 +306,14 @@ function Account({ session, staged, onSignOut, chrome }) {
                 <div class="usec">
                     <div class="ustat"><span>Session</span><b class="live">${sessionLeft(session.sessionExpiresAt)}</b></div>
                 </div>
-                ${''/* 🔴 THE WAYS OUT — fork 08, and the menu had none. A panel that names who you are and then offers only "sign out" is a dead end; the two places an admin actually goes from here are their own Discord profile and the public site the bot serves. Each names its destination rather than a count, because that is the fact you want before clicking away. */}
+                ${''/* 🔴 THE WAYS OUT — fork 08, and the menu had none. A panel that names who you are and then offers only "sign out" is a dead end; the places an admin actually goes from here are their own Discord profile, the public site, and the two consoles this bot is actually administered from. ⚠️ THE TWO CONSOLE URLS ARE HARKIRAT'S OWN, GIVEN 2026-09-11 17:36 EDT, AND NEITHER IS DERIVABLE FROM THIS REPO -- the Cloudinary console path carries an account hash that appears nowhere in the code, and the production application id is read from the bot token at runtime and is never written down. They were asked for rather than guessed, and a session "tidying" them into a shorter form would break both. Each names its destination rather than a count, because that is the fact you want before clicking away. */}
                 <div class="usec">
                     <a class="mi mi-out" role="menuitem" href="https://dioreo.app" target="_blank" rel="noopener noreferrer">
                         Dioreo<span class="mnote">dioreo.app ↗</span></a>
-                    <a class="mi mi-out" role="menuitem" href="https://dioreo.app/terms" target="_blank" rel="noopener noreferrer">
-                        Terms and privacy<span class="mnote">dioreo.app ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://discord.com/developers/applications/1491474871778021550/" target="_blank" rel="noopener noreferrer">
+                        Developer portal<span class="mnote">discord.com ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://console.cloudinary.com/app/c-8ce65ff8df5c60f1482628a729eec2/assets/media_library/" target="_blank" rel="noopener noreferrer">
+                        Cloudinary assets<span class="mnote">cloudinary.com ↗</span></a>
                 </div>
                 <div class="usec">
                     <!-- The reach is a NOTE on the row it qualifies rather than a stat of its own: "what you can do"
