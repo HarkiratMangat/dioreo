@@ -2226,14 +2226,98 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* ── ACCESS · sessions ─────────────────────────────────────────────────────*/
 .sesslist{display:flex;flex-direction:column;gap:9px;padding:16px}
-.sess{display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;
-  background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:12px 14px}
-.sess:hover{background:var(--hi)}
-.sess .sdot{width:8px;height:8px;border-radius:var(--rad-round);background:var(--ok);
-  box-shadow:0 0 0 3px rgba(61,220,151,.16)}
-.sess.stale .sdot{background:var(--ink4);box-shadow:none}
+/* 🔴 THE ROW IS AN INSET SURFACE NOW, AND THAT IS WHAT MAKES THE TINT BOTH VISIBLE AND LEGAL. Raising the
+   mix on a `--raised` ground to make it perceptible took the user-agent line to 3.5:1 on a real avatar and
+   2.06:1 on a white one, both under AA -- I had measured exactly this on the drawer's bar and then not
+   re-measured after changing the ground underneath it. `--sunk` is the drawer bar's own ground, it is much
+   darker, so a LOW mix reads clearly against it and the text keeps its headroom. Same rule, same numbers,
+   same surface as the thing he asked this to match. */
+.sess{display:grid;grid-template-columns:18px 1fr auto auto;gap:14px;align-items:center;
+  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:12px 14px}
+.sess:hover{border-color:var(--rule2)}
+/* The drawer's identity bar rule, applied to a row: same mix into the ground rather than an alpha wash, same
+   bounded result. `--raised` here instead of `--sunk` because that is this row's own ground. */
+/* 🔴 IT WAS THERE AND IT WAS INVISIBLE, WHICH IS THE SAME AS NOT BEING THERE. Harkirat, 2026-09-11 17:51 EDT:
+   "how does this bar = my avatar colors?" -- a fair question, because at 12/8/7 percent spread across a
+   1300px row the wash was under a point of luminance and what he could actually see was the green dot's own
+   halo. Two changes: the mix is roughly doubled, and the blobs are pulled into the LEFT THIRD, beside the
+   name, so the colour lands where the identity is and fades out under the user-agent string rather than
+   being smeared across the whole row at homeopathic strength. */
+.sess[data-mesh]{background:
+  radial-gradient(50% 300% at 0% 50%, color-mix(in srgb,var(--m1) 11%,var(--sunk)) 0%, transparent 74%),
+  radial-gradient(32% 200% at 14% 0%, color-mix(in srgb,var(--m2) 8%,var(--sunk)) 0%, transparent 72%),
+  radial-gradient(38% 240% at 28% 100%, color-mix(in srgb,var(--m3) 6%,var(--sunk)) 0%, transparent 76%),
+  var(--sunk);
+  border-color:color-mix(in srgb,var(--m1) 30%,var(--rule))}
+.sess[data-mesh]:hover{border-color:color-mix(in srgb,var(--m1) 44%,var(--rule))}
+/* 🔴 A LIVE DOT THAT DOES NOT MOVE IS A PAINTED CLAIM. ⚠️ TWO CARDS OF HIS DESIGN SYSTEM ARE MIXED HERE ON
+   PURPOSE, AND I NAMED THE WRONG ONE FIRST. The brief is card #04 HAWKING PULSAR -- a pulsing glow, a slow
+   ring, a black core with a white hairline, a small bright centre -- but #04 has no CSS of its own: it is
+   Tailwind's `animate-pulse` over `animate-spin` on a UNIFORM border, which cannot show rotation at all. The
+   mechanism that makes the ring readable comes from card #01's `.accretion-disk-3d`, a conic gradient with a
+   bright white lead, blurred and spun. #04 is the brief; #01 is how it is drawn. Harkirat sent a
+   Tailwind snippet, then the gif, then the source it came from -- `local/reference/2026-09-11-void-black-hole-
+   design-system.html`, his own file, copied in before being cited. 2026-09-11 17:47-17:52 EDT.
+   🔴 THE SOURCE SETTLED SOMETHING I HAD ALREADY GOT RIGHT AND THEN TALKED MYSELF OUT OF. My first build made
+   the outer ring a spinning conic ARC, reasoning that a uniform border cannot show rotation. The gif then
+   looked like a static ring with a breathing core, so I deleted the arc and animated the core instead. The
+   source says the arc was correct: `.accretion-disk-3d` IS a conic gradient with a bright white lead, blurred
+   and spinning at 1.8s, and it only READ as static because it is tilted 74 degrees and blurred into a haze.
+   Reverse-engineering a render is a guess; the file is the fact. ⚠️ The lesson is not "trust the source" --
+   it is that I dropped a correct mechanism on the evidence of a low-resolution render, and the render could
+   not have distinguished the two.
+   Three layers, the source's own three, and no extra markup: ::before is the accretion disk, ::after is the
+   lensing halo fused with the singularity core, and the element carries the outward glow.
+   ⚠️ TWO DELIBERATE DEPARTURES AT 18px AGAINST THE SOURCE'S 140px. The disk is NOT given the source's
+   `rotateX(74deg)`: an 18px disk tilted to 74 degrees is a 5px line, which is a smudge rather than a disk.
+   And the halo is not blurred 1.5px -- a blurred hairline at this size is not a hairline, it is a grey fog.
+   Both are scale adaptations, not corrections; the conic lead, the white ring, the black core and the two
+   periods are the source's. */
+.sess .sdot{position:relative;width:18px;height:18px;border-radius:var(--rad-round);
+  box-shadow:0 0 10px 1px color-mix(in srgb,var(--ok) 22%,transparent)}
+.sess .sdot::before{content:"";position:absolute;inset:-2px;border-radius:inherit;
+  background:conic-gradient(from 0deg,#fff 0%,var(--ok) 22%,
+    color-mix(in srgb,var(--ok) 22%,transparent) 48%,transparent 64%,
+    color-mix(in srgb,var(--ok) 70%,transparent) 86%,#fff 100%);
+  filter:blur(1.6px);opacity:.85;
+  animation:void-spin 2.4s linear infinite}
+.sess .sdot::after{content:"";position:absolute;inset:3px;border-radius:inherit;
+  background:var(--desk);border:1.5px solid color-mix(in srgb,#fff 82%,transparent);
+  box-shadow:0 0 7px 1px color-mix(in srgb,var(--ok) 55%,transparent),
+             inset 0 0 6px 0 color-mix(in srgb,var(--ok) 60%,transparent);
+  animation:void-shimmer 2.4s ease-in-out infinite alternate}
+/* 🔴 THE TWO PERIODS LOCK 2:1 RATHER THAN DRIFTING, and that is the whole of the "better sync" he asked for
+   at 2026-09-11 17:55 EDT. They were 1.8s and 3s: the shimmer ALTERNATES, so its true period is 6s against a
+   1.8s rotation -- a 10:3 relationship that only realigns every 18 seconds, which is why the disk and the
+   core looked like two animations sharing a box rather than one object. At 2.4s each, the shimmer's full
+   round trip is 4.8s = exactly two rotations, so the bright lobe returns to the top at every extreme of the
+   breath: brightest on one pass, dimmest on the next, forever. Nothing drifts and nothing repeats too
+   obviously. */
+@keyframes void-spin{to{transform:rotate(360deg)}}
+@keyframes void-shimmer{
+  0%{transform:scale(.97);box-shadow:0 0 5px 0 color-mix(in srgb,var(--ok) 42%,transparent),
+       inset 0 0 4px 0 color-mix(in srgb,var(--ok) 45%,transparent)}
+  100%{transform:scale(1.04);box-shadow:0 0 10px 2px color-mix(in srgb,var(--ok) 70%,transparent),
+        inset 0 0 8px 0 color-mix(in srgb,var(--ok) 75%,transparent)}}
+/* A session last seen an hour ago is not live, and nothing about it should breathe. */
+.sess.stale .sdot{width:10px;height:10px;margin:4px;background:var(--ink4);border:0;box-shadow:none;animation:none}
+.sess.stale .sdot::before,.sess.stale .sdot::after{display:none;animation:none}
+/* Frozen, not removed: the pulsar's resting frame is still a lit core inside a ring, which is the fact. */
+/* Frozen, not removed: the resting frame is still a lit core inside a ring, which is the fact it states. */
+@media (prefers-reduced-motion:reduce){
+  .sess .sdot,.sess .sdot::before,.sess .sdot::after{animation:none}
+  .sess .sdot{box-shadow:0 0 12px 2px color-mix(in srgb,var(--ok) 26%,transparent)}}
+.sessb{min-width:0}
 .sessb b{display:block;font:600 var(--t-md)/1.3 var(--ui);color:var(--ink)}
-.sessb span{display:block;font:400 var(--t-sm)/1.4 var(--data);color:var(--ink3);margin-top:2px}
+.sessb span{display:block;font:400 var(--t-xs)/1.4 var(--data);color:var(--ink3);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* When they were last here, out of the user-agent's tail and into a column of its own. */
+.sess .seen{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;
+  padding-right:14px;border-right:1px solid var(--rule);text-align:right}
+.sess .seen em{font-style:normal;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.sess .seen b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ok);white-space:nowrap}
+.sess.stale .seen b{color:var(--ink2)}
 .sesscur{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ok);border:1px solid var(--ok);border-radius:var(--rad-1);padding:3px 7px}
 
@@ -3150,9 +3234,18 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .pname i{display:block;width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .pname b{font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink);letter-spacing:.01em}
 .pname .ownly-k{display:inline-flex;font-style:normal;line-height:0;color:var(--danger-ink)}
-.mx td.held{font:500 var(--t-lg)/1 var(--data);color:var(--ink2);font-variant-numeric:tabular-nums}
-.mx td.held.spof{color:var(--warn)}
-.mx td.held.zero{color:var(--del)}
+/* 🔴 THE COUNT WEARS ITS OWN PERMISSION'S COLOUR. It used to carry a THIRD meaning -- grey for fine, orange
+   for a single point of failure, red for nobody -- which put a risk vocabulary in a column that answers "how
+   many", on a grid where colour already means topic everywhere else. Harkirat, 2026-09-11 17:45 EDT: "those
+   existing colors lowkey make no sense. just make them match the row's theme color." The single-point and
+   zero-holder facts are not lost: both still reach the reader through the row's own tooltip text, and
+   By permission draws them as bands.
+   ⚠️ MIXED TOWARD --ink, NEVER RAW. A raw accent as TEXT is the defect `project_website_commands_page`
+   records with a measured 4.58:1 floor -- Season Draft's blue and Manage's purple both land near 3.3:1 on
+   --raised, under AA and under this repo's own --ink4 ban. The mix keeps the hue identifiable and the
+   number readable; the ratio below was tuned by measuring all twelve, not chosen. */
+.mx td.held{font:500 var(--t-lg)/1 var(--data);font-variant-numeric:tabular-nums;
+  color:color-mix(in srgb,var(--c,var(--ink2)) 55%,var(--ink))}
 
 /* a column head is a PERSON: identity at rest, and its two verbs only on pointer or focus */
 /* The whole head opens the drawer -- the Edit and Revoke chips on it were a third affordance for a thing

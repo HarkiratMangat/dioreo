@@ -252,7 +252,28 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
 // ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
 
 
-function Sessions({ sessions, onEnd, ttlHours, nameOf }) {
+// 🔴 A ROW IS ITS OWN COMPONENT BECAUSE THE TINT IS A HOOK. `useAvatarTint` cannot be called inside a `.map`, so the row that needs one has to be a component -- the same reason the drawer's bar could do it inline and this could not. Same mesh as the drawer's identity bar, from the same avatar, for the reason he gave: "it helps easily identify the user." Harkirat, 2026-09-11 17:44 EDT.
+function SessionRow({ s, live, name, user, onEnd }) {
+    const tint = useAvatarTint(user ? user.avatarUrl : null);
+    return html`
+        <div class=${'sess' + (live ? '' : ' stale')} data-mesh=${tint ? 'y' : null}
+             style=${tint ? `--m1:${tint[0]};--m2:${tint[1] || tint[0]};--m3:${tint[2] || tint[1] || tint[0]}` : null}>
+            <span class="sdot" aria-hidden="true"></span>
+            <span class="sessb">
+                <b>${name}</b>
+                <span>${s.userAgent || 'device not recorded'}</span>
+            </span>
+            <!-- 🔴 WHEN THEY WERE LAST HERE IS THE FACT THIS PANEL EXISTS FOR, and it was the tail of a
+                 130-character user-agent string -- the least readable position on the row, after the part
+                 nobody reads. It is its own column now, with a label over it, in the same shape the drawer's
+                 identity bar uses for provenance. Harkirat, 2026-09-11 17:44 EDT: "it's currently buried with
+                 the browser info." -->
+            <span class="seen"><em>${live ? 'Active' : 'Last seen'}</em><b>${relTime(s.lastSeenAt)}</b></span>
+            <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
+        </div>`;
+}
+
+function Sessions({ sessions, onEnd, ttlHours, nameOf, who }) {
     const now = Date.now();
     return html`
         <!-- ⚠️ A section WITH A LANDMARK NAME, and an id the stylesheet can reach. access.html declares
@@ -269,14 +290,8 @@ function Sessions({ sessions, onEnd, ttlHours, nameOf }) {
             ${sessions.length ? html`
                 <div class="sesslist">
                     ${sessions.map((s) => html`
-                        <div key=${s.sessionHash} class=${'sess' + (sessionIsLive(s, now) ? '' : ' stale')}>
-                            <span class="sdot" aria-hidden="true"></span>
-                            <span class="sessb">
-                                <b>${nameOf(s.discordId)}</b>
-                                <span>${s.userAgent || 'device not recorded'} · ${relTime(s.lastSeenAt)}</span>
-                            </span>
-                            <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
-                        </div>`)}
+                        <${SessionRow} key=${s.sessionHash} s=${s} live=${sessionIsLive(s, now)}
+                                       name=${nameOf(s.discordId)} user=${who[s.discordId]} onEnd=${onEnd} />`)}
                 </div>
                 <!-- The two sentences access.html closes this list with, and the second is the only place the portal
                      says that ending a session does NOT stage. On a realm where every other write waits for Review,
@@ -472,7 +487,8 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                     </td>
                                 </tr>
                                 ${g.rows.map((sc, ri) => html`
-                                    <tr key=${sc.key} class="prow" data-last=${ri === g.rows.length - 1 ? "y" : null}>
+                                    <tr key=${sc.key} class="prow" data-last=${ri === g.rows.length - 1 ? "y" : null}
+                                        style=${`--c:${accentOf(sc)}`}>
                                         <td class="mxc-name">
                                             <span class="pname" style=${`--c:${accentOf(sc)}`}
                                                   data-tip=${g.key === 'command'
@@ -869,7 +885,7 @@ export function AccessRealm({ session }) {
                           The owner is <b>${nameOf(session.discordId)}</b> and holds everything
                           regardless of this list.
                       </div></div></div>`}
-                  footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} nameOf=${nameOf} ttlHours=${data.sessionTtlHours ?? 12} />`}
+                  footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} nameOf=${nameOf} who=${who} ttlHours=${data.sessionTtlHours ?? 12} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === 'By admin'
