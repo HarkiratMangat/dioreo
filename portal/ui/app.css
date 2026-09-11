@@ -1675,7 +1675,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   background:rgba(255,122,69,.07);border-left:2px solid var(--warn);margin-bottom:6px}
 .dwissue b{font-size:var(--t-sm);color:var(--ink);font-weight:600}
 .dwissue span{font-size:var(--t-sm);color:var(--ink3)}
-.dwfield{display:flex;flex-direction:column;gap:var(--s2);margin-bottom:var(--s3)}
+.dwfield{display:flex;flex-direction:column;gap:var(--s2);margin-bottom:var(--s4)}
 /* a sentence-case label at --t-sm, not a 9.5px tracked eyebrow: a drawer with six fields is a FORM, and a form
    is read, not scanned. The eyebrow voice stays for panel headings. */
 .dwfield label{font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink3);letter-spacing:0;text-transform:none}
@@ -5797,7 +5797,21 @@ button .ic,a .ic{pointer-events:none}
 .tokgrid{display:flex;flex-wrap:wrap;gap:8px}
 /* The second step of the tier-3 gate. It takes the footer's left edge so the sentence is read before the
    button under the cursor is pressed again. */
-.dwsure{margin-right:auto;font:500 var(--t-sm)/1.35 var(--ui);color:var(--ink2);max-width:340px}
+/* ══ THE CONFIRM SCREEN ══ The second step is a different screen, not a relabelled button in the same
+   place: swapping the footer's text read as a button that had not registered the click. The body is
+   replaced by exactly what is about to be written, so the thing being confirmed is legible at the moment
+   of confirming it. Harkirat, 2026-09-11 17:10 EDT. */
+.dw-lead{margin:0 0 var(--s4);font:500 var(--t-md)/1.45 var(--ui);color:var(--ink)}
+.cfm{display:flex;flex-direction:column;border:1px solid var(--rule);border-radius:var(--rad-2);
+  background:var(--sunk);overflow:hidden}
+.cfmrow{display:flex;gap:16px;padding:11px 14px;border-top:1px solid var(--rule)}
+.cfmrow:first-child{border-top:0}
+.cfmrow>b{flex:none;width:104px;font:600 var(--t-micro)/1.6 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.cfmrow>span{flex:1;min-width:0;font:500 var(--t-sm)/1.6 var(--ui);color:var(--ink);word-break:break-word}
+.cfmrow code{font-family:var(--data);font-size:var(--t-sm);color:var(--ink2)}
+.cfmrow em{font-style:normal;color:var(--ink3)}
+.cfmchips{display:flex;flex-wrap:wrap;gap:6px}
 /* Revoking is the one irreversible thing this drawer does, and it was rendering as an ordinary grey button
    beside Cancel. `.btn.danger` was written at the call site and had never existed in the stylesheet. */
 .btn.danger{color:var(--danger-ink);border-color:var(--danger-edge);
