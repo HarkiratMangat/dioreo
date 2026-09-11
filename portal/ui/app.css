@@ -1721,20 +1721,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .trow-body.over{background:var(--focus-07);box-shadow:inset 0 0 0 1.5px var(--staged)}
 .trow-empty{margin:0;align-self:center;font-size:var(--t-sm);color:var(--ink3);font-style:italic}
 
-.bchip{display:flex;flex-direction:column;gap:4px;min-width:158px;cursor:grab;
-  background:var(--raised);border:1px solid var(--rule2);border-left:2px solid var(--c);
-  border-radius:var(--rad-2);padding:8px 11px;transition:transform .13s,box-shadow .13s,border-color .13s}
-.bchip:hover{border-color:var(--c);transform:translateY(-2px);
-  box-shadow:0 8px 18px -10px var(--scrim-90)}
-.bchip.dragging{opacity:.6;transform:rotate(-1.5deg) scale(.98);cursor:grabbing}
 .bc-top{display:flex;align-items:center;gap:7px}
-.bc-w{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
 .bc-meta{font:700 var(--t-micro)/1 var(--data);letter-spacing:.09em;color:var(--patch);
   border:1px solid rgba(242,194,48,.45);border-radius:var(--rad-1);padding:2px 4px}
-.bc-b{font-size:var(--t-sm);color:var(--ink3)}
-.bc-foot{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:var(--t-micro);
-  letter-spacing:.06em;color:var(--ink3)}
-.bc-dmz{color:#5FA8D8} .bc-tox{color:var(--del);font-size:var(--t-sm)}
+.bc-dmz{color:#5FA8D8}
 .bc-bad{margin-left:auto;color:var(--warn);border:1px solid var(--danger-edge);border-radius:var(--rad-3);
   padding:1px 6px;font-variant-numeric:tabular-nums;cursor:help}
 
@@ -2033,7 +2023,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* A staged change has to visibly GO somewhere, or the tray is a list nobody notices. */
 .staged-pulse{animation:stagePulse var(--dur-3) var(--ease) 1}
 .count-bump{animation:countBump var(--dur-2) var(--ease) 1}
-.bchip.settled{animation:settle var(--dur-2) var(--ease) 1}
 .trow-body.flash{box-shadow:inset 0 0 0 1.5px var(--staged);transition:box-shadow var(--dur-3)}
 
 /* ── 10.6 EDGE STATES: name what is missing, why, and the one action that fixes it ── */
@@ -2048,7 +2037,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 @media (prefers-reduced-motion: reduce){
   #viewTrack,#viewBoard,#viewRack,#viewCoverage,#viewCompare,
-  .bcols .bcol,.trows .trow,.staged-pulse,.count-bump,.bchip.settled{animation:none !important}
+  .bcols .bcol,.trows .trow,.staged-pulse,.count-bump{animation:none !important}
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -2138,10 +2127,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-/* The 7px realm bar that stood here is gone (2026-09-10 11:39 EDT). Two marks were tried on it and both
-   were rejected; the third mark was never the answer. It was a third copy of a colour already in
-   every granted cell of its own column, and it was crowding out the count — the one fact this view
-   alone answers at a glance. See the note at the header markup in access.js. */
+.mx .mxs i{display:block;width:100%;height:7px;border-radius:var(--rad-1);background:var(--c);margin:0 0 8px}
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
@@ -2185,7 +2171,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxcell.locked:hover{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
-.mxrole.owner{border-color:var(--patch);color:var(--patch)}
 .mxrole.admin{border-color:var(--info);color:var(--info)}
 .mxrole.editor{border-color:var(--ink3);color:var(--ink3)}
 /* The key row for the matrix foot (fork 05). Inline, on one line, so the marks are named beside the grid rather than described under it — the sentence that survives beneath is the one about a CONSEQUENCE, not about a mark. */
@@ -2208,15 +2193,34 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    written here. A grid child also stretches, so the group states its own width rather than filling the
    masthead's identity column. */
 .mh-mode{display:inline-flex;width:max-content;gap:var(--s2);background:transparent;border:0;margin-top:var(--s3)}
+/* 2026-09-11 09:31 EDT -- .mh-mode-row is a DIRECT grid child of .masthead (passed through the
+   `below` slot), placed on New build's own row track. This is what actually fixes "same
+   alignment as New build" -- the previous margin-top:56px attempt lived inside .mh-id (row 1),
+   which only made row 1 taller and pushed New build down with it: wrong element moved, and the
+   growth showed up as the dead gap between the stats and New build. Real grid alignment, zero
+   guessed pixels, row 1 never changes size. */
+/* Measured against the real reference -- Broadcast's own masthead, untouched, "New broadcast"
+   sits exactly 16px below its subtitle (.mh-new's own margin-top, never overridden there).
+   Guessed --s5 (28px) here first without checking that; it was simply wrong, over the real value
+   by 12px. 16px is what "matches every other realm's masthead" actually measures to. */
+.mh-mode-row{grid-column:1;grid-row:2;align-self:start;display:flex;align-items:center;margin-top:16px}
+.mh-mode-row .mh-mode{margin-top:0}
+/* 2026-09-11 09:08 EDT: no top margin when it sits inside the action row (.mh-add) beside the create button --
+   the s3 above is for its old position directly under the masthead's job line. */
+.mh-add .mh-mode{margin-top:0}
 .mh-mode button{min-height:var(--tap);padding:0 var(--s5);border:1px solid var(--rule2);
   border-radius:var(--rad-2);background:transparent;color:var(--ink3);font-family:var(--data);
   font-size:var(--t-lg);font-weight:700;letter-spacing:.12em;cursor:pointer;
   transition:color .14s,border-color .14s,background .14s}
-/* The chosen mode is the realm's own hue as a GROUND, with the ink computed against it rather than
-   assumed: --on-accent is near-black and the armory purple takes it to 4.3:1, which is the trap the
-   state pill hit earlier today. --ink on this hue measures above 4.5, so the fill stays light-on-dark. */
-.mh-mode button[aria-checked="true"]{color:var(--ink);background:var(--hi);
-  border-color:var(--r-armory);box-shadow:inset 0 -3px 0 0 var(--r-armory)}
+/* The chosen mode used to take the realm's OWN hue (armory purple) regardless of which mode was
+   picked, so MP and DMZ were visually identical here while the create chip beside them coloured
+   MP crimson and DMZ blue for the same two words. Harkirat, 2026-09-11 09:01 EDT: match the toggle to the chips
+   it sits beside rather than to the realm. Same computed-ink reasoning as before (--ink measures
+   above 4.5:1 on both hexes, so the fill stays light-on-dark for either mode). */
+.mh-mode button[data-arm="MP"][aria-checked="true"]{color:var(--ink);background:var(--hi);
+  border-color:#FF3B5C;box-shadow:inset 0 -3px 0 0 #FF3B5C}
+.mh-mode button[data-arm="DMZ"][aria-checked="true"]{color:var(--ink);background:var(--hi);
+  border-color:#3DA5F5;box-shadow:inset 0 -3px 0 0 #3DA5F5}
 .mh-mode button:hover:not([aria-checked="true"]){color:var(--ink2);border-color:var(--ink4)}
 .mh-mode button:focus-visible{outline:2px solid var(--patch);outline-offset:2px}
 .mxkey{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);align-items:center;
@@ -2520,32 +2524,15 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
  * The grid used to offer exactly ONE interaction, repeated 28 times. A column
  * header now grants/revokes a scope for everyone and each row has all/none —
  * both tier 2, because N writes that must land together are one changeset. */
-button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;position:relative;z-index:1;
+button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;
   color:var(--ink3);border-radius:var(--rad-2);transition:color var(--dur-1) var(--ease),
   background var(--dur-1) var(--ease)}
 button.mxs.mxcol:hover{color:var(--ink);background:var(--hi)}
 button.mxs.mxcol:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
-/* DEPTH IS THE HEADER NOW: how many people besides the owner hold this scope. 0 is a gap, 1 is a
-   single point of failure, 2+ is covered — so the number is the risk and needs no second mark beside
-   it. Tabular so twelve of them line up, and the two states that matter take ink rather than shape,
-   because SHAPE is spoken for by the cells below (filled = direct, ring = inherited). */
-/* 🔴 THE COUNT FOLLOWS THE LABEL NOW, AND IS QUIETER THAN IT. Harkirat, pin pmtvqrti6: By admin is "UGLY
-   and broken — look at the alignment, the spacing, the actual style". In his screenshot the twelve counts
-   sat ABOVE their labels at --t-lg, so the header read as a row of bare numbers before it read as a row of
-   column names, and what the number MEANS had to be looked up in a run-on legend. Label first, count under
-   it at --t-md. It stays the loud thing when it is 0 or 1, because those are the only two values that carry
-   risk — .none and .one already colour them. */
-.mxdepth{display:block;font:600 var(--t-md)/1 var(--data);color:var(--ink3);
-  font-variant-numeric:tabular-nums;letter-spacing:0;margin:5px 0 0;text-transform:none}
-.mxdepth.one{color:var(--warn)}
-.mxdepth.none{color:var(--del)}
-.mxcn{display:block;font:600 var(--t-micro)/1.3 var(--ui);letter-spacing:.01em;
-  text-transform:none;color:var(--ink3);white-space:nowrap}
-/* Equal pitch. The columns used to be sized by their LABELS — measured live at 29px for BOT against
-   105px for SEASON DRAFT — so the cells fell on twelve irregular intervals and the eye could not run
-   down a column, which is half of what a matrix is for. */
-.mx thead th.sc{width:72px;max-width:72px;z-index:3}
-button.mxs.mxcol:hover .mxcn{color:var(--ink)}
+.mxn2{display:block;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);margin-top:3px;
+  letter-spacing:.04em;font-variant-numeric:tabular-nums}
+button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
+.mxcol.spof .mxn2{color:var(--warn)}
 .mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:var(--rad-1);
   color:var(--ink3);font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:4px 7px;cursor:pointer;opacity:0;
@@ -2732,7 +2719,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .bdg.dmz{background:rgba(51,123,166,.16);color:#6FB6DD;border-color:rgba(51,123,166,.45)}
 .bdg.toxic{background:rgba(255,107,107,.14);color:var(--danger-ink);border-color:var(--danger-edge)}
 .bdg.bad{background:rgba(255,122,69,.14);color:var(--warn);border-color:rgba(255,122,69,.4)}
-.bc-att{font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);letter-spacing:.04em}
 
 /* Bulk & export view. */
 .bulkview{padding:16px}
@@ -3070,9 +3056,19 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  * Access is the ACHROMATIC realm: every colour here is BORROWED from the realm the scope
  * governs (--c, set per column/cell), never invented. The eighth accent an earlier build
  * would have needed does not exist anywhere else in the product. */
-.mxgrp th{padding:0 0 5px;border:0}
+/* 2026-09-11 09:11 EDT -- TWO divider lines were stacking 5px apart under COMMANDS/MANAGE PAGES: this row's own
+   intended underline (below, on the span) PLUS an unremoved one, because `.mx thead th`'s
+   border-bottom (specificity 0,1,2 -- element+element+class) beats a bare `.mxgrp th{border:0}`
+   (0,1,1). The pill row directly under it then touched whichever line won. One border now, drawn
+   on the TH itself so it runs the group's full width rather than just under the text, with real
+   room below it before the pills start. */
+.mx thead tr.mxgrp th{padding:0 0 9px;border:0;border-bottom:1px solid var(--rule2)}
 .mxgrp th span{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink3);text-align:center;padding-bottom:5px;border-bottom:1px solid var(--rule2)}
+  color:var(--ink3);text-align:center}
+/* The line between "Commands" and "/manage pages" that the labels alone do not draw -- it answers
+   which columns a group name covers, running from the group row down through the column labels. */
+.mxgrp th.grpend{border-right:1px solid var(--rule2)}
+.mx thead tr:not(.mxgrp) th.grpend{border-right:1px solid var(--rule2);padding-right:8px}
 .mx .ownerrow td{background:rgba(255,255,255,.018)}
 .mx .ownerrow .mxav{background:var(--sunk);color:var(--ink2)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
@@ -3094,16 +3090,15 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    Track's deadline notch got: a mark may point at content it does not cross. The topic colour
    is now untouched at full area, and the state is a warn rule directly beneath it — plus the
    holder count in warn, so the fact has two carriers and neither is destructive. */
-/* 🔴 THE MOST IMPORTANT FACT ON THIS HEADER WAS DRAWN AS A DROP SHADOW (2026-09-10 10:56 EDT). Pin
-   pmtuxn6we: "THE UNDERLINES ARE TERRIBLE. i can't even see them unless i literally manually zoom
-   into the page. And honestly, do they even serve any useful purpose? like i can already see what
-   permissions a person has by looking at the square below." Two questions, and the second is the
-   one that was never answered: the bar is NOT the per-person grant — the squares below are that —
-   it is the PORTAL REALM the scope belongs to, and when the column is a single point of failure it
-   also carries that. Neither was said anywhere a reader could see, so a legend now says both.
-   The shape: an offset copy of the bar 3px lower and 1px narrower reads as a slightly fuzzy edge.
-   An opaque 2px RING is the same language the non-spof columns already use for their realm glow —
-   one grammar, two states — and it keeps both carriers, which was the point of the original rule. */
+/* 🔴 THE RING TRIED THREE TIMES ON 2026-09-10 (a 3px underline, a 4px glow, a 7px ring) AND NEVER
+   ACTUALLY SHOWED. Pin pmtuxn6we: "THE UNDERLINES ARE TERRIBLE. i can't even see them unless i
+   literally manually zoom into the page." A same-day fork (05) then removed the bar itself outright
+   and replaced the header with a bare count, which Harkirat also rejected that evening — the bar
+   names the portal realm and the squares below name who holds it; neither is the same fact as a
+   single point of failure. The bar stays, unringed; the amber-coloured count under the label — a
+   second carrier that was already there before any ring was tried — is what marks a single point
+   of failure now. */
+.mxlegend.bar{width:16px;height:7px;background:var(--r-season);vertical-align:0}
 
 .mxlegend{display:inline-block;width:12px;height:12px;border-radius:var(--rad-1);vertical-align:-2px;margin-right:5px}
 .mxlegend.on{background:var(--ink2)}
@@ -3121,11 +3116,9 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
  * finding deserves. It wraps under only when the row itself collapses at narrow widths. */
 .scope .flag{justify-self:end;font:600 var(--t-xs)/1 var(--ui);letter-spacing:.03em;color:var(--warn);
   border:1px solid rgba(242,153,74,.4);border-radius:var(--rad-pill);padding:4px 9px;white-space:nowrap}
-.scope .flag.quiet{color:var(--ink3);font-weight:500}
 .scope.spof{background:linear-gradient(90deg,rgba(242,153,74,.07),transparent 60%)}
 .holder{display:inline-block;padding:2px 7px;border-radius:var(--rad-pill);border:1px solid var(--rule2);
   background:var(--sunk);font:500 var(--t-xs)/1.5 var(--mono);color:var(--ink2)}
-.holder.owner{border-color:var(--rule);color:var(--ink3)}
 .tokgrid{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
 .tokgrid .chip.inh{opacity:.72;border-style:dashed}
 
@@ -3619,8 +3612,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .att-row.clear .att-i{color:var(--ok)}
 .att-go{flex:none}
 /* Once the findings moved up, the realm strip is a way IN — quieter, denser, no second alarm. */
-.hgrid.quiet .hcard{padding:14px 15px}
-.hgrid.quiet .hq{opacity:.72}
 @media (max-width:720px){
   .att-row{grid-template-columns:26px 3px 1fr;row-gap:10px;padding:13px 14px 13px 2px}
   .att-go{grid-column:3;justify-self:start}
@@ -3639,9 +3630,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    Armory's resting Board at 4.42:1 and the .86 case at 3.69:1. Hover restored it, and hover is not an
    accessibility remedy. The dim moves to the chip's BORDER and BACKGROUND, which carry no text and are where a
    depth cue belongs; the label stays at full opacity. A 6% text fade was never legible as a cue anyway. */
-.trow .bchip{border-color:color-mix(in srgb,var(--rule2) calc(var(--bc-dim,1) * 100%),transparent);
-  background-color:color-mix(in srgb,var(--raised) calc(var(--bc-dim,1) * 100%),transparent)}
-.trow:hover .bchip{opacity:1}
 
 /* 🔴 SIX PAIRS OF ADJACENT CARDS READ AS DUPLICATES — LOCUS/LOCUS, DR-H/DR-H, LK24/LK24 —
    because two builds of one weapon are two cards with the same title, told apart only by a
@@ -3677,21 +3665,10 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   transform:rotate(45deg);margin-top:4px}
 .bgrp-m{display:flex;align-items:center;gap:7px;padding-left:15px}
 .bgrp-m .bgrp-n{font:500 var(--t-xs)/1 var(--data);letter-spacing:.08em;color:var(--ink3);white-space:nowrap}
-.bgrp .bchip{border:0;border-radius:0;background:transparent;min-width:0;transform:none;box-shadow:none}
-.bgrp .bchip:hover{transform:none;box-shadow:none;background:color-mix(in srgb,var(--c) 9%,transparent)}
-.bgrp .bchip + .bchip{border-top:1px solid var(--rule3)}
-.bgrp .bc-w{display:none}          /* the weapon is named once, on the group */
 
 /* The realm strip lost its reason to be a 3-up card grid the moment the findings moved into the
    ranked list above it — a 3+2 layout left a hole in the second row for no gain. Five across,
    one row, equal weight, because that is now exactly what they are: five ways in. */
-.hgrid.quiet{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.hgrid.quiet .hcard{padding:13px 14px;gap:7px}
-.hgrid.quiet .hq{font-size:var(--t-sm);line-height:1.4}
-.hgrid.quiet .hf b{font-size:var(--t-xl)}
-@media (max-width:1180px){.hgrid.quiet{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:720px){.hgrid.quiet{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:460px){.hgrid.quiet{grid-template-columns:1fr}}
 
 
 /* 🔴 `.col` WAS A COLLISION — `.col{…min-height:220px}` is a BOARD COLUMN, defined 2,400 lines
@@ -3744,7 +3721,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    boundary — without it a weapon's builds split across two columns and the header orphans. */
 .trow-body{align-content:flex-start;display:block;columns:182px;column-gap:10px}
 .trow-body .bgrp{width:auto;break-inside:avoid;margin:0 0 10px;display:block}
-.trow-body .bchip{display:flex}
 .trow-empty{column-span:all}
 /* The group is a card among cards — it must not stretch the row it sits in. */
 .bgrp{flex:0 0 auto;align-self:flex-start;width:182px}   /* outside the rack, where it is still a flex child */
@@ -4633,7 +4609,12 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
  * account panel, not by a second button in a different colour, which is exactly what taught
  * that they were two different acts.
  * ══════════════════════════════════════════════════════════════════════════════ */
-.umenu{width:288px}
+/* 2026-09-11 09:04 EDT: cut off at the bottom on a short viewport -- .umenu is position:absolute, top-anchored
+   to a button that sits at the very top of the page, and nothing clamped its height against the
+   viewport it was opening INTO. Scrolls internally past that point instead of running off the edge. */
+.umenu{width:288px;max-height:calc(100vh - 76px);overflow-y:auto}
+.un a{color:inherit;text-decoration:none}
+.un a:hover{text-decoration:underline;color:var(--ink2)}
 .ubanner{height:74px}
 /* identity ON the banner, not above it */
 .uid{position:relative;margin-top:-30px;padding:0 14px 12px;display:flex;align-items:flex-end;gap:11px}
@@ -4887,8 +4868,6 @@ tbody tr{transition:transform var(--dur-1) var(--ease),box-shadow var(--dur-1) v
 /* The ring key, beside the marks it explains. Its swatch IS the mark — a ringed pill at chip
  * scale — so the legend and the thing are visibly the same object rather than a description of it. */
 .key .l.spofk b{color:var(--warn);font-weight:600}
-/* …and the ringed column's own count agrees with the ring, so the mark is never the only carrier. */
-.key .l.dk .mxdepth{display:inline;margin:0 2px 0 0;font-size:var(--t-sm)}
 /* A countdown inside its last stretch stops being neutral. The lead keeps its size either way —
  * size is the hierarchy, colour is the meaning (§16.3) — so this only changes the ink. */
 .mh-stats .stat.lead .v.hot{color:var(--warn)}
@@ -5782,7 +5761,10 @@ button .ic,a .ic{pointer-events:none}
 /* ── THE WEAPON SEARCH (Compare) ─────────────────────────────────────────────────────────────
  * A combobox, so the list is positioned against the field rather than pushed into the flow: a list that moves the
  * page down on every keystroke is a list you cannot aim at. */
-.wsrch{position:relative;flex:0 0 280px;max-width:280px}
+/* 2026-09-11 09:13 EDT -- a fixed 280px read as "search for ONE weapon" on a panel whose own copy says
+   "Pick one weapon, or two" -- Harkirat, direct. Grows with the row instead of capping small,
+   still wraps under the picked-weapon chips on a narrow viewport. */
+.wsrch{position:relative;flex:1 1 340px;max-width:480px}
 .wsrch .dwfield{margin-bottom:0}
 .wsrch input{width:100%}
 .wsrch-list{position:absolute;z-index:5;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;
@@ -5799,6 +5781,28 @@ button .ic,a .ic{pointer-events:none}
 /* The picked-weapon chips sit beside the field, so the bar has to align them to its bottom edge rather than centre
  * them against a two-line labelled input. */
 .cmpbar{align-items:flex-end;gap:9px}
+/* 2026-09-11 09:15 EDT -- per-build selection, one row per weapon that has more than one build. Reuses .chip
+   at a smaller size rather than inventing a second toggle language. */
+/* the per-build toggles now live INSIDE the weapon chip's own group (.cmppick), not below the
+   whole row as a disconnected block that had no visible tie to which weapon it belonged to.
+   2026-09-11 09:20 EDT -- this was DASHED on the first pass, which is wrong: this portal's own
+   state vocabulary is solid=live, dashed=staged, hatched=conflict (COMPANION, the Review legend),
+   and a filter selection commits nothing -- a dashed border on it lies about that. Solid, quiet. */
+.cmppick{display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px;padding:4px 6px 4px 4px;
+  border:1px solid var(--rule2);border-radius:var(--rad-pill)}
+.cmppick .chip.on{border-color:transparent}
+.cmpbrow{display:inline-flex;flex-wrap:wrap;gap:5px}
+.chip.sm{padding:4px 9px;font-size:var(--t-sm)}
+.chip.sm:not(.on){opacity:.55}
+/* 2026-09-11 09:16 EDT -- three full-width label/value rows, each wasting the empty third column of a grid
+   built for a different feature, condensed to one row of bordered inline chips -- Harkirat,
+   direct. margin-bottom is the gap onto the FIELD table that used to be zero. */
+.cmpstats{display:flex;flex-wrap:wrap;gap:8px;margin:12px 16px 16px}
+.cmpstat{display:inline-flex;align-items:baseline;gap:6px;padding:7px 13px;border:1px solid var(--rule);
+  border-radius:var(--rad-pill);background:var(--sunk)}
+.cmpstat b{font-family:var(--data);font-size:var(--t-base);font-weight:600;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.cmpstat span{font-size:var(--t-sm);color:var(--ink3)}
 .cmpbar .chip.on{display:inline-flex;align-items:center;gap:6px}
 
 /* One build of a weapon, and the six-column truncation, both say so in the same voice. */
@@ -5819,10 +5823,6 @@ button .ic,a .ic{pointer-events:none}
  * ⚠️ These are the Armory's OWN classes only. `.bdg`, `.thumb` and `.dwfield label` are shared with other realms, so
  * they are listed in the report as a cross-realm decision rather than changed unilaterally here. */
 .bc-meta{font-size:var(--t-micro)}      /* 7.5px → 9px. Uppercase and tracked, so micro is the honest floor, not sm. */
-.bc-att{font-size:var(--t-sm)}          /* 8.5px → 11.5px. "5×" is a number a reader reads, not an eyebrow. */
-.bc-foot{font-size:var(--t-sm)}         /* 9px → 11.5px. The chip's whole meta row inherits from here. */
-.bc-b{font-size:var(--t-sm)}            /* 11px → 11.5px. The build name — the thing that tells two siblings apart. */
-.bc-tox{font-size:var(--t-sm)}          /* 11px → 11.5px. */
 .trow-n{font-size:var(--t-sm)}          /* 10px → 11.5px. A count in a closed header is the header's only number. */
 .bf-n{font-size:var(--t-sm)}            /* 10px → 11.5px. "3 of 5" beside the attachments heading. */
 .bgrp-m .bgrp-n{font-size:var(--t-sm)}  /* 10px → 11.5px. */

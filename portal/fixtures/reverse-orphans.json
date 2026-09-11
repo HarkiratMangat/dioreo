@@ -1,8 +1,10 @@
 {
-  "recordedAt": "2026-09-09T18:30:13.378Z",
+  "recordedAt": "2026-09-11T13:50:21.450Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [],
-  "vars": [],
+  "vars": [
+    "--banner"
+  ],
   "classes": [
     "ackrow",
     "act",
@@ -41,7 +43,6 @@
     "hgrid",
     "hi",
     "hmast",
-    "hq",
     "hseason",
     "is-loading",
     "is-refreshing",
@@ -73,8 +74,8 @@
     "s-error",
     "s-spof",
     "scrim-b",
-    "settled",
     "slow",
+    "sortic",
     "staged-pulse",
     "stemmed",
     "t-S",
@@ -90,6 +91,7 @@
     "trow-note",
     "trows",
     "ub",
+    "ubanner",
     "ubt",
     "wcard",
     "zhint"

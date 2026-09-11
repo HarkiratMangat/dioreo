@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-10T23:19:25.599Z",
-  "commit": "3294a0c2",
+  "recordedAt": "2026-09-11T13:40:38.106Z",
+  "commit": "b54a2531",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,10 +9,11 @@
   "views": {
     "Tier board": {
       "grid": {
-        "examined": 3665,
-        "nearMisses": 14,
-        "sizeIssues": 229,
+        "examined": 3661,
+        "nearMisses": 13,
+        "sizeIssues": 230,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -267,10 +268,11 @@
     },
     "Repairs": {
       "grid": {
-        "examined": 3648,
-        "nearMisses": 11,
-        "sizeIssues": 246,
+        "examined": 3644,
+        "nearMisses": 13,
+        "sizeIssues": 247,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -542,10 +544,11 @@
     },
     "Compare": {
       "grid": {
-        "examined": 3594,
-        "nearMisses": 9,
-        "sizeIssues": 229,
+        "examined": 3590,
+        "nearMisses": 24,
+        "sizeIssues": 230,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -800,10 +803,11 @@
     },
     "Bulk & export": {
       "grid": {
-        "examined": 3613,
-        "nearMisses": 9,
-        "sizeIssues": 232,
+        "examined": 3609,
+        "nearMisses": 8,
+        "sizeIssues": 233,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",

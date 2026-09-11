@@ -295,8 +295,12 @@ function Account({ session, staged, onSignOut, chrome }) {
                           style=${`--av-src:${avatarUrl ? `url(${avatarUrl})` : 'none'}`} aria-hidden="true">
                         ${avatarUrl ? null : html`<b class="uinit">${initialOf(session)}</b>`}
                     </span>
+                    <!-- 2026-09-11 09:04 EDT: the @username line IS the Discord-profile link now, so the identical
+                         destination is not said twice on one panel -- Harkirat, direct. -->
                     <span class="un"><b>${session.globalName || session.username || 'Dioreo admin'}</b>
-                        <span>${session.username ? `@${session.username}` : id}</span></span>
+                        ${session.username
+                            ? html`<a href=${`https://discord.com/users/${id}`} target="_blank" rel="noopener noreferrer">@${session.username}</a>`
+                            : html`<span>${id}</span>`}</span>
                     ${session.isOwner ? html`<span class="rolebadge">OWNER</span>` : null}
                 </div>
                 <div class="usec">
@@ -304,8 +308,6 @@ function Account({ session, staged, onSignOut, chrome }) {
                 </div>
                 ${''/* 🔴 THE WAYS OUT — fork 08, and the menu had none. A panel that names who you are and then offers only "sign out" is a dead end; the two places an admin actually goes from here are their own Discord profile and the public site the bot serves. Each names its destination rather than a count, because that is the fact you want before clicking away. */}
                 <div class="usec">
-                    <a class="mi mi-out" role="menuitem" href=${`https://discord.com/users/${id}`} target="_blank" rel="noopener noreferrer">
-                        Your Discord profile<span class="mnote">discord.com ↗</span></a>
                     <a class="mi mi-out" role="menuitem" href="https://dioreo.app" target="_blank" rel="noopener noreferrer">
                         Dioreo<span class="mnote">dioreo.app ↗</span></a>
                     <a class="mi mi-out" role="menuitem" href="https://dioreo.app/terms" target="_blank" rel="noopener noreferrer">

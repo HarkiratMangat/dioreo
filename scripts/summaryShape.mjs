@@ -7,8 +7,7 @@
 //   node scripts/summaryShape.mjs --session latest        # THIS session, runnable mid-run
 //   node scripts/summaryShape.mjs --session <id-substring>
 //
-// 🔴 TWO GAPS FOUND 2026-09-10 20:01 EDT, BOTH OF WHICH ARE WHY THIS COULD NOT HAVE CAUGHT THAT DAY.
-// (1) IT NEVER MEASURED SILENCE — the rule the contract lists FIRST. It counted final-message shape
+// 🔴 TWO GAPS FOUND 2026-09-10 20:01 EDT, BOTH OF WHICH ARE WHY THIS COULD NOT HAVE CAUGHT THAT DAY. (1) IT NEVER MEASURED SILENCE — the rule the contract lists FIRST. It counted final-message shape
 //     only, because it was built the day the complaint was "walls of text"; the instrument inherited
 //     the complaint rather than the contract. `rec.tools` was already collected per message and
 //     thrown away. A session that broke the silence rule 33 times scored normally on every column.
@@ -52,9 +51,7 @@ const textOf = (c) => (typeof c === "string" ? c : Array.isArray(c) ? c.filter((
 let files;
 try { files = readdirSync(DIR).filter((f) => f.endsWith(".jsonl")); } catch { console.error(`summaryShape: no transcripts at ${DIR}`); process.exit(2); }
 
-// --session narrows to ONE transcript so the report answers "how is this session going" rather than
-// "how did last week go". `latest` is the most recently written file, which is this session when it
-// is run from inside one. A single session is never skipped for having few prompts.
+// --session narrows to ONE transcript so the report answers "how is this session going" rather than "how did last week go". `latest` is the most recently written file, which is this session when it is run from inside one. A single session is never skipped for having few prompts.
 const SESSION = opt("--session", "");
 if (SESSION) {
   const match = SESSION === "latest"

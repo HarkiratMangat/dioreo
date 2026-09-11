@@ -5,7 +5,7 @@ import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Fold, Icon } from './icons.js';
-import { Shell, Masthead, useCreateKey } from './shell.js';
+import { Shell, Masthead, MastheadNew } from './shell.js';
 import { Manifest } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
@@ -265,7 +265,11 @@ function Coverage({ builds, active, onFilter }) {
             <!-- ⚠️ THE COUNTS ARE PER BUILD AND THE FIX IS PER WEAPON, which is the single most confusing
                  thing about this panel: clearing "No badges" on one build clears it on every build of that
                  weapon, so a count of 57 can drop by nine from one edit. -->
-            <div class="callout">
+            <!-- pmtvqazpj: .callout is margin:0 everywhere and every OTHER caller supplies the gap externally
+                 (a wrapping .panel with its own margin in access.js/broadcast.js) — this is the one bare
+                 usage, so its bottom border sat flush on the card grid below with 0px between them. Matched
+                 to .repbar's own margin-bottom (14px) directly above it for one rhythm down the column. -->
+            <div class="callout" style="margin-bottom:14px">
                 <b>Badges are per weapon, not per build.</b> A weapon with five builds contributes five rows to
                 these counts, and fixing one fixes all five — so a number here can fall by more than one.
             </div>
@@ -754,15 +758,14 @@ function LoadoutCard({ build, siblings }) {
 
 // 🔴 PICK-TWO WAS THE WRONG QUESTION — Harkirat, Pin 18: "why can't I just type the weapon name / compare multiple builds of that weapon". The bar offered the first forty builds in the catalogue as chips and asked you to find two of them by eye, so the comparison anyone actually wants — this weapon, all of its builds — could only be reached by scrolling to two chips that happen to share a name, and a weapon with three builds could not be expressed at all. The entry point is a typed weapon now, and the comparison is its whole sibling set: exactly the set the near-duplicate flag is about.
 //
-// ⚠️ TWO WEAPONS, SIX COLUMNS. One weapon answers "which of these do I keep"; a second answers "does the AK117 carry what the Fennec does", which is a real question and costs one more chip. Past that the table stops being readable at 1282px, so the cap is on the COLUMNS rather than on the weapons — a weapon with seven builds is truncated and says so, instead of being refused for having too many.
-const MAX_COMPARE_WEAPONS = 2;
+// ⚠️ TWO WEAPONS, SIX COLUMNS. One weapon answers "which of these do I keep"; a second answers "does the AK117 carry what the Fennec does", which is a real question and costs one more chip. Past that the table stops being readable at 1282px, so the cap is on the COLUMNS rather than on the weapons — a weapon with seven builds is truncated and says so, instead of being refused for having too many. 2026-09-11 09:19 EDT -- MAX_COMPARE_WEAPONS was a second cap sitting on top of the real one. Harkirat, direct: "the compare panel can clearly compare more than 2 weapons... why am i limited to only selecting 2?" The comment two lines below this one already argued the cap belongs on COLUMNS, not weapons -- the code just never matched its own reasoning. One cap now.
 const MAX_COMPARE_COLUMNS = 6;
 
 // ⚠️ A COMBOBOX, NOT AN INPUT WITH A LIST UNDER IT. `aria-expanded`/`aria-controls`/`aria-activedescendant` are what make the arrow keys mean anything to a screen reader: without them the highlighted row is a class name and the reader is told nothing has changed. The list is filtered on every keystroke rather than on a debounce, because the corpus is the weapons in one armory — tens, not thousands — and a debounce would only add lag to a local filter.
-function WeaponSearch({ options, picked, onPick }) {
+function WeaponSearch({ options, picked, roomLeft, onPick }) {
     const [q, setQ] = useState('');
     const [hi, setHi] = useState(0);
-    const full = picked.length >= MAX_COMPARE_WEAPONS;
+    const full = !roomLeft;
     // Two is a deliberate limit — six build columns is what fits the screen the table is read on — and the input below already says so: it is `disabled` at the cap with its own placeholder. Checked 2026-09-10 15:51 EDT after I had written a comment here claiming this failed silently; it does not.
     const matches = full ? [] : matchWeapons(options, q, picked);
     const at = Math.min(hi, Math.max(0, matches.length - 1));
@@ -781,7 +784,7 @@ function WeaponSearch({ options, picked, onPick }) {
                 <input id="cmp-weapon" type="search" autocomplete="off" spellcheck="false" role="combobox"
                        aria-expanded=${matches.length ? 'true' : 'false'} aria-controls="cmp-weapon-list"
                        aria-activedescendant=${matches.length ? 'cmp-w-' + at : ''}
-                       placeholder=${full ? 'Two weapons is as many as this table lines up' : 'Type a weapon name — AK117, Fennec, KRM'}
+                       placeholder=${full ? `${MAX_COMPARE_COLUMNS} builds is as many as this table lines up` : 'Type a weapon name — AK117, Fennec, KRM'}
                        disabled=${full} value=${q}
                        onInput=${(e) => { setQ(e.target.value); setHi(0); }} onKeyDown=${onKey} />
             </label>
@@ -799,13 +802,20 @@ function WeaponSearch({ options, picked, onPick }) {
         </div>`;
 }
 
-// ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that.
+// ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted.
 function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
+    const [excluded, setExcluded] = useState(() => new Set());
+    const toggleBuild = (id) => setExcluded((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+    });
     const options = weaponOptions(builds);
     const picked = (weapons || []).filter((w) => options.some((o) => o.weapon === w));
     const optionOf = (w) => options.find((o) => o.weapon === w) || { weapon: w, builds: [] };
     const all = picked.flatMap((w) => optionOf(w).builds);
-    const chosen = all.slice(0, MAX_COMPARE_COLUMNS);
+    const visible = all.filter((b) => !excluded.has(String(b._id)));
+    const chosen = visible.slice(0, MAX_COMPARE_COLUMNS);
     const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
     // 🔴 THE SUGGESTION OFFERED ONE WEAPON ON A PANEL CALLED COMPARE. Harkirat, 2026-09-10 15:50 EDT: "IT'S LITERALLY TITLED *COMPARE* yet the mechanism takes 1 weapon only? and what's the point of the single 'try bal-27 button'??" The mechanism was never one-weapon — MAX_COMPARE_WEAPONS is 2 and the chip row above holds the second — but every affordance on the empty screen described one, so the capability was there and hidden. A suggestion that seeds ONE weapon teaches the wrong shape on the first use of the panel. Two weapons IN THE SAME CATEGORY is the comparison worth offering: cross-category is apples to oranges (an AR against a sniper shares almost no field worth lining up), and same-category is exactly the "which of these two do I keep" question the near-duplicate flag is about. Falls back to the two with the most builds when no category has two, and to one weapon when the armory has only one.
     const withSiblings = options.filter((o) => o.builds.length > 1);
@@ -819,7 +829,8 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
         return two.length === 2 ? two : null;
     })();
     const suggest = withSiblings[0] || null;
-    const singles = picked.map(optionOf).filter((o) => o.builds.length === 1);
+    // A weapon with one build reads as "nothing to compare" only when it is the SOLE thing picked -- paired with a second weapon it is not isolated, it is one side of the comparison in the table below. This message rendered even then before today and nobody had picked a 1-build weapon alongside a real second one to notice.
+    const singles = picked.length === 1 ? picked.map(optionOf).filter((o) => o.builds.length === 1) : [];
 
     if (!options.length) {
         return html`
@@ -833,13 +844,26 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     return html`
         <div id="compare">
             <div class="cmpbar">
-                <${WeaponSearch} options=${options} picked=${picked}
-                                 onPick=${(w) => onSetWeapons([...picked, w].slice(-MAX_COMPARE_WEAPONS))} />
-                ${picked.map((w) => html`
-                    <button class="chip on" key=${w} onClick=${() => onSetWeapons(picked.filter((x) => x !== w))}
-                            aria-label=${`Remove ${w} from the comparison`}>
-                        ${w}<b>${optionOf(w).builds.length}</b><${Icon} name="x" cls="sm" />
-                    </button>`)}
+                <${WeaponSearch} options=${options} picked=${picked} roomLeft=${chosen.length < MAX_COMPARE_COLUMNS}
+                                 onPick=${(w) => onSetWeapons([...picked, w])} />
+                ${picked.map((w) => {
+                    const o = optionOf(w);
+                    return html`
+                    <span class="cmppick" key=${w}>
+                        <button class="chip on" onClick=${() => onSetWeapons(picked.filter((x) => x !== w))}
+                                aria-label=${`Remove ${w} from the comparison`}>
+                            ${w}<b>${o.builds.length}</b><${Icon} name="x" cls="sm" />
+                        </button>
+                        ${o.builds.length > 1 ? html`
+                            <span class="cmpbrow">
+                                ${o.builds.map((b) => html`
+                                    <button type="button" class=${'chip sm' + (excluded.has(String(b._id)) ? '' : ' on')}
+                                            aria-pressed=${excluded.has(String(b._id)) ? 'false' : 'true'}
+                                            onClick=${() => toggleBuild(String(b._id))}>
+                                        ${b.buildName || 'Standard Build'}</button>`)}
+                            </span>` : null}
+                    </span>`;
+                })}
             </div>
             ${!picked.length ? html`
                 <p class="empty"><b>Pick one weapon, or two.</b>${' '}
@@ -859,9 +883,12 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
                         <p class="cmpone" key=${o.weapon}><b>${o.weapon}</b> has one build in this armory, so there is
                             nothing to line it up against. Its card is below.${' '}
                             <button class="chip" onClick=${() => onOpenRack(o.weapon)}>Show it in the tier board</button></p>`)}
-                    ${all.length > chosen.length ? html`
-                        <p class="cmpone">Showing the first ${MAX_COMPARE_COLUMNS} of ${all.length} builds — past that the
-                            table stops fitting the screen it is read on.</p>` : null}
+                    ${visible.length > chosen.length ? html`
+                        <p class="cmpone">Showing the first ${MAX_COMPARE_COLUMNS} of ${visible.length} selected builds
+                            — past that the table stops fitting the screen it is read on.</p>` : null}
+                    ${all.length > visible.length ? html`
+                        <p class="cmpone">${all.length - visible.length} build${all.length - visible.length === 1 ? '' : 's'}${' '}
+                            excluded above, not deleted.</p>` : null}
                     <div class="cmpcards">
                         ${chosen.map((b) => html`<${LoadoutCard} key=${String(b._id)} build=${b} siblings=${siblingsOf(b)} />`)}
                     </div>
@@ -873,11 +900,12 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
                             const vs = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
                             return !vs.every((v) => v === vs[0]);
                         }).length;
+                        // 2026-09-11 09:16 EDT -- .diff-r is a SHARED 3-column grid (key, was, now) also used by analytics.js and season.js for real was->now rows; Compare only ever supplied 2 of its 3 columns, which is the empty space Harkirat flagged -- "they could literally be bordered in-line boxes". Its own markup now, not a shared class used at half capacity.
                         return html`
-                            <div class="diff">
-                                <div class="diff-r"><span class="dk">Builds lined up</span><span>${chosen.length}</span></div>
-                                <div class="diff-r"><span class="dk">Fields compared</span><span>${COMPARE_FIELDS.length}</span></div>
-                                <div class="diff-r"><span class="dk">Differ</span><span>${chosen.length < 2 ? 'nothing to differ from' : (differing || 'none — these are the same build twice')}</span></div>
+                            <div class="cmpstats">
+                                <span class="cmpstat"><b>${chosen.length}</b><span>builds lined up</span></span>
+                                <span class="cmpstat"><b>${COMPARE_FIELDS.length}</b><span>fields compared</span></span>
+                                <span class="cmpstat"><b>${chosen.length < 2 ? '—' : (differing || '0')}</b><span>${chosen.length < 2 ? 'nothing to differ from yet' : differing ? 'differ' : 'differ — same build twice'}</span></span>
                             </div>`;
                     })()}
                     ${chosen.length > 1 ? html`
@@ -961,28 +989,7 @@ function BulkOverwrites({ rows, builds, mode }) {
         </div>`;
 }
 
-// ⚠️ TWO CHIPS, NOT ONE BUTTON, BECAUSE THE ARMORY HAS TWO ARMORIES — and both keep the shortcut the shared MastheadNew binds, which the first version of this group dropped when it was transplanted from the mockup as bare chips. `b` opens MP, `d` opens DMZ, each announced on its own chip rather than bound invisibly, and both guarded so a bare letter typed into a field is a letter.
-const ADD_KEY = { MP: 'b', DMZ: 'd' };
-
-function ArmoryAddChips({ onAdd }) {
-    useCreateKey(ADD_KEY.MP, () => onAdd('MP'));
-    useCreateKey(ADD_KEY.DMZ, () => onAdd('DMZ'));
-    return html`
-        <div class="mh-add" id="mhAdd" role="group" aria-label="Add a build">
-            <span class="mh-add-k">Add</span>
-            ${MODES.map((m) => html`
-                <!-- MP/DMZ used to borrow Season's --draw/--ret tokens (purple/pink), which read as arbitrary
-                     here -- "purple/pink don't make sense for these modes" (Harkirat, pin pmtux8b12, 2026-09-09).
-                     MP takes the same crimson as its own AR category accent; DMZ gets a clear blue, matching how
-                     the mode reads everywhere else in the Manifest's MP/DMZ scope chips. -->
-                <button type="button" key=${m} class="pill mh-t"
-                        style=${`--c:${m === 'DMZ' ? '#3DA5F5' : '#FF3B5C'}`}
-                        onClick=${() => onAdd(m)}>
-                    <span class="dot"></span>New ${m} build${' '}
-                    <kbd class="mh-k" aria-label=${`Keyboard shortcut: ${ADD_KEY[m].toUpperCase()}`}>${ADD_KEY[m].toUpperCase()}</kbd>
-                </button>`)}
-        </div>`;
-}
+// 🔴 REVERSED 2026-09-11 09:01 EDT — Harkirat, direct: the two-chip argument ("MP and DMZ are different records, a single button once made the mode a thing you discovered inside the form") was written when nothing else on the page stated the mode. The mode toggle now sits in the masthead itself, right under the title, so a third statement of MP/DMZ on the create verb was saying it again rather than saying it once. One `New build` chip, matching the shared MastheadNew every other realm's single create verb already uses (Broadcast's "Post announcement", Access's "Grant access") — it opens into whichever armory is currently selected, and AddBuildForm already carries its own in-form MP/DMZ switch (`.modesw`, just below "Identity") for the case where the wrong one was opened, because that switch sets a PROPERTY OF THE RECORD and always has.
 
 function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
     const [text, setText] = useState('');
@@ -1333,21 +1340,25 @@ export function ArmoryRealm({ session }) {
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
                   masthead=${html`<${Masthead} title="Armory"
-                                               idBelow=${html`
-                                                   <div class="mh-mode" role="radiogroup" aria-label="Which armory">
-                                                       ${['MP', 'DMZ'].map((m) => html`
-                                                           <button key=${m} role="radio" data-arm=${m} aria-checked=${m === armMode ? 'true' : 'false'}
-                                                                   onClick=${() => setArmMode(m)}>${m}</button>`)}
-                                                   </div>`}
                                                sub="Every build the bot can show a player, ranked within its category, with whatever is wrong with it named."
                                                stats=${armoryStats}
-                                               actions=${html`
-                                                   <!-- ⚠️ TWO CHIPS, NOT ONE BUTTON, BECAUSE THE ARMORY HAS TWO ARMORIES.
-                                                        MP and DMZ are different records with different rules — DMZ has no share
-                                                        code and ranks by combat range — and a single "New build" made the mode a
-                                                        thing you discovered inside the form. Season's masthead already works this
-                                                        way for its five item types; this is the same control. -->
-                                                   <${ArmoryAddChips} onAdd=${(m) => { setAddMode(m); setShowAdd(true); }} />`} />`}
+                                               actions=${html`<${MastheadNew} label="New build" hint="n"
+                                                                              tip=${`New ${armMode} build`}
+                                                                              onClick=${() => { setAddMode(armMode); setShowAdd(true); }} />`}
+                                               below=${html`
+                                                   <!-- 2026-09-11 09:31 EDT, real fix -- idBelow renders INSIDE .mh-id (row 1), so a
+                                                        margin-top there only inflated mh-id's own height and pushed New build (row 2)
+                                                        down with it: wrong element moved, plus the exact dead gap he flagged. The below
+                                                        prop renders as a direct child of the .masthead GRID ITSELF, so it can be placed on
+                                                        New build's own row track (column 1, row 2) -- true grid alignment, no
+                                                        pixel guess, and row 1's height never changes. -->
+                                                   <div class="mh-mode-row">
+                                                       <div class="mh-mode" role="radiogroup" aria-label="Which armory">
+                                                           ${['MP', 'DMZ'].map((m) => html`
+                                                               <button key=${m} role="radio" data-arm=${m} aria-checked=${m === armMode ? 'true' : 'false'}
+                                                                       onClick=${() => setArmMode(m)}>${m}</button>`)}
+                                                       </div>
+                                                   </div>`} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
                       ${view === VIEWS.rack

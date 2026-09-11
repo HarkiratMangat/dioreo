@@ -968,7 +968,18 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### ◐ `[P1 · L · Opus5-XHigh]` PORTAL PIN ROUND 2 — **HE VERDICTED EVERY OPEN FORK 2026-09-10 18:22–19:16 EDT. ONE PIN IS UNTOUCHED: `pmtvqazpj`**
+### `[P2 · M · Opus5-High]` The masthead's row-1 height is UNGOVERNED, and it changes the gap above every realm's create button — filed 2026-09-11 09:47 EDT
+
+**Measured, not guessed** (Armory pin, this session): the gap from the LAST STAT's bottom edge to the create button's top edge is **58px on Broadcast** ("never ends" -> "Post announcement") and **27px on Armory** ("stale" -> "New build") -- roughly half. The masthead is a 2-column CSS grid (`.masthead{grid-template-columns:1fr auto}`, `.mh-id{grid-column:1;grid-row:1}`, `.mh-stats{grid-column:2;grid-row:1}`, `.mh-new{grid-column:2;grid-row:2}`); row 1's height is whichever column's content is TALLER, so it silently depends on how many subtitle lines a realm happens to have (Broadcast: 3) against how many stats it renders (Broadcast: 4, Armory: 5). Nobody chose this ratio per realm -- it falls out of unrelated content lengths.
+
+**Fixing the gap directly (a margin-top on `.mh-new` or similar) cannot fix this**, and this session proved that live: matching the SUBTITLE-side gap to Broadcast's 16px (a real, verified fix, still in place) left the STATS-side gap untouched, because the two sides are governed by different columns of the same row. The subtitle-to-button relationship and the stats-to-button relationship are two different measurements that happen to coincide only when both columns' content heights are close, which is accidental, not designed.
+
+**The real fix is structural, not a value tweak** -- give `.mh-stats` (or `.mh-id`) a stable min-height so row 1's height stops depending on subtitle line-count and stat count per realm, then re-verify the stats-to-button gap on all seven realms (`portal:geometry --all --check` after, `--write` once attributed). Filed for an Opus session because it touches the shared `Masthead` component every realm renders through -- Season, Access, Broadcast, Analytics, Review, Home, Armory -- and getting the height rule right needs holding all seven mastheads' actual content shapes at once, not one at a time.
+
+**Verify by:** stats-bottom-to-button-top gap measured (not eyeballed) within a few px of each other across all seven realms, and `portal:geometry --all --check` clean after re-recording with the change attributed.
+
+
+### ✅ `[CLOSED 2026-09-11 09:08 EDT]` PORTAL PIN ROUND 2 — every fork verdicted, `pmtvqazpj` fixed and verified on the signed-in portal, the two add chips collapsed per his direct decision
 
 🔴 **THE OPEN COUNT WAS WRONG THREE TIMES TODAY AND ONLY THE LAST SURVIVED A FALSIFIER, SO THE METHOD IS RECORDED WITH THE NUMBER.** `open = all_pins − closed_in_record − shipped_today`, and the closed set must be assembled from **three** places in this entry — the status paragraph, the group table's *closed today* row, and *group A entire*. Reading the status paragraph alone reported **seven** open pins of which six were already closed. Print both falsifiers before the count.
 
@@ -1004,7 +1015,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 | Group | Pins | The work |
 |---|---|---|
-| **A · panel-chrome seam** *(class)* | ~~`pmtvpoz7u` `pmtvp3kih` `pmtvqu75g` `pmtvqujif` `pmtvqvbfd`~~ · `pmtvqazpj` **SPLIT OUT, still open** — 🔴 **the falsifier below already FIRED and this row never recorded it** (noted 2026-09-10 17:33 EDT): one rule moved five of the six, not all six, so armory's coverage cards are a separate cause and remain unmeasured | *"the borders are touching"* five times across three realms, and he generalised it himself. One rule about what a `.ph` and a panel's first/last child owe the panel edge. **Falsifier: if one rule does not move all six, it is not one cause — split it** |
+| **A · panel-chrome seam** *(class)* | ~~`pmtvpoz7u` `pmtvp3kih` `pmtvqu75g` `pmtvqujif` `pmtvqvbfd` `pmtvqazpj`~~ **ALL SIX CLOSED** — `.callout` was `margin:0` on every caller and armory's coverage-repairs page was the one bare usage with no wrapper supplying the gap externally; matched to `.repbar`'s own 14px — 🔴 **the falsifier below already FIRED and this row never recorded it** (noted 2026-09-10 17:33 EDT): one rule moved five of the six, not all six, so armory's coverage cards are a separate cause and remain unmeasured | *"the borders are touching"* five times across three realms, and he generalised it himself. One rule about what a `.ph` and a panel's first/last child owe the panel edge. **Falsifier: if one rule does not move all six, it is not one cause — split it** |
 | **B · the Manifest, properly** | `pmtvpwaqj` `pmtvql4hf` `pmtvqmx17` `pmtvqy8du` | Column labels not aligned with their cells, and width given to columns that never use it — pinned on four realms. ⚠️ Armory's widths were reallocated 2026-09-10 10:48 EDT and he re-pinned it 90 minutes later; establish whether that was too narrow or simply stale **before** redesigning. He asked for a real `/design-critique` |
 | **C · buttons do not read as buttons** *(class)* | `pmtvq210l` `pmtvqfvu9` `pmtvqezgz` `pmtvq8kpe` | *"each button should equally feel like a button"* — colour may differ, weight and hit area may not |
 | **D · creation drawers** | `pmtvp7tqy` `pmtvp9ur7` `pmtvpcfp1` `pmtvpd6it` `pmtvpi2jh` | Field alignment (he says check it as a CLASS across drawers) · a pop-up date picker on **every date field portal-wide** · group the creation chips · what "one date"/"a window" is for · integrate the `/manage` guides, assistive not bloated |
@@ -2063,7 +2074,7 @@ Three portal fixes on 2026-09-10 landed in the file and never on the page, and *
 
 **Not built now, deliberately:** writing a 199-baseline ratchet in the last minutes before a compact, with no regression to test it against, is the speculative-instrument failure this repo has paid for before. **Verify condition:** a gate exists that fails on a NEWLY-introduced same-selector-same-property pair and passes on the 199 already present, with a test that feeds it a real regression rather than a fixture designed to pass.
 
-### `[P3 · S · Sonnet5-Medium]` Nine MORE dead classes, and this is the second time the same commit-without-the-gate produced them
+### ✅ `[CLOSED 2026-09-11 09:08 EDT]` Nine MORE dead classes — 8 removed by hand-read line range, `spofk` revived (not deleted), `sortic` confirmed false-positive and left alone
 
 *Filed 2026-09-10 17:33 EDT. **The 2026-09-06 entry below is the first instance and it is CLOSED — read it first**, because its lesson is the one that repeated: ten `portal/ui` commits landed after `46b35696` added the geometry gate, and none of them ran `--ci` either.* `scripts/portalReverseOrphans.mjs --ci` is RED with ten classes, and the `--why` triage is already done:
 

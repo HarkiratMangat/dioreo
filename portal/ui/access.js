@@ -235,37 +235,27 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                 <div class="mxwrap">
                     <table class="mx">
                         <thead>
+                            <!-- 2026-09-11 09:11 EDT: the boundary between the two groups is now a real vertical line,
+                                 not just the two span labels -- Harkirat, direct: "those command/manage pages
+                                 heads are so confusing, what do they even correspond to?" A group name alone,
+                                 40px above twelve columns, does not say WHERE one group ends -- the line does. -->
                             <tr class="mxgrp">
                                 <th class="mxwho"></th>
-                                <th colspan=${commands.length}><span>Commands</span></th>
+                                <th class="grpend" colspan=${commands.length}><span>Commands</span></th>
                                 <th colspan=${pages.length}><span>/manage pages</span></th>
                                 <th></th>
                             </tr>
                             <tr>
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
                                 ${ordered.map((sc) => html`
-                                    ${/* 🔴 THE HEADER'S SUBJECT IS DEPTH, AND IT USED TO BE A 7px COLOUR BAR. Two marks were
-                                          tried on that bar and both were rejected — a 3/4/7px underline, then a ring — and the third
-                                          mark was never the answer. Two findings settled it. (1) The bar was a THIRD copy: the realm
-                                          hue is already painted into every granted cell in the column below it, up to four times, and
-                                          the By-permission tab one click away states the realm in words ("reaches armory"). (2) The
-                                          count under the name was already carrying the whole risk story — 0 nobody but you, 1 a single
-                                          point, 2+ covered — at the smallest size in the header, in the quietest ink, while the
-                                          masthead calls SINGLE POINTS out in red. The most important fact on a page whose own
-                                          subtitle is "where you are the only one who can do it" was the least visible thing on it.
-                                          So the bar goes and the number becomes the header. Realm survives in the cells and in words
-                                          next door; nothing is lost, one illegible carrier is. */ null}
-                                    <th key=${sc.key} class="sc">
-                                        <button type="button" class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
+                                    <th key=${sc.key} class=${'sc' + (sc === commands[commands.length - 1] ? ' grpend' : '')}>
+                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
-                                              onClick=${() => setView('By permission')}
-                                              title=${holdersOf(sc) === 0
-                                                  ? `${sc.label} — nobody but you holds this${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`
-                                                  : holdersOf(sc) === 1
-                                                  ? `${sc.label} — a single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`
-                                                  : `${sc.label} — ${holdersOf(sc)} people besides you hold it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}. Open By permission for the detail.`}>
-                                            <span class="mxcn" lang="en">${sc.label}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}</span><em class=${'mxdepth' + (holdersOf(sc) === 0 ? ' none' : holdersOf(sc) === 1 ? ' one' : '')}>${holdersOf(sc)}</em>
-                                        </button>
+                                              title=${spofScopes.has(sc.key)
+                                                  ? `${sc.label} — single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`
+                                                  : `${sc.label} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides you${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`}>
+                                            <i></i>${sc.label}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<em class="mxn2">${holdersOf(sc)}</em>
+                                        </span>
                                     </th>`)}
                                 <th><span class="mxs">Action</span></th>
                             </tr>
@@ -379,13 +369,17 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                         <span><span class="mxlegend inh"></span>inherited</span>
                     </span>
                     <span><b>An inherited cell cannot be turned off on its own</b> — switching it off means revoking the thing that covers it, which is <code>manage</code></span>
-                    <!-- 🔴 THE THIRD SENTENCE, AND IT ANSWERS A QUESTION RATHER THAN RESTATING A FACT. Pin pmtuxn6we
+                    <!-- 🔴 THE THIRD SENTENCE ANSWERS A QUESTION RATHER THAN RESTATING A FACT. Pin pmtuxn6we
                          asked what the bar over each column name is FOR, given the squares below already show who holds
                          what. It was never the same fact: the squares are per person, the bar is the portal realm the
-                         scope belongs to, and the amber ring is a single point of failure. Both were carried only by a
-                         title attribute (no backtick on that word: this comment lives inside a template literal and
-                         the build gate refuses one), which is invisible until you hover the 7px strip you cannot see. -->
-                    ${''/* The third sentence stood here and it described a MARK — that a filled square takes the realm's colour — which is what the key above now does in a fraction of the width. Fork 05's whole point is that a key names marks and a sentence carries a consequence; leaving this one would have kept the paragraph the pin was about. The realm each scope reaches is still named in words on By permission, which is where a reader asking that question already is. */}
+                         scope belongs to. A 2026-09-10 attempt (fork 05) tried removing the bar outright and putting a
+                         holder-count in its place; Harkirat called that build worse the same evening and asked for the
+                         bar restored exactly as it stood, with only the ring that used to mark a single point of
+                         failure dropped — it was tried three ways that day (a 3px underline, a 4px glow, a 7px ring)
+                         and never actually visible without zooming in. The amber-coloured count under the label,
+                         which already existed alongside the ring as a second carrier of the same fact, is what marks
+                         a single point of failure now; the key below names it in words. -->
+                    <span><span class="mxlegend bar"></span>the bar over a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
                     <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
                          removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
                          states with a locked chip on every cell — two authorities for one fact, which is the defect
@@ -664,7 +658,7 @@ export function AccessRealm({ session }) {
         <span class="key">
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
-            ${anyGrid ? html`<span class="l dk" data-note>the number over a column is how many people besides you hold it — <em class="mxdepth none">0</em> nobody, <em class="mxdepth one">1</em> a single point</span>` : null}
+            ${spofSet.size ? html`<span class="l spofk" data-note><em class="mxn2" style="color:var(--warn);display:inline;margin:0 3px 0 0">1</em>the count under a column turns amber — held by <b>one person</b> besides you</span>` : null}
             ${anyLock ? html`<span class="l" data-note><i style="background:none"><${Icon} name="lock" cls="sm" /></i>owner-grantable only</span>` : null}
         </span>`;
 
