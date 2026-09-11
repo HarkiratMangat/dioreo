@@ -3064,17 +3064,15 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    ⛔ NO tier badge and NO descriptor line under it (both tried 2026-09-11 13:13 EDT and rejected): what the tier
    MEANS is on the heading's own hover, because the fact is needed once rather than on every read. */
 .mx tbody.grp .gh td{border-bottom:0;height:auto;padding:0}
-.mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 45px}
+.mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 0 12px 45px}
 .mx tbody.grp .ghead{gap:0}
 .mx tbody.grp .ghead h4{margin:0;display:flex;align-items:center;gap:10px;flex:1;
-  font:700 13px/1 var(--data);letter-spacing:.18em;text-transform:uppercase;color:var(--ink2)}
-/* the rule runs from the name to the far edge, so the title opens a section instead of labelling a row */
-.mx tbody.grp .ghead h4::after{content:"";flex:1;height:1px;background:var(--rule)}
-.mx tbody[data-grp=command] .ghead h4{color:var(--ink);font-size:14px}
+  font:700 15px/1.15 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.mx tbody[data-grp=page] .ghead h4{color:var(--ink2);font-size:13.5px}
 /* Beside its own title, before the rule -- in the Held column's x it read as a Held number for a row
    that does not exist. */
-.mx tbody.grp .ghead .fig{order:-1;margin-right:10px;font:500 var(--t-sm)/1 var(--data);
-  color:var(--ink3);font-variant-numeric:tabular-nums}
+.mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);
+  font-variant-numeric:tabular-nums;padding-right:16px}
 /* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
    a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
 .mx tbody[data-grp=command] .gh td{border-top:0}
@@ -3124,7 +3122,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .colh .clbl{font:400 9.5px/1.3 var(--ui);color:var(--ink3);text-align:center;max-width:100px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .colh .built{font:400 9.5px/1.3 var(--data);color:var(--ink3);letter-spacing:.04em}
-.colh .mxav{margin-bottom:3px}
+.colh .mxav{width:26px;height:26px;margin-bottom:3px;font-size:var(--t-sm)}
 /* A real avatar when Discord gives one, the initial only as the fallback. */
 .colh .mxav.has{background:var(--av-src) center/cover no-repeat;color:transparent}
 /* the column a pending change belongs to, in that person's own edit colour */
@@ -3143,16 +3141,16 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* ⛔ NOT A SECOND BOX. A bordered card inside a bordered panel is the nested-card defect, and on one ground
    its border encloses nothing. The legend is a FOOTER REGION: one rule above it, the panel's own ground,
    and the space doing the separating. */
-.mxlegend-box{display:flex;flex-direction:column;gap:var(--s2);margin:var(--s5) 16px var(--s4);
-  padding:var(--s4) 2px 0;border-top:1px solid var(--rule)}
-.mxlegend-box .lrow{display:flex;align-items:center;gap:14px;min-height:0;line-height:1.45;
+.mxlegend-box{display:flex;flex-direction:column;gap:9px;margin:var(--s5) 16px var(--s4);
+  padding:14px 16px;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--raised)}
+.mxlegend-box .lrow{display:flex;align-items:center;gap:12px;min-height:0;line-height:1.45;
   font-size:var(--t-sm);color:var(--ink3)}
 /* the marks were sized for the old foot, where each sat alone on a line; here they set the row height */
 .mxlegend-box .mxlegend{flex:none;width:14px;height:14px;margin:0}
 .mxlegend-box .k{line-height:1}
 .mxlegend-box .k svg{width:13px;height:13px}
 .mxlegend-box .lrow b{color:var(--ink);font-weight:600}
-.mxlegend-box .k{display:flex;align-items:center;gap:7px;flex:none;min-width:124px;color:var(--ink2);
+.mxlegend-box .k{display:flex;align-items:center;gap:7px;flex:none;min-width:128px;color:var(--ink2);
   font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase}
 .mxlegend-box .mxlegend.sw{width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);border:0}
 
@@ -3193,7 +3191,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
  * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
  * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
-.mxcell{width:16px;height:16px;border-radius:var(--rad-1);border:1px solid var(--rule2);background:transparent;
+.mxcell{width:16px;height:16px;border-radius:4px;border:1px solid var(--rule2);background:transparent;
   display:block;margin:0 auto;padding:0;cursor:default}
 .mxcell.on{background:var(--c);border-color:var(--c)}
 /* 🔴 THE RING NAMES ITS SOURCE. An inherited page did not come from nowhere -- a command carries it --
