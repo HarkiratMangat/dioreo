@@ -65,6 +65,19 @@ tool: mcp__sequential-thinking__sequentialthinking
 
 **The one question this section adds to the pass, stated so it can be checked rather than merely intended:** *before presenting a check, a claim, a summary, or a tool choice, name the pushback it would draw — then spend the one cheap call that pushback would eventually force, now, instead of waiting to be asked.*
 
+## A fifth failure mode, and it is the one that let a nine-hour rule violation through — 2026-09-10 20:02 EDT
+
+🔴 **THE PASS SEARCHES THE SPACE YOU WERE ALREADY THINKING ABOUT, AND CALLS THAT A SWEEP.** Measured, not theorised: a compact-prep pass ran five thoughts, explicitly asked *"where will this handoff be wrong?"*, and produced four answers — every one about the portal work that had filled the session. **Not one was "it omits the output style that loads on every turn."** The session had broken the Silent contract **39 times** by then: mid-run prose against a four-item exception list, 9 of 13 final messages over budget, 11 chapter marks across 176 messages. None of it surfaced until Harkirat asked, two messages after I declared the compact ready.
+
+**The rules that govern EVERY turn are the ones a pass never reaches, precisely because they are not what the session was about.** `silent-mode.md` and this file both declare `unconditional: true`. They were in context for all 176 messages and neither was examined once.
+
+🔴 **So the pass carries one fixed question that is not about the task: WHICH RULES LOADED UNCONDITIONALLY THIS SESSION, AND WHAT IS MY MEASURED COMPLIANCE WITH EACH?** A number, never a judgement — "I think I kept it tight" is the answer that produced 39.
+
+- **For the Silent contract there is an instrument and it takes seconds:** `node scripts/summaryShape.mjs --session latest` reports this session's mid-run prose, final-message median and p90, count over budget, and tables per message. ⚠️ **It could not measure silence at all until 2026-09-10 20:01 EDT** — it was built the day the complaint was "walls of text", so it counted final-message shape and ignored the rule the contract lists first. An instrument inherits the complaint that created it; ask what it does NOT measure before trusting a clean row.
+- **For this file, the check is the thought log itself:** did the pass ask anything that was not downstream of the task in front of it?
+
+⚠️ **And the cheap tell that the question was skipped: the pass produced only findings you could have listed before running it.** A pass whose every answer is about the work at hand has not swept — it has elaborated.
+
 ## Two failure modes this file exists to stop
 
 - 🔴 **Thinking AFTER, to verify a conclusion already reached.** That is a ritual, not a pass. The thoughts must be able to change the answer, which means they run before it is formed.
