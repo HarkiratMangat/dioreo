@@ -38,7 +38,17 @@ function emittedClasses() {
         }
     };
     for (const f of fs.readdirSync(UI).filter((n) => n.endsWith('.js'))) {
-        const src = fs.readFileSync(path.join(UI, f), 'utf8');
+        // 🔴 THIS FILE ALREADY STRIPS COMMENTS FROM THE STYLESHEET AND DID NOT STRIP THEM FROM THE SOURCE, and the asymmetry is written into its own header thirty lines above -- "a gate whose false NEGATIVES are silent is the exact shape it exists to prevent" -- about the CSS side only. The JS side had the mirror defect and it produced a false POSITIVE: `broadcast.js:43` explains a past fix by quoting `<span class="stt …">` in prose, and this scan read the ellipsis as an emitted class with no rule, failing `npm test` on documentation. That is the identical failure the tone check records fixing in portalUi.test.js -- "a check that reads its own documentation as evidence reports the opposite of the truth, confidently" -- so the idiom is copied from there rather than reinvented. ⚠️ BLANKED TO SPACES, NOT REMOVED, so every offset and line number still lines up with the real file for anything downstream that reports a position.
+        const raw = fs.readFileSync(path.join(UI, f), 'utf8');
+        const src = (() => {
+            let out = '', i = 0;
+            while (i < raw.length) {
+                if (raw.startsWith('//', i)) { const e = raw.indexOf('\n', i); const to = e === -1 ? raw.length : e; out += ' '.repeat(to - i); i = to; }
+                else if (raw.startsWith('/*', i)) { const e = raw.indexOf('*/', i + 2); const to = e === -1 ? raw.length : e + 2; out += raw.slice(i, to).replace(/[^\n]/g, ' '); i = to; }
+                else { out += raw[i]; i++; }
+            }
+            return out;
+        })();
         for (const m of src.matchAll(/class="([^"$]*)"/g)) add(m[1], f);
         // 🔴 A CLASS PASSED AS A DATA VALUE WAS INVISIBLE TO THIS GATE. The Manifest takes `metaClass` on a column and renders it into the row's secondary line, so the name never appears inside a `class=` attribute in the source — and `metaClass: 'rowlife'` shipped with no rule behind it anywhere, which is precisely the state this file exists to prevent. Any future prop that names a class has to be listed here, or it inherits the same blind spot. ⚠️ THIS LIST MUST MATCH portalCoverage's CLASS_PROPS EXACTLY, and a check below enforces it. Measured 2026-08-26: `tone` was added to coverage's list and NOT to this one, so a `tone: 'live'` counted as covered while this gate — the one that fails on a class with no rule — could not see it. A no-op class shipped and the number went up. The two gates only hold each other while they read the same syntax, and the claim that they do was written in coverage's own header while it was false.
         for (const m of src.matchAll(new RegExp(`\\b(?:${CLASS_PROPS.join('|')}):\\s*'([^']+)'`, 'g'))) add(m[1], f);

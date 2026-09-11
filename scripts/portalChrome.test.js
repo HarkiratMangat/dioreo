@@ -1,6 +1,6 @@
 // scripts/portalChrome.test.js — the shared chrome's pure halves, and the one invariant that keeps a native dialog out of the portal.
 //
-// The chrome is the part every realm renders inside, so a defect here is eight defects. These are the pieces that can be checked without a browser: how the command bar ranks what you typed, whether ⌘K knows to stand down behind a modal, and whether a typed confirmation actually gates.
+// The chrome is the part every realm renders inside, so a defect here is eight defects. These are the pieces that can be checked without a browser: how the command bar ranks what you typed, whether ⌘/ knows to stand down behind a modal (⌘K until pin round 2 — it is bound on his Mac), and whether a typed confirmation actually gates.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');

@@ -1012,6 +1012,8 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 
 `installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.
 
+⚠️ **AND THE `tooltip runtime` STATE WAS REMOVED FROM `portal/fixtures/states/shell.json` ON 2026-09-11 19:30 EDT, SO IT HAS TO COME BACK WITH THE FEATURE.** It expected `.tip` to appear on hover and could never reach it once the runtime returned early — a gate that cannot pass is worse than no gate, because a suite that is red for a known reason trains a reader to skip the whole file. It was deleted rather than left failing, which means **re-enabling `installTips()` without restoring that state ships the runtime with nothing walking it.** The state's own shape was: realm `season`, one `hover` step on an element carrying `data-tip`, expecting `.tip`.
+
 
 ### `[P1 · M · Opus5-High]` WHICH COMMANDS CONFER WHICH `/manage` PAGES — the model has exactly one conferral and nobody chose that — filed 2026-09-11 13:21 EDT
 

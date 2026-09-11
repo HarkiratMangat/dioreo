@@ -381,11 +381,11 @@ const SEASON_COLUMNS = [
         assert.ok(out.includes(String(session.discordId)), 'the id is WHOLE in the panel — a partial id cannot be checked');
     });
 
-    // ⚠️ The failure this guards is silent and specific: an unset custom property makes the whole `background` declaration invalid at computed-value time, so the disc and the banner paint TRANSPARENT rather than falling back to a lower-specificity rule.
-    check('the account head sets --banner and --av-src to a VALID value rather than leaving them unset', () => {
+    // ⚠️ The failure this guards is silent and specific: an unset custom property makes the whole `background` declaration invalid at computed-value time, so the disc paints TRANSPARENT rather than falling back to a lower-specificity rule. 🔴 THE `--banner` HALF WAS REMOVED 2026-09-11 18:50 EDT BECAUSE THE THING IT GUARDED WAS DELETED. The banner slot went from the account panel on 2026-09-10 (fork 08); this assertion outlived it and had been failing ever since, which is the worst state for a gate to be in -- a red that everybody learns to read as "the known one". Its CSS was removed in the same change. ⚠️ The `--av-src` half is untouched and still real: the avatar disc is still rendered and still needs a resolvable value.
+    check('the account head sets --av-src to a VALID value rather than leaving it unset', () => {
         const out = render(html`<${Shell} realm="armory" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
-        assert.ok(out.includes('--banner:none'), 'the banner names a value the CSS can resolve');
         assert.ok(out.includes('--av-src:none'), 'the avatar disc names a value the CSS can resolve');
+        assert.ok(!out.includes('--banner'), 'the banner slot is gone; nothing should emit it');
     });
 
     check('a typed confirmation renders its gate and holds the button shut until it is satisfied', () => {

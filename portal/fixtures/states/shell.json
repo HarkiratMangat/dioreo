@@ -22,7 +22,7 @@
       "flags": {},
       "steps": [
         {
-          "key": "k",
+          "key": "/",
           "meta": true
         }
       ],
@@ -146,19 +146,6 @@
       "known": [],
       "note": "the masthead Export strip \u2014 each scope states its OWN shape, because only some of them re-import \u26a0\ufe0f THE STEP DELIBERATELY CARRIES NO `until`. One was added 2026-09-01 to fix a load race and became the race: `until` waits on its own 5000ms settle deadline while `expect` waits 45000ms for the SAME selector, so the redundant, tighter one failed first. A wait duplicated at two deadlines is worse than one wait, and the shorter number wins in exactly the conditions the longer one was raised for.",
       "expect": ".exs"
-    },
-    {
-      "name": "tooltip runtime",
-      "realm": "season",
-      "flags": {},
-      "steps": [
-        {
-          "hover": "[data-tip]"
-        }
-      ],
-      "known": [],
-      "note": "32 data-tip hosts on Season and the runtime is delegated from the document; tooltips are content and are invisible to a screenshot",
-      "expect": ".tip"
     },
     {
       "name": "toast after an account action",

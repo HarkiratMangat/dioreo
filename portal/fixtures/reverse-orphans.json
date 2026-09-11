@@ -1,10 +1,8 @@
 {
-  "recordedAt": "2026-09-11T15:24:14.555Z",
+  "recordedAt": "2026-09-11T22:52:20.644Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [],
-  "vars": [
-    "--banner"
-  ],
+  "vars": [],
   "classes": [
     "ackrow",
     "act",
@@ -95,7 +93,5 @@
     "wcard",
     "zhint"
   ],
-  "mismatch": [
-    "lone"
-  ]
+  "mismatch": []
 }

@@ -301,7 +301,10 @@ export function ClockFace({ p }) {
 //
 // 🔴 FIVE PRESSURE TIERS, each REMOVING something. `data-tier` drives it from CSS so the component states the tier and the stylesheet decides what that looks like — a single orange "hot" state means the element says exactly one thing for twenty days and then another.
 //
-// ⚠️ TWO WALLS, NOT THREE DEADLINES. bpEnd and rankEnd are usually the same day; seasonMoments groups by date so one moment carrying two lines reads as one wall.
+// ⚠️ TWO WALLS, NOT THREE DEADLINES. bpEnd and rankEnd are usually the same day; seasonMoments groups by date so one moment carrying two lines reads as one wall. ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT, same defect as broadcast.js's LIFECYCLE_WORD: `SeasonClock` reads `fmtWall` seven lines before it was declared. Harmless today because the read sits inside a render closure, a crash the moment anything evaluates it eagerly, and invisible to `node --check` -- which is what `scripts/tdzRatchet.mjs` is for. The deadline as a person reads a clock: the day, then the hour it actually falls, in the viewer's own zone. A deadline stored at 00:00Z is 8pm the previous evening in Toronto -- the whole point of fork 01 -- so the DAY alone is not the answer and neither is the raw instant.
+const fmtWall = (at) => (at == null ? '—' : new Date(at).toLocaleString(undefined,
+    { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
+
 function SeasonClock({ season, today }) {
     const [, setTick] = useState(0);
     const moments = seasonMoments(season, today || new Date().toISOString().slice(0, 10));
@@ -347,8 +350,6 @@ function SeasonClock({ season, today }) {
 }
 
 // A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset. The deadline as a person reads a clock: the day, then the hour it actually falls, in the viewer's own zone. A deadline stored at 00:00Z is 8pm the previous evening in Toronto — the whole point of fork 01 — so the DAY alone is not the answer and neither is the raw instant.
-const fmtWall = (at) => (at == null ? '—' : new Date(at).toLocaleString(undefined,
-    { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
 
 const daysUntil = (iso) => Math.max(0, Math.round(
     (new Date(String(iso).slice(0, 10) + 'T00:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')) / 86400000));
