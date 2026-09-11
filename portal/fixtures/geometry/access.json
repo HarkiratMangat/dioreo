@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T18:27:01.252Z",
-  "commit": "07c65e44",
+  "recordedAt": "2026-09-11T18:50:46.034Z",
+  "commit": "2d088585",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,9 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 367,
+        "examined": 366,
         "nearMisses": 12,
-        "sizeIssues": 116,
+        "sizeIssues": 117,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -67,6 +67,7 @@
           "mxc>mxcell|TOP-OFFSET",
           "mxc>mxcell|TOP-OFFSET",
           "mxc>mxcell|TOP-OFFSET",
+          "mxlegend-box>lrow|h",
           "pname>b|TOP-OFFSET",
           "pname>b|TOP-OFFSET",
           "pname>b|TOP-OFFSET",
@@ -139,10 +140,10 @@
         ],
         "cols": [
           "Permission",
-          "OOwneryou",
-          "Ccalendar helper…000002",
-          "Mmoderator…000001",
-          "Ggunsmith…000003",
+          "Dior (fixture)owner",
+          "Dior (fixture)@diorswrld",
+          "Dior (fixture)@diorswrld",
+          "Dior (fixture)@diorswrld",
           "Held"
         ],
         "sections": []

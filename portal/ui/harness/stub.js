@@ -522,7 +522,17 @@ const ROUTES = [
         return { kind, rows };
     }],
     // 🔴 THE DRAWER'S TIER PREVIEW NEEDS THIS OR IT SHOWS ITS EMPTY STATE WITH TEXT IN THE BOX. Narrower than utils/adminParser.js on purpose, same as parse-date/parse-bulk: the four shorthands the placeholder itself teaches, so the stub cannot teach a grammar the product does not have. The Grant drawer's lookup (pin 32). A superset of both shapes the route can answer with — ok:true beside the found fields — so portalHarness.test.js's promise check is satisfied and access.js's `res.id` test takes the found branch. Any 17–20 digit id resolves to the fixture person, and the display name says so.
-    [/^\/api\/discord\/user$/, (params) => ({ ok: true, reason: '', id: params.get('id') || '1139845545754632283', username: 'diorswrld', globalName: 'Dior (fixture)', avatarUrl: 'https://cdn.discordapp.com/embed/avatars/3.png' })],
+    [/^\/api\/discord\/user$/, (params) => {
+        // 🔴 ONE PERSON PER ID, NOT ONE PERSON FOR EVERY ID. This answered with the same fixture user for
+        // every lookup, so the Access grid drew four columns carrying one name and the harness could not
+        // show the identity work at all -- the instrument disagreeing with the product about who is who.
+        // Derived from the id, so the columns differ and stay stable across reloads.
+        const id = String(params.get('id') || '');
+        const NAMES = ['dior', 'calhelper', 'moddy', 'gunsmith', 'seedling'];
+        const k = (Number(id.slice(-1)) || 0) % NAMES.length;
+        return { id, username: NAMES[k], globalName: NAMES[k].charAt(0).toUpperCase() + NAMES[k].slice(1),
+                 avatarUrl: `https://cdn.discordapp.com/embed/avatars/${k}.png` };
+    }],
     [/^\/api\/parse-items$/, (params, body) => {
         const TIER = { m: 'mythic', l: 'legendary', lg: 'legacy', e: 'epic' };
         const items = []; const errors = [];

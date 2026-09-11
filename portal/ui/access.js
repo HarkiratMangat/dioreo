@@ -53,6 +53,30 @@ const SCOPE_COLOR = {
 };
 const accentOf = (sc) => SCOPE_COLOR[sc.key] || 'var(--ink3)';
 
+// 🔴 PEOPLE, NOT SNOWFLAKES. Every admin surface rendered an ellipsis and six digits -- Harkirat:
+// "Gee i didn't know my name was ...632283". The route and the shape were already here: the grant
+// drawer's preview reads `user.globalName`, `user.username` and `user.avatarUrl` from this same
+// endpoint. Nothing needed building; it needed using. The id survives only as the fallback when
+// Discord refuses, which is the one case where a number is better than a wrong name.
+function useIdentities(ids) {
+    const [map, setMap] = useState({});
+    const key = ids.join(',');
+    useEffect(() => {
+        let dead = false;
+        (async () => {
+            const out = {};
+            for (const id of ids) {
+                if (!/^\d{17,20}$/.test(id)) continue;
+                const r = await fetchJson(`/api/discord/user?id=${id}`);
+                if (r && r.id) out[id] = r;
+            }
+            if (!dead && Object.keys(out).length) setMap((p) => ({ ...p, ...out }));
+        })();
+        return () => { dead = true; };
+    }, [key]);
+    return map;
+}
+
 function useDiscordLookup(discordId) {
     const [state, setState] = useState({ status: 'idle' });
     useEffect(() => {
@@ -75,7 +99,7 @@ function useDiscordLookup(discordId) {
 // ⚠️ THE OWNER-ONLY LOCK IS SHOWN, NOT ENFORCED HERE. `destructive` is excluded from `all` and grantable only by the owner — the server decides that, and a chip that hid it would leave an owner unable to grant the one permission only they can grant. The mark says why it is different.
 //
 // ⚠️ grantReady (access.logic.js) is the single source for when the Grant button may fire and what the `.why` line says when it may not — kept pure and unit-tested (scripts/portalSession.test.js) precisely so this readiness rule can be checked without a DOM. 🔴 ONE FORM, TWO MODES, BECAUSE THE SECOND ONE IS THE FIRST ONE WITH ITS ID ALREADY DECIDED. Passing an `admin` turns this into the design's Edit drawer: the id is fixed and read-only, the chips arrive pre-filled from what that account already holds, and the label is the value being edited rather than a blank. ⚠️ THE LOOKUP IS SKIPPED IN EDIT MODE, DELIBERATELY. `useDiscordLookup` exists to catch a typo'd or nonexistent id before a grant creates an unreachable row; an id already in the grid was resolved when it was granted and cannot be retyped here, so a second round-trip would buy nothing and would leave the Save button disabled for 400ms every time the drawer opens. `grantReady` is handed `'ok'` for exactly that reason and for no other. ⚠️ AND THE TYPED CONFIRMATION STAYS. An edit replaces the whole permission list — it can revoke as easily as grant — so it is the same act at the same tier as the grant it reuses, and dropping the gate because the row already exists would be reading "edit" as "smaller".
-function GrantForm({ admin, onGrant, scopes, onCancel }) {
+function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke }) {
     const editing = Boolean(admin);
     const scopeKeys = new Set((scopes || []).map((sc) => sc.key));
     const [discordId, setDiscordId] = useState(editing ? admin.discordId : '');
@@ -91,6 +115,8 @@ function GrantForm({ admin, onGrant, scopes, onCancel }) {
         <${Drawer} eyebrow=${editing ? 'admin.grant · tier 3 · replaces the whole list' : 'admin.grant · tier 3'}
                    title=${editing ? `Edit …${admin.discordId.slice(-6)}` : 'Grant portal access'} onClose=${onCancel}
                    actions=${html`
+                       ${editing && onRevoke ? html`<button class="btn danger" style="margin-right:auto"
+                               onClick=${() => onRevoke(admin.discordId)}>Revoke access</button>` : null}
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class="btn go" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText, note)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
@@ -222,6 +248,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         grants: Object.fromEntries(scopes.map((sc) => [sc.key, { direct: true, held: true }])),
     };
     const people = [ownerCol, ...granted];
+    const who = useIdentities(people.map((p) => p.discordId));
     // "besides you" -- the owner holds everything by definition, so counting them would make every count 1 higher and mean nothing.
     const holdersOf = (sc) => granted.filter((a) => (a.grants[sc.key] || {}).held).length;
 
@@ -339,16 +366,18 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                     const isOwner = Boolean(a.__owner);
                                     const n = dirtyOf(a);
                                     const nv = noteNow(a);
+                                    const u = who[a.discordId];
+                                    const name = (u && (u.globalName || u.username)) || nv || `…${a.discordId.slice(-6)}`;
                                     return html`
                                         <th key=${a.discordId} class=${(isOwner ? 'owncol ' : '') + (n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
                                             style=${`--ed:${editColor(a)}`}>
                                             <button type="button" class="colh"
-                                                    aria-label=${isOwner ? 'You — the owner' : `Open ${nv || a.discordId} in the admin drawer`}
+                                                    aria-label=${isOwner ? 'You — the owner' : `Open ${name} in the admin drawer`}
                                                     onClick=${() => (isOwner ? null : onEdit(a))}>
-                                                <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
-                                                ${''}
-                                                <b>${isOwner ? 'Owner' : (nv || html`…${a.discordId.slice(-6)}`)}</b>
-                                                <span class="clbl">${isOwner ? 'you' : html`…${a.discordId.slice(-6)}`}</span>
+                                                <span class=${'mxav' + (u && u.avatarUrl ? ' has' : '')} aria-hidden="true"
+                                                      style=${u && u.avatarUrl ? `--av-src:url(${u.avatarUrl})` : ''}>${u && u.avatarUrl ? '' : name.slice(0, 1).toUpperCase()}</span>
+                                                <b>${name}</b>
+                                                <span class="clbl">${isOwner ? 'owner' : (u ? `@${u.username}` : nv || '')}</span>
                                             </button>
                                         </th>`;
                                 })}
@@ -380,7 +409,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                             </span>
                                         </td>
                                         ${people.map((a) => cellFor(a, sc))}
-                                        <td class=${'mxc-held held' + (spofScopes.has(sc.key) ? ' spof' : '') + (holdersOf(sc) === 0 ? ' zero' : '')}
+                                        <td class=${'mxc-held held' + (spofScopes.has(sc.key) ? ' spof' : '') + (holdersOf(sc) === 0 && !sc.ownerOnly ? ' zero' : '')}
                                             data-tip=${spofScopes.has(sc.key)
                                                 ? 'Single point of failure — exactly one person besides you holds it'
                                                 : `${holdersOf(sc)} hold it`}>${holdersOf(sc)}</td>
@@ -404,7 +433,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                             <div key=${a.discordId} class="mxbar" style=${`--ed:${editColor(a)}`}>
                                 <span class="who">
                                     <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
-                                    <span><b>…${a.discordId.slice(-6)}</b><em>${nv || 'no label'}</em></span>
+                                    <span><b>${(who[a.discordId] && (who[a.discordId].globalName || who[a.discordId].username)) || nv || html`…${a.discordId.slice(-6)}`}</b><em>${nv || 'no label'}</em></span>
                                 </span>
                                 <span class="chips">
                                     ${Object.entries(rp).map(([k, want]) => {
@@ -426,19 +455,19 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                 <div class="mxlegend-box">
                     <div class="lrow">
                         <span class="k"><span class="mxlegend on"></span>Filled</span>
-                        <span>Granted <b>directly</b>. The fill is that permission's own colour.</span>
+                        <span>Granted <b>directly</b>.</span>
                     </div>
                     <div class="lrow">
                         <span class="k"><span class="mxlegend inh"></span>Ringed</span>
-                        <span>Inherited — and <b>the ring is the colour of the command it came from</b>. An inherited cell cannot be turned off on its own: switching it off means revoking the thing that covers it, which is the <code>manage</code> token</span>
+                        <span>Inherited — <b>the ring names the command it came from</b>, and only that command can take it back.</span>
                     </div>
                     <div class="lrow">
                         <span class="k">${(commands.slice(0, 3)).map((sc) => html`<span key=${sc.key} class="mxlegend sw" style=${`--c:${accentOf(sc)}`}></span>`)}Colour</span>
-                        <span>Every permission has <b>its own</b>, in the grid and in an edit bar's chips.</span>
+                        <span>Every permission has <b>its own</b>.</span>
                     </div>
                     <div class="lrow">
                         <span class="k"><${Icon} name="lock" cls="sm" />Owner only</span>
-                        <span><b>Destructive</b> is the one permission the <code>all</code> shorthand never hands out — it can arrive only by being granted deliberately.</span>
+                        <span><b>Destructive</b> is the one the <code>all</code> shorthand never hands out.</span>
                     </div>
                 </div>
             `}
@@ -721,7 +750,7 @@ export function AccessRealm({ session }) {
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
-                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} onCancel=${() => setShowGrant(false)} />` : null}${editAdmin ? html`<${GrantForm} admin=${editAdmin} onGrant=${handleEdit} scopes=${matrix.scopes} onCancel=${() => setEditAdmin(null)} />` : null}`}
+                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} onCancel=${() => setShowGrant(false)} />` : null}${editAdmin ? html`<${GrantForm} admin=${editAdmin} onRevoke=${confirmRevoke} onGrant=${handleEdit} scopes=${matrix.scopes} onCancel=${() => setEditAdmin(null)} />` : null}`}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },

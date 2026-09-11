@@ -3056,6 +3056,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx td.mxc-name{text-align:left}
 .mx tbody.grp .gh td{text-align:left}
 .mx thead th.mxc-held{text-align:right;padding-right:16px}
+.mx thead th.mxc-held .mxs{text-align:right;padding-right:0}
 .mx tbody tr.prow td{height:38px}
 
 /* THE GROUP HEADING is a rule, a name and a figure — and NOT a chip. Border, fill and radius each say
@@ -3085,6 +3086,20 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   left:-1px;width:12px;background:var(--rule2)}
 .mx tbody[data-grp=command] tr[data-last] td.mxc-name::after{left:-2px;width:14px;height:2px;background:var(--rule2)}
 
+/* 🔴 THE HOVER, AS A SECTION STATE RATHER THAN A HINT. He asked for a touch that IMPLIES the hierarchy
+   when the pointer is on Commands or its four labels -- not a tooltip, which is what I reached for first
+   and what he then had removed portal-wide. Hovering either tier recedes the other, so the containment is
+   shown by behaviour: the eight pages dim while you are reading the four commands that can cover them.
+   ⛔ Scoped to the NAME column, never the whole row, so moving down a column of cells does not strobe the
+   page; eased, and skipped entirely under prefers-reduced-motion. */
+.mx tbody.grp{transition:opacity var(--dur-2) var(--ease)}
+.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=page]{opacity:.42}
+.mx:has(tbody[data-grp=page] td.mxc-name:hover) tbody[data-grp=command]{opacity:.42}
+.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=command] .pname b,
+.mx:has(tbody[data-grp=page] td.mxc-name:hover) tbody[data-grp=page] .pname b{color:var(--ink)}
+.mx:has(tbody[data-grp=command] td.mxc-name:hover) tbody[data-grp=command] td.mxc-name{border-left-color:var(--ink3)}
+@media (prefers-reduced-motion:reduce){.mx tbody.grp{transition:none}}
+
 /* a permission is a swatch and a name, on one baseline */
 .pname{display:flex;align-items:center;gap:10px;cursor:help}
 .pname i{display:block;width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
@@ -3109,6 +3124,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .colh .built{font:400 9.5px/1.3 var(--data);color:var(--ink3);letter-spacing:.04em}
 .colh .mxav{margin-bottom:3px}
+/* A real avatar when Discord gives one, the initial only as the fallback. */
+.colh .mxav.has{background:var(--av-src) center/cover no-repeat;color:transparent}
 /* the column a pending change belongs to, in that person's own edit colour */
 .mx thead th.dirty .colh{background:color-mix(in srgb,var(--ed) 11%,transparent);
   box-shadow:inset 0 2px 0 var(--ed)}

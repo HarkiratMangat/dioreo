@@ -970,11 +970,15 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### `[P2 | M | Opus5-High]` THE PORTAL SHOWS TRUNCATED DISCORD IDS WHERE IT SHOULD SHOW PEOPLE - filed 2026-09-11 14:27 EDT
+### CLOSED `[P2 | M | Opus5-High]` THE PORTAL SHOWS TRUNCATED DISCORD IDS WHERE IT SHOULD SHOW PEOPLE - filed 2026-09-11 14:27 EDT
+
+**BUILT 2026-09-11 14:52 EDT - the Access grid and the edit bars resolve every id through `/api/discord/user`, the route the grant drawer's preview already used, and render the real avatar with the initial only as the fallback. Filed and built inside the hour because nothing needed building: the shape was already there.**
 
 Harkirat, 2026-09-11 14:27 EDT: *"Gee i didn't know my name was ...632283"* and *"Type their actual username instead of ...00002."* Every admin-facing surface renders an ellipsis plus six digits of a snowflake: the Access column heads, the owner callout, the bars, the sessions list. `portal/api/access.js` already has a `/api/discord/user` route and `access.js` a `useDiscordLookup` hook, so the capability exists and nothing uses it for display. **Do:** resolve username and avatar for every admin once per load, server-side, cached, with the id as the fallback when Discord refuses. **Verify by:** no `slice(-6)` remains in `portal/ui/access.js`, and the owner callout names a person.
 
-### `[P2 | S | Sonnet5-High]` THE ADMIN DRAWER HAS TO CARRY REVOKE AND THE NOTE - filed 2026-09-11 14:27 EDT
+### CLOSED `[P2 | S | Sonnet5-High]` THE ADMIN DRAWER HAS TO CARRY REVOKE AND THE NOTE - filed 2026-09-11 14:27 EDT
+
+**BUILT 2026-09-11 14:52 EDT - and the filing overstated it. The NOTE was already in the drawer: `GrantForm` with an `admin` prop is the Edit drawer and its label field has always been editable. Only Revoke was missing, and it is one button in the drawer's action row wired to the `confirmRevoke` that already existed.**
 
 The column head opens `onEdit` now and the Edit and Revoke chips went with it, so the drawer is the only route to both. **Revoke currently has no other affordance** - the one place this pin round left a capability reachable only through a surface that is still thin. **Do:** the drawer carries full info, every permission, the note editor and a typed-confirm revoke. **Verify by:** revoking an admin end to end without touching the grid.
 
