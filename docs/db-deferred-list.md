@@ -988,6 +988,20 @@ The column head opens `onEdit` now and the Edit and Revoke chips went with it, s
 
 ⚠️ **One noun in the original scope shipped DIFFERENTLY, and it is named here rather than left to look delivered.** The filing asked for a drawer with its own fields, *validation* and a *typed confirm*. Fields and validation shipped as written — Title is required and gates the Save button. The typed confirm did **not**: Harkirat replaced it with a two-step "are you sure" click on 2026-09-11 16:40 EDT, because retyping an 18-digit snowflake confirms the clipboard rather than the intent. The server-side gate is unchanged; only the human-facing half moved.
 
+### `[P2 · M · Opus5-High]` SESSION HISTORY — the panel can only ever show the last 12 hours, and the obvious fix is a security regression — filed 2026-09-11 18:13 EDT
+
+Harkirat asked for the last 5–10 sessions to stay in the "Signed in right now" panel, with a quiet one going red and reading "4 days ago". **The UI for that is built and shipped; the data is not there to feed it.** He chose **Not now — file it**, with **30 days** as the retention answer when it is built.
+
+🔴 **`models/PortalSession.js` expires the document 12 hours after `createdAt` via a Mongo TTL index**, so a session older than that is physically gone. A row showing "4 days ago" cannot exist today.
+
+🔴 **AND `portal/auth.js:219-220` IS THE ENTIRE AUTH CHECK — a `findOne` on the session hash plus a `revokedAt` test, with no age comparison anywhere in the codebase.** The document existing IS the session. So raising the TTL to keep history would extend **every login** by exactly the retention window: a 30-day retention would mean 30-day sessions. ⚠️ This is also a latent fragility independent of the feature — if that index is ever dropped or fails to run, every session becomes permanent and nothing would report it.
+
+**Do, in this order:** add an explicit "createdAt + SESSION_TTL_SECONDS older than now → return null" to `authSession`, so the TTL index becomes a housekeeping sweep rather than the security boundary · only then raise the index to 30 days and add an `endedAt` · have `/api/access` return the recent-but-dead ones alongside the live ones · cap the list at 10 in the UI. The alternative shape — a separate history collection that leaves auth untouched — was offered and not chosen.
+
+⚠️ **THIS IS A PUBLISHED-PRIVACY-POLICY CHANGE AND THE SAME COMMIT MUST CARRY IT.** `docs/legal/PRIVACY.md` §2 and Appendix A name the Discord ID and the device string with a **12-hour** retention answer; going to 30 days makes both false. `docs-audit`'s `privacy-model-coverage` exists for exactly this, and `PortalSession.js`'s own header says so.
+
+**Verify by:** signing out, then seeing that session still listed in red with a spelled-out age — and, separately, confirming that a session whose `createdAt` is older than 12 hours is refused by `authSession` even though its document is still present.
+
 ### `[P3 | S | Sonnet5-Medium]` TOOLTIP REDESIGN - the runtime is disabled, not deleted - filed 2026-09-11 14:27 EDT
 
 `installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.
