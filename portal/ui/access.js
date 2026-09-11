@@ -584,8 +584,8 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
     `;
 }
 
-// By scope -- the inverse of the grid, and it answers a question the grid structurally cannot: "who can touch the calendar?" without reading across a row. Holders are derived from the SAME matrix rather than a second query, so the two views can never disagree about who holds what.
-function ByScope({ matrix, spof, ownerId, nameOf }) {
+// By scope -- the inverse of the grid, and it answers a question the grid structurally cannot: "who can touch the calendar?" without reading across a row. Holders are derived from the SAME matrix rather than a second query, so the two views can never disagree about who holds what. 🔴 THE OTHER HALF OF THIS REALM, BROUGHT UP TO WHAT THE GRID LEARNED TODAY. Harkirat, 2026-09-11 18:14 EDT: "trickle the refining, the improvements, the changes, the designs... into [it] as well." Four things carry over, and each is a decision the grid already paid for rather than a fresh invention: a holder is a FACE and a name, not a string, from the same `who` map and the same `personName` rule -- which is the whole point of having made that a shared token this afternoon · a band heading is a name, a rule and a figure at the far end, the grid's group-heading shape · a row's swatch and its bracket light from anywhere in the row, which is the grid's hover corrected from "the label cell" to "the row" · and each row says which TIER it belongs to, a distinction the grid makes structurally and this list could not make at all.
+function ByScope({ matrix, spof, ownerId, nameOf, who }) {
     const spofScopes = new Set((spof || []).map((s) => s.scope));
     return html`
         <div id="by-scope">
@@ -632,11 +632,20 @@ function ByScope({ matrix, spof, ownerId, nameOf }) {
                             <!-- The name is the LABEL with the raw token beside it, not the token alone: the token
                                  is what you type into a grant and the label is what it means, and a list showing
                                  only the token asks the reader to translate twelve of them. -->
-                            <span class="nm"><i></i>${sc.label || sc.key}<em>${sc.key}</em></span>
+                            <span class="nm"><i></i><b>${sc.label || sc.key}</b><em>${sc.key}</em></span>
+                            <!-- The tier, which this list could not say at all. The grid carries it structurally, in two labelled blocks with brackets of different weight; a flat list ordered by holder count cannot, so it says it in a word per row. -->
+                            <span class="tk" data-kind=${sc.kind}>${sc.kind === 'command' ? 'command' : '/manage page'}</span>
                             <!-- 🔴 ELEVEN SCOPE TOKENS AND NO WAY TO TELL WHICH ONES REACH THE PORTAL. The realm was already known — the grid above puts it in a title attribute, which is a hover on a row you are reading with your eyes — and the difference matters: a Discord-only scope granted to somebody who only ever uses the portal does nothing at all. -->
                             <span class="rl">${sc.realm ? html`reaches <b>${sc.realm}</b>` : html`<span class="none">Discord only</span>`}</span>
                             <span class="hs">
-                                ${holders.length ? holders.map((h) => html`<span class="holder" key=${h}>${nameOf(h)}</span>`)
+                                ${holders.length ? holders.map((h) => {
+                                    const u = who[h];
+                                    return html`<span class="holder" key=${h}>
+                                        <span class=${'hav' + (u && u.avatarUrl ? ' has' : '')} aria-hidden="true"
+                                              style=${u && u.avatarUrl ? `--av-src:url(${u.avatarUrl})` : null}
+                                              >${u && u.avatarUrl ? null : (nameOf(h) || '?').slice(0, 1).toUpperCase()}</span>
+                                        ${nameOf(h)}</span>`;
+                                })
                                     : html`<span class="holder none">nobody else</span>`}
                             </span>
                         </div>
@@ -647,9 +656,20 @@ function ByScope({ matrix, spof, ownerId, nameOf }) {
             </div>
             <!-- The two flags this list draws, named where the list ends. Same rule as the grid's foot: a mark
                  that is on screen is named on screen, and only the marks that ARE on screen. -->
-            <div class="mxfoot">
-                <span><b style="color:var(--warn)">Single point</b> — exactly one non-owner holds it. If they go, you are the only one left who can do it.</span>
-                <span><b>Nobody but you</b> — zero non-owner holders. Safe, and also the reason you are still doing it yourself.</span>
+            <!-- The legend takes the grid's own shape -- a bordered box on the lifted ground, a MARK and what it means one row each -- because he approved that shape there, and two legends on two tabs of one screen looking like two different components is the defect this realm keeps re-learning. -->
+            <div class="mxlegend-box">
+                <div class="lrow">
+                    <span class="k"><span class="mxlegend sw" style="--c:var(--warn)"></span>Single point</span>
+                    <span>Exactly one person besides you holds it — <b>if they go, you are the only one left</b>.</span>
+                </div>
+                <div class="lrow">
+                    <span class="k"><span class="mxlegend sw" style="--c:var(--ink4)"></span>Nobody but you</span>
+                    <span>Zero holders besides you. Safe, and <b>the reason you are still doing it yourself</b>.</span>
+                </div>
+                <div class="lrow">
+                    <span class="k"><span class="mxlegend sw" style="--c:var(--ink3)"></span>Tier</span>
+                    <span>A <b>command</b> carries everything inside it; a <b>/manage page</b> is one surface.</span>
+                </div>
             </div>
         </div>
     `;
@@ -912,7 +932,7 @@ export function AccessRealm({ session }) {
                                              onRevoke=${confirmRevoke} onSave=${confirmSave} onEdit=${setEditAdmin}
                                              highlightId=${highlightId}
                                              onExplain=${explainInherited} who=${who} nameOf=${nameOf} isOwnerId=${session.discordId} />`
-                          : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} nameOf=${nameOf} ownerId=${session.discordId} />`}
+                          : html`<${ByScope} matrix=${matrix} spof=${data.singlePointsOfFailure} nameOf=${nameOf} who=${who} ownerId=${session.discordId} />`}
                   `} />
     `;
 }
