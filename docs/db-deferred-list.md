@@ -1114,7 +1114,9 @@ Both nudges were blind to batched searches because they matched only the **`Bash
 
 **Verify condition:** feed each hook a `{tool_input:{commands:[{command:…}]}}` payload carrying the exact input its Bash-shape test already uses, and get the same verdict.
 
-### 🔴 `[P1 · M · Opus5-High]` STEP 3's IMPECCABLE PASS WAS NEVER RUN — five invocations, all realms per run, components only
+### 🔶 `[P1 · M · Opus5-High]` STEP 3's IMPECCABLE PASS — ✅ IT HAS RUN NOW; what is left is its TAIL of findings
+
+🔴 **THE HEADING WAS FALSE FROM 2026-09-09 20:57 EDT ONWARD AND NOTHING UPDATED IT — corrected 2026-09-11 11:04 EDT, checked on disk rather than recalled.** `.impeccable/critique/` holds **two** reports now, not one: the stale `2026-09-06T18-15-03Z__portal-ui-home-js.md` this entry cites, and **`2026-09-10T00-07-21Z__portal-ui.md` (19.7K)** — the single component-layer run across all realms that this entry's own verify condition asked for. All five verbs ran in order; `clarify`, `layout` and `harden`/`polish` landed as `1fef14c4`, `d0f35d94` and `5814deae`, all three present in `git log`. **What remains is not the method but its output:** four of the eight filed findings are closed, one is part done, and one NEW `[P1 · S]` came out of it — `portalContrastRendered.test.js` walks a fixture rather than the seven realms, which is why two live contrast failures survived a green gate. ⚠️ **An entry whose HEADING states a fact can go false while its body stays true**, and a reader scanning headings — which is how this file is read — gets the stale claim. That is the second stale-heading defect found in this file today.
 
 *Filed 2026-09-09 18:58 EDT, after Harkirat asked whether the impeccable skills had ever actually been used on the portal. **They were not.** Checked on disk the same minute: `.impeccable/surfaces/` holds **seven** briefs and `.impeccable/critique/` holds **one** report — `portal-ui-home-js`, generated 2026-09-06 14:15 EDT, three days BEFORE step 3 ran. `clarify`, `layout`, `harden` and `polish` have never been invoked on anything.*
 
@@ -1309,7 +1311,9 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 
 
-### `[P2 · S · Sonnet5-High]` The Silent output style is drafted but not installed, and its companion rule file is not written
+### ✅ `[CLOSED 2026-09-11 11:04 EDT]` The Silent output style — INSTALLED, selected, and its rule file written and test-pinned
+
+**Closed 2026-09-11 11:04 EDT against the files themselves, not against a memory of doing it.** All three exist: `~/.claude/output-styles/silent.md` (6.8K, user level, and it is the active style in this session's own system prompt), `.claude/rules/silent-mode.md` (14.8K, `unconditional: true` so it loads every session), and **`scripts/silentContract.test.mjs`** (3.2K), which fails on any drift between the two — step 3 of the Do-list above asked for the drift to be made impossible, and a test is a stronger answer than deleting the duplicate text. This session's `SessionStart` instruction-load line confirms `silent-mode.md` arrives in context. ⚠️ The entry sat open for a week after the work was done because nothing closes an entry except a person remembering to.
 
 **Filed 2026-09-04 10:00 EDT.** Draft lives at `local/output-style-silent-DRAFT.md` (**gitignored** — this entry is the only tracked record of it). Review artifact: <https://claude.ai/code/artifact/613d54ad-c309-42af-8d6b-c8389c658c92>. Graded samples in `local/output-style-samples/` (7 rejected, 5 kept).
 
