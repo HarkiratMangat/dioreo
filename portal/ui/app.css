@@ -2156,8 +2156,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxcell.staged::after{border-color:var(--c)}
 /* The owner's column is a STATEMENT, not a disabled control: it is quieted by its ground rather than
    by fading its marks, which read as broken rather than as built-in. */
-.mx td.mxc.owncol,.mx thead th.owncol{background:color-mix(in srgb,var(--sunk) 55%,transparent)}
-.mx thead th.owncol{border-radius:var(--rad-2) var(--rad-2) 0 0}
+/* 🔴 A DISABLED COLUMN DIMS ITS MARKS; IT DOES NOT TINT ITS GROUND. A grey wash behind the owner's cells
+   read as a broken table rather than as "these are not yours to change", and it fought the edit-colour tint
+   that means something two columns over. The swatches themselves carry the state. Harkirat, 2026-09-11 16:40 EDT. */
+.mx td.mxc.owncol .mxcell{opacity:.42}
+.mx thead th.owncol .colh{cursor:default}
+.mx thead th.owncol:hover{background:none}
 .mxcell[role=img]:hover{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
@@ -3055,8 +3059,10 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx thead th.mxc-name .mxs{text-align:left}
 .mx td.mxc-name{text-align:left}
 .mx tbody.grp .gh td{text-align:left}
-.mx thead th.mxc-held,.mx td.mxc-held{text-align:right;padding-right:16px}
-.mx thead th.mxc-held .mxs{text-align:right;padding:0}
+/* The head, the twelve numbers and each group's figure share one centre line. They were flush right, which
+   makes a 2 and a 12 start at different x and reads as three loosely-related things. Harkirat, 2026-09-11 16:40 EDT. */
+.mx thead th.mxc-held,.mx td.mxc-held{text-align:center;padding-right:0}
+.mx thead th.mxc-held .mxs{text-align:center;padding:0}
 .mx tbody tr.prow td{height:38px}
 
 /* THE GROUP HEADING is a rule, a name and a figure — and NOT a chip. Border, fill and radius each say
@@ -3072,7 +3078,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* Beside its own title, before the rule -- in the Held column's x it read as a Held number for a row
    that does not exist. */
 .mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);
-  font-variant-numeric:tabular-nums;padding-right:16px}
+  width:78px;text-align:center;
+  font-variant-numeric:tabular-nums;padding-right:0}
 /* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
    a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
 .mx tbody[data-grp=command] .gh td{border-top:0}
@@ -3113,20 +3120,32 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* The whole head opens the drawer -- the Edit and Revoke chips on it were a third affordance for a thing
    the block itself should do. Harkirat, 2026-09-11 13:53 EDT: "those buttons are useless since the entire
    box should be opening their detailed drawer anyway." */
-.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 7px;width:100%;
-  border:1px solid transparent;border-radius:var(--rad-2) var(--rad-2) 0 0;position:relative;
+/* 🔴 THE HIGHLIGHT IS THE CELL'S, NOT THE BUTTON'S. A button sized to its own content sat inside a taller
+   header cell, so the tint stopped a few pixels above the row's bottom border and read as a box that had not
+   finished drawing. Moving it to the `th` means it covers the block exactly, by construction, whatever the
+   tallest head in the row happens to be. `[data-who]` rather than a class because the th's className is built
+   from three ternaries and the reverse-orphan scan cannot follow one. Harkirat, 2026-09-11 16:40 EDT. */
+.colh{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 12px 9px;width:100%;
+  border:0;position:relative;
   background:none;cursor:pointer;font:inherit;color:inherit;text-align:center}
-.colh:hover{background:var(--hi);border-color:var(--rule)}
+/* ⚠️ AND THE CELL'S OWN 9px BOTTOM PADDING WAS THE ACTUAL 10px GAP. It exists to sit the "Permission" and
+   "Held" caption baselines off the rule; a person column has no caption, so on those cells it was pure dead
+   space between the button and the border -- which is the strip Harkirat saw the highlight stop short of. */
+.mx thead th[data-who]{padding-bottom:0}
+.mx thead th[data-who]:hover{background:var(--hi)}
 .colh:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
-.colh b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ink)}
-.colh .clbl{font:400 9.5px/1.3 var(--ui);color:var(--ink3);text-align:center;max-width:100px;
+/* Both lines are free text and both clip. The 22-character cut happens in JS so the ellipsis lands on a
+   character boundary the reader can see; this is the belt for a narrow column at a narrow viewport. */
+.colh b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ink);display:block;max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.colh .clbl{display:block;font:400 9.5px/1.3 var(--ui);color:var(--ink3);text-align:center;max-width:100%;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .colh .built{font:400 9.5px/1.3 var(--data);color:var(--ink3);letter-spacing:.04em}
 .colh .mxav{width:26px;height:26px;margin-bottom:3px;font-size:var(--t-sm)}
 /* A real avatar when Discord gives one, the initial only as the fallback. */
 .colh .mxav.has{background:var(--av-src) center/cover no-repeat;color:transparent}
 /* the column a pending change belongs to, in that person's own edit colour */
-.mx thead th.dirty .colh{background:color-mix(in srgb,var(--ed) 11%,transparent);
+.mx thead th[data-who].dirty{background:color-mix(in srgb,var(--ed) 11%,transparent);
   box-shadow:inset 0 2px 0 var(--ed)}
 .mx thead th.dirty .colh b{color:var(--ed)}
 .mx td.mxc.staged{background:color-mix(in srgb,var(--ed) 6%,transparent)}
@@ -3141,7 +3160,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* ⛔ NOT A SECOND BOX. A bordered card inside a bordered panel is the nested-card defect, and on one ground
    its border encloses nothing. The legend is a FOOTER REGION: one rule above it, the panel's own ground,
    and the space doing the separating. */
-.mxlegend-box{display:flex;flex-direction:column;gap:9px;margin:var(--s5) 16px var(--s4);
+.mxlegend-box{display:flex;flex-direction:column;gap:3px;margin:var(--s5) 16px var(--s4);
   padding:14px 16px;border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--raised)}
 .mxlegend-box .lrow{display:flex;align-items:center;gap:12px;min-height:0;line-height:1.45;
   font-size:var(--t-sm);color:var(--ink3)}
@@ -3201,7 +3220,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mxcell.inh{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
 .mxcell[data-pend]{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
 /* The owner's cells are stated, not editable -- and they are the only ones rendered as role="img". */
-.mxcell[role=img]{opacity:.9;cursor:default}
+.mxcell[role=img]{cursor:default}
 /* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
    Harkirat: "the orange ring is just bad. it hides and swallows the color it's surrounding."
    Measured on the header bars: a 22x7px pill with a 2px ring loses roughly HALF its visible
@@ -5728,6 +5747,30 @@ button .ic,a .ic{pointer-events:none}
 .dwfield textarea{min-height:88px;resize:vertical;font-family:var(--data);font-size:var(--t-sm);line-height:var(--lh-body)}
 .dwfield textarea:focus,.dwfield select:focus{outline:none;border-color:var(--patch)}
 .dwfield .hint{padding:0;font-size:var(--t-xs);color:var(--ink3);line-height:var(--lh-ui)}
+
+/* ══ THE GRANT / EDIT DRAWER — 2026-09-11 16:40 EDT ══════════════════════════════════════════════════ */
+/* 🔴 TWELVE CHIPS IN ONE WRAP SAID NOTHING ABOUT THE TIER. `.tokgrid` had no rule at all -- the chips were
+   laid out by whatever `.chip.topic`'s inline-flex and the surrounding whitespace happened to do, which is
+   why they read as clustered. They are two labelled blocks now, in the same words the grid uses. */
+.tokgroup{margin-bottom:var(--s3)}
+.tokgroup h5{display:flex;align-items:center;gap:7px;margin:0 0 8px;
+  font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;color:var(--ink2)}
+.tokgroup[data-tier=page] h5{color:var(--ink3)}
+.tokgroup h5 em{order:2;font-style:normal;font:500 var(--t-xs)/1 var(--data);color:var(--ink3);
+  font-variant-numeric:tabular-nums}
+.tokgroup h5::after{content:"";flex:1;height:1px;background:var(--rule)}
+.tokgrid{display:flex;flex-wrap:wrap;gap:8px}
+/* The second step of the tier-3 gate. It takes the footer's left edge so the sentence is read before the
+   button under the cursor is pressed again. */
+.dwsure{margin-right:auto;font:500 var(--t-sm)/1.35 var(--ui);color:var(--ink2);max-width:340px}
+/* Revoking is the one irreversible thing this drawer does, and it was rendering as an ordinary grey button
+   beside Cancel. `.btn.danger` was written at the call site and had never existed in the stylesheet. */
+.btn.danger{color:var(--danger-ink);border-color:var(--danger-edge);
+  background:color-mix(in srgb,var(--danger-ink) 9%,transparent)}
+.btn.danger:hover{background:var(--danger-edge);color:var(--ink)}
+/* Who handed the access out is the fact a reader checks; six digits of a snowflake are not checkable. */
+.granter{font-family:var(--data);font-weight:700;color:var(--ink);
+  background:color-mix(in srgb,var(--ink2) 15%,transparent);border-radius:var(--rad-1);padding:1px 6px}
 /* 🔴 THE FORMAT ARRIVES WHEN YOU ARE IN THE FIELD — Harkirat's pick, 2026-09-10 18:36 EDT, fork 07 option E. A permanently visible hint under every field is the "hint line" he refused ("is a hint line REALLY the best design decision you could make??"); a disclosure makes you work for something the field could hand you. This is neither: nothing at rest, the rule on focus, gone on blur.
    🔴 IT IS CLIPPED, NEVER `display:none`. `aria-describedby` points at these, and a display:none element is not in the accessibility tree — hiding it that way would silently remove the description from every screen reader while looking identical. This is the `.sr` clip, so the hint is announced at all times and drawn only while the field has focus. */
 .dwfield .bf-hint{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;

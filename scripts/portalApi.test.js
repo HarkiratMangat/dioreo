@@ -98,13 +98,30 @@ check('THE NOTE GUARD CAN FAIL: the construction that shipped turns absence into
     assert.ok(!('note' in adminGrantDoc({ discordId: '1', grantedBy: '2', permissions: ['bot'] })), 'and the new shape does not');
 });
 
-// 🔴 THE CHECK THAT WOULD HAVE CAUGHT IT, and no gate here had this shape: a call site passing FEWER arguments than the function declares. It is silent in JavaScript, invisible to every renderer and every linter this repo runs, and the missing one was the field the whole realm identifies people by.
-check('every grant() call site in the Access realm passes all four declared arguments', () => {
+check('an absent title leaves the stored one alone', () => {
+    const doc = adminGrantDoc({ discordId: '1', grantedBy: '2', permissions: ['bot'] });
+    assert.ok(!('title' in doc), 'the grid row Save posts no title — writing one would clear the grid label it is not editing');
+});
+
+check('a title sent as an empty string still clears it', () => {
+    assert.strictEqual(adminGrantDoc({ discordId: '1', grantedBy: '2', permissions: ['bot'], title: '' }).title, '');
+});
+
+check('a real title is written through', () => {
+    assert.strictEqual(adminGrantDoc({ discordId: '1', grantedBy: '2', permissions: ['bot'], title: 'Calendar Helper' }).title, 'Calendar Helper');
+});
+
+// 🔴 THE CHECK THAT WOULD HAVE CAUGHT IT, and no gate here had this shape: a call site passing FEWER arguments than the function declares. It is silent in JavaScript, invisible to every renderer and every linter this repo runs, and the missing one was the field the whole realm identifies people by. ⚠️ THE ARITY AND THE REQUIREMENT ARE TWO NUMBERS NOW, and collapsing them back into one would be a regression dressed as tidying. `grant()` grew a fifth parameter, `title`, on 2026-09-11 when the old single free-text label split into a public Title and a private Note. Four are REQUIRED at every call site; the fifth is deliberately optional, because the grid's own row Save edits permissions and must post no title at all -- absence is what tells portal/api/access.js to leave the stored one alone, exactly as it already does for `note`, and the three checks directly above are what hold that server-side rule down.
+check('every grant() call site in the Access realm passes the four REQUIRED arguments', () => {
     const src = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'access.js'), 'utf8');
     const decl = src.match(/async function grant\(([^)]*)\)/);
     assert.ok(decl, 'the scan found no grant() declaration, which means it is looking at the wrong thing');
     const arity = decl[1].split(',').length;
-    assert.strictEqual(arity, 4, 'the declaration changed — update this check with it');
+    const REQUIRED = 4;
+    assert.strictEqual(arity, 5, 'the declaration changed — update this check and say which of the new parameters are required');
+    assert.deepStrictEqual(decl[1].split(',').map((x) => x.trim()),
+        ['discordId', 'permissions', 'confirmText', 'note', 'title'],
+        'the parameter ORDER decides which ones an under-length call omits, so it is pinned rather than counted');
 
     let masked;                                 // assigned below; the walker reads it, never the raw source
     const args = (from) => {                    // top-level comma count from the open paren
@@ -136,8 +153,9 @@ check('every grant() call site in the Access realm passes all four declared argu
         sites.push({ line: masked.slice(0, m.index).split('\n').length, n: args(open) });
     }
     assert.ok(sites.length, 'no grant() call sites found — the matcher is wrong, not the code');
-    const short = sites.filter((s) => s.n < arity);
-    assert.deepStrictEqual(short, [], `grant() takes ${arity} arguments and these call sites pass fewer: ` + short.map((s) => `access.js:${s.line} passes ${s.n}`).join(', '));
+    const short = sites.filter((s) => s.n < REQUIRED);
+    assert.deepStrictEqual(short, [], `grant() requires its first ${REQUIRED} arguments and these call sites pass fewer: ` + short.map((s) => `access.js:${s.line} passes ${s.n}`).join(', '));
+    assert.ok(sites.some((s) => s.n === arity), 'nothing passes the optional title — the parameter is dead and this check has stopped meaning anything');
 });
 
 process.exit(failures ? 1 : 0);

@@ -25,25 +25,13 @@ function relTime(value) {
 //
 // 🔴 pin32: A DISCORD ID TYPED INTO A BOX WAS NEVER CHECKED AGAINST DISCORD ITSELF. Nothing stopped an admin from granting a typo'd id, or an id for an account that does not exist — the grant would silently succeed and sit in the grid as an unreachable row. GET /api/discord/user (portal/api/access.js) resolves the id against the bot's own Discord API access before Grant is allowed to enable, and the preview card (avatar/username/globalName/id) is the thing that lets a human actually confirm "yes, that's them" rather than trusting a string of digits.
 //
-// Debounced 400ms so every keystroke does not fire a Discord API call, and only once the id LOOKS like a snowflake (17–20 digits) — an in-progress id is not a failed lookup, it is simply not a ready one yet, and treating it as an error would flash a warning on every keystroke.
+// Debounced 400ms so every keystroke does not fire a Discord API call, and only once the id LOOKS like a snowflake (17–20 digits) — an in-progress id is not a failed lookup, it is simply not a ready one yet, and treating it as an error would flash a warning on every keystroke. A column is ~110px wide and a title is free text, so the grid clips rather than wraps: a second line would push every avatar in the header row down by the height of the longest label anybody ever typed. 22 is Harkirat's number, 2026-09-11 16:40 EDT, and the ellipsis counts toward it.
+const clip = (v, n = 22) => (typeof v === 'string' && v.length > n ? v.slice(0, n - 1) + '…' : (v || ''));
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
-// 🔴 ONE SOURCE FOR A SCOPE'S COLOUR, AND THE DRAWER HAD BEEN READING A SECOND ONE THAT DOES NOT EXIST. The grid has always coloured a cell with this; the permission chips read sc.hex instead, which buildPermissionMatrix has never emitted -- it builds {key, label, kind, ownerOnly, realm}. So --c was unset on every chip, .chip.topic i painted background:var(--c) with nothing in it, and a picked chip's color-mix(in srgb,var(--c) 16%,transparent) was invalid and dropped entirely: twelve identical black pills where the design shows the realm's colour. ⚠️ THE HARNESS FIXTURE DOES SET hex (assets/fixtures.js:1100), which is the whole reason no instrument caught it -- the same shape as the ownerOnly mark recorded in portal/api/access.js, where the legend named a mark only the fixture could draw. Hoisted above its first reader because the TDZ ratchet is right that source order should not be what holds a render up.
-// 🔴 A SCOPE'S COLOUR IS ITS OWN NOW, NOT ITS REALM'S — Harkirat, 2026-09-11 13:09 EDT.
-// It used to be `var(--r-${sc.realm})`, so the five season pages were one amber and the two armory
-// pages one violet, and COMPANION §4.2 defended that: "every colour here is borrowed from the realm
-// the scope governs, because inventing an eighth accent would put a colour on screen that means
-// nothing anywhere else in the product." His ruling is that the rule has to bend HERE specifically:
-// this panel grants access inside the DISCORD BOT, the portal's own access scoping is not built, and
-// he is the only person with portal access — so a realm hue is naming a thing this grid is not about.
-// Shades of one hue were tried first and rejected: "they all more or less still look/feel the same."
-// Twelve distinct hues, spaced around the wheel and deliberately clear of the 165–265° band the edit
-// identities own, so a topic colour and an edit colour can never be mistaken for one another.
+// 🔴 ONE SOURCE FOR A SCOPE'S COLOUR, AND THE DRAWER HAD BEEN READING A SECOND ONE THAT DOES NOT EXIST. The grid has always coloured a cell with this; the permission chips read sc.hex instead, which buildPermissionMatrix has never emitted -- it builds {key, label, kind, ownerOnly, realm}. So --c was unset on every chip, .chip.topic i painted background:var(--c) with nothing in it, and a picked chip's color-mix(in srgb,var(--c) 16%,transparent) was invalid and dropped entirely: twelve identical black pills where the design shows the realm's colour. ⚠️ THE HARNESS FIXTURE DOES SET hex (assets/fixtures.js:1100), which is the whole reason no instrument caught it -- the same shape as the ownerOnly mark recorded in portal/api/access.js, where the legend named a mark only the fixture could draw. Hoisted above its first reader because the TDZ ratchet is right that source order should not be what holds a render up. 🔴 A SCOPE'S COLOUR IS ITS OWN NOW, NOT ITS REALM'S — Harkirat, 2026-09-11 13:09 EDT. It used to be `var(--r-${sc.realm})`, so the five season pages were one amber and the two armory pages one violet, and COMPANION §4.2 defended that: "every colour here is borrowed from the realm the scope governs, because inventing an eighth accent would put a colour on screen that means nothing anywhere else in the product." His ruling is that the rule has to bend HERE specifically: this panel grants access inside the DISCORD BOT, the portal's own access scoping is not built, and he is the only person with portal access — so a realm hue is naming a thing this grid is not about. Shades of one hue were tried first and rejected: "they all more or less still look/feel the same." Twelve distinct hues, spaced around the wheel and deliberately clear of the 165–265° band the edit identities own, so a topic colour and an edit colour can never be mistaken for one another.
 const SCOPE_COLOR = {
-    // 🔴 SPACED ON THE WHEEL, NOT SHADED. The first attempt put Autobuild, DMZ and Season Draft on three
-    // greens and Manage and MP on two purples -- Harkirat, 2026-09-11 14:06 EDT: "NEARLY IDENTICAL SHADES".
-    // Twelve hues roughly 30 degrees apart, and the EDIT identities were moved to pale tints in tokens.css
-    // so a topic colour and an edit colour can never be confused without the topics losing the wheel.
+    // 🔴 SPACED ON THE WHEEL, NOT SHADED. The first attempt put Autobuild, DMZ and Season Draft on three greens and Manage and MP on two purples -- Harkirat, 2026-09-11 14:06 EDT: "NEARLY IDENTICAL SHADES". Twelve hues roughly 30 degrees apart, and the EDIT identities were moved to pale tints in tokens.css so a topic colour and an edit colour can never be confused without the topics losing the wheel.
     manage: '#8B5CF6',                 autobuild: '#06B6D4',
     bot: '#EAB308',                    destructive: '#EF4444',
     'manage.draws': '#F97316',         'manage.calendar': '#14B8A6',
@@ -53,11 +41,7 @@ const SCOPE_COLOR = {
 };
 const accentOf = (sc) => SCOPE_COLOR[sc.key] || 'var(--ink3)';
 
-// 🔴 PEOPLE, NOT SNOWFLAKES. Every admin surface rendered an ellipsis and six digits -- Harkirat:
-// "Gee i didn't know my name was ...632283". The route and the shape were already here: the grant
-// drawer's preview reads `user.globalName`, `user.username` and `user.avatarUrl` from this same
-// endpoint. Nothing needed building; it needed using. The id survives only as the fallback when
-// Discord refuses, which is the one case where a number is better than a wrong name.
+// 🔴 PEOPLE, NOT SNOWFLAKES. Every admin surface rendered an ellipsis and six digits -- Harkirat: "Gee i didn't know my name was ...632283". The route and the shape were already here: the grant drawer's preview reads `user.globalName`, `user.username` and `user.avatarUrl` from this same endpoint. Nothing needed building; it needed using. The id survives only as the fallback when Discord refuses, which is the one case where a number is better than a wrong name.
 function useIdentities(ids) {
     const [map, setMap] = useState({});
     const key = ids.join(',');
@@ -104,32 +88,47 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke }) {
     const scopeKeys = new Set((scopes || []).map((sc) => sc.key));
     const [discordId, setDiscordId] = useState(editing ? admin.discordId : '');
     const [picked, setPicked] = useState(editing ? (admin.permissions || []).filter((k) => scopeKeys.has(k)) : []);
-    const [note, setNote] = useState(editing ? (admin.note || '') : '');
-    const [confirmText, setConfirmText] = useState('');
+    // 🔴 THE RENAME MIGRATES HERE, ONE ROW AT A TIME, RATHER THAN IN A SCRIPT. Until 2026-09-11 there was one free-text field called "Label"; it is now two -- Title, the official name the grid prints, and Note, a private reminder. A row granted before the split carries only the old note, and that note WAS the grid label, so on such a row the Title field opens holding it and the Note field opens empty. A row that already has a title keeps both as they are. Nothing touches the database until the owner saves.
+    const [title, setTitle] = useState(editing ? (admin.title || admin.note || '') : '');
+    const [note, setNote] = useState(editing ? (admin.title ? (admin.note || '') : '') : '');
+    // 🔴 THE TYPED CONFIRMATION IS A SECOND CLICK NOW, NOT A SECOND TYPING. Retyping an 18-digit snowflake is a transcription exercise, and a gate nobody reads is a gate that only costs time -- ids were being pasted from the field above it, which confirms the clipboard rather than the intent. The act is still tier 3 and still deliberate: the footer arms, states what is about to happen, and takes a second press. ⚠️ THE WIRE CONTRACT IS UNCHANGED. portal/api/access.js's confirmMatchesTarget still requires the target's own id, so `submit` sends it -- the server's gate is exactly where it was.
+    const [armed, setArmed] = useState(false);
     const lookup = useDiscordLookup(discordId);
+    // Who handed this out. Always the owner today, but it is read from the record rather than assumed, and a name is the thing a reader can actually check -- the last six digits of a snowflake are not.
+    const granter = useDiscordLookup(editing ? (admin.grantedBy || '') : '');
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
     // 🔴 THE LOOKUP RUNS IN BOTH MODES BUT ONLY GATES ONE, and the first version of this got it backwards twice over. It faked `{status:'ok'}` in edit mode to skip the round-trip — which crashed the drawer outright, because the preview below reads `lookup.user.avatarUrl` and a faked status carries no user. It was also wrong on the merits: the avatar and username are exactly what tell you WHICH HUMAN this row of digits is, which is the whole argument that put the lookup on the grant form. So it runs. What it must NOT do is gate readiness: an id already in the grid was resolved when it was granted, and making a label edit wait on Discord being reachable would mean an outage there locks the owner out of renaming a row here.
-    const { ready, why } = grantReady({ discordId, lookupStatus: editing ? 'ok' : lookup.status, pickedCount: picked.length, confirmText });
+    const base = grantReady({ discordId, lookupStatus: editing ? 'ok' : lookup.status, pickedCount: picked.length, confirmText: discordId });
+    // A title is required because it is the only thing naming this person on the grid. `grantReady` is kept pure and unit-tested and is deliberately not taught about it -- the field is this form's own rule.
+    const ready = base.ready && title.trim().length > 0;
+    const why = base.why || (!title.trim() ? 'Give them a title — it is what names them on the grid.' : '');
+    const named = lookup.status === 'ok' && lookup.user ? (lookup.user.globalName || lookup.user.username) : null;
+    const granterName = granter.status === 'ok' && granter.user ? (granter.user.globalName || granter.user.username) : null;
+    // Two tiers, two blocks, in the grid's own words. Twelve chips in one wrap said nothing about which four of them carry everything inside a command and which eight are a single page each.
+    const tiers = [
+        { key: 'command', heading: 'Commands', rows: (scopes || []).filter((sc) => sc.kind === 'command') },
+        { key: 'page', heading: '/manage pages', rows: (scopes || []).filter((sc) => sc.kind === 'page') },
+    ];
+    const submit = () => onGrant(discordId, picked, discordId, note, title.trim());
 
     return html`
         <${Drawer} eyebrow=${editing ? 'admin.grant · tier 3 · replaces the whole list' : 'admin.grant · tier 3'}
-                   title=${editing ? `Edit …${admin.discordId.slice(-6)}` : 'Grant portal access'} onClose=${onCancel}
-                   actions=${html`
+                   title=${editing ? `Edit ${named || `…${admin.discordId.slice(-6)}`}` : 'Grant portal access'} onClose=${onCancel}
+                   actions=${armed ? html`
+                       <span class="dwsure">${editing ? 'Save these permissions?' : 'Grant this access?'} This is written immediately.</span>
+                       <button class="btn" onClick=${() => setArmed(false)}>Back</button>
+                       <button class="btn go" onClick=${submit}>${editing ? 'Yes, save changes' : 'Yes, grant access'}</button>`
+                     : html`
                        ${editing && onRevoke ? html`<button class="btn danger" style="margin-right:auto"
                                onClick=${() => onRevoke(admin.discordId)}>Revoke access</button>` : null}
                        <button class="btn" onClick=${onCancel}>Cancel</button>
-                       <button class="btn go" disabled=${!ready} onClick=${() => onGrant(discordId, picked, confirmText, note)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
+                       <button class="btn go" disabled=${!ready} onClick=${() => setArmed(true)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
-                <!-- 🔴 A PLACEHOLDER IS NOT A LABEL, and these two inputs look identical the moment either has
-                     text in it — one takes the account to grant, the other takes the SAME id typed back as the
-                     tier-3 confirmation. A screen-reader label existed; a visible one did not, so the only thing
-                     distinguishing them on screen was a hint that disappears when you start typing. The dwfield class
-                     is the sheet's own labelled field, used by every other form in the portal. -->
                 <div class="dwfield"><label for="grant-discordid">Discord ID</label>
                     <input id="grant-discordid" placeholder="17–20 digits" inputmode="numeric" autocomplete="off"
                            readOnly=${editing} aria-readonly=${editing ? 'true' : 'false'}
                            value=${discordId} onInput=${(e) => setDiscordId(e.target.value.trim())} /></div>
-                ${editing ? html`<p class="dw-p">Granted by <code>…${(admin.grantedBy || '').slice(-6)}</code>${' '}
+                ${editing ? html`<p class="dw-p">Granted by <b class="granter">${granterName || html`…${(admin.grantedBy || '').slice(-6)}`}</b>${' '}
                     ${admin.grantedAt ? html`on <b>${shortDate(admin.grantedAt)}</b>` : null}. Only the owner may grant,
                     revoke or edit permissions, so this is always you.</p>` : null}
                 ${lookup.status === 'loading' ? html`<p class="dw-p">Looking that id up…</p>` : null}
@@ -140,26 +139,34 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke }) {
                         <span class="gp-n"><b>${lookup.user.globalName || lookup.user.username}</b>
                             <span>@${lookup.user.username} · …${discordId.slice(-6)}</span></span>
                     </div>` : null}
-                <div class="tokgrid">
-                    ${(scopes || []).map((sc) => html`
-                        <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
-                                style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
-                                title=${sc.key} onClick=${() => toggle(sc.key)}>
-                            <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
-                        </button>`)}
-                </div>
-                <div class="dwfield" style="margin-top:var(--s3)"><label for="grant-note">Label (optional)</label>
-                    <input id="grant-note" placeholder="How you will recognise them" value=${note} onInput=${(e) => setNote(e.target.value)} /></div>
-                <div class="dwfield"><label for="grant-confirm">Type the Discord ID again to confirm</label>
-                    <input id="grant-confirm" placeholder=${discordId || 'the same digits'} autocomplete="off"
-                           value=${confirmText} onInput=${(e) => setConfirmText(e.target.value)} /></div>
+                ${tiers.map((t) => html`
+                    <div key=${t.key} class="tokgroup" data-tier=${t.key}>
+                        <h5>${t.heading}<em>${t.rows.length}</em></h5>
+                        <div class="tokgrid">
+                            ${t.rows.map((sc) => html`
+                                <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
+                                        style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
+                                        title=${sc.key} onClick=${() => toggle(sc.key)}>
+                                    <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
+                                </button>`)}
+                        </div>
+                    </div>`)}
+                <div class="dwfield" style="margin-top:var(--s3)"><label for="grant-title">Title</label>
+                    <input id="grant-title" placeholder="What they are here to do" value=${title}
+                           aria-required="true" onInput=${(e) => setTitle(e.target.value)} />
+                    <span class="hint">Shown on the grid, under their avatar and username. Kept short — anything past
+                        22 characters is clipped there.</span></div>
+                <div class="dwfield"><label for="grant-note">Note (optional)</label>
+                    <input id="grant-note" placeholder="A private reminder about them" value=${note}
+                           onInput=${(e) => setNote(e.target.value)} />
+                    <span class="hint">Only ever visible here.</span></div>
                 <p class="dw-p"><b>This commits immediately.</b> A permission change is not staged and has no review
-                    screen — typing the id is the entire gate, because there is no data to export and nothing
+                    screen — the confirm step is the entire gate, because there is no data to export and nothing
                     meaningful to preview. The allowlist cache is invalidated on write, so it is live in the bot on
                     their very next click.</p>
                 ${editing ? html`<p class="dw-p">Whatever is picked above becomes the whole list. Anything you
                     untick is revoked on their very next action.</p>` : null}
-                ${why ? html`<p class="why" role="status">${why}</p>` : null}
+                ${why && !armed ? html`<p class="why" role="status">${why}</p>` : null}
             </div>
         <//>
     `;
@@ -238,10 +245,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
     const commands = scopes.filter((s) => s.kind === 'command');
     const pages = scopes.filter((s) => s.kind === 'page');
     const spofScopes = new Set((spof || []).map((x) => x.scope));
-    // 🔴 THE OWNER IS SYNTHETIC AND ALWAYS HAS BEEN. `buildPermissionMatrix` reads the AdminUser
-    // collection and the owner is not in it -- the owner is built in, not granted -- so the old grid drew
-    // a static owner ROW for exactly this reason. Transposed, that becomes a static first COLUMN; taking
-    // `matrix.admins` alone silently dropped it, which reads as "the owner holds nothing".
+    // 🔴 THE OWNER IS SYNTHETIC AND ALWAYS HAS BEEN. `buildPermissionMatrix` reads the AdminUser collection and the owner is not in it -- the owner is built in, not granted -- so the old grid drew a static owner ROW for exactly this reason. Transposed, that becomes a static first COLUMN; taking `matrix.admins` alone silently dropped it, which reads as "the owner holds nothing".
     const granted = (matrix.admins || []).filter((a) => a.discordId !== isOwnerId);
     const ownerCol = {
         discordId: isOwnerId || 'owner', note: 'Owner', __owner: true,
@@ -278,19 +282,16 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         setEditingNote((cur) => (cur === id ? null : cur));
     };
     const noteNow = (a) => (pendingNote[a.discordId] !== undefined ? pendingNote[a.discordId] : (a.note || ''));
+    // The grid prints the TITLE. `note` is the private field now, and the fallback is the whole migration: a row granted before the 2026-09-11 split has no title and its old note is what the grid used to show, so it keeps showing it until the Edit drawer promotes it. See models/AdminUser.js.
+    const titleOf = (a) => a.title || a.note || '';
     const noteDirty = (a) => pendingNote[a.discordId] !== undefined && pendingNote[a.discordId] !== (a.note || '');
 
-    // Every admin carrying an edit takes one of four EDIT IDENTITY colours, and the same value paints their
-    // column head, their pending cells and their bar -- so a bar, a column and a set of cells are one object.
-    // Assigned by position in the admin list so a person keeps their colour for as long as the list does.
+    // Every admin carrying an edit takes one of four EDIT IDENTITY colours, and the same value paints their column head, their pending cells and their bar -- so a bar, a column and a set of cells are one object. Assigned by position in the admin list so a person keeps their colour for as long as the list does.
     const editColor = (a) => (a.__owner ? 'var(--ink3)' : `var(--ed${(granted.findIndex((g) => g.discordId === a.discordId) % 4) + 1})`);
     const dirtyOf = (a) => Object.keys(rowPending(a.discordId)).length + (noteDirty(a) ? 1 : 0);
     const editing = people.map((a, i) => ({ a, i })).filter(({ a }) => !a.__owner && dirtyOf(a) > 0);
 
-    // The command a page was inherited FROM. `portal/api/access.js` computes `inherited` as
-    // `kind === 'page' && !direct && perms.includes('manage')` -- so today exactly one command confers,
-    // and the ring wears its colour. Resolved from the scope list rather than hardcoded, so a second
-    // conferring command becomes a data change here rather than a design change.
+    // The command a page was inherited FROM. `portal/api/access.js` computes `inherited` as `kind === 'page' && !direct && perms.includes('manage')` -- so today exactly one command confers, and the ring wears its colour. Resolved from the scope list rather than hardcoded, so a second conferring command becomes a data change here rather than a design change.
     const CONFERRER = 'manage';
     const conferrer = commands.find((c) => c.key === CONFERRER) || null;
 
@@ -305,10 +306,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         const g = a.grants[sc.key] || {};
         const pend = rowPending(a.discordId)[sc.key];
         const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
-        // 🔴 INHERITANCE IS COMPUTED FROM THE EFFECTIVE STATE, NOT THE SERVER'S. Staging `manage` used to
-        // light nothing below it -- the eight pages kept reading the server's `inherited`, which is false
-        // until the change is saved -- so the one relationship this grid exists to show was invisible at
-        // exactly the moment you were creating it. Harkirat, 2026-09-11 13:54 EDT.
+        // 🔴 INHERITANCE IS COMPUTED FROM THE EFFECTIVE STATE, NOT THE SERVER'S. Staging `manage` used to light nothing below it -- the eight pages kept reading the server's `inherited`, which is false until the change is saved -- so the one relationship this grid exists to show was invisible at exactly the moment you were creating it. Harkirat, 2026-09-11 13:54 EDT.
         const rpAll = rowPending(a.discordId);
         const holdsManage = rpAll[CONFERRER] !== undefined
             ? rpAll[CONFERRER] : Boolean((a.grants[CONFERRER] || {}).direct);
@@ -365,19 +363,21 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                 ${people.map((a) => {
                                     const isOwner = Boolean(a.__owner);
                                     const n = dirtyOf(a);
-                                    const nv = noteNow(a);
+                                    const nv = titleOf(a);
                                     const u = who[a.discordId];
-                                    const name = (u && (u.globalName || u.username)) || nv || `…${a.discordId.slice(-6)}`;
+                                    // 🔴 THREE THINGS, IN THIS ORDER: the avatar, the Discord username, and the TITLE. Until 2026-09-11 the title (then called the label) was used as a FALLBACK for the name, so an account Discord had not resolved rendered its whole free-text label in the name slot -- untruncated, in a 110px column, touching both edges. The two are different facts and each now has its own line.
+                                    const name = (u && (u.globalName || u.username)) || `…${a.discordId.slice(-6)}`;
+                                    const sub = isOwner ? 'owner' : (nv || (u ? `@${u.username}` : `…${a.discordId.slice(-6)}`));
                                     return html`
-                                        <th key=${a.discordId} class=${(isOwner ? 'owncol ' : '') + (n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
+                                        <th key=${a.discordId} data-who="y" class=${(isOwner ? 'owncol ' : '') + (n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
                                             style=${`--ed:${editColor(a)}`}>
                                             <button type="button" class="colh"
-                                                    aria-label=${isOwner ? 'You — the owner' : `Open ${name} in the admin drawer`}
+                                                    aria-label=${isOwner ? 'You — the owner' : `Open ${name}${nv ? `, ${nv},` : ''} in the admin drawer`}
                                                     onClick=${() => (isOwner ? null : onEdit(a))}>
                                                 <span class=${'mxav' + (u && u.avatarUrl ? ' has' : '')} aria-hidden="true"
                                                       style=${u && u.avatarUrl ? `--av-src:url(${u.avatarUrl})` : ''}>${u && u.avatarUrl ? '' : name.slice(0, 1).toUpperCase()}</span>
-                                                <b>${name}</b>
-                                                <span class="clbl">${isOwner ? 'owner' : (u ? `@${u.username}` : html`…${a.discordId.slice(-6)}`)}</span>
+                                                <b>${clip(name)}</b>
+                                                <span class="clbl">${clip(sub)}</span>
                                             </button>
                                         </th>`;
                                 })}
@@ -426,14 +426,14 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                 <div class="mxbars">
                     ${editing.map(({ a, i }) => {
                         const rp = rowPending(a.discordId);
-                        const nv = noteNow(a);
+                        const nv = titleOf(a);
                         const ndirty = noteDirty(a);
                         const n = dirtyOf(a);
                         return html`
                             <div key=${a.discordId} class="mxbar" style=${`--ed:${editColor(a)}`}>
                                 <span class="who">
                                     <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
-                                    <span><b>${(who[a.discordId] && (who[a.discordId].globalName || who[a.discordId].username)) || nv || html`…${a.discordId.slice(-6)}`}</b><em>${nv || 'no label'}</em></span>
+                                    <span><b>${(who[a.discordId] && (who[a.discordId].globalName || who[a.discordId].username)) || nv || html`…${a.discordId.slice(-6)}`}</b><em>${clip(nv) || 'no title'}</em></span>
                                 </span>
                                 <span class="chips">
                                     ${Object.entries(rp).map(([k, want]) => {
@@ -657,10 +657,11 @@ export function AccessRealm({ session }) {
         refresh();
     }
 
-    async function grant(discordId, permissions, confirmText, note) {
+    // ⚠️ `title` AND `note` ARE BOTH OPTIONAL ON THE WIRE AND THAT IS LOAD-BEARING. JSON.stringify drops an undefined value, and portal/api/access.js reads an absent key as "leave it alone" -- which is what lets the grid's own row Save post permissions without erasing a label it was never editing. Only the drawer, which owns both fields, sends them.
+    async function grant(discordId, permissions, confirmText, note, title) {
         const body = await fetchJson('/api/access/grant', {
             method: 'POST', headers: { 'content-type': 'application/json', 'x-csrf-token': session.csrfToken },
-            body: JSON.stringify({ discordId, permissions, confirmText, note }),
+            body: JSON.stringify({ discordId, permissions, confirmText, note, title }),
         });
         setNotice(body.ok ? '' : (body.reason || body.error || 'Grant failed'));
         refresh();
@@ -668,8 +669,8 @@ export function AccessRealm({ session }) {
     }
 
     // D1/pin32 delight — the drawer's own success path: close it, highlight the new row once, and say what happened. Kept separate from grant() itself because grant() is also the grid's own save path (confirmSave below), which already has its own "Permissions saved." toast and must not also close a drawer that was never open.
-    async function handleGrant(discordId, permissions, confirmText, note) {
-        const body = await grant(discordId, permissions, confirmText, note);
+    async function handleGrant(discordId, permissions, confirmText, note, title) {
+        const body = await grant(discordId, permissions, confirmText, note, title);
         if (!body || !body.ok) return;
         setShowGrant(false);
         setHighlightId(discordId);
@@ -677,15 +678,15 @@ export function AccessRealm({ session }) {
     }
 
     // The Edit drawer's success path. It posts through the same grant() as everything else — /api/access/grant REPLACES the row, which is exactly what an edit is — and says what changed rather than "saved", because the drawer can move permissions and the label in one act.
-    async function handleEdit(discordId, permissions, confirmText, note) {
+    async function handleEdit(discordId, permissions, confirmText, note, title) {
         const before = editAdmin;
-        const body = await grant(discordId, permissions, confirmText, note);
+        const body = await grant(discordId, permissions, confirmText, note, title);
         if (!body || !body.ok) return;
         setEditAdmin(null);
         setHighlightId(discordId);
         const moved = permissions.length - (before.permissions || []).length;
-        const relabelled = (note || '') !== (before.note || '');
-        overlay.say(relabelled && !moved ? `Label is now “${note || 'no label'}”.`
+        const relabelled = (title || '') !== (before.title || before.note || '') || (note || '') !== (before.note || '');
+        overlay.say(relabelled && !moved ? `Title is now “${title || 'untitled'}”.`
             : `…${discordId.slice(-6)} now holds ${permissions.length} permission${permissions.length === 1 ? '' : 's'}.`);
     }
 

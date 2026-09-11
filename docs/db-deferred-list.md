@@ -982,6 +982,10 @@ Harkirat, 2026-09-11 14:27 EDT: *"Gee i didn't know my name was ...632283"* and 
 
 The column head opens `onEdit` now and the Edit and Revoke chips went with it, so the drawer is the only route to both. **Revoke currently has no other affordance** - the one place this pin round left a capability reachable only through a surface that is still thin. **Do:** the drawer carries full info, every permission, the note editor and a typed-confirm revoke. **Verify by:** revoking an admin end to end without touching the grid.
 
+### CLOSED `[P2 · S]` ACCESS — AN ADMIN NOTE EDITOR, OR THE NOTE STAYS GRANT-TIME ONLY — filed from the Access conformance pass
+
+**CLOSED AS BUILT, 2026-09-11 16:56 EDT, and the question it asked is now moot in both directions.** It asked whether to build an editor for the free-text label or leave it writable only at grant time. The Edit drawer edits it, and the field it asked about has since become two: a required public **Title** that names the admin on the grid, and an optional private **Note**. Both are editable in the drawer, both are stored on `AdminUser`, and a wrong one is a correction rather than a revoke-and-regrant. **Verify by:** opening any admin's drawer and changing either field without touching a permission. The matching linksee fork is superseded by this row.
+
 ### `[P3 | S | Sonnet5-Medium]` TOOLTIP REDESIGN - the runtime is disabled, not deleted - filed 2026-09-11 14:27 EDT
 
 `installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.

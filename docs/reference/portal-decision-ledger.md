@@ -564,6 +564,27 @@ Under the two-mode system, "a stood-down redesign" meant: as of 2026-08-31, 35 d
 | Access By permission | ✅ **Grouped by holder count, risk stated once per band** | Six byte-identical amber pills and twelve identical `owner` chips: when half the rows shout one sentence, none of them discriminates | A band ever holds one row, where a band header costs more than it saves |
 | Weapon-card v1, MP/DMZ toggle v1 | 🚫 **REJECTED** — *"both ugly and lazy fixes"*. Recorded so neither is re-proposed; the weapon card was then redesigned three times with him and shipped | **My recommendation for MP/DMZ, since he asked and a recommendation is owed rather than a gap:** stop drawing it as a segmented control at all. `manageActions.js` registers `loadouts_mp` and `loadouts_dmz` as **distinct pages with distinct permission scopes**, and the switch repartitions the entire realm — 125 builds against 8 — so it is nearer the rail's realm selection than a filter chip, and my v1 was lazy precisely because it was a *bigger version of the same control*. **Make each mode a real object in the masthead**, beside the stat cluster rather than tucked in the `.ph`: its name, its own build count, and its own accent (`--mode-mp` #FF3430 / `--mode-dmz` #3DA5F5 already exist in `tokens.css`) as a fill on the selected one. That answers *"changes the entire personality of the armory realm"* by making the control as large as the change it makes. **Tracked as `pmtvq8kpe` in the round-2 entry of `docs/db-deferred-list.md`; it is his call, not filed as approved.** | He picks a different shape, or DMZ ever stops being a separate permission scope |
 
+## Decided 2026-09-11 16:56 EDT — the Access grid and its drawer, from his ten numbered corrections
+
+Ten instructions, given as a numbered list against two screenshots and the open Edit drawer. Every row below was measured in the harness after the change, not asserted.
+
+| # | The decision | Falsifier — what would show it was undone |
+|---|---|---|
+| 1 | The column head's highlight is painted by the **cell**, and the cell's 9px bottom padding is zeroed on person columns | `.colh`'s height is not its `th`'s height minus the 1px border |
+| 2 | A head's two text lines **clip at 22 characters** in JS, with CSS ellipsis as the belt | A title longer than 22 renders in full, or wraps to a second line |
+| 3 | The owner column **dims its swatches** (`opacity:.42`); it does not tint its ground | `.mx td.mxc.owncol` declares a `background` again |
+| 4 | The HELD head, its twelve numbers and both group figures share **one centre line** | Their centres are not all equal at any viewport |
+| 5 | The legend's rows sit at a **3px** gap | `.mxlegend-box` gap returns to 9px |
+| 6 | The drawer's heading and its granted-by line name **people**, not the last six digits of a snowflake | Either renders a `…xxxxxx` while Discord resolved the id |
+| 7 | **Title** (required, public, on the grid) and **Note** (optional, private) are two fields and two stored keys | `models/AdminUser.js` carries only `note` |
+| 8 | The permission chips are **two labelled tiers**, Commands and /manage pages, in the grid's own words | `.tokgroup` disappears and twelve chips share one wrap |
+| 9 | The tier-3 gate is a **second click**, not a second typing; the wire still carries the target's own id | `#grant-confirm` returns, or `submit` stops sending `discordId` as `confirmText` |
+| 10 | **Revoke access** wears `.btn.danger` | It computes to `--ink2` instead of `--danger-ink` |
+
+**The migration is per row and there is no script.** A grant made before the split carries a `note` and no `title`; every reader falls back to `title || note`, and the Edit drawer opens with the old note sitting in the Title field, so the rename happens on that row's next save. `handlers/bot.js`'s Discord grant panel still writes only `note` — deliberately, and it says so at the call site.
+
+**Two gates moved with it, and neither was relaxed.** `portalApi`'s grant-arity tripwire now pins the parameter NAMES and separates the declared arity (5) from the required floor (4), because `title`'s absence is what tells the server to leave a stored label alone — the same rule `note` already had, now with its own three checks. `portalHarness` was **red on clean HEAD**: the `/api/discord/user` stub's own comment promised an `ok`/`reason` superset it never emitted. Fixed rather than filed, since the gate's whole subject is the stub agreeing with the route.
+
 ## Decided 2026-09-11 — Access and Armory, live corrections from him watching dev-portal.dioreo.app
 
 *Answered via `AskUserQuestion` before anything was built, not derived. He was testing the tunneled signed-in portal in his own browser in real time; each decision below was made against the actual render, not a description of it.*
