@@ -239,6 +239,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-08 13:47 EDT — Context carriers WP3-WP8: SESSION-START.md moves to an @import, a compliance self-audit finds and fixes a real Read-tool gap, and a stale plan finding gets checked before being acted on (unreleased on `chore/context-carriers`, proposed v3.80.0)
 - 2026-09-10 13:09 EDT — the pin round that corrected its own handoff
 - 2026-09-10 16:44 EDT — portal pin round 2, second half — six corrections, one root cause (v3.79.0-pre)
+- 2026-09-11 10:50 EDT — the masthead's row-1 height is governed, and the filed fix was the wrong lever (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4229,6 +4230,14 @@ Harkirat corrected me six times in ninety minutes and every one was right. Writt
 The pass, once it actually ran, produced two things worth keeping. **Ordering rule:** reach-per-edit, not ease-of-closing — `StatePill` is one component across seven realms, a weapon card is one card. **And what success is:** pins arrive in rounds of about thirty, so they are a sample, not a queue. Closing 37 does not mean the portal is right; it means this sample is exhausted. The measure is whether round 3 is smaller than round 2, which is why the class fixes (one seam rule for five pins, `.pill.sm` for every small pill in seven realms, the filter group label for every realm with two filter groups) are the ones worth the turns.
 
 Three defects surfaced that nobody was looking for. **`npm test` had been red since 11:45 EDT across three commits** because `portalGeometry --all --check` lives only inside the full suite that the routing table reserves for a push. **`coverageFlags` had no check for an MP build with no gunsmith code**, and two exist. **codebase-memory's index for this repo holds 15 files** while `index_status` reports `ready` with the correct head_sha and re-indexing changes nothing — which is why three graph queries came back empty and I wrongly blamed my own usage before measuring.
+
+## 2026-09-11 10:50 EDT — the masthead's row-1 height is governed, and the filed fix was the wrong lever (v3.79.0-pre)
+
+The gap above each realm's create button had never been chosen. `.masthead` is a two-column grid whose row 1 takes the height of whichever column is taller, so the slack under the shorter one — precisely the gap the create button sits below — fell out of how many subtitle lines a realm happens to wrap against how many stats it happens to render. It measured 58px on Broadcast, 36.2 on Armory and 16 on Access. Harkirat asked for one fixed height the upper text sits and wraps within, calibrated to Broadcast's, which he likes.
+
+**The entry filed for this yesterday recommended a `min-height` on `.mh-stats` or `.mh-id`, and that would not have worked.** A floor on one column leaves the other free to exceed it, so row 1 goes on varying. The lever is the row track: one declaration, `@media (min-width:901px){.masthead{grid-template-rows:minmax(108px,auto)}}`, governs all seven realms. Worth recording because the wrong recommendation was written by the same process that measured the problem correctly — the diagnosis was right and the prescription was one level off it.
+
+Two constraints came out of measuring rather than reasoning. Season renders no `.mh-stats` at all — its clock takes that grid area — and measures 162.9px, so a hard `108px` track would have pushed the clock into row 2 and onto the add row; `minmax` pins the floor and still grows. And the floor is gated on `min-width:901px` because below that the masthead restacks to one column, where the floor is dead space — a `max-width` reset could not do that job, because the stacking rule sits about 800 lines above the grid rule and loses the cascade to it. `.masthead` is declared seven times in one stylesheet; which one wins is not knowable from reading any one of them, which is the file's own standing warning and it held again here.
 
 # Part B — Lessons Ledger (thematic)
 
