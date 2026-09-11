@@ -241,6 +241,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-10 16:44 EDT — portal pin round 2, second half — six corrections, one root cause (v3.79.0-pre)
 - 2026-09-11 10:50 EDT — the masthead's row-1 height is governed, and the filed fix was the wrong lever (v3.79.0-pre)
 - 2026-09-11 11:27 EDT — the Access matrix is a grid again, and four defects no gate could see (v3.79.0-pre)
+- 2026-09-11 11:39 EDT — the matrix labels come off their side, and a sticky header that painted over itself (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4249,6 +4250,18 @@ The columns were sized by their labels — MP 24px against Destructive 98.8px �
 **The pattern underneath all four is the same one this repo keeps paying for, in a new costume.** Three records describe this exact surface as already fixed: the ledger says the realm bar was deleted (it renders), the ledger says the columns are on an even 66px pitch (they were on twelve different ones), and both the ledger and the v3.79.0 changelog say the holder count is 16.5px tabular (it was rendering at 9.5px, the smallest size on the page). Every one of those was written in good faith by a session that made the decision and then did not measure the result. A record of a decision is not a record of a landing, and on this surface the gap between the two had grown to three claims — which is also why Harkirat kept looking at a screen he had been told was fixed and calling it ugly and broken.
 
 The layout answer itself was mostly forced rather than chosen. Turning the labels is the only way twelve columns of that length fit an even pitch without truncation, and truncation hides the thing the screen exists to state. The mockup gives no answer — `access.html` sizes its columns by their labels too — so this is one of the places the portal is deliberately ahead of the package, and it carries a ledger row saying so.
+
+## 2026-09-11 11:39 EDT — the matrix labels come off their side, and a sticky header that painted over itself (v3.79.0-pre)
+
+Harkirat, on the version I had just shipped: *"everything else about the new access design is fine but I don't like the vertical text."* He was right, and the turned label was never the goal — it was what fitted. Worth writing down is that the constraint producing it is real: the table gets 890px, the Admin and Action columns and the group gutter take about 250 of it, so twelve scope columns share ~640px, 53px each, while ANNOUNCEMENT measures 86.2px and DESTRUCTIVE 70.7px, neither with a break opportunity. Horizontal, even pitch, and full labels cannot all be had in ONE row of labels. They can in two: alternating tiers give each label the pitch of every second column — 106px, clearing the widest by 20 — and a 1px leader drops from each label to the column it names, so the association is drawn rather than inferred.
+
+**Two instrument lessons came out of the fix and both are the same shape: the tool was right and its message was not.**
+
+The first looked like data loss. Every one of the twelve labels rendered visibly cut — AUTOBUIL, CALENDAF, ANNOUNCEM — while the DOM was perfectly correct: `scrollWidth === clientWidth === 86px`, `overflow:visible` on every ancestor up to the panel. `position:sticky` creates a stacking context whatever its z-index, so each header cell is its own layer painting in DOM order, and column N+1's opaque background covered the overhang of column N's label. A z-index on the label cannot fix it — a child cannot escape its parent's stacking context — so the background stopped being per-cell and became one backdrop owned by the first scope column. The first attempt at that backdrop then hid the first column's own swatch and count, because `z-index:0` joins the positioned layer and paints above in-flow content; `-1` is the answer.
+
+The second was `portalReverseOrphans` reporting `mxl-a` and `mxl-b` as rules nothing emits. They were emitted. It resolves `'base' + (cond ? ' extra' : '')` and not a ternary whose branches are both non-empty, so a two-value class reads as two orphans. The tempting fix is to re-baseline the finding, which would have put a false positive in the baseline permanently; the honest one is that a tier is not really a class anyway. `data-tier` says the same thing with an attribute selector, outside the class scanner entirely.
+
+Also in the same pass, and from him: the header's staged chip measured 133×53px, the full height of the header bar, with *"staged · review"* wrapped to two lines inside it, because `align-items:stretch` let it take the row's height. It is a wayfinding chip, not a primary action.
 
 # Part B — Lessons Ledger (thematic)
 

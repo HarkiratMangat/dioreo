@@ -3112,16 +3112,49 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 @media (min-width:901px){.mxwrap{overflow:visible}}
 .mx thead tr.mxgrp th{top:0}
 .mx thead tr:not(.mxgrp) th{top:34.5px}
-/* 🔴 THE LABEL TURNS, BECAUSE AN EVEN PITCH AND A HORIZONTAL LABEL CANNOT BOTH BE HAD HERE.
-   Twelve scope columns share ~564px, so a column is 47px. DESTRUCTIVE and ANNOUNCEMENT measure ~79px
-   and ~86px at 9.5px with .1em tracking -- they do not fit, they contain no break opportunity, and
-   letting them size their own column is the ragged grid this pass removed. Truncation was the other
-   option and it hides the one thing this screen exists to state, so the label turns instead: every
-   one of the twelve is fully legible, at a pitch narrow enough that the two groups read as blocks.
-   ⚠️ The mockup does not answer this -- access.html sizes these columns by their labels too, so the
-   portal is deliberately ahead here rather than divergent by accident (ledger, Superseded 2026-09-06). */
-.mx .sc .mxl{display:block;writing-mode:vertical-rl;transform:rotate(180deg);
-  white-space:nowrap;margin:0 auto var(--s2);color:var(--ink3)}
+/* ══ 2026-09-11 11:32 EDT — THE LABELS ARE HORIZONTAL AND STAGGERED ACROSS TWO TIERS ══
+   Harkirat, 2026-09-11 11:32 EDT: "I don't like the vertical text." He is right and the turned label was never the
+   goal -- it was what fitted. The constraint is real and worth writing down, because the next session
+   will meet it again: the panel gives the table 890px, the Admin and Action columns and the group
+   gutter take ~250 of it, so twelve scope columns share ~640px = 53px each. Measured label widths at
+   9.5px/.1em: ANNOUNCEMENT 86.2 · SEASON DRAFT 78.4 · DESTRUCTIVE 70.7 · PATCH NOTES 70.3. Nothing
+   over 45px of content fits, most of them do not, and the three longest are single words with no
+   break opportunity. So horizontal + even pitch + full labels is impossible in ONE row of labels.
+   It is possible in TWO. Alternating tiers give each label the pitch of its tier -- 106px, which
+   clears the widest by 20px -- and a 1px leader drops from each label to the column it names, so the
+   association is drawn rather than inferred. This is the dense-axis solution, it keeps the even pitch
+   and the group bands he approved, and every one of the twelve stays fully legible and upright.
+   ⚠️ The tier is by column INDEX, so it is stable: adding a scope re-stripes from that column on,
+   rather than shuffling labels between tiers by width. */
+.mx thead th.sc{position:relative;padding-top:62px}
+.mx .sc .mxl{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;
+  color:var(--ink3);line-height:1}
+.mx .sc .mxl[data-tier=b]{top:14px}
+.mx .sc .mxl[data-tier=a]{top:36px}
+/* The leader is the whole reason a staggered axis reads: without it the upper tier looks like a
+   caption for the pair below it. It drops from the label to the swatch that starts the column. */
+.mx .sc .mxl::after{content:"";position:absolute;left:50%;top:calc(100% + 3px);width:1px;
+  background:var(--rule2)}
+.mx .sc .mxl[data-tier=b]::after{height:34px}
+.mx .sc .mxl[data-tier=a]::after{height:12px}
+/* 🔴 A STAGGERED LABEL OVERHANGS ITS NEIGHBOURS' CELLS, AND EVERY HEADER CELL WAS PAINTING AN OPAQUE
+   BACKGROUND OVER IT. `position:sticky` creates a stacking context whatever its z-index, so each th is
+   its own layer painting in DOM order: column N+1's `background:var(--paper)` covered the right half of
+   column N's label. On screen that read as TRUNCATION -- AUTOBUIL, CALENDAF, ANNOUNCEM -- while the DOM
+   was perfectly correct, `scrollWidth === clientWidth === 86px` and `overflow:visible` on every ancestor.
+   ⚠️ A z-index on the label cannot fix this: a child cannot escape its parent's stacking context, so the
+   background has to stop being per-cell. It becomes ONE backdrop, owned by the first scope column and
+   extended right behind all of them, sitting UNDER every cell's own content because each later cell is a
+   later-painting context. The header still covers the rows it scrolls over, which is what it was for. */
+/* ⚠️ `z-index:-1`, NOT 0. At 0 the backdrop joins the positioned layer, which paints ABOVE the th's own
+   in-flow content -- so the first column's swatch and its holder count both vanished behind it while the
+   other eleven were fine, which looks like a data bug and is a paint bug. -1 puts it behind them and still
+   above the cell's own (now absent) background. And the ACTION cell drops its background for the same
+   reason the scope cells did: the last label overhangs it, and it was painting over ANNOUNCEMENT. */
+.mx thead tr:not(.mxgrp) th.sc,
+.mx thead tr:not(.mxgrp) th:last-child{background:none}
+.mx thead tr:not(.mxgrp) th.sc-first::before{content:"";position:absolute;inset:0 -2000px 0 0;
+  background:var(--paper);z-index:-1}
 /* 🔴 THE LOCK IS A GLYPH, AND A GLYPH INSIDE TURNED TEXT READS AS A TYPO. Counter-rotating it inside
    the label put a raised mark after DESTRUCTIVE that looked like a degree sign, not a lock. It is a
    marker on ONE of twelve columns, so it belongs at the head of its column rather than inside the
@@ -4740,7 +4773,13 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
   line-height:1;color:var(--staged);letter-spacing:var(--tr-fig);font-variant-numeric:tabular-nums;
   background:color-mix(in srgb,var(--staged) 14%,transparent);
   border-right:1px solid color-mix(in srgb,var(--staged) 30%,transparent)}
-.hdr-commit span{display:flex;align-items:center;padding:6px 12px;letter-spacing:.02em}
+.hdr-commit span{display:flex;align-items:center;padding:0 12px;letter-spacing:.02em;white-space:nowrap}
+/* 🔴 2026-09-11 11:32 EDT — Harkirat: "wtf is that ugly over inflated staged review button". Measured: 133x53px,
+   which is the full height of the header bar, because `align-items:stretch` let it take the row's
+   height and "staged · review" then wrapped to two lines inside it. It is a quiet wayfinding chip,
+   not a primary action: it sits on its own line height and states itself on one line. */
+.hdr-commit{align-self:center;height:30px}
+.hdr-commit b{font-size:var(--t-base);padding:0 10px}
 .hdr-commit:hover{background:color-mix(in srgb,var(--staged) 20%,transparent)}
 
 /* ══════════════════════════════════════════════════════════════════════════════

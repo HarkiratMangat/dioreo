@@ -264,13 +264,13 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                             <tr>
                                 <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
                                 ${ordered.flatMap((sc, mxi) => [html`
-                                    <th key=${sc.key} class="sc">
+                                    <th key=${sc.key} class=${'sc' + (mxi === 0 ? ' sc-first' : '')}>
                                         <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
                                               style=${`--c:${accentOf(sc)}`}
                                               title=${spofScopes.has(sc.key)
                                                   ? `${sc.label} — single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`
                                                   : `${sc.label} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides you${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`}>
-                                            ${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<span class="mxl">${sc.label}</span><i></i><em class="mxn2">${holdersOf(sc)}</em>
+                                            ${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<span class="mxl" data-tier=${mxi % 2 ? 'b' : 'a'}>${sc.label}</span><i></i><em class="mxn2">${holdersOf(sc)}</em>
                                         </span>
                                     </th>`, GAPH(mxi)])}
                                 <th><span class="mxs">Action</span></th>
