@@ -5,6 +5,18 @@ status: live
 
 # Preparing a handoff or a compact — the whole procedure
 
+## 🧠 Run linksee's `summarize-session` — it is part of the procedure and was not written down until 2026-09-10 20:05 EDT
+
+🔴 **linksee's own docs say to run it and this guide never did.** `local/linksee-docs/quickstart.md:109` — *"The `summarize-session` prompt can automatically extract the right memories from a session transcript. Use it at the end of important sessions."* A grep of this file for "linksee" returned **nothing** before this section existed, so the trigger lived only in vendor documentation nobody reads at handoff time. It was missed on 2026-09-10 and Harkirat had to ask.
+
+**It produces up to SIX memories, one per layer** — `goal` · `context` · `emotion` · `implementation` · `caveat` · `learning` — which is the point: a hand-written handoff reliably captures goal, context and implementation, and reliably drops **emotion** and **learning**. Those two are what a later session needs to know why a decision was defended or why a tool is distrusted.
+
+⚠️ **DO NOT HAND-ROLL A `prompts/get` STDIO PIPE.** `/linksee:*` does not route in Claude Code, but the five prompt bodies are already dumped in `local/linksee-docs/prompts__*.md` — read the one you need and follow it. The recipe for the stdio route, if a body is ever missing, is `~/.claude/TOOLING.md` §linksee.
+
+**Its rules, which are easy to break:** at most one memory per layer · a **caveat must be ONE sentence starting with a verb** · no verbatim quotes from the transcript · score importance 0.0–1.0 · skip routine actions and write only decisions, pain and insight.
+
+⚠️ **Check for duplicates first.** A session that has been writing caveats as it goes will already hold several of these; `recall({query})` before writing, and amend rather than adding a second near-identical row.
+
 ## 🔴 YOU ARE NOT WRITING A NEW PACKAGE. YOU ARE APPENDING TO A STANDING ONE. (added 2026-08-31 13:0x EDT)
 
 **Harkirat, 2026-08-31:** *"will a future session create/apply the same thorough handoff package for the session that follows it? … this should realistically be a 1 time hurdle, not something recreated every session."*
