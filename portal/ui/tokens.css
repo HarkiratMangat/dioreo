@@ -125,6 +125,12 @@
   --r-season:#F2994A; --r-armory:#AE72E0; --r-broadcast:#E56FA6;
   --r-access:#6B8AF7; --r-analytics:#9CC85A; --r-review:var(--ink); --r-home:var(--ink2);
 
+/* EDIT IDENTITY — one colour per person being edited, so a bar, a column head and a set of pending
+ * cells read as one object. Deliberately a COOL band (165–265°) that the scope palette in access.js
+ * stays clear of, and deliberately never painted on a cell's fill or a permission's swatch: a topic
+ * colour and an edit colour must never be mistakable for one another. Added 2026-09-11 13:13 EDT. */
+  --ed1:#5BC8C0; --ed2:#4FB3E8; --ed3:#6B8AF7; --ed4:#A9B8C9;
+
 
   /* layout — the one place to override */
   /* TYPE SCALE — a dashboard fails typographically when every size is within 4px of every

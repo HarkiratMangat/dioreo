@@ -29,7 +29,24 @@ function relTime(value) {
 const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 // 🔴 ONE SOURCE FOR A SCOPE'S COLOUR, AND THE DRAWER HAD BEEN READING A SECOND ONE THAT DOES NOT EXIST. The grid has always coloured a cell with this; the permission chips read sc.hex instead, which buildPermissionMatrix has never emitted -- it builds {key, label, kind, ownerOnly, realm}. So --c was unset on every chip, .chip.topic i painted background:var(--c) with nothing in it, and a picked chip's color-mix(in srgb,var(--c) 16%,transparent) was invalid and dropped entirely: twelve identical black pills where the design shows the realm's colour. ⚠️ THE HARNESS FIXTURE DOES SET hex (assets/fixtures.js:1100), which is the whole reason no instrument caught it -- the same shape as the ownerOnly mark recorded in portal/api/access.js, where the legend named a mark only the fixture could draw. Hoisted above its first reader because the TDZ ratchet is right that source order should not be what holds a render up.
-const accentOf = (sc) => (sc.realm ? `var(--r-${sc.realm})` : 'var(--ink3)');
+// 🔴 A SCOPE'S COLOUR IS ITS OWN NOW, NOT ITS REALM'S — Harkirat, 2026-09-11 13:09 EDT.
+// It used to be `var(--r-${sc.realm})`, so the five season pages were one amber and the two armory
+// pages one violet, and COMPANION §4.2 defended that: "every colour here is borrowed from the realm
+// the scope governs, because inventing an eighth accent would put a colour on screen that means
+// nothing anywhere else in the product." His ruling is that the rule has to bend HERE specifically:
+// this panel grants access inside the DISCORD BOT, the portal's own access scoping is not built, and
+// he is the only person with portal access — so a realm hue is naming a thing this grid is not about.
+// Shades of one hue were tried first and rejected: "they all more or less still look/feel the same."
+// Twelve distinct hues, spaced around the wheel and deliberately clear of the 165–265° band the edit
+// identities own, so a topic colour and an edit colour can never be mistaken for one another.
+const SCOPE_COLOR = {
+    manage: '#9B6BE8', autobuild: '#4EC07A', bot: '#E6BE3F', destructive: '#E8604C',
+    'manage.draws': '#F0793C', 'manage.calendar': '#CBCB45',
+    'manage.loadouts_mp': '#C46BE0', 'manage.loadouts_dmz': '#79C558',
+    'manage.patchnotes': '#E8608F', 'manage.seasondraft': '#A3C94B',
+    'manage.season': '#F29B3B', 'manage.announcement': '#E063C4',
+};
+const accentOf = (sc) => SCOPE_COLOR[sc.key] || 'var(--ink3)';
 
 function useDiscordLookup(discordId) {
     const [state, setState] = useState({ status: 'idle' });
@@ -184,19 +201,24 @@ function RevokeControl({ discordId, onRevoke }) {
 // ⚠️ AN INHERITED CELL DOES NOT TOGGLE. Holding a bare `manage` covers every page at once, so there is no such thing as revoking one of them — the honest response to that click is to say so, not to quietly rewrite the token into eight explicit ones. Two things the grid does that the string cannot are INHERITANCE (visible rather than remembered) and, in the By-scope view below, SINGLE POINTS OF FAILURE. Data comes from GET /api/access/matrix, built over the same scope enumeration singlePointsOfFailure() uses — never a second list that could drift. 🔴 THE LABEL STAGES EXACTLY LIKE A PERMISSION CELL, and that is the whole reason it is here rather than only in the drawer. `note` is the only thing telling `…000001` from `…000003` on a screen of snowflakes, so fixing a typo in it should not cost the same ceremony as handing out a permission — but it commits through the SAME row Save and the SAME typed gate, because it rides on the same request that replaces the permission list. Two entry points, one commit: the row for a quick correction, the Edit drawer for everything at once.
 function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId, highlightId }) {
     const [pending, setPending] = useState({});     // { "discordId|scope": true|false }
-    const [pendingNote, setPendingNote] = useState({});   // { discordId: "the label being typed" }
-    const [editingNote, setEditingNote] = useState(null); // the one row whose label input is open
+    const [pendingNote, setPendingNote] = useState({});
+    const [editingNote, setEditingNote] = useState(null);
     const scopes = matrix.scopes || [];
     const commands = scopes.filter((s) => s.kind === 'command');
     const pages = scopes.filter((s) => s.kind === 'page');
-    const ordered = [...commands, ...pages];
-    // The gutter between the two groups is a REAL COLUMN, not padding on the boundary cells: padding
-    // would eat into those two columns' content boxes and leave their swatches narrower than the
-    // other ten, which is the ragged edge this pass exists to remove. Emitted after the last command.
-    const GAP = (i) => (i === commands.length - 1 ? html`<td class="mxgap"></td>` : null);
-    const GAPH = (i) => (i === commands.length - 1 ? html`<th class="mxgap"></th>` : null);
     const spofScopes = new Set((spof || []).map((x) => x.scope));
-    const holdersOf = (sc) => matrix.admins.filter((a) => (a.grants[sc.key] || {}).held).length;
+    // 🔴 THE OWNER IS SYNTHETIC AND ALWAYS HAS BEEN. `buildPermissionMatrix` reads the AdminUser
+    // collection and the owner is not in it -- the owner is built in, not granted -- so the old grid drew
+    // a static owner ROW for exactly this reason. Transposed, that becomes a static first COLUMN; taking
+    // `matrix.admins` alone silently dropped it, which reads as "the owner holds nothing".
+    const granted = (matrix.admins || []).filter((a) => a.discordId !== isOwnerId);
+    const ownerCol = {
+        discordId: isOwnerId || 'owner', note: 'Owner', __owner: true,
+        grants: Object.fromEntries(scopes.map((sc) => [sc.key, { direct: true, held: true }])),
+    };
+    const people = [ownerCol, ...granted];
+    // "besides you" -- the owner holds everything by definition, so counting them would make every count 1 higher and mean nothing.
+    const holdersOf = (sc) => granted.filter((a) => (a.grants[sc.key] || {}).held).length;
 
     const rowPending = (id) => Object.fromEntries(Object.entries(pending)
         .filter(([k]) => k.startsWith(id + '|'))
@@ -217,105 +239,109 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
 
     const dropNote = (id) => setPendingNote((prev) => Object.fromEntries(
         Object.entries(prev).filter(([k]) => k !== id)));
-    // ⚠️ DISCARD HAS TO DROP BOTH, or a discarded row keeps a staged label that its own Save button no longer counts — a pending change with nothing on screen offering to commit it.
+    // ⚠️ DISCARD HAS TO DROP BOTH, or a discarded admin keeps a staged label that its own Save no longer counts.
     const clearRow = (id) => {
         setPending((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith(id + '|'))));
         dropNote(id);
         setEditingNote((cur) => (cur === id ? null : cur));
     };
-    // The label as it stands right now: what is being typed if anything is, otherwise what is stored.
     const noteNow = (a) => (pendingNote[a.discordId] !== undefined ? pendingNote[a.discordId] : (a.note || ''));
     const noteDirty = (a) => pendingNote[a.discordId] !== undefined && pendingNote[a.discordId] !== (a.note || '');
 
+    // Every admin carrying an edit takes one of four EDIT IDENTITY colours, and the same value paints their
+    // column head, their pending cells and their bar -- so a bar, a column and a set of cells are one object.
+    // Assigned by position in the admin list so a person keeps their colour for as long as the list does.
+    const editColor = (a) => (a.__owner ? 'var(--ink3)' : `var(--ed${(granted.findIndex((g) => g.discordId === a.discordId) % 4) + 1})`);
+    const dirtyOf = (a) => Object.keys(rowPending(a.discordId)).length + (noteDirty(a) ? 1 : 0);
+    const editing = people.map((a, i) => ({ a, i })).filter(({ a }) => !a.__owner && dirtyOf(a) > 0);
+
+    // The command a page was inherited FROM. `portal/api/access.js` computes `inherited` as
+    // `kind === 'page' && !direct && perms.includes('manage')` -- so today exactly one command confers,
+    // and the ring wears its colour. Resolved from the scope list rather than hardcoded, so a second
+    // conferring command becomes a data change here rather than a design change.
+    const CONFERRER = 'manage';
+    const conferrer = commands.find((c) => c.key === CONFERRER) || null;
+
+    const groups = [
+        { key: 'command', title: 'Commands', rows: commands,
+            tip: 'A command hands over everything inside it. Manage is the one that carries pages -- all eight below, at once. Destructive names no surface: it gates the right to run an irreversible operation on any of them.' },
+        { key: 'page', title: '/manage pages', rows: pages,
+            tip: 'One surface each. Granted on their own, or inherited whole from Manage -- an inherited page cannot be switched off by itself.' },
+    ];
+
+    const cellFor = (a, sc) => {
+        const g = a.grants[sc.key] || {};
+        const pend = rowPending(a.discordId)[sc.key];
+        const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
+        const inheritedOnly = pend === undefined && g.inherited && !g.direct;
+        const isOwner = Boolean(a.__owner);
+        const cls = 'mxcell'
+            + (on && !inheritedOnly ? ' on' : '')
+            + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (inheritedOnly ? ' inh inherited' : ''))
+            ;
+        const style = `--c:${accentOf(sc)};--ed:${editColor(a)}`
+            + (inheritedOnly && conferrer ? `;--from:${accentOf(conferrer)}` : '');
+        const what = g.direct ? 'granted directly'
+            : g.inherited ? `inherited from ${conferrer ? conferrer.label.toLowerCase() : CONFERRER}`
+            : 'not granted';
+        const willBe = pend === true ? ' — pending: will be granted'
+            : pend === false ? ' — pending: will be revoked' : '';
+        if (isOwner) {
+            return html`<td key=${a.discordId} class="mxc"><span class=${cls} role="img" aria-checked="true" style=${style}
+                aria-label=${`${sc.label}: held by the owner, not editable`}
+                data-tip="The owner short-circuits every check"></span></td>`;
+        }
+        return html`<td key=${a.discordId} class=${'mxc' + (pend !== undefined ? ' staged' : '')} style=${`--ed:${editColor(a)}`}>
+            <button class=${cls} style=${style}
+                role="checkbox" aria-checked=${on ? 'true' : 'false'}
+                aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
+                data-tip=${`${sc.label} — ${what}${willBe}`}
+                onClick=${() => toggle(a, sc)}></button></td>`;
+    };
+
     return html`
         <!-- ⚠️ NO PANEL AND NO HEADER OF ITS OWN. access.html draws ONE .ph — the Shell's view bar — carrying
-             the title, the tabs, the key and a right-aligned meta line; a second header inside the view repeated
-             the view name the tabs already say, and nested a .panel inside the Shell's .panel, which breaks the
-             .panel + .panel{background:transparent} chain Armory already paid for. The meta line moved to the
-             Shell's meta prop and the key to realmKey; both slots already existed and this realm used neither.
+             the title, the tabs, the key and a right-aligned meta line.
              ⚠️ NO BACKTICKS IN THIS COMMENT ON PURPOSE — it sits inside a template literal, where even a MATCHED
              pair closes and reopens the literal and the text between them is parsed as JavaScript. -->
         <div id="by-admin">
-            ${matrix.admins.length === 0 ? html`<p class="empty">Nobody else has been granted access. You are the only admin.</p>` : html`
+            ${people.length === 0 ? html`<p class="empty">Nobody has been granted access yet.</p>` : html`
                 <div class="mxwrap">
+                    <!-- 🔴 PERMISSIONS ARE ROWS AND PEOPLE ARE COLUMNS. Twelve scope names could not be carried
+                         horizontally across a 53px column, and every fix for that — turning them, staggering them,
+                         abbreviating them — was rejected in turn. The long axis was simply pointed the wrong way:
+                         there are twelve permissions and a handful of people, so the permissions go down the page
+                         where a name may be any length, and the two groups become labelled blocks of rows rather
+                         than bands over columns. -->
                     <table class="mx">
-                        <!-- The pitch lives in a colgroup because table-layout:fixed reads its widths from the
-                             FIRST ROW, and the first row here is the group band with its colspans -- so sizing from
-                             the markup itself would size every column from the wrong cells.
-                             NO BACKTICKS IN THIS COMMENT: it sits inside a template literal, where even a matched
-                             pair closes and reopens the literal and the text between is parsed as JavaScript. -->
                         <colgroup>
-                            <col class="mxc-who" />
-                            ${ordered.flatMap((sc, i) => [html`<col key=${sc.key} class="mxc-sc" />`, i === commands.length - 1 ? html`<col key="gapc" class="mxc-gap" />` : null])}
-                            <col class="mxc-act" />
+                            <col class="mxc-name" />
+                            ${people.map((a) => html`<col key=${a.discordId} class="mxc-who" />`)}
+                            <col class="mxc-held" />
                         </colgroup>
                         <thead>
-                            <!-- 2026-09-11 09:11 EDT: the boundary between the two groups is now a real vertical line,
-                                 not just the two span labels -- Harkirat, direct: "those command/manage pages
-                                 heads are so confusing, what do they even correspond to?" A group name alone,
-                                 40px above twelve columns, does not say WHERE one group ends -- the line does. -->
-                            <tr class="mxgrp">
-                                <th class="mxwho"></th>
-                                <th class="grp" colspan=${commands.length}><span>Commands</span></th>
-                                <th class="mxgap"></th>
-                                <th class="grp" colspan=${pages.length}><span>/manage pages</span></th>
-                                <th></th>
-                            </tr>
                             <tr>
-                                <th class="mxwho"><span class="mxs" style="text-align:left">Admin</span></th>
-                                ${ordered.flatMap((sc, mxi) => [html`
-                                    <th key=${sc.key} class=${'sc' + (mxi === 0 ? ' sc-first' : '')}>
-                                        <span class=${'mxs mxcol' + (spofScopes.has(sc.key) ? ' spof' : '') + (sc.ownerOnly ? ' ownly' : '')}
-                                              style=${`--c:${accentOf(sc)}`}
-                                              title=${spofScopes.has(sc.key)
-                                                  ? `${sc.label} — single point of failure: exactly one person besides you holds it${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`
-                                                  : `${sc.label} — ${holdersOf(sc)} ${holdersOf(sc) === 1 ? 'holder' : 'holders'} besides you${sc.realm ? ' · reaches ' + sc.realm : ' · Discord only'}`}>
-                                            ${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}<span class="mxl" data-tier=${mxi % 2 ? 'b' : 'a'}>${sc.label}</span><i></i><em class="mxn2">${holdersOf(sc)}</em>
-                                        </span>
-                                    </th>`, GAPH(mxi)])}
-                                <th><span class="mxs">Action</span></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- 🔴 THE OWNER ROW NEVER RENDERED ONCE, AND THE HEADER PROMISED IT. The row markup below
-                                 carried an owner ? locked branch keyed on a discordId match against the matrix, but the
-                                 owner is NOT an AdminUser document — buildPermissionMatrix reads that collection, so the
-                                 owner is never in it and the branch was unreachable. The grid therefore said "owner is not
-                                 editable" about a row it did not draw, and every .locked and .ownerrow rule in both
-                                 stylesheets sat with no emitter. access.html draws the owner as a STATIC first row for the
-                                 same reason: the owner is built in, not granted. -->
-                            <!-- ⚠️ NO BACKTICKS ABOVE ON PURPOSE — this comment is inside a template literal, where
-                                 even a MATCHED pair closes and reopens the literal and the text between is parsed
-                                 as JavaScript. It is the trap portal-editing.md names first, and it has now cost
-                                 two turns in one session. -->
-                            <tr class="ownerrow">
-                                <td class="mxwho"><span class="mxid">
-                                    <span class="mxav" aria-hidden="true"><${Icon} name="user" cls="sm" /></span>
-                                    <span class="mxn"><b>Owner</b><span>…${String(isOwnerId || '').slice(-6)} · built in</span></span>
-                                </span></td>
-                                ${ordered.flatMap((sc, mxi) => [html`
-                                    <td key=${sc.key}><span class="mxcell on locked" style=${`--c:${accentOf(sc)}`}
-                                        role="img" aria-label=${`${sc.label}: held by the owner, not editable`}
-                                        title="The owner short-circuits every check"></span></td>`, GAP(mxi)])}
-                                <td class="mxact"><span class="mxacts"><span class="holder">locked</span></span></td>
-                            </tr>
-                            ${matrix.admins.filter((a) => a.discordId !== isOwnerId).map((a) => {
-                                const owner = false;
-                                const rp = rowPending(a.discordId);
-                                const nv = noteNow(a);
-                                const ndirty = noteDirty(a);
-                                const changes = Object.keys(rp).length + (ndirty ? 1 : 0);
-                                return html`
-                                    <tr key=${a.discordId} class=${(owner ? 'ownerrow' : '') + (a.discordId === highlightId ? ' just-granted' : '')}>
-                                        <td class="mxwho"><span class="mxid">
-                                            <!-- The initial follows the LABEL BEING TYPED, not the stored one: a preview that ignores the edit in progress is a second authority on the same fact. -->
-                                            <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
-                                            <span class="mxn">
-                                                <b>…${a.discordId.slice(-6)}</b>
-                                                <span>
-                                                    ${editingNote === a.discordId ? html`
-                                                        <!-- 🔴 data-bare IS NOT DECORATION AND IT IS NOT A CLASS I COULD HAVE OUT-SPECIFIED. app.css's element-level input rule is 0,3,1 and sets min-height:var(--tap), which is 44px, so this input rendered at 44px inside a 15px line and drew over the granted date beside it. That rule's own comment names this exact mistake -- made before with .cmdbar input.cb-in, reported by Harkirat twice weeks apart -- and says the fix is to OPT OUT rather than to outrank, because an opt-out cannot lose an argument it is not having. I tried raising the height first, measured it, and found 44px still winning.
-                                                        ⚠️ A REF, NOT THE autofocus ATTRIBUTE, WHICH IS HONOURED ONLY WHILE THE PAGE IS BEING PARSED. On a swap like this one it does nothing at all: measured, the input appeared and the caret stayed where it was. The guard matters as much as the focus -- this callback runs on every render, and focusing an already-focused input would drag the caret to the end on every keystroke. -->
+                                <th class="mxc-name"><span class="mxs">Permission</span></th>
+                                ${people.map((a) => {
+                                    const isOwner = Boolean(a.__owner);
+                                    const n = dirtyOf(a);
+                                    const nv = noteNow(a);
+                                    return html`
+                                        <th key=${a.discordId} class=${(n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
+                                            style=${`--ed:${editColor(a)}`}>
+                                            <div class="colh">
+                                                ${isOwner ? null : html`
+                                                    <span class="colacts">
+                                                        <button class="colact" aria-label=${`Edit …${a.discordId.slice(-6)}`}
+                                                                data-tip="Permissions and label, in one drawer"
+                                                                onClick=${() => onEdit(a)}><${Icon} name="pencil" cls="sm" /></button>
+                                                        <${RevokeControl} discordId=${a.discordId} onRevoke=${onRevoke} />
+                                                    </span>`}
+                                                <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
+                                                <b>${isOwner ? 'Owner' : html`…${a.discordId.slice(-6)}`}</b>
+                                                ${isOwner ? html`<span class="built">built in</span>`
+                                                    : editingNote === a.discordId ? html`
+                                                        <!-- data-bare opts OUT of the element-level input rule, whose min-height is var(--tap) at 44px and would blow the column head open. Opting out cannot lose an argument it is not having; out-specifying it was tried and 44px still won. A ref rather than the autofocus attribute, which is honoured only while the page is parsing. -->
                                                         <input class="mxlbl-in" data-bare value=${nv}
                                                                ref=${(el) => { if (el && document.activeElement !== el) el.focus(); }}
                                                                aria-label=${`Label for …${a.discordId.slice(-6)}`}
@@ -326,88 +352,93 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                                                    if (e.key === 'Escape') { dropNote(a.discordId); setEditingNote(null); }
                                                                    if (e.key === 'Enter') setEditingNote(null);
                                                                }} />`
-                                                        : html`
-                                                        <button class=${'mxlbl' + (ndirty ? ' pend' : '')}
-                                                                aria-label=${`Edit the label for …${a.discordId.slice(-6)}`}
-                                                                title="Rename this label — it stages like a permission and saves with the row"
-                                                                onClick=${() => setEditingNote(a.discordId)}>${nv || 'no label'}</button>`}
-                                                    ${a.grantedAt ? html`<em class="mxgr">· granted ${shortDate(a.grantedAt)}</em>` : null}
-                                                </span>
+                                                    : html`<button class=${'mxlbl clbl' + (noteDirty(a) ? ' pend' : '')}
+                                                                   aria-label=${`Edit the label for …${a.discordId.slice(-6)}`}
+                                                                   data-tip="Rename this label — it stages like a permission and saves with the rest"
+                                                                   onClick=${() => setEditingNote(a.discordId)}>${nv || 'no label'}</button>`}
+                                            </div>
+                                        </th>`;
+                                })}
+                                <th class="mxc-held"><span class="mxs">Held</span></th>
+                            </tr>
+                        </thead>
+                        ${groups.map((g) => html`
+                            <tbody key=${g.key} class="grp" data-grp=${g.key}>
+                                <!-- The heading is a rule, a name and a figure. What the tier MEANS is on hover:
+                                     a permanent sentence under every heading was two paragraphs of chrome on a
+                                     grid, and the fact is needed once, not on every read. -->
+                                <tr class="gh">
+                                    <td colspan=${people.length + 2}>
+                                        <div class="ghead">
+                                            <h4 data-tip=${g.tip}>${g.title}</h4>
+                                            <span class="fig">${g.rows.length}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                ${g.rows.map((sc, ri) => html`
+                                    <tr key=${sc.key} class="prow" data-last=${ri === g.rows.length - 1 ? "y" : null}>
+                                        <td class="mxc-name">
+                                            <span class="pname" style=${`--c:${accentOf(sc)}`}
+                                                  data-tip=${g.key === 'command'
+                                                      ? `${sc.label} — a command: it carries every function inside it${sc.key === CONFERRER ? ', including all ' + pages.length + ' /manage pages below' : ''}`
+                                                      : `${sc.label} — one /manage page. Held on its own, or inherited whole from ${conferrer ? conferrer.label : CONFERRER}`}>
+                                                <i></i><b>${sc.label}</b>
+                                                ${sc.ownerOnly ? html`<em class="ownly-k" data-tip="Only the owner can grant this one"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></em>` : null}
                                             </span>
-                                        </span></td>
-                                        ${ordered.flatMap((sc, mxi) => {
-                                            const g = a.grants[sc.key] || {};
-                                            const pend = rp[sc.key];
-                                            const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
-                                            // 🔴 THE TICK IS DRAWN BY THE ARIA STATE, NOT BY A CLASS. app.css's checkmark is `.mxcell[aria-checked=true]::after`, so a cell wearing `.on` alone fills with the accent and draws nothing inside it — the state was legible only as colour, which §4.1 says is the one thing colour must not carry. 🔴 AN INHERITED CELL MUST NOT ALSO WEAR `.on`, EVEN THOUGH IT RENDERED CORRECTLY. `.mxcell.on` fills with the accent and `.mxcell.inh` resets the background to transparent — so the ring survived only because `.inh` is declared LATER in the stylesheet. Reorder those two rules and every inherited cell in the grid fills solid, which is the one thing the ring exists to distinguish. The design's inherited cell carries no `.on` at all. `aria-checked` stays true: an inherited permission IS held, and that is the semantics, not the paint.
-                                            const inheritedOnly = pend === undefined && g.inherited && !g.direct;
-                                            const cls = 'mxcell'
-                                                + (on && !inheritedOnly ? ' on' : '')
-                                                + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (inheritedOnly ? ' inh inherited' : ''))
-                                                + (owner ? ' locked' : '');
-                                            const what = g.direct ? 'granted directly' : g.inherited ? 'inherited from manage' : 'not granted';
-                                            const willBe = pend === true ? ' — pending: will be granted'
-                                                : pend === false ? ' — pending: will be revoked' : '';
-                                            if (owner) {
-                                                return [html`<td key=${sc.key}><span class=${cls} role="img" aria-checked="true" style=${`--c:${accentOf(sc)}`}
-                                                    aria-label=${`${sc.label}: held by the owner, not editable`}
-                                                    title="The owner short-circuits every check"></span></td>`, GAP(mxi)];
-                                            }
-                                            return [html`<td key=${sc.key}><button class=${cls} style=${`--c:${accentOf(sc)}`}
-                                                role="checkbox" aria-checked=${on ? 'true' : 'false'}
-                                                aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
-                                                title=${`${sc.label} — ${what}${willBe}`}
-                                                onClick=${() => toggle(a, sc)}></button></td>`, GAP(mxi)];
-                                        })}
-                                        <td class="mxact"><span class="mxacts">
-                                            ${owner ? html`<span class="holder">locked</span>`
-                                                : changes ? html`
-                                                    <button class="chip go" onClick=${() => onSave(a, rp, ndirty ? nv : undefined, () => clearRow(a.discordId))}>
-                                                        Save ${changes} ${changes === 1 ? 'change' : 'changes'}</button>
-                                                    <button class="chip" onClick=${() => clearRow(a.discordId)}>Discard</button>`
-                                                : html`
-                                                    <button class="chip" aria-label=${`Edit …${a.discordId.slice(-6)}`}
-                                                            title="Permissions and label, in one drawer"
-                                                            onClick=${() => onEdit(a)}>Edit</button>
-                                                    <button class="rmv" title="Revoke entirely"
-                                                            aria-label=${`Revoke …${a.discordId.slice(-6)} entirely`}
-                                                            onClick=${() => onRevoke(a.discordId)}><${Icon} name="trash-2" cls="sm" /></button>`}
-                                        </span></td>
-                                    </tr>`;
-                            })}
-                        </tbody>
+                                        </td>
+                                        ${people.map((a) => cellFor(a, sc))}
+                                        <td class=${'mxc-held held' + (spofScopes.has(sc.key) ? ' spof' : '') + (holdersOf(sc) === 0 ? ' zero' : '')}
+                                            data-tip=${spofScopes.has(sc.key)
+                                                ? 'Single point of failure — exactly one person besides you holds it'
+                                                : `${holdersOf(sc)} hold it`}>${holdersOf(sc)}</td>
+                                    </tr>`)}
+                            </tbody>`)}
                     </table>
                 </div>
+
+                <!-- 🔴 ONE BAR PER ADMIN BEING EDITED, IN THAT ADMIN'S OWN COLOUR. The controls used to sit in an
+                     Action column at the far end of the row, as far from the cells they commit as the table is wide.
+                     A bar carries the person, every pending change as a chip, and Save and Discard built into its own
+                     right end -- and two people edited at once are two bars in two colours, each committing only its
+                     own. Harkirat's model, 2026-09-11 12:55 EDT. -->
+                <div class="mxbars">
+                    ${editing.map(({ a, i }) => {
+                        const rp = rowPending(a.discordId);
+                        const nv = noteNow(a);
+                        const ndirty = noteDirty(a);
+                        const n = dirtyOf(a);
+                        return html`
+                            <div key=${a.discordId} class="mxbar" style=${`--ed:${editColor(a)}`}>
+                                <span class="who">
+                                    <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
+                                    <span><b>…${a.discordId.slice(-6)}</b><em>${nv || 'no label'}</em></span>
+                                </span>
+                                <span class="chips">
+                                    ${Object.entries(rp).map(([k, want]) => {
+                                        const sc = scopes.find((s) => s.key === k) || { key: k, label: k };
+                                        return html`<span key=${k} class=${'bchip' + (want ? '' : ' off')} style=${`--c:${accentOf(sc)}`}>
+                                            <i></i><s>${want ? 'grant' : 'revoke'}</s>${sc.label}</span>`;
+                                    })}
+                                    ${ndirty ? html`<span class="bchip lbl"><s>label</s>${nv || 'cleared'}</span>` : null}
+                                </span>
+                                <span class="acts">
+                                    <button class="go" onClick=${() => onSave(a, rp, ndirty ? nv : undefined, () => clearRow(a.discordId))}>
+                                        Save ${n}</button>
+                                    <button class="no" onClick=${() => clearRow(a.discordId)}>Discard</button>
+                                </span>
+                            </div>`;
+                    })}
+                </div>
+
                 <div class="mxfoot">
-                    ${''/* 🔴 A KEY NAMES THE MARKS; A SENTENCE CARRIES THE CONSEQUENCE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 05, against his own verdict on the current build: "UGLY and broken — look at the alignment, the spacing, the actual style." Two of the three sentences here described a MARK, which a key does in a fraction of the width and without a paragraph under a grid. The third describes what happens if you click — that turning an inherited cell off means revoking `manage` — and a key cannot hold the one line that stops a wrong action. ⚠️ HE MARKED THIS PROVISIONAL: "I'll need to see it in the actual portal to verify i made the right choice." It is not settled until he has. */}
                     <span class="mxkey">
                         <span><span class="mxlegend on"></span>direct</span>
                         <span><span class="mxlegend inh"></span>inherited</span>
                     </span>
                     <span><b>An inherited cell cannot be turned off on its own</b> — switching it off means revoking the thing that covers it, which is <code>manage</code></span>
-                    <!-- 🔴 THE THIRD SENTENCE ANSWERS A QUESTION RATHER THAN RESTATING A FACT. Pin pmtuxn6we
-                         asked what the bar over each column name is FOR, given the squares below already show who holds
-                         what. It was never the same fact: the squares are per person, the bar is the portal realm the
-                         scope belongs to. A 2026-09-10 attempt (fork 05) tried removing the bar outright and putting a
-                         holder-count in its place; Harkirat called that build worse the same evening and asked for the
-                         bar restored exactly as it stood, with only the ring that used to mark a single point of
-                         failure dropped — it was tried three ways that day (a 3px underline, a 4px glow, a 7px ring)
-                         and never actually visible without zooming in. The amber-coloured count under the label,
-                         which already existed alongside the ring as a second carrier of the same fact, is what marks
-                         a single point of failure now; the key below names it in words. -->
-                    <span><span class="mxlegend bar"></span>the swatch under a column name is the <b>portal realm</b> that scope belongs to — the squares below it are who holds it.</span>
-                    <!-- ⚠️ "The owner has everything and cannot be edited" USED TO BE A THIRD SENTENCE HERE and was
-                         removed once the owner ROW started rendering above. It restated, 300px below, a fact the row
-                         states with a locked chip on every cell — two authorities for one fact, which is the defect
-                         access.html's own comment records fixing when it moved the ring key out of this foot. The
-                         design's foot has two sentences for the same reason. -->
+                    <span>the ring on an inherited cell is <b>the colour of the command it came from</b>, and the swatch beside a permission is that permission's own.</span>
                 </div>
-                <!-- ⚠️ THE COMMAND LIST IS SEPARATED BY MIDDOTS, NOT COMMAS, AND THE SENTENCES DO NOT WRAP MID-PHRASE.
-                     An inline code chip carries horizontal padding, so a comma set straight after one lands a chip's
-                     width from the word it belongs to (portalUi.test.js's own gate, and the Analytics callout that
-                     earned it). And htm drops a whitespace-only text node across a newline, so a line ending in a word
-                     whose next line opens with a tag renders as one run-on word. Both gates fired on this paragraph. -->
-                <p class="racknote">${(matrix.scopes || []).length} permissions: ${(matrix.scopes || []).filter((s) => s.kind === 'command').length} commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and ${(matrix.scopes || []).filter((s) => s.kind === 'page').length} <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo. <b>🔒 <code>destructive</code> is a real permission in the bot</b> and the only one the <code>all</code> shorthand never includes — it can arrive only by being typed deliberately.</p>
+                <p class="racknote">${scopes.length} permissions: ${commands.length} commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and ${pages.length} <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo.</p>
             `}
         </div>
     `;
@@ -674,7 +705,7 @@ export function AccessRealm({ session }) {
         <span class="key">
             <span class="l"><i></i>direct</span>
             <span class="s"><i></i>inherited</span>
-            ${spofSet.size ? html`<span class="l spofk" data-note><em class="mxn2" style="color:var(--warn);display:inline;margin:0 3px 0 0">1</em>the count under a column turns amber — held by <b>one person</b> besides you</span>` : null}
+            ${spofSet.size ? html`<span class="l spofk" data-note><em class="mxn2" style="color:var(--warn);display:inline;margin:0 3px 0 0">1</em>in the Held column, amber — held by <b>one person</b> besides you</span>` : null}
             ${anyLock ? html`<span class="l" data-note><i style="background:none"><${Icon} name="lock" cls="sm" /></i>owner-grantable only</span>` : null}
         </span>`;
 

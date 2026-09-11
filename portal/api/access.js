@@ -53,11 +53,17 @@ function singlePointsOfFailure(admins) {
 }
 
 // Human-readable column labels for MANAGE_PAGE_SCOPES -- read from commands/manage.js's own content-picker choices (the real, already-shipped display names) rather than inventing new copy, per this repo's naming convention.
+// These labels are the PORTAL's, not the bot's -- `manageActions.js` keeps its own and /manage in Discord
+// is untouched by anything here. Renamed 2026-09-11 13:13 EDT at Harkirat's request: MP and DMZ did not say what they
+// were, and Season read as the whole realm when it is one page about the title and the dates.
 const PAGE_LABELS = {
-    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP', loadouts_dmz: 'DMZ',
-    patchnotes: 'Patch Notes', seasondraft: 'Season Draft', season: 'Season', announcement: 'Announcement',
+    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
+    patchnotes: 'Patch Notes', seasondraft: 'Season Draft', season: 'Season Title/Dates',
+    announcement: 'Announcements',
 };
-const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot' };
+// ⚠️ `destructive` HAD NO ENTRY, so it rendered as its raw lowercase key beside three title-cased
+// neighbours -- the label table was written before the fourth command existed and nothing re-read it.
+const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot', destructive: 'Destructive' };
 
 // Gap audit §3.2: the permission-grid data this needs already exists (getAdminPermissionsMap, MANAGE_PAGE_SCOPES) -- this reuses the EXACT same scope enumeration singlePointsOfFailure() above already established, rather than a second list that could drift from it. Shaped for a grid component directly (rows=admins, columns=scopes), not a raw dump of AdminUser docs.
 function buildPermissionMatrix(admins) {

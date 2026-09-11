@@ -1845,8 +1845,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    "one class, two contracts" failure that put Broadcast's ruler 128px off its own lanes.
    The lock is the mark; the danger ink is inherited from the scope's own --c, so nothing here
    hardcodes a colour. */
-.mxcol.ownly .ownly-k{font-size:var(--t-micro);line-height:1;margin-left:3px;opacity:.85;font-weight:400}
-.mxcol.ownly{color:var(--danger-ink)}
 /* A one-way row an admin may SEE but not run. Still fully legible — the point is that they can
    read what exists and what would unlock it, not that the row is greyed into unreadability. */
 .ow-i.ow-locked{opacity:.78}
@@ -2127,16 +2125,12 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:1px solid var(--rule);padding:0 0 9px;vertical-align:bottom}
 .mx .mxs{display:block;font:600 var(--t-micro)/1.35 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3);text-align:center;padding:0 4px}
-.mx .mxs i{display:block;width:100%;height:7px;border-radius:var(--rad-1);background:var(--c);margin:0 0 8px}
 .mx .mxwho{text-align:left;min-width:190px;padding-right:14px}
 .mx tbody td{height:46px;text-align:center;vertical-align:middle}
 .mx tbody tr:hover td{background:var(--hi)}
 .mxid{display:flex;align-items:center;gap:10px;padding:7px 0}
 .mxav{width:30px;height:30px;border-radius:var(--rad-round);background:var(--avatar-a);flex-shrink:0;
   display:grid;place-items:center;font:700 var(--t-sm)/1 var(--ui);color:var(--ink);text-transform:uppercase}
-.mxn{min-width:0}
-.mxn b{display:block;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink)}
-.mxn span{display:block;font:400 var(--t-micro)/1.3 var(--data);color:var(--ink3);margin-top:1px}
 /* The label is the only thing telling one snowflake row from another, so it edits in place — and it
    STAGES rather than firing, exactly like a permission cell beside it, using the same `--staged` ring
    that marks every other pending change in this grid. A button rather than a contenteditable: it is a
@@ -2167,8 +2161,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
 .mxcell.staged{background:transparent;border:1.5px dashed var(--c)}
 .mxcell.staged::after{border-color:var(--c)}
-.mxcell.locked{cursor:not-allowed;opacity:.5}
-.mxcell.locked:hover{transform:none;border-color:var(--rule2)}
+.mxcell[role=img]{cursor:not-allowed;opacity:.5}
+.mxcell[role=img]:hover{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
 .mxrole.admin{border-color:var(--info);color:var(--info)}
@@ -2524,15 +2518,8 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
  * The grid used to offer exactly ONE interaction, repeated 28 times. A column
  * header now grants/revokes a scope for everyone and each row has all/none —
  * both tier 2, because N writes that must land together are one changeset. */
-button.mxs.mxcol{width:100%;background:none;border:0;cursor:pointer;font:inherit;padding:0 4px 0;
-  color:var(--ink3);border-radius:var(--rad-2);transition:color var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease)}
-button.mxs.mxcol:hover{color:var(--ink);background:var(--hi)}
-button.mxs.mxcol:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
 .mxn2{display:block;font:500 var(--t-micro)/1 var(--data);color:var(--ink3);margin-top:3px;
   letter-spacing:.04em;font-variant-numeric:tabular-nums}
-button.mxs.mxcol:hover .mxn2{color:var(--ink2)}
-.mxcol.spof .mxn2{color:var(--warn)}
 .mxrow{margin-left:auto;flex:none;background:none;border:1px solid var(--rule2);border-radius:var(--rad-1);
   color:var(--ink3);font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:4px 7px;cursor:pointer;opacity:0;
@@ -3062,122 +3049,117 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    (0,1,1). The pill row directly under it then touched whichever line won. One border now, drawn
    on the TH itself so it runs the group's full width rather than just under the text, with real
    room below it before the pills start. */
-.mx thead tr.mxgrp th{padding:0 0 9px;border:0;border-bottom:1px solid var(--rule2)}
-.mxgrp th span{display:block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink3);text-align:center}
-/* ══ 2026-09-11 11:16 EDT — THE GROUP IS THE PRIMARY STRUCTURE OF THIS GRID; THE COLUMN IS SECONDARY ══
-   Harkirat, 2026-09-11 09:11 EDT: "those command/manage pages heads are so confusing, what do they
-   even correspond to?" A hairline answered WHERE one group ends. It did not answer why the grid is
-   hard to read, and measuring it did:
+.mxc-name{width:auto}
+.mxc-who{width:118px}
+.mxc-held{width:78px}
+.mx thead th{vertical-align:bottom}
+.mx thead th.mxc-name{text-align:left}
+/* `.mx .mxs` centres, which is right for a person's column and wrong for the one column of prose. */
+.mx thead th.mxc-name .mxs{text-align:left}
+.mx td.mxc-name{text-align:left}
+.mx tbody.grp .gh td{text-align:left}
+.mx thead th.mxc-held{text-align:right;padding-right:16px}
+.mx tbody tr.prow td{height:38px}
 
-     · The twelve columns were sized BY THEIR LABELS. Measured before this change, at 1282px:
-       MP 24px against Destructive 98.8px -- a 4x spread, so the cells below them fell on twelve
-       irregular intervals and the matrix read as ragged rather than as a grid. The ledger records an
-       "even 66px pitch" as already done; it was not in the code, and nothing had re-measured it.
-     · The group name and the column labels were BOTH 9.5px uppercase --ink3. At a squint nothing led,
-       so the two groups -- the one fact this header exists to state -- were the weakest signal on it.
-     · The gutter rule that would have separated them, `.mxgrp + .mxgrp`, matched NOTHING: `.mxgrp` is
-       the ROW class and there is only one such row, and `.grp` was never emitted. Its own comment says
-       "a group needs a gutter, not just a caption" -- correct, and it never ran.
+/* THE GROUP HEADING is a rule, a name and a figure — and NOT a chip. Border, fill and radius each say
+   "separate object", which is the opposite of what a heading is: a property of the block beneath it.
+   ⛔ NO tier badge and NO descriptor line under it (both tried 2026-09-11 13:13 EDT and rejected): what the tier
+   MEANS is on the heading's own hover, because the fact is needed once rather than on every read. */
+.mx tbody.grp .gh td{border-bottom:0;height:auto;padding:0}
+.mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 0}
+.mx tbody.grp .ghead h4{margin:0;flex:1;font:700 15px/1.15 var(--display);letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink);cursor:help}
+.mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
+/* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
+   a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
+.mx tbody[data-grp=command] .gh td{border-top:0}
+.mx tbody[data-grp=page] .gh td{border-top:1px solid var(--rule)}
+.mx tbody[data-grp=page] .ghead h4{font-size:13.5px;color:var(--ink2)}
+.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--ink4);padding-left:20px}
+.mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--ink4)}
+.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:34px}
+.mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:14px}
+/* the bracket closes with a foot on the group's last row, so it encloses rather than merely runs alongside */
+.mx tbody.grp tr[data-last] td.mxc-name{position:relative}
+.mx tbody.grp tr[data-last] td.mxc-name::after{content:"";position:absolute;bottom:-1px;height:1px;
+  left:-1px;width:12px;background:var(--rule2)}
+.mx tbody[data-grp=command] tr[data-last] td.mxc-name::after{left:-2px;width:14px;height:2px;background:var(--ink4)}
 
-   So: an even pitch declared once in a colgroup, a real gutter COLUMN between the groups with the
-   boundary drawn down its middle, and the group name raised a step and given a band over exactly the
-   columns it governs. The band is the answer to "what do they correspond to" -- it is the width of its
-   own group, so membership is read rather than inferred. */
-.mx{table-layout:fixed}
-.mxc-who{width:190px}
-.mxc-gap{width:20px}
-.mxc-act{width:84px}
-.mxc-sc{width:auto}
-/* A REAL COLUMN, not padding on the two boundary cells: padding would eat into their content boxes and
-   leave those two swatches narrower than the other ten, re-creating the ragged edge in miniature. */
-.mx .mxgap{background:linear-gradient(var(--rule2),var(--rule2)) center/1px 100% no-repeat}
-/* The band already states the split on the group row; a second line through it would be saying it twice. */
-.mx thead tr.mxgrp th.mxgap{background:none}
-.mxgrp th.grp span{font-size:var(--t-xs);letter-spacing:.12em;color:var(--ink2);
-  background:var(--sunk);border:1px solid var(--rule);border-bottom:0;
-  border-radius:var(--rad-2) var(--rad-2) 0 0;padding:6px 10px 7px}
-/* 🔴 THE STICKY HEADER HAD NEVER WORKED ONCE, AND MY FIRST FIX HERE CLAIMED OTHERWISE.
-   `.mx thead th` has carried `position:sticky;top:0` since the matrix was written. Sticky resolves
-   against the nearest SCROLL CONTAINER, and `.mxwrap{overflow-x:auto}` is one -- `overflow-y` computes
-   to `auto` alongside it -- but `.mxwrap` has no bounded height, so it never scrolls vertically and the
-   header had nothing to stick inside. Measured after scrolling 120px: both header rows sat at -104px and
-   -70px, i.e. gone. On a permission matrix that is the whole usability question, and it is worse now the
-   labels are turned: scroll four rows and you are reading an unlabelled grid of coloured squares.
-   The wrapper only needs to scroll horizontally when the table cannot fit, and since the pitch became
-   fixed it always fits above the restack breakpoint -- so above it the wrapper stops being a scroll
-   container at all and sticky resolves against `main`, which is the element that actually scrolls.
-   ⚠️ I first wrote a two-row `top` offset here and described it as the fix. It was not: with sticky inert
-   both rules were dead, and the offset only matters once the rows can stick at all. Both are below. */
-@media (min-width:901px){.mxwrap{overflow:visible}}
-.mx thead tr.mxgrp th{top:0}
-.mx thead tr:not(.mxgrp) th{top:34.5px}
-/* ══ 2026-09-11 11:32 EDT — THE LABELS ARE HORIZONTAL AND STAGGERED ACROSS TWO TIERS ══
-   Harkirat, 2026-09-11 11:32 EDT: "I don't like the vertical text." He is right and the turned label was never the
-   goal -- it was what fitted. The constraint is real and worth writing down, because the next session
-   will meet it again: the panel gives the table 890px, the Admin and Action columns and the group
-   gutter take ~250 of it, so twelve scope columns share ~640px = 53px each. Measured label widths at
-   9.5px/.1em: ANNOUNCEMENT 86.2 · SEASON DRAFT 78.4 · DESTRUCTIVE 70.7 · PATCH NOTES 70.3. Nothing
-   over 45px of content fits, most of them do not, and the three longest are single words with no
-   break opportunity. So horizontal + even pitch + full labels is impossible in ONE row of labels.
-   It is possible in TWO. Alternating tiers give each label the pitch of its tier -- 106px, which
-   clears the widest by 20px -- and a 1px leader drops from each label to the column it names, so the
-   association is drawn rather than inferred. This is the dense-axis solution, it keeps the even pitch
-   and the group bands he approved, and every one of the twelve stays fully legible and upright.
-   ⚠️ The tier is by column INDEX, so it is stable: adding a scope re-stripes from that column on,
-   rather than shuffling labels between tiers by width. */
-.mx thead th.sc{position:relative;padding-top:62px}
-.mx .sc .mxl{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;
-  color:var(--ink3);line-height:1}
-.mx .sc .mxl[data-tier=b]{top:14px}
-.mx .sc .mxl[data-tier=a]{top:36px}
-/* The leader is the whole reason a staggered axis reads: without it the upper tier looks like a
-   caption for the pair below it. It drops from the label to the swatch that starts the column. */
-.mx .sc .mxl::after{content:"";position:absolute;left:50%;top:calc(100% + 3px);width:1px;
-  background:var(--rule2)}
-.mx .sc .mxl[data-tier=b]::after{height:34px}
-.mx .sc .mxl[data-tier=a]::after{height:12px}
-/* 🔴 A STAGGERED LABEL OVERHANGS ITS NEIGHBOURS' CELLS, AND EVERY HEADER CELL WAS PAINTING AN OPAQUE
-   BACKGROUND OVER IT. `position:sticky` creates a stacking context whatever its z-index, so each th is
-   its own layer painting in DOM order: column N+1's `background:var(--paper)` covered the right half of
-   column N's label. On screen that read as TRUNCATION -- AUTOBUIL, CALENDAF, ANNOUNCEM -- while the DOM
-   was perfectly correct, `scrollWidth === clientWidth === 86px` and `overflow:visible` on every ancestor.
-   ⚠️ A z-index on the label cannot fix this: a child cannot escape its parent's stacking context, so the
-   background has to stop being per-cell. It becomes ONE backdrop, owned by the first scope column and
-   extended right behind all of them, sitting UNDER every cell's own content because each later cell is a
-   later-painting context. The header still covers the rows it scrolls over, which is what it was for. */
-/* ⚠️ `z-index:-1`, NOT 0. At 0 the backdrop joins the positioned layer, which paints ABOVE the th's own
-   in-flow content -- so the first column's swatch and its holder count both vanished behind it while the
-   other eleven were fine, which looks like a data bug and is a paint bug. -1 puts it behind them and still
-   above the cell's own (now absent) background. And the ACTION cell drops its background for the same
-   reason the scope cells did: the last label overhangs it, and it was painting over ANNOUNCEMENT. */
-.mx thead tr:not(.mxgrp) th.sc,
-.mx thead tr:not(.mxgrp) th:last-child{background:none}
-.mx thead tr:not(.mxgrp) th.sc-first::before{content:"";position:absolute;inset:0 -2000px 0 0;
-  background:var(--paper);z-index:-1}
-/* 🔴 THE LOCK IS A GLYPH, AND A GLYPH INSIDE TURNED TEXT READS AS A TYPO. Counter-rotating it inside
-   the label put a raised mark after DESTRUCTIVE that looked like a degree sign, not a lock. It is a
-   marker on ONE of twelve columns, so it belongs at the head of its column rather than inside the
-   word: upright, centred, above the turned label, where it reads as an annotation on the column. */
-.mx .sc .ownly-k{display:block;margin:0 auto var(--s1);line-height:0}
-/* The swatch and the count sit BELOW the turned label, hard against the grid they annotate, so all
-   twelve align on one line however long their labels are (thead th is vertical-align:bottom). */
-.mx .sc .mxs i{margin:0 0 var(--s1)}
-/* 🔴 THE COUNT IS THE HEADER -- the 2026-09-10 decision said so and the code never carried it.
-   The ledger and the v3.79.0 changelog both record "16.5px tabular, --del at 0, --warn at 1"; the
-   rule in this file read var(--t-micro), 9.5px, which is the smallest size on the page. The most
-   important fact in the column was rendered as its quietest element for a day. --t-lg IS 16.5px. */
-.mx .sc .mxn2{font-size:var(--t-lg);line-height:1;color:var(--ink2);margin-top:var(--s1)}
-.mx .ownerrow td{background:rgba(255,255,255,.018)}
-.mx .ownerrow .mxav{background:var(--sunk);color:var(--ink2)}
+/* a permission is a swatch and a name, on one baseline */
+.pname{display:flex;align-items:center;gap:10px;cursor:help}
+.pname i{display:block;width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
+.pname b{font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink);letter-spacing:.01em}
+.pname .ownly-k{display:inline-flex;font-style:normal;line-height:0;color:var(--danger-ink)}
+.mx td.held{text-align:right;padding-right:16px;font:500 var(--t-lg)/1 var(--data);color:var(--ink2);
+  font-variant-numeric:tabular-nums}
+.mx td.held.spof{color:var(--warn)}
+.mx td.held.zero{color:var(--del)}
+
+/* a column head is a PERSON: identity at rest, and its two verbs only on pointer or focus */
+.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 8px 9px;
+  border-radius:var(--rad-2) var(--rad-2) 0 0;position:relative}
+.colh b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ink)}
+.colh .clbl{font:400 9.5px/1.3 var(--ui);color:var(--ink3);text-align:center;max-width:100px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.colh .built{font:400 9.5px/1.3 var(--data);color:var(--ink3);letter-spacing:.04em}
+.colh .mxav{margin-bottom:3px}
+.colacts{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;
+  transition:opacity var(--dur-1) var(--ease)}
+.colh:hover .colacts,.colh:focus-within .colacts{opacity:1}
+.colact{width:22px;height:22px;display:grid;place-items:center;border:0;border-radius:var(--rad-1);
+  background:none;color:var(--ink3);cursor:pointer}
+.colact:hover{background:var(--hi);color:var(--ink2)}
+/* the column a pending change belongs to, in that person's own edit colour */
+.mx thead th.dirty .colh{background:color-mix(in srgb,var(--ed) 11%,transparent);
+  box-shadow:inset 0 2px 0 var(--ed)}
+.mx thead th.dirty .colh b{color:var(--ed)}
+.mx td.mxc.staged{background:color-mix(in srgb,var(--ed) 6%,transparent)}
+
+/* ══ THE EDIT BARS — one per person being edited, docked under the grid ══
+   Harkirat, 2026-09-11 13:13 EDT: the controls in a column of their own were "so poorly integrated"; a bar carries
+   the person, every pending change as a chip, and its own Save and Discard, and two people edited at
+   once are two bars in two colours each committing only its own. */
+.mxbars{display:flex;flex-direction:column;gap:var(--s2);padding:0 16px}
+.mxbars:empty{display:none}
+.mxbar{display:flex;align-items:center;gap:14px;padding:10px 12px 10px 14px;border-radius:var(--rad-2);
+  border:1px solid color-mix(in srgb,var(--ed) 38%,var(--rule));
+  background:color-mix(in srgb,var(--ed) 8%,var(--paper));box-shadow:inset 3px 0 0 var(--ed)}
+.mxbar .who{display:flex;align-items:center;gap:9px;flex:none;min-width:168px}
+.mxbar .who .mxav{background:color-mix(in srgb,var(--ed) 22%,var(--raised));color:var(--ed)}
+.mxbar .who b{display:block;font:600 var(--t-sm)/1.2 var(--data);color:var(--ink)}
+.mxbar .who em{display:block;font-style:normal;font:400 9.5px/1.3 var(--ui);color:var(--ink3)}
+.mxbar .chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.bchip{display:inline-flex;align-items:center;gap:6px;font:500 var(--t-xs)/1 var(--ui);color:var(--ink2);
+  padding:5px 8px 5px 6px;border-radius:var(--rad-1);
+  background:color-mix(in srgb,var(--ed) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--ed) 26%,transparent)}
+.bchip i{display:block;width:9px;height:9px;border-radius:2px;background:var(--c);flex:none}
+.bchip s{text-decoration:none;font:600 var(--t-xs)/1 var(--data);color:var(--ed)}
+.bchip.off{opacity:.8}
+.bchip.off s{color:var(--ink3)}
+.bchip.lbl i{display:none}
+.mxbar .acts{display:flex;flex:none;height:28px;border-radius:var(--rad-1);overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--ed) 50%,var(--rule2))}
+.mxbar .acts button{border:0;height:100%;cursor:pointer;font:600 var(--t-micro)/1 var(--ui);
+  letter-spacing:.11em;text-transform:uppercase;padding:0 12px}
+.mxbar .acts .go{background:var(--ed);color:var(--on-accent)}
+.mxbar .acts .no{background:transparent;color:var(--ink3);
+  border-left:1px solid color-mix(in srgb,var(--ed) 34%,var(--rule2))}
+.mxbar .acts .no:hover{color:var(--ink);background:color-mix(in srgb,var(--ed) 12%,transparent)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
  * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
  * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
 .mxcell{width:16px;height:16px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:block;margin:0 auto;padding:0;cursor:default}
 .mxcell.on{background:var(--c);border-color:var(--c)}
-.mxcell.inh{background:transparent;border:2px solid var(--c);opacity:.85}
-.mxcell.locked{opacity:.55}
+/* 🔴 THE RING NAMES ITS SOURCE. An inherited page did not come from nowhere -- a command carries it --
+   so the ring wears that command's colour rather than the page's own, and reading down a column tells you
+   WHICH grant is doing the covering. `--from` is set only on an inherited cell; the fallback keeps a cell
+   legible if a future conferring command has no colour yet. Harkirat, 2026-09-11 13:13 EDT. */
+.mxcell.inh{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
+.mxcell.pend{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
+/* The owner's cells are stated, not editable -- and they are the only ones rendered as role="img". */
+.mxcell[role=img]{opacity:.55;cursor:default}
 /* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
    Harkirat: "the orange ring is just bad. it hides and swallows the color it's surrounding."
    Measured on the header bars: a 22x7px pill with a 2px ring loses roughly HALF its visible
@@ -3216,10 +3198,6 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .scope .flag{justify-self:end;font:600 var(--t-xs)/1 var(--ui);letter-spacing:.03em;color:var(--warn);
   border:1px solid rgba(242,153,74,.4);border-radius:var(--rad-pill);padding:4px 9px;white-space:nowrap}
 .scope.spof{background:linear-gradient(90deg,rgba(242,153,74,.07),transparent 60%)}
-.holder{display:inline-block;padding:2px 7px;border-radius:var(--rad-pill);border:1px solid var(--rule2);
-  background:var(--sunk);font:500 var(--t-xs)/1.5 var(--mono);color:var(--ink2)}
-.tokgrid{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
-.tokgrid .chip.inh{opacity:.72;border-style:dashed}
 
 /* ═══════════════ BROADCAST — the delivery queue + never-ending bars ═══════════════ */
 /* A bar with expiresAt:null has NO RIGHT EDGE. A bar that stops reads as an end date, and
@@ -4258,13 +4236,11 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 .mxcell.pend.off{background:transparent;border-color:var(--danger-edge)}
 .mxcell.pend.off::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
   background:var(--danger-ink);transform:translate(-50%,-50%)}
-.mx tbody tr:hover .mxcell:not(.locked){border-color:var(--ink4)}
+.mx tbody tr:hover .mxcell:not([role=img]){border-color:var(--ink4)}
 /* 🔴 THE FLEX GOES ON AN INNER SPAN, NOT ON THE <td>. `display:flex` on a table cell takes
    it out of the table's own layout — it stops participating in column sizing, which is the
    one job a cell has. Caught by the audit's own rule the first time this rendered; the same
    rule exists because a previous cell had done it and shifted a whole column. */
-.mxact{white-space:nowrap;text-align:right}
-.mxact .mxacts{display:inline-flex;gap:4px;align-items:center;justify-content:flex-end}
 /* The batched confirm groups its two halves rather than running one list of mixed signs —
    reading "granting 3 / revoking 1" is the thing that makes a batch safer than four clicks. */
 .acg{margin-top:14px}

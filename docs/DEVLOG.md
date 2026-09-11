@@ -242,6 +242,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-11 10:50 EDT — the masthead's row-1 height is governed, and the filed fix was the wrong lever (v3.79.0-pre)
 - 2026-09-11 11:27 EDT — the Access matrix is a grid again, and four defects no gate could see (v3.79.0-pre)
 - 2026-09-11 11:39 EDT — the matrix labels come off their side, and a sticky header that painted over itself (v3.79.0-pre)
+- 2026-09-11 13:25 EDT — the Access matrix turns ninety degrees, and three rejected label fixes were all the wrong question (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4262,6 +4263,20 @@ The first looked like data loss. Every one of the twelve labels rendered visibly
 The second was `portalReverseOrphans` reporting `mxl-a` and `mxl-b` as rules nothing emits. They were emitted. It resolves `'base' + (cond ? ' extra' : '')` and not a ternary whose branches are both non-empty, so a two-value class reads as two orphans. The tempting fix is to re-baseline the finding, which would have put a false positive in the baseline permanently; the honest one is that a tier is not really a class anyway. `data-tier` says the same thing with an attribute selector, outside the class scanner entirely.
 
 Also in the same pass, and from him: the header's staged chip measured 133×53px, the full height of the header bar, with *"staged · review"* wrapped to two lines inside it, because `align-items:stretch` let it take the row's height. It is a wayfinding chip, not a primary action.
+
+## 2026-09-11 13:25 EDT — the Access matrix turns ninety degrees, and three rejected label fixes were all the wrong question (v3.79.0-pre)
+
+Three label treatments were built and rejected in a row — turned, staggered, abbreviated — and the fourth attempt was not another label treatment. Twelve scope columns share 640px of an 890px table, so 53px each, while ANNOUNCEMENT measures 86.2px with no break opportunity. The long axis was pointed the wrong way: there are twelve permissions and a handful of people. Permissions are rows now.
+
+**The lesson is not "transpose sooner", it is that the constraint was measurable from the first attempt and I kept solving downstream of it.** The 53px figure and the 86.2px figure existed before the turned labels shipped; what I did with them was design around them three times rather than ask what produced them. Harkirat rejected each attempt in one line, and each rejection cost a build, a gate run and a records pass.
+
+Three smaller things came out of the rebuild, and two of them are the same shape as each other.
+
+The transpose silently dropped the inline label editor. It lived in the old row's identity cell and is the only way to rename an admin — the drawer that would replace it is a filed, unbuilt item — so removing the row removed the feature, and nothing failed. It is back in the column head.
+
+`portalReverseOrphans` reported four classes as rules nothing emits, and all four were emitted. It resolves `'base' + (cond ? ' extra' : '')` and not a concatenation ending in a variable or a two-branch ternary, so `g-command`, `g-page`, `grpend` and `locked` read as orphans. The tempting fix is to re-record the baseline, which would have put four false positives in it permanently; the honest one is that none of those four was really a class. Three became data attributes and the fourth became the `role="img"` the owner's cells already carry.
+
+And a design decision with a written rationale got overruled, correctly. A scope's colour was the realm it governs, and COMPANION §4.2 defends that: inventing an eighth accent would put a colour on screen that means nothing anywhere else. Harkirat's ruling is that the rule has to bend for this panel specifically, because it grants access inside the Discord bot rather than the portal, and the portal's own access scoping does not exist yet. Worth recording because the rule is still right everywhere else — what changed is the scope of its claim, not its truth.
 
 # Part B — Lessons Ledger (thematic)
 

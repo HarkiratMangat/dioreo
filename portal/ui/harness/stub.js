@@ -474,7 +474,18 @@ const ROUTES = [
             'manage.loadouts_mp': 'armory', 'manage.loadouts_dmz': 'armory',
             'manage.announcement': 'broadcast',
         };
-        const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({ ...s, realm: s.realm || REALM[s.key] || null }));
+        // ⚠️ AND THE LABELS, for the same reason and with the same risk: PAGE_LABELS/COMMAND_LABELS live in
+        // portal/api/access.js, the exported fixture predates the 2026-09-11 13:14 EDT renames, and a harness showing
+        // "MP" where production shows "MP Loadouts" is the instrument disagreeing with the product about the
+        // one thing this grid is made of. Reproduced rather than imported because the stub runs in the browser.
+        const LABEL = {
+            destructive: 'Destructive',
+            'manage.loadouts_mp': 'MP Loadouts', 'manage.loadouts_dmz': 'DMZ Loadouts',
+            'manage.season': 'Season Title/Dates', 'manage.announcement': 'Announcements',
+        };
+        const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({
+            ...s, realm: s.realm || REALM[s.key] || null, label: LABEL[s.key] || s.label,
+        }));
         return { scopes, admins: FIX.accessAdmins || [] };
     }],
     // ⚠️ THE FLAG CHANGES THE NUMBERS HERE TOO, or the toggle is a control that visibly does nothing — which is the exact defect class this branch has spent its life finding. The real route re-runs the aggregations with `isAdmin` unfiltered; the harness cannot, so it scales the two counts by a fixed fraction and says so. It demonstrates that the control reaches the server and the page re-reads; it does not claim to be the real ratio.
