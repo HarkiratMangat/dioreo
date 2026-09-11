@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T21:56:53.866Z",
-  "commit": "8f056680",
+  "recordedAt": "2026-09-11T22:06:35.378Z",
+  "commit": "a2672836",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,9 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 408,
+        "examined": 410,
         "nearMisses": 13,
-        "sizeIssues": 140,
+        "sizeIssues": 138,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
@@ -149,8 +149,6 @@
           "root>b|TOP-OFFSET",
           "root>b|TOP-OFFSET",
           "root>b|TOP-OFFSET",
-          "sess>sdot|h",
-          "sess>sdot|w",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]
@@ -174,9 +172,9 @@
     },
     "By permission": {
       "grid": {
-        "examined": 223,
+        "examined": 225,
         "nearMisses": 10,
-        "sizeIssues": 11,
+        "sizeIssues": 9,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
@@ -185,8 +183,6 @@
           "hs>holder|w",
           "mxfoot>span|TOP-OFFSET",
           "root>b|TOP-OFFSET",
-          "sess>sdot|h",
-          "sess>sdot|w",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]

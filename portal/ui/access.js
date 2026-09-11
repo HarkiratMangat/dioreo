@@ -21,6 +21,17 @@ function relTime(value) {
     return `${Math.round(secs / 86400)}d ago`;
 }
 
+// 🔴 SPELLED OUT, NOT ABBREVIATED, AND ONLY HERE. `relTime` above is the portal's compact form -- "4d ago" -- and it stays that way for every other caller. On a session that has gone quiet the age IS the headline, printed in red beside nothing else, and "4 days ago" is what Harkirat asked for in his own words at 2026-09-11 18:03 EDT. No seconds at any point, by his instruction and because a number that changes while you read it is noise rather than information.
+function longAgo(value) {
+    if (!value) return 'unknown';
+    const secs = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 1000));
+    const unit = (n, word) => `${n} ${word}${n === 1 ? '' : 's'} ago`;
+    if (secs < 90) return 'moments ago';
+    if (secs < 5400) return unit(Math.round(secs / 60), 'minute');
+    if (secs < 172800) return unit(Math.round(secs / 3600), 'hour');
+    return unit(Math.round(secs / 86400), 'day');
+}
+
 // D1/pin32 — the always-visible `.addrow` (the block this replaces) rendered at the FOOT of the whole grid and did nothing when clicked from the masthead's "+ Grant access" button beyond scrolling to it ("the portal literally does nothing"). It is now a drawer, opened from the masthead, matching Broadcast's PostForm (portal/ui/broadcast.js:248) — a real modal with its own typed-confirmation gate, rather than a form permanently sitting under the table.
 //
 // 🔴 pin32: A DISCORD ID TYPED INTO A BOX WAS NEVER CHECKED AGAINST DISCORD ITSELF. Nothing stopped an admin from granting a typo'd id, or an id for an account that does not exist — the grant would silently succeed and sit in the grid as an unreachable row. GET /api/discord/user (portal/api/access.js) resolves the id against the bot's own Discord API access before Grant is allowed to enable, and the preview card (avatar/username/globalName/id) is the thing that lets a human actually confirm "yes, that's them" rather than trusting a string of digits.
@@ -252,12 +263,15 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
 // ⚠️ THIS REPLACES THE MANIFEST ON THIS REALM RATHER THAN JOINING IT. The Access mockup has no manifest at all — sessions are a view — and the portal had put them in the shared table, which is how the hardcoded state got there in the first place. Two lists of one thing is the defect this branch has spent its life removing. sessionIsLive/sessionSummary come from access.logic.js, loaded as a classic script — see that file for why fifteen minutes, and for the hardcoded `state: 'live'` this replaces. The design's own `fmt` is `toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})`. UTC is not a detail: a grant written at 20:00 EDT is the next day in local time, so a date rendered in the reader's zone can name a day the record does not. A scope reads in the colour of the realm it reaches, on BOTH views — the design sets --c on every scope row and every grid column. It lived inside ByAdmin, so the By-permission list drew its dots grey.
 
 
-// 🔴 A ROW IS ITS OWN COMPONENT BECAUSE THE TINT IS A HOOK. `useAvatarTint` cannot be called inside a `.map`, so the row that needs one has to be a component -- the same reason the drawer's bar could do it inline and this could not. Same mesh as the drawer's identity bar, from the same avatar, for the reason he gave: "it helps easily identify the user." Harkirat, 2026-09-11 17:44 EDT.
+// 🔴 A ROW IS ITS OWN COMPONENT BECAUSE THE TINT IS A HOOK. `useAvatarTint` cannot be called inside a `.map`, so the row that needs one has to be a component -- the same reason the drawer's bar could do it inline and this could not. Same mesh as the drawer's identity bar, from the same avatar, for the reason he gave: "it helps easily identify the user." Harkirat, 2026-09-11 17:44 EDT. 🔴 THE GROUND IS THE STATE, NOT THE PERSON, AND THAT IS A REVERSAL. The row carried a mesh derived from the viewer's avatar for about ten minutes; Harkirat looked at it beside the green glow the live dot was already casting and chose the glow -- 2026-09-11 18:03 EDT, "i like this background color design... maybe just leave them all as this color and instead just implement the user's avatar on the far left." It is the better call for a reason worth writing down: this panel answers "who is signed in and are they still here", and a ground that varies by PERSON spends the one continuous visual channel on the question the avatar already answers, leaving the question that actually matters -- live or gone -- to a dot. One `--live` token now drives the glow, the pulsar and the age, so a session going quiet turns the whole row red at once rather than in three separate places that could disagree.
 function SessionRow({ s, live, name, user, onEnd }) {
-    const tint = useAvatarTint(user ? user.avatarUrl : null);
     return html`
-        <div class=${'sess' + (live ? '' : ' stale')} data-mesh=${tint ? 'y' : null}
-             style=${tint ? `--m1:${tint[0]};--m2:${tint[1] || tint[0]};--m3:${tint[2] || tint[1] || tint[0]}` : null}>
+        <div class=${'sess' + (live ? '' : ' stale')}>
+            <!-- Edge to edge: no padding, no radius of its own, clipped by the row's own corners. The face is
+                 the identifier; the glow beside it is the state. -->
+            <span class=${'savatar' + (user && user.avatarUrl ? ' has' : '')} aria-hidden="true"
+                  style=${user && user.avatarUrl ? `--av-src:url(${user.avatarUrl})` : null}
+                  >${user && user.avatarUrl ? null : html`<b>${(name || '?').slice(0, 1).toUpperCase()}</b>`}</span>
             <span class="sdot" aria-hidden="true"></span>
             <span class="sessb">
                 <b>${name}</b>
@@ -265,15 +279,20 @@ function SessionRow({ s, live, name, user, onEnd }) {
             </span>
             <!-- 🔴 WHEN THEY WERE LAST HERE IS THE FACT THIS PANEL EXISTS FOR, and it was the tail of a
                  130-character user-agent string -- the least readable position on the row, after the part
-                 nobody reads. It is its own column now, with a label over it, in the same shape the drawer's
-                 identity bar uses for provenance. Harkirat, 2026-09-11 17:44 EDT: "it's currently buried with
-                 the browser info." -->
-            <span class="seen"><em>${live ? 'Active' : 'Last seen'}</em><b>${relTime(s.lastSeenAt)}</b></span>
+                 nobody reads. Its own column, with a label over it, and on a quiet session the age becomes
+                 the headline and is spelled out in full. -->
+            <span class="seen"><em>${live ? 'Active' : 'Last seen'}</em><b>${live ? 'now' : longAgo(s.lastSeenAt)}</b></span>
             <button class="chip danger" onClick=${() => onEnd([s.sessionHash])}>End session</button>
         </div>`;
 }
 
 function Sessions({ sessions, onEnd, ttlHours, nameOf, who }) {
+    // 🔴 "4 days ago" HAS TO BECOME "5 days ago" WITHOUT A RELOAD, and nothing here re-rendered on its own: every age was computed once, at mount, and then sat there being slowly wrong. A session that crosses the 15-minute line also has to STOP being live while you are looking at it. 30s is the coarsest tick that cannot visibly lag a minutes-resolution label. Harkirat, 2026-09-11 18:03 EDT: "with it updating live".
+    const [, tick] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => tick((n) => n + 1), 30000);
+        return () => clearInterval(id);
+    }, []);
     const now = Date.now();
     return html`
         <!-- ⚠️ A section WITH A LANDMARK NAME, and an id the stylesheet can reach. access.html declares

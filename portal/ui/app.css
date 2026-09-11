@@ -2226,30 +2226,33 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* ── ACCESS · sessions ─────────────────────────────────────────────────────*/
 .sesslist{display:flex;flex-direction:column;gap:9px;padding:16px}
-/* 🔴 THE ROW IS AN INSET SURFACE NOW, AND THAT IS WHAT MAKES THE TINT BOTH VISIBLE AND LEGAL. Raising the
-   mix on a `--raised` ground to make it perceptible took the user-agent line to 3.5:1 on a real avatar and
-   2.06:1 on a white one, both under AA -- I had measured exactly this on the drawer's bar and then not
-   re-measured after changing the ground underneath it. `--sunk` is the drawer bar's own ground, it is much
-   darker, so a LOW mix reads clearly against it and the text keeps its headroom. Same rule, same numbers,
-   same surface as the thing he asked this to match. */
-.sess{display:grid;grid-template-columns:18px 1fr auto auto;gap:14px;align-items:center;
-  background:var(--sunk);border:1px solid var(--rule);border-radius:var(--rad-2);padding:12px 14px}
-.sess:hover{border-color:var(--rule2)}
+/* ══ A SESSION ROW ══ face on the left, state everywhere else ════════════════════════════════════════
+   🔴 ONE TOKEN DRIVES THE WHOLE ROW'S STATE. `--live` is green while somebody is here and red once they are
+   not, and the glow, the pulsar and the age all read it -- so a session going quiet cannot turn red in two
+   places and stay green in a third. That failure mode is not hypothetical on this surface: the row already
+   carried a `.stale` class that changed the dot and nothing else.
+   ⚠️ THE AVATAR IS EDGE TO EDGE, which is why the padding lives on the CONTENT and not on the row, and why
+   the row clips. A square that stops short of the border is a thumbnail; one that meets it is a face. */
+.sess{--live:var(--ok);
+  display:grid;grid-template-columns:auto 18px 1fr auto auto;gap:0 14px;align-items:center;
+  background:
+    radial-gradient(58% 320% at 4% 50%, color-mix(in srgb,var(--live) 15%,var(--sunk)) 0%, transparent 72%),
+    radial-gradient(34% 220% at 22% 0%, color-mix(in srgb,var(--live) 9%,var(--sunk)) 0%, transparent 70%),
+    var(--sunk);
+  border:1px solid color-mix(in srgb,var(--live) 22%,var(--rule));border-radius:var(--rad-2);
+  padding:0 14px 0 0;min-height:64px;overflow:hidden}
+.sess.stale{--live:var(--del)}
+.sess .savatar{align-self:stretch;width:64px;flex:none;display:grid;place-items:center;
+  background:var(--sunk);border-right:1px solid color-mix(in srgb,var(--live) 18%,var(--rule))}
+.sess .savatar.has{background:var(--av-src) center/cover no-repeat,var(--sunk)}
+.sess .savatar b{font:600 var(--t-lg)/1 var(--data);color:var(--ink3)}
+/* A session that is gone should not have a face lit like one that is here. */
+.sess.stale .savatar.has{filter:grayscale(.55) brightness(.78)}
+.sess:hover{border-color:color-mix(in srgb,var(--live) 42%,var(--rule))}
 /* The drawer's identity bar rule, applied to a row: same mix into the ground rather than an alpha wash, same
    bounded result. `--raised` here instead of `--sunk` because that is this row's own ground. */
-/* 🔴 IT WAS THERE AND IT WAS INVISIBLE, WHICH IS THE SAME AS NOT BEING THERE. Harkirat, 2026-09-11 17:51 EDT:
-   "how does this bar = my avatar colors?" -- a fair question, because at 12/8/7 percent spread across a
-   1300px row the wash was under a point of luminance and what he could actually see was the green dot's own
-   halo. Two changes: the mix is roughly doubled, and the blobs are pulled into the LEFT THIRD, beside the
-   name, so the colour lands where the identity is and fades out under the user-agent string rather than
-   being smeared across the whole row at homeopathic strength. */
-.sess[data-mesh]{background:
-  radial-gradient(50% 300% at 0% 50%, color-mix(in srgb,var(--m1) 11%,var(--sunk)) 0%, transparent 74%),
-  radial-gradient(32% 200% at 14% 0%, color-mix(in srgb,var(--m2) 8%,var(--sunk)) 0%, transparent 72%),
-  radial-gradient(38% 240% at 28% 100%, color-mix(in srgb,var(--m3) 6%,var(--sunk)) 0%, transparent 76%),
-  var(--sunk);
-  border-color:color-mix(in srgb,var(--m1) 30%,var(--rule))}
-.sess[data-mesh]:hover{border-color:color-mix(in srgb,var(--m1) 44%,var(--rule))}
+/* The avatar-derived mesh lived here from 2026-09-11 17:44 until 18:03 EDT and is deliberately gone: the
+   ground states the SESSION'S state now, and the avatar states whose it is. See SessionRow's own note. */
 /* 🔴 A LIVE DOT THAT DOES NOT MOVE IS A PAINTED CLAIM. ⚠️ TWO CARDS OF HIS DESIGN SYSTEM ARE MIXED HERE ON
    PURPOSE, AND I NAMED THE WRONG ONE FIRST. The brief is card #04 HAWKING PULSAR -- a pulsing glow, a slow
    ring, a black core with a white hairline, a small bright centre -- but #04 has no CSS of its own: it is
@@ -2274,17 +2277,17 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    Both are scale adaptations, not corrections; the conic lead, the white ring, the black core and the two
    periods are the source's. */
 .sess .sdot{position:relative;width:18px;height:18px;border-radius:var(--rad-round);
-  box-shadow:0 0 10px 1px color-mix(in srgb,var(--ok) 22%,transparent)}
+  box-shadow:0 0 10px 1px color-mix(in srgb,var(--live) 22%,transparent)}
 .sess .sdot::before{content:"";position:absolute;inset:-2px;border-radius:inherit;
-  background:conic-gradient(from 0deg,#fff 0%,var(--ok) 22%,
-    color-mix(in srgb,var(--ok) 22%,transparent) 48%,transparent 64%,
-    color-mix(in srgb,var(--ok) 70%,transparent) 86%,#fff 100%);
+  background:conic-gradient(from 0deg,#fff 0%,var(--live) 22%,
+    color-mix(in srgb,var(--live) 22%,transparent) 48%,transparent 64%,
+    color-mix(in srgb,var(--live) 70%,transparent) 86%,#fff 100%);
   filter:blur(1.6px);opacity:.85;
   animation:void-spin 2.4s linear infinite}
 .sess .sdot::after{content:"";position:absolute;inset:3px;border-radius:inherit;
   background:var(--desk);border:1.5px solid color-mix(in srgb,#fff 82%,transparent);
-  box-shadow:0 0 7px 1px color-mix(in srgb,var(--ok) 55%,transparent),
-             inset 0 0 6px 0 color-mix(in srgb,var(--ok) 60%,transparent);
+  box-shadow:0 0 7px 1px color-mix(in srgb,var(--live) 55%,transparent),
+             inset 0 0 6px 0 color-mix(in srgb,var(--live) 60%,transparent);
   animation:void-shimmer 2.4s ease-in-out infinite alternate}
 /* 🔴 THE TWO PERIODS LOCK 2:1 RATHER THAN DRIFTING, and that is the whole of the "better sync" he asked for
    at 2026-09-11 17:55 EDT. They were 1.8s and 3s: the shimmer ALTERNATES, so its true period is 6s against a
@@ -2295,13 +2298,18 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    obviously. */
 @keyframes void-spin{to{transform:rotate(360deg)}}
 @keyframes void-shimmer{
-  0%{transform:scale(.97);box-shadow:0 0 5px 0 color-mix(in srgb,var(--ok) 42%,transparent),
-       inset 0 0 4px 0 color-mix(in srgb,var(--ok) 45%,transparent)}
-  100%{transform:scale(1.04);box-shadow:0 0 10px 2px color-mix(in srgb,var(--ok) 70%,transparent),
-        inset 0 0 8px 0 color-mix(in srgb,var(--ok) 75%,transparent)}}
+  0%{transform:scale(.97);box-shadow:0 0 5px 0 color-mix(in srgb,var(--live) 42%,transparent),
+       inset 0 0 4px 0 color-mix(in srgb,var(--live) 45%,transparent)}
+  100%{transform:scale(1.04);box-shadow:0 0 10px 2px color-mix(in srgb,var(--live) 70%,transparent),
+        inset 0 0 8px 0 color-mix(in srgb,var(--live) 75%,transparent)}}
 /* A session last seen an hour ago is not live, and nothing about it should breathe. */
-.sess.stale .sdot{width:10px;height:10px;margin:4px;background:var(--ink4);border:0;box-shadow:none;animation:none}
-.sess.stale .sdot::before,.sess.stale .sdot::after{display:none;animation:none}
+/* 🔴 THE SAME OBJECT, FROZEN AND RED -- not a different, smaller dot. Replacing it with a grey pip made the
+   two states two unrelated marks, so a reader had to learn both; a stopped pulsar is legible as the live one
+   with the life taken out of it, which is exactly the fact. Harkirat, 2026-09-11 18:03 EDT: "the animation
+   would stop animating and change to a static version of it in red shading." */
+.sess.stale .sdot,.sess.stale .sdot::before,.sess.stale .sdot::after{animation:none}
+.sess.stale .sdot::before{opacity:.55;transform:rotate(38deg)}
+.sess.stale .sdot::after{transform:scale(1)}
 /* Frozen, not removed: the pulsar's resting frame is still a lit core inside a ring, which is the fact. */
 /* Frozen, not removed: the resting frame is still a lit core inside a ring, which is the fact it states. */
 @media (prefers-reduced-motion:reduce){
@@ -2316,8 +2324,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   padding-right:14px;border-right:1px solid var(--rule);text-align:right}
 .sess .seen em{font-style:normal;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
-.sess .seen b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ok);white-space:nowrap}
-.sess.stale .seen b{color:var(--ink2)}
+.sess .seen b{font:600 var(--t-sm)/1.2 var(--data);color:var(--live);white-space:nowrap}
 .sesscur{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ok);border:1px solid var(--ok);border-radius:var(--rad-1);padding:3px 7px}
 
