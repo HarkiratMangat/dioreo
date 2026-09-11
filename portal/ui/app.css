@@ -2161,7 +2161,10 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
 .mxcell.staged{background:transparent;border:1.5px dashed var(--c)}
 .mxcell.staged::after{border-color:var(--c)}
-.mxcell[role=img]{cursor:not-allowed;opacity:.5}
+/* The owner's column is a STATEMENT, not a disabled control: it is quieted by its ground rather than
+   by fading its marks, which read as broken rather than as built-in. */
+.mx td.mxc.owncol,.mx thead th.owncol{background:color-mix(in srgb,var(--sunk) 55%,transparent)}
+.mx thead th.owncol{border-radius:var(--rad-2) var(--rad-2) 0 0}
 .mxcell[role=img]:hover{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
@@ -3049,8 +3052,9 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    (0,1,1). The pill row directly under it then touched whichever line won. One border now, drawn
    on the TH itself so it runs the group's full width rather than just under the text, with real
    room below it before the pills start. */
-.mxc-name{width:auto}
-.mxc-who{width:118px}
+.mx{table-layout:fixed}
+.mxc-name{width:200px}
+.mxc-who{width:auto}
 .mxc-held{width:78px}
 .mx thead th{vertical-align:bottom}
 .mx thead th.mxc-name{text-align:left}
@@ -3066,7 +3070,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    ⛔ NO tier badge and NO descriptor line under it (both tried 2026-09-11 13:13 EDT and rejected): what the tier
    MEANS is on the heading's own hover, because the fact is needed once rather than on every read. */
 .mx tbody.grp .gh td{border-bottom:0;height:auto;padding:0}
-.mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 0}
+.mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 45px}
 .mx tbody.grp .ghead h4{margin:0;flex:1;font:700 15px/1.15 var(--display);letter-spacing:.06em;
   text-transform:uppercase;color:var(--ink);cursor:help}
 .mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
@@ -3075,15 +3079,15 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx tbody[data-grp=command] .gh td{border-top:0}
 .mx tbody[data-grp=page] .gh td{border-top:1px solid var(--rule)}
 .mx tbody[data-grp=page] .ghead h4{font-size:13.5px;color:var(--ink2)}
-.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--ink4);padding-left:20px}
-.mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--ink4)}
+.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--rule2);padding-left:20px}
+.mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--rule2)}
 .mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:34px}
 .mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:14px}
 /* the bracket closes with a foot on the group's last row, so it encloses rather than merely runs alongside */
 .mx tbody.grp tr[data-last] td.mxc-name{position:relative}
 .mx tbody.grp tr[data-last] td.mxc-name::after{content:"";position:absolute;bottom:-1px;height:1px;
   left:-1px;width:12px;background:var(--rule2)}
-.mx tbody[data-grp=command] tr[data-last] td.mxc-name::after{left:-2px;width:14px;height:2px;background:var(--ink4)}
+.mx tbody[data-grp=command] tr[data-last] td.mxc-name::after{left:-2px;width:14px;height:2px;background:var(--rule2)}
 
 /* a permission is a swatch and a name, on one baseline */
 .pname{display:flex;align-items:center;gap:10px;cursor:help}
@@ -3114,6 +3118,17 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   box-shadow:inset 0 2px 0 var(--ed)}
 .mx thead th.dirty .colh b{color:var(--ed)}
 .mx td.mxc.staged{background:color-mix(in srgb,var(--ed) 6%,transparent)}
+
+/* ══ THE LEGEND — a MARK and what it means, one row each ══
+   It replaced a foot of three sentences, two of which described a mark that a swatch states in a
+   fraction of the width. Harkirat approved this shape in the artifact before the grid was built. */
+.mxlegend-box{display:flex;flex-direction:column;gap:9px;margin:0 16px;padding:14px 16px;
+  border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper)}
+.mxlegend-box .lrow{display:flex;align-items:center;gap:12px;font-size:var(--t-sm);color:var(--ink3)}
+.mxlegend-box .lrow b{color:var(--ink);font-weight:600}
+.mxlegend-box .k{display:flex;align-items:center;gap:7px;flex:none;min-width:124px;color:var(--ink2);
+  font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase}
+.mxlegend-box .mxlegend.sw{width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);border:0}
 
 /* ══ THE EDIT BARS — one per person being edited, docked under the grid ══
    Harkirat, 2026-09-11 13:13 EDT: the controls in a column of their own were "so poorly integrated"; a bar carries
@@ -3149,7 +3164,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
  * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
  * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
-.mxcell{width:16px;height:16px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
+.mxcell{width:16px;height:16px;border-radius:var(--rad-1);border:1px solid var(--rule2);background:transparent;
   display:block;margin:0 auto;padding:0;cursor:default}
 .mxcell.on{background:var(--c);border-color:var(--c)}
 /* 🔴 THE RING NAMES ITS SOURCE. An inherited page did not come from nowhere -- a command carries it --
@@ -3159,7 +3174,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mxcell.inh{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
 .mxcell.pend{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
 /* The owner's cells are stated, not editable -- and they are the only ones rendered as role="img". */
-.mxcell[role=img]{opacity:.55;cursor:default}
+.mxcell[role=img]{opacity:.9;cursor:default}
 /* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
    Harkirat: "the orange ring is just bad. it hides and swallows the color it's surrounding."
    Measured on the header bars: a 22x7px pill with a 2px ring loses roughly HALF its visible

@@ -287,7 +287,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         const willBe = pend === true ? ' — pending: will be granted'
             : pend === false ? ' — pending: will be revoked' : '';
         if (isOwner) {
-            return html`<td key=${a.discordId} class="mxc"><span class=${cls} role="img" aria-checked="true" style=${style}
+            return html`<td key=${a.discordId} class="mxc owncol"><span class=${cls} role="img" aria-checked="true" style=${style}
                 aria-label=${`${sc.label}: held by the owner, not editable`}
                 data-tip="The owner short-circuits every check"></span></td>`;
         }
@@ -327,7 +327,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                     const n = dirtyOf(a);
                                     const nv = noteNow(a);
                                     return html`
-                                        <th key=${a.discordId} class=${(n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
+                                        <th key=${a.discordId} class=${(isOwner ? 'owncol ' : '') + (n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
                                             style=${`--ed:${editColor(a)}`}>
                                             <div class="colh">
                                                 ${isOwner ? null : html`
@@ -430,13 +430,19 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                     })}
                 </div>
 
-                <div class="mxfoot">
-                    <span class="mxkey">
-                        <span><span class="mxlegend on"></span>direct</span>
-                        <span><span class="mxlegend inh"></span>inherited</span>
-                    </span>
-                    <span><b>An inherited cell cannot be turned off on its own</b> — switching it off means revoking the thing that covers it, which is <code>manage</code></span>
-                    <span>the ring on an inherited cell is <b>the colour of the command it came from</b>, and the swatch beside a permission is that permission's own.</span>
+                <div class="mxlegend-box">
+                    <div class="lrow">
+                        <span class="k"><span class="mxlegend on"></span>Filled</span>
+                        <span>Granted <b>directly</b>. The fill is that permission's own colour.</span>
+                    </div>
+                    <div class="lrow">
+                        <span class="k"><span class="mxlegend inh"></span>Ringed</span>
+                        <span>Inherited — and <b>the ring is the colour of the command it came from</b>. An inherited cell cannot be turned off on its own: switching it off means revoking the thing that covers it, which is the <code>manage</code> token</span>
+                    </div>
+                    <div class="lrow">
+                        <span class="k">${(commands.slice(0, 3)).map((sc) => html`<span key=${sc.key} class="mxlegend sw" style=${`--c:${accentOf(sc)}`}></span>`)}Colour</span>
+                        <span>Every permission has <b>its own</b>, in the grid and in an edit bar's chips.</span>
+                    </div>
                 </div>
                 <p class="racknote">${scopes.length} permissions: ${commands.length} commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and ${pages.length} <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo.</p>
             `}

@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T17:19:58.373Z",
-  "commit": "fbaad860",
+  "recordedAt": "2026-09-11T17:35:03.656Z",
+  "commit": "006eabe5",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,9 +9,9 @@
   "views": {
     "By admin": {
       "grid": {
-        "examined": 367,
-        "nearMisses": 19,
-        "sizeIssues": 111,
+        "examined": 375,
+        "nearMisses": 21,
+        "sizeIssues": 118,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -31,6 +31,7 @@
           "grp>prow|TOP-OFFSET",
           "grp>prow|TOP-OFFSET",
           "l>i|TOP-OFFSET",
+          "lrow>k|h",
           "mxc-name>pname|TOP-OFFSET",
           "mxc-name>pname|TOP-OFFSET",
           "mxc-name>pname|TOP-OFFSET",
@@ -68,7 +69,6 @@
           "mxc>mxcell|TOP-OFFSET",
           "mxc>mxcell|TOP-OFFSET",
           "mxc>mxcell|TOP-OFFSET",
-          "mxfoot>span|TOP-OFFSET",
           "pname>b|TOP-OFFSET",
           "pname>b|TOP-OFFSET",
           "pname>b|TOP-OFFSET",
@@ -109,6 +109,16 @@
           "prow>mxc-name|TOP-OFFSET",
           "prow>mxc-name|TOP-OFFSET",
           "prow>mxc-name|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
+          "prow>mxc.owncol|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
@@ -119,9 +129,6 @@
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
           "prow>mxc|TOP-OFFSET",
-          "root>b|TOP-OFFSET",
-          "root>colh|TOP-OFFSET",
-          "root>colh|h",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]
