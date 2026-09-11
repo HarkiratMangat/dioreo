@@ -7,6 +7,14 @@
 let installed = false;
 
 export function installTips() {
+    // 🔴 OFF ACROSS THE WHOLE PORTAL, 2026-09-11 14:20 EDT, Harkirat: "fuck off with these pop-up hints.
+    // They're ugly, terribly implemented and integrated, and they're more annoying than they are helpful.
+    // Completely remove them across the entire portal until i decide to fully revamp their design."
+    // The runtime is disabled rather than every `data-tip` stripped: one line to reverse when the redesign
+    // happens, and no attribute churn across ten realm files in the meantime. Filed as near-future work.
+    return;
+}
+export function installTipsDisabled() {
     if (installed || typeof document === 'undefined') return;
     installed = true;
 

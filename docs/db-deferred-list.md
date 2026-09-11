@@ -970,6 +970,19 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 | M | Opus5-High]` THE PORTAL SHOWS TRUNCATED DISCORD IDS WHERE IT SHOULD SHOW PEOPLE - filed 2026-09-11 14:27 EDT
+
+Harkirat, 2026-09-11 14:27 EDT: *"Gee i didn't know my name was ...632283"* and *"Type their actual username instead of ...00002."* Every admin-facing surface renders an ellipsis plus six digits of a snowflake: the Access column heads, the owner callout, the bars, the sessions list. `portal/api/access.js` already has a `/api/discord/user` route and `access.js` a `useDiscordLookup` hook, so the capability exists and nothing uses it for display. **Do:** resolve username and avatar for every admin once per load, server-side, cached, with the id as the fallback when Discord refuses. **Verify by:** no `slice(-6)` remains in `portal/ui/access.js`, and the owner callout names a person.
+
+### `[P2 | S | Sonnet5-High]` THE ADMIN DRAWER HAS TO CARRY REVOKE AND THE NOTE - filed 2026-09-11 14:27 EDT
+
+The column head opens `onEdit` now and the Edit and Revoke chips went with it, so the drawer is the only route to both. **Revoke currently has no other affordance** - the one place this pin round left a capability reachable only through a surface that is still thin. **Do:** the drawer carries full info, every permission, the note editor and a typed-confirm revoke. **Verify by:** revoking an admin end to end without touching the grid.
+
+### `[P3 | S | Sonnet5-Medium]` TOOLTIP REDESIGN - the runtime is disabled, not deleted - filed 2026-09-11 14:27 EDT
+
+`installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.
+
+
 ### `[P1 · M · Opus5-High]` WHICH COMMANDS CONFER WHICH `/manage` PAGES — the model has exactly one conferral and nobody chose that — filed 2026-09-11 13:21 EDT
 
 🔴 **Harkirat, 2026-09-11 13:21 EDT, designing the Access grid's inheritance ring:** *"say someone is given the Autobuild command permission, they would also gain access/inherit MP/DMZ /manage page permissions with it."* **They would not, today.** `portal/api/access.js:82` computes it in one line — `const inherited = scope.kind === 'page' && !direct && perms.includes('manage')` — so **`manage` is the only command that confers anything, and it confers all eight pages at once.** `autobuild`, `bot` and `destructive` confer nothing.

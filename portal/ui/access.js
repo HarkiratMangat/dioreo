@@ -40,11 +40,16 @@ const shortDate = (v) => new Date(v).toLocaleDateString('en-US', { month: 'short
 // Twelve distinct hues, spaced around the wheel and deliberately clear of the 165–265° band the edit
 // identities own, so a topic colour and an edit colour can never be mistaken for one another.
 const SCOPE_COLOR = {
-    manage: '#9B6BE8', autobuild: '#4EC07A', bot: '#E6BE3F', destructive: '#E8604C',
-    'manage.draws': '#F0793C', 'manage.calendar': '#CBCB45',
-    'manage.loadouts_mp': '#C46BE0', 'manage.loadouts_dmz': '#79C558',
-    'manage.patchnotes': '#E8608F', 'manage.seasondraft': '#A3C94B',
-    'manage.season': '#F29B3B', 'manage.announcement': '#E063C4',
+    // 🔴 SPACED ON THE WHEEL, NOT SHADED. The first attempt put Autobuild, DMZ and Season Draft on three
+    // greens and Manage and MP on two purples -- Harkirat, 2026-09-11 14:06 EDT: "NEARLY IDENTICAL SHADES".
+    // Twelve hues roughly 30 degrees apart, and the EDIT identities were moved to pale tints in tokens.css
+    // so a topic colour and an edit colour can never be confused without the topics losing the wheel.
+    manage: '#8B5CF6',                 autobuild: '#06B6D4',
+    bot: '#EAB308',                    destructive: '#EF4444',
+    'manage.draws': '#F97316',         'manage.calendar': '#14B8A6',
+    'manage.loadouts_mp': '#EC4899',   'manage.loadouts_dmz': '#22C55E',
+    'manage.patchnotes': '#A3E635',    'manage.seasondraft': '#3B82F6',
+    'manage.season': '#F59E0B',        'manage.announcement': '#D946EF',
 };
 const accentOf = (sc) => SCOPE_COLOR[sc.key] || 'var(--ink3)';
 
@@ -273,11 +278,18 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         const g = a.grants[sc.key] || {};
         const pend = rowPending(a.discordId)[sc.key];
         const on = pend === undefined ? Boolean(g.direct || g.inherited) : pend;
-        const inheritedOnly = pend === undefined && g.inherited && !g.direct;
+        // 🔴 INHERITANCE IS COMPUTED FROM THE EFFECTIVE STATE, NOT THE SERVER'S. Staging `manage` used to
+        // light nothing below it -- the eight pages kept reading the server's `inherited`, which is false
+        // until the change is saved -- so the one relationship this grid exists to show was invisible at
+        // exactly the moment you were creating it. Harkirat, 2026-09-11 13:54 EDT.
+        const rpAll = rowPending(a.discordId);
+        const holdsManage = rpAll[CONFERRER] !== undefined
+            ? rpAll[CONFERRER] : Boolean((a.grants[CONFERRER] || {}).direct);
+        const inheritedOnly = pend === undefined && !g.direct && (g.inherited || (sc.kind === 'page' && holdsManage));
         const isOwner = Boolean(a.__owner);
         const cls = 'mxcell'
             + (on && !inheritedOnly ? ' on' : '')
-            + (pend !== undefined ? (pend ? ' pend' : ' pend off') : (inheritedOnly ? ' inh inherited' : ''))
+            + (pend === undefined && inheritedOnly ? ' inh inherited' : '')
             ;
         const style = `--c:${accentOf(sc)};--ed:${editColor(a)}`
             + (inheritedOnly && conferrer ? `;--from:${accentOf(conferrer)}` : '');
@@ -293,6 +305,7 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         }
         return html`<td key=${a.discordId} class=${'mxc' + (pend !== undefined ? ' staged' : '')} style=${`--ed:${editColor(a)}`}>
             <button class=${cls} style=${style}
+                data-pend=${pend === undefined ? null : (pend ? 'on' : 'off')}
                 role="checkbox" aria-checked=${on ? 'true' : 'false'}
                 aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
                 data-tip=${`${sc.label} — ${what}${willBe}`}
@@ -329,34 +342,14 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                                     return html`
                                         <th key=${a.discordId} class=${(isOwner ? 'owncol ' : '') + (n ? 'dirty ' : '') + (a.discordId === highlightId ? 'just-granted' : '')}
                                             style=${`--ed:${editColor(a)}`}>
-                                            <div class="colh">
-                                                ${isOwner ? null : html`
-                                                    <span class="colacts">
-                                                        <button class="colact" aria-label=${`Edit …${a.discordId.slice(-6)}`}
-                                                                data-tip="Permissions and label, in one drawer"
-                                                                onClick=${() => onEdit(a)}><${Icon} name="pencil" cls="sm" /></button>
-                                                        <${RevokeControl} discordId=${a.discordId} onRevoke=${onRevoke} />
-                                                    </span>`}
+                                            <button type="button" class="colh"
+                                                    aria-label=${isOwner ? 'You — the owner' : `Open ${nv || a.discordId} in the admin drawer`}
+                                                    onClick=${() => (isOwner ? null : onEdit(a))}>
                                                 <span class="mxav" aria-hidden="true">${(nv ? nv[0] : a.discordId.slice(-1)).toUpperCase()}</span>
-                                                <b>${isOwner ? 'Owner' : html`…${a.discordId.slice(-6)}`}</b>
-                                                ${isOwner ? html`<span class="built">built in</span>`
-                                                    : editingNote === a.discordId ? html`
-                                                        <!-- data-bare opts OUT of the element-level input rule, whose min-height is var(--tap) at 44px and would blow the column head open. Opting out cannot lose an argument it is not having; out-specifying it was tried and 44px still won. A ref rather than the autofocus attribute, which is honoured only while the page is parsing. -->
-                                                        <input class="mxlbl-in" data-bare value=${nv}
-                                                               ref=${(el) => { if (el && document.activeElement !== el) el.focus(); }}
-                                                               aria-label=${`Label for …${a.discordId.slice(-6)}`}
-                                                               placeholder="How you will recognise them"
-                                                               onInput=${(e) => setPendingNote({ ...pendingNote, [a.discordId]: e.target.value })}
-                                                               onBlur=${() => setEditingNote(null)}
-                                                               onKeyDown=${(e) => {
-                                                                   if (e.key === 'Escape') { dropNote(a.discordId); setEditingNote(null); }
-                                                                   if (e.key === 'Enter') setEditingNote(null);
-                                                               }} />`
-                                                    : html`<button class=${'mxlbl clbl' + (noteDirty(a) ? ' pend' : '')}
-                                                                   aria-label=${`Edit the label for …${a.discordId.slice(-6)}`}
-                                                                   data-tip="Rename this label — it stages like a permission and saves with the rest"
-                                                                   onClick=${() => setEditingNote(a.discordId)}>${nv || 'no label'}</button>`}
-                                            </div>
+                                                ${''}
+                                                <b>${isOwner ? 'Owner' : (nv || html`…${a.discordId.slice(-6)}`)}</b>
+                                                <span class="clbl">${isOwner ? 'you' : html`…${a.discordId.slice(-6)}`}</span>
+                                            </button>
                                         </th>`;
                                 })}
                                 <th class="mxc-held"><span class="mxs">Held</span></th>
@@ -443,8 +436,11 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
                         <span class="k">${(commands.slice(0, 3)).map((sc) => html`<span key=${sc.key} class="mxlegend sw" style=${`--c:${accentOf(sc)}`}></span>`)}Colour</span>
                         <span>Every permission has <b>its own</b>, in the grid and in an edit bar's chips.</span>
                     </div>
+                    <div class="lrow">
+                        <span class="k"><${Icon} name="lock" cls="sm" />Owner only</span>
+                        <span><b>Destructive</b> is the one permission the <code>all</code> shorthand never hands out — it can arrive only by being granted deliberately.</span>
+                    </div>
                 </div>
-                <p class="racknote">${scopes.length} permissions: ${commands.length} commands — <code>manage</code> · <code>autobuild</code> · <code>bot</code> · <code>destructive</code> — and ${pages.length} <code>/manage</code> pages. <code>all</code> is an input-only convenience that expands to the three ORIGINAL commands and <b>never to <code>destructive</code></b> — a convenience that quietly hands out irreversibility is the opposite of one. An admin must always hold at least one permission: an admin with nothing granted should be revoked, not parked in limbo.</p>
             `}
         </div>
     `;

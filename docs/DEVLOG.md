@@ -243,6 +243,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-11 11:27 EDT — the Access matrix is a grid again, and four defects no gate could see (v3.79.0-pre)
 - 2026-09-11 11:39 EDT — the matrix labels come off their side, and a sticky header that painted over itself (v3.79.0-pre)
 - 2026-09-11 13:25 EDT — the Access matrix turns ninety degrees, and three rejected label fixes were all the wrong question (v3.79.0-pre)
+- 2026-09-11 14:28 EDT — eighteen pins on the Access grid, and the ones that hurt were the ones I could have seen (v3.79.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4277,6 +4278,18 @@ The transpose silently dropped the inline label editor. It lived in the old row'
 `portalReverseOrphans` reported four classes as rules nothing emits, and all four were emitted. It resolves `'base' + (cond ? ' extra' : '')` and not a concatenation ending in a variable or a two-branch ternary, so `g-command`, `g-page`, `grpend` and `locked` read as orphans. The tempting fix is to re-record the baseline, which would have put four false positives in it permanently; the honest one is that none of those four was really a class. Three became data attributes and the fourth became the `role="img"` the owner's cells already carry.
 
 And a design decision with a written rationale got overruled, correctly. A scope's colour was the realm it governs, and COMPANION §4.2 defends that: inventing an eighth accent would put a colour on screen that means nothing anywhere else. Harkirat's ruling is that the rule has to bend for this panel specifically, because it grants access inside the Discord bot rather than the portal, and the portal's own access scoping does not exist yet. Worth recording because the rule is still right everywhere else — what changed is the scope of its claim, not its truth.
+
+## 2026-09-11 14:28 EDT — eighteen pins on the Access grid, and the ones that hurt were the ones I could have seen (v3.79.0-pre)
+
+Eighteen pins on the transposed Access grid. Grouped they were seven things, and only two were judgement calls - the rest were defects I would have seen by opening the page, which is the same finding as this morning's and the third time today.
+
+The tooltips are off portal-wide. Not restyled, off. I had also read "carry the tier explanation on hover" as licence to add MORE of them to a surface he already disliked, which is the near-neighbour failure: the instruction was about where the explanation lives, not about the mechanism I reached for.
+
+The colour pass was rejected a second time for the same reason in a new costume. Told the shades were too similar, I re-picked twelve hues still only about nineteen degrees apart, because I was protecting a constraint nobody asked me to protect - keeping a cool band clear for four edit identities. The fix was to move those to pale tints and let the topics have the wheel. I had optimised the wrong constraint and then defended it.
+
+The inherited-permission bug is the one worth keeping. Staging `manage` lit nothing below it, because the cell read the server's `inherited` flag, which stays false until save - so the single relationship this grid exists to show was invisible at exactly the moment you were creating it. A grid that only tells the truth after you commit is a grid you cannot use to decide whether to commit.
+
+And the structural one: in the artifact the grid and the legend sat on `--paper` inside a `--desk` page, so a soft-cornered bordered box read as a box. In the portal everything is `--paper`, so I shipped `--paper` boxes on a `--paper` panel - borders around nothing. That is what "you just slapped them in" means precisely, and it is the same root as this morning's failure: I ported a component out of a page and left the page behind.
 
 # Part B — Lessons Ledger (thematic)
 

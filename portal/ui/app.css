@@ -2118,7 +2118,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * Access is the one ACHROMATIC realm on purpose: its subject is the other
  * realms, so every colour on the page is borrowed from the scope it governs
  * rather than invented for the page itself. */
-.mxwrap{padding:16px;overflow-x:auto}
+.mxwrap{margin:16px;padding:14px 16px 6px;overflow-x:auto;border:1px solid var(--rule);
+  border-radius:var(--rad-2);background:var(--sunk)}
 .mx{border-collapse:separate;border-spacing:0;width:100%;min-width:640px}
 .mx th,.mx td{border-bottom:1px solid var(--rule3);padding:0}
 .mx thead th{position:sticky;top:0;background:var(--paper);z-index:2;
@@ -2135,11 +2136,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    STAGES rather than firing, exactly like a permission cell beside it, using the same `--staged` ring
    that marks every other pending change in this grid. A button rather than a contenteditable: it is a
    control, it needs a name, and the sheet already knows how to focus one. */
-.mxlbl{font:inherit;color:inherit;background:none;border:0;padding:1px 3px;margin-left:-3px;cursor:text;
-  border-radius:var(--rad-1);text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;transition:background var(--dur-1) var(--ease)}
-.mxlbl:hover{background:var(--hi);color:var(--ink2)}
-.mxlbl.pend{box-shadow:0 0 0 1.5px var(--staged);color:var(--ink)}
 /* ⚠️ THE HEIGHT IS PINNED TO THE LINE IT REPLACES, and `data-bare` on the element is the other half.
    An input carries app.css's own element rule at 0,3,1 — a single class cannot outrank it, and that
    rule's comment says so in capitals after the same mistake shipped twice on the command bar. So the
@@ -2147,9 +2143,6 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    🔴 AND THE 44px THAT SURVIVES BELOW 900px IS DELIBERATE — tokens.css's tap-target rule, written
    after measuring that every control on every realm was under 44px. It is not overridden here: on a
    narrow viewport this input SHOULD be 44px and the row should grow around it. */
-.mxlbl-in{font:inherit;line-height:1.3;color:var(--ink);background:var(--sunk);border:1px solid var(--staged);
-  border-radius:var(--rad-1);padding:0 4px;margin-left:-5px;max-width:170px;height:17px;
-  vertical-align:-3px;box-sizing:border-box}
 .mxgr{font-style:normal;color:var(--ink3);margin-left:4px}
 .mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
@@ -3071,8 +3064,11 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    MEANS is on the heading's own hover, because the fact is needed once rather than on every read. */
 .mx tbody.grp .gh td{border-bottom:0;height:auto;padding:0}
 .mx tbody.grp .ghead{display:flex;align-items:baseline;gap:var(--s4);padding:26px 16px 12px 45px}
-.mx tbody.grp .ghead h4{margin:0;flex:1;font:700 15px/1.15 var(--display);letter-spacing:.06em;
-  text-transform:uppercase;color:var(--ink);cursor:help}
+.mx tbody.grp .ghead h4{margin:0;display:flex;align-items:center;gap:12px;flex:1;
+  font:700 13px/1 var(--data);letter-spacing:.18em;text-transform:uppercase;color:var(--ink2)}
+/* the rule runs from the name to the far edge, so the title opens a section instead of labelling a row */
+.mx tbody.grp .ghead h4::after{content:"";flex:1;height:1px;background:var(--rule)}
+.mx tbody[data-grp=command] .ghead h4{color:var(--ink);font-size:14px}
 .mx tbody.grp .ghead .fig{font:500 var(--t-lg)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums}
 /* THE TIER, drawn four ways so it survives a squint rather than being asserted in words: a heavier rule,
    a brighter name, a heavier bracket, and tier 2 INDENTED under tier 1 — subordination stated by position. */
@@ -3100,19 +3096,19 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx td.held.zero{color:var(--del)}
 
 /* a column head is a PERSON: identity at rest, and its two verbs only on pointer or focus */
-.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 8px 9px;
-  border-radius:var(--rad-2) var(--rad-2) 0 0;position:relative}
+/* The whole head opens the drawer -- the Edit and Revoke chips on it were a third affordance for a thing
+   the block itself should do. Harkirat, 2026-09-11 13:53 EDT: "those buttons are useless since the entire
+   box should be opening their detailed drawer anyway." */
+.colh{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 8px 9px;width:100%;
+  border:1px solid transparent;border-radius:var(--rad-2) var(--rad-2) 0 0;position:relative;
+  background:none;cursor:pointer;font:inherit;color:inherit;text-align:center}
+.colh:hover{background:var(--hi);border-color:var(--rule)}
+.colh:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
 .colh b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ink)}
 .colh .clbl{font:400 9.5px/1.3 var(--ui);color:var(--ink3);text-align:center;max-width:100px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .colh .built{font:400 9.5px/1.3 var(--data);color:var(--ink3);letter-spacing:.04em}
 .colh .mxav{margin-bottom:3px}
-.colacts{position:absolute;top:5px;right:5px;display:flex;gap:2px;opacity:0;
-  transition:opacity var(--dur-1) var(--ease)}
-.colh:hover .colacts,.colh:focus-within .colacts{opacity:1}
-.colact{width:22px;height:22px;display:grid;place-items:center;border:0;border-radius:var(--rad-1);
-  background:none;color:var(--ink3);cursor:pointer}
-.colact:hover{background:var(--hi);color:var(--ink2)}
 /* the column a pending change belongs to, in that person's own edit colour */
 .mx thead th.dirty .colh{background:color-mix(in srgb,var(--ed) 11%,transparent);
   box-shadow:inset 0 2px 0 var(--ed)}
@@ -3122,8 +3118,12 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* ══ THE LEGEND — a MARK and what it means, one row each ══
    It replaced a foot of three sentences, two of which described a mark that a swatch states in a
    fraction of the width. Harkirat approved this shape in the artifact before the grid was built. */
-.mxlegend-box{display:flex;flex-direction:column;gap:9px;margin:0 16px;padding:14px 16px;
-  border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--paper)}
+/* 🔴 A BOX NEEDS A GROUND OF ITS OWN. In the artifact these sat on --paper inside a --desk page; in the
+   portal everything is --paper, so a --paper box on a --paper panel is an invisible box with a border
+   around it -- which is exactly what "you just slapped them in" looks like. Both the grid and the legend
+   are inset surfaces now. Harkirat, 2026-09-11 14:15 EDT. */
+.mxlegend-box{display:flex;flex-direction:column;gap:10px;margin:0 16px var(--s4);padding:15px 17px;
+  border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk)}
 .mxlegend-box .lrow{display:flex;align-items:center;gap:12px;font-size:var(--t-sm);color:var(--ink3)}
 .mxlegend-box .lrow b{color:var(--ink);font-weight:600}
 .mxlegend-box .k{display:flex;align-items:center;gap:7px;flex:none;min-width:124px;color:var(--ink2);
@@ -3134,12 +3134,15 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    Harkirat, 2026-09-11 13:13 EDT: the controls in a column of their own were "so poorly integrated"; a bar carries
    the person, every pending change as a chip, and its own Save and Discard, and two people edited at
    once are two bars in two colours each committing only its own. */
-.mxbars{display:flex;flex-direction:column;gap:var(--s2);padding:0 16px}
+.mxbars{display:flex;flex-direction:column;gap:10px;padding:0 16px;margin:var(--s4) 0 var(--s5)}
 .mxbars:empty{display:none}
 .mxbar{display:flex;align-items:center;gap:14px;padding:10px 12px 10px 14px;border-radius:var(--rad-2);
   border:1px solid color-mix(in srgb,var(--ed) 38%,var(--rule));
   background:color-mix(in srgb,var(--ed) 8%,var(--paper));box-shadow:inset 3px 0 0 var(--ed)}
-.mxbar .who{display:flex;align-items:center;gap:9px;flex:none;min-width:168px}
+/* A fixed track, not a minimum: the chips began at a different x on every bar because the who block
+   sized itself to the label. Harkirat, 2026-09-11 13:57 EDT -- "give the admins label its own space and
+   then start the chips from the same position". */
+.mxbar .who{display:flex;align-items:center;gap:9px;flex:none;width:190px;overflow:hidden}
 .mxbar .who .mxav{background:color-mix(in srgb,var(--ed) 22%,var(--raised));color:var(--ed)}
 .mxbar .who b{display:block;font:600 var(--t-sm)/1.2 var(--data);color:var(--ink)}
 .mxbar .who em{display:block;font-style:normal;font:400 9.5px/1.3 var(--ui);color:var(--ink3)}
@@ -3172,7 +3175,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    WHICH grant is doing the covering. `--from` is set only on an inherited cell; the fallback keeps a cell
    legible if a future conferring command has no colour yet. Harkirat, 2026-09-11 13:13 EDT. */
 .mxcell.inh{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
-.mxcell.pend{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
+.mxcell[data-pend]{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
 /* The owner's cells are stated, not editable -- and they are the only ones rendered as role="img". */
 .mxcell[role=img]{opacity:.9;cursor:default}
 /* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
@@ -4247,9 +4250,9 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* Pending reads as "what it WILL be, not yet written": the fill or the emptiness is the
    future state, and the dashed --staged ring is what marks it unsaved. Same dashed-and-
    hollow language the Track already uses for staged bars, so it is learned once. */
-.mxcell.pend{position:relative;box-shadow:0 0 0 2px var(--desk),0 0 0 3.5px var(--staged)}
-.mxcell.pend.off{background:transparent;border-color:var(--danger-edge)}
-.mxcell.pend.off::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
+.mxcell[data-pend]{position:relative;box-shadow:0 0 0 2px var(--desk),0 0 0 3.5px var(--staged)}
+.mxcell[data-pend=off]{background:transparent;border-color:var(--danger-edge)}
+.mxcell[data-pend=off]::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
   background:var(--danger-ink);transform:translate(-50%,-50%)}
 .mx tbody tr:hover .mxcell:not([role=img]){border-color:var(--ink4)}
 /* 🔴 THE FLEX GOES ON AN INNER SPAN, NOT ON THE <td>. `display:flex` on a table cell takes
