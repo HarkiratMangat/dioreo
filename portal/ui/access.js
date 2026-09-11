@@ -65,6 +65,52 @@ function useIdentities(ids) {
     return map;
 }
 
+// 🔴 THE BAR TAKES ITS GROUND FROM THE FACE ON IT. Harkirat asked whether a soft mesh tint from the profile picture was doable, 2026-09-11 17:25 EDT -- it is, and it needs no server: Discord's CDN sends a permissive `Access-Control-Allow-Origin`, verified live against both a default avatar and a real user's before a line of this was written, so `crossOrigin="anonymous"` plus `getImageData` reads real pixels instead of tainting the canvas. The extraction is deliberately crude and deterministic: 28x28 samples, binned into 24 hue buckets of 15 degrees, with grey, near-black and near-white discarded so a dark avatar on a dark bar does not produce a tint of nothing. The three fullest buckets become three blobs. It is NOT the bot's k-means (utils/accentColor.js) and should not become it -- that runs server-side over a full-size image to pick ONE accent a user will live with, and this is three decorative blobs at 15% alpha that must cost nothing on a drawer open. ⚠️ EVERY FAILURE PATH ENDS IN NO TINT, NEVER A BROKEN BAR: a blocked image, a tainted canvas, an avatar with no colourful pixels at all. The bar's own `--sunk` is what shows, which is exactly what it looked like yesterday.
+function dominantColors(img, n = 3) {
+    const S = 28;
+    const c = document.createElement('canvas');
+    c.width = S; c.height = S;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(img, 0, 0, S, S);
+    const d = x.getImageData(0, 0, S, S).data;
+    const bins = new Map();
+    for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        if (d[i + 3] < 200) continue;
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), chroma = mx - mn, lum = (mx + mn) / 2;
+        if (chroma < 28 || lum < 26 || lum > 234) continue;
+        let h = mx === r ? ((g - b) / chroma) % 6 : mx === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
+        h = (h * 60 + 360) % 360;
+        const k = Math.floor(h / 15);
+        const e = bins.get(k) || { n: 0, r: 0, g: 0, b: 0 };
+        e.n += 1; e.r += r; e.g += g; e.b += b;
+        bins.set(k, e);
+    }
+    return [...bins.values()].sort((p, q) => q.n - p.n).slice(0, n)
+        .map((e) => `rgb(${Math.round(e.r / e.n)} ${Math.round(e.g / e.n)} ${Math.round(e.b / e.n)})`);
+}
+
+function useAvatarTint(url) {
+    const [tint, setTint] = useState(null);
+    useEffect(() => {
+        setTint(null);
+        if (!url) return undefined;
+        let dead = false;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            if (dead) return;
+            try {
+                const cols = dominantColors(img);
+                if (cols.length) setTint(cols);
+            } catch { /* a tainted canvas means no tint, and no tint is a perfectly good bar */ }
+        };
+        img.src = url;
+        return () => { dead = true; };
+    }, [url]);
+    return tint;
+}
+
 function useDiscordLookup(discordId) {
     const [state, setState] = useState(() => (IDENTITY.has(discordId) ? { status: 'ok', user: IDENTITY.get(discordId) } : { status: 'idle' }));
     useEffect(() => {
@@ -100,6 +146,7 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
     // 🔴 THE SECOND STEP IS ITS OWN SCREEN, NOT A RELABELLED BUTTON IN THE SAME PLACE. The first version swapped the footer's text and left everything else standing, and Harkirat read it as a button that had not registered his click -- 2026-09-11 17:10 EDT: "I DIDN'T MEAN IN THE EXACT SAME SPOT... the 1st time i didn't even notice it and thought the button was just bugged." A confirmation that looks like the thing it is confirming is not one. The drawer replaces its whole body with a summary of exactly what is about to be written. ⚠️ THE WIRE CONTRACT IS UNCHANGED: portal/api/access.js's confirmMatchesTarget still requires the target's own id, and `submit` sends it, so the server's gate is where it always was.
     const [armed, setArmed] = useState(false);
     const lookup = useDiscordLookup(discordId);
+    const tint = useAvatarTint(lookup.status === 'ok' && lookup.user ? lookup.user.avatarUrl : null);
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
     // 🔴 THE LOOKUP RUNS IN BOTH MODES BUT ONLY GATES ONE, and the first version of this got it backwards twice over. It faked `{status:'ok'}` in edit mode to skip the round-trip — which crashed the drawer outright, because the preview below reads `lookup.user.avatarUrl` and a faked status carries no user. It was also wrong on the merits: the avatar and username are exactly what tell you WHICH HUMAN this row of digits is, which is the whole argument that put the lookup on the grant form. So it runs. What it must NOT do is gate readiness: an id already in the grid was resolved when it was granted, and making a label edit wait on Discord being reachable would mean an outage there locks the owner out of renaming a row here.
     const base = grantReady({ discordId, lookupStatus: editing ? 'ok' : lookup.status, pickedCount: picked.length, confirmText: discordId });
@@ -150,6 +197,20 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class="btn go" disabled=${!ready} onClick=${() => setArmed(true)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
+                <!-- 🔴 THE IDENTITY BAR STAYS AT THE TOP AND CARRIES ITS OWN PROVENANCE. It travelled down with the Discord ID field and should not have: the id INPUT is a control you fill in, the bar is the answer to "who is this", and the answer belongs where a reader starts. Harkirat, 2026-09-11 17:23 EDT. The full snowflake is printed rather than its last six digits -- the bar is 1,000px wide and the truncation was inherited from a 110px grid column, where it is a real constraint and here it was never one. "Granted by" moved in off its own paragraph: one object now answers who, which account, and on whose authority. -->
+                ${lookup.status === 'ok' && lookup.user ? html`
+                    <div class="idbar" data-mesh=${tint ? 'y' : null}
+                         style=${tint ? `--m1:${tint[0]};--m2:${tint[1] || tint[0]};--m3:${tint[2] || tint[1] || tint[0]}` : null}>
+                        <span class="gp-av" aria-hidden="true" style=${`--av-src:url(${lookup.user.avatarUrl})`}></span>
+                        <span class="gp-n">
+                            <b>${lookup.user.globalName || lookup.user.username}</b>
+                            <span>@${lookup.user.username}<i></i><code>${discordId}</code></span>
+                        </span>
+                        ${editing ? html`<span class="gp-by">
+                            <em>Granted by</em>
+                            <b>${nameOf(admin.grantedBy)}${admin.grantedAt ? html` · ${shortDate(admin.grantedAt)}` : null}</b>
+                        </span>` : null}
+                    </div>` : null}
                 ${tiers.map((t) => html`
                     <div key=${t.key} class="tokgroup" data-tier=${t.key}>
                         <h5>${t.heading}<em>${t.rows.length}</em></h5>
@@ -167,15 +228,8 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
                     <input id="grant-discordid" placeholder="17–20 digits" inputmode="numeric" autocomplete="off"
                            readOnly=${editing} aria-readonly=${editing ? 'true' : 'false'}
                            value=${discordId} onInput=${(e) => setDiscordId(e.target.value.trim())} /></div>
-                ${editing ? html`<p class="dw-p">Granted by <b class="granter">${nameOf(admin.grantedBy)}</b>${admin.grantedAt ? html`, ${shortDate(admin.grantedAt)}` : null}.</p>` : null}
                 ${lookup.status === 'loading' ? html`<p class="dw-p">Looking that id up…</p>` : null}
                 ${lookup.status === 'error' ? html`<p class="dw-p" style="color:var(--warn)">${lookup.reason}</p>` : null}
-                ${lookup.status === 'ok' && lookup.user ? html`
-                    <div class="grantpreview">
-                        <span class="gp-av" aria-hidden="true" style=${`--av-src:url(${lookup.user.avatarUrl})`}></span>
-                        <span class="gp-n"><b>${lookup.user.globalName || lookup.user.username}</b>
-                            <span>@${lookup.user.username} · …${discordId.slice(-6)}</span></span>
-                    </div>` : null}
                 <div class="dwfield"><label for="grant-title">Title</label>
                     <input id="grant-title" placeholder="What they are here to do" value=${title}
                            aria-required="true" onInput=${(e) => setTitle(e.target.value)} />

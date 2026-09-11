@@ -4804,7 +4804,14 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
 .un a:hover{text-decoration:underline;color:var(--ink2)}
 .ubanner{height:74px}
 /* identity ON the banner, not above it */
-.uid{position:relative;margin-top:-30px;padding:0 14px 12px;display:flex;align-items:flex-end;gap:11px}
+/* 🔴 THE -30px WAS THE BANNER'S, AND THE BANNER WAS DELETED ON 2026-09-10. It lifted the avatar so it
+   overlapped a 38px image strip at the top of the panel; that strip went (fork 08, `--banner:none` reserving
+   room for a feature with no date), the negative margin stayed, and `.umenu{overflow:hidden}` has been
+   clipping the avatar and the name ever since. Measured 2026-09-11 17:30 EDT: `.uid` sat at y=22 inside a
+   menu whose own top edge was y=51 -- 29px of it outside the box that clips. Harkirat: "it's cut off at the
+   top." ⚠️ The overlap ring on `.uid .uav` is kept: it reads as a deliberate edge now rather than as the
+   seam between an avatar and an image that is no longer there. */
+.uid{position:relative;margin-top:0;padding:14px 14px 12px;display:flex;align-items:flex-end;gap:11px}
 .uid .uav{width:46px;height:46px;border-radius:var(--rad-round);border:2px solid var(--paper);
   background:var(--avatar-a) var(--av-src) center/cover;flex:none}
 .uid .un{min-width:0}
@@ -5819,9 +5826,8 @@ button .ic,a .ic{pointer-events:none}
 .btn.danger{color:var(--danger-ink);border-color:var(--danger-edge);
   background:color-mix(in srgb,var(--danger-ink) 9%,transparent)}
 .btn.danger:hover{background:var(--danger-edge);color:var(--ink)}
-/* Who handed the access out is the fact a reader checks; six digits of a snowflake are not checkable. */
-.granter{font-family:var(--data);font-weight:700;color:var(--ink);
-  background:color-mix(in srgb,var(--ink2) 15%,transparent);border-radius:var(--rad-1);padding:1px 6px}
+/* `.granter` lived here until 2026-09-11 17:23 EDT. Its sentence moved INTO the identity bar above, so
+   the class has no emitter and the rule would be an orphan -- see `.idbar .gp-by`. */
 /* 🔴 THE FORMAT ARRIVES WHEN YOU ARE IN THE FIELD — Harkirat's pick, 2026-09-10 18:36 EDT, fork 07 option E. A permanently visible hint under every field is the "hint line" he refused ("is a hint line REALLY the best design decision you could make??"); a disclosure makes you work for something the field could hand you. This is neither: nothing at rest, the rule on focus, gone on blur.
    🔴 IT IS CLIPPED, NEVER `display:none`. `aria-describedby` points at these, and a display:none element is not in the accessibility tree — hiding it that way would silently remove the description from every screen reader while looking identical. This is the `.sr` clip, so the hint is announced at all times and drawn only while the field has focus. */
 .dwfield .bf-hint{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;
@@ -6078,13 +6084,48 @@ button .ic,a .ic{pointer-events:none}
    display name, @username and the id, so an admin can see who they are about to grant before Grant enables.
    .grantpreview/.gp-av/.gp-n are new classes; .dwbody/.dwfield/.tokgrid/.dw-p already exist and are reused
    as-is. --avatar-a and --sunk are existing tokens (see .who .av's gradient fallback in app.css). */
-.grantpreview{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--rule2);
-  border-radius:var(--rad-1);background:var(--sunk);margin:8px 0}
-.grantpreview .gp-av{width:32px;height:32px;border-radius:var(--rad-round);flex:none;
-  background:var(--av-src,none) center/cover no-repeat,var(--avatar-a)}
-.grantpreview .gp-n{display:flex;flex-direction:column;gap:1px;min-width:0}
-.grantpreview .gp-n b{font-size:var(--t-sm);color:var(--ink)}
-.grantpreview .gp-n span{font-size:var(--t-micro);color:var(--ink3)}
+/* ══ THE IDENTITY BAR — who this drawer is about ══════════════════════════════════════════════════════
+   🔴 IT IS THE HEAD OF THE DRAWER, NOT A FIELD IN IT. Renamed from `.grantpreview` because it stopped
+   being a preview of something being typed the moment it started carrying provenance: it answers who,
+   which account, and on whose authority, and it sits above everything else for that reason.
+   ⚠️ THE ID IS PRINTED IN FULL. The `…001227` form was carried over from the grid's 110px column, where
+   the clip is a real constraint; this bar is roughly a thousand pixels wide and the truncation was hiding
+   the one value somebody might need to copy. Harkirat, 2026-09-11 17:23 EDT. */
+.idbar{display:flex;align-items:center;gap:14px;padding:12px 16px;margin:0 0 var(--s4);
+  border:1px solid var(--rule);border-radius:var(--rad-2);background:var(--sunk)}
+.idbar .gp-av{width:40px;height:40px;border-radius:var(--rad-round);flex:none;
+  background:var(--av-src,none) center/cover no-repeat,var(--avatar-a);
+  box-shadow:0 0 0 1px var(--rule2)}
+.idbar .gp-n{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.idbar .gp-n b{font:600 var(--t-md)/1.2 var(--ui);color:var(--ink)}
+/* the handle and the snowflake are two different facts, so a rule separates them rather than a middot
+   doing double duty beside the one already inside the handle. */
+.idbar .gp-n>span{display:flex;align-items:center;gap:9px;min-width:0;
+  font:400 var(--t-xs)/1.3 var(--ui);color:var(--ink3)}
+.idbar .gp-n>span i{display:block;width:1px;height:11px;background:var(--rule2);flex:none}
+.idbar .gp-n code{font-family:var(--data);font-size:var(--t-xs);color:var(--ink2);letter-spacing:.02em}
+/* Provenance rides on the right: a quiet label over the fact, so it reads as metadata rather than as a
+   second name competing with the one on the left. */
+.idbar .gp-by{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;
+  padding-left:16px;border-left:1px solid var(--rule);text-align:right}
+.idbar .gp-by em{font-style:normal;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
+  text-transform:uppercase;color:var(--ink3)}
+.idbar .gp-by b{font:500 var(--t-xs)/1.3 var(--data);color:var(--ink2);white-space:nowrap}
+/* 🔴 THE MESH IS MIXED INTO --sunk, NEVER LAID OVER IT AS ALPHA. An alpha wash lightens the ground by
+   whatever the avatar happens to be, so a bright orange face would have taken --ink3 on this bar below
+   4.5:1 while a dark one changed nothing -- a contrast floor that depends on somebody's profile picture is
+   not a floor. Mixing each blob toward --sunk bounds the result: at 22% the lightest ground this can ever
+   produce is 22% of a pure white avatar, and the three blobs do not stack because each one fades to
+   transparent before the next begins. Measured on the harness's five brand-coloured avatars after the
+   fact, not reasoned about. Harkirat, 2026-09-11 17:25 EDT. */
+.idbar[data-mesh]{background:
+  radial-gradient(115% 190% at 4% 46%, color-mix(in srgb,var(--m1) 10%,var(--sunk)) 0%, transparent 58%),
+  radial-gradient(95% 165% at 40% 6%, color-mix(in srgb,var(--m2) 7%,var(--sunk)) 0%, transparent 54%),
+  radial-gradient(120% 210% at 82% 96%, color-mix(in srgb,var(--m3) 6%,var(--sunk)) 0%, transparent 62%),
+  var(--sunk);
+  border-color:color-mix(in srgb,var(--m1) 26%,var(--rule))}
+@media (prefers-reduced-motion:reduce){.idbar[data-mesh]{transition:none}}
+.idbar{transition:background var(--dur-2) var(--ease)}
 
 /* harden lens — names which single precondition is still missing before the Grant button in the drawer will
    enable (access.logic.js's grantReady drives the text; this is only the line's own styling). New class. */
