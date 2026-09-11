@@ -1,7 +1,7 @@
 {
   "realm": "analytics",
-  "recordedAt": "2026-09-11T13:06:52.168Z",
-  "commit": "b54a2531",
+  "recordedAt": "2026-09-11T14:46:13.227Z",
+  "commit": "280974ac",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -13,7 +13,6 @@
         "nearMisses": 5,
         "sizeIssues": 94,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "bootgrid>b|TOP-OFFSET",
           "bootgrid>b|TOP-OFFSET",
@@ -49,6 +48,7 @@
           "ncell>span|TOP-OFFSET",
           "ncell>span|TOP-OFFSET",
           "ncell>span|w",
+          "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
@@ -133,9 +133,8 @@
       "grid": {
         "examined": 419,
         "nearMisses": 5,
-        "sizeIssues": 139,
+        "sizeIssues": 137,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
           "chipset>mlabel|w",
@@ -207,7 +206,6 @@
           "ncell>span|TOP-OFFSET",
           "ncell>span|TOP-OFFSET",
           "ncell>span|w",
-          "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
           "root>cb|TOP-OFFSET",
@@ -300,9 +298,8 @@
       "grid": {
         "examined": 400,
         "nearMisses": 5,
-        "sizeIssues": 146,
+        "sizeIssues": 145,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
           "ackrow>al|TOP-OFFSET",
@@ -474,9 +471,8 @@
       "grid": {
         "examined": 343,
         "nearMisses": 7,
-        "sizeIssues": 79,
+        "sizeIssues": 78,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
           "chipset>mlabel|w",
@@ -580,10 +576,9 @@
     "Search": {
       "grid": {
         "examined": 340,
-        "nearMisses": 24,
-        "sizeIssues": 79,
+        "nearMisses": 21,
+        "sizeIssues": 78,
         "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|h",
           "chipset>mlabel|w",

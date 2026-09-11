@@ -968,7 +968,7 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
-### `[P2 · M · Opus5-High]` The masthead's row-1 height is UNGOVERNED, and it changes the gap above every realm's create button — filed 2026-09-11 09:47 EDT
+### ✅ `[CLOSED 2026-09-11 10:49 EDT]` The masthead's row-1 height is UNGOVERNED — FIXED, and the fix was the ROW TRACK, not a column min-height
 
 **Measured, not guessed** (Armory pin, this session): the gap from the LAST STAT's bottom edge to the create button's top edge is **58px on Broadcast** ("never ends" -> "Post announcement") and **27px on Armory** ("stale" -> "New build") -- roughly half. The masthead is a 2-column CSS grid (`.masthead{grid-template-columns:1fr auto}`, `.mh-id{grid-column:1;grid-row:1}`, `.mh-stats{grid-column:2;grid-row:1}`, `.mh-new{grid-column:2;grid-row:2}`); row 1's height is whichever column's content is TALLER, so it silently depends on how many subtitle lines a realm happens to have (Broadcast: 3) against how many stats it renders (Broadcast: 4, Armory: 5). Nobody chose this ratio per realm -- it falls out of unrelated content lengths.
 
@@ -977,6 +977,29 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 **The real fix is structural, not a value tweak** -- give `.mh-stats` (or `.mh-id`) a stable min-height so row 1's height stops depending on subtitle line-count and stat count per realm, then re-verify the stats-to-button gap on all seven realms (`portal:geometry --all --check` after, `--write` once attributed). Filed for an Opus session because it touches the shared `Masthead` component every realm renders through -- Season, Access, Broadcast, Analytics, Review, Home, Armory -- and getting the height rule right needs holding all seven mastheads' actual content shapes at once, not one at a time.
 
 **Verify by:** stats-bottom-to-button-top gap measured (not eyeballed) within a few px of each other across all seven realms, and `portal:geometry --all --check` clean after re-recording with the change attributed.
+
+
+🔴 **CLOSED 2026-09-11 10:49 EDT. The recommendation written above — "give `.mh-stats` (or `.mh-id`) a stable min-height" — would not have worked, and saying so is the point of this closure.** Row 1's height is `max(column 1, column 2)`, so a floor on ONE column leaves the OTHER free to exceed it and row 1 goes on varying. The lever is the row track itself: `@media (min-width:901px){.masthead{grid-template-rows:minmax(108px,auto)}}`, one declaration on the shared component, added beside the winning `.masthead{display:grid…}` rule.
+
+**Measured on all seven realms at 1282 and 1700, before and after** (harness, frozen clock, fresh page per realm — script kept out of the tree, it was a one-off):
+
+| realm | row 1 before | row 1 after | stats→button gap before | after |
+|---|---|---|---|---|
+| broadcast | 108.25 | 108.25 *(unchanged — it is the reference)* | 58 | 58 |
+| armory | 86.5 | 108 | 36.2 | 57.7 |
+| access | 66.25 | 108 | 16 | 57.7 |
+| analytics | 66.25 | 108 | n/a — no create button | n/a |
+| home | 82.75 | 108 | n/a | n/a |
+| review | 86.5 | 108 | n/a | n/a |
+| season | 162.9 | 162.9 *(deliberately exempt)* | 16 | 16 |
+
+**108px is Broadcast's own measured row 1**, chosen because Harkirat said plainly *"I like the amount of gap/spacing in the broadcast page masthead"* — so Broadcast is unchanged by its own rule and every other realm comes to it.
+
+⛔ **`minmax`, not a fixed track, and Season is the falsifier that made it so.** Season renders no `.mh-stats` at all (its clock takes that grid area) and its row 1 measures 162.9px — a fixed `108px` track would have pushed the clock into row 2 and onto the add row. `minmax` pins the floor and still grows, which also covers a realm whose subtitle wraps to a fourth line at a narrow desktop width. Season keeps its 16px add-row gap and that is CONSISTENT rather than an exception: on every realm the row-2 control now sits 16px below the taller column, and Season's taller column is simply its clock.
+
+⛔ **`min-width:901px`, because at ≤900px `.masthead` restacks to one column** (`grid-template-areas:"id" "stats"`), where a row-1 floor is dead space. A `max-width` reset could not do this job — that stacking rule sits ~800 lines ABOVE the grid rule and loses the cascade to it, so the guard had to go on the floor itself.
+
+**Verified:** `portal:geometry --all --check` failed with 13 changes across access/analytics/armory, all re-recorded in the same commit with the cause attributed; re-check clean, 7/7 fixtures match. `portal:reverse-orphans --ci` clean. Armory's MP/DMZ toggle still shares New build's top edge exactly (206px, both viewports) — last session's fix survived. All seven realms opened and looked at in the harness, not only measured.
 
 
 ### ✅ `[CLOSED 2026-09-11 09:08 EDT]` PORTAL PIN ROUND 2 — every fork verdicted, `pmtvqazpj` fixed and verified on the signed-in portal, the two add chips collapsed per his direct decision

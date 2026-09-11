@@ -3743,6 +3743,24 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    the fold, on the realm that manages 133 builds. Identity left, numbers and the action right,
    which is also the reading order: what is this · how is it doing · what can I add. */
 .masthead{display:grid;grid-template-columns:1fr auto;align-items:start;column-gap:28px}
+/* 🔴 ROW 1 HAS A FLOOR, so the gap above every realm's create button stops being an accident.
+   Measured 2026-09-11 10:44 EDT across all seven realms at 1282 and 1700: row 1's height was max(.mh-id, .mh-stats),
+   so the slack under the SHORTER column -- which is the gap the create button sits below -- fell out of
+   how many subtitle lines a realm happens to wrap and how many stats it happens to render. It read
+   58px on Broadcast (3 subtitle lines, 4 stats), 36.2 on Armory (2 lines, 5 stats) and 16 on Access
+   (1 line, 4 stats). Nobody chose those ratios. Harkirat, 2026-09-11 10:44 EDT: he wants one fixed height the upper
+   text sits and wraps within, calibrated to "the amount of gap/spacing in the broadcast page masthead".
+   108px IS Broadcast's own measured row 1 (108.25), so Broadcast is deliberately UNCHANGED by this and
+   the other realms come to it.
+   ⛔ minmax, NOT a fixed track, and Season is why: Season renders no .mh-stats at all -- its clock takes
+   that grid area -- and its row 1 measures 162.9px. A fixed 108px track would push the clock into row 2
+   and onto the add row. minmax pins the FLOOR and still grows, so Season is untouched and a realm whose
+   subtitle wraps to a fourth line at a narrow desktop width grows instead of overflowing.
+   ⛔ min-width:901px on purpose: at <=900px `.masthead` restacks to one column with
+   grid-template-areas:"id" "stats" (the rule ~800 lines above this one), where a row-1 floor would be
+   dead space rather than alignment. A max-width reset would not work here -- that earlier block loses
+   the cascade to this one, so the guard has to be on the floor itself. */
+@media (min-width:901px){.masthead{grid-template-rows:minmax(108px,auto)}}
 .masthead .mh-id{grid-column:1;grid-row:1}
 .masthead .mh-stats{grid-column:2;grid-row:1;justify-content:flex-end;margin-top:6px}
 .masthead .mh-new{grid-column:2;grid-row:2;justify-self:end;margin-top:16px}

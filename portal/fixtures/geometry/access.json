@@ -1,7 +1,7 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T13:50:21.013Z",
-  "commit": "b54a2531",
+  "recordedAt": "2026-09-11T14:46:09.911Z",
+  "commit": "280974ac",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -10,7 +10,7 @@
     "By admin": {
       "grid": {
         "examined": 367,
-        "nearMisses": 11,
+        "nearMisses": 13,
         "sizeIssues": 15,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
