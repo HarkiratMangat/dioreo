@@ -585,6 +585,19 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 
 **Two gates moved with it, and neither was relaxed.** `portalApi`'s grant-arity tripwire now pins the parameter NAMES and separates the declared arity (5) from the required floor (4), because `title`'s absence is what tells the server to leave a stored label alone — the same rule `note` already had, now with its own three checks. `portalHarness` was **red on clean HEAD**: the `/api/discord/user` stub's own comment promised an `ok`/`reason` superset it never emitted. Fixed rather than filed, since the gate's whole subject is the stub agreeing with the route.
 
+## Decided 2026-09-11 18:42 EDT — Access loses a view, and the bracket settles
+
+| The decision | Falsifier |
+|---|---|
+| **By permission is DISABLED, not deleted** — one flag, `BY_PERMISSION` in `portal/ui/access.js` | `ByScope` stops being referenced, or the flag gains a second reader |
+| A view switcher with **one option is not rendered at all** — a general Shell rule, not an Access special case | `.seg` appears on a realm with a single `viewOptions` entry |
+| The tier bracket is `--rule2` **at rest** and the permission's own colour **on hover** | A resting row's `border-left-color` is anything but `--rule2` |
+| Within a tier, **weight** says command-or-page (2px / 1px) and **colour** says which permission | The two tiers stop differing in width, or the accent appears without a pointer |
+
+**The flag is the whole mechanism and nothing else is conditional on it.** `singlePointsOfFailure` is still fetched and still drives the grid's own marks — this hides a VIEW, not a fact. `ByScope` stays referenced inside the flagged branch on purpose, so it remains live code rather than an orphan a later sweep deletes on sight. Flip to `true` and the view, its tab, its command-palette entry and its styles all return.
+
+⚠️ **The accent-at-rest version shipped for about four minutes and was wrong.** He said he liked "the left border being accent color" having watched it fire on the row under his pointer; it was read as a permanent paint and gave twelve rows a permanent coloured spine. A resting state that announces is not the same as a hover that answers.
+
 ## Decided 2026-09-11 — Access and Armory, live corrections from him watching dev-portal.dioreo.app
 
 *Answered via `AskUserQuestion` before anything was built, not derived. He was testing the tunneled signed-in portal in his own browser in real time; each decision below was made against the actual render, not a description of it.*

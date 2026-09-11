@@ -3181,7 +3181,13 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    the by admin panel as well?" It also tidies the realm's own rule rather than bending it -- WEIGHT carries
    the tier, 2px against 1px, and COLOUR carries the topic, which is the split this grid states everywhere
    else. `--c` comes from `tr.prow`'s own style, set for the HELD count, so nothing new is threaded through. */
-.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--c,var(--rule2));padding-left:20px}
+/* 🔴 THE ACCENT IS THE HOVER, NOT THE RESTING STATE, and I got that backwards. He said he liked "the left
+   border being accent color" having seen it fire on the row under his pointer; I read it as a permanent
+   paint and gave twelve rows a permanent coloured spine -- 2026-09-11 18:41 EDT, "it was only displaying the
+   colored border when specifically hovering over that row... i dont want it always displayed". At rest the
+   bracket is `--rule2` and says only which tier the row is in, by WEIGHT; the colour arrives when you point
+   at it, which is the row answering rather than announcing. */
+.mx tbody[data-grp=command] td.mxc-name{border-left:2px solid var(--rule2);padding-left:20px}
 .mx tbody[data-grp=command] .gh td:first-child{border-left:2px solid var(--rule2)}
 /* 🔴 ONE LEFT EDGE FOR ALL TWELVE, AND THE BRACKET'S WEIGHT CARRIES THE TIER INSTEAD. The page tier was
    indented 13px further than the command tier -- 2px border + 20px against 1px + 34px -- so the two blocks
@@ -3190,7 +3196,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    sides, so this is not a regression from today's work, it is a thing that has been wrong since the tier
    brackets went in and he is the first to look at it straight. The signal that remains is the bracket being
    2px against 1px, plus the heading's own size and ink -- both of which say "tier" without moving the text. */
-.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--c,var(--rule2));padding-left:21px}
+.mx tbody[data-grp=page] td.mxc-name{border-left:1px solid var(--rule2);padding-left:21px}
 .mx tbody[data-grp=page] .gh td:first-child{border-left:1px solid var(--rule2);padding-left:1px}
 /* the bracket closes with a foot on the group's last row, so it encloses rather than merely runs alongside */
 .mx tbody.grp tr[data-last] td.mxc-name{position:relative}
@@ -3209,9 +3215,9 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    the row under the pointer, where it used to light every row in the tier at once. Harkirat, 2026-09-11 17:01 EDT. */
 .mx tbody.grp tr.prow:hover .pname b{color:var(--ink)}
 .mx tbody.grp tr.prow:hover .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-/* The bracket is already the permission's colour at rest, so the hover cannot be "light the bracket" any
-   more -- it THICKENS instead, which is the one change that reads without introducing a second colour. */
-.mx tbody.grp tr.prow:hover td.mxc-name{box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 60%,transparent)}
+/* And the hover lights it in the permission's OWN colour rather than a neutral -- the one improvement that
+   survives from the version he corrected: the bracket and the swatch it sits beside are the same object. */
+.mx tbody.grp tr.prow:hover td.mxc-name{border-left-color:var(--c)}
 /* 🔴 AND THE SECTION HEADING IS THE SAME GESTURE AT THE TIER'S SCALE: hovering "Commands" puts all four of
    its permissions into the row hover state and runs the bracket from the first of them up past the heading
    itself, so the thing the label names is outlined rather than merely described. `:has` is what makes a
@@ -3220,7 +3226,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    rather than assumed. */
 .mx tbody.grp:has(.gh td:hover) .pname b{color:var(--ink)}
 .mx tbody.grp:has(.gh td:hover) .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-.mx tbody.grp:has(.gh td:hover) td.mxc-name{box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 60%,transparent)}
+.mx tbody.grp:has(.gh td:hover) td.mxc-name{border-left-color:var(--c)}
 .mx tbody.grp:has(.gh td:hover) .gh td:first-child{border-left-color:var(--ink3)}
 @media (prefers-reduced-motion:reduce){.pname b,.pname i{transition:none}}
 
@@ -3404,10 +3410,10 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    at 17:33 today. */
 .scope{display:grid;grid-template-columns:250px 1fr auto;gap:14px;align-items:center;
   padding:9px 12px 9px 18px;background:var(--paper);
-  border-left:2px solid var(--c);
-  transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+  border-left:2px solid var(--rule2);
+  transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
 .scope[data-kind=page]{border-left-width:1px;padding-left:19px}
-.scope:hover{background:var(--hi);box-shadow:inset 3px 0 0 -1px color-mix(in srgb,var(--c) 55%,transparent)}
+.scope:hover{background:var(--hi);border-left-color:var(--c)}
 /* 🔴 THE SWATCH IS BACK. `.scope .nm i{display:none}` hid it, so this list had a `--c` on every row and
    nothing wearing it -- twelve permissions the grid tells apart by colour, rendered as twelve identical lines
    of text. Same 15x8 pill as `.pname i`, same ring on hover, because it is the same object. */

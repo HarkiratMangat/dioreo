@@ -574,10 +574,18 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                                         <button key=${m} role="tab" data-arm=${m} aria-selected=${m === mode ? 'true' : 'false'}
                                                 onClick=${() => onSetMode(m)}>${m}</button>`)}
                                 </div>` : null}
-                            <div class="seg" role="tablist" aria-label="View">
-                                ${viewOptions.map((v) => html`
-                                    <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
-                            </div>
+                            <!-- ⚠️ ONE OPTION IS NOT A CHOICE, so it does not get a control. A single-tab
+                                 tablist reads as a disabled switcher -- a thing you could press that would do
+                                 nothing -- and the realm's title beside it already says where you are. The bar
+                                 itself stays, because it carries the title, the tools, the key and the meta;
+                                 only the segmented control goes. Added when Access dropped to one view,
+                                 2026-09-11 18:40 EDT, and written as a general rule rather than a special case
+                                 because the next realm to lose a view should not have to discover this. -->
+                            ${viewOptions.length > 1 ? html`
+                                <div class="seg" role="tablist" aria-label="View">
+                                    ${viewOptions.map((v) => html`
+                                        <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
+                                </div>` : null}
                             <!-- ⚠️ ORDER IS THE DESIGN'S, AND IT WAS WRONG. The bar reads title · views · the
                                  view's own controls · what the marks mean · where you are — so the Track's zoom
                                  group sits with the views it changes, and the two explanatory pieces close the

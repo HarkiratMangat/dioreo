@@ -1002,6 +1002,12 @@ Harkirat asked for the last 5–10 sessions to stay in the "Signed in right now"
 
 **Verify by:** signing out, then seeing that session still listed in red with a spelled-out age — and, separately, confirming that a session whose `createdAt` is older than 12 hours is refused by `authSession` even though its document is still present.
 
+### `[P3 · XS]` ACCESS "BY PERMISSION" IS DISABLED BEHIND A FLAG — decide whether it ever comes back — filed 2026-09-11 18:42 EDT
+
+Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission' panel. can you just indefinetely disable and hide it? dont delete it."* `BY_PERMISSION = false` in `portal/ui/access.js` hides the view, its tab, and its command-palette entry; `ByScope`, its styles and its fixtures are untouched and the function stays referenced inside the flagged branch so it is not mistaken for dead code.
+
+**This is a live-code cost with no reader**, which is the same shape as the tooltip item below it: a whole component and roughly 60 lines of CSS maintained for a surface nobody opens. **Do:** either flip the flag back with a reason, or delete `ByScope`, its `.scope`/`.scbandh`/`.holder` rules and the `#by-scope` overlay coverage together. **Verify by:** a decision either way, not by the flag still being there.
+
 ### `[P3 | S | Sonnet5-Medium]` TOOLTIP REDESIGN - the runtime is disabled, not deleted - filed 2026-09-11 14:27 EDT
 
 `installTips()` returns early portal-wide at his instruction, and every `data-tip` attribute is still in the markup, so the redesign is a rewrite of one file plus re-enabling one line. **Verify by:** a hint he does not call ugly.

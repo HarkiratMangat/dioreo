@@ -1,16 +1,16 @@
 {
   "realm": "access",
-  "recordedAt": "2026-09-11T22:38:57.002Z",
-  "commit": "b31b505d",
+  "recordedAt": "2026-09-11T22:42:37.076Z",
+  "commit": "c4e19df6",
   "viewport": {
     "w": 1282,
     "h": 888
   },
   "views": {
-    "By admin": {
+    "(single view)": {
       "grid": {
-        "examined": 410,
-        "nearMisses": 13,
+        "examined": 407,
+        "nearMisses": 15,
         "sizeIssues": 138,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -155,10 +155,7 @@
       },
       "inventory": {
         "h1": "Access",
-        "tabs": [
-          "By admin",
-          "By permission"
-        ],
+        "tabs": [],
         "cols": [
           "Permission",
           "Diorowner",
@@ -167,42 +164,6 @@
           "GunsmithGunsmith Lead",
           "Held"
         ],
-        "sections": []
-      }
-    },
-    "By permission": {
-      "grid": {
-        "examined": 288,
-        "nearMisses": 10,
-        "sizeIssues": 18,
-        "sizeGroups": [
-          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
-          "[object>[object.SVGAnimatedString]|h",
-          "[object>[object.SVGAnimatedString]|w",
-          "callout>b|TOP-OFFSET",
-          "hs>holder|w",
-          "k>mxlegend.sw|TOP-OFFSET",
-          "k>mxlegend.sw|TOP-OFFSET",
-          "lrow>k|TOP-OFFSET",
-          "lrow>k|TOP-OFFSET",
-          "lrow>span|TOP-OFFSET",
-          "lrow>span|TOP-OFFSET",
-          "mxlegend-box>lrow|TOP-OFFSET",
-          "mxlegend-box>lrow|TOP-OFFSET",
-          "mxlegend-box>lrow|h",
-          "root>b|TOP-OFFSET",
-          "root>b|TOP-OFFSET",
-          "stat>k|TOP-OFFSET",
-          "stat>v|TOP-OFFSET"
-        ]
-      },
-      "inventory": {
-        "h1": "Access",
-        "tabs": [
-          "By admin",
-          "By permission"
-        ],
-        "cols": [],
         "sections": []
       }
     }

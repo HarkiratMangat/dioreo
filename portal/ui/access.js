@@ -676,6 +676,9 @@ function ByScope({ matrix, spof, ownerId, nameOf, who }) {
     `;
 }
 
+// 🔴 BY PERMISSION IS DISABLED, NOT DELETED, AND THIS FLAG IS THE ONLY THING HOLDING IT SHUT. Harkirat, 2026-09-11 18:40 EDT: "i dont even see a point in the 'by permission' panel. can you just indefinetely disable and hide it? dont delete it." Flip this to `true` and the view, its tab, its command-palette entry and its styles all come back exactly as they were -- `ByScope` is still referenced below, under this flag, precisely so it stays live code rather than an orphan a later sweep deletes on sight. ⚠️ NOTHING ELSE IS CONDITIONAL ON IT. `singlePointsOfFailure` is still fetched and still drives the grid's own spof marks; this hides a VIEW, not a fact.
+const BY_PERMISSION = false;
+
 export function AccessRealm({ session }) {
     // Both endpoints in ONE useAsync, because they are one page: two hooks would give the realm two independent phases and a screen that is half skeleton and half table, which reads as a rendering bug rather than as loading. ⚠️ `/api/review` RIDES ALONG for the rail's staged badge, in the SAME `useAsync` so the realm still has one loading phase. It is deliberately NOT run through `failureOf`: a 403 on review must not take down the Access page, which an admin can legitimately hold without holding Review.
     const load = useAsync(() => Promise.all([fetchJson('/api/access'), fetchJson('/api/access/matrix'), fetchJson('/api/review')])
@@ -885,7 +888,7 @@ export function AccessRealm({ session }) {
 
     // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
-        <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${['By admin', 'By permission']} onSetView=${setView}
+        <${Shell} realm="access" session=${session} busy=${load.hostClass} view=${view} viewOptions=${BY_PERMISSION ? ['By admin', 'By permission'] : ['By admin']} onSetView=${setView}
                   ${''/* ⛔ NO realmKey. The view bar carried direct / inherited / the amber count / owner-grantable -- the same four marks the foot legend states better, a few hundred pixels above it. Two authorities for one fact is the defect this realm's own comments keep recording being fixed, and this pass added the second one without removing the first. */}
                   meta=${viewMeta}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
@@ -928,7 +931,7 @@ export function AccessRealm({ session }) {
                   footSlot=${html`<${Sessions} sessions=${data.sessions || []} onEnd=${confirmEndSessions} nameOf=${nameOf} who=${who} ttlHours=${data.sessionTtlHours ?? 12} />`}
                   viewSlot=${html`
                       ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
-                      ${view === 'By admin'
+                      ${!BY_PERMISSION || view === 'By admin'
                           ? html`<${ByAdmin} matrix=${matrix} spof=${data.singlePointsOfFailure}
                                              onRevoke=${confirmRevoke} onSave=${confirmSave} onEdit=${setEditAdmin}
                                              highlightId=${highlightId}
