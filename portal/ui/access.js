@@ -326,15 +326,17 @@ function ByAdmin({ matrix, spof, onSave, onRevoke, onEdit, onExplain, isOwnerId,
         if (isOwner) {
             return html`<td key=${a.discordId} class="mxc owncol"><span class=${cls} role="img" aria-checked="true" style=${style}
                 aria-label=${`${sc.label}: held by the owner, not editable`}
-                data-tip="The owner short-circuits every check"></span></td>`;
+                data-tip="The owner short-circuits every check"><i></i></span></td>`;
         }
-        return html`<td key=${a.discordId} class=${'mxc' + (pend !== undefined ? ' staged' : '')} style=${`--ed:${editColor(a)}`}>
+        // 🔴 THE BUTTON FILLS THE CELL AND THE SWATCH IS INSIDE IT. A 16px control centred in a 38px row means
+    // most of a cell is a miss, and the row was showing a pointer over all of it anyway -- `tbody tr` carries an unscoped `cursor:pointer` for the manifest tables, so every dead pixel here advertised a click it could not take. The <i> is the square; the button is the target. Harkirat, 2026-09-11 17:01 EDT.
+    return html`<td key=${a.discordId} class=${'mxc' + (pend !== undefined ? ' staged' : '')} style=${`--ed:${editColor(a)}`}>
             <button class=${cls} style=${style}
                 data-pend=${pend === undefined ? null : (pend ? 'on' : 'off')}
                 role="checkbox" aria-checked=${on ? 'true' : 'false'}
                 aria-label=${`${sc.label} for …${a.discordId.slice(-6)}: ${what}${willBe}`}
                 data-tip=${`${sc.label} — ${what}${willBe}`}
-                onClick=${() => toggle(a, sc)}></button></td>`;
+                onClick=${() => toggle(a, sc)}><i></i></button></td>`;
     };
 
     return html`

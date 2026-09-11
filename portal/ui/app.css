@@ -2118,7 +2118,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
  * Access is the one ACHROMATIC realm on purpose: its subject is the other
  * realms, so every colour on the page is borrowed from the scope it governs
  * rather than invented for the page itself. */
-.mxwrap{margin:16px;padding:14px 16px 6px;overflow-x:auto;border:1px solid var(--rule);
+.mxwrap{margin:16px;padding:14px 16px 16px;overflow-x:auto;border:1px solid var(--rule);
   border-radius:var(--rad-2);background:var(--raised)}
 .mx{border-collapse:separate;border-spacing:0;width:100%;min-width:640px}
 .mx th,.mx td{border-bottom:1px solid var(--rule3);padding:0}
@@ -2146,23 +2146,25 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .mxgr{font-style:normal;color:var(--ink3);margin-left:4px}
 .mxcell{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid var(--rule2);background:transparent;
   display:inline-grid;place-items:center;cursor:pointer;transition:all var(--dur-1) var(--ease);padding:0}
-.mxcell:hover{border-color:var(--ink3);transform:scale(1.08)}
-.mxcell:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+/* The whole cell is the target, so the FEEDBACK is on the mark: the button growing would move its neighbours. */
+.mxcell:hover i{border-color:var(--ink3);transform:scale(1.08)}
+.mxcell:focus-visible{outline:none}
+.mxcell:focus-visible i{outline:2px solid var(--staged);outline-offset:3px}
 /* 🔴 `:not(.inh)` IS LOAD-BEARING, AND ITS ABSENCE SURVIVED THE FIX THAT CLAIMED TO REMOVE IT. An inherited cell keeps `aria-checked=true` -- an inherited permission IS held -- so this rule and `.mxcell.inh` below both match it at IDENTICAL specificity (0,2,0), and the hollow ring won only because `.inh` is declared later in the file. Dropping the `.on` class removed one fill source and left this one, while the commit message said the source-order dependency was gone. Moving these two rules apart would have filled every inherited cell solid. */
-.mxcell[aria-checked=true]:not(.inh){background:var(--c);border-color:var(--c)}
+.mxcell[aria-checked=true]:not(.inh) i{background:var(--c);border-color:var(--c)}
 .mxcell[aria-checked=true]::after{content:"";width:9px;height:5px;border-left:2px solid var(--on-accent);
   border-bottom:2px solid var(--on-accent);transform:rotate(-45deg) translate(1px,-1px)}
-.mxcell.staged{background:transparent;border:1.5px dashed var(--c)}
+.mxcell.staged i{background:transparent;border:1.5px dashed var(--c)}
 .mxcell.staged::after{border-color:var(--c)}
 /* The owner's column is a STATEMENT, not a disabled control: it is quieted by its ground rather than
    by fading its marks, which read as broken rather than as built-in. */
 /* 🔴 A DISABLED COLUMN DIMS ITS MARKS; IT DOES NOT TINT ITS GROUND. A grey wash behind the owner's cells
    read as a broken table rather than as "these are not yours to change", and it fought the edit-colour tint
    that means something two columns over. The swatches themselves carry the state. Harkirat, 2026-09-11 16:40 EDT. */
-.mx td.mxc.owncol .mxcell{opacity:.42}
+.mx td.mxc.owncol .mxcell i{opacity:.42}
 .mx thead th.owncol .colh{cursor:default}
 .mx thead th.owncol:hover{background:none}
-.mxcell[role=img]:hover{transform:none;border-color:var(--rule2)}
+.mxcell[role=img]:hover i{transform:none;border-color:var(--rule2)}
 .mxrole{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink2)}
 .mxrole.admin{border-color:var(--info);color:var(--info)}
@@ -3074,6 +3076,12 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .mx tbody.grp .ghead{gap:0}
 .mx tbody.grp .ghead h4{margin:0;display:flex;align-items:center;gap:10px;flex:1;
   font:700 15px/1.15 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+/* 🔴 THE RULE FROM THE NAME TO THE FIGURE, ON THESE TWO HEADINGS AND NOWHERE ELSE. It was removed on
+   2026-09-11 14:15 EDT as an invention of mine; he asked for it back at 17:01 EDT having seen the same
+   device on the drawer's two chip tiers, where it reads as one object rather than a label and a stray
+   number. h4 is already the flex child that takes the slack, so the rule simply fills it: its right edge
+   lands at the HELD column's left edge by construction, not by a number anybody has to maintain. */
+.mx tbody.grp .ghead h4::after{content:"";flex:1;height:1px;background:var(--rule);margin:0 4px 0 2px}
 .mx tbody[data-grp=page] .ghead h4{color:var(--ink2);font-size:13.5px}
 /* Beside its own title, before the rule -- in the Held column's x it read as a Held number for a row
    that does not exist. */
@@ -3101,14 +3109,35 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    full ink, its swatch takes a ring in its own colour, and the tier's bracket lights for as long as you
    are inside it. Nothing else moves, nothing changes size, nothing below reflows. */
 .pname b,.pname i{transition:color var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
-.mx td.mxc-name:hover .pname b{color:var(--ink)}
-.mx td.mxc-name:hover .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
-.mx tbody[data-grp=command]:hover td.mxc-name{border-left-color:var(--ink3)}
-.mx tbody[data-grp=page]:hover td.mxc-name{border-left-color:var(--ink4)}
+/* 🔴 THE ROW IS THE UNIT, NOT THE NAME CELL. Pointing at a cell twelve columns across is still asking about
+   THAT permission, so the pill and the bracket answer from anywhere in the row -- and the bracket lights only
+   the row under the pointer, where it used to light every row in the tier at once. Harkirat, 2026-09-11 17:01 EDT. */
+.mx tbody.grp tr.prow:hover .pname b{color:var(--ink)}
+.mx tbody.grp tr.prow:hover .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
+.mx tbody.grp tr.prow:hover td.mxc-name{border-left-color:var(--ink3)}
+/* 🔴 AND THE SECTION HEADING IS THE SAME GESTURE AT THE TIER'S SCALE: hovering "Commands" puts all four of
+   its permissions into the row hover state and runs the bracket from the first of them up past the heading
+   itself, so the thing the label names is outlined rather than merely described. `:has` is what makes a
+   heading reach its own later siblings; verified supported in the harness Chrome before this was written,
+   rather than assumed. */
+.mx tbody.grp:has(.ghead h4:hover) .pname b{color:var(--ink)}
+.mx tbody.grp:has(.ghead h4:hover) .pname i{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent)}
+.mx tbody.grp:has(.ghead h4:hover) td.mxc-name,
+.mx tbody.grp:has(.ghead h4:hover) .gh td:first-child{border-left-color:var(--ink3)}
 @media (prefers-reduced-motion:reduce){.pname b,.pname i{transition:none}}
 
 /* a permission is a swatch and a name, on one baseline */
-.pname{display:flex;align-items:center;gap:10px;cursor:help}
+/* 🔴 EVERY POINTER COMPLAINT ON THIS PANEL HAD ONE CAUSE AND IT IS NOT IN THIS BLOCK: `tbody tr` carries a
+   bare, global `cursor:pointer` (app.css:405) for the manifest tables' row click, and it inherits into every
+   cell of this grid -- the name cells, the HELD numbers, the section headings, and all the dead space around
+   a 16px swatch. Measured 2026-09-11 17:02 EDT: td.mxc, td.mxc-name, td.mxc-held and the heading cell ALL
+   computed `pointer`. Neutralised inside `.mx` only rather than deleted, because the manifest rows are
+   genuinely clickable and that rule is theirs. Then each kind of cell states its own. */
+.mx tbody tr{cursor:default}
+.mx td.mxc{cursor:pointer}
+.mx td.mxc-name,.mx td.mxc-held,.mx tbody.grp .gh td,.mx tbody.grp .ghead,.mx tbody.grp .ghead h4{cursor:default}
+/* and the `?` he asked about twice: a help cursor on a label and on an inherited cell. */
+.pname{display:flex;align-items:center;gap:10px;cursor:default}
 .pname i{display:block;width:15px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none}
 .pname b{font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink);letter-spacing:.01em}
 .pname .ownly-k{display:inline-flex;font-style:normal;line-height:0;color:var(--danger-ink)}
@@ -3210,17 +3239,23 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 /* SHAPE carries the distinction, not brightness alone: a DIRECT grant is a filled square, an
  * INHERITED one is a hollow ring. Reading "paler = inherited" needs both cells side by side;
  * the ring reads on its own, which is what a colour-blind or low-contrast reader gets. */
-.mxcell{width:16px;height:16px;border-radius:4px;border:1px solid var(--rule2);background:transparent;
-  display:block;margin:0 auto;padding:0;cursor:default}
-.mxcell.on{background:var(--c);border-color:var(--c)}
+/* 🔴 THE CONTROL IS THE CELL AND THE SQUARE IS INSIDE IT. Every box declaration below moved from the button
+   to its `<i>`, so the button can be 100% of a 38px row without the mark growing with it. Nothing about the
+   mark's appearance changed -- this is a target change, checked by measuring the `i` against the old 16px. */
+.mx td.mxc{position:relative}
+.mxcell{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;border:0;background:none;margin:0;padding:0;border-radius:0}
+.mxcell i{display:block;width:16px;height:16px;border-radius:4px;border:1px solid var(--rule2);
+  background:transparent;position:relative}
+.mxcell.on i{background:var(--c);border-color:var(--c)}
 /* 🔴 THE RING NAMES ITS SOURCE. An inherited page did not come from nowhere -- a command carries it --
    so the ring wears that command's colour rather than the page's own, and reading down a column tells you
    WHICH grant is doing the covering. `--from` is set only on an inherited cell; the fallback keeps a cell
    legible if a future conferring command has no colour yet. Harkirat, 2026-09-11 13:13 EDT. */
-.mxcell.inh{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
-.mxcell[data-pend]{outline:2px solid var(--ed,var(--staged));outline-offset:2px}
+.mxcell.inh i{background:transparent;border:2px solid var(--from,var(--c));opacity:.85}
 /* The owner's cells are stated, not editable -- and they are the only ones rendered as role="img". */
 .mxcell[role=img]{cursor:default}
+.mxcell{cursor:pointer}
 /* 🔴 THE RING WAS A STATE MARK PAINTED IN COLOUR, ON TOP OF A TOPIC COLOUR, AND IT WON.
    Harkirat: "the orange ring is just bad. it hides and swallows the color it's surrounding."
    Measured on the header bars: a 22x7px pill with a 2px ring loses roughly HALF its visible
@@ -4273,7 +4308,7 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
    <button> now, so everything below is about making a PENDING state legible against a
    saved one at 16px. */
 .mxcell{cursor:pointer;padding:0}
-.mxcell.inherited{cursor:help}
+.mxcell.inherited{cursor:pointer}
 /* 🔴 THE 26px CELL'S CHECKMARK RENDERS AS A BLACK BAR AT THIS SIZE, AND THIS GRID DOES NOT WANT IT.
    `.mxcell[aria-checked=true]::after` draws a tick from two rotated borders, centred only by the 26px
    rule's `display:inline-grid;place-items:center` — which the 16px `.mxcell` rule above REPLACES with
@@ -4293,11 +4328,11 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* Pending reads as "what it WILL be, not yet written": the fill or the emptiness is the
    future state, and the dashed --staged ring is what marks it unsaved. Same dashed-and-
    hollow language the Track already uses for staged bars, so it is learned once. */
-.mxcell[data-pend]{position:relative;box-shadow:0 0 0 2px var(--desk),0 0 0 3.5px var(--staged)}
-.mxcell[data-pend=off]{background:transparent;border-color:var(--danger-edge)}
-.mxcell[data-pend=off]::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
+.mxcell[data-pend] i{box-shadow:0 0 0 2px var(--desk),0 0 0 3.5px var(--staged)}
+.mxcell[data-pend=off] i{background:transparent;border-color:var(--danger-edge)}
+.mxcell[data-pend=off] i::before{content:"";position:absolute;left:50%;top:50%;width:9px;height:1.5px;
   background:var(--danger-ink);transform:translate(-50%,-50%)}
-.mx tbody tr:hover .mxcell:not([role=img]){border-color:var(--ink4)}
+.mx tbody tr:hover .mxcell:not([role=img]) i{border-color:var(--ink4)}
 /* 🔴 THE FLEX GOES ON AN INNER SPAN, NOT ON THE <td>. `display:flex` on a table cell takes
    it out of the table's own layout — it stops participating in column sizing, which is the
    one job a cell has. Caught by the audit's own rule the first time this rendered; the same
