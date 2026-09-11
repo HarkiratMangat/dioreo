@@ -150,6 +150,19 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class="btn go" disabled=${!ready} onClick=${() => setArmed(true)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
+                ${tiers.map((t) => html`
+                    <div key=${t.key} class="tokgroup" data-tier=${t.key}>
+                        <h5>${t.heading}<em>${t.rows.length}</em></h5>
+                        <div class="tokgrid">
+                            ${t.rows.map((sc) => html`
+                                <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
+                                        style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
+                                        title=${sc.key} onClick=${() => toggle(sc.key)}>
+                                    <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
+                                </button>`)}
+                        </div>
+                    </div>`)}
+                <!-- 🔴 THE ID SITS UNDER THE PERMISSIONS, NOT ABOVE THEM. Harkirat, 2026-09-11 17:21 EDT. The drawer reads as a sentence in this order: here is what this account may do, here is which account, here is what to call them. The lookup preview and the granted-by line travel WITH the id rather than staying behind -- the preview exists to answer "is that the right human" about the field directly above it, and separating them would leave an avatar explaining nothing. -->
                 <div class="dwfield"><label for="grant-discordid">Discord ID</label>
                     <input id="grant-discordid" placeholder="17–20 digits" inputmode="numeric" autocomplete="off"
                            readOnly=${editing} aria-readonly=${editing ? 'true' : 'false'}
@@ -163,18 +176,6 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
                         <span class="gp-n"><b>${lookup.user.globalName || lookup.user.username}</b>
                             <span>@${lookup.user.username} · …${discordId.slice(-6)}</span></span>
                     </div>` : null}
-                ${tiers.map((t) => html`
-                    <div key=${t.key} class="tokgroup" data-tier=${t.key}>
-                        <h5>${t.heading}<em>${t.rows.length}</em></h5>
-                        <div class="tokgrid">
-                            ${t.rows.map((sc) => html`
-                                <button key=${sc.key} class=${'chip topic' + (picked.includes(sc.key) ? ' on' : '')}
-                                        style=${`--c:${accentOf(sc)}`} aria-pressed=${picked.includes(sc.key) ? 'true' : 'false'}
-                                        title=${sc.key} onClick=${() => toggle(sc.key)}>
-                                    <i></i>${sc.label || sc.key}${sc.ownerOnly ? html`<b class="ownly-k"><${Icon} name="lock" cls="sm" label="owner-grantable only" /></b>` : null}
-                                </button>`)}
-                        </div>
-                    </div>`)}
                 <div class="dwfield"><label for="grant-title">Title</label>
                     <input id="grant-title" placeholder="What they are here to do" value=${title}
                            aria-required="true" onInput=${(e) => setTitle(e.target.value)} />
