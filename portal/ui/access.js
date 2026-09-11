@@ -116,14 +116,15 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
     const chosen = (scopes || []).filter((sc) => picked.includes(sc.key));
     const submit = () => onGrant(discordId, picked, discordId, note, title.trim());
 
+    // 🔴 AND THE COMMITTING BUTTON MUST NOT SIT WHERE THE PREVIOUS ONE DID. The confirm screen was its own screen and still failed, because "Save changes" landed on the exact pixels "Save changes" had just occupied -- so a double click commits and the second step is decoration. Harkirat, 2026-09-11 17:18 EDT: "THE SAVE BUTTON IS STILL IN THE SAME SPOT. Which defeats the entire purpose." The commit takes the footer's FAR LEFT and Back takes the right, so the pixels under the cursor are the harmless action.
     if (armed) {
         return html`
             <${Drawer} eyebrow="admin.grant · tier 3 · confirm"
                        title=${editing ? `Save changes to ${label}?` : `Grant access to ${label}?`}
                        onClose=${() => setArmed(false)}
                        actions=${html`
-                           <button class="btn" onClick=${() => setArmed(false)}>Back</button>
-                           <button class="btn go" onClick=${submit}>${editing ? 'Save changes' : 'Grant access'}</button>`}>
+                           <button class="btn go cfmgo" onClick=${submit}>${editing ? 'Yes, save changes' : 'Yes, grant access'}</button>
+                           <button class="btn" onClick=${() => setArmed(false)}>Back</button>`}>
                 <div class="dwbody">
                     <p class="dw-lead">Written immediately. No review screen, no undo.</p>
                     <div class="cfm">

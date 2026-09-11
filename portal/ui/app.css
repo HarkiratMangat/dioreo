@@ -5812,6 +5812,8 @@ button .ic,a .ic{pointer-events:none}
 .cfmrow code{font-family:var(--data);font-size:var(--t-sm);color:var(--ink2)}
 .cfmrow em{font-style:normal;color:var(--ink3)}
 .cfmchips{display:flex;flex-wrap:wrap;gap:6px}
+/* The confirming button takes the footer's far left so it cannot inherit the previous click's position. */
+.cfmgo{margin-right:auto}
 /* Revoking is the one irreversible thing this drawer does, and it was rendering as an ordinary grey button
    beside Cancel. `.btn.danger` was written at the call site and had never existed in the stylesheet. */
 .btn.danger{color:var(--danger-ink);border-color:var(--danger-edge);
