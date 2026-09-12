@@ -11,6 +11,15 @@ function confirmMatchesTarget(confirmText, discordId) {
     return typeof confirmText === 'string' && confirmText === discordId;
 }
 
+// 🔴 AN ABSENT `note` MEANS "LEAVE IT ALONE", NEVER "SET IT TO EMPTY" — and the difference was live data loss, found 2026-09-09 09:49 EDT. This route has two callers. The Grant drawer always sends a `note` string, because its own field is `useState('')`. The grid's row Save did not: `portal/ui/access.js`'s `confirmSave` called a four-parameter `grant()` with three arguments, `JSON.stringify` drops an `undefined` value rather than sending `null`, so the body arrived with no `note` key at all — and `note: body.note || ''` turned that absence into `''`, which Mongoose writes as a `$set` because the update document carries no operators. **Adjusting anybody's permissions silently erased their label**, which is the only thing telling `…000001` from `…000003` on a screen of Discord snowflakes, under a toast reading "Permissions saved." The doc is built here rather than inline so the distinction is testable without a database, and so the fix defends the SERVER rather than only the one caller that was wrong: an empty string sent on purpose still clears the label, absence never does.
+function adminGrantDoc({ discordId, grantedBy, permissions, note, title }) {
+    const doc = { discordId, grantedBy, permissions };
+    if (typeof note === 'string') doc.note = note;
+    // `title` takes the identical absent-means-leave-alone rule as `note` above, and for the identical reason: the grid's own row Save posts permissions only, so a fifth key it never sends must not be read as an instruction to clear the label it is not editing.
+    if (typeof title === 'string') doc.title = title;
+    return doc;
+}
+
 function ownerOnly(handler) {
     return async (req, res, url, session) => {
         if (!isOwner(session.discordId)) return forbidden(res, 'Access is owner-only.');
@@ -45,12 +54,14 @@ function singlePointsOfFailure(admins) {
     return spof;
 }
 
-// Human-readable column labels for MANAGE_PAGE_SCOPES -- read from commands/manage.js's own content-picker choices (the real, already-shipped display names) rather than inventing new copy, per this repo's naming convention.
+// Human-readable column labels for MANAGE_PAGE_SCOPES -- read from commands/manage.js's own content-picker choices (the real, already-shipped display names) rather than inventing new copy, per this repo's naming convention. These labels are the PORTAL's, not the bot's -- `manageActions.js` keeps its own and /manage in Discord is untouched by anything here. Renamed 2026-09-11 13:13 EDT at Harkirat's request: MP and DMZ did not say what they were, and Season read as the whole realm when it is one page about the title and the dates.
 const PAGE_LABELS = {
-    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP', loadouts_dmz: 'DMZ',
-    patchnotes: 'Patch Notes', seasondraft: 'Season Draft', season: 'Season', announcement: 'Announcement',
+    draws: 'Draws', calendar: 'Calendar', loadouts_mp: 'MP Loadouts', loadouts_dmz: 'DMZ Loadouts',
+    patchnotes: 'Patch Notes', seasondraft: 'Season Draft', season: 'Season Title/Dates',
+    announcement: 'Announcements',
 };
-const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot' };
+// ⚠️ `destructive` HAD NO ENTRY, so it rendered as its raw lowercase key beside three title-cased neighbours -- the label table was written before the fourth command existed and nothing re-read it.
+const COMMAND_LABELS = { manage: 'Manage', autobuild: 'Autobuild', bot: 'Bot', destructive: 'Destructive' };
 
 // Gap audit §3.2: the permission-grid data this needs already exists (getAdminPermissionsMap, MANAGE_PAGE_SCOPES) -- this reuses the EXACT same scope enumeration singlePointsOfFailure() above already established, rather than a second list that could drift from it. Shaped for a grid component directly (rows=admins, columns=scopes), not a raw dump of AdminUser docs.
 function buildPermissionMatrix(admins) {
@@ -79,7 +90,7 @@ function buildPermissionMatrix(admins) {
         const grantedAt = admin.grantedAt
             ? new Date(admin.grantedAt)
             : (admin._id ? new Date(parseInt(String(admin._id).slice(0, 8), 16) * 1000) : null);
-        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', grantedAt };
+        return { discordId: admin.discordId, grants, permissions: perms, grantedBy: admin.grantedBy || null, note: admin.note || '', title: admin.title || '', grantedAt };
     });
     return { admins: rows, scopes };
 }
@@ -118,6 +129,7 @@ function register(route) {
             // A cell says what it IS, not merely whether it is on: "direct" and "inherited" are different facts, and a boolean grid would be the string this page exists to replace. ⚠️ THE SHAPE IS `{admins:[{discordId, grants:{key:{direct,inherited}}}], scopes:[{key,label}]}` -- read off buildPermissionMatrix rather than guessed. A first draft here reached for a top-level `m.grants[id]` that does not exist, which would have written a CSV of empty cells: a well-formed file asserting that nobody holds anything.
             const cols = [
                 { label: 'Admin', get: (r) => r.discordId },
+                { label: 'Title', get: (r) => r.title || r.note },
                 { label: 'Note', get: (r) => r.note },
                 ...(m.scopes || []).map((sc) => ({
                     label: sc.label || sc.key,
@@ -154,7 +166,7 @@ function register(route) {
 
         await AdminUser.findOneAndUpdate(
             { discordId: body.discordId },
-            { discordId: body.discordId, grantedBy: session.discordId, permissions, note: body.note || '' },
+            adminGrantDoc({ discordId: body.discordId, grantedBy: session.discordId, permissions, note: body.note, title: body.title }),
             { upsert: true, new: true }
         );
         invalidateAdminCache();
@@ -202,4 +214,4 @@ function register(route) {
     })));
 }
 
-module.exports = { register, singlePointsOfFailure, buildPermissionMatrix };
+module.exports = { register, singlePointsOfFailure, buildPermissionMatrix, adminGrantDoc };

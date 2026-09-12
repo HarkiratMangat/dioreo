@@ -72,8 +72,11 @@ check('the class names the tier emits are the ones app.css actually declares', (
     const keys = rackCategories(BUILDS).flatMap((c) => c.groups.map((g) => g.tierKey));
     assert.deepStrictEqual([...new Set(keys)].sort(), ['best', 'top3', 'top5', 'unranked'],
         'the fixture must exercise more than one tier, or the css check below proves almost nothing');
+    // 🔴 STRIP COMMENTS FIRST — THIS CHECK NEVER WORKED WITHOUT IT (found 2026-09-07 01:16 EDT). `css.includes('.t-top3')` is a substring test, and the only occurrence of that token in app.css was inside a COMMENT enumerating the retired `.trow.t-*` selectors. So the gate reported a conservation property it was not measuring: `.bgrp.t-top3` had no rule at all and this passed, for an unknown length of time. It only went red when an unrelated comment rewrite removed the word — a check whose pass depends on prose is a check that cannot fail for the right reason, which this repo's own standard calls worse than no check. ⚠️ AND THE SELECTOR MUST BE A REAL ONE, not just a non-comment substring: `.t-top3` appearing inside a longer identifier is not a declaration either. It must be followed by a character that can legally end a class name in a selector.
+    const code = css.replace(/\/\*[\s\S]*?\*\//g, ' ');
     for (const k of new Set(keys)) {
-        assert.ok(css.includes(`.t-${k}`), `.t-${k} is emitted by RANK_KEY and declared nowhere in app.css`);
+        assert.ok(new RegExp(`\\.t-${k}(?![\\w-])`).test(code),
+            `.t-${k} is emitted by RANK_KEY and declared nowhere in app.css (comments do not count)`);
     }
 });
 

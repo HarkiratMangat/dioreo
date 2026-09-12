@@ -273,6 +273,32 @@ check('THE WRAP GATE CAN FAIL: a line ending in a word followed by <b> is caught
     assert.ok(!INLINE_TEXT_TAG.test('${staged ? html`<span class="cnt">'), 'an expression is deliberately NOT gated — see the note above');
 });
 
+// 🔴 THE THIRD QUADRANT OF THE SAME TRAP, AND A CENSUS IS WHY IT IS THIS ONE RATHER THAN A GUESS. The two gates above cover a line ending in a WORD before an inline tag, and one ending in an EXPRESSION before a word — which leaves the third corner unwatched: a line ending in a CLOSING inline tag before a word. Counting every line-end -> line-start pair across `portal/ui/*.js` on 2026-09-08 gave word->word 2691 (never a defect: the text node does not end, so htm keeps the space), expr->word 357 (gated above), expr->expr 78, expr->inlineTag 21 (deliberately declined above), closeTag->expr 8, **closeTag->word 3**, closeTag->inlineTag 1, word->expr 1. All three closeTag->word pairs were real and all three were rendering: Armory's empty states read "Nothing in this armory yet.A build is a weapon". The census is the reason this gate is narrow by measurement rather than by hope — the same file's own note warns that 137 tag adjacencies are not 137 defects, and a gate that says otherwise gets suppressed.
+//
+// ⚠️ THE CLOSING TAG MUST CARRY TEXT, and that one requirement is the difference between this gate and a false-positive machine. `<i style=${…}></i>` is a POSITIONED GRAPHIC — `analytics.js:551` puts one immediately before a `<b class="deadline">` — and a space between two positioned elements means nothing, so an empty tag must never fire. Requiring a word character immediately before the `</…>` is the same discrimination the note above makes for expressions, applied to the other side of the break.
+const CLOSING_TEXT_TAG = /[A-Za-z0-9.,;:!?)\]"']<\/(b|code|em|i|strong|abbr|kbd|sup|sub)>$/;
+check('no closing inline tag wraps straight into a word, losing the space between them', () => {
+    const dir = path.join(__dirname, '..', 'portal', 'ui');
+    const offenders = [];
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.js') && !n.endsWith('.logic.js'))) {
+        const lines = fs.readFileSync(path.join(dir, f), 'utf8').split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+            if (/^\s*(\/\/|\*|<!--)/.test(lines[i].trim())) continue;
+            if (!CLOSING_TEXT_TAG.test(lines[i].trim())) continue;
+            const next = lines[i + 1].trim();
+            if (!/^[A-Za-z0-9]/.test(next)) continue;
+            offenders.push(`portal/ui/${f}:${i + 1}  …${lines[i].trim().slice(-38)} ⟶ ${next.slice(0, 30)}`);
+        }
+    }
+    assert.deepStrictEqual(offenders, [], "htm eats the line break after a closing tag too — end the line with ${' '}:\n  " + offenders.join('\n  '));
+});
+
+check('THE CLOSING-TAG GATE CAN FAIL, and does not fire on an empty positioned tag', () => {
+    assert.ok(CLOSING_TEXT_TAG.test('<p class="empty"><b>Nothing in this armory yet.</b>'), 'the real defect must be caught');
+    assert.ok(!CLOSING_TEXT_TAG.test('<i style=${`width:${p}%`}></i>'), 'an empty positioned tag must not fire — see the note above');
+    assert.ok(!CLOSING_TEXT_TAG.test("<b>Nothing in this armory yet.</b>${' '}"), 'the explicit fix must not fire');
+});
+
 
 // ── OVERLAPS AND GAPS ────────────────────────────────────────────────────────────────────────
 //
@@ -795,8 +821,8 @@ check('no table element in portal/ui carries a role= that overrides its implicit
 
 check('THE TABLE-ROLE GATE CAN FAIL: the real markup, with the real regression put back', () => {
     const real = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'manifest.js'), 'utf8');
-    // The anchor is the multi-line row tag, matched on its class expression rather than on a key= this file does not use. NO LINE NUMBER: it was cited as manifest.js:221 and had already drifted to :236 before this edit moved it again. 🔴 THIS ASSERTION FIRED FOR REAL ON 2026-09-05 00:05 EDT AND THAT IS THE WHOLE POINT OF IT. Removing the dead `preview-sel` class took the row tag from `${(selected.has(row.id) ? 'sel' : '') + …}` to `${selected.has(row.id) ? 'sel' : ''}`, so the patch below stopped patching anything and the proof went vacuous — a gate that would have kept reporting a green table-role check over a falsifier that reintroduced nothing. The anchor now stops before the ternary, so a change to the CLASS LOGIC cannot silently blind it again; only a change to the tag itself can, and that is what the assertion is for.
-    const broken = real.replace("<tr class=${selected.has(row.id)", '<tr role="button" class=${selected.has(row.id)');
+    // The anchor is the multi-line row tag, matched on its class expression rather than on a key= this file does not use. NO LINE NUMBER: it was cited as manifest.js:221 and had already drifted to :236 before this edit moved it again. 🔴 THIS ASSERTION FIRED FOR REAL ON 2026-09-05 00:05 EDT AND THAT IS THE WHOLE POINT OF IT. Removing the dead `preview-sel` class took the row tag from `${(selected.has(row.id) ? 'sel' : '') + …}` to `${selected.has(row.id) ? 'sel' : ''}`, so the patch below stopped patching anything and the proof went vacuous — a gate that would have kept reporting a green table-role check over a falsifier that reintroduced nothing. The anchor now stops before the ternary, so a change to the CLASS LOGIC cannot silently blind it again; only a change to the tag itself can, and that is what the assertion is for. 🔴 AND IT FIRED A SECOND TIME ON 2026-09-09 15:02 EDT, SYMMETRICALLY, WHICH IS WHY THE ANCHOR IS NOW SHORTER STILL. Restoring `preview-sel` — this time WITH the rule it never had, Harkirat having picked the mark from three rendered options — took the class expression back to `${(selected.has(row.id) ? … ) + …}`, and the anchor was still carrying `selected.has(row.id)` past the `${`. So it broke on the paren. Twice in five days, in opposite directions, for the same reason: an anchor that reaches into the expression is an anchor that moves with the expression. It stops at `<tr class=${` now, which is the tag and nothing else.
+    const broken = real.replace("<tr class=${", '<tr role="button" class=${');
     assert.notStrictEqual(broken, real, 'the row tag moved -- this proof no longer reintroduces anything');
     const code = broken.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|\s)\/\/[^\n]*/g, '$1');
     const hits = [...code.matchAll(/<(tr|td|th|tbody|thead|table)\b([^>]*)>/g)].filter((m) => /\brole=/.test(m[2]));
@@ -844,6 +870,30 @@ check('findingBarIds marks only what a machine can be sure of — not the judgem
     assert.ok(ids.has('w1'), 'a draw window matching no draw is mechanical and marks');
     assert.ok(!ids.has('d1'), 'a draw served synthetic is a JUDGEMENT call and must not paint the row as wrong');
     assert.ok(!ids.has('e4'), 'looks-like-2xCP is a judgement call and must not mark');
+});
+
+// 🔴 THE ONE THING THAT STOPS A COMMIT WAS INSIDE THE COLLAPSED DEFAULT. `tray.js` defaults COLLAPSED — measured, because defaulting open put a 269px floating panel over page content on every realm — and `.tray.collapsed .rounds,.tray.collapsed .hint{display:none}` took `.hint` with it. `.hint` is the sentence saying N tier-3 changes need an export before they will commit, which is the only thing standing between staged work and a commit. The rounds list is detail and still collapses; the blocker is status, and status is what a collapsed tray is FOR.
+check('the tray\'s blocking hint is not hidden by a collapsed tray', () => {
+    const hidesHint = (sheet) => sheet.split('\n').filter((l) =>
+        /\.tray\.collapsed/.test(l) && /\.hint\b/.test(l) && /display\s*:\s*none/.test(l));
+    const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
+    assert.deepStrictEqual(hidesHint(css), [], 'no rule may hide .hint while the tray is collapsed');
+    // THE GATE CAN FAIL: the real rule, exactly as it shipped until 2026-09-09 20:51 EDT.
+    assert.strictEqual(hidesHint('.tray.collapsed .rounds,.tray.collapsed .hint{display:none}').length, 1,
+        'the scanner must recognise the rule it exists to forbid');
+});
+
+// 🔴 `--ink4` IS A NON-TEXT TOKEN AND THREE RULES USED IT AS TEXT. `DESIGN.md` forbids `color:var(--ink4)` in bold, `tokens.css` repeats it, and `app.css` restates it in a comment while deleting a batch of the same violations on 2026-09-04 — and three survived, two of them measured failing by pixel-sampling the composited render (`.stg-strip .ss-sep` 3.46:1 on Season, `em.mxgr` 3.02:1 on Access). Prose said it three times and nothing checked it. ⚠️ THE SCANNER STRIPS COMMENTS FIRST. Two lines of `app.css` QUOTE this rule while explaining it, and a source-shape gate that cannot tell code from prose fires hardest on the file that documents the bug best — which trains the next reader to delete the comment rather than keep the rule. ⚠️ AND IT MATCHES THE `color` PROPERTY ONLY. `border-color:var(--ink4)`, `border-left-color` and `text-decoration-color` are all legitimate and all contain the same substring; nine rules use it correctly that way.
+check('no rule paints TEXT with --ink4', () => {
+    const textInk4 = (sheet) => sheet.replace(/\/\*[\s\S]*?\*\//g, '')
+        .split('\n').filter((l) => /(^|[;{\s])color\s*:\s*var\(--ink4\)/.test(l));
+    const css = fs.readFileSync(path.join(__dirname, '..', 'portal', 'ui', 'app.css'), 'utf8');
+    assert.deepStrictEqual(textInk4(css), [], '--ink4 is not a text tone; use --ink3');
+    // THE GATE CAN FAIL: the real rule, exactly as it shipped until 2026-09-09 20:54 EDT.
+    assert.strictEqual(textInk4('.stg-strip .ss-sep{color:var(--ink4);flex:none}').length, 1, 'the scanner must catch a real one');
+    // AND IT MUST NOT FIRE ON THE NINE LEGITIMATE USES, nor on prose that quotes the rule.
+    assert.strictEqual(textInk4('.flag.info{border-left-color:var(--ink4)}').length, 0, 'a border colour is not text');
+    assert.strictEqual(textInk4('/* DESIGN.md forbids color:var(--ink4) in bold */').length, 0, 'a comment quoting the rule is not a violation');
 });
 
 process.exit(failures ? 1 : 0);

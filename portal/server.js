@@ -34,7 +34,7 @@ const route = (method, pattern, handler) => ROUTES.push({ method, pattern, handl
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
-function serveStatic(req, res, url) {
+function serveStatic(req, res, url, env) {
     // Reject any path segment that could escape PUBLIC_DIR (../, encoded or not) BEFORE resolving — resolving first and comparing after is the classic path-traversal mistake this avoids.
     const decoded = decodeURIComponent(url.pathname);
     if (decoded.includes('..')) { res.writeHead(400); return res.end('Bad request'); }
@@ -47,9 +47,77 @@ function serveStatic(req, res, url) {
         const headers = { 'content-type': MIME[ext] || 'application/octet-stream' };
         // The document and everything it executes. A stale one of these is a portal that silently disagrees with its own source.
         if (ext === '.html' || ext === '.js' || ext === '.mjs' || ext === '.css') headers['cache-control'] = 'no-cache, must-revalidate';
+        const out = (ext === '.html' && pinEnabled(env)) ? Buffer.from(injectPin(data.toString('utf8'))) : data;
         res.writeHead(200, headers);
+        res.end(out);
+    });
+}
+
+// ── THE ANNOTATION OVERLAY — DEV ONLY, and every branch below is gated on this one function (2026-09-09 21:39 EDT).
+//
+// 🔴 IT IS MOUNTED IN THE PAGE BECAUSE IT CANNOT BE A PROXY. `portal/auth.js` derives the origin from the REQUEST: the session cookie is host-only by design and the OAuth redirect_uri must be an origin registered on the Discord application. Serving the live portal under a second origin breaks sign-in and needs a redirect URI only Harkirat can register. In the page there is no second origin.
+//
+// ⚠️ THIS IS THE ONE PLACE THIS FILE REACHES OUTSIDE `portal/public`, against its own header rule. It is deliberate and it is fenced: the note file is a developer's scratch file, the branch cannot be reached in production, and a failed write is swallowed rather than answered as an error, because losing a note must not look like a broken portal.
+function pinEnabled(env) { return env !== 'production'; }
+const PIN_SCRIPT = path.join(__dirname, 'dev', 'pin.js');
+const PIN_NOTES = path.join(__dirname, '..', 'local', 'portal-sync-notes.md');
+// ⚠️ THE CAP ROSE FROM 20KB TO 8MB BECAUSE A NOTE CAN NOW CARRY A CROP, and it is still a cap: a paste is a base64 PNG, and an unbounded body on a route this permissive is how a dev convenience becomes a way to fill a disk. A ⌘⇧4 crop of a panel runs a few hundred KB.
+const PIN_MAX = 8 * 1024 * 1024;
+// 🔴 CROPS LAND OUTSIDE `portal/public`, DELIBERATELY. Everything under that directory is handed to anyone who reaches the origin by `serveStatic`; a screenshot of an admin console showing real records is precisely the thing that must not become a URL. `local/` is gitignored and unserved.
+const PIN_SHOTS = path.join(__dirname, '..', 'local', 'portal-pins');
+
+function servePinScript(res) {
+    fs.readFile(PIN_SCRIPT, (err, data) => {
+        if (err) { res.writeHead(404); return res.end('Not found'); }
+        res.writeHead(200, { 'content-type': 'text/javascript', 'cache-control': 'no-cache, must-revalidate' });
         res.end(data);
     });
+}
+
+function readPinNote(req, res) {
+    let body = '';
+    req.on('data', (c) => { body += c; if (body.length > PIN_MAX) req.destroy(); });
+    req.on('end', () => {
+        let n;
+        try { n = JSON.parse(body); } catch { res.writeHead(400); return res.end('bad json'); }
+        // ⚠️ `YYYY-MM-DD HH:MM TZ`, WHICH IS THE ONLY TIMESTAMP SHAPE THIS REPO USES. The first version wrote `toLocaleString('en-US')`, which produced `9/9/2026, 21:58:06 EDT` — a US-locale string in a file every other line of which is ISO-first, and unsortable next to them. The zone is READ rather than hardcoded, so this stays correct across the EDT/EST boundary instead of lying for four months of the year.
+        const now = new Date(), TZ = 'America/New_York';
+        const stamp = now.toLocaleDateString('en-CA', { timeZone: TZ })
+            + ' ' + now.toLocaleTimeString('en-GB', { timeZone: TZ, hour12: false }).slice(0, 5)
+            + ' ' + now.toLocaleTimeString('en-US', { timeZone: TZ, timeZoneName: 'short' }).split(' ').pop();
+        const id = 'p' + Date.now().toString(36);
+
+        let shotLine = '';
+        if (typeof n.shot === 'string' && n.shot.startsWith('data:image/')) {
+            try {
+                fs.mkdirSync(PIN_SHOTS, { recursive: true });
+                const ext = (n.shot.slice(11).split(';')[0] || 'png').replace(/[^a-z0-9]/g, '') || 'png';
+                fs.writeFileSync(path.join(PIN_SHOTS, `${id}.${ext}`), Buffer.from(n.shot.split(',')[1] || '', 'base64'));
+                shotLine = `\n![pin ${id}](portal-pins/${id}.${ext})\n`;
+            } catch { /* a missing crop makes a worse note, never a failed one */ }
+        }
+
+        // A REGION names whose space it is; an ELEMENT names itself. Both carry the frame.
+        const where = n.kind === 'region' && n.region
+            ? `**Region** ${n.rect || ''} inside \`${n.region.owner}\`\n`
+                + `**Its spacing:** ${n.region.spacing}\n`
+                + `**Between:** above ${n.region.above} · below ${n.region.below} · left ${n.region.left} · right ${n.region.right}\n`
+            : `**Element:** \`${n.selector || '?'}\` · ${n.rect || ''}\n`
+                + `**It shows:** ${(n.shows || '').replace(/\n/g, ' ')}\n`;
+
+        const entry = `\n## ${n.realm || 'unknown'} — ${stamp} · ${id} · from the dev-portal overlay\n`
+            + where
+            + `**Frame:** route ${n.route || ''} · scroll ${n.scroll || '?'} · viewport ${n.viewport || '?'}\n`
+            + shotLine
+            + `\n${n.text || ''}\n`;
+        try { fs.appendFileSync(PIN_NOTES, entry); } catch { /* a scratch note is never worth a 500 */ }
+        res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ id }));
+    });
+}
+
+// The tag is injected rather than built into index.html, so `scripts/buildPortal.js` stays ignorant of it and a production build cannot carry it even by accident.
+function injectPin(html) {
+    return html.replace('</body>', '<script src="/__pin.js" defer></script>\n</body>');
 }
 
 function createServer({ port, mongoUri, env }) {
@@ -60,8 +128,10 @@ function createServer({ port, mongoUri, env }) {
             const url = new URL(req.url, `http://${req.headers.host}`);
             const match = ROUTES.find(r => r.method === req.method && r.pattern.test(url.pathname));
             if (!match) {
+                if (pinEnabled(env) && req.method === 'GET' && url.pathname === '/__pin.js') return servePinScript(res);
+                if (pinEnabled(env) && req.method === 'POST' && url.pathname === '/__pin/note') return readPinNote(req, res);
                 if (req.method === 'GET' && !url.pathname.startsWith('/api/') && !url.pathname.startsWith('/auth/')) {
-                    return serveStatic(req, res, url);
+                    return serveStatic(req, res, url, env);
                 }
                 res.writeHead(404); return res.end('Not found');
             }
@@ -76,7 +146,7 @@ function createServer({ port, mongoUri, env }) {
     return server;
 }
 
-module.exports = { createServer, assertEnvironment, route, ROUTES };
+module.exports = { createServer, assertEnvironment, route, ROUTES, pinEnabled, injectPin, PIN_SHOTS, PIN_NOTES, PUBLIC_DIR };
 
 // Registered AFTER the export above, mirroring core/ops/index.js's own fix for the exact same hazard: these modules require('../auth') and this file's `route`, so if they were required before module.exports was assigned, `route` would still be undefined at the moment they read it.
 require('./auth').registerAuthRoutes(route);

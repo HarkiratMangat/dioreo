@@ -1,5 +1,5 @@
 #!/bin/bash
-# Proofs for completeness-sweep.sh — passes 2 and 3 of the pre-PR audit.
+# Proofs for commit-completeness-sweep.sh — passes 2 and 3 of the pre-PR audit.
 #
 # This hook makes three claims that are worthless if untrue, so each is pinned here:
 #   (a) it DETECTS content that vanished in a delete/rename — the thing a reference check cannot see;
@@ -10,7 +10,7 @@
 #
 # Run the hook the way the hook RUNS: a non-interactive shell. This machine aliases find->bfs and git->rtk interactively, which is how a BSD-find bug in another hook nearly escaped twice.
 
-HOOK="$(cd "$(dirname "$0")" && pwd)/completeness-sweep.sh"
+HOOK="$(cd "$(dirname "$0")" && pwd)/commit-completeness-sweep.sh"
 pass=0; fail=0
 TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
 
@@ -33,6 +33,9 @@ mkrepo() {
   printf '%s' "$d"
 }
 
+# ⚠️ THE ENVELOPE IS ITSELF A PROPERTY, and run() below unwraps it — so a "does it deny?" proof written against run() reads the message text and can never see a `decision:"block"`. That is a check that cannot fail, which this file already warns about twice. runraw() is what the commit-mode cases assert on.
+runraw() { CLAUDE_PROJECT_DIR="$1" bash "$HOOK" main "$2" "$3" 2>/dev/null; }
+
 run() { # $1 repo · $2 transcript ("" for none) · $3 mode
   CLAUDE_PROJECT_DIR="$1" bash "$HOOK" main "$2" "$3" 2>/dev/null \
     | jq -r '.reason // .hookSpecificOutput.additionalContext // "SILENT"' 2>/dev/null || echo SILENT
@@ -45,7 +48,7 @@ a() { local n="$1" needle="$2" want="$3" out="$4" got
 # ⚠️ EVERY angle fixture must contain at least ONE Bash tool_use entry that is IRRELEVANT to the angles. Since 2026-08-06 12:37 EDT a transcript with zero Bash entries reports "ANGLE DETECTION COULD NOT RUN" instead of listing angles — because "I cannot see the session" and "no angle was taken" are different answers and must not look alike. A fixture with no Bash calls therefore tests the unreadable path, not the detection path. The filler below is that one irrelevant call.
 FILLER='{"type":"tool_use","name":"Bash","input":{"command":"git status --short"}}'
 
-echo "completeness-sweep.sh — proofs"
+echo "commit-completeness-sweep.sh — proofs"
 
 # ⚠️ CAPTURE EACH FIXTURE'S OUTPUT ONCE, then assert against the variable — never call run() twice on the same repo. The stamp deliberately makes a second run on unchanged state SILENT, so a second call returns empty and every later assertion fails for a reason that has nothing to do with the behaviour under test. Three cases failed exactly this way on the suite's first run (2026-08-06 09:21 EDT); the cost control was working and the test was wrong.
 
@@ -71,6 +74,15 @@ CLAIM=$(mkrepo d5 delete)
 tr_noclaim="$TMP/t-noclaim.jsonl"
 printf '{"type":"assistant","message":{"content":[{"type":"text","text":"still working on it, next I will look at the parser"}]}}\n' > "$tr_noclaim"
 a "stop mode, no completion claim -> silent" "CONSERVATION" no "$(run "$CLAIM" "$tr_noclaim" stop)"
+
+# ---- 🔴 COMMIT MODE: fires WITHOUT a completion claim, and never denies ---- The mode this hook was moved to on 2026-09-06. Two properties, and the second is the one Harkirat's standing constraint turns on: a gate here interrupts, it does not deny. A `decision:"block"` reaching a PreToolUse call would refuse the commit, which is the behaviour he ruled out.
+COMMITM=$(mkrepo commit_mode delete)
+a "commit mode, NO claim -> still fires"      "CONSERVATION" yes "$(run "$COMMITM" "$tr_noclaim" commit)"
+# ⚠️ A SEPARATE FIXTURE, not a second call on the one above — the stamp makes a repeat run on unchanged state silent, and three cases failed exactly that way on this suite's first run.
+COMMITR=$(mkrepo commit_raw delete)
+raw_commit=$(runraw "$COMMITR" "$tr_noclaim" commit)
+a "commit mode -> additionalContext envelope" '"additionalContext"' yes "$raw_commit"
+a "commit mode NEVER denies the commit"       '"decision"'          no  "$raw_commit"
 
 CLAIM2=$(mkrepo d6 delete)
 tr_claim="$TMP/t-claim.jsonl"

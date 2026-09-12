@@ -1,9 +1,9 @@
 {
   "surface": "Access",
-  "note": "Registered while building out Access (unit D, 2026-09-06 01:46 EDT). The Grant drawer is the first creation form this realm has had: before it, + Grant access only scrolled to an always-open row at the foot of the grid.",
+  "note": "Registered while building out Access (unit D, 2026-09-06 01:46 EDT). The Grant drawer is the first creation form this realm has had: before it, + Grant access only scrolled to an always-open row at the foot of the grid. Extended 2026-09-09 10:17 EDT: the row's Edit chip and the in-place label. \ud83d\udd34 THE PREVIEW-CARD STATE IS THE ONE THAT EARNS ITS KEEP \u2014 edit mode first shipped faking the Discord lookup as `{status:'ok'}` with no `user`, and the drawer threw on `lookup.user.avatarUrl` before painting anything. A rendered walk is the only instrument that sees that: SSR never runs the effect, so the status stays idle and the preview is never reached.",
   "states": [
     {
-      "name": "grant drawer · opens from the masthead",
+      "name": "grant drawer \u00b7 opens from the masthead",
       "realm": "access",
       "flags": {},
       "steps": [
@@ -18,7 +18,7 @@
       "expect": ".drawer.open #grant-discordid"
     },
     {
-      "name": "grant drawer · the reason line before anything is typed",
+      "name": "grant drawer \u00b7 the reason line before anything is typed",
       "realm": "access",
       "flags": {},
       "steps": [
@@ -33,7 +33,7 @@
       "expect": ".drawer.open .dwbody .why"
     },
     {
-      "name": "grant drawer · a typed id resolves to a preview card",
+      "name": "grant drawer \u00b7 a typed id resolves to a preview card",
       "realm": "access",
       "flags": {},
       "steps": [
@@ -51,7 +51,31 @@
         }
       ],
       "known": [],
-      "expect": ".drawer.open .grantpreview .gp-n b"
+      "expect": ".drawer.open .idbar .gp-n b"
+    },
+    {
+      "name": "edit drawer \u00b7 a row's Edit chip opens the form, pre-filled",
+      "realm": "access",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mx thead th[data-who]:not(.owncol) .colh"
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open #grant-note"
+    },
+    {
+      "name": "edit drawer \u00b7 the preview card resolves for the row being edited",
+      "realm": "access",
+      "flags": {},
+      "steps": [
+        {
+          "click": ".mx thead th[data-who]:not(.owncol) .colh"
+        }
+      ],
+      "known": [],
+      "expect": ".drawer.open .idbar .gp-n b"
     }
   ]
 }

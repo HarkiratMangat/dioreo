@@ -151,7 +151,7 @@ function register(route) {
         });
         if (!gate.ok) return sendJson(res, 409, gate);
 
-        const result = await commitSet(doc.ops, { actorId: session.discordId });
+        const result = await commitSet(doc.ops, { actorId: session.discordId, source: 'portal' });
         if (!result.ok) return sendJson(res, 409, result);
 
         doc.state = 'committed';
@@ -169,7 +169,7 @@ function register(route) {
         if (!isOwner(session.discordId) && !(await hasManagePageAccess(session.discordId, row.page))) {
             return forbidden(res, `You do not have access to the "${row.page}" page.`);
         }
-        const result = await revertChange(changeId, { actorId: session.discordId });
+        const result = await revertChange(changeId, { actorId: session.discordId, source: 'portal' });
         sendJson(res, result.ok ? 200 : 409, result);
     }));
 }

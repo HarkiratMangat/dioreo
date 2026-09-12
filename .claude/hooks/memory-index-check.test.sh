@@ -86,51 +86,7 @@ fixture; rm "$TMP/mem/MEMORY.md"
 assert "missing MEMORY.md is FATAL"             "WRONG PATH"                         yes
 
 echo
-# ── the PLATFORM-TRUNCATION mitigation ──────────────────────────────────────── 🔴 THESE EXIST BECAUSE THE MITIGATION SHIPPED WITH A HAND-SIZED 2500-BYTE TAIL THAT THE INDEX OUTGREW. Measured 2026-09-01 16:0x EDT: the real index was 33,934B against a ~25,000B platform cap, so ~8,900B and 42 index lines never reached a session — while the block's own comment claimed "better than 2x margin" against a 1.2KB loss measured when the file was smaller. A margin computed once against a growing file is a constant with an expiry nobody wrote down. The second case is the one that would have caught it: it asserts the re-emitted set tracks the CUT rather than a size.
-big_fixture() {
-  rm -rf "$TMP/mem" "$TMP/state"; mkdir -p "$TMP/mem/archive"
-  echo "# alpha" > "$TMP/mem/alpha.md"
-  echo "RETIRED 2026-08-02 13:05 EDT - shipped and absorbed." > "$TMP/mem/archive/gone.md"
-  : > "$TMP/mem/MEMORY.md"
-  i=0
-  while [ "$i" -lt 60 ]; do
-    printf -- '- [Alpha](alpha.md) - padding entry %02d %s\n' "$i" \
-      "$(printf 'x%.0s' $(seq 1 60))" >> "$TMP/mem/MEMORY.md"
-    i=$((i+1))
-  done
-}
-big_run() { MEMCHECK_DIR="$TMP/mem" MEMCHECK_STATE="$TMP/state" MEMCHECK_BUDGET=99999 \
-            MEMCHECK_PLATFORM_CAP="$1" bash "$CHECK"; }
-
-big_fixture
-ctx="$(big_run 1500 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')"
-case "$ctx" in
-  *"READ THE WHOLE MEMORY INDEX"*) echo "  PASS  oversized index INSTRUCTS a full read, not only a warning"; pass=$((pass+1));;
-  *) echo "  FAIL  oversized index INSTRUCTS a full read -- no read instruction emitted"; fail=$((fail+1));;
-esac
-
-n_all=$(grep -c '^- \[' "$TMP/mem/MEMORY.md")
-n_emit=$(printf '%s\n' "$ctx" | grep -c '^- \[')
-if [ "$n_emit" -gt 0 ] && [ "$n_emit" -lt "$n_all" ]; then
-  echo "  PASS  re-emits only the lines past the cut ($n_emit of $n_all), never the whole index"; pass=$((pass+1))
-else
-  echo "  FAIL  re-emits only the lines past the cut -- got $n_emit of $n_all (a fixed size, or everything)"; fail=$((fail+1))
-fi
-
-# The load-bearing case: RAISE the cap and the re-emitted set must SHRINK. A fixed-size tail cannot pass this.
-n_narrow=$(big_run 4000 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])' | grep -c '^- \[')
-if [ "$n_narrow" -lt "$n_emit" ]; then
-  echo "  PASS  the re-emitted set TRACKS the cut ($n_emit at cap 1500 -> $n_narrow at cap 4000)"; pass=$((pass+1))
-else
-  echo "  FAIL  the re-emitted set tracks the cut -- $n_emit then $n_narrow; it is not derived from the overflow"; fail=$((fail+1))
-fi
-
-case "$(big_run 999999)" in
-  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  mitigation stands down when the index fits -- it fired anyway"; fail=$((fail+1));;
-  *) echo "  PASS  mitigation stands down when the index fits under the platform cap"; pass=$((pass+1));;
-esac
-
-# ── the LINE limit ─────────────────────────────────────────────────────────── 🔴 THIS IS THE VACUOUS PASS THE BYTE-ONLY GATE WOULD HAVE SHIPPED. The platform cuts at the first 200 lines OR 25KB, whichever comes FIRST, and until 2026-09-02 11:40 EDT this hook only ever measured bytes. The trap is that the remedy for the byte ceiling — shortening entries — walks the file toward the LINE ceiling, so the gate would go green at exactly the moment the fix succeeded while the tail silently stopped loading again. These cases use many SHORT lines: comfortably under any byte cap, far over the line cap. A byte-only implementation passes every one of them.
+# ── the LINE-LIMIT advisory ───────────────────────────────────────────────────────────────────── The byte-tail and line-tail re-emit mitigations this section used to test were RETIRED 2026-09-08 EDT (WP3 of the context-carriers plan): MEMORY.md is now delivered via CLAUDE.md's @-import, proven full and cap-free, so the platform loader's own separate truncation no longer determines what a session actually receives. Only the housekeeping BUDGET/line-count advisory below (the 90%-of-cap early warning, unrelated to the retired re-emit) is still real behavior.
 lines_fixture() {
   rm -rf "$TMP/mem" "$TMP/state"; mkdir -p "$TMP/mem/archive"
   echo "# alpha" > "$TMP/mem/alpha.md"
@@ -142,36 +98,10 @@ lines_fixture() {
     i=$((i+1))
   done
 }
-# Cap set absurdly high so BYTES cannot possibly be the thing that fires.
 lines_run() { MEMCHECK_DIR="$TMP/mem" MEMCHECK_STATE="$TMP/state" MEMCHECK_BUDGET=99999 \
               MEMCHECK_PLATFORM_CAP=9999999 MEMCHECK_PLATFORM_LINES="${1:-200}" bash "$CHECK"; }
 
-lines_fixture
-lctx="$(lines_run 200 | python3 -c 'import sys,json; print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])')"
-lsize=$(wc -c < "$TMP/mem/MEMORY.md" | tr -d ' ')
-
-case "$lctx" in
-  *"READ THE WHOLE MEMORY INDEX"*) echo "  PASS  a 250-line index fires on LINES while only ${lsize}B (bytes never bind)"; pass=$((pass+1));;
-  *) echo "  FAIL  a 250-line index fires on LINES -- byte-only gate, the tail drops silently"; fail=$((fail+1));;
-esac
-case "$lctx" in
-  *"LINES (250 against a 200-line cap)"*) echo "  PASS  names LINES as the binding limit"; pass=$((pass+1));;
-  *) echo "  FAIL  names LINES as the binding limit -- got no such phrase"; fail=$((fail+1));;
-esac
-# The re-emit must carry the lines past 200, not nothing and not everything.
-n_lall=$(grep -c '^- \[' "$TMP/mem/MEMORY.md")
-n_lemit=$(printf '%s\n' "$lctx" | grep -c '^- \[')
-if [ "$n_lemit" -gt 0 ] && [ "$n_lemit" -lt "$n_lall" ]; then
-  echo "  PASS  re-emits only the lines past the LINE cut ($n_lemit of $n_lall)"; pass=$((pass+1))
-else
-  echo "  FAIL  re-emits only the lines past the LINE cut -- got $n_lemit of $n_lall"; fail=$((fail+1))
-fi
-# Raise the line limit above the file and it must stand down entirely.
-case "$(lines_run 999)" in
-  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  line mitigation stands down when the index fits -- it fired anyway"; fail=$((fail+1));;
-  *) echo "  PASS  line mitigation stands down when the index fits under the line cap"; pass=$((pass+1));;
-esac
-# And the advisory must fire BEFORE the breach, same contract as the byte tier: 190 lines against a 200-line cap is 95%, over the 90% line, and still under the cap.
+# The advisory must fire BEFORE the breach: 190 lines against a 200-line cap is 95%, over the 90% line, and still under the cap.
 lines_fixture
 head -190 "$TMP/mem/MEMORY.md" > "$TMP/mem/MEMORY.tmp" && mv "$TMP/mem/MEMORY.tmp" "$TMP/mem/MEMORY.md"
 adv="$(lines_run 200)"
@@ -179,9 +109,12 @@ case "$adv" in
   *"APPROACHING THE LINE LIMIT"*) echo "  PASS  line advisory fires at 190/200, before the breach"; pass=$((pass+1));;
   *) echo "  FAIL  line advisory fires at 190/200 -- no advisory emitted"; fail=$((fail+1));;
 esac
-case "$adv" in
-  *"READ THE WHOLE MEMORY INDEX"*) echo "  FAIL  advisory must not be the breach -- the read instruction fired under the cap"; fail=$((fail+1));;
-  *) echo "  PASS  the advisory is not the breach (no read instruction under the cap)"; pass=$((pass+1));;
+# And a comfortably-under-cap file must stay quiet.
+lines_fixture
+head -50 "$TMP/mem/MEMORY.md" > "$TMP/mem/MEMORY.tmp" && mv "$TMP/mem/MEMORY.tmp" "$TMP/mem/MEMORY.md"
+case "$(lines_run 200)" in
+  *"APPROACHING THE LINE LIMIT"*) echo "  FAIL  advisory must not fire comfortably under the line cap"; fail=$((fail+1));;
+  *) echo "  PASS  comfortably under the line cap: no advisory"; pass=$((pass+1));;
 esac
 
 echo "  $pass passed, $fail failed"

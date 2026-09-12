@@ -157,3 +157,13 @@ Two deliberate choices in that file, both of which fail silently if undone:
 ✅ **The site root serves the landing page directly now** (flattened 2026-08-05 14:43 EDT when dioreo.app went live — `build()` writes `index.html` straight to `public/`). This used to require going to **`/legal/`** locally, because the real landing page lived there and only `public/_redirects` — a Cloudflare Pages feature a plain static server doesn't implement — pointed `/` at it. That caveat is retired: the local preview server now shows the same page at `/` a live deploy does, no redirect needed either place.
 
 ⚠️ **It binds localhost, so it cannot reach a phone.** For device testing run `python3 -m http.server 8899 --bind 0.0.0.0 --directory public` and browse the machine's LAN address.
+
+## 🎨 The impeccable verbs are REACHABLE HERE, and only one of them is expensive
+
+*Added 2026-09-09 21:17 EDT. Measured against the installed skill, not inferred.*
+
+🔴 **Only `critique` spawns sub-agents (two, mandatory). Every other verb is an ordinary inline edit.** `clarify` · `layout` · `typeset` · `harden` · `polish` · `distill` · `onboard` · `adapt` · `optimize` · `animate` · `colorize` · `bolder` · `quieter` · `delight` · `audit` · `extract` · `document` cost no more than the edit they make. **Reach for one on one component** — `layout` on one page family is a normal edit, not an event.
+
+**The order when you want the full pass:** `critique` → `clarify` → `layout` → `harden` → `polish`. **The full table, with what each verb is for and where it fits, is `docs/reference/tool-capability-tests.md` § The impeccable skill.**
+
+⚠️ **`new-work` is the one heavy verb** — comp producers, a finish reviewer and a documenter — and it is for a NEW surface or a replacement visual world, never a refinement.

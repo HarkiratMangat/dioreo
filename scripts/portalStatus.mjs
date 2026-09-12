@@ -30,6 +30,11 @@ const fidelity = (realm) => {
     return { kb: Math.round(src.length / 1024), handlers: (src.match(ON) || []).length };
 };
 
+// 🔴 EXPORTED SO THE **STALE** BRANCH CAN BE CERTIFIED WITHOUT A GIT TREE — added 2026-09-09 17:30 EDT, closing a filed [P2 · XS]. The fresh branch was proven (all seven report fresh where nothing moved); the stale branch had never fired once, so by this repo's own rule — prove a probe can report PRESENCE before trusting its silence — the whole instrument was uncertified. ⚠️ THE OBVIOUS FALSIFIER IS BANNED AND THE BAN IS EXPENSIVE: committing a real portal/ui change, running, then `git reset --hard` is what DESTROYED four uncommitted edits on 2026-08-30, including a plan correction that left a wrong instruction live. A pure function takes two timestamps and needs no tree at all. ⚠️ IT FAILS CLOSED ON A MISSING VALUE, deliberately. An empty `git log` reply means the path has no commits — a fresh clone, or a fixture that was never committed — and calling that STALE would cry wolf on every new checkout.
+export function isStale(lastUiCt, lastFixCt) {
+    return Boolean(lastUiCt && lastFixCt && Number(lastUiCt) > Number(lastFixCt));
+}
+
 const rows = [];
 for (const file of fs.readdirSync(FIX).filter((f) => f.endsWith('.json')).sort()) {
     const j = JSON.parse(fs.readFileSync(path.join(FIX, file), 'utf8'));
@@ -38,7 +43,7 @@ for (const file of fs.readdirSync(FIX).filter((f) => f.endsWith('.json')).sort()
     // 🔴 COMPARE THE TWO FILES' LAST COMMITS, NOT THE STAMPED SHA AGAINST HEAD. A fixture cannot record the commit it is about to be committed in, so `stamp..HEAD` counts the recording commit itself and reports "1 — RE-MEASURE" immediately after every legitimate re-record. Found by running this on the tree it was written for: all seven realms cried stale at once, which is the shape of a false positive rather than a finding. A gate that cries wolf gets filtered, and then it is not guarding anything.
     const lastUi = sh('git log -1 --format=%ct -- portal/ui portal/vendor');
     const lastFix = sh(`git log -1 --format=%ct -- ${path.relative(ROOT, path.join(FIX, file))}`);
-    const stale = lastUi && lastFix && Number(lastUi) > Number(lastFix);
+    const stale = isStale(lastUi, lastFix);
     const moved = stale ? sh(`git rev-list --count ${lastFix ? '--since=@' + lastFix : ''} HEAD -- portal/ui`) : '0';
     rows.push({ realm, at, drift: Number(moved) || 0, views: Object.keys(j.views || {}), fid: fidelity(realm) });
 }

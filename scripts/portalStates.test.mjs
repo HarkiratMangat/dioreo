@@ -3,11 +3,33 @@
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
 import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, pass6Names, diffAgainstKnown, stepSettle } from './lib/portalStatePasses.cjs';
-import { isStall, portalTouched, manifestChangedBeyondVersion } from './portalStates.mjs';
+import { isStall, portalTouched, manifestChangedBeyondVersion, stepPause } from './portalStates.mjs';
+import fs from 'fs';
 
 let passed = 0;
 const check = (label, fn) => { fn(); passed++; console.log(`  ✓ ${label}`); };
 console.log('portal:states self-test\n');
+
+// 🔴 THE RETRY HAS TO BE A DIFFERENT EXPERIMENT, and until 2026-09-09 17:28 EDT it was the same one twice. The filed stall fires ~50% in-suite, so re-running identically separates a race from a broken subject about as well as flipping the coin again. `patience` adds a wait BEFORE each step — the diagnosis in portalStates.mjs is that a step clicks before its target mounts — and deliberately leaves every deadline alone, because raising those was tried three times and failed.
+check('the FIRST attempt is unchanged: patience 1 adds exactly zero delay', () => {
+    assert.strictEqual(stepPause(1), 0);
+    assert.strictEqual(stepPause(undefined), 0);
+});
+
+check('the RETRY actually waits: patience 3 pauses before every step', () => {
+    assert.strictEqual(stepPause(3), 500);
+    assert.ok(stepPause(3) > stepPause(1), 'a retry that waits the same as the first attempt is not a second experiment');
+});
+
+// The falsifier that matters is not arithmetic — it is whether the retry CALL still passes a patience at all. Reverting it to walk(page, state, port) would restore the identical re-run and every numeric assertion above would still pass.
+check('THE RETRY CALL SITE STILL VARIES SOMETHING: walk is re-invoked with a patience above 1', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    const retry = src.match(/records = await walk\(page, state, port(, *(\d+))?\);/g) || [];
+    assert.strictEqual(retry.length, 2, `expected exactly two walk() calls in the try/retry, found ${retry.length}`);
+    assert.ok(/walk\(page, state, port\)/.test(retry[0]), 'the first attempt must take the default patience');
+    const n = Number((retry[1].match(/port, *(\d+)/) || [])[1]);
+    assert.ok(n > 1, `the retry must pass a patience above 1, got ${retry[1]}`);
+});
 
 check('PASS 1 names the doubled search bar, with the real measurements it shipped with', () => {
     const found = pass1Composite({ controls: [{ id: 'input.cb-in', h: 44, parentH: 34, border: 1, bg: 'rgb(11, 15, 18)', selfPaintsBg: true, parentPaints: true }] });

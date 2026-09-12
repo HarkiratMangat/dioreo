@@ -7,6 +7,8 @@ const ChangeLog = require('../../models/ChangeLog');
 const AlertLog = require('../../models/AlertLog');
 const BootRecord = require('../../models/BootRecord');
 const AnalyticsEvent = require('../../models/AnalyticsEvent');
+const AdminUser = require('../../models/AdminUser');
+const { ALLOWED_ADMIN_ID } = require('../../utils/owner');
 const { hasCommandAccess } = require('../../utils/adminAccess');
 const { sendJson, forbidden } = require('./httpUtil');
 
@@ -210,8 +212,11 @@ function register(route) {
         health.spark.commands = bucketByDay(events7d, 7);
         // 🔴 THE THREE TEXT EXPORTS ARE GONE FROM THIS PAYLOAD, AND DELETING THEM IS THE POINT. buildUsageExport/buildTimingExport/buildAlertExport produce the Discord command's own downloadable .txt, and the portal was rendering all three verbatim inside <pre> blocks — the fallback that stood in for a dashboard until there was one. Now that Usage and Timing are real panels, keeping the text beside them is two layers saying the same thing, which is the defect this branch has spent its life finding rather than a harmless extra. The alert export's own facts (level, detail) were never lost: eventRiver already returns full AlertLog documents, so the river carries them as columns and filters instead of prose. Three text builds per page load go with them. The exports remain exactly where they belong — attached to /bot analytics, in Discord.
         //
-        // OUTCOME_KEYS/ENTRY_KEYS ride in the payload because the browser cannot require a Mongoose model and the six outcomes are an ENUM, not a display list: the Outcomes panel's whole reading is which ones have NEVER occurred, so it has to know the ones the data does not contain. models/AnalyticsRollup is their single source (its own header records the bug from when two copies existed), and the UI holds only the prose labels.
-        sendJson(res, 200, { river, riverTotal: riverCount, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
+        // OUTCOME_KEYS/ENTRY_KEYS ride in the payload because the browser cannot require a Mongoose model and the six outcomes are an ENUM, not a display list: the Outcomes panel's whole reading is which ones have NEVER occurred, so it has to know the ones the data does not contain. models/AnalyticsRollup is their single source (its own header records the bug from when two copies existed), and the UI holds only the prose labels. 🔴 "WHO" WAS A ROW OF DIGITS. Harkirat, pin pmtvqy8du, 2026-09-10 12:33 EDT: "the who column is useless right now because wtf does '632283' tell me? nothing." This codebase stores NO usernames -- portal/ui/shell.js:217 says so plainly, which is why the identity chip shows an id too -- so the only honest labels are the ones it does hold: the owner is the owner, and a granted admin has whatever note the owner wrote when granting (models/AdminUser.js calls it "a label the owner can add ... e.g. a name"). Everything else keeps its shortened id rather than inventing a name. ⚠️ ONE query per page load, not one per row: a river of 100 rows has one or two distinct actors.
+        const admins = await AdminUser.find({}).select('discordId note').lean();
+        const actors = Object.fromEntries(admins.filter(a => a.note).map(a => [a.discordId, a.note]));
+        actors[ALLOWED_ADMIN_ID] = 'owner';
+        sendJson(res, 200, { river, actors, riverTotal: riverCount, health, usageStats, timingStats, reach, searches, outcomeKeys: OUTCOME_KEYS, entryKeys: ENTRY_KEYS });
     }));
 
     // ⚠️ EACH SCOPE RE-QUERIES ITS OWN TABLE rather than reusing a cached page payload: an export taken ten minutes after the page loaded should be the data as it is NOW, not a snapshot of what the tab happened to render. The cost is one query per download, which is the right trade for a button somebody presses occasionally.

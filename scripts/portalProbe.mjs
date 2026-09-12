@@ -33,7 +33,7 @@ const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[proce
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
 // 🔴 TWO REALMS NOW, NOT ONE. Home carries the same staged surfaces Review does — the header's commit crumb, the masthead's staged figure and the whole `.hres` resume strip — and it was measured UNSEEDED through Part 6b's first nine runs, which reported the crumb, the figure and the strip as ONLY IN PORTAL and the two pages 78px apart. Seeded they are the same height. Until 2026-09-03 21:29 EDT the seed lived inside review.html and no other page could be asked; it is in the mockup's shared shell.js now, so this guard can cover any page that shows staged work rather than the one page that happened to own the code.
 if (SEED_REALMS.includes(realm) && !/demo=1/.test(MK_QUERY) && !process.argv.includes('--no-seed')) {
-    console.error(`refusing: ${realm === 'home' ? 'Home' : 'Review'} must be measured SEEDED or the two sides hold different data.\n`
+    console.error(`refusing: ${realm.charAt(0).toUpperCase() + realm.slice(1)} must be measured SEEDED or the two sides hold different data.\n`
         + '  add   --mk-query demo=1     to compare two populated boards\n'
         + '  or    --no-seed             to measure the empty state deliberately');
     process.exit(2);

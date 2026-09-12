@@ -1,0 +1,49 @@
+{
+  "surface": "Review",
+  "note": "Registered 2026-09-07 — this realm had no states file at all. Four states: the per-op detail toggle, the discard-all confirm, the async 'slow' skeleton, and a real attempt at 'progress' — the one async.js state that lives only mid-commit and had never been photographed on any realm (shell.json's own note records that 'refreshing' and 'progress' were tried there and refused to appear; this uses the slow= knob deliberately, with a step-level `until` guard rather than a fixed sleep, to give the drawer time to mount before it is clicked).",
+  "states": [
+    {
+      "name": "changeset op · the row expands to its detail",
+      "realm": "review",
+      "steps": [
+        { "click": "button.rvdrop" }
+      ],
+      "known": [],
+      "expect": ".rvdet"
+    },
+    {
+      "name": "discard all · the tier-1 danger confirm opens",
+      "realm": "review",
+      "steps": [
+        { "clickText": { "sel": ".rvfoot button.btn", "text": "Discard all" } }
+      ],
+      "known": [],
+      "expect": ".dw-f button.dang"
+    },
+    {
+      "name": "slow · the skeleton in the shape of the content",
+      "realm": "review",
+      "flags": { "slow": "4000" },
+      "known": [],
+      "expect": ".skel",
+      "preSettleMs": 4200,
+      "settleMs": 300
+    },
+    {
+      "name": "progress · a multi-changeset commit still in flight",
+      "realm": "review",
+      "flags": { "slow": "4000" },
+      "known": [],
+      "steps": [
+        { "clickText": { "sel": "button.rvop", "text": "Widow's Bite" }, "until": ".rvdet .rvcx button.chip.go", "untilMs": 5000 },
+        { "clickText": { "sel": ".rvdet button.chip.go", "text": "Keep mine" }, "waitMs": 300 },
+        { "clickText": { "sel": ".rvfoot button.go", "text": "Commit" }, "until": ".dw-f button.go, .dw-f button.dang", "untilMs": 8000 },
+        { "clickText": { "sel": ".dw-f button.go, .dw-f button.dang", "text": "Commit" }, "waitMs": 400 }
+      ],
+      "preSettleMs": 8500,
+      "settleMs": 400,
+      "expect": ".prog",
+      "note": "The sample set stages one op against 'The Widow's Bite Draw' as STALE, which blocks the commit button until it is resolved — found by opening the page rather than assumed, per this file's own note about what a fixture is for. Every fetchJson call including each per-changeset commit is delayed by slow=4000, so Progress stays mounted for total-ops×4000ms — the walk lands 400ms after the drawer's own confirm, well inside that window. preSettleMs clears BOTH the session mint and review's own GET before anything is clicked, so ops.length reflects real staged sample data rather than an empty in-flight list."
+    }
+  ]
+}

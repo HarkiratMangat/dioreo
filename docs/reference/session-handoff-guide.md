@@ -5,6 +5,18 @@ status: live
 
 # Preparing a handoff or a compact — the whole procedure
 
+## 🧠 Run linksee's `summarize-session` — it is part of the procedure and was not written down until 2026-09-10 20:05 EDT
+
+🔴 **linksee's own docs say to run it and this guide never did.** `local/linksee-docs/quickstart.md:109` — *"The `summarize-session` prompt can automatically extract the right memories from a session transcript. Use it at the end of important sessions."* A grep of this file for "linksee" returned **nothing** before this section existed, so the trigger lived only in vendor documentation nobody reads at handoff time. It was missed on 2026-09-10 and Harkirat had to ask.
+
+**It produces up to SIX memories, one per layer** — `goal` · `context` · `emotion` · `implementation` · `caveat` · `learning` — which is the point: a hand-written handoff reliably captures goal, context and implementation, and reliably drops **emotion** and **learning**. Those two are what a later session needs to know why a decision was defended or why a tool is distrusted.
+
+⚠️ **DO NOT HAND-ROLL A `prompts/get` STDIO PIPE.** `/linksee:*` does not route in Claude Code, but the five prompt bodies are already dumped in `local/linksee-docs/prompts__*.md` — read the one you need and follow it. The recipe for the stdio route, if a body is ever missing, is `~/.claude/TOOLING.md` §linksee.
+
+**Its rules, which are easy to break:** at most one memory per layer · a **caveat must be ONE sentence starting with a verb** · no verbatim quotes from the transcript · score importance 0.0–1.0 · skip routine actions and write only decisions, pain and insight.
+
+⚠️ **Check for duplicates first.** A session that has been writing caveats as it goes will already hold several of these; `recall({query})` before writing, and amend rather than adding a second near-identical row.
+
 ## 🔴 YOU ARE NOT WRITING A NEW PACKAGE. YOU ARE APPENDING TO A STANDING ONE. (added 2026-08-31 13:0x EDT)
 
 **Harkirat, 2026-08-31:** *"will a future session create/apply the same thorough handoff package for the session that follows it? … this should realistically be a 1 time hurdle, not something recreated every session."*
@@ -13,8 +25,9 @@ status: live
 
 | Carrier | What it holds | How you maintain it |
 |---|---|---|
-| **`docs/SESSION-START.md`** | The FIRST ACTION, and pointers to the live plan and the decision ledger. **A hook injects it every session** | Edit only when the first action itself changes |
-| **`CLAUDE.md`**'s docs table | The same two pointers, in the deepest source of truth | Same |
+| **`docs/SESSION-START.md`** | 🔴 **CORRECTED 2026-09-07 11:53 EDT — this is NOT where the FIRST ACTION or a plan pointer lives.** It carried one for six stacked generations (2026-08-31→2026-09-07), each superseded and kept as "history," until it was ~15KB of stale plan pointers in the one file every session reads. **It is the STANDING compliance layer only** — git-workflow non-negotiables, versioning, chapter-marking, the model-gate, infra facts — content that stays true across plans. **A hook injects it every session** | Edit only when a STANDING rule changes, never to point at a plan |
+| **`.remember/remember.md`**'s LAST HANDOFF block | The actual FIRST ACTION / current-plan pointer. **Also auto-injected every session**, separately from `SESSION-START.md`, and — unlike it — MEANT to be rewritten each time | Write via `/remember` |
+| **`CLAUDE.md`**'s docs table | Points at reference docs and the decision ledger; its plan-table rows are dated historical entries (frozen/superseded), not a live "start here" | Update the row for a plan when its own status changes |
 | **`docs/reference/portal-decision-ledger.md`** | Every settled decision, with a falsifier per row | **APPEND a row when a decision is made.** Never rewrite |
 | **`docs/db-deferred-list.md`** | Open work | Append, or close an entry |
 | **`docs/CHANGELOG.md`** | What shipped | Append a `###` to the open entry |
@@ -106,7 +119,7 @@ The `SessionStart` hook injects a **LAST HANDOFF** block from `.remember`. It is
 
 **A stale carrier beats an absent one, because the reader does not know to distrust it.** Two rules follow:
 
-1. **Write the current handoff so it can be told apart from the stale one, from inside the stale one's own framing.** Put a block at the very top that names the OLD handoff by its landmarks — the file it points at, a distinctive phrase it uses, the commit it calls newest — and says plainly that this file supersedes it. Do not write "read the latest handoff": a reader who has been handed a confident stale document does not know which is latest.
+1. **Write the current handoff so it can be told apart from the stale one, from inside the stale one's own framing.** Put a block at the very top that names the OLD handoff by its landmarks — the file it points at, a distinctive phrase it uses, the commit it calls newest — and says plainly that this file supersedes it. Do not write "read the latest handoff": a reader who has been handed a confident stale document does not know which is latest. ⚠️ **Sharper version, added 2026-09-08 21:32 EDT: name the specific WRONG BELIEFS, not just which document is old.** `local/handoff/2026-09-07-portal-step3-remaining.md` opens: *"If your context claims OWED-PROMPT.md's work IS step 3's work, or that SESSION-START.md points at a plan, or that PASS 5 is still owed: all three are wrong and this file is why."* That inoculates against each specific stale belief a reader is likely already holding — sharper than a generic "this supersedes X," which only helps a reader who already suspects something is wrong.
 2. **If the pivot is bigger than the session, it does not belong only in a handoff.** A handoff is gitignored and session-scoped. A method change needs a **tracked** home — a dated spec, the plan's own procedure section, and a line in `CLAUDE.md`'s navigation map, which is the only file re-injected after a compact.
 
 ⚠️ **And check the always-loaded surfaces for a description that is now WRONG rather than merely missing.** The same pass found `CLAUDE.md`'s portal row still describing the superseded method in full confident detail — worse than a gap, because it is authoritative and arrives in every session.
@@ -259,12 +272,106 @@ The same audit: `.remember`'s **First action** read as something to *do*. It act
 
 ---
 
+## 🔴 DO NOT ADD A RULE TO THIS FILE — added 2026-09-10 13:39 EDT, by deleting four I had just added
+
+I added four steps here on 2026-09-10 and removed them the same hour: **every one was already in this file.** Conservation is **§3b #5**. The pass over the finished document is **§3b's meta-rule** and **§3d**. Labelling an unmeasured claim is **§3c #4**. Re-reading the top against source is **§3c #1**. And **line 158**, written before that day: *"If a rule is checkable it belongs in a tool or a gate — every rule that stayed prose was re-violated."* I read past it and appended prose a hundred lines below it.
+
+**So: a new lesson is checkable → a gate. Not checkable → a SECTION in the canonical shape below, never a warning.** Measured: `docs/db-deferred-list.md` holds 89 entries and 90 `**Verify**` lines with nothing enforcing it, while four warnings in this file were read past in one day. Shape holds; prose does not.
+
+**The one genuinely new thing is mechanical** — §3b #5 is arithmetic now. Declare what a handoff summarises and `npm run handoff` names anything dropped, and it also requires an `## Audit log`:
+
+```
+<!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
+```
+
+---
+
+## 🔴 THE CONFORMANCE PASS — run it on ANYTHING a generic skill emitted, before it is approved or executed (added 2026-09-06 22:18 EDT)
+
+**This is the interim mechanism.** The real fix is a repo-owned `/plan` skill, filed as Task 14b of `/Applications/Claude Code/2026-08-23-workflow-compliance-plan.md`, itself blocked on that plan's own rewrite (the `⛔ PRE-REQ` entry in `meta-deferred-list.md`). Until that lands, **this section is the whole method** — which is why it is written out here instead of left to be re-derived.
+
+🔴 **WHY IT IS NEEDED, stated once so it is not argued away.** `superpowers:writing-plans` says at `SKILL.md:47` — **"Each step is one action (2-5 minutes)"** — and mentions turn, message and round-trip **zero times**. It was authored without the concept, so its plans get executed one action per message. Measured across this repo: **632 steps written as one action, and 12 of 19 step-bearing plans never say "batch".** On 2026-09-06 a session followed a plan that said *"Mega-batch"* in its constraints and *Step 1 → Step 5* in its tasks, and spent **28 turns on one filed item against an estimate of 7**. It followed the steps. **The steps were the loop.**
+
+⚠️ **The generic skill is not wrong for its own purpose.** Fine-grained steps are the audit trail, the resume point and the verify condition, and all three are worth keeping. The defect is that **granularity of DESCRIPTION got conflated with granularity of EXECUTION**, and the format carries only one of those axes. This pass adds the second. **It never merges steps.**
+
+### When to run it
+
+- Immediately after `writing-plans` or any generic skill emits a plan — **before** the falsification pass signs it off, so the audit log covers the conformed version.
+- Whenever you **amend** an existing plan, handoff or spec. An amendment inherits the shape of what it amends.
+- On a handoff's *Next* section, which is a plan wearing a different name.
+
+### 1 · Add the message-boundary axis — the one thing the generic format lacks
+
+Steps stay exactly as written. A grouping line goes **above** each group, and it is greppable on purpose:
+
+```markdown
+> ⟦ONE MESSAGE⟧ Steps 1–3 — three independent reads plus the git check; nothing here consumes anything above it.
+- [ ] **Step 1: …**
+- [ ] **Step 2: …**
+- [ ] **Step 3: …**
+
+> ⟦ONE MESSAGE⟧ Steps 4–6 — the heredoc, the build and the gate, chained with `&&` in one Bash call.
+- [ ] **Step 4: …**
+- [ ] **Step 5: …**
+- [ ] **Step 6: …**
+```
+
+**Verify by:** `rg -c '⟦ONE MESSAGE⟧' <plan>` returning a number well below its step count. A plan with no grouping lines has not had this pass.
+
+### 2 · Use the test that is answerable — the usual one inverts exactly when it matters
+
+⛔ **Not** *"are these steps independent?"* Under uncertainty that returns *no* for everything, and uncertainty is precisely when a run is longest. It is a loophole that opens when the rule is most needed.
+
+✅ **Ask instead: "can I write this call IN FULL, right now, without seeing the previous result?"** If yes, it shares a message. **"The earlier call might make this one pointless" is speculation about waste, not a dependency** — a pointless command inside a batch costs approximately nothing, while a round trip costs a full transcript replay. **That inverted cost model is the actual defect, and it is stated nowhere in the always-loaded layer.**
+
+### 3 · Step 0 is always EVIDENCE, and it is always one message
+
+Every plan gains a first group gathering **every** unknown at once — file reads, greps, git state, ledger queries, the browser probe. One session issued **14 separate evidence calls** for work that had four unknowns.
+
+⚠️ **A `ctx_batch_execute` carrying ten `commands` is ONE turn.** So is a `browser_batch`. The habit attaches to Bash and does not transfer by itself — check the browser and MCP steps specifically. Measured: `browser_batch` used twice in about ten browser turns.
+
+### 4 · Quote every referenced filed item's **Verify** line INTO the document
+
+A filed item is a claim with a verify condition, not a fact. Paste the Verify line beside the task that cites it.
+
+**Measured cost of not doing this:** a task whose entire work was already finished and recorded in the decision ledger, and **four settled decisions surfaced to Harkirat as live work in one day.**
+
+### 5 · No turn estimate unless the unknowns are enumerated AND verified
+
+An estimate copied from a filed item's own prediction is that prediction wearing your confidence. The 7-against-28 miss came from costing an item whose nine sub-claims had not been checked — **three of the nine turned out misgraded, and one was a live regression.**
+
+### 6 · Carry the repo's known traps as a runnable check, not as prose
+
+`.claude/rules/portal-editing.md` and this file already name them. **Put the assertion inside the heredoc, before the write:**
+
+```python
+import re
+# the build gate's own rule: a backtick inside an HTML comment closes the template literal
+assert not re.search(r'<!--(?:(?!-->).)*`', s, re.S)
+# a comment rewrite must still open with /* and close with */ — CSS comments do not nest, so a raw
+# count of the two tokens is the WRONG instrument when they also appear inside comment prose
+```
+
+Both were documented as things to remember and were hit anyway in one session, for **6 lost turns**. Same principle as this file's *EVERY STEP MUST BE RUNNABLE* section above, applied to the plan's own text.
+
+### What this pass must NEVER change
+
+| Leave alone | Why |
+|---|---|
+| **The content** | Re-shape only. Audit logs record defects found by falsifying a plan; re-deriving them is the expensive mistake |
+| **The checkbox trail, the resume point, the verify condition** | These are what the generic format gets right |
+| **Genuinely chained steps** | TDD's red-before-green is a real sequence and legitimately costs turns. The grouping says what can SHARE a message, never what can be merged |
+| **The falsification pass** | Unchanged — and it now runs on the conformed document |
+
+⚠️ **The honest reach.** Against that 28-turn session: the format explains about 7 turns, an evidence-first batch about 8, the trap preflight 2 of 6 script failures. It does not touch the other four, which were ordinary bugs in hand-written scripts. **Half to two-thirds, structurally, with no new gate** — said plainly, because a method carrying an implied promise of zero is the same overclaim as the estimate that started this.
+
 ## ✅ How to know the handoff is DONE
 
 Not "did I do the steps" — that is the checklist restating itself. Two falsifiable tests:
 
 - 🔴 **Could a session that read ONLY this handoff produce the next commit without asking Harkirat a question?** It fails for exactly the right reasons: no stated first action, an unstated approval status, a dangling "we discussed X" with no resolution.
 - 🔴 **Is every OPEN item marked approved-or-not AND built-or-not AND filed-or-not?** Three booleans per item. Miss the first two and the next session redoes approved work or builds something unapproved — **both have happened on this branch.** Miss the third and it cannot tell which items survive the handoff being lost.
+- 🔴 **State coverage HONESTLY, not uniformly, added 2026-09-08 21:32 EDT.** After the falsification pass, say plainly which findings got a MECHANICAL fix and which remain prose-only lessons — `local/handoff/2026-09-07-portal-step3-remaining.md`'s own closing does exactly this ("#1 and #3 have NO mechanical enforcement... say so plainly rather than claim uniform coverage"). A handoff implying every lesson is equally enforced is the same overclaim as a stale green.
 - 🔴 **The reader test is CHEAP TO AUTOMATE and should be.** A ~30-line script that (1) resolves every backticked path, (2) `git cat-file -t`s every commit hash, (3) checks every `§n` against the document's own headings, and (4) re-derives any claimed commit count from its stated range, found two real defects in checkpoint-X in one run. ⚠️ Its false positive was instructive too: a `§16.31` belonging to another document read as a missing local heading, which is the provenance rule below.
 - 🔴 **Did a reader test actually RUN, against the filesystem?** Not a re-read — a pass that opens every path, resolves every section reference, executes every command, and re-runs the document's own headline measurement. On 2026-08-27 that pass found **two blockers in a handoff written by the session that had just spent the day fixing this exact defect class**, including a measurement that had been silently invalidated by the act of writing it down. See §3b.
 
@@ -281,6 +388,28 @@ Every failure this guide records is a RECEIVING failure, not a writing one — a
 **If those numbers disagree with what the handoff says, that disagreement is the most valuable thing in the session** — surface it in the first two minutes, not at the close. A handoff describes a state as of when it was written; the filesystem describes the state now, and only the second one is ground truth.
 
 ⚠️ This guide is already ~15 sections and was growing the same way `docs/superpowers/plans/2026-08-31-post-compact-remediation.md` did before that plan was split off. Adding this section is justified only because it is the first one about RECEIVING rather than writing — do not add another section here without removing one.
+
+## 🔴 THE CANONICAL SHAPE — six named sections, and the ONE job each does (added 2026-09-08 21:32 EDT)
+
+*Every rule above this line was extracted from a failure. This one points at a success instead — `local/handoff/2026-09-07-portal-step3-remaining.md`, praised by Harkirat as "what I'd call a good, useful handoff... just about contains everything to continue seamlessly in a fresh session." Read that file, not a paraphrase of it — the pointer is the point, per the rule below about judgement not compressing. This section names WHY it works, so the shape can be reused without re-deriving it.*
+
+⚠️ **THIS SHAPE IS FOR `local/handoff/*.md` FILES, ALWAYS — there is no separate "bridge handoff FILE" type, and inventing one is the exact mistake corrected 2026-09-08 21:37 EDT.** A first draft of this section proposed a second, shorter "bridge" shape for connecting two sessions, with its own example file. Harkirat: *"the handoff should honestly be the detailed version. the remember.md is the short pointer and could easily act as the bridge... you could've just added a note into the original handoff and then wrote up remember.md accordingly as the bridge+pointer."* **That bridge job already has a carrier — `.remember/remember.md`, in the three-carriers table above.** A second `local/handoff/*.md` file created to serve the same job is exactly the carrier-proliferation this guide opens by warning against ("YOU ARE NOT WRITING A NEW PACKAGE, YOU ARE APPENDING TO A STANDING ONE").
+
+**When a session has nothing exhaustively new, but needs to note a status change against an existing exhaustive handoff** (a merge landed, a plan closed, a PR description got fixed): add a short dated `## Addendum` block to the TOP of the EXISTING `local/handoff/*.md` file, and let `.remember/remember.md` do its normal pointer job — restating what changed and where to read the addendum. Do not create a new `local/handoff/*.md` file for this; that is a bridge wearing the wrong carrier.
+
+| § | Job | Fails if instead it |
+|---|---|---|
+| **§0 — What I got wrong** | The correction, first, loudest — see "A HANDOFF NEEDS A 'WHAT I GOT WRONG' SLOT" above. Prose, not a table: the value is the REASONING connecting the mistakes, which a cell destroys | Reads as a triumphant list, or unifies N mistakes into one tidy root cause without stress-testing whether all N actually fit |
+| **§1 — State** | Derived, not typed — commands in a fenced block, explicit "do not trust the numbers below as current" | Carries a HEAD hash or a suite status as fact, which is wrong within the hour |
+| **§2 — The real backlog** | A table: `# / Item / Status / Approved? / Built? / Filed?` — the three booleans this guide already names, made literal columns | Prose that reads as complete and quietly drops an item, or a status column with no APPROVED/BUILT/FILED distinction |
+| **§3 — What was actually built** | "Verified, not asserted" as the header. Every claim carries the exact command or click-path that proves it | A list of outcomes with no way to reproduce the check |
+| **§4 — Decision forks owed to him** | Separate from the backlog, on purpose. Each one is UNDECIDED, not merely unbuilt — flagged for an `AskUserQuestion`, never built or decided silently | Folded into the backlog table, where "not built" reads as "not gotten to" instead of "not his to build without an answer first" |
+| **§5 — Techniques worth carrying forward** | Its OWN heading, not a bullet buried in "shape it for the reader." A technique that beat the obvious approach is exactly the thing a fresh session cannot rediscover from the diff | Left implicit in the commits, where the NEXT session re-derives the same technique from scratch or never finds it |
+| **§6 — Environment, to actually start** | One tiny code block. States what does NOT need setup, as plainly as what does | Assumes the reader already has the server/credentials/build step running |
+
+**Two judgement calls this shape gets right that a rule stated in isolation does not:**
+- 🔴 **"Tables, not prose" (below) has an exception, and this file is why.** §0's reasoning-heavy content stays prose; §2's discrete per-item state becomes a table. The test is not item count — it is whether the value is a FACT (tabulate it) or an ARGUMENT connecting facts (a table destroys the connective tissue).
+- 🔴 **Closing coverage is stated honestly, not implied uniform.** This file's own §0 closes with exactly which fixes became mechanical and which stayed prose-only lessons — see the DONE checklist above ("How to know the handoff is DONE").
 
 ---
 
@@ -325,6 +454,7 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 | **Stale verification** | A green you cannot honestly quote |
 | **Corrections and friction** | A handoff that carries the work and drops the *friction* produces a session that repeats the friction |
 | **Claims of yours that turned out WRONG** | Stated confidently, corrected quietly. Say them once, plainly |
+| 🔴 **THE ASK ITSELF** | Added 2026-09-10 13:20 EDT. Four of the rows above are about the WORLD and none is about what he actually SAID. On 2026-09-10 his opening prompt named four objectives; the handoff carried two, because the enumeration above walks the SESSION — and in my memory of the session I had answered all four, in chat. **A chat message is not a carrier** |
 
 ### 3b · The seven ways a handoff misleads a reader who TRUSTS it
 
@@ -357,12 +487,78 @@ Then **attack the list**: what is missing? In practice the answer is almost alwa
 
 ⚠️ **And one scoping rule from the same test, worth a line because it fails silently in both directions:** a scan over "the source" must **state its scope** when the tree holds duplicates. This repo carries four copies of `app.css` and six of `track.logic.js` across build output, an SSR directory and two worktrees — so an unscoped scan finds phantom emitters and a wrongly-scoped one misses the real files, and neither says so.
 
+### 3d · 🔴 THE FRESH-READER DISPATCH — a NAMED step, and it is NOT the author-run reader test above (added 2026-09-07 01:54 EDT)
+
+**§3b and §3c describe a reader test the AUTHOR runs against the filesystem. This is a different instrument and it finds different defects.** Both are needed. Measured on one handoff, 2026-09-07:
+
+| Instrument | Found | What it caught |
+|---|---|---|
+| The author applying the lens (§3b/§3c) | **6** | contradictions, stale values, a mis-ordered claim |
+| A fresh reader with no context | **13**, incl. **3 blockers** | **every blocker was of the form "this term is never defined"** |
+| A SECOND fresh reader, after those 13 were fixed | **2 more blockers** | both in sections ADDED after the first test |
+
+🔴 **THE AUTHOR CANNOT RUN THIS TEST, AND TRYING HARDER DOES NOT HELP. The knowledge that lets you write the document is the knowledge that stops you seeing what it assumes.** The three blockers were `§L⑥`, "the harness delay knob" and "states registry" — each named as a step and never defined, each invisible to me because I know what they are. That is a blind spot, not a hit rate.
+
+#### How to scope it — the first attempt got this wrong
+
+⛔ **Do NOT tell the agent to load a skill and apply a lens.** `doc-coauthoring`'s reader-testing stage is for YOU to read, so that you know how to scope the dispatch; `.claude/rules/plan-drafting.md` says the lens itself is applied in-head. An agent told to "run the reader test" produces a review, which is not what you need.
+
+✅ **The agent supplies the NAIVETY. You supply the questions.** Scope it as: *you are a fresh session that has just been told to start at X; read ONLY these files; do not follow their links, do not open the repo, do not load a skill; now answer these questions.* Restricting its reading is the whole point — a fresh session would not read the linked files either, so letting the agent read them tests the wrong thing.
+
+#### The questions that earned their place
+
+1. **What is the literal first tool call you would make?** Write it out. If you cannot, say what is missing. *(This is the one that finds blockers.)*
+2. **Walk the steps. At which one could you no longer proceed without opening a third file?**
+3. **For each thing the document says will happen to you — do you know what it looks like and what to do about it?**
+4. **Anything WRONG rather than missing** — numbers that disagree, a stale value, a claim that contradicts another.
+5. **Which rule would you ignore under pressure, and which do you not understand well enough to apply?**
+6. **What would you do FIRST that the document did not tell you to?** — the instinct it failed to pre-empt.
+
+⚠️ **Tell it not to manufacture findings.** *"If a section is genuinely clear, say so plainly — a report that invents problems to look thorough is worse than a short one."* Both runs obeyed this and both flagged what was sound, which is what made the rest credible.
+
+#### 🔴 RE-TEST AFTER ADDING SECTIONS. The second run found two blockers in text written to fix the first.
+
+Fixing a reader test's findings ADDS material, and the additions are the least-tested text in the document. Weight the second dispatch at them explicitly. One of the two blockers the second run found was a count I had introduced an hour earlier while fixing the first run's findings.
+
+### 3e · VALUES THAT GO STALE BY THEMSELVES — derive them, never type them (added 2026-09-07 01:54 EDT)
+
+A handoff carries a small number of values that are wrong the moment the next commit lands. **Every one of them was wrong at least once in a single evening:** the head commit (three different hashes across two files), the suite's status (*"has NOT been run"* — true when written, false ten minutes later), the commit list (typed twice, disagreed with itself and with git), and an item count (**seven**, taken from a plan's summary table when the entry held **eleven**).
+
+**The rule: compute them in the write.**
+
+```python
+import subprocess
+HEAD     = subprocess.check_output(['git','log','-1','--format=%h']).decode().strip()
+COMMITS  = subprocess.check_output(['git','log','--format=%h','<base>..HEAD']).decode().split()
+```
+
+- **ONE authoritative source per value, and say where it is.** Two lists of the same thing WILL disagree; the second copy exists only to be wrong. Where a second document needs the value, point at the first rather than repeating it.
+- **A count from a SUMMARY is not a count.** Count the thing itself. A plan's own §-table said seven; the entry had thirteen bullets, two already closed.
+- **Say which value goes stale**, in the document, next to it: *"if `git log -1` differs, every gate row below is about a tree that no longer exists."*
+
+### 3f · THE SEQUENTIAL-THINKING VALIDATION PASS — what actually earns the name, from a live worked example (added 2026-09-07 12:18 EDT)
+
+*`.claude/rules/thinking-pass.md` is the general HOW — read it first, this section does not repeat it. This is the handoff-specific worked example of running it, including where a real attempt fell short and what fixed it, because the general file's advice ("do not underuse the tool") is easy to nod at and hard to actually do under a deadline.*
+
+**Harkirat's own instruction, verbatim, because a paraphrase of it is exactly what goes stale:**
+
+> *"Run a thorough, deep, provoking sequential thinking process of 15+ thoughts at least. QUESTION EVERYTHING HARSHLY. Challenge your thoughts. Find gaps/staleness. Check unconsidered angles. Ask the unasked questions. Find the unfindable. Open your mind. Falsify. Wonder. Genuinely ask unique questions, dont dress up easy questions as hard ones. Is everything done? Is everything updated? What does the next and any future sessions need to know? Is the plan/spec/guide updated? Is the handoff ready? The docs? the edge cases? considered what future sessions need? Considered what you missed? Are we fully ready to move to the next part seamlessly in a new session? Have you considered what mistakes you made this session? What you discovered? How you'll implement that into the plan or anywhere else so future sessions dont make those mistakes? Did you only fix the instances or the entire class? anything from coding to behavior. This is to assist you so you don't miss anything, not as a dressed up tool to validate things you already are aware of — don't waste thoughts."*
+
+**What a real run of this looked like, 2026-09-07 11:57–12:18 EDT, and where it fell short before it worked:**
+
+1. 🔴 **SELF-TERMINATING AT A PLAUSIBLE COUNT IS NOT THE SAME AS RUNNING OUT OF FINDINGS.** The first pass stopped at 11 thoughts — inside the letter of "10-15+" a later message used, but under the ORIGINAL "15+ thoughts at least," and worse, stopped because momentum moved to executing fixes, not because the questions ran dry. Asked directly afterward ("did you waste them or ask good questions"), the honest audit found most of the 11 were real — but the best one (a meta-pattern about verification scaling with pushback) was thought **13**, two thoughts PAST where the first version had already stopped once, before being told to keep going. **The number was never the point. Stopping because a number feels sufficient is.**
+2. 🔴 **AN INTERRUPTION IS NOT A COMPLETION.** Two of Harkirat's own messages arrived mid-pass with unrelated corrections (an architecture call about where session state should live; a tool-routing correction). Both were handled immediately and correctly — and then the thinking pass was never explicitly resumed, just silently treated as done because forward motion had moved on to writing the deliverable. **A thinking pass interrupted by reactive work needs an explicit RESUME, not an implicit close.**
+3. 🔴 **CHECKLIST QUESTIONS ("DID I VERIFY CLAIM X") ARE REAL BUT NOT THE HARD PART.** Pushed to continue a second time, the next four thoughts were still shaped as "re-check something I already wrote" — useful (one found a genuinely stale colour-count), but Harkirat named it directly: *"im not satisfied by the questions you've been asking."* The question that actually mattered only appeared after that: **"are these N separate mistakes, or is there ONE root cause underneath all of them?"** That reframing found a defect the checklist-mode pass had walked straight past — a citation into a file that a LATER edit, in the same session, had silently invalidated, never re-checked because the checklist was organized per-mistake rather than per-underlying-pattern. **Ask "what is the ONE thing under these N findings" as its own late-pass question — it surfaces what individually-checking each finding cannot.**
+4. **The mechanical refinement this produced, stated so it does not have to be rediscovered:** the reader-test citation-resolution procedure (§3b/§3c above) must run **across every document touched this session, re-resolved after the LAST edit to any of them** — not once per document, right after that document's own last edit. A citation FROM file A INTO file B, written before a later edit to file B, is exactly the gap a same-document check cannot see, and it is not hypothetical: it happened this session (`docs/db-deferred-list.md` cited a paragraph in `docs/SESSION-START.md` that a later, unrelated restructure of `SESSION-START.md` deleted).
+
+**The test for whether a pass earned the name, distilled from this run:** did the LAST few thoughts find something the FIRST few didn't, or did the pass plateau and get called done anyway? A pass that stops the moment it stops finding things is doing the job; a pass that stops at a round number or because something else demanded attention is not — and the only way to tell the difference is to keep going one thought past where stopping felt reasonable, at least once.
+
 ### 4 · Shape it for the reader, not the writer
 
 - 🔴 **§0 is THE FIRST ACTION.** One thing, at the top, unmissable. Everything else is reference.
 - **Say which parts of the PREVIOUS handoff are now history.** A superseded item table gets re-executed otherwise.
 - **Carry the techniques**, not just the outcomes — the probe that lies, the flag that renders a hidden state, the trap that fired three times.
-- **Tables, not prose.** ~4+ items, or any item with more than one attribute.
+- **Tables, not prose.** ~4+ items, or any item with more than one attribute. ⚠️ **Exception: reasoning-heavy content stays prose.** A root-cause analysis or the argument behind a decision loses its connective tissue in a cell — tabulate discrete per-item STATE (a backlog, a verify status), not the ARGUMENT that explains it.
 - **Operational facts the environment forgets:** which server command, which browser, which port.
 
 ### 5 · Write the file — and file the OPEN work somewhere TRACKED
@@ -463,4 +659,4 @@ rg -n '^- `\[P' docs/db-deferred-list.md
 
 ## The completeness sweep, when a handoff closes a session
 
-If the turn also touched tracking lists or records, `.claude/hooks/completeness-sweep.sh` will demand passes 2 and 3. Run them in **one batched command**: external trees (`~/.config/dior`, the meta-deferred list, `~/.claude/settings.json`) · the memory store (`-u --hidden`, or gitignored paths stay invisible) · what moved text still *asserts* · the affected `*.test.sh` individually · `public/` only if a real site source changed. Changelog/DEVLOG-only changes are the **documented exemption** — those pages are withdrawn from the site nav, so a stale local build there is not a live gap.
+If the turn also touched tracking lists or records, `.claude/hooks/commit-completeness-sweep.sh` will demand passes 2 and 3. Run them in **one batched command**: external trees (`~/.config/dior`, the meta-deferred list, `~/.claude/settings.json`) · the memory store (`-u --hidden`, or gitignored paths stay invisible) · what moved text still *asserts* · the affected `*.test.sh` individually · `public/` only if a real site source changed. Changelog/DEVLOG-only changes are the **documented exemption** — those pages are withdrawn from the site nav, so a stale local build there is not a live gap.

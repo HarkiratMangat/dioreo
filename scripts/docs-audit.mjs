@@ -125,6 +125,8 @@ const XREF_SKIP_SOURCES = [
   "docs/CHANGELOG-SUMMARY.md",
   "docs/DEVLOG.md",
   "docs/ideas/diors-notes.md",
+  // Moved from a memory file 2026-09-08 (WP5b, context-carriers plan). It documents EXTERNAL MCP servers' own internals (linksee-memory's installed npm package: dist/mcp/server.js, dist/skill/SKILL.md, dist/lib/map-view.js) -- paths that are real on disk inside that package, never inside this repo, and never will be. XREF_IGNORED_OPTIONAL does not fit: it exempts gitignored-and-absent paths, and these are not gitignored, they simply belong to a different codebase entirely.
+  "docs/reference/tool-capability-tests.md",
 ];
 const XREF_SKIP_PREFIXES = ["docs/archive/", "docs/superpowers/"];
 
@@ -186,23 +188,39 @@ const check = (id, severity, title, run, opts = {}) =>
 //
 // ⚠️ THE PRINCIPLE WAS ALREADY WRITTEN DOWN AND STILL FAILED. `docs/reference/session-handoff-guide.md` has carried "JUDGEMENT DOES NOT COMPRESS -- CARRY A POINTER, NEVER A PARAPHRASE" since 2026-08-30, and the opener was summarised anyway, because the person writing it is the person who knows the content and summarising feels like service. That is the same shape as the timestamp placeholder: a rule everyone agrees with, violated at the moment of writing, so the remedy has to be a check rather than a better sentence.
 //
-// Deliberately narrow: it asserts only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
+// Deliberately narrow in WHAT it asserts, not in what it covers: it checks only that the DOCUMENT tells its reader an opener is not a summary of it. It cannot see the opener, which lives in a chat message -- so it guards the half that is on disk, and that half is what makes a skimming reader catch itself.
 check(
   "prompt-antiskim",
   "ERROR",
-  "every realm prompt tells its reader that a short opener is not a summary of it",
+  "every document a session is pointed at says a short opener is not a summary of it",
   () => {
     const out = [];
     let examined = 0;
     const dir = "docs/superpowers/plans";
     const GUARD = /not a summary of (this|that) file|IF YOU WERE HANDED A SHORT OPENER/i;
+
+    // \u{1F534} WIDENED 2026-09-06 20:47 EDT — Harkirat: "why realm prompts only? seems useful for all handoff prompts, no?" He is right, and the original scope was an accident of where the defect was first seen. The failure is not a property of a FILENAME: it is a property of being the document a fresh session is POINTED AT, because that is the document whose opener gets pasted into chat instead of it. A plan named by SESSION-START is exactly as skimmable as a file called *-PROMPT.md, and on the day this widened, the live step-3 plan was named by three carriers and carried no guard at all.
+    //
+    // So the corpus is RELATIONAL rather than nominal: every *-PROMPT.md, PLUS every tracked .md that a session-start carrier names as read-this-first. That cannot go stale when a file is renamed, and it grows by itself when a new carrier starts pointing somewhere. \u26A0\uFE0F `.remember/remember.md` is READ FROM DISK, not from git — it is gitignored and is still the single highest-reach pointer a next session gets, so excluding it would leave the most-read carrier's target unchecked.
+    const targets = new Set();
     for (const f of (existsSync(join(REPO, dir)) ? readdirSync(join(REPO, dir)) : []).filter((n) => /-PROMPT\.md$/.test(n))) {
-      const txt = read(`${dir}/${f}`);
+      targets.add(`${dir}/${f}`);
+    }
+    for (const carrier of ["docs/SESSION-START.md", ".remember/remember.md"]) {
+      const c = read(carrier);
+      if (c === null) continue;
+      // Only the head of a carrier counts: a path named in its history section is not what a session is pointed at.
+      for (const m of c.split("\n").slice(0, 60).join("\n").matchAll(/(docs\/superpowers\/plans\/[\w.\-]+\.md)/g)) {
+        if (existsSync(join(REPO, m[1]))) targets.add(m[1]);
+      }
+    }
+    for (const rel of [...targets].sort()) {
+      const txt = read(rel);
       if (txt === null) continue;
       examined++;
       // Only the opening of the file counts. A guard buried at line 400 is read by somebody who already did not skim.
       if (!GUARD.test(txt.split("\n").slice(0, 40).join("\n"))) {
-        out.push({ msg: `${dir}/${f} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
+        out.push({ msg: `${rel} has no anti-skim guard in its first 40 lines. A session handed a short opener will act on the opener. State, near the top, that the opener is NOT a summary of this file and name at least one thing only the file carries.` });
       }
     }
     return { findings: out, examined };
@@ -922,6 +940,30 @@ check(
   }
 );
 
+/* ----------------------- session-start-size --------------------------- */
+check(
+  "session-start-size",
+  "ERROR",
+  "docs/SESSION-START.md stays under its 8KB delivery budget",
+  () => {
+    const content = read("docs/SESSION-START.md");
+    if (content === null) return { findings: [], examined: 0 };
+    const size = Buffer.byteLength(content, "utf8");
+    const BUDGET = 8000;
+    return {
+      examined: 1,
+      findings:
+        size > BUDGET
+          ? [
+              {
+                msg: `docs/SESSION-START.md is ${size}B, over its ${BUDGET}B delivery budget. It is @-imported into every session via CLAUDE.md, so its size is a permanent per-session tax -- trim it or move detail to a doc read on demand. Never restore the old cat-hook (a hook output over ~10KB reaches a session as a silently truncated ~2KB preview).`,
+              },
+            ]
+          : [],
+    };
+  }
+);
+
 /* --------------------------- secrets-hygiene ------------------------ */
 check(
   "secrets-hygiene",
@@ -1079,7 +1121,17 @@ check(
         }
         // 🔴 `existsSync`/`join`, NOT `fs.`/`path.` -- this module imports them as NAMED bindings (line 49/51), so the original `fs.existsSync(path.join(ROOT, supersededBy))` referenced three identifiers that do not exist here (`fs`, `path`, and `ROOT` -- the repo root is `REPO`). It threw ReferenceError on the FIRST document to ever use superseded_by, 2026-08-23 11:36 EDT, which is also the first time this branch had ever executed: nothing in the repo carried the field, so the check was written, wired, counted among the passing gates, and never once run. A check that cannot run is not coverage.
         if (!existsSync(join(REPO, supersededBy))) {
-          out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          // 🔴 GITIGNORED-AND-ABSENT IS AMBIGUOUS, NOT BROKEN — found 2026-09-09 when this exact branch failed CI: OWED-PROMPT.md's superseded_by: pointed at a real local/handoff/*.md file that exists on every local checkout and never exists in CI (gitignored, never committed). Blocking on it made this check permanently unsatisfiable in CI for any superseded_by: target under local/ — the same class xref already solved below with a WARN. Reuse that exact treatment instead of re-deriving a second, divergent answer.
+          if (ignoredSet([supersededBy]).has(supersededBy)) {
+            out.push({
+              severity: "WARN",
+              msg: `${f} points superseded_by: at \`${supersededBy}\`, which is gitignored AND not ` +
+                `present. That is either a real local handoff this checkout lacks, or a stale path — ` +
+                `the ignore rule makes the two indistinguishable, so confirm which.`,
+            });
+          } else {
+            out.push({ msg: `${f} points superseded_by: at ${supersededBy}, which does not exist.` });
+          }
         }
       }
       declaredPublished.set(f, /^published:\s*true\b/m.test(fm));

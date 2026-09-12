@@ -28,13 +28,14 @@ const LEDGER = 'docs/reference/portal-decision-ledger.md';
 //
 // SESSION-START's FIRST ACTION is the one place that states what a session should read first. Derive from it, and if it names nothing, say so loudly rather than guess — a wrong guess here silently validates a pointer chain that leads somewhere else. 🔴 ALL OF THEM, NOT THE FIRST ONE — corrected 2026-09-04 14:02 EDT. The comment above has said since it was written that there are legitimately TWO live plans, and this function then returned `match()` — the FIRST path in the file. SESSION-START names the remediation plan first and the conformance work second, so the singular answer was always the remediation plan, and the `.remember` check below dutifully demanded that a session working realms name a plan about working MECHANISMS. That is how "which plan governs?" came to be recorded as an open question in `.remember` and in `docs/db-deferred-list.md` while THREE primary sources already answered it: the remediation plan's own "the conformance plan is NOT superseded", SESSION-START's 2026-09-01 amendment ("if you were handed a realm prompt, that prompt is your first action and this line is not"), and this very comment. A function contradicting the comment directly above it is the receipt class this repo keeps finding.
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
-function livePlans() {
-    return plansNamedIn(read(START) || '');
-}
+const { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary } = require_('./lib/handoffCoverage.cjs');
 
-// ⚠️ CALLED BELOW, AFTER `START` EXISTS. Assigning here read `START` in its temporal dead zone and threw at import — a live TDZ, written minutes after committing a plan whose Task 1 exists to catch exactly this, and which `node --check` passes. That is the whole argument for the lint rule.
+// ⚠️ CONST DECLARATIONS MOVED ABOVE `livePlans()` ON PURPOSE (2026-09-08 18:17 EDT) -- the same TDZ class the comment below already warns about. `livePlans()` now reads BOTH files: as of a 2026-09-07 SESSION-START redesign (which the WP3 rewrite of this file, done the same day as this fix, preserved rather than caused), SESSION-START.md deliberately carries NO plan pointer any more -- that job moved to `.remember/remember.md`'s auto-injected LAST HANDOFF block. This function's comment below still said "SESSION-START is the ONLY file that decides what governs now", which was already false by the time this was found: the exact "comment contradicts the code" receipt class this file's own header says it has caught twice before, caught a third time by actually running the check rather than trusting it.
 const REMEMBER = '.remember/remember.md';
 const START = 'docs/SESSION-START.md';
+function livePlans() {
+    return plansNamedIn((read(START) || '') + '\n' + (read(REMEMBER) || ''));
+}
 const PLANS = livePlans();
 const PLAN = PLANS[0] || null;   // kept for the messages that name ONE path
 
@@ -49,9 +50,9 @@ console.log('\nhandoff check — a handoff is THREE APPENDS and ONE SHORT REWRIT
 //    hung off .remember, which is gitignored and rewritten wholesale. If the tracked files do not
 //    name the live plan, losing one untracked file strands the work.
 const start = read(START) || '';
-if (!PLANS.length) fail('SESSION-START names no plan at all — there is no first action',
-    `add the governing plan's path to ${START}. Every other check here assumes one exists.`);
-else ok(`SESSION-START names ${PLANS.length} live plan(s): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
+if (!PLANS.length) fail('neither SESSION-START nor .remember names a plan at all — there is no first action',
+    `add the governing plan's path to ${REMEMBER} (SESSION-START deliberately carries none since 2026-09-07 -- session-specific state belongs in .remember, not the tracked file).`);
+else ok(`${PLANS.length} live plan(s) named (SESSION-START and/or .remember): ${PLANS.map((f) => path.basename(f)).join(' · ')}`);
 for (const [f, label] of [[LEDGER, 'the decision ledger']]) {
     if (start.includes(path.basename(f)) || start.includes(f)) ok(`SESSION-START names ${label}`);
     else fail(`SESSION-START does NOT name ${label} — the pointer chain runs through .remember alone`,
@@ -75,7 +76,22 @@ else {
     else ok(`.remember names ${named.map((f) => path.basename(f)).join(' · ')}`);
 }
 
-// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it.
+// ── 3. THE THREE APPENDS. Did the carriers actually grow, and does the ledger cover what changed? ⚠️ THE WINDOW IS A GUESS AND IT SAYS SO. There is no reliable session boundary in git: `.remember` is gitignored, so its rewrites leave no history to anchor to. A fixed lookback can BOTH pass falsely (an unrelated ledger edit from a previous session sits inside it) and fail falsely (a long session pushes a correct early append outside it). The second audit called this broken by construction; it is, and the honest fix is to PRINT the window rather than imply precision. `--since <ref>` overrides it. ── A COMMIT HASH TYPED INTO A HANDOFF IS WRONG BY THE NEXT COMMIT (added 2026-09-07 01:55 EDT) ──────── WHY: on 2026-09-06/07 a single handoff pair carried THREE different values for HEAD, in the file whose own state block calls the head "the one number that goes stale by itself". A fresh-reader test found it as a blocker: a session running the prescribed `git log -1` gets one hash and two answers about what it means. Typing a hash is the defect; this makes typing a WRONG one loud. ⚠️ IT CHECKS SHAPE, NOT INTENT. A hash that names a real ancestor is fine — a handoff legitimately cites the commit a measurement was taken on. What cannot be right is a hash that is not in this branch's history at all, or a line CLAIMING to be the head while naming something else.
+const HEADSHA = sh('git log -1 --format=%h');
+for (const doc of ['docs/superpowers/plans/OWED-PROMPT.md', START]) {
+    const body = read(doc);
+    if (!body) continue;
+    const claims = [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
+        .map((m) => m[1] || m[2]).filter(Boolean);
+    const wrong = [...new Set(claims)].filter((h) => !h.startsWith(HEADSHA) && !HEADSHA.startsWith(h));
+    if (wrong.length) {
+        fail(`${doc} claims HEAD is ${wrong.join(', ')} — git says ${HEADSHA}`,
+            'derive it in the write (git log -1 --format=%h) rather than typing it, and keep ONE such line per document.');
+    } else if (claims.length) {
+        ok(`${doc} names HEAD as ${HEADSHA}, and git agrees`);
+    }
+}
+
 const sinceArg = process.argv.includes('--since') ? process.argv[process.argv.indexOf('--since') + 1] : null;
 const hist = sh('git log --oneline -40 --format=%H').split('\n').filter(Boolean);
 const base = sinceArg || hist[Math.min(hist.length - 1, 19)] || 'HEAD~1';
@@ -103,6 +119,78 @@ else ok('the deferred list grew');
 if (codeTouched.length && !logGrew) soft('code changed and the changelog did not',
     'append a ### to the open entry. Do NOT mint a new version.');
 else if (logGrew) ok('the changelog grew');
+
+// ── 3b. 🔴 THE HANDOFF AGAINST ITS OWN SOURCE, AND AGAINST ITS OWN PASS.
+//    Added 2026-09-10 13:17 EDT after a handoff shipped with one of the 36 items it organises in NEITHER
+//    carrier, another in no worklist, and three counted twice — while every check here was green. The
+//    carriers were in order; the CONTENT was not, and nothing looked. Harkirat: *"is your check of the
+//    handoff mechanical or actually thoughtful?"* It was mechanical, and these two are what mechanical
+//    can honestly cover so that thoughtful is spent on what it cannot.
+const handoffPaths = [...new Set((rem || '').match(/local\/handoff\/[\w.\-]+\.md/g) || [])];
+if (!handoffPaths.length) soft('.remember names no handoff file',
+    'a handoff nothing points at is a handoff nobody opens — name it in .remember, or say plainly that this session produced none.');
+// ⚠️ DATED FLOOR, the same carve-out `docs-audit`'s plan-audit-log makes. The 109 handoffs written before this convention existed are not defective for lacking it, and failing them would only teach the next reader that the check lies.
+const HANDOFF_AUDIT_FROM = '2026-09-10';
+for (const hp of handoffPaths) {
+    const dated = /(\d{4}-\d{2}-\d{2})/.exec(path.basename(hp));
+    if (dated && dated[1] < HANDOFF_AUDIT_FROM) { ok(`${path.basename(hp)} predates the audit-log floor — exempt`); continue; }
+    const doc = read(hp);
+    if (doc === null) { fail(`${hp} is named in .remember and does not exist`, 'fix the pointer or write the file.'); continue; }
+
+    // (a) Did a pass run OVER THE FINISHED ARTIFACT? Same argument as docs-audit's plan-audit-log.
+    if (!hasPassRecord(doc)) fail(`${hp} records no pass over itself`,
+        'add a `## Audit log` section saying what a falsification pass over the FINISHED handoff found — "no gaps found" is a legitimate entry. A handoff with none is one nobody tried to break, and that is invisible to the next session.');
+    else ok(`${path.basename(hp)} records its own audit pass`);
+
+    // (b) Does it conserve the list it summarises?
+    const dir = coverageDirective(doc);
+    // 🔴 THE "declares no source list" ADVISORY IS DELETED, AND THE MEASUREMENT IS WHY. It fired on
+    //    every handoff without a directive — and across all 109 in `local/handoff/`, **zero** name five
+    //    or more id-bearing items, so the round-2 handoff is the first in this project's history to
+    //    summarise a list at all. An advisory with a 1-in-109 hit rate is noise, and noise is how a
+    //    check stops being read. The guide tells you to add a directive when you summarise something;
+    //    this stays silent until one exists, and does real arithmetic once it does.
+    if (!dir) {
+        // Conditional, not universal — see looksLikeASummary's own note for the measurement that earned this back after I deleted it and left the check unable to fire.
+        if (looksLikeASummary(doc)) soft(`${path.basename(hp)} looks like it summarises a list and declares no source`,
+            'add one line so the arithmetic runs instead of your eyes:\n        <!-- coverage: <path> · <regex with one capture group> -->\n        Pointed at the previous session\'s handoff, this check named the exact pin its table had dropped.');
+    } else {
+        const src = read(dir.source);
+        if (src === null) fail(`${path.basename(hp)} declares a coverage source that does not exist: ${dir.source}`, 'fix the path.');
+        else {
+            const { ids, missing, vacuous, badPattern } = coverageGaps(src, dir.pattern, [doc, read('docs/db-deferred-list.md')]);
+            if (badPattern) fail(`${path.basename(hp)}'s coverage pattern is not a valid regex`, `pattern: ${dir.pattern}`);
+            else if (vacuous) fail(`${path.basename(hp)}'s coverage pattern matched ZERO ids in ${dir.source}`,
+                'a pattern that matches nothing reports full coverage forever. Fix the pattern — this is the vacuous pass, not a clean one.');
+            else if (missing.length) fail(`${missing.length} of ${ids.length} item(s) from ${dir.source} appear in NEITHER the handoff nor the deferred list`,
+                `they are: ${missing.join(', ')}`);
+            else ok(`all ${ids.length} items from ${path.basename(dir.source)} reach a carrier`);
+        }
+    }
+}
+
+// ── 3c. THE RECORD LAYERS, SHOWN RATHER THAN JUDGED. Not every session earns a DEVLOG entry and a gate
+//    that demanded one would only produce filler — so this PRINTS the row and lets you decide, which is
+//    the difference between a layer you skipped and a layer you never thought about. Three were skipped
+//    on 2026-09-10 while a document about discipline was being written.
+const layers = [['CHANGELOG', 'docs/CHANGELOG.md'], ['DEVLOG', 'docs/DEVLOG.md'],
+                ['deferred list', 'docs/db-deferred-list.md'], ['decision ledger', LEDGER]];
+console.log('  ℹ️  record layers this window: '
+    + layers.map(([n, f]) => `${touched.includes(f) ? '✓' : '·'} ${n}`).join('  '));
+
+// ── 3d. THE NOTES FILE, AT THE MOMENT IT CAN STILL BE ACTED ON. A SessionStart hook flags it at the
+//    START of every session and nothing flags it at the END — which is the last point a session can
+//    discharge it. Four consecutive sessions were flagged and did nothing.
+const notes = read('docs/ideas/diors-notes.md');
+if (notes) {
+    // ⚠️ TWO COUNTS OF ONE THING, AND THEY DISAGREE ON PURPOSE. This counts EVERY unchecked box in the file; the SessionStart hook counts only those inside its working sections, so it reports one fewer. Neither is wrong — they measure different sets — but an unexplained 8-vs-9 is the duplicated-state defect this repo keeps removing, so the message below says which set it is.
+    const openItems = (notes.match(/^\s*-\s*\[ \]/gm) || []).length;
+    if (openItems && !touched.includes('docs/ideas/diors-notes.md')) {
+        soft(`docs/ideas/diors-notes.md has ${openItems} unchecked box(es) file-wide and was not touched this window`,
+            'this is the LAST moment this session can act on it. Answer or mark them, or state in the handoff that they are deliberately untouched and why — working-agreement rule 7.');
+    } else if (openItems) ok(`the notes file was touched (${openItems} still open)`);
+    else ok('the notes file has no open items');
+}
 
 // ── 4. 🔴 IS THE CODE ACTUALLY GREEN? The second audit's headline: this script reported full green while
 //    `npm test` was RED on a file the same round of work had just created, and `docs:audit` carried an

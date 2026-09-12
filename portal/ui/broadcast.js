@@ -4,18 +4,22 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead, MastheadNew } from './shell.js';
+import { Shell, Masthead, MastheadNew } from './shell.js';
 import { DiscordCard } from './v2Render.js';
-import { Manifest } from './manifest.js';
+import { Manifest, StatePill } from './manifest.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay, Drawer } from './overlay.js';
+import { SmartDate } from './composer.js';
 
 // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
 const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0(\d)$/, ' $1');
 
+// ⚠️ THE CONTENT LIFECYCLE, NAMED. An inline object literal inside a render closure is a vocabulary nothing else can see, and this column carries TWO of them — the staging state (StatePill) and this. Kept apart on purpose: `LIVE NOW` is not `SAVED`, and a reader who cannot tell a written-and-over post from a staged-and-not-yet-real one has been told half the answer.
+const LIFECYCLE_WORD = { live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' };
+// ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27.
 const BROADCAST_COLUMNS = [
     // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state. ownDot: this column draws `.sev` itself — the design's ONE swatch, which is a severity mark rather than a topic dot. Without the flag the row carried both, and the extra 17px wrapped a 46-character title onto a second line on every long row.
     { key: 'text', label: 'Announcement', editable: true,
@@ -35,9 +39,18 @@ const BROADCAST_COLUMNS = [
     { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<b style="color:var(--warn)">never</b>`) },
     // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
     { key: 'state', label: 'State', dataKind: 'right',
-      render: (r) => html`<span class=${'stt ' + (r.state === 'staged' ? 'staged' : 'saved')}>${r.state === 'staged' ? 'STAGED' : 'SAVED'}</span>
-          <span class="rowmeta" style="margin-left:6px">${({ live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' })[r.state] || String(r.state || '').toUpperCase()}</span>` },
+      // 🔴 THE CHIP IS `StatePill`, NOT A SECOND COPY OF IT (2026-09-10 17:24 EDT). This rendered its own
+      //    `<span class="stt …">` with its own STAGED/SAVED words — a hand-rolled duplicate of the component
+      //    that `manifest.js` exports for exactly this reason, and the reason it is exported at all is that
+      //    Season did the same thing and lost the pill entirely. Two copies of one vocabulary is how
+      //    `.stt.stag` / `.stt.sched` / `.stt.exp` came to be emitted against classes no stylesheet defines.
+      //    Harkirat, pin pmtvqq1xg: *"the state column's labels are so poorly implemented"* — and his own
+      //    standing rule, *fix the class, not just the instance*. The SECOND axis stays, because it is a
+      //    different fact: the chip is the STAGING state, the meta is the CONTENT lifecycle.
+      render: (r) => html`<${StatePill} state=${r.state === 'staged' ? 'staged' : 'saved'} accent=${accentOf(r)} />
+          <span class="rowmeta" style="margin-left:6px">${LIFECYCLE_WORD[r.state] || String(r.state || '').toUpperCase()}</span>` },
 ];
+
 
 const BROADCAST_FILTERS = [
     { key: 'state', label: 'State', options: [
@@ -123,7 +136,7 @@ function NowShowing({ live, counts, cap }) {
                      when there is one. The portal printed nothing at all under the cap, so the one fact a
                      reader most needs here — that position is delivery order and cannot be changed — appeared
                      only in the failure case. -->
-                <p class="chint" style="margin-top:12px">
+                <p class="chint" style="margin-top:var(--s3)">
                     Position is <b>delivery order</b> — oldest first, and nothing else. There is no way
                     to reorder announcements.${cap && live.length > cap ? html`${' '}<b style="color:var(--warn)">${live.length - cap} of these will not
                     be shown</b> until something above ${live.length - cap === 1 ? 'it' : 'them'} ends.` : null}
@@ -234,7 +247,7 @@ function HeadsUp({ all }) {
              reason. The design wraps it in a plain div for exactly this, so the callout stays raised and
              the Manifest's adjacency is to the view panel it is subordinate to. Margins collapse through
              a div with no border or padding, so it costs no space. -->
-        <div class="panel" style="margin-top:16px"><div class="callout">
+        <div class="panel" style="margin-top:var(--s4)"><div class="callout">
             <b>Heads up:</b>${' '}“${worst.text.slice(0, 62)}${worst.text.length > 62 ? '…' : ''}”
             has no expiry and has been showing for <b>${worst.days} day${worst.days === 1 ? '' : 's'}</b>.${' '}
             ${forever.length > 1 ? `${forever.length - 1} other${forever.length === 2 ? '' : 's'} also never end. ` : ''}${' '}
@@ -249,13 +262,24 @@ function PostForm({ onSubmit, onCancel }) {
     const [text, setText] = useState('');
     const [startsAt, setStartsAt] = useState('');
     const [expiresAt, setExpiresAt] = useState('');
-    const ready = text.trim();
+    // 🔴 THE RESOLVED INSTANT IS STATE, NOT A CLIENT-SIDE PARSE AT SUBMIT TIME. This used to send
+    //    `new Date(startsAt).toISOString()`, which is the browser's parser reading a value the BOT will
+    //    later read with chrono-node — two implementations behind one promise, which is the exact
+    //    argument composer.js's own header makes for asking the server. The iso here is what
+    //    /api/parse-date returned, so what the preview says and what the record holds cannot differ.
+    const [startsIso, setStartsIso] = useState(null);
+    const [expiresIso, setExpiresIso] = useState(null);
+    // ⚠️ TEXT WITHOUT A RESOLUTION MUST BLOCK, NOT SILENTLY SEND NULL. A field reading "next tuseday"
+    //    resolves to nothing; submitting it would post an announcement that starts immediately and say
+    //    nothing about why. The `why` line below names which field, in the drawer footer's own voice.
+    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', expiresAt.trim() && !expiresIso ? 'the end' : ''].filter(Boolean);
+    const ready = text.trim() && !unresolved.length;
 
     function submit() {
         onSubmit(buildBroadcastAddOp({
             text,
-            startsAt: startsAt.trim() ? new Date(startsAt).toISOString() : null,
-            expiresAt: expiresAt.trim() ? new Date(expiresAt).toISOString() : null,
+            startsAt: startsIso || null,
+            expiresAt: expiresIso || null,
         }));
     }
 
@@ -265,16 +289,22 @@ function PostForm({ onSubmit, onCancel }) {
                    actions=${html`
                        <span role="status" class=${'why' + (ready ? '' : ' blocked')}>${ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.' : 'Write the announcement first.'}</span>
                        <button class="btn" onClick=${onCancel}>Cancel</button>
+                       ${unresolved.length ? html`<span class="why blocked">${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet</span>` : null}
                        <button class="btn go" disabled=${!ready} onClick=${submit}>Stage post</button>`}>
             <div class="dwbody">
                 <div class="dwfield"><label for="post-text">Text</label>
                     <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
                               value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                    <div class="dwfield"><label for="post-starts">Starts (blank = immediately)</label>
-                        <input id="post-starts" type="date" value=${startsAt} onInput=${(e) => setStartsAt(e.target.value)} /></div>
-                    <div class="dwfield"><label for="post-expires">Ends</label>
-                        <input id="post-expires" type="date" value=${expiresAt} onInput=${(e) => setExpiresAt(e.target.value)} /></div>
+                <div class="dw-grid2">
+                        ${''/* 🔴 PIN pmtvp9ur7 ASKED FOR A DATE PICKER AND THE ANSWER WAS ALREADY BUILT. A native date input cannot take "in 3 days", cannot take a paste out of a patch note, and renders a different widget in every browser. SmartDate asks the bot's own chrono-node through /api/parse-date and echoes what it resolved, which is what /manage has understood since it was built. */}
+                    <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
+                                  placeholder="blank = the moment you commit, or “in 3 days”, or Sep 21"
+                                  value=${startsAt} iso=${startsIso}
+                                  onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
+                    <${SmartDate} chrome="drawer" id="post-expires" label="Ends"
+                                  placeholder="blank = the server’s 60-day default, not never"
+                                  value=${expiresAt} iso=${expiresIso}
+                                  onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />
                 </div>
                 <p class="dw-p">A blank start shows it the moment you commit. A blank end takes the server's
                     60-day default, not never.</p>

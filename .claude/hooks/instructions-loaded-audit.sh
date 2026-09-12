@@ -65,6 +65,8 @@ if [ "${1:-}" = "--session" ]; then
       | ($uniq | map(.bytes) | add) as $bytes
       | "INSTRUCTION LOAD (most recent batch, \($latest)): \($files | length) file(s), \($bytes)B — \($files | join(", "))."
         + (if ($files | map(select(endswith("silent-mode.md"))) | length > 0) then " ✅ silent-mode.md is among them, so the standing working style IS loading." else " 🔴 silent-mode.md is NOT among them. If CLAUDE.md IS listed, the unconditional rule did not load and SILENT MODE IS NOT IN EFFECT — switch it to an @-import from CLAUDE.md and move the file out of .claude/rules/ so it cannot double-load. If CLAUDE.md is not listed either, this hook simply had not run yet and the batch is stale." end)
+      + (if ($files | map(select(endswith("SESSION-START.md"))) | length > 0) then " ✅ SESSION-START.md is among them (the @import is delivering it)." else " 🔴 SESSION-START.md is NOT among them -- check project CLAUDE.md for the @docs/SESSION-START.md include line." end)
+      + (if ($files | map(select(endswith("MEMORY.md"))) | length > 0) then " ✅ MEMORY.md is among them." else " 🔴 MEMORY.md is NOT among them -- the memory-index @import may have failed." end)
     end' "$LOG" 2>/dev/null | jq -Rs 'if . == "" then empty else {hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}} end'
   exit 0
 fi

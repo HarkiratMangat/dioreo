@@ -8,6 +8,8 @@ scope: CONTEXT LOADING — the memory index, the rules tier and what reaches a s
 
 *Written 2026-09-02 21:00 EDT at Harkirat's instruction, after he rejected both of my answers as patches. This document exists so the next session does not have to re-derive anything I measured. **It contains no approved solution.** Both problems are open, and the two "fixes" described below are recorded as REJECTED so they are not accidentally rebuilt.*
 
+> 🔴 **A SHORT OPENER IS NOT A SUMMARY OF THIS FILE.** **It contains NO approved solution**, and the two fixes described inside are recorded as REJECTED so they are not accidentally rebuilt — an opener that lists them reads as a plan of work and is the exact failure this file was written to prevent. Added 2026-09-06 20:48 EDT.
+>
 > 🔴 **READ THIS FIRST.** Harkirat's verdict, verbatim, 2026-09-02 20:57 EDT:
 > - On the `MEMORY.md` trim: *"that's a terrible solution... that's partially loading a memory which a session might assume is the entire memory line and won't bother looking for the remainder of it. The entire point some of those index lines were expanded was because session would read the smaller index line and then not comply with that memory because they concluded their reasoning based on the smaller memory index line. Your entire memory.md trim seems to have been an easy-out, lazy, unthoughtful patch job which causes more issues similar to what we've faced in the past."*
 > - On the rules-loading pointer hook: *"your 'rules dont load' solution is a copout that solves nothing."*

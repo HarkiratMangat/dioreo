@@ -11,7 +11,7 @@
 #   2. conservation — did the change LOSE something, or leave a surviving claim FALSE?  -> here
 #   3. angles       — which KIND of check never ran at all?           -> here
 #
-# ── TIMING: WHY `Stop`, NOT ONLY `gh pr create` ─────────────────────────────────────────────────── stale-reference-sweep.sh fires at `gh pr create`. On 2026-08-06 that gate COULD NOT HAVE FIRED: the session made three completion claims across six commits and never opened a PR. Harkirat had to prompt three times — each one AFTER a false "done" had already reached him. The moment this must fire is the moment the CLAIM IS MADE. That is `Stop`, per assistant message. `gh pr create` is kept as the backstop for a session that opens a PR without ever claiming done. Same lesson as records-close-check.sh's header ("the real defect was never absence, it was TIMING") and as that hook's dead `grep -qx`, found the same morning.
+# ── TIMING: WHY A COMMIT, AND NOT EVERY MESSAGE ─── REVERSED 2026-09-06 22:22 EDT, Harkirat: the sweep "should only fire before commits/merges", not "after every little run/turn". THE OLD REASONING IS KEPT BECAUSE IT WAS SOUND AND IS NOW OUTWEIGHED, not because it was wrong: this fired on `Stop`, per assistant message, because the moment it must fire is the moment the CLAIM IS MADE — on 2026-08-06 a session made three completion claims across six commits and never opened a PR, so a `gh pr create` gate could not have fired at all. What that did not price in is FREQUENCY. A per-message gate on a long session is read once and skimmed after, which is the fires-on-everything failure written into four other hooks here; and it was switched off by hand mid-session (`Stop` -> `Stop__OFF`) for interrupting work, which is the same outcome as not existing. A commit is the narrowest moment that still precedes the irreversible thing: `git commit`, `git merge`, `git tag -a`, `gh pr merge`. ⚠️ It is strictly LATER than a claim in prose — that gap is real and is the cost of this change, stated rather than hidden. `gh pr create` remains the `pr`-mode backstop. ⚠️ `stop` mode is RETIRED but still implemented and still tested: it is what the claim gate hangs off, and deleting it deletes the proof that the claim gate works.
 #
 # ── COST: WHY IT IS NOT A TOKEN BURNER (Harkirat's second ask, same session) ────────────────────── A Stop hook runs on EVERY assistant message, so an expensive one is worse than none — it adds latency to every turn and, printing the same block repeatedly, trains the reader to skip it. Four cost controls, in the order they execute:
 #   1. STAMP FIRST. A fingerprint of (base + HEAD + working-tree state) is cached in .git/. Unchanged since the last report -> exit 0 having run two git commands. The overwhelmingly common case.
@@ -27,7 +27,7 @@ set -uo pipefail
 REPO="${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}"
 BASE="${1:-main}"
 TRANSCRIPT="${2:-}"
-MODE="${3:-pr}"          # stop | pr
+MODE="${3:-pr}"          # commit | pr | stop (retired; kept so the claim-gate proof still runs)
 
 # ⚠️ RESOLVE THIS BEFORE THE `cd` BELOW. `${BASH_SOURCE[0]}` is the path the hook was INVOKED with, which is relative when the harness calls `bash .claude/hooks/completeness-sweep.sh` — so resolving it after `cd "$REPO"` re-anchors it to $REPO instead of to where the script actually lives. Under a worktree, or any CLAUDE_PROJECT_DIR that is not the invoking directory, it then points at a `.claude/hooks` that does not exist and the claim gate reports its own detector as MISSING. records-close-check.sh already resolves its HOOKDIR before cd-ing for exactly this reason; this hook did not, and it took a synthetic-repo test to expose it because the live path happens to coincide. Found 2026-08-06 12:37 EDT.
 HOOKDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,7 +46,10 @@ if [ "$BASE" = main ] && git rev-parse --verify -q v3-pre-release >/dev/null 2>&
 fi
 
 emit() {
-  if [ "$MODE" = stop ]; then
+  # ⚠️ COMMIT MODE NEVER DENIES, and the shape is the reason. Harkirat's standing constraint on every gate in this directory: "a gate is better than advisory but i dont want it denying things." additionalContext with hookEventName is the only output that reaches Claude without blocking the call or putting a prompt in front of him — friction on the model is free, friction on him is disqualifying, so permissionDecision "ask" is wrong here even though it would be stricter.
+  if [ "$MODE" = commit ]; then
+    jq -n --arg f "$1" '{hookSpecificOutput:{hookEventName:"PreToolUse", additionalContext:("COMPLETENESS SWEEP -- you are about to commit or merge. These are the checks that normally take three prompts to get.\n\nPass 1 (references) is stale-reference-sweep.sh. Below are passes 2 and 3: what the change may have LOST or left FALSE, and which KIND of check never ran.\n" + $f + "\n\nNone of it is a verdict -- it is what nothing has looked at yet. Work through it and say what each turned up, including \"checked, nothing there\". The commit is NOT blocked: proceeding anyway is a decision you state, not one you skip.")}}'
+  elif [ "$MODE" = stop ]; then
     jq -n --arg f "$1" '{decision:"block", reason:("COMPLETENESS SWEEP -- you are reporting this as done. These are the checks that normally take three prompts to get.\n\nPass 1 (references) is stale-reference-sweep.sh. Below are passes 2 and 3: what the change may have LOST or left FALSE, and which KIND of check never ran.\n" + $f + "\n\nNone of it is a verdict -- it is what nothing has looked at yet. Work through it and report what each turned up, including \"checked, nothing there\". Do not restate the work as done while an item above is unexamined; that sequence is the reason this gate exists.")}'
   else
     jq -n --arg f "$1" '{hookSpecificOutput:{hookEventName:"PreToolUse", additionalContext:("COMPLETENESS SWEEP -- passes 2 and 3 of the pre-PR audit (pass 1 is stale-reference-sweep.sh).\n" + $f + "\n\nNone of it is a verdict -- it is what nothing has looked at yet. Report what each turned up, including \"checked, nothing there\".")}}'
@@ -54,7 +57,7 @@ emit() {
 }
 
 # ── COST CONTROL 1: the stamp. Two git commands, then usually exit. ─────────────────────────────── Lives in .git/ deliberately: never committed, never shared between clones or worktrees, discarded with the clone. A stamp in the tree would be state that rots and needs gitignoring.
-STAMP="$(git rev-parse --git-dir)/completeness-sweep.stamp"
+STAMP="$(git rev-parse --git-dir)/commit-completeness-sweep.stamp"
 # ⚠️ THE SESSION IS PART OF THE FINGERPRINT — added 2026-08-06 09:44 EDT. The stamp lives in .git/ and therefore PERSISTS ACROSS SESSIONS. Without the session component, a new session inheriting an unchanged repo state got SILENCE on its first completion claim — and a fresh session has taken ZERO angles, which is precisely when pass 3 is worth the most. The stamp is meant to suppress repeats within a session, never to carry "already checked" into a new one.
 fingerprint=$(printf '%s|%s|%s|%s' "$BASE" "${TRANSCRIPT##*/}" \
   "$(git rev-parse HEAD 2>/dev/null)" "$(git status --porcelain 2>/dev/null | cksum)")
@@ -78,7 +81,7 @@ if ! command -v rg >/dev/null 2>&1; then
   exit 0
 fi
 
-# ── COST CONTROL 2: claim gate (stop mode only) ─────────────────────────────────────────────────── ⚠️ DELEGATES to claim-detect.sh. This carried its OWN copy of the completion-claim regex while the gate in settings.json carried a different one — two dialects for one concept, in the same repo whose `notes-open-items.sh` exists precisely because a duplicated regex drifted and one copy went silently unfixed for weeks. Consolidated 2026-08-06 09:47 EDT, found by asking what this hook DUPLICATES — an angle neither earlier pass took. The comment here used to claim it "mirrors" that vocabulary; mirroring by hand is what drift looks like before it drifts.
+# ── COST CONTROL 2: claim gate (stop mode only) ─────────────────────────────────────────────────── ⚠️ DELEGATES to claim-detect.sh. This carried its OWN copy of the completion-claim regex while the gate in settings.json carried a different one — two dialects for one concept, in the same repo whose `notes-open-items.sh` exists precisely because a duplicated regex drifted and one copy went silently unfixed for weeks. Consolidated 2026-08-06 09:47 EDT, found by asking what this hook DUPLICATES — an angle neither earlier pass took. The comment here used to claim it "mirrors" that vocabulary; mirroring by hand is what drift looks like before it drifts. ⚠️ COMMIT MODE DELIBERATELY SKIPS THIS. In stop mode the gate existed because a message is not necessarily a claim; a COMMIT IS the claim, so demanding a second one in prose would make the sweep unreachable at the exact moment it was moved to.
 if [ "$MODE" = stop ]; then
   [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] || exit 0
   DETECT="$HOOKDIR/claim-detect.sh"

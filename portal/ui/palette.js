@@ -6,6 +6,21 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
+import { Icon } from './icons.js';
+
+// The command bar's own kind vocabulary — five groups, five shapes. `commit` takes a check because that is the verb; `home` takes the alert triangle because the only home entry is "What needs you", which is a warning by construction. Kept beside the component that reads it: these groups are the palette's, not shared.
+const KIND_ICON = { realm: 'layout-grid', view: 'eye', account: 'log-out', commit: 'check', home: 'triangle-alert',
+    armory: 'square-pen', broadcast: 'square-pen' };
+
+// The four things a result can BE, in the order a reader wants them. `account` is last and carries a rule above it: it is the only section holding an act that ends the session, and a destructive act must not be reachable by momentum from a navigation list.
+const SECTIONS = [
+    { key: 'here', label: 'On this page', groups: ['view'] },
+    { key: 'go', label: 'Go to', groups: ['realm', 'home'] },
+    { key: 'do', label: 'Do', groups: ['commit', 'armory', 'broadcast'] },
+    { key: 'account', label: 'Account', groups: ['account'] },
+];
+const SECTION_OF = (c) => (SECTIONS.find((s) => s.groups.includes(c.group)) || SECTIONS[2]);
+const SECTION_RANK = (c) => SECTIONS.indexOf(SECTION_OF(c));
 
 // A command is { label, group, accent, keywords, local, run }. `run` is the whole contract: the bar never navigates by convention or by parsing the label, so a command that goes nowhere is a command somebody forgot to give a body — visible in the source rather than at the moment somebody presses Enter on it.
 export function CommandBar({ commands = [], realmLabel }) {
@@ -15,13 +30,15 @@ export function CommandBar({ commands = [], realmLabel }) {
     const inputRef = useRef(null);
     const listRef = useRef(null);
 
-    const hits = paletteHits(commands, query);
+    // 🔴 GROUPED, AND SIGN OUT IS SET APART — Harkirat's pick, 2026-09-10 18:22 EDT, fork 04. The icons fixed the dot; this fixes what the dot was a symptom of. Every result had identical weight in a keyboard-driven list, so "Sign out" sat one arrow-key from a page you were merely browsing to. ⚠️ THE SORT IS APPLIED TO `hits` ITSELF, NOT AT RENDER TIME, because `active` indexes this array — grouping only in the markup would make the arrow keys jump between sections while the highlight moved in relevance order. Stable within a section, so relevance still decides the order of what is inside one.
+    const hits = [...paletteHits(commands, query)].sort((a, b) => SECTION_RANK(a) - SECTION_RANK(b));
     const active = Math.min(sel, Math.max(0, hits.length - 1));
 
     // ⌘K / Ctrl-K. Bound to the document because that is what a global shortcut means, and guarded by paletteBlocked because `inert` on the header stops the pointer and the tab order but not this listener — see palette.logic.js for the full note.
     useEffect(() => {
         const onKey = (e) => {
-            if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'k') return;
+            // ⌘/ RATHER THAN ⌘K — pin pmtvpmxsx, 2026-09-10 11:59 EDT: "i have cmd+K binded to something else on my mac." The portal has exactly one reader and his machine already owns ⌘K, so a shortcut he cannot press is not a shortcut. `/` needs no shift on his layout and no browser claims ⌘/. ⚠️ The <kbd> below renders the same key, and COMPANION §5.1 says the bar opens on INTENT — pointerdown, typing, or this chord — and never on focus; that is unchanged.
+            if (!(e.metaKey || e.ctrlKey) || e.key !== '/') return;
             if (paletteBlocked(document)) return;
             e.preventDefault();
             const el = inputRef.current;
@@ -67,16 +84,20 @@ export function CommandBar({ commands = [], realmLabel }) {
                    onInput=${(e) => { setQuery(e.target.value); setSel(0); setOpen(true); }}
                    onKeyDown=${onKeyDown}
                    onBlur=${() => setTimeout(() => setOpen(false), 130)} />
-            <kbd>⌘K</kbd>
+            <kbd>⌘/</kbd>
             <div class="cb-drop" hidden=${!open}>
                 <div class="plist" id="cbList" role="listbox" ref=${listRef}
                      aria-label="Commands and pages">
                     ${hits.length ? hits.map((c, i) => html`
+                        ${SECTION_OF(c) !== SECTION_OF(hits[i - 1] || {}) || i === 0 ? html`
+                            <p class=${'psec' + (SECTION_OF(c).key === 'account' ? ' psec-cut' : '')} role="presentation">${SECTION_OF(c).label}</p>` : null}
                         <button class="pitem" role="option" key=${c.label} aria-selected=${i === active ? 'true' : 'false'}
+                                style=${`--c:${c.accent || 'var(--ink3)'}`}
                                 onMouseEnter=${() => setSel(i)}
                                 onMouseDown=${(e) => e.preventDefault()}
                                 onClick=${() => runCommand(c)}>
-                            <i style=${`--c:${c.accent || 'var(--ink3)'}`} aria-hidden="true"></i>
+                            ${'' /* 🔴 FIVE KINDS OF RESULT WORE ONE DOT. Harkirat, pin pmtvplcuz, 2026-09-10 11:57 EDT: "why is 'sign out' have a dot beside it when it could have easily had an actual log-out icon." Measured on the rendered palette: every .pitem drew the same 8px disc and no svg, so a realm, a view, an action, a commit and sign-out were told apart only by the muted group word at the far right of the row. SHAPE carries kind and COLOUR carries topic is this console's own law — the dot was colour doing both jobs and neither well. The icon is the kind; --c still tints it, so a realm keeps its hue. */}
+                            <${Icon} name=${KIND_ICON[c.group] || 'square-pen'} cls="sm" />
                             ${c.label}
                             ${c.group ? html`<span class="pk">${c.group}</span>` : null}
                         </button>`)

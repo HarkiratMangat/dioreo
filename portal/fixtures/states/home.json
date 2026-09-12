@@ -1,0 +1,22 @@
+{
+  "surface": "Home",
+  "note": "Registered 2026-09-07 — no states file existed for this realm. Home has no drawers of its own (the build-out COMPANION's own note), so its registry is the two async states every realm shares; shell.json already carries this realm's default entry.",
+  "states": [
+    {
+      "name": "slow · the skeleton in the shape of the content",
+      "realm": "home",
+      "flags": { "slow": "4000" },
+      "known": [],
+      "expect": ".skel",
+      "preSettleMs": 4200,
+      "settleMs": 300
+    },
+    {
+      "name": "failed · the server refuses",
+      "realm": "home",
+      "flags": { "fail": "500" },
+      "known": [],
+      "expect": ".failbox"
+    }
+  ]
+}

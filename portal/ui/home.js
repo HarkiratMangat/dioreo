@@ -6,7 +6,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead } from './shell.js';
+import { Shell, Masthead } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 // The clock FACE is Season's, imported rather than transcribed — see its header for the copy this replaced.
@@ -60,6 +60,8 @@ const LANE_ACCENT = { draw: 'var(--draw)', returning: 'var(--ret)', event: 'var(
 //
 // 🔴 SEVERITY IS A PROPERTY OF THE KIND, NOT OF THE COUNT (COMPANION §5.9f.1). Thirty-three builds needing a caption is not more urgent than one scope only one person can use; the count only breaks ties. The portal emitted `kind:'warn'` on every row — one weight, three rows — so the ladder existed in the stylesheet (`.s-conflict` `.s-spof` `.s-error` `.s-repair` `.s-forever`) with nothing ever wearing four of its five rungs, and Access and Analytics were never asked whether anything was wrong with them at all.
 const SEV = { conflict: 95, spof: 90, error: 80, repair: 60, forever: 50 };
+// 🔴 THE LADDER WAS CARRIED BY A 3px COLOUR BAR AND NOTHING ELSE, which is WCAG 1.4.1 (use of colour) and no brief opts out of it. The ORDINAL does not cover it: 01 is the worst thing PRESENT, so a quiet Tuesday and a real emergency both render 01 and only the unlabelled swatch separates them. PRODUCT.md is explicit that a second admin is near-term and that affordances stay discoverable rather than being designed out — and nothing on the page teaches this ladder. ⚠️ WHAT IS NOT ADDED, DELIBERATELY: a visible word. Every row's own fact ALREADY names its kind ("N errors pinged", "N builds need repair"), so a visible kind label would restate the sentence beside it — one quantity, two authorities. What is missing is the RUNG, and the rung belongs to the bar that encodes it. So the bar gains a tip and the row gains an accessible name; the composition is untouched and --ink4 keeps its 3.02:1, which clears the 3:1 non-text floor and is no longer the sole carrier.
+const SEV_RUNG = { conflict: 'Critical', spof: 'Critical', error: 'High', repair: 'Medium', forever: 'Low' };
 
 // 🔴 STAGED WORK IS DELIBERATELY NOT ON THIS LIST, and that is the fix rather than an omission. Measured 2026-08-27: the staged count appeared THREE times on Home inside 500px — the masthead figure, an entry here, and the staged bar 16px below that entry saying the same sentence with more in it. COMPANION §16.6 warns about exactly this shape: "a third copy of a fact stated above it". It also corrects the LEAD figure: this list is EXCEPTIONS — things that are WRONG — and `needs you` counts its rows, so counting a queue here inflated the one number the page is named after.
 //
@@ -122,7 +124,8 @@ function attentionRows({ season, armory, broadcast, access, matrix, analytics, t
             ? Math.round((new Date(dayOf(today) + 'T00:00:00Z').getTime() - new Date(a.createdAt).getTime()) / 86400000) : 0);
         const oldest = Math.max(0, ...forever.map(age));
         push('forever', 'Broadcast', '#/broadcast',
-            `${forever.length} announcement${forever.length === 1 ? '' : 's'} never end — oldest up ${oldest}d`,
+            // The noun was pluralised and the VERB was not, so a single one read "1 announcement never end". Invisible until the row gained an accessible name and the sentence had to be read aloud rather than scanned.
+            `${forever.length} announcement${forever.length === 1 ? '' : 's'} never end${forever.length === 1 ? 's' : ''} — oldest up ${oldest}d`,
             forever.length, 'Airtime', (broadcast?.all || []).filter((a) => a.state === 'live').length);
     }
 
@@ -144,9 +147,11 @@ function AttentionList({ rows }) {
     return html`
         <div class="att-list" role="list">
             ${rows.map((a, i) => html`
-                <a role="listitem" class=${`att-row s-${a.kind}`} href=${a.href} key=${a.text} style=${`--c:var(--r-${a.realm.toLowerCase()})`}>
+                <a role="listitem" class=${`att-row s-${a.kind}`} href=${a.href} key=${a.text}
+                   aria-label=${`${SEV_RUNG[a.kind]} \u2014 ${a.text}. ${a.realm}, ${a.act}.`}
+                   style=${`--c:var(--r-${a.realm.toLowerCase()})`}>
                     <span class="att-i" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span>
-                    <span class="att-b" aria-hidden="true"></span>
+                    <span class="att-b" data-tip=${`${SEV_RUNG[a.kind]} \u00b7 ${a.text}`} aria-hidden="true"></span>
                     <span class="att-x"><b>${a.text}</b>${' '}<em>${a.realm} · ${a.act}</em></span>${' '}
                     <span class="att-go">
                         ${a.of ? html`<span class="att-sev">${a.n} of ${a.of}</span>` : null}
@@ -169,7 +174,7 @@ function HomeClock({ season, today }) {
     // ⚠️ ONBOARD, 2026-09-06 — both empty states now name the next action rather than leaving the reader to already know Season is where a deadline gets set. Home's build-out row asks for exactly this: an empty state carries a button/link to the realm that would fix it.
     if (!moments.length) return html`<section class="hclock"><span class="sc-none">No season deadline set. <a href="#/season">Set one in Season</a>.</span></section>`;
     const next = moments[0], rest = moments.slice(1);
-    const p = countdownParts(next.iso, Date.now());
+    const p = countdownParts(next.at, Date.now());
     if (!p || p.past) return html`<section class="hclock"><span class="sc-none">This season has ended. <a href="#/season">Start the next one in Season</a>.</span></section>`;
 
     const items = seasonItems(season);
@@ -183,7 +188,9 @@ function HomeClock({ season, today }) {
         </div>`);
 
     return html`
+        ${''/* The h3s below sat directly under the masthead h1 with no h2 between them, so screen-reader heading navigation skipped a level on the page's own state panel. `.sr` is the visually-hidden utility at app.css:39 — position:absolute, 1px, clipped — so this costs no layout and the design is unchanged. */}
         <section class="hclock" aria-label="Season countdown">
+            <h2 class="sr">Season countdown</h2>
             <div class="sclock hc-face" data-tier=${seasonTier(p.d)}>
                 <${ClockFace} p=${p} />
                 <div class="sc-when">${season?.currentSeasonTitle || 'This season'} · until <b>${fmtDay(next.iso)}</b></div>
@@ -193,12 +200,12 @@ function HomeClock({ season, today }) {
                 <div class="hc-col">
                     <h3>Still to drop <b>${upcoming.length}</b></h3>
                     ${upcoming.length ? rows(upcoming, (i) => i.start) : html`<p class="hc-none">Nothing else releases before then.</p>`}
-                    ${upcoming.length > 4 ? html`<p class="hc-more">${upcoming.length - 4} more</p>` : null}
+                    ${upcoming.length > 4 ? html`<p class="hc-more">${upcoming.length - 4} more${' '}<a href="#/season">open the Track</a></p>` : null}
                 </div>
                 <div class="hc-col">
                     <h3>Stops by then <b>${ending.length}</b></h3>
                     ${ending.length ? rows(ending, (i) => i.end) : html`<p class="hc-none">Nothing running ends before then.</p>`}
-                    ${ending.length > 4 ? html`<p class="hc-more">${ending.length - 4} more</p>` : null}
+                    ${ending.length > 4 ? html`<p class="hc-more">${ending.length - 4} more${' '}<a href="#/season">open the Track</a></p>` : null}
                 </div>
             </div>
         </section>`;
@@ -238,7 +245,7 @@ function LiveNow({ season, broadcast, today }) {
                 ${items.slice(0, SHOW).map((i) => html`
                     <div class="lrow" key=${i.title + i.start} style=${`--c:${i.accent || LANE_ACCENT[i.lane] || 'var(--ink4)'}`}>
                         <i class="ld"></i>
-                        <span class="lt">${i.title}</span>
+                        <span class="lt" data-tip=${i.title}>${i.title}</span>
                         <!-- "hot" is two days out, the same threshold the attention list uses for a deadline. A colour that fires on a different number than the list beside it teaches the reader that neither can be trusted. -->
                         <span class=${'lw' + (i.end && dday(today, i.end) <= 2 ? ' hot' : '')}>
                             ${i.end && i.end !== i.start ? endsIn(i.end, today) : 'today'}
@@ -256,9 +263,10 @@ function LiveNow({ season, broadcast, today }) {
                 ${anns.length ? anns.map((a) => html`
                     <div class="lrow" key=${a._id || a.text} style="--c:var(--patch)">
                         <i class="ld"></i>
-                        <span class="lt">${a.text || a.title || html`<span class="none">untitled announcement</span>`}</span>
-                        <!-- 🔴 NO EXPIRY IS THE HOT STATE, not the calm one. An announcement with no expiresAt value never stops on its own, which is the single defect Broadcast's own attention row exists to report — so it reads hot here for the same reason. -->
-                        <span class=${'lw' + (a.expiresAt ? '' : ' hot')}>
+                        ${''/* Measured 2026-09-06 14:15 EDT: both live announcements were cut at 52% and 55% (scrollWidth 707 against clientWidth 339, and 715 against 319) with no way to read the rest. An announcement's whole content IS its text, so the panel could not answer the question it asks. `data-tip` is the portal's own delegated tooltip and this is the pattern broadcast.js:204 already uses for exactly this case. */}
+                        <span class="lt" data-tip=${a.text || a.title || 'untitled announcement'}>${a.text || a.title || html`<span class="none">untitled announcement</span>`}</span>
+                        ${''/* 🔴 THIS BRANCH IS REVERSED FROM WHAT IT WAS, AND THE COMMENT IT REPLACES ARGUED THE OPPOSITE. It read: "NO EXPIRY IS THE HOT STATE... which is the single defect Broadcast's own attention row exists to report". That sentence contains its own refutation — Broadcast's attention row DOES report it, on this very page, as the `forever` rung of the list 400px above. Painting it hot here is a second authority on one fact, and it costs the colour its meaning: `.lrow .lw.hot` is ONE unscoped rule (app.css:4411) shared by both columns of `.hlive`, so the same orange said "ends within two days" on the left and "never ends at all" on the right, side by side. DESIGN.md's own law settles it — colour carries topic, shape carries state, a new state gets a new SHAPE never a new hue — and the left column's comment already states the principle: a colour that fires on a different number than the thing beside it teaches the reader that neither can be trusted. So `hot` now means ONE thing in both columns, and no-expiry keeps saying "never ends" in words, which names the state without borrowing the warn fill. Derived */}
+                        <span class=${'lw' + (a.expiresAt && dday(today, a.expiresAt) <= 2 ? ' hot' : '')}>
                             ${a.expiresAt ? endsIn(a.expiresAt, today) : 'never ends'}
                         </span>
                     </div>`)
@@ -275,7 +283,8 @@ function Resume({ ops }) {
     return html`
         <div class="hres">
             <b>${ops.length} staged change${ops.length === 1 ? '' : 's'}</b>
-            <span>across ${realms.size} realm${realms.size === 1 ? '' : 's'} — nothing is live until you commit them.</span>
+            ${''/* It computed the Set and then printed only its size, so the one question the strip could answer for free — WHICH realms — went unasked. Named in delivery-agnostic order (Set insertion), capitalised for prose. */}
+            <span>across ${[...realms].map((r) => r.charAt(0).toUpperCase() + r.slice(1)).join(', ')} — nothing is live until you commit them.</span>
             <span class="sp"></span>
             <a class="chip go" href="#/review">Review & commit</a>
         </div>`;
@@ -355,6 +364,7 @@ export function HomeRealm({ session }) {
                                wrong". Reordering only; every component is unchanged. -->
                           <${Resume} ops=${data.review?.ops || []} />
                           <${HomeClock} season=${data.season?.live} today=${today} />
+                          <h2 class="sr">What needs you</h2>
                           <${AttentionList} rows=${rows} />
                           <${LiveNow} season=${data.season?.live} broadcast=${data.broadcast} today=${today} />
                       </div>`} />`;

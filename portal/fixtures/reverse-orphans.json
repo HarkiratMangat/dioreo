@@ -1,9 +1,7 @@
 {
-  "recordedAt": "2026-09-06T13:26:44.323Z",
+  "recordedAt": "2026-09-11T22:52:20.644Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
-  "data": [
-    "role"
-  ],
+  "data": [],
   "vars": [],
   "classes": [
     "ackrow",
@@ -16,14 +14,11 @@
     "atrow",
     "atruler",
     "att",
-    "bc-mode",
-    "bform",
     "bulk",
     "bulkbar",
     "card",
     "col",
     "colnote",
-    "commit",
     "count-bump",
     "dead",
     "depb",
@@ -38,7 +33,6 @@
     "flagged",
     "fxc",
     "good",
-    "grp",
     "hcard",
     "hdr-out",
     "health",
@@ -46,7 +40,6 @@
     "hgrid",
     "hi",
     "hmast",
-    "hq",
     "hseason",
     "is-loading",
     "is-refreshing",
@@ -59,14 +52,11 @@
     "mrow",
     "mxrole",
     "mxrow",
-    "nw-act",
-    "nwhost",
     "on-item",
     "oos",
     "opline",
     "pal",
     "pbox",
-    "pend",
     "pm",
     "pwrap",
     "rb",
@@ -76,14 +66,13 @@
     "repw",
     "rfoot",
     "rowin",
-    "rvn-sum",
     "rw",
     "s-conflict",
     "s-error",
     "s-spof",
     "scrim-b",
-    "settled",
     "slow",
+    "sortic",
     "staged-pulse",
     "stemmed",
     "t-S",
@@ -99,11 +88,10 @@
     "trow-note",
     "trows",
     "ub",
+    "ubanner",
     "ubt",
     "wcard",
     "zhint"
   ],
-  "mismatch": [
-    "lone"
-  ]
+  "mismatch": []
 }

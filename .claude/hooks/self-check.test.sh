@@ -197,5 +197,21 @@ else
     bad 'SessionStart(compact|fork) marker hook is registered' 'not found in .claude/settings.json -- mode 5 can never fire'
 fi
 
+
+# ===========================================================================
+# WORKING-AGREEMENT STALENESS (added 2026-09-08 13:05 EDT, WP3/WP7 context-carriers plan). The plan decided this check and it was never built until now -- pin both directions with fixtures so it cannot silently stop firing.
+# ===========================================================================
+STALE_FIXTURE="$TMP/stale-agreement.md"
+FRESH_FIXTURE="$TMP/fresh-agreement.md"
+printf '# Working agreement\n\nlast reconciled: 2026-01-01 00:00 EST\n' > "$STALE_FIXTURE"
+TODAY="$(date '+%Y-%m-%d')"
+printf '# Working agreement\n\nlast reconciled: %s 00:00 EST\n' "$TODAY" > "$FRESH_FIXTURE"
+
+OUT="$(SELFCHECK_AGREEMENT_FILE="$STALE_FIXTURE" bash -c 'printf {} | bash "'"$HOOK"'"' 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
+check 'staleness: a last-reconciled date >30 days old is flagged' "past the 30-day check-in point"
+
+OUT="$(SELFCHECK_AGREEMENT_FILE="$FRESH_FIXTURE" bash -c 'printf {} | bash "'"$HOOK"'"' 2>/dev/null | jq -r '.hookSpecificOutput.additionalContext')"
+absent 'staleness: a fresh last-reconciled date stays quiet' "past the 30-day check-in point"
+
 printf '\n  %d passed, %d failed\n\n' "$pass" "$fails"
 [ "$fails" -eq 0 ]

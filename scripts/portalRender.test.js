@@ -66,7 +66,7 @@ const SEASON_COLUMNS = [
     installLogicGlobals();
     const { render } = await import('preact-render-to-string');
     const { html } = await import('../portal/public/.ssr/vendor/htm-preact.mjs');
-    const { Shell, Masthead, Rail, Door } = await import('../portal/public/.ssr/ui/shell.js');
+    const { Shell, Masthead, Rail, Door, NoAccess } = await import('../portal/public/.ssr/ui/shell.js');
     const { Manifest, SelectionBar } = await import('../portal/public/.ssr/ui/manifest.js');
     const { Board } = await import('../portal/public/.ssr/ui/board.js');
     const { Track } = await import('../portal/public/.ssr/ui/track.js');
@@ -165,6 +165,19 @@ const SEASON_COLUMNS = [
         assert.ok(neverGranted.includes('not an admin'), 'and the signed-in person is told why they see nothing');
         const stranger = render(html`<${Door} />`);
         assert.ok(!stranger.includes('not an admin'), 'a stranger is told nothing about any account');
+    });
+
+    check('an expired session and a forbidden one do not share one sentence', () => {
+        // \u{1f534} THE GATE CAN FAIL, and it failed for real until 2026-09-09 20:27 EDT. NoAccess took no props and rendered ONE line — "You do not have access to this realm." — for both kinds, so a twelve-hour timeout was reported as a permissions problem and the correct copy in async.logic.js was unreachable. The subject here is that the two kinds render DIFFERENTLY and that the expired one offers the way back; the wording itself belongs to FAILURE_COPY and is deliberately not duplicated into this assertion.
+        const expired = render(html`<${NoAccess} error=${{ kind: 'expired', k: 'SIGNED OUT', what: 'This session expired.', means: 'Portal sessions last 12 hours.', action: 'Sign in again' }} />`);
+        const forbidden = render(html`<${NoAccess} error=${{ kind: 'forbidden', k: 'NO ACCESS', what: 'Your account is not allowed to see this.', means: 'Signing in worked; the permission did not.', action: 'Back to home' }} />`);
+        assert.notStrictEqual(expired, forbidden, 'the two kinds must not render identically');
+        assert.ok(expired.includes('This session expired.'), 'the expired screen says the session ended');
+        assert.ok(expired.includes('/auth/login'), 'and carries the one route that fixes it');
+        assert.ok(!forbidden.includes('/auth/login'), 'a forbidden account is not offered a sign-in it has already done');
+        assert.ok(forbidden.includes('the permission did not'), 'and is told which half failed');
+        const bare = render(html`<${NoAccess} />`);
+        assert.ok(bare.includes('do not have access'), 'a call with no error still renders the guard sentence');
     });
 
     check('the Manifest renders one row per record, with its topic dot and state pill', () => {
@@ -368,11 +381,11 @@ const SEASON_COLUMNS = [
         assert.ok(out.includes(String(session.discordId)), 'the id is WHOLE in the panel — a partial id cannot be checked');
     });
 
-    // ⚠️ The failure this guards is silent and specific: an unset custom property makes the whole `background` declaration invalid at computed-value time, so the disc and the banner paint TRANSPARENT rather than falling back to a lower-specificity rule.
-    check('the account head sets --banner and --av-src to a VALID value rather than leaving them unset', () => {
+    // ⚠️ The failure this guards is silent and specific: an unset custom property makes the whole `background` declaration invalid at computed-value time, so the disc paints TRANSPARENT rather than falling back to a lower-specificity rule. 🔴 THE `--banner` HALF WAS REMOVED 2026-09-11 18:50 EDT BECAUSE THE THING IT GUARDED WAS DELETED. The banner slot went from the account panel on 2026-09-10 (fork 08); this assertion outlived it and had been failing ever since, which is the worst state for a gate to be in -- a red that everybody learns to read as "the known one". Its CSS was removed in the same change. ⚠️ The `--av-src` half is untouched and still real: the avatar disc is still rendered and still needs a resolvable value.
+    check('the account head sets --av-src to a VALID value rather than leaving it unset', () => {
         const out = render(html`<${Shell} realm="armory" session=${session} viewSlot=${html`<div/>`} manifestSlot=${html`<div/>`} />`);
-        assert.ok(out.includes('--banner:none'), 'the banner names a value the CSS can resolve');
         assert.ok(out.includes('--av-src:none'), 'the avatar disc names a value the CSS can resolve');
+        assert.ok(!out.includes('--banner'), 'the banner slot is gone; nothing should emit it');
     });
 
     check('a typed confirmation renders its gate and holds the button shut until it is satisfied', () => {

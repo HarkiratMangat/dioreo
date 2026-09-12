@@ -143,13 +143,15 @@ function Figure({ value, zero = false }) {
 // 🔴 `actions` IS A GRID CHILD OF `.masthead`, NOT A CHILD OF `.mh-id`, AND MOVING IT THERE FIXED A VISIBLE DEFECT NO GATE COULD SEE. `.mh-add` has carried `grid-column / grid-row / justify-self:end` since the mockup, and inside `.mh-id` every one of those declarations was inert — the element was not a grid item. So the ADD row right-aligned to `.mh-id`'s edge instead of the masthead's: measured on Season at 1282, the ADD row ended at x=995 while `.mh-take`, the export line directly beneath it, ended at x=1260. Two right-aligned rows, 265px apart, one above the other. `portal:orphans` was quiet because the class exists and has a rule; `portal:coverage` was quiet because the rule has an element. A consumer whose producer is in the wrong parent is this port's signature defect, and it is invisible to every scanner that asks only whether both ends exist.
 //
 // ⚠️ `aside` AND `stats` OCCUPY THE SAME GRID AREA AND ARE MUTUALLY EXCLUSIVE ON PURPOSE. Season has no stat block -- COMPANION 16.31 point 3: the clock *"replaces the masthead's stat block, which he called useless"*, so it takes that column rather than sitting under the title in the left one. Expressing it as one slot rather than two stacked ones is what makes "replaces" true in the layout instead of only in the prose.
-export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null, below = null }) {
+export function Masthead({ title, sub, stats = [], actions = null, eyebrow = null, aside = null, take = null, below = null, idBelow = null }) {
     return html`
         <div class="masthead">
             <div class="mh-id">
                 ${eyebrow}
                 <h1>${title}</h1>
                 ${sub ? html`<span class="job">${sub}</span>` : null}
+                ${''/* 🔴 UNDER THE JOB LINE, NOT BESIDE THE TITLE — Harkirat, 2026-09-10 19:16 EDT, closing fork 02. A control that decides WHAT THE REALM IS goes here: after the realm has said its name and what it does, before the figures that control rewrites. Beside the title it competed with the h1 for the same eye; below the sentence it is the first thing you meet after reading what the page is for. It is deliberately LARGER than a view tab, because it is a larger statement than one — Armory's MP/DMZ rewrites every number in the stat block (125 builds to 8, 106 stale to 0) while a view only redraws the same set. */}
+                ${idBelow}
             </div>
             <!-- ⚠️ THE WRAPPER IS A PORTAL ADDITION AND IT IS A GRID CHILD. The design puts the clock
                  in the masthead grid itself, carrying the mh-stats and sclock classes on one element; wrapping it added a
@@ -282,7 +284,7 @@ function Account({ session, staged, onSignOut, chrome }) {
                 <span class="cv" aria-hidden="true"></span>
             </button>
             <div class="umenu" role="menu" aria-label="Account" hidden=${!open}>
-                <div class="ubanner" style="--banner:none" aria-hidden="true"></div>
+                ${''/* 🔴 THE BANNER SLOT IS GONE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 08. It was `--banner:none` hardcoded: a 38px strip reserving room for an image the session payload has never carried, so it rendered as a grey band that read as a broken header. A REAL banner needs a new field on /auth and a Discord fetch, and reserving space for a feature with no date is exactly how this strip came to exist. It returns with an image in it, the next time that payload is touched for something else. */}
                 <div class="uid">
                     <!-- D3 — the real Discord avatar and name, replacing a grey disc and the literal string
                          "Dioreo admin" that named nobody. globalName is the display line; the muted line
@@ -293,12 +295,25 @@ function Account({ session, staged, onSignOut, chrome }) {
                           style=${`--av-src:${avatarUrl ? `url(${avatarUrl})` : 'none'}`} aria-hidden="true">
                         ${avatarUrl ? null : html`<b class="uinit">${initialOf(session)}</b>`}
                     </span>
+                    <!-- 2026-09-11 09:04 EDT: the @username line IS the Discord-profile link now, so the identical
+                         destination is not said twice on one panel -- Harkirat, direct. -->
                     <span class="un"><b>${session.globalName || session.username || 'Dioreo admin'}</b>
-                        <span>${session.username ? `@${session.username}` : id}</span></span>
+                        ${session.username
+                            ? html`<a href=${`https://discord.com/users/${id}`} target="_blank" rel="noopener noreferrer">@${session.username}</a>`
+                            : html`<span>${id}</span>`}</span>
                     ${session.isOwner ? html`<span class="rolebadge">OWNER</span>` : null}
                 </div>
                 <div class="usec">
                     <div class="ustat"><span>Session</span><b class="live">${sessionLeft(session.sessionExpiresAt)}</b></div>
+                </div>
+                ${''/* 🔴 THE WAYS OUT — fork 08, and the menu had none. A panel that names who you are and then offers only "sign out" is a dead end; the places an admin actually goes from here are their own Discord profile, the public site, and the two consoles this bot is actually administered from. ⚠️ THE TWO CONSOLE URLS ARE HARKIRAT'S OWN, GIVEN 2026-09-11 17:36 EDT, AND NEITHER IS DERIVABLE FROM THIS REPO -- the Cloudinary console path carries an account hash that appears nowhere in the code, and the production application id is read from the bot token at runtime and is never written down. They were asked for rather than guessed, and a session "tidying" them into a shorter form would break both. Each names its destination rather than a count, because that is the fact you want before clicking away. */}
+                <div class="usec">
+                    <a class="mi mi-out" role="menuitem" href="https://dioreo.app" target="_blank" rel="noopener noreferrer">
+                        Dioreo<span class="mnote">dioreo.app ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://discord.com/developers/applications/1491474871778021550/" target="_blank" rel="noopener noreferrer">
+                        Developer portal<span class="mnote">discord.com ↗</span></a>
+                    <a class="mi mi-out" role="menuitem" href="https://console.cloudinary.com/app/c-8ce65ff8df5c60f1482628a729eec2/assets/media_library/" target="_blank" rel="noopener noreferrer">
+                        Cloudinary assets<span class="mnote">cloudinary.com ↗</span></a>
                 </div>
                 <div class="usec">
                     <!-- The reach is a NOTE on the row it qualifies rather than a stat of its own: "what you can do"
@@ -559,10 +574,18 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                                         <button key=${m} role="tab" data-arm=${m} aria-selected=${m === mode ? 'true' : 'false'}
                                                 onClick=${() => onSetMode(m)}>${m}</button>`)}
                                 </div>` : null}
-                            <div class="seg" role="tablist" aria-label="View">
-                                ${viewOptions.map((v) => html`
-                                    <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
-                            </div>
+                            <!-- ⚠️ ONE OPTION IS NOT A CHOICE, so it does not get a control. A single-tab
+                                 tablist reads as a disabled switcher -- a thing you could press that would do
+                                 nothing -- and the realm's title beside it already says where you are. The bar
+                                 itself stays, because it carries the title, the tools, the key and the meta;
+                                 only the segmented control goes. Added when Access dropped to one view,
+                                 2026-09-11 18:40 EDT, and written as a general rule rather than a special case
+                                 because the next realm to lose a view should not have to discover this. -->
+                            ${viewOptions.length > 1 ? html`
+                                <div class="seg" role="tablist" aria-label="View">
+                                    ${viewOptions.map((v) => html`
+                                        <button role="tab" aria-selected=${v === view ? 'true' : 'false'} onClick=${() => onSetView(v)}>${v}</button>`)}
+                                </div>` : null}
                             <!-- ⚠️ ORDER IS THE DESIGN'S, AND IT WAS WRONG. The bar reads title · views · the
                                  view's own controls · what the marks mean · where you are — so the Track's zoom
                                  group sits with the views it changes, and the two explanatory pieces close the
@@ -600,6 +623,7 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
             <${StagedTray} ops=${stagedOps} onDiscardAll=${onDiscardAll || discardAllStaged} busy=${Boolean(busy)}
                            inert=${exportOpen} />
             ${traySlot || null}
+            <${BackToTop} />
             ${overlaySlot || null}
             ${exportScopes && exportScopes.length && exportOpen
                 ? html`<${ExportDrawer} scopes=${exportScopes} overlay=${overlayFor || chrome} onClose=${() => setExportOpen(false)} />` : null}
@@ -608,9 +632,37 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
     `;
 }
 
-// Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6).
-export function NoAccess() {
-    return html`<p class="empty" style="padding:24px">You do not have access to this realm.</p>`;
+// A long Manifest (Armory's catalogue is 133+ rows) had no way back to the top except scrolling back up by hand -- "why is there no 'to the top' button on such a LONG scrolling page?" (Harkirat, pin pmtux6x74, 2026-09-09). One component covers every realm for free, because they all share this one <main> scroll container (spec's own contract) -- no per-realm wiring needed.
+function BackToTop() {
+    const [show, setShow] = useState(false);
+    // 🔴 Found while writing the 2026-09-10 handoff, not by a new pin, and it took TWO wrong attempts. Attempt 1: `document.querySelector('main')` grabbed the wrong one of two `<main>` elements present on a signed-in page. Attempt 2: picking "whichever main currently overflows" at mount time was STILL wrong, because this app replaces the `<main>` DOM node itself as the page moves from its loading skeleton to real content -- confirmed by adding a console.log: the effect ran twice with two DIFFERENT small scrollHeight/clientHeight pairs, neither matching the real 17000px-tall content main that existed once data had actually loaded. Any approach that grabs a `main` reference ONCE at mount is fragile here for that reason. The fix is CAPTURE-PHASE delegation on `document`: scroll events do not bubble, but they ARE dispatched in the capture phase, so listening there sees a scroll on ANY element, whichever `<main>` instance currently exists, with no reference to hold onto or invalidate.
+    useEffect(() => {
+        const onScroll = (e) => {
+            const t = e.target;
+            if (t && t.tagName === 'MAIN') setShow(t.scrollTop > 480);
+        };
+        document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+        return () => document.removeEventListener('scroll', onScroll, { capture: true });
+    }, []);
+    if (!show) return null;
+    return html`
+        <button type="button" id="__backtotop" aria-label="Back to top"
+                onClick=${() => [...document.querySelectorAll('main')].find((el) => el.scrollHeight > el.clientHeight)?.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <${Icon} name="chevron-up" size=${18} />
+        </button>`;
+}
+
+// Every realm's initial-load error state renders through this one component instead of duplicating the same inline <p> (simplify Simplification #6). 🔴 ONE SENTENCE WAS SERVING TWO DIFFERENT FACTS AND ONE OF THEM WAS WRONG (2026-09-09 20:26 EDT). An expired session is a TIMEOUT and this screen told it that it lacked PERMISSION — on a console whose sessions last twelve hours, which makes it the failure a reader meets most often. The routing here is deliberate and stays: async.js sends both `expired` and `forbidden` to this screen because there is nothing to keep the chrome FOR. What was wrong is that the screen ignored the error it was routed WITH. `failureOf` has produced the true copy since the async layer was built — what / means / action, with "Sign in again" for `expired` — and none of it was reachable from here.
+//
+// ⚠️ THIS COMPONENT ADDS NO COPY OF ITS OWN, deliberately. Writing the expired sentence here would put one fact on two surfaces, which is the defect being fixed rather than a second helping of it. The bare sentence survives only as the guard for an error with no `what`.
+export function NoAccess({ error = null }) {
+    if (!error || !error.what) return html`<p class="empty">You do not have access to this realm.</p>`;
+    return html`
+        <div class="empty" role="alert">
+            <b>${error.what}</b>
+            <p>${error.means}</p>
+            ${error.kind === 'expired' ? html`<a class="pill sm" href="/auth/login">${error.action}</a>` : null}
+        </div>`;
 }
 
 export function Door({ forbidden }) {

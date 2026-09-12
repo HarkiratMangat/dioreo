@@ -95,8 +95,8 @@ PREMISE="" ; DELIB="" ; STATED="" ; STALE=0 ; RENAME_GIVEN=0
 if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
     # One pass yields both the line number and the matched text (grep -o -n prefixes "<line>:"). ⚠️ UserPromptSubmit has a 30-SECOND timeout -- a quarter of the 600s most events get -- and a hook that times out is CANCELLED with its additionalContext silently discarded. On a long session this transcript is tens of MB, so every avoidable pass over it is a real risk. ⚠️ THE CORRECTION MESSAGE CARRIES MG-EXAMPLE TOO, and that is not cosmetic. It quotes the stated
 # derivation back verbatim, so its own output MATCHES ITS OWN DETECTOR -- the hook's echo lands in the transcript and becomes evidence for the next firing, which is the classic "a hook whose block message quotes its own detector suppresses itself forever". Found by the completeness sweep 2026-08-20 12:58 EDT, one commit after the escape token was introduced for the neighbouring case. ⚠️ MG-EXAMPLE -- the per-line escape, added 2026-08-20 12:54 EDT after this gate fired a FALSE
-    # POSITIVE on its own self-test within minutes of shipping: self-check.test.sh's fixture strings travel into the SESSION transcript as tool-call text, and the validator read one as a real recommendation. Anything that QUOTES a derivation rather than making one -- test code, this hook's own docs, a message explaining the gate -- carries the marker on that line and is skipped. Same shape and same reason as the timestamp hook's TS-EXAMPLE token, which exists because writing ABOUT a fabricated stamp kept tripping the fabricated-stamp check. ⚠️ The fixture FILES the test points the hook at are unaffected: they are separate .jsonl files whose lines carry no marker, so detection still works there and the tests still mean something. ⚠️ ONE numbered pass, THEN filter, THEN extract. The first version chained `grep -voiE` into `grep -noiE`: combining -v with -o is UNDEFINED (there is no match to print on a non-matching line) and only worked here by luck of this grep's behaviour -- on a grep that honours it literally the filter would emit nothing and the whole gate would silently never fire.
-    CAND="$(grep -niE "$DERIV_RE" "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | tail -1 || true)"
+    # POSITIVE on its own self-test within minutes of shipping: self-check.test.sh's fixture strings travel into the SESSION transcript as tool-call text, and the validator read one as a real recommendation. Anything that QUOTES a derivation rather than making one -- test code, this hook's own docs, a message explaining the gate -- carries the marker on that line and is skipped. Same shape and same reason as the timestamp hook's TS-EXAMPLE token, which exists because writing ABOUT a fabricated stamp kept tripping the fabricated-stamp check. ⚠️ The fixture FILES the test points the hook at are unaffected: they are separate .jsonl files whose lines carry no marker, so detection still works there and the tests still mean something. ⚠️ ONE numbered pass, THEN filter, THEN extract. The first version chained `grep -voiE` into `grep -noiE`: combining -v with -o is UNDEFINED (there is no match to print on a non-matching line) and only worked here by luck of this grep's behaviour -- on a grep that honours it literally the filter would emit nothing and the whole gate would silently never fire. 🔴 A TOOL RESULT IS NOT A RECOMMENDATION, AND THIS GATE READ ONE AS A LIVE MISMATCHED PICK — measured 2026-09-06 20:46 EDT. A linksee `dream()` call returned a stored memory whose RAW content was a past session prompt containing a derivation string. That lands in the transcript as a `"type":"tool_result"` line inside a `"type":"user"` envelope, carries no MG-EXAMPLE marker (nothing can add one to an MCP server's output), and `tail -1` then made it the newest "derivation". The gate reported a mismatched model pick on three consecutive prompts of a session whose real derivation was correct and unchanged. The existing MG-EXAMPLE escape covers text this repo writes; it cannot cover text arriving from a tool. **Only an ASSISTANT message can state a recommendation**, so filter on the envelope rather than on content: a transcript line is JSONL and an assistant turn carries `"role":"assistant"` while every tool result arrives under `"type":"user"`. ⚠️ REQUIRING `"role":"assistant"` was tried first and broke 14 of this hook's own tests: the fixtures are BARE STRINGS written to a .jsonl with no JSON envelope at all, so any POSITIVE envelope requirement excludes every one of them. Excluding `tool_result` is the correct shape - it removes exactly the false positive and leaves enveloped-or-not lines alone.
+    CAND="$(grep -niE "$DERIV_RE" "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | grep -viE '"type":"tool_result"' | tail -1 || true)"
     DERIV_LINE="${CAND%%:*}"
     # A /compact wipes the CONTEXT but not the transcript FILE, so a derivation from before one is still greppable while the session no longer remembers making it. Harkirat, 2026-08-20 12:16 EDT: "I really only need it at the very start, or if a compact was run." Marker verified against the real corpus that same minute -- `"subtype":"compact_boundary"`, 43 occurrences across 120 transcripts. Comparing LINE NUMBERS is what makes "after the last compact" a fact rather than a guess: a derivation is only current if it comes AFTER the newest boundary.
     COMPACT_LINE="$(grep -n '"subtype":"compact_boundary"' "$TRANSCRIPT" 2>/dev/null | tail -1 | cut -d: -f1)"
@@ -113,7 +113,7 @@ if [ -n "$TRANSCRIPT" ] && [ -r "$TRANSCRIPT" ]; then
         if [ -n "$COMPACT_LINE" ] && [ "$COMPACT_LINE" -gt "$DERIV_LINE" ] 2>/dev/null; then STALE=1; fi
     fi
     # The rename string, detected the same way and filtered the same way (MG-EXAMPLE covers both patterns -- one escape token, reused, rather than a second one to keep in sync). Same staleness rule as the derivation: a rename given before the last compact doesn't count, since Harkirat asks for BOTH to be re-stated together after a compact/fork, not just the model half.
-    RCAND="$(grep -niE "$RENAME_RE" "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | tail -1 || true)"
+    RCAND="$(grep -niE "$RENAME_RE" "$TRANSCRIPT" 2>/dev/null | grep -viE 'MG-EXAMPLE' | grep -viE '"type":"tool_result"' | tail -1 || true)"
     if [ -n "$RCAND" ]; then
         RENAME_LINE="${RCAND%%:*}"
         RENAME_GIVEN=1
@@ -127,11 +127,11 @@ EXPECTED="$(cell_for "$PREMISE" "$DELIB")"
 # ---------------------------------------------------------------------------
 # The FIRST ACTION clause is CONDITIONAL as of 2026-08-20 12:16 EDT. Harkirat: "i'll have some sessions literally give me the model recommendation and rename string on nearly every prompt/task in a session. I really only need it at the very start, or if a compact was run." Firing an unconditional "if you have NOT yet..." on every prompt is precisely what produced that -- the reader cannot tell a reminder from a request, so the safe read is to comply again. Once a derivation is on record AFTER the newest compact boundary, the clause is replaced by an explicit instruction NOT to repeat it.
 read -r -d '' FIRST_ACTION <<'EOF' || true
-[self-check] (1) FIRST ACTION: if you have NOT yet this session output the ready-to-paste /rename string + a one-line model+effort recommendation, do it now before any task content -- this is a hard gate (feedback_suggest_model_switch memory), not optional. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming).
+[self-check] (1) FIRST ACTION: if you have NOT yet this session output the ready-to-paste /rename string + a one-line model+effort recommendation, do it now before any task content -- this is a hard gate (feedback_suggest_model_switch memory), not optional. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming). (4) FINAL MESSAGE: the long form goes to a file and the message stays about 25 lines, verdict first, one table per section, natural sentences -- the Silent contract in .claude/rules/silent-mode.md.
 EOF
 
 read -r -d '' ALREADY_DONE <<'EOF' || true
-[self-check] (1) RENAME + MODEL: already given this session -- do NOT repeat either. Re-state them ONLY if the session drastically pivots or you fork; a mid-session model change is otherwise token waste Harkirat does not want. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming).
+[self-check] (1) RENAME + MODEL: already given this session -- do NOT repeat either. Re-state them ONLY if the session drastically pivots or you fork; a mid-session model change is otherwise token waste Harkirat does not want. (2) CHAPTERS: if this turn shifted into a new distinct TOPIC since the last mark, call mark_chapter now -- mark finely, one per topic, no cap. (3) JUDGMENT RULES: fix a gap you notice THIS turn rather than deferring/flagging it (working-agreement rule 9), and never assert done/synced/caught-up/matches without running the actual check first (verify before claiming). (4) FINAL MESSAGE: the long form goes to a file and the message stays about 25 lines, verdict first, one table per section, natural sentences -- the Silent contract in .claude/rules/silent-mode.md.
 EOF
 
 read -r -d '' GRID <<'EOF' || true
@@ -198,7 +198,28 @@ else
     MODEL_BLOCK="$GRID"
 fi
 
+# ---------------------------------------------------------------------------
+# Working-agreement staleness (WP3/WP7, context-carriers plan, 2026-09-08). The plan decided this check and it was never built -- print one line when the global agreement's own `last reconciled:` stamp is more than 30 days old, so a stale agreement is visible at the moment it matters rather than discovered by accident.
+# ---------------------------------------------------------------------------
+AGREEMENT_FILE="${SELFCHECK_AGREEMENT_FILE:-$HOME/.claude/WORKING-AGREEMENT.md}"
+STALE_AGREEMENT=""
+if [ -f "$AGREEMENT_FILE" ]; then
+    RECONCILED="$(grep -oE 'last reconciled: [0-9]{4}-[0-9]{2}-[0-9]{2}' "$AGREEMENT_FILE" 2>/dev/null | head -1 | sed 's/last reconciled: //')"
+    if [ -n "$RECONCILED" ]; then
+        NOW_EPOCH="$(date '+%s' 2>/dev/null)"
+        RECONCILED_EPOCH="$(date -j -f '%Y-%m-%d' "$RECONCILED" '+%s' 2>/dev/null)"
+        [ -z "$RECONCILED_EPOCH" ] && RECONCILED_EPOCH="$(date -d "$RECONCILED" '+%s' 2>/dev/null)"
+        if [ -n "$NOW_EPOCH" ] && [ -n "$RECONCILED_EPOCH" ]; then
+            DAYS_OLD=$(( (NOW_EPOCH - RECONCILED_EPOCH) / 86400 ))
+            if [ "$DAYS_OLD" -gt 30 ] 2>/dev/null; then
+                STALE_AGREEMENT="[self-check] ⚠️ ~/.claude/WORKING-AGREEMENT.md's 'last reconciled' date is ${DAYS_OLD} days old (${RECONCILED}) -- past the 30-day check-in point. Reconcile it against recent standing preferences, or bump the date if nothing has changed."
+            fi
+        fi
+    fi
+fi
+
 CONTEXT="$(printf '%s\n\n%s' "$SELFCHECK" "$MODEL_BLOCK")"
+[ -n "$STALE_AGREEMENT" ] && CONTEXT="$(printf '%s\n\n%s' "$CONTEXT" "$STALE_AGREEMENT")"
 
 jq -n --arg ctx "$CONTEXT" \
   '{hookSpecificOutput:{hookEventName:"UserPromptSubmit", additionalContext:$ctx}}'

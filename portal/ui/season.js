@@ -4,7 +4,7 @@
 import { h } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
-import { Shell, NoAccess, Masthead, useCreateKey } from './shell.js';
+import { Shell, Masthead, useCreateKey } from './shell.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 import { OneWay } from './oneway.js';
@@ -15,7 +15,7 @@ import { Board } from './board.js';
 import { Manifest, StatePill } from './manifest.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { DiscordCard } from './v2Render.js';
-import { Composer } from './composer.js';
+import { Composer, SmartDate } from './composer.js';
 import { Track, Zoomer, Repairs } from './track.js';
 
 // LANE_LABELS lives in season.logic.js (a bare global here, same pattern as buildSeasonAddOp/buildSeasonEditOp above) rather than a local const, so scripts/seasonOps.test.js can require() it directly instead of regex-scraping this ESM file's source text. Gap audit §3.4 finding 1: Manifest printed row.lane's raw collection-key value verbatim (e.g. "newDraws") since nothing humanized it for display. 🔴 THE ROW SAID WHAT A THING WAS CALLED AND NOTHING ABOUT WHAT IS IN IT. A draw's whole point is the items it carries and their rarity — the table showed a title, a type and a date, so the one question this list exists to answer needed a click per row. The adopted table styles a detail cell, tier chips, a secondary line and a right-aligned status column; all four were styled and unused. ⚠️ A READABLE MAP, NOT A BUILT STRING. The design's markup emits the full tier word, and writing that as `t-${tier}` makes the three rules it needs invisible to the reverse-orphan scan — which reads source, not a running page, and correctly reported them as rules nothing triggers. Spelling them out costs three lines and keeps the gate able to see what is emitted.
@@ -230,7 +230,7 @@ function DayDrawer({ day, live, draft, withDraft, onWithDraft, onClose, onDay })
                     </ul>`
                 : html`<p class="dw-p">Nothing is scheduled on this day.</p>`}
                 ${draft ? html`
-                    <label class="dwcheck" style="margin-top:12px">
+                    <label class="dwcheck" style="margin-top:var(--s3)">
                         <input type="checkbox" checked=${withDraft} onChange=${(e) => onWithDraft(e.target.checked)} />
                         <span>Include the staged next-season draft. Players cannot see these.</span>
                     </label>` : null}
@@ -301,7 +301,10 @@ export function ClockFace({ p }) {
 //
 // 🔴 FIVE PRESSURE TIERS, each REMOVING something. `data-tier` drives it from CSS so the component states the tier and the stylesheet decides what that looks like — a single orange "hot" state means the element says exactly one thing for twenty days and then another.
 //
-// ⚠️ TWO WALLS, NOT THREE DEADLINES. bpEnd and rankEnd are usually the same day; seasonMoments groups by date so one moment carrying two lines reads as one wall.
+// ⚠️ TWO WALLS, NOT THREE DEADLINES. bpEnd and rankEnd are usually the same day; seasonMoments groups by date so one moment carrying two lines reads as one wall. ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT, same defect as broadcast.js's LIFECYCLE_WORD: `SeasonClock` reads `fmtWall` seven lines before it was declared. Harmless today because the read sits inside a render closure, a crash the moment anything evaluates it eagerly, and invisible to `node --check` -- which is what `scripts/tdzRatchet.mjs` is for. The deadline as a person reads a clock: the day, then the hour it actually falls, in the viewer's own zone. A deadline stored at 00:00Z is 8pm the previous evening in Toronto -- the whole point of fork 01 -- so the DAY alone is not the answer and neither is the raw instant.
+const fmtWall = (at) => (at == null ? '—' : new Date(at).toLocaleString(undefined,
+    { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
+
 function SeasonClock({ season, today }) {
     const [, setTick] = useState(0);
     const moments = seasonMoments(season, today || new Date().toISOString().slice(0, 10));
@@ -317,11 +320,13 @@ function SeasonClock({ season, today }) {
     }
     const next = moments[0];
     const rest = moments.slice(1);
-    // 🔴 THE INSTANT, NOT THE START OF THE DAY. The design's clock is called with its fixture's own date, so it
-    //    reads 23h 59m 59s at every hour of that day — which is what made two captures seconds apart comparable,
-    //    and is not a clock for a console that is running. The READOUT below is the design's; this line is not,
-    //    and the two sat in one paragraph of code pointing in opposite directions.
-    const p = countdownParts(next.iso, Date.now());
+    // 🔴 THE INSTANT, NOT THE START OF THE DAY — and until 2026-09-10 17:11 EDT this comment was true of the INTENT and false of the
+    //    CODE, because it passed `next.iso`, a day string, into a helper that then counted to the end of that day.
+    //    The design's clock is called with its fixture's own date, so it reads 23h 59m 59s at every hour of that day —
+    //    which is what made two captures seconds apart comparable, and is not a clock for a console that is running.
+    //    The READOUT below is the design's; this line is not, and the two sat in one paragraph of code pointing in
+    //    opposite directions. `next.at` is the value `seasonMoments` now carries off the season document unmodified.
+    const p = countdownParts(next.at, Date.now());
     if (!p || p.past) return html`<div class="sclock" data-tier="today"><span class="sc-none">This season has ended.</span></div>`;
 
     // 🔴 THE HERO-FIGURE CLOCK WAS DELETED HERE, DELIBERATELY, AND ITS ONLY RECORD IS A PUBLISHED ARTIFACT.
@@ -337,13 +342,15 @@ function SeasonClock({ season, today }) {
                 <!-- The face is ClockFace's, not a second copy of it. Season and Home render the same four
                      segments from the same code; only what surrounds them differs. -->
                 <${ClockFace} p=${p} />
-                <div class="sc-when">until <b>${fmtDay(next.iso)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
+                ${''/* 🔴 THE LOCAL WALL, NOT A BARE DATE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 01. "until Sep 10" is true and useless: the same four words whether the boundary is Sep 9 at 8pm or Sep 10 at 8pm his time, and that ambiguity is exactly what hid the countdown bug for a day. `next.at` is the stored instant, so this reads it in the VIEWER's zone and the reader and the record can no longer differ silently. */}
+                <div class="sc-when">until <b>${fmtWall(next.at)}</b>${' · '}${next.lines.map((L) => L.label.toLowerCase()).join(' & ')}</div>
                 ${rest.length ? html`<div class="sc-then">then <b>${rest[0].lines.map((L) => L.label).join(' ')}</b>${' '}${fmtDay(rest[0].iso)}${' · '}${daysUntil(rest[0].iso)} ${daysUntil(rest[0].iso) === 1 ? 'day' : 'days'}</div>` : null}
             </div>`;
     }
 }
 
-// A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset.
+// A date alone does not answer "is that soon?". The mockup's THEN line reads "DMZ NOV 11 · 79 DAYS" and the portal's read "then DMZ Nov 11" — the same fact minus the only part that needs no arithmetic from the reader. Whole days, UTC on both ends, so it never disagrees with the hero figure by an hour of local offset. The deadline as a person reads a clock: the day, then the hour it actually falls, in the viewer's own zone. A deadline stored at 00:00Z is 8pm the previous evening in Toronto — the whole point of fork 01 — so the DAY alone is not the answer and neither is the raw instant.
+
 const daysUntil = (iso) => Math.max(0, Math.round(
     (new Date(String(iso).slice(0, 10) + 'T00:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z')) / 86400000));
 
@@ -403,12 +410,12 @@ const COMPOSE_TYPES = [
       pointNote: 'A patch note is published once. The record stores one date and no end — which is why it is not a lane on the Track.' },
 ];
 
-// 🔴 FOUR CHIPS, AND TWO WERE REMOVED FOR DIFFERENT REASONS. `drawwindow` is no longer a kind at all (see COMPOSE_TYPES above). `patchnote` still is — but it had TWO entry points, this one and the Season Record panel's own CTA, and the record panel's is the one that sits beside the list it adds to. A control that creates a publication belongs next to the publications, not in a row of season-schedule chips it shares nothing with. The masthead keeps the four kinds that land on the Track.
+// 🔴 FOUR CHIPS, AND TWO WERE REMOVED FOR DIFFERENT REASONS. `drawwindow` is no longer a kind at all (see COMPOSE_TYPES above). `patchnote` still is — but it had TWO entry points, this one and the Season Record panel's own CTA, and the record panel's is the one that sits beside the list it adds to. A control that creates a publication belongs next to the publications, not in a row of season-schedule chips it shares nothing with. The masthead keeps the four kinds that land on the Track. 🔴 GROUPED, AND ON ONE LINE — Harkirat, 2026-09-10 18:22 EDT, fork 06: "B is the right direction but i dont want a vertical row of them, i still want them in line in 1 line." The captions this replaces were "one date" / "a window", repeated across four chips to say a thing the GROUPING says once: a draw happens on a date, a calendar row runs between two. The group name is the word `/manage` already uses, so nothing new is taught. ⚠️ A VERTICAL STACK WAS THE OBVIOUS RENDERING AND IT IS REFUSED — this row lives in the masthead beside three other controls, and turning it into three stacked rows would push the Track down for a label.
 const ADD_CHIPS = [
-    { key: 'draw', label: 'Draw', accent: 'var(--draw)' },
-    { key: 'returning', label: 'Returning draw', accent: 'var(--ret)' },
-    { key: 'event', label: 'Event', accent: 'var(--ev)' },
-    { key: 'playlist', label: 'Playlist', accent: 'var(--play)' },
+    { key: 'draw', label: 'Draw', accent: 'var(--draw)', group: 'Draws' },
+    { key: 'returning', label: 'Returning draw', accent: 'var(--ret)', group: 'Draws' },
+    { key: 'event', label: 'Event', accent: 'var(--ev)', group: 'Calendar' },
+    { key: 'playlist', label: 'Playlist', accent: 'var(--play)', group: 'Calendar' },
 ];
 
 // ⚠️ THE ACCESS KEY IS ANNOUNCED, NOT MERELY BOUND -- the same rule MastheadNew follows, and the mockup draws the `N` badge for exactly this reason. `n` opens the composer with no type chosen, which is the right default for a group of six: picking the type is the composer's first field, so a shortcut per chip would be six shortcuts for one act. useCreateKey already refuses to fire while somebody is typing, so the letter cannot be swallowed mid-title.
@@ -417,7 +424,8 @@ function AddChips({ onAdd }) {
     return html`
         <div class="mh-add" role="group" aria-label="Add to this season">
             <span class="mh-add-k">Add</span>
-            ${ADD_CHIPS.map((c) => html`
+            ${ADD_CHIPS.map((c, i) => html`
+                ${c.group !== (ADD_CHIPS[i - 1] || {}).group ? html`<span class="mh-add-g">${c.group}</span>` : null}
                 <button class="pill mh-t" style=${`--c:${c.accent}`} onClick=${() => onAdd(c.key)}>
                     <span class="dot"></span>${c.label}
                 </button>`)}
@@ -457,7 +465,20 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                 <span class=${'srec-state' + (editingDraft ? ' staged' : '')}>${editingDraft ? 'staged draft' : 'live'}</span>
             </div>
             <p class=${'srec-title' + (titled ? '' : ' untitled')}>${titled || 'No season title set'}</p>
+${''/* 🔴 PEERS, NOT TWINS — 2026-09-10 10:55 EDT. Two of Harkirat's corrections on this strip look
+                     opposed and are not. 2026-08-25: "the calendar banners portion needs to stop feeling like a
+                     'foot note'. it's literally one of the main elements of the strip." 2026-09-09, pin pmtuxcp3b,
+                     his third or fourth time: "the season titles and the calendar banner items ALL LOOK LIKE THE
+                     SAME THING... same element, same design, same area, same importance." The first was answered by
+                     giving all six cells one identical treatment, which is what produced the second. Equal STANDING
+                     was never the same thing as equal FORM: three dated deadlines and three pictures are different
+                     KINDS, and the previous layout made the banner rows read as deadline rows with the date missing.
+                     Two named bands of equal weight — same surface, same width, neither nested in the other — and
+                     the banners get a real tile with a 56px image instead of a 34px sliver in a text row. */}
             <div class="srec-grid">
+                <div class="srec-band">
+                <span class="srec-bl">Deadlines</span>
+                <div class="srec-rows">
                 ${SEASON_LINES.map((L) => {
                     const t = (season?.[L.titleKey] || '').trim();
                     const tbd = season?.[L.tbdKey], iso = season?.[L.endKey];
@@ -468,6 +489,10 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                             <span class=${'d' + (tbd || !iso ? ' tbd' : '')}>${tbd ? 'TBD' : (iso ? fmtDay(iso) : 'no date')}</span>
                         </div>`;
                 })}
+                </div></div>
+                <div class="srec-band">
+                <span class="srec-bl">Calendar banners</span>
+                <div class="srec-tiles">
                 <!-- 🔴 A DOT, NOT THE WORD "set". A short word at the end of a row reads as a BUTTON —
                      "set", "open", "edit" and "clear" are all things you do. This column holds a DATE
                      in the rows above, so a verb here also broke the peerage the shared treatment
@@ -485,7 +510,7 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                     const on = (season?.[b.k] || '').trim();
                     const shows = on && !brokenBanner[b.k];
                     return html`
-                        <div class=${'srec-c' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
+                        <div class=${'srec-c srec-tile' + (on ? '' : ' off') + (on && !shows ? ' dead' : '') + (shows ? ' has-img' : '')} key=${b.k} style=${`--c:${b.hex}`}>
                             <span class="k">${b.label}</span>
                             <span class=${'t' + (on ? '' : ' unset')}>
                                 <!-- 🔴 THE WHOLE MECHANISM IS KEPT, AND THE CLASSIFICATION THAT SPLIT IT WAS WRONG. The design
@@ -494,14 +519,26 @@ function SeasonRecord({ season, editingDraft, draftStaged, today }) {
                                      class, the status words and the d aria-label all read that state. Adopt the design's
                                      no-image version and nothing ever fires the error, so a broken banner asserts its own
                                      health — a falsehood about live data. The three sites are ONE decision and it is (b). -->
-                                ${shows
-                                    ? html`<img class="srec-thumb" src=${on} alt="" loading="lazy" decoding="async"
+                                ${/* 🔴 THE LAZY-LOADING ATTRIBUTE IS WHY ALL THREE BANNERS RENDERED AS EMPTY BOXES.
+                                     Measured on the live dev portal 2026-09-10: fetch() of the exact same URL returned 200 with
+                                     250KB of real JPEG, and a fresh img built in the console with the same src loaded instantly
+                                     at 2048px wide — while these three sat at complete:false and naturalWidth:0 twelve seconds
+                                     after load, through a scroll and back. The only difference was the deferred-load attribute.
+                                     main is the scroll container and this panel is mid-rise transform when the browser evaluates
+                                     intersection, so the load is deferred and never re-armed. That also explains why it looked
+                                     intermittent: a slow render occasionally let one through. Three images ABOVE THE FOLD on
+                                     every visit to this realm buy nothing from deferral and were paying a blank panel for it.
+                                     No backtick and no attribute spelled out in here: this comment sits inside a template
+                                     literal, where a backtick closes it and where my own assert matched its own prose twice. */
+                                 shows
+                                    ? html`<img class="srec-thumb" src=${on} alt="" decoding="async"
                                                 onError=${() => setBrokenBanner((m) => ({ ...m, [b.k]: true }))} />`
                                     : (on ? 'set, but the image will not load' : 'no image set')}
                             </span>
                             <span class="d" role="img" aria-label=${on ? (shows ? 'set' : 'set but not loading') : 'not set'}><em></em></span>
                         </div>`;
                 })}
+                </div></div>
             </div>
             <!-- 🔴 THE LATENESS NUDGE MOVED ONTO THE LINE THAT CARRIES THE CONTROL, and the first attempt at
                  this got it wrong in a way worth recording: it deleted the nudge as a duplicate of the
@@ -735,8 +772,8 @@ function RecordPreview({ note, onClose }) {
     return html`
         <${Drawer} eyebrow=${`Patch notes · saved · ${note.current ? 'live now' : 'ended'}`}
                    title=${note.title} onClose=${onClose}
-                   actions=${html`<button class="btn" onClick=${onClose}>Cancel</button>
-                                  <button class="btn go" onClick=${onClose}>Stage these dates</button>`}>
+                   ${''/* 🔴 THE PRIMARY BUTTON PROMISED TO STAGE AND CALLED onClose (found 2026-09-10 17:47 EDT). It read "Stage these dates" beside two date inputs that had no onInput and no state, in a component whose only props are note and onClose — there is no stage path threaded into it at all, so nothing could have been staged even if the fields had been bound. A control that lies about what it does is worse than a missing one, and this one lied on the realm whose entire subject is staging. The dates are edited in PatchEditor, which owns releaseDateText, binds it, and stages through onStage(ops). A preview previews. */}
+                   actions=${html`<button class="btn go" onClick=${onClose}>Close</button>`}>
             <p class="dw-p">This is the card <b>as Discord renders it</b> — the same builder the
                bot calls, so the preview cannot drift from what ships.</p>
             <${DiscordCard} accent="var(--patch)" title=${note.title}
@@ -744,10 +781,9 @@ function RecordPreview({ note, onClose }) {
                             rows=${[['Window', `${day} → ${day}`], ['Duration', '1 day'],
                                     ['Detail', note.images.length ? `${note.images.length} image${note.images.length === 1 ? '' : 's'}` : '—'],
                                     ['Thumbnail', note.thumb || '—']]} />
-            <div class="dwfield" style="margin-top:16px"><label for="p-start">Starts</label>
-                <input id="p-start" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
-            <div class="dwfield"><label for="p-end">Ends</label>
-                <input id="p-end" type="date" value=${String(note.releaseDate || '').slice(0, 10)} /></div>
+            ${''/* The two inert date inputs that stood here are gone with the button that promised to stage them. They carried no onInput and no state, so typing into either changed nothing; and the window they described is already stated above, in the card, as Discord will render it. */}
+            <p class="dw-p">The dates are edited in the record's own editor, where they are read by the
+               same parser the bot uses — this drawer shows what is already saved.</p>
         <//>`;
 }
 
@@ -769,9 +805,11 @@ function PatchEditor({ entry, onStage, onClose }) {
                 <label class="dwfield"><span>Title override <i>blank keeps the season title it was published under</i></span>
                     <input value=${draft.titleOverride} placeholder=${entry.title}
                            onInput=${(e) => set({ titleOverride: e.target.value })} /></label>
-                <label class="dwfield"><span>Release date <i>read by the same parser the bot uses</i></span>
-                    <input value=${draft.releaseDateText} spellcheck="false" placeholder="July 22, 2026 7:20 AM"
-                           onInput=${(e) => set({ releaseDateText: e.target.value })} /></label>
+                ${''/* 🔴 THE LABEL CLAIMED THE PARSER AND THE FIELD NEVER SHOWED IT. "read by the same parser the bot uses" is true — the text is sent verbatim and parsed server-side — but a bare input gives you no way to see WHAT it resolved to, so a typo reads exactly like a date until the record is saved. SmartDate asks /api/parse-date as you type and echoes the answer, which turns the label's claim into something visible. The payload is unchanged: the TEXT is still what ships, because the server is the parser. Pin pmtvp9ur7. */}
+                <${SmartDate} chrome="drawer" id="pe-date" label="Release date"
+                              placeholder="July 22, 2026 7:20 AM"
+                              value=${draft.releaseDateText} iso=${draft.releaseDateIso}
+                              onChange=${(v, i) => set({ releaseDateText: v, releaseDateIso: i })} />
             </div>
             <label class="dwfield"><span>Additional info <i>rendered under the images; b:, n: and f: become the buff, nerf and fix marks</i></span>
                 <textarea rows="4" value=${draft.description} onInput=${(e) => set({ description: e.target.value })}></textarea></label>

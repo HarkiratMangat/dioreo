@@ -58,6 +58,7 @@ function armoryBuild(b) {
     if (!(b.isMeta || b.categoryRank || b.dmzRangeRank || b.isToxic)) flags.push('no-badges');
     if ((b.attachments || []).length !== (b.mode === 'DMZ' ? 9 : 5)) flags.push('wrong-attachment-count');
     if (b.lastUpdated && Date.now() - new Date(b.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
+    if (b.mode === 'MP' && !b.shareCode) flags.push('no-code');
     if (b.mode === 'MP' && b.shareCode && (MP_CODES.get(b.shareCode) || 0) > 1) flags.push('near-duplicate');
     return { ...b, _id: b._id || b.id, coverage: flags, accent: CAT_HEX[b.category] || 'var(--ink3)' };
 }
@@ -131,6 +132,7 @@ function analyticsPayload() {
         usageStats: usageStatsShape(F_), timingStats: timingStatsShape(F_),
         reach: F_.reachStats || [],
         searches: F_.searchTerms || [],
+        actors: { [F_.OWNER_ID || '1139845545754632283']: 'owner' },
         outcomeKeys: F_.OUTCOMES || [], entryKeys: F_.ENTRIES || [],
     };
 }
@@ -472,8 +474,27 @@ const ROUTES = [
             'manage.loadouts_mp': 'armory', 'manage.loadouts_dmz': 'armory',
             'manage.announcement': 'broadcast',
         };
-        const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({ ...s, realm: s.realm || REALM[s.key] || null }));
-        return { scopes, admins: FIX.accessAdmins || [] };
+        // ⚠️ AND THE LABELS, for the same reason and with the same risk: PAGE_LABELS/COMMAND_LABELS live in portal/api/access.js, the exported fixture predates the 2026-09-11 13:14 EDT renames, and a harness showing "MP" where production shows "MP Loadouts" is the instrument disagreeing with the product about the one thing this grid is made of. Reproduced rather than imported because the stub runs in the browser.
+        const LABEL = {
+            destructive: 'Destructive',
+            'manage.loadouts_mp': 'MP Loadouts', 'manage.loadouts_dmz': 'DMZ Loadouts',
+            'manage.season': 'Season Title/Dates', 'manage.announcement': 'Announcements',
+        };
+        const scopes = (FIX.accessScopes || FIX.SCOPES || []).map((s) => ({
+            ...s, realm: s.realm || REALM[s.key] || null, label: LABEL[s.key] || s.label,
+        }));
+        // 🔴 TITLE AND NOTE ARE TWO FIELDS SINCE 2026-09-11 AND THE EXPORTED FIXTURE PREDATES THE SPLIT -- same shape, and same reason, as the LABEL override above it. Overlaid here rather than edited into docs/superpowers/mockups/**/fixtures.js, which is a maintained record of what the design package held. Without this every harness column falls back to the old note and the two fields cannot be told apart on screen, which is precisely what the split exists to make visible. ⚠️ ONE OF THESE IS HARKIRAT'S OWN ALT ACCOUNT (488090341573001227), supplied 2026-09-11 16:40 EDT for exactly this -- so the grid is exercised against a real snowflake rather than three synthetic ones that differ only in a final digit.
+        const ALT = '488090341573001227';
+        const PROFILE = {
+            '411000000000000002': { title: 'Calendar Helper', note: 'AEST; covers the weekend calendar drops.' },
+            '411000000000000001': { title: 'Moderator and weekend escalation', note: 'Holds destructive — the only other account that does.' },
+            '411000000000000003': { title: 'Gunsmith Lead', note: '' },
+        };
+        const admins = (FIX.accessAdmins || []).map((a, i) => {
+            const id = i === 0 ? ALT : a.discordId;
+            return { ...a, discordId: id, ...(PROFILE[a.discordId] || {}) };
+        });
+        return { scopes, admins };
     }],
     // ⚠️ THE FLAG CHANGES THE NUMBERS HERE TOO, or the toggle is a control that visibly does nothing — which is the exact defect class this branch has spent its life finding. The real route re-runs the aggregations with `isAdmin` unfiltered; the harness cannot, so it scales the two counts by a fixed fraction and says so. It demonstrates that the control reaches the server and the page re-reads; it does not claim to be the real ratio.
     [/^\/api\/analytics$/, (params) => {
@@ -509,7 +530,25 @@ const ROUTES = [
         return { kind, rows };
     }],
     // 🔴 THE DRAWER'S TIER PREVIEW NEEDS THIS OR IT SHOWS ITS EMPTY STATE WITH TEXT IN THE BOX. Narrower than utils/adminParser.js on purpose, same as parse-date/parse-bulk: the four shorthands the placeholder itself teaches, so the stub cannot teach a grammar the product does not have. The Grant drawer's lookup (pin 32). A superset of both shapes the route can answer with — ok:true beside the found fields — so portalHarness.test.js's promise check is satisfied and access.js's `res.id` test takes the found branch. Any 17–20 digit id resolves to the fixture person, and the display name says so.
-    [/^\/api\/discord\/user$/, (params) => ({ ok: true, reason: '', id: params.get('id') || '1139845545754632283', username: 'diorswrld', globalName: 'Dior (fixture)', avatarUrl: 'https://cdn.discordapp.com/embed/avatars/3.png' })],
+    [/^\/api\/discord\/user$/, (params) => {
+        // 🔴 ONE PERSON PER ID, NOT ONE PERSON FOR EVERY ID. This answered with the same fixture user for every lookup, so the Access grid drew four columns carrying one name and the harness could not show the identity work at all -- the instrument disagreeing with the product about who is who. Derived from the id, so the columns differ and stay stable across reloads.
+        const id = String(params.get('id') || '');
+        // Harkirat's alt account, supplied for testing 2026-09-11 16:40 EDT. Named rather than derived so the harness shows a human where the live portal would show one; the avatar is still the Discord default, because a fixture page must not fetch cdn.discordapp.com for a real hash it cannot know.
+        if (id === (FIX.OWNER_ID || '1139845545754632283')) {
+            return { ok: true, reason: null, id, username: 'diorswrld', globalName: 'Dior',
+                     avatarUrl: 'https://cdn.discordapp.com/embed/avatars/0.png' };
+        }
+        if (id === '488090341573001227') {
+            return { ok: true, reason: null, id, username: 'diors.alt', globalName: 'Dior (alt)',
+                     avatarUrl: 'https://cdn.discordapp.com/embed/avatars/1.png' };
+        }
+        // 🔴 THE SUPERSET THE COMMENT ABOVE PROMISES WAS NEVER ACTUALLY EMITTED, and portalHarness.test.js has been red on it -- the real route answers a miss with {ok:false, reason}, the stub answered every id with the found fields and neither key. Fixed here rather than filed because it is the check's own subject: an instrument telling you the stub matches the route while it does not. 2026-09-11 16:52 EDT.
+        if (!/^\d{17,20}$/.test(id)) return { ok: false, reason: 'That id did not resolve to a Discord account.' };
+        const NAMES = ['dior', 'calhelper', 'moddy', 'gunsmith', 'seedling'];
+        const k = (Number(id.slice(-1)) || 0) % NAMES.length;
+        return { ok: true, reason: null, id, username: NAMES[k], globalName: NAMES[k].charAt(0).toUpperCase() + NAMES[k].slice(1),
+                 avatarUrl: `https://cdn.discordapp.com/embed/avatars/${k}.png` };
+    }],
     [/^\/api\/parse-items$/, (params, body) => {
         const TIER = { m: 'mythic', l: 'legendary', lg: 'legacy', e: 'epic' };
         const items = []; const errors = [];

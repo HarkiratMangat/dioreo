@@ -12,6 +12,7 @@ import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
 const { plansNamedIn } = require_('./lib/handoffPlans.cjs');
+const { coverageDirective, coverageGaps, hasPassRecord, looksLikeASummary } = require_('./lib/handoffCoverage.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 let n = 0; const ok = (m) => { n++; console.log(`  ✓ ${m}`); };
@@ -39,16 +40,35 @@ ok('a plan named twice (a FIRST ACTION line and its amendment) is one plan, not 
 assert.deepStrictEqual(plansNamedIn('docs/superpowers/plans/a.md'), plansNamedIn('docs/superpowers/plans/a.md'));
 ok('two identical calls agree — no lastIndex carried between them');
 
-// ── the real file, which is what the defect was actually about
+// ── the real files, which is what the defect was actually about ⚠️ CORRECTED 2026-09-08 18:17 EDT: this read ONLY docs/SESSION-START.md and asserted it names >=1 plan. That assumption died the same day it was last "corrected" (12:11 EDT, PR #186) -- WP3 of the context-carriers plan rewrote SESSION-START to deliberately carry NO plan pointer at all, moving that job to `.remember/remember.md`'s auto-injected LAST HANDOFF block (a 2026-09-07 design decision this test predates). `handoffCheck.mjs`'s own `livePlans()` now reads BOTH files concatenated; this test must exercise the same union or it certifies behavior the real check no longer has.
 const start = fs.readFileSync(path.join(ROOT, 'docs/SESSION-START.md'), 'utf8');
-const real = plansNamedIn(start);
-assert.ok(real.length >= 2,
-    `SESSION-START names ${real.length} plan(s); this repo has had more than one live plan since 2026-08-31 and the check must see them all — got ${JSON.stringify(real)}`);
-ok(`the real SESSION-START names ${real.length} plans, and all of them are returned`);
+const rememberPath = path.join(ROOT, '.remember/remember.md');
+const remember = fs.existsSync(rememberPath) ? fs.readFileSync(rememberPath, 'utf8') : '';
+const real = plansNamedIn(start + '\n' + remember);
+const PLAN_RE = /(~\/\.claude\/plans\/[A-Za-z0-9._-]+\.md|docs\/superpowers\/plans\/[A-Za-z0-9._-]+\.md)/g;
+const independent = [...new Set((start + '\n' + remember).match(PLAN_RE) || [])];
+// 🔴 THE COMPLETENESS ASSERTION ONLY HOLDS WHEN .remember EXISTS — added 2026-09-09, found by CI itself failing on a fresh checkout. `.remember/` is gitignored and never committed, so a fresh clone (CI included) has no `.remember/remember.md` at all — and since WP3 made SESSION-START.md deliberately carry no plan pointer, "the pointer chain must resolve to a plan" is a LOCAL, session-handoff invariant (a session forgot to leave one), not something a fresh checkout can ever satisfy. `handoffCheck.mjs` itself already treats a missing `.remember` as its own failure mode (see its `rem === null` check) but this suite deliberately does not assert its exit code — only this test's OWN independent completeness check was still unconditional, which is what broke.
+if (fs.existsSync(rememberPath)) {
+    assert.ok(independent.length >= 1, `neither SESSION-START nor .remember names a plan at all — the pointer chain is broken`);
+    assert.deepStrictEqual(real, independent,
+        `the resolver must see EVERY plan named across SESSION-START + .remember — resolver ${JSON.stringify(real)} vs the files ${JSON.stringify(independent)}`);
+} else {
+    console.log('  ⚠ SKIPPED the pointer-chain completeness check — .remember/remember.md is gitignored and absent in this checkout (fresh clone / CI). This is expected here, not a failure.');
+}
 
-assert.ok(real.some((f) => f.includes('portal-conformance')),
-    `the conformance plan is the one realm sessions actually work from and it must be among them — got ${JSON.stringify(real)}`);
-ok('the conformance plan is among them — it is NOT first in the file, which is the whole defect');
+// ── THE STALE-HEAD MATCHER, PROVEN BOTH WAYS (added 2026-09-07 01:55 EDT) ───────────────────────── It fired on its FIRST live run against a real stale value — a pin written before an amend, in the document it was built for. That is the can-fail proof; these two cases pin the matcher so a later edit cannot loosen it into something that always passes.
+const headClaims = (body) => [...body.matchAll(/HEAD[^\n]*?`([0-9a-f]{7,40})`|`([0-9a-f]{7,40})`[^\n]*?\bis HEAD\b/gi)]
+    .map((m) => m[1] || m[2]).filter(Boolean);
+
+assert.deepStrictEqual(headClaims('| **HEAD when this was written** | **`c342a760`** — run `git log -1` |'), ['c342a760'],
+    'a HEAD line must yield its hash');
+assert.deepStrictEqual(headClaims('the fix landed in `6d57e68d` and shipped'), [],
+    'AN ORDINARY COMMIT CITATION IS NOT A HEAD CLAIM — a handoff legitimately names the commit a measurement came from, and flagging those would make this gate fire on every well-written document, which is how a gate gets suppressed rather than obeyed');
+console.log('  ✓ the stale-HEAD matcher reads a HEAD claim and ignores an ordinary citation');
+if (fs.existsSync(rememberPath)) ok(`the real SESSION-START + .remember names ${real.length} plans, and all of them are returned`);
+
+// ⚠️ RETIRED 2026-09-08 12:11 EDT: this asserted the conformance plan is named — true while realm work was live, false once PR #186 recorded the build-out as merged and moved that plan to HISTORY. A test that names a specific plan pins the state of the WORK, not the resolver; the completeness assertion above is the one that holds. The order-preservation property it also guarded is pinned by the two-path fixture case above.
+ok('the named-plan assertion is retired — which plan is live is a fact about the work, and the fixture case above pins ordering');
 
 // 🔴 THE PROGRAM MUST RUN, AND IT HAS TO BE A SUBPROCESS. Added 2026-09-04 14:11 EDT after `npm run handoff` threw `ReferenceError: require_ is not defined` at import while this suite was green — the resolver had a test and the PROGRAM had none, so a change that made the script unrunnable passed everything. ⚠️ THE FIRST VERSION OF THIS CASE `await import`ed IT, under a comment of mine asserting the module is `process.exit`-free at import. It is not: importing runs the whole check and exits with its verdict, which killed this suite. A claim in a comment, contradicted by running it, one turn after writing it — so the subprocess is not caution, it is the measured requirement. ⚠️ THE EXIT CODE IS DELIBERATELY NOT ASSERTED. `handoffCheck` exits 1 whenever a carrier is genuinely missing, which is its JOB; asserting 0 would make this suite fail for reasons that have nothing to do with whether the script is runnable. What is asserted is that it did not die at load — a ReferenceError, a SyntaxError, or a stack trace instead of a report.
 const run = spawnSync(process.execPath, [path.join(ROOT, 'scripts/handoffCheck.mjs')], { cwd: ROOT, encoding: 'utf8' });
@@ -60,3 +80,65 @@ assert.ok(/handoff check/.test(out),
 ok('handoffCheck.mjs RUNS and reports — the resolver had a test and the program had none');
 
 console.log(`\nhandoffCheck plans — ${n} passed`);
+
+// ── COVERAGE AND THE SELF-AUDIT, added 2026-09-10 13:17 EDT. 🔴 EVERY ONE OF THESE CAN FAIL, and the fourth is the reason the file exists. A handoff shipped on 2026-09-10 with one of its 36 items in neither carrier while every gate was green, because nothing compared the summary to its source. The vacuous case is the one that would have made the fix useless: a pattern matching nothing reports full coverage forever, which is a check that manufactures confidence — strictly worse than no check.
+
+assert.deepStrictEqual(coverageDirective('nothing here'), null);
+assert.deepStrictEqual(
+    coverageDirective('intro\n<!-- coverage: local/pins.md · · (pmt\\w+) · -->\nrest'),
+    { source: 'local/pins.md', pattern: '· (pmt\\w+) ·' });
+ok('the coverage directive is parsed, and its absence is null rather than a throw');
+
+const SRC = '## a — · pmtAAA ·\n## b — · pmtBBB ·\n## c — · pmtCCC ·';
+{
+    const r = coverageGaps(SRC, '· (pmt\\w+) ·', ['pmtAAA pmtBBB pmtCCC']);
+    assert.deepStrictEqual(r.ids, ['pmtAAA', 'pmtBBB', 'pmtCCC']);
+    assert.deepStrictEqual(r.missing, []);
+    assert.strictEqual(r.vacuous, false);
+    ok('a summary that names every id reports no gap');
+}
+{
+    // THE REAL 2026-09-10 CASE: one id present in the second carrier only, one in neither.
+    const r = coverageGaps(SRC, '· (pmt\\w+) ·', ['pmtAAA only', 'deferred list mentions pmtBBB']);
+    assert.deepStrictEqual(r.missing, ['pmtCCC']);
+    ok('THE GATE CAN FAIL: an id in neither carrier is named, and one in EITHER carrier counts as covered');
+}
+{
+    // 🔴 THE VACUOUS PASS. A wrong pattern extracts nothing and would otherwise report success.
+    const r = coverageGaps(SRC, '· (nope\\w+) ·', ['']);
+    assert.deepStrictEqual(r.missing, []);
+    assert.strictEqual(r.vacuous, true, 'zero ids must be flagged vacuous, never reported as covered');
+    ok('THE GATE CANNOT PASS VACUOUSLY: a pattern matching zero ids is a failure, not full coverage');
+}
+{
+    const r = coverageGaps(SRC, '· (pmt\\w+ ·', ['']);
+    assert.strictEqual(r.badPattern, true);
+    ok('an invalid regex is reported rather than thrown');
+}
+
+// 🔴 THE VOCABULARY CASES, from the REAL corpus rather than from my own heading. Measured across all 109 handoffs on disk: the first predicate matched 1 (the one written to satisfy it) and 23 carry a genuine self-critical section under words they chose. Each string below is lifted from a real file.
+assert.strictEqual(hasPassRecord('# H\n\n## 0. Important correction\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## Two standing lessons\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## \u26a0\ufe0f Where the spec was WRONG or incomplete — corrections\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## The two corrections\n\n...'), true);
+assert.strictEqual(hasPassRecord('# H\n\n## What the previous handoffs got wrong\n\n...'), true);
+ok('THE PREDICATE IS NOT TUNED TO MY OWN HEADING: five real headings from the 109-file corpus pass');
+assert.strictEqual(hasPassRecord('# H\n\n## State\n\n## Next\n\n## Context'), false);
+assert.strictEqual(hasPassRecord('# H\n\n## Where things live\n\n## The surfaces'), false);
+ok('...and a handoff that only describes the WORK still fails — widening did not make it vacuous');
+
+assert.strictEqual(hasPassRecord('# H\n\nbody only'), false);
+assert.strictEqual(hasPassRecord('# H\n\n## Audit log\n\nno gaps found'), true);
+assert.strictEqual(hasPassRecord('# H\n\n### What the pass found\n\n- one'), true);
+ok('THE GATE CAN FAIL: a handoff with no record of a pass over itself is detected, and "no gaps found" is writable');
+
+// 🔴 BOTH DIRECTIONS, because the first version of this advisory was unconditional and I deleted it rather than conditioning it — which left the coverage check unable to fire at all.
+assert.strictEqual(looksLikeASummary('## State\nBranch feat/x, 3 commits, suite green. Next: push.'), false);
+// 🔴 THESE TWO CORPUS FILES LIVE UNDER `local/`, WHICH IS GITIGNORED AND THEREFORE NEVER EXISTS IN CI. Read unconditionally they threw ENOENT and failed the whole suite on a fresh clone — and this repo had already learned the lesson once, in `scripts/docs-audit.mjs`'s own note: "GITIGNORED-AND-ABSENT IS AMBIGUOUS, NOT BROKEN — found 2026-09-09 when this exact branch failed CI... blocking on it made this check permanently unsatisfiable in CI." The same answer was applied there and not here, which is the instance-not-class shape. ⚠️ THE SKIP IS NARROW ON PURPOSE. The synthetic negative above ALWAYS runs, so the advisory can never become vacuous: what a fresh clone loses is only the proof that it fires on two REAL handoffs, and that is stated out loud rather than passed silently. Same treatment this file already gives `.remember` above.
+const corpus = ['local/handoff/2026-09-10-portal-round2.md', 'local/handoff/2026-09-10-portal-pin-fixes-full-handoff.md']
+    .map((r) => path.join(ROOT, r)).filter((f) => fs.existsSync(f));
+for (const f of corpus) assert.strictEqual(looksLikeASummary(fs.readFileSync(f, 'utf8')), true, `${f} should read as a summary`);
+if (corpus.length === 2) ok('THE ADVISORY IS CONDITIONAL AND THE CONDITION DISCRIMINATES: silent on a prose handoff, fires on both real list-summarising ones');
+else console.log(`  ⚠ PARTIAL — ${corpus.length} of 2 real corpus handoffs present; the rest are gitignored and absent in this checkout (fresh clone / CI). The synthetic negative still ran, so the advisory is proven non-vacuous either way.`);
+
+console.log(`\n${n} assertion group(s) passed`);

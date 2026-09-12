@@ -1,6 +1,6 @@
 {
   "surface": "shell",
-  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file \u2014 this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope \u2014 there is no ?empty=; an empty state is reached by narrowing). \u26a0\ufe0f TWO OF async.js's SIX REQUEST STATES ARE NOT REGISTERED HERE, and the reason is not that nobody tried: `refreshing` and `progress` were registered, walked, and REFUSED to appear \u2014 see docs/db-deferred-list.md. An `expect` selector is what turned that from a passing state into a question.",
+  "note": "The chrome every realm inherits: the rail, the command bar, the masthead, the account panel, the tray, and the six request states async.js owns. A realm registers its OWN states in its own file \u2014 this one is Part 0's, and it is the seed the catalogue grows from. `flags` are harness stub flags (stub.js reads fail/slow/offline/today/owner/realms/admin/category/destroy/draft/id/ids/mode/q/scope \u2014 there is no ?empty=; an empty state is reached by narrowing). \u26a0\ufe0f `refreshing` WAS UNREACHABLE FOR A WHILE, AND IS NOW REGISTERED BELOW (2026-09-07) \u2014 the fix was the harness `slow=` knob combined with a step sequence that lands past the first (slow) load, so useAsync's re-fetch has data already on screen to hold `is-refreshing` open long enough to photograph. `progress` is not one of useAsync's four `phase` values at all \u2014 it is Review's own sibling component, driven by a commit loop rather than a GET \u2014 and its working registration lives in portal/fixtures/states/review.json, using the same knob. See docs/db-deferred-list.md's 2026-09-07 00:27 EDT entry for the timing diagnosis this fix acts on.",
   "states": [
     {
       "name": "default \u00b7 home",
@@ -22,7 +22,7 @@
       "flags": {},
       "steps": [
         {
-          "key": "k",
+          "key": "/",
           "meta": true
         }
       ],
@@ -148,19 +148,6 @@
       "expect": ".exs"
     },
     {
-      "name": "tooltip runtime",
-      "realm": "season",
-      "flags": {},
-      "steps": [
-        {
-          "hover": "[data-tip]"
-        }
-      ],
-      "known": [],
-      "note": "32 data-tip hosts on Season and the runtime is delegated from the document; tooltips are content and are invisible to a screenshot",
-      "expect": ".tip"
-    },
-    {
       "name": "toast after an account action",
       "realm": "season",
       "flags": {},
@@ -201,6 +188,27 @@
       "known": [],
       "note": "the seven irreversible ops at the foot of Season, gated on the destructive permission",
       "expect": ".ow"
+    },
+    {
+      "name": "refreshing \u00b7 a re-read keeps data on screen while it goes back for more",
+      "realm": "analytics",
+      "flags": {
+        "slow": "4000"
+      },
+      "steps": [
+        {
+          "clickText": {
+            "sel": "label.adminsw",
+            "text": "include admin"
+          },
+          "waitMs": 300
+        }
+      ],
+      "known": [],
+      "preSettleMs": 8500,
+      "settleMs": 300,
+      "note": "Reached via Analytics' admin-traffic toggle, the one control in this portal that changes useAsync's deps while data is already on screen. preSettleMs clears the session mint AND the realm's own first fetch (both slow=4000) so s.data is populated before the toggle is clicked; the toggle's own re-fetch is then delayed by the same slow=4000, giving a 300ms-later check a wide window to catch main.is-refreshing before it clears.",
+      "expect": "main.is-refreshing"
     },
     {
       "name": "reduced motion \u00b7 season",

@@ -90,3 +90,9 @@ portal/public/
 # it is ignored, NO GATE SEES IT: docs-audit, the reflow checks and the xref check all resolve their
 # file list from `git ls-files`. Highest trust, zero review. Keep POINTERS in it, never content.
 CLAUDE.local.md
+.impeccable/live/
+# Dated impeccable critique/audit reports are tool output, regenerated per run, and written in the
+# tool own format -- reflow-prose fights the generator on them. Ignored 2026-09-06 16:14 EDT. Anything a
+# report FINDS must be filed in docs/db-deferred-list.md, because an ignored path carries nothing forward.
+.impeccable/critique/
+.impeccable/audit/

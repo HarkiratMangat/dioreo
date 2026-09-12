@@ -198,6 +198,7 @@ async function route(interaction) {
             return interaction.reply({ content: '🔒 **Only the bot owner can manage the admin list.**', ephemeral: true });
         }
         const rawId = interaction.fields.getTextInputValue('discord_id').trim();
+        // ⚠️ THIS WRITES `note` AND NOT `title`, AND THAT IS CORRECT RATHER THAN A GAP. The portal split the single free-text label into a public `title` (what its Access grid prints) and a private `note` on 2026-09-11; every reader falls back to `title || note`, so an admin granted from here shows their note on the grid until somebody gives them a title in the portal's Edit drawer. Adding a second modal field to this panel is a separate decision about a surface that was not in scope.
         const note = interaction.fields.getTextInputValue('note')?.trim() || '';
         const discordId = rawId.replace(/[<@!>]/g, '');
         if (!/^\d{17,20}$/.test(discordId)) {
