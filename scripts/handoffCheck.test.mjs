@@ -134,8 +134,11 @@ ok('THE GATE CAN FAIL: a handoff with no record of a pass over itself is detecte
 
 // 🔴 BOTH DIRECTIONS, because the first version of this advisory was unconditional and I deleted it rather than conditioning it — which left the coverage check unable to fire at all.
 assert.strictEqual(looksLikeASummary('## State\nBranch feat/x, 3 commits, suite green. Next: push.'), false);
-assert.strictEqual(looksLikeASummary(fs.readFileSync(path.join(ROOT, 'local/handoff/2026-09-10-portal-round2.md'), 'utf8')), true);
-assert.strictEqual(looksLikeASummary(fs.readFileSync(path.join(ROOT, 'local/handoff/2026-09-10-portal-pin-fixes-full-handoff.md'), 'utf8')), true);
-ok('THE ADVISORY IS CONDITIONAL AND THE CONDITION DISCRIMINATES: silent on a prose handoff, fires on both real list-summarising ones');
+// 🔴 THESE TWO CORPUS FILES LIVE UNDER `local/`, WHICH IS GITIGNORED AND THEREFORE NEVER EXISTS IN CI. Read unconditionally they threw ENOENT and failed the whole suite on a fresh clone — and this repo had already learned the lesson once, in `scripts/docs-audit.mjs`'s own note: "GITIGNORED-AND-ABSENT IS AMBIGUOUS, NOT BROKEN — found 2026-09-09 when this exact branch failed CI... blocking on it made this check permanently unsatisfiable in CI." The same answer was applied there and not here, which is the instance-not-class shape. ⚠️ THE SKIP IS NARROW ON PURPOSE. The synthetic negative above ALWAYS runs, so the advisory can never become vacuous: what a fresh clone loses is only the proof that it fires on two REAL handoffs, and that is stated out loud rather than passed silently. Same treatment this file already gives `.remember` above.
+const corpus = ['local/handoff/2026-09-10-portal-round2.md', 'local/handoff/2026-09-10-portal-pin-fixes-full-handoff.md']
+    .map((r) => path.join(ROOT, r)).filter((f) => fs.existsSync(f));
+for (const f of corpus) assert.strictEqual(looksLikeASummary(fs.readFileSync(f, 'utf8')), true, `${f} should read as a summary`);
+if (corpus.length === 2) ok('THE ADVISORY IS CONDITIONAL AND THE CONDITION DISCRIMINATES: silent on a prose handoff, fires on both real list-summarising ones');
+else console.log(`  ⚠ PARTIAL — ${corpus.length} of 2 real corpus handoffs present; the rest are gitignored and absent in this checkout (fresh clone / CI). The synthetic negative still ran, so the advisory is proven non-vacuous either way.`);
 
 console.log(`\n${n} assertion group(s) passed`);
