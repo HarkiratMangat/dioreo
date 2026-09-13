@@ -35,7 +35,7 @@ function seasonLive() {
 }
 
 // Every realm this admin can see. The harness signs in as the owner because the alternative — a partial grant — hides surfaces, and a harness that silently omits a page is worse than useless when the whole point is looking at every page. Narrower grants are reachable with ?realms= below.
-const ALL_REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analytics'];
+const ALL_REALMS = ['season', 'armory', 'broadcast', 'review', 'access', 'analytics', 'history'];
 const params = new URLSearchParams(location.search);
 const realms = params.get('realms') ? params.get('realms').split(',') : ALL_REALMS;
 const owner = params.get('owner') !== '0';

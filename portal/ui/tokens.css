@@ -55,7 +55,7 @@
   --ink:#E8EDF1; --ink2:#9DAAB4; --ink3:#85939F; --ink4:#5C6A75;
 
   /* signal — state, readable regardless of topic accent */
-  --patch:#F2C230; --warn:#FF7A45; --ok:#3DDC97; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
+  --patch:#F2C230; --warn:#FF7A45; --ok:#7BDB63; --info:#409AD0; --sched:#A680FB; --del:#FF6B6B;
 
   /* SEASON topic accents — colour carries TOPIC */
   /* 🔴 THE MOCKUP'S SET, ADOPTED 2026-08-26 08:39 EDT (Harkirat: "Keep the mockup colors").
@@ -87,7 +87,7 @@
   --ar:#FF3B5C; --smg:#FFD23F; --lmg:#845EC2; --mm:#3DDC97; --sn:#4361EE; --sg:#F6A93B; --sec:#3E6E8E;
 
   /* staged-state accent — only ever tints a shape that is ALREADY dashed/hollow */
-  --staged:#5FD4E8;
+  --staged:#D8F24A;
   /* the three season deadlines are distinct TOPICS, so each gets its own hue;
      they read as vertical dashed markers, never as lane bars */
   --bp:#FFCE3A; --rank:#5FA8FF; --dmz:#FF9F45;
@@ -122,8 +122,10 @@
    *   home     ink2        — the arrival surface, not a territory; explicit so the rail never falls back to --patch
    * Consumers: the rail's hover wash and active edge, the masthead's LEAD figure, the masthead wash
    * (.app[data-realm] in app.css), Access's accentOf(), Home's attention rows. */
-  --r-season:#F2994A; --r-armory:#AE72E0; --r-broadcast:#E56FA6;
-  --r-access:#6B8AF7; --r-analytics:#9CC85A; --r-review:var(--ink); --r-home:var(--ink2);
+  --r-season:#F59E0C; --r-armory:#EF4444; --r-broadcast:#EC4899;
+  --r-access:#6C8AF7; --r-analytics:#9CC85A; --r-history:#00E1D9; --r-review:#D8F24A; --r-home:var(--ink2);
+  /* 2026-09-13 17:32 EDT — batch-2 spec §1.1: every realm moved except Analytics; History is new; Review gets a real accent,
+     overturning D4's "Review = ink". Review shares #D8F24A with --staged on purpose: Review is where staged work goes. */
 
 /* EDIT IDENTITY — one colour per person being edited, so a bar, a column head and a set of pending
  * cells read as one object. Deliberately a COOL band (165–265°) that the scope palette in access.js
@@ -256,7 +258,8 @@
   --win-18:rgba(31,138,94,.18); --win-20:rgba(31,138,94,.20); --win-45:rgba(31,138,94,.45);
 
   --row-selected:#20303B;    /* the Manifest's tbody tr.on, one step past --hi */
-  --on-staged:#00151A;       /* ink ON --staged's cyan fill, parallel to --ev-ink/--warn-ink */
+  --on-staged:#1A2000;       /* ink ON --staged's lime fill (13.4:1), re-derived 2026-09-13 17:32 EDT when --staged left cyan */
+  --on-ok:#07130A;           /* ink ON --ok's green fill (11.0:1) — confirm buttons fill with --ok since 2026-09-13 17:32 EDT */
 
   /* the scrim behind the preview drawer and the command palette — a colder base than --scrim-* */
   --overlay:#06090B;

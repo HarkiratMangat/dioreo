@@ -5,7 +5,6 @@
     "portal/ui/access.js :: 'data' was used before it was defined.",
     "portal/ui/access.js :: 'matrix' was used before it was defined.",
     "portal/ui/access.js :: 'matrix' was used before it was defined.",
-    "portal/ui/analytics.js :: 'rows' was used before it was defined.",
     "portal/ui/armory.js :: 'COVERAGE_LABEL' was used before it was defined.",
     "portal/ui/broadcast.js :: 'accentOf' was used before it was defined.",
     "portal/ui/broadcast.js :: 'daysBetween' was used before it was defined.",

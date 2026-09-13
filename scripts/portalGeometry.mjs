@@ -23,7 +23,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'portal', 'public');
 const FIXTURES = path.join(ROOT, 'portal', 'fixtures', 'geometry');
 const VIEWPORT = { w: 1282, h: 888 };                                                    // §0.3, the same numbers `__grid.viewport()` asserts against
-const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
+const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'history', 'review', 'home'];
 
 // ───────────────────────────────────────────────────────────────────────────── The comparison. Pure, exported, and unit-tested without a browser — the half most likely to be quietly wrong is the diff, not the capture. ─────────────────────────────────────────────────────────────────────────────
 export function compare(before, after) {

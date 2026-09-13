@@ -86,22 +86,22 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 1–6 — nothing here reads anything above it.
 
-- [ ] **Step 1 — git.** `git fetch --prune && git status --short && git worktree list && git rev-list --left-right --count origin/v3-pre-release...HEAD`, then `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md > /dev/null && echo plan-merged` — the plan's own file, because a squash merge gives it a new commit and an ancestry check could never pass. Same message: `npm run portal:status`, `npm run index:health` and `node scripts/summaryShape.mjs --session latest`.
-- [ ] **Step 2 — ledger** (`ctx_search`, `source: "portal-decision-ledger"`, one call): distinct realm hues D4 · staged colour · empty state · crumb (Home row 14, Review region 5) · command bar · rail order · Analytics river table · Review's `span.sp`.
-- [ ] **Step 3 — counts** (`ctx_batch_execute`, one call): `rg -n 'var\(--staged\)' portal/ui/app.css portal/ui/*.js` · `rg -n 'var\(--ok\)|61,\s*220,\s*151' portal/ui/app.css portal/ui/*.js` · `rg -n '\[data-realm' portal/ui/app.css` · `rg -n 'accentOf|SCOPE_COLOR|PAGE_COLOR' portal/ui/access.js` · `rg -n "'analytics'" scripts/portal*.mjs scripts/lib/*.mjs portal/ui/app.js portal/api/*.js` · `rg -n 'mongoose.model' models/`. Measured 2026-09-13 14:15 EDT on `efa5480e` with exactly these commands: **76 lines** of `var(--staged)` in `app.css` (85 occurrences) plus 1 in the JS, and **55 lines** matching the `--ok` pattern (52 in `app.css`, 3 in the JS). Spec §1.3's "~50" and "49" were approximations; these govern. Step 10 classifies by line. If a count moved by more than a handful, another branch touched the tokens — read that diff before classifying.
-- [ ] **Step 4 — blast radius** (`search_graph`, include_connected): `realmLabelOf` (6 consumers in shell.js) · `visibleRealms` (auth routes, review API) · `dominantColors`.
-- [ ] **Step 5 — memory:** `mcp__linksee__recall({layer:'caveat', query:'tokens staged History realm rail'})`.
-- [ ] **Step 6 — open the seven realms:** chrome-devtools `new_page` once per realm (`http://localhost:8787/harness.html?fresh=1#/<realm>`), all seven in this message. Keep the seven `pageId`s; every later page step in this session uses them.
+- [x] *(2026-09-13 17:28 EDT — plan-merged, 0/0 vs origin, index:health exit 0)* **Step 1 — git.** `git fetch --prune && git status --short && git worktree list && git rev-list --left-right --count origin/v3-pre-release...HEAD`, then `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md > /dev/null && echo plan-merged` — the plan's own file, because a squash merge gives it a new commit and an ancestry check could never pass. Same message: `npm run portal:status`, `npm run index:health` and `node scripts/summaryShape.mjs --session latest`.
+- [x] *(2026-09-13 17:28 EDT)* **Step 2 — ledger** (`ctx_search`, `source: "portal-decision-ledger"`, one call): distinct realm hues D4 · staged colour · empty state · crumb (Home row 14, Review region 5) · command bar · rail order · Analytics river table · Review's `span.sp`.
+- [x] *(2026-09-13 17:28 EDT — 76+1 `--staged`, 52+3 `--ok`, unchanged)* **Step 3 — counts** (`ctx_batch_execute`, one call): `rg -n 'var\(--staged\)' portal/ui/app.css portal/ui/*.js` · `rg -n 'var\(--ok\)|61,\s*220,\s*151' portal/ui/app.css portal/ui/*.js` · `rg -n '\[data-realm' portal/ui/app.css` · `rg -n 'accentOf|SCOPE_COLOR|PAGE_COLOR' portal/ui/access.js` · `rg -n "'analytics'" scripts/portal*.mjs scripts/lib/*.mjs portal/ui/app.js portal/api/*.js` · `rg -n 'mongoose.model' models/`. Measured 2026-09-13 14:15 EDT on `efa5480e` with exactly these commands: **76 lines** of `var(--staged)` in `app.css` (85 occurrences) plus 1 in the JS, and **55 lines** matching the `--ok` pattern (52 in `app.css`, 3 in the JS). Spec §1.3's "~50" and "49" were approximations; these govern. Step 10 classifies by line. If a count moved by more than a handful, another branch touched the tokens — read that diff before classifying.
+- [x] *(2026-09-13 17:28 EDT — realmLabelOf 6, visibleRealms 1 (auth routes), dominantColors 1 (useAvatarTint))* **Step 4 — blast radius** (`search_graph`, include_connected): `realmLabelOf` (6 consumers in shell.js) · `visibleRealms` (auth routes, review API) · `dominantColors`.
+- [x] *(2026-09-13 17:28 EDT)* **Step 5 — memory:** `mcp__linksee__recall({layer:'caveat', query:'tokens staged History realm rail'})`.
+- [x] *(2026-09-13 17:28 EDT — pageIds season 2 · armory 3 · broadcast 4 · access 5 · analytics 6 · review 7 · home 8)* **Step 6 — open the seven realms:** chrome-devtools `new_page` once per realm (`http://localhost:8787/harness.html?fresh=1#/<realm>`), all seven in this message. Keep the seven `pageId`s; every later page step in this session uses them.
 
 > ⟦ONE MESSAGE⟧ Step 6b — needs the pages Step 6 opened.
 
-- [ ] **Step 6b — before captures:** `take_screenshot` with `filePath: local/pins2/s1-before-<realm>.png`, one per page, all seven in this message.
+- [x] *(2026-09-13 17:28 EDT)* **Step 6b — before captures:** `take_screenshot` with `filePath: local/pins2/s1-before-<realm>.png`, one per page, all seven in this message.
 
 ### 3.1 · Dispatch agents A and B
 
 > ⟦ONE MESSAGE⟧ Step 7 — Bash only; the worktrees must exist before the agents.
 
-- [ ] **Step 7:** `git worktree add -b feat/pins2-a-broadcast-delivery .claude/worktrees/pins2-a feat/portal-pins2-identity && git worktree add -b feat/pins2-b-armory-data .claude/worktrees/pins2-b feat/portal-pins2-identity && cp .env.dev .claude/worktrees/pins2-a/ && cp .env.dev .claude/worktrees/pins2-b/`
+- [x] *(2026-09-13 17:28 EDT)* **Step 7:** `git worktree add -b feat/pins2-a-broadcast-delivery .claude/worktrees/pins2-a feat/portal-pins2-identity && git worktree add -b feat/pins2-b-armory-data .claude/worktrees/pins2-b feat/portal-pins2-identity && cp .env.dev .claude/worktrees/pins2-a/ && cp .env.dev .claude/worktrees/pins2-b/`
 
 > ⟦ONE MESSAGE⟧ Steps 8–9 — both `Agent` calls, `model: "sonnet"`, `run_in_background: true`, prompts = §8.3 briefs A and B verbatim.
 
@@ -112,32 +112,114 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 10–11 — the classification is written into this file, then the heredoc applies it and runs the gates.
 
-- [ ] **Step 10 — classify.** Add a table under this step: every `--staged` consumer from Step 3 as `selector · today · becomes (staged | ok | focus)`. Commit, Save, Grant and every `.btn.go` / `button.go` is **ok**; counts, draft bar, NEXT SEASON, staged chips are **staged**; `:focus-visible` outlines are **focus** (keep a visible, AA-passing outline).
-- [ ] **Step 11 — one heredoc:** `tokens.css` realm accents per spec §1.1 (+ `--r-history`, `--r-review:#D8F24A`) · `--staged:#D8F24A` · `--ok:#7BDB63` · `--on-staged` and any ok-fill ink re-derived · the app.css consumers per Step 10. **Do not touch the Access grid's scope palette** — spec §1.2 and §5. Preflight asserts: trap 10(a) on every touched JS file; for every selector edited, exactly one `^selector` hit. Chain: `PYEOF && npm run portal:orphans && node scripts/portalReverseOrphans.mjs --ci && node scripts/portalGeometry.mjs --all --check`.
+- [x] *(2026-09-13 17:32 EDT)* **Step 10 — classify.** Add a table under this step: every `--staged` consumer from Step 3 as `selector · today · becomes (staged | ok | focus)`. Commit, Save, Grant and every `.btn.go` / `button.go` is **ok**; counts, draft bar, NEXT SEASON, staged chips are **staged**; `:focus-visible` outlines are **focus** (keep a visible, AA-passing outline).
+
+  *Classified 2026-09-13 17:32 EDT against the Step 3 list (76 app.css lines + 1 JS). **focus** keeps today's pixels: it maps to `--focus` (#5FD4E8, the old staged cyan, 11.5:1 on the desk), so no outline loses contrast. Drag-over and hover affordances count as focus, not state. `.chip.go` ("Review & commit") stays **staged**: it navigates to Review and produces nothing, so it is not a confirm button in spec §1.3's sense. The 12 lines of `rgba(61,220,151,…)` literals of the old `--ok` move to `rgba(123,219,99,…)`. New inks: `--on-staged` #1A2000 (13.4:1), `--on-ok` #07130A (11.0:1).*
+
+  | line | selector | becomes |
+  |---|---|---|
+  | 115 | `.realm .cnt` | staged |
+  | 133 | `.stat.warn .v` | staged |
+  | 441 | `.tray-h .n` | staged |
+  | 444 | `.round` | staged |
+  | 457 | `.round-u:hover:not([disabled])` | focus |
+  | 459 | `.round-u:focus-visible` | focus |
+  | 479 | `.btn.go` | ok |
+  | 913 | `.bcard .actions button.go` | ok |
+  | 914 | `.bcard .actions button.go:hover` | ok |
+  | 954 | `.dline.dirty` | staged |
+  | 1005 | `.lnsw .pip.draft` | staged |
+  | 1009 | `.draftbar` | staged |
+  | 1010 | `.draftbar .dt` | staged |
+  | 1103 | `.bcol.drop .bcol-body` | focus |
+  | 1228 | `.draftnote` | staged |
+  | 1230 | `.draftnote b` | staged |
+  | 1232 | `.identity.editing-draft` | staged |
+  | 1234 | `.identity.editing-draft .f-main input:focus` | focus |
+  | 1240 | `.diff-r .dnow.add` | staged |
+  | 1291 | `#__backtotop:focus-visible` | focus |
+  | 1304 | `.nextmark` | staged |
+  | 1487 | `.chip.stagedchip[aria-pressed=true]` | staged |
+  | 1688 | `.bulkbar b` | staged |
+  | 1721 | `.trow-body.over` | focus |
+  | 1734 | `.chip.go` | staged |
+  | 1735 | `.chip.go:hover` | staged |
+  | 1749 | `.repin:focus` | focus |
+  | 1838 | `.mh-stats .stat.stg .v` | staged |
+  | 2024 | `.trow-body.flash` | focus |
+  | 2059 | `.nscard:focus-visible` | focus |
+  | 2061 | `.nscard.over` | focus |
+  | 2152 | `.mxcell:focus-visible i` | focus |
+  | 2396 | `.hcard:focus-visible` | focus |
+  | 2409 | `.hcard .hf .att.stg` | staged |
+  | 2411 | `.hres` | staged |
+  | 2427 | `.rvop:focus-visible` | focus |
+  | 2428 | `.rvop[aria-pressed=true],.rvop[aria-selected=true]` | staged |
+  | 2429 | `.rvop[aria-pressed=true],.rvop[aria-selected=true]` | staged |
+  | 2561 | `.tray-h:focus-visible` | focus |
+  | 2576 | `button.tile:focus-visible` | focus |
+  | 2585 | `button.ub:focus-visible` | focus |
+  | 2594 | `.evrow:focus-visible` | focus |
+  | 2599 | `.evrow:hover .evgo` | focus |
+  | 2614 | `.mxrow:focus-visible` | focus |
+  | 2644 | `.rvdrop:focus-visible` | focus |
+  | 2741 | `.attx:focus-visible` | focus |
+  | 2752 | `.bgt:focus-visible` | focus |
+  | 2805 | `.bvcard textarea:focus,.bvexpout:focus` | focus |
+  | 2890 | `.lvlb:focus-visible` | focus |
+  | 2924 | `.ub2:focus-visible` | focus |
+  | 3117 | `.modesw button:focus-visible` | focus |
+  | 3278 | `.colh:focus-visible` | focus |
+  | 3470 | `.nscard.over` | focus |
+  | 4300 | `.selbar-n` | staged |
+  | 4498 | `.mxcell[data-pend] i` | staged |
+  | 4524 | `.realm.out.has svg` | staged |
+  | 4591 | `tr.rowin > td` | staged |
+  | 4705 | `0%` | staged |
+  | 4706 | `55%` | staged |
+  | 4748 | `.fdelta.up` | staged |
+  | 4792 | `.mrow.sel,tr[aria-selected="true"]` | staged |
+  | 4793 | `.mrow.sel,tr[aria-selected="true"]` | staged |
+  | 4833 | `.mh-stats .stat.stg .v` | staged |
+  | 5016 | `.hdr-commit` | staged |
+  | 5017 | `.hdr-commit` | staged |
+  | 5019 | `.hdr-commit b` | staged |
+  | 5020 | `.hdr-commit b` | staged |
+  | 5021 | `.hdr-commit b` | staged |
+  | 5029 | `.hdr-commit:hover` | staged |
+  | 5109 | `.pitem.act i` | staged |
+  | 5111 | `.pitem.act::after` | staged |
+  | 5158 | `tbody tr:has(.cb.on)` | staged |
+  | 5164 | `.fxc` | staged |
+  | 5272 | `.mh-eyebrow i.stg` | staged |
+  | 5390 | `.srec-state.staged` | staged |
+  | 6117 | `.trow.tcat > .trow-h:focus-visible` | focus |
+  | access.js:193 | `.bchip` `--ed` (Grant drawer chosen scopes) | staged |
+- [x] *(2026-09-13 17:32 EDT)* **Step 11 — one heredoc:** `tokens.css` realm accents per spec §1.1 (+ `--r-history`, `--r-review:#D8F24A`) · `--staged:#D8F24A` · `--ok:#7BDB63` · `--on-staged` and any ok-fill ink re-derived · the app.css consumers per Step 10. **Do not touch the Access grid's scope palette** — spec §1.2 and §5. Preflight asserts: trap 10(a) on every touched JS file; for every selector edited, exactly one `^selector` hit. Chain: `PYEOF && npm run portal:orphans && node scripts/portalReverseOrphans.mjs --ci && node scripts/portalGeometry.mjs --all --check`.
 
 > ⟦ONE MESSAGE⟧ Step 12 — reload first: the pages Step 6 opened still carry the old CSS.
 
-- [ ] **Step 12 — reload:** `navigate_page` with `type: reload` on each of the seven Step 6 `pageId`s.
+- [x] *(2026-09-13 17:33 EDT)* **Step 12 — reload:** `navigate_page` with `type: reload` on each of the seven Step 6 `pageId`s.
 
 > ⟦ONE MESSAGE⟧ Step 12b — reads and captures together; nothing navigates.
 
-- [ ] **Step 12b — close the token layer:** `evaluate_script` on the reloaded pages — on Review, `getComputedStyle(document.querySelector('.btn.go')).backgroundColor === 'rgb(123, 219, 99)'`; on Analytics Health the `59 synced` value reads `rgb(123, 219, 99)`; the rail's staged count reads `rgb(216, 242, 74)`; every realm's masthead lead figure reads its new accent. Same message: `take_screenshot` to `local/pins2/s1-after-<realm>.png` for all seven.
+- [x] *(2026-09-13 17:33 EDT — Review `.btn.go` "Commit 4 changes" rgb(123, 219, 99) ink rgb(7, 19, 10) · Analytics `59 synced` rgb(123, 219, 99) · rail staged count rgb(216, 242, 74) · `--realm-c` season #F59E0C armory #EF4444 broadcast #EC4899 access #6C8AF7 analytics #9CC85A review #D8F24A, home none; mastheads read it where a lead figure exists — Season's Track has no `.mh-stats`, Home's lead is a warn stat by design)* **Step 12b — close the token layer:** `evaluate_script` on the reloaded pages — on Review, `getComputedStyle(document.querySelector('.btn.go')).backgroundColor === 'rgb(123, 219, 99)'`; on Analytics Health the `59 synced` value reads `rgb(123, 219, 99)`; the rail's staged count reads `rgb(216, 242, 74)`; every realm's masthead lead figure reads its new accent. Same message: `take_screenshot` to `local/pins2/s1-after-<realm>.png` for all seven.
 
 ### 3.3 · Empty state and dev-data seed
 
 > ⟦ONE MESSAGE⟧ Step 13 — the heredoc with its verify read chained.
 
-- [ ] **Step 13 — one heredoc:** `.estate .eicon` → solid border and tint from the realm accent (use the variable `.app[data-realm]` already exposes — Step 3 found it); `.estate.good` keeps `--ok`. Verify on `?fresh=1&empty=1#/analytics`, Usage tab: `borderTopStyle === 'solid'` and the border colour derives from `#9CC85A`.
+- [x] *(2026-09-13 17:34 EDT — `.estate .eicon` on `?fresh=1&empty=1#/analytics` Usage: borderTopStyle `solid`, border `color(srgb 0.612 0.784 0.353 / 0.55)` = #9CC85A at 55%, glyph rgb(156, 200, 90); the variable is `--realm-c`)* **Step 13 — one heredoc:** `.estate .eicon` → solid border and tint from the realm accent (use the variable `.app[data-realm]` already exposes — Step 3 found it); `.estate.good` keeps `--ok`. Verify on `?fresh=1&empty=1#/analytics`, Usage tab: `borderTopStyle === 'solid'` and the border colour derives from `#9CC85A`.
 > ⟦ONE MESSAGE⟧ Step 14 — write and run the script in one heredoc chain; the four-view check on the signed-in dev portal that closes it is the next message.
 
-- [ ] **Step 14 — seed script**, new under `scripts/`: refuses to run unless the Mongo host is `localhost`/`127.0.0.1` and the database name ends in `-dev`; writes realistic events over 30 days into the model(s) Step 3 found. Close: on the signed-in dev portal (§1 row 9 — the harness is fixtures and cannot show the seed), Usage, Timing, Reach and Search each render a populated panel, not `.estate`.
+- [x] *(2026-09-13 17:36 EDT — `scripts/seedAnalyticsTraffic.js`: loopback + dev-named guard, proven to refuse a remote URI (exit 1); 2,579 rows into `diors-builds-dev`, 723 public in the last 7 days, 271 autocomplete searches; `--clear` removes exactly its rows. Signed-in dev portal as the owner: Usage, Timing, Reach and Search each 0 visible `.estate`, captures `local/pins2/s1-seeded-*.png`)* **Step 14 — seed script**, new under `scripts/`: refuses to run unless the Mongo host is `localhost`/`127.0.0.1` and the database name ends in `-dev`; writes realistic events over 30 days into the model(s) Step 3 found. Close: on the signed-in dev portal (§1 row 9 — the harness is fixtures and cannot show the seed), Usage, Timing, Reach and Search each render a populated panel, not `.estate`.
 
 ### 3.4 · History
 
 > ⟦ONE MESSAGE⟧ Steps 15–16.
 
-- [ ] **Step 15 — one heredoc:** `SEED_REALMS` gains `history` · `shell.js` `REALMS`, `REALM_LABEL`, `REALM_ICON` (a clock-with-arrow glyph) and a rail divider after Analytics per spec §4 · a `history` route in `portal/ui/app.js` rendering the manifest moved out of `analytics.js` (`RIVER_COLUMNS`, its filters, the revert action, the admin-traffic state it needs) · `realmAccess.visibleRealms` shows History to whoever sees Analytics until the deferred permission design replaces the model · Analytics keeps everything else unchanged · every instrument realm list from Step 3 · `CLAUDE.md`'s realm count and list · a `## History` section in the ledger, moving the river rows with a dated note. Deletion rule 5 applies to the lines leaving `analytics.js`. Chain: `PYEOF && npm test >/tmp/s1.log 2>&1; echo "exit=$?"`.
-- [ ] **Step 16 — close** (reload, then chrome-devtools reads): the rail reads Season, Armory, Broadcast, Access, Analytics, a divider, History, Review — seven entries (`REALMS` in `shell.js` holds five today, and Review renders separately); `#/history` renders the manifest; `#/analytics` has no `#manifest`; a revert on History still stages.
+- [x] *(2026-09-13 17:46 EDT — new `portal/ui/history.js` holds the river, filters, drawer and revert verbatim; Analytics' Health links hand their filter over in sessionStorage and navigate to `#/history`; `SEED_REALMS`, `portalGeometry`, `portalLedgerRows`, the harness stub and the render test gained `history`. **Not added** to the mockup-bound instruments (`portalDiff`, `portalAgreement`, `portalOpenKind`, `portalStatus`, `portalCaptureModes`, `portalCoverage`): History has no mockup page for them to compare. The baselined `rows` TDZ was retired in the move rather than carried. Nine river rows moved to a `## History` ledger section. `npm test` green after re-recording geometry: every realm +3 examined nodes is the new rail link; Analytics' 92 changes are the manifest leaving; Review's one new size issue is the rail link's label)* **Step 15 — one heredoc:** `SEED_REALMS` gains `history` · `shell.js` `REALMS`, `REALM_LABEL`, `REALM_ICON` (a clock-with-arrow glyph) and a rail divider after Analytics per spec §4 · a `history` route in `portal/ui/app.js` rendering the manifest moved out of `analytics.js` (`RIVER_COLUMNS`, its filters, the revert action, the admin-traffic state it needs) · `realmAccess.visibleRealms` shows History to whoever sees Analytics until the deferred permission design replaces the model · Analytics keeps everything else unchanged · every instrument realm list from Step 3 · `CLAUDE.md`'s realm count and list · a `## History` section in the ledger, moving the river rows with a dated note. Deletion rule 5 applies to the lines leaving `analytics.js`. Chain: `PYEOF && npm test >/tmp/s1.log 2>&1; echo "exit=$?"`.
+- [x] *(2026-09-13 17:46 EDT — rail reads Season · Armory · Broadcast · Access · Analytics · divider · History · Review; `#/history` renders the manifest (11 rows, `--realm-c` #00E1D9); `#/analytics` has no `#manifest`; a change row opens the drawer, Reverse → confirm → "1 change reversed"; the Health "Restarts" tile opens History with the restarts chip pressed and the handoff key consumed — empty because the harness page holds no restart rows, the artifact the ledger already records; a handed-over `kind: change` filter shows 6 CHANGE rows only)* **Step 16 — close** (reload, then chrome-devtools reads): the rail reads Season, Armory, Broadcast, Access, Analytics, a divider, History, Review — seven entries (`REALMS` in `shell.js` holds five today, and Review renders separately); `#/history` renders the manifest; `#/analytics` has no `#manifest`; a revert on History still stages.
 
 ### 3.5 · Shell chrome
 
@@ -395,7 +477,7 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 
 > ⟦ONE MESSAGE⟧ Step 3 — only after Harkirat approves the merge, restated.
 
-- [ ] **Step 3:** `gh pr merge --squash --delete-branch` with an explicit `--body` carrying one trailer block · `git log -1` shows this release before anything else · no tag (the v3 line mints none until v3.0.0) · `git fetch origin main:main v3-pre-release:v3-pre-release` · re-index per `CLAUDE.md`, then `npm run index:health` exits 0.
+- [x] *(2026-09-13 14:55 EDT, merged as `dd35f706`; ticked by Session 1 at 2026-09-13 17:28 EDT)* **Step 3:** `gh pr merge --squash --delete-branch` with an explicit `--body` carrying one trailer block · `git log -1` shows this release before anything else · no tag (the v3 line mints none until v3.0.0) · `git fetch origin main:main v3-pre-release:v3-pre-release` · re-index per `CLAUDE.md`, then `npm run index:health` exits 0.
 
 **The DEVLOG body — canonical here; the gitignored draft it came from is `local/pins2/devlog-draft-for-merge.md`.** The script writes and stamps the `## ` title from `--desc`, so the body starts at its first paragraph:
 

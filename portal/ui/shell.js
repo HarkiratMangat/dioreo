@@ -17,14 +17,14 @@ import { fetchJson } from './httpClient.js';
 /* global refusalOf */
 
 // Five PLACES TO WORK. Review is deliberately not among them — see Rail below.
-const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics'];
+const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'history'];
 
 // 🔴 THE ID IS NOT THE LABEL, AND THE MIGRATION RENDERED THE ID. `realm` is a key — lowercase, URL-shaped, the thing `--r-season` and `#/season` are built from — and every reader-facing surface here was printing it raw: a rail reading "season armory broadcast", a breadcrumb reading "season", a panel titled "season", and a command bar offering "Search season, or run a command". The mockup's own REALMS array carries a `label` beside the id for exactly this reason, and COMPANION §2307 is explicit that the word `realm` and its ids stay in the CODE while anything a person reads names the page — "Could not load Season", "Search Access, or run a command".
 //
 // ⚠️ ONE MAP, used by the rail, the crumb, the panel title and the command bar. A second copy is how two surfaces come to disagree about what a place is called, which is the same failure `portalClassProps.mjs` exists to prevent one layer down. 🔴 Home is "Portal Home" because a crumb reading "Home" beside a rail with no home entry says less than it looks like it does — and that is now the ONLY reason. ⚠️ **This comment also claimed it is "what the mockup's own breadcrumb says on index.html", and that is FALSE: `index.html` contains no crumb at all.** The pixel diff pairs the mockup's plain `span` reading "Home" against this `span.crumb` reading "Portal Home" and reports it as region 14 — measured 2026-09-03 23:11 EDT, by the §L ⑥ agent's prompt to treat every comment as an unverified claim. The DECISION stands on its surviving half; the evidence it cited never existed. A comment that offers two reasons and is wrong about one is the shape that costs most, because the true half makes the false half read as checked.
 const REALM_LABEL = {
     season: 'Season', armory: 'Armory', broadcast: 'Broadcast', access: 'Access',
-    analytics: 'Analytics', review: 'Review', home: 'Portal Home',
+    analytics: 'Analytics', history: 'History', review: 'Review', home: 'Portal Home',
 };
 export const realmLabelOf = (r) => REALM_LABEL[r] || (r ? r[0].toUpperCase() + r.slice(1) : '');
 
@@ -35,6 +35,8 @@ const REALM_ICON = {
     broadcast: 'M4 10v4a1 1 0 0 0 1 1h3l5 4V5L8 9H5a1 1 0 0 0-1 1zM17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11',
     access: 'M15 7a4 4 0 1 1-3.9 5H8v2H6v2H3v-3l8.1-8.1A4 4 0 0 1 15 7zM16 10.5h.01',
     analytics: 'M3 17l4-6 4 3 4-7 3 4M3 21h18',
+    // A clock face whose rim turns back into an arrow — time, run in reverse. Added with the History realm, 2026-09-13 17:41 EDT.
+    history: 'M3 12a9 9 0 1 0 2.64-6.36L3 8M3 3v5h5M12 7v5l3 2',
     // The approved design's own glyph for Review — lines shortening to a check. Kept verbatim rather than re-drawn, so the rail reads the same here as in the mockup it came from.
     review: 'M4 6h16M4 12h10M4 18h7M15 17l2.5 2.5L22 15',
     home: 'M3 10.5 12 3l9 7.5M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5',
@@ -82,8 +84,10 @@ export function pulseTray() {
 
 export function Rail({ realm, realms, badges = {} }) {
     const visible = realms || REALMS;
-    const places = visible.filter((r) => r !== 'review');
+    // 🔴 HISTORY SITS BELOW THE RULE WITH REVIEW (2026-09-13 17:41 EDT, batch-2 spec §4). Harkirat's rail order is Season, Armory, Broadcast, Access, Analytics, then a divider, then History and Review: the five above are places to look and work, the two below are where work is put back or made real.
+    const places = visible.filter((r) => r !== 'review' && r !== 'history');
     const canReview = !realms || visible.includes('review');
+    const canHistory = visible.includes('history');
     const staged = Object.values(badges).reduce((n, v) => n + (Number(v) || 0), 0);
     return html`
         <nav class="rail" aria-label="Realms">
@@ -92,12 +96,18 @@ export function Rail({ realm, realms, badges = {} }) {
                    aria-current=${r === realm ? 'page' : null}>
                     <${RealmIcon} realm=${r} />${realmLabelOf(r)}
                 </a>`)}
+            ${canReview || canHistory ? html`
+                <!-- 🔴 BELOW A RULE, NOT ANOTHER REALM. The realms above are places to work; History
+                     and Review are the ways back and out, and the rule says so without a label nobody
+                     would read at 9px. The staged count is a property of the CHANGESET, so it belongs
+                     on Review rather than on whichever realm happened to stage the work. -->
+                <span class="rail-rule" aria-hidden="true"></span>` : null}
+            ${canHistory ? html`
+                <a class="realm" href="#/history" style="--c:var(--r-history)"
+                   aria-current=${realm === 'history' ? 'page' : null}>
+                    <${RealmIcon} realm="history" />History
+                </a>` : null}
             ${canReview ? html`
-                <!-- 🔴 BELOW A RULE, NOT A SIXTH REALM. Five realms are places to work; Review is the
-                     way out, and the rule says so without a label nobody would read at 9px. The
-                     staged count is a property of the CHANGESET, so it belongs here rather than on
-                     whichever realm happened to stage the work. -->
-                <span class="rail-rule" aria-hidden="true"></span>
                 <a class=${'realm out' + (staged ? ' has' : '')} href="#/review" style="--c:var(--r-review)"
                    aria-current=${realm === 'review' ? 'page' : null}>
                     <${RealmIcon} realm="review" />Review

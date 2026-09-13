@@ -23,6 +23,8 @@ const stripJsComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(
 const bot = stripJsComments(read('commands/bot.js'));
 const api = read('portal/api/analytics.js');
 const ui = read('portal/ui/analytics.js');
+// The river's LEVEL_TAG moved to history.js with the event river, 2026-09-13 17:42 EDT (batch-2 spec §4); LEVEL_ROW, the Health panel's table, stayed here.
+const historyUi = read('portal/ui/history.js');
 
 // The two functions are sliced out by name so a match belonging to some other query in this large file cannot be mistaken for one of theirs.
 function bodyOf(name) {
@@ -114,8 +116,8 @@ check('every alert level the writer can emit is one the portal can render', () =
     const map = writer.slice(writer.indexOf('const LEVEL_COLOR'), writer.indexOf('};', writer.indexOf('const LEVEL_COLOR')));
     const levels = [...map.matchAll(/(\w+):\s*0x[0-9a-fA-F]+/g)].map((m) => m[1]);
     assert.ok(levels.length >= 4, `parsed ${levels.length} levels from alertWebhook's LEVEL_COLOR — the writer's shape changed and this check has gone blind`);
-    for (const table of ['LEVEL_ROW', 'LEVEL_TAG']) {
-        const decl = ui.slice(ui.indexOf(`const ${table} = {`), ui.indexOf('};', ui.indexOf(`const ${table} = {`)));
+    for (const [table, src] of [['LEVEL_ROW', ui], ['LEVEL_TAG', historyUi]]) {
+        const decl = src.slice(src.indexOf(`const ${table} = {`), src.indexOf('};', src.indexOf(`const ${table} = {`)));
         assert.ok(decl.length > 20, `${table} is not declared as an object literal any more`);
         const missing = levels.filter((l) => !new RegExp(`\\b${l}:`).test(decl));
         assert.deepStrictEqual(missing, [], `${table} has no key for ${missing.join(', ')} — those alerts render as the fallback tier with nothing complaining`);
