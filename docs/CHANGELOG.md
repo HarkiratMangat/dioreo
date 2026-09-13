@@ -29,7 +29,24 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.79.0 — 2026-09-06 (#186) — the deferred list stops lying, and the portal's write path is proven for the first time
+## Pre-Release v3.80.0 — 2026-09-13 14:33 EDT (#187) — the second pin batch, decided and planned
+
+**No product code changed.** Harkirat pinned 29 notes on the dev portal between 2026-09-11 22:46 EDT and 2026-09-12 12:31 EDT. This branch turns them into a frozen decisions spec and a live plan for two build sessions and one critique session, written 2026-09-13 11:37 EDT.
+
+- **Decided on a shown board, over five rounds:** global realm accents under his rule that a permission wears its in-bot command's colour · Review gets a real accent (`#D8F24A`) and staged inherits it · `--ok` becomes `#7BDB63` and confirm buttons take it, because no button had ever used a green · the dashed empty state becomes a solid edge in the realm's accent · small text is sorted by kind, never swept · History splits out of Analytics · Bulk's paste folds into New Build and its duplicate export goes.
+- **Four pins named a cause that was not the cause:** the Analytics icons are empty states · the Build Name field already exists and the dev data holds ordinals plus one gunsmith code · Analytics' When column is in UTC · the harness fixture hides the session user-agent defect.
+- **Deferred at Harkirat's call:** the permission restructure — tiers, create/modify/destructive plus a new view-only sub-tier, the four-shape cell — filed `[P1]` with every input recorded.
+- **Files:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` · `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` · `docs/db-deferred-list.md`.
+
+### The search index stops disappearing under its own server
+
+context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a server that was killed leaves exactly that log. This repo's store vanished that way twice in three days, silently each time: search kept answering from the deleted file and missed everything written since. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that has lost its corpora instead of trusting its stamp, and `npm run index:health` reports whether either index's server is reading the file on disk.
+
+### Build names stay as they are stored
+
+The plan had a migration clearing the "Build 1", "Build 2" names from the database so the build number could be shown on its own. A review before merge found the bot still uses those names to work out the next build's number and its image, to match builds when pasting, and to delete a named build — clearing them would have overwritten a build's image. The plan now shows the number and hides ordinal names without changing stored data, and the choice of a deeper fix goes to Harkirat with the full list of places that depend on the name.
+
+## Pre-Release v3.79.0 — 2026-09-06 (#186 · `efa5480`) — the deferred list stops lying, and the portal's write path is proven for the first time
 
 **No product code changed except two accepted design fixes. The subject of this entry is that a third of the repo's own work list was false, and it cost real turns before anyone measured it.**
 
@@ -307,7 +324,7 @@ Full plan: `~/.claude/plans/okay-so-i-want-majestic-yao.md`. Route/handoff: `loc
 
 ⚠️ **A third finding, filed rather than fixed: three fields, eight readers, five files, no shared helper.** `daysUntil` uses `T00:00:00Z` while `countdownParts` used `T23:59:59Z` — two conventions for one field, two files apart. Seven sites do `String(bpEnd).slice(0, 10)`, which is safe only while the value arrives as an ISO string; `season.logic.js` also runs under Node, where a real `Date` stringifies to `"Wed Sep 09 2026 …"` and that slice yields `"Wed Sep 09"`, then gets lexically compared against `"2026-09-14"` — silently, with every gate green.
 
-## Pre-Release v3.78.0 — 2026-09-06 (#185) — The portal is built out: every pin, the design queue, fifteen lenses, and the drawer that kept one character
+## Pre-Release v3.78.0 — 2026-09-06 (#185 · `67fa4df`) — The portal is built out: every pin, the design queue, fifteen lenses, and the drawer that kept one character
 
 **Harkirat, 2026-09-06 00:43 EDT: *"finish the portal… the conformance is more or less done, it just needs correcting… fix them, any bugs, any gaps, any improvements… awwwards worthy."* The stand-down rule — redesigns return only after all realms match — is superseded by that message, so every resting-frame floor in the decision ledger is history from this entry on, and each deliberate divergence from the mockup package is a cited row in the ledger's new "Superseded 2026-09-06" section.** Built by one orchestrating session and four scoped subagents with exclusive file ownership (Season · Armory · Access + identity · Analytics + Home); the design system, the CSS splice, the states registries and the records were the orchestrator's.
 
@@ -4596,20 +4613,3 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 # 📋 Unreleased (open branch/PR, not yet merged)
 
 **Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and no hash** — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead; that model is retired now that all work flows through a branch first.)
-
-## Proposed v3.80.0-pre — `docs/portal-pins-batch-2-plan`, open into `v3-pre-release` — the second pin batch, decided and planned
-
-**No product code changed.** Harkirat pinned 29 notes on the dev portal between 2026-09-11 22:46 EDT and 2026-09-12 12:31 EDT. This branch turns them into a frozen decisions spec and a live plan for two build sessions and one critique session, written 2026-09-13 11:37 EDT.
-
-- **Decided on a shown board, over five rounds:** global realm accents under his rule that a permission wears its in-bot command's colour · Review gets a real accent (`#D8F24A`) and staged inherits it · `--ok` becomes `#7BDB63` and confirm buttons take it, because no button had ever used a green · the dashed empty state becomes a solid edge in the realm's accent · small text is sorted by kind, never swept · History splits out of Analytics · Bulk's paste folds into New Build and its duplicate export goes.
-- **Four pins named a cause that was not the cause:** the Analytics icons are empty states · the Build Name field already exists and the dev data holds ordinals plus one gunsmith code · Analytics' When column is in UTC · the harness fixture hides the session user-agent defect.
-- **Deferred at Harkirat's call:** the permission restructure — tiers, create/modify/destructive plus a new view-only sub-tier, the four-shape cell — filed `[P1]` with every input recorded.
-- **Files:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` · `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` · `docs/db-deferred-list.md`.
-
-### The search index stops disappearing under its own server
-
-context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a server that was killed leaves exactly that log. This repo's store vanished that way twice in three days, silently each time: search kept answering from the deleted file and missed everything written since. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that has lost its corpora instead of trusting its stamp, and `npm run index:health` reports whether either index's server is reading the file on disk.
-
-### Build names stay as they are stored
-
-The plan had a migration clearing the "Build 1", "Build 2" names from the database so the build number could be shown on its own. A review before merge found the bot still uses those names to work out the next build's number and its image, to match builds when pasting, and to delete a named build — clearing them would have overwritten a build's image. The plan now shows the number and hides ordinal names without changing stored data, and the choice of a deeper fix goes to Harkirat with the full list of places that depend on the name.

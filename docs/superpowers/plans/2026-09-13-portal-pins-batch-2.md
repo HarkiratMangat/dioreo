@@ -387,11 +387,11 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 
 > ⟦ONE MESSAGE⟧ Step 1 — only after Harkirat approves the push, restated as `Approved by · to · when`.
 
-- [ ] **Step 1:** `git push -u origin docs/portal-pins-batch-2-plan && gh pr create --base v3-pre-release` in one Bash call, with the PR body ending in the Claude Code attribution line.
+- [x] *(2026-09-13 14:33 EDT, #187)* **Step 1:** `git push -u origin docs/portal-pins-batch-2-plan && gh pr create --base v3-pre-release` in one Bash call, with the PR body ending in the Claude Code attribution line.
 
 > ⟦ONE MESSAGE⟧ Step 2 — the pre-merge checkpoint as one heredoc, gates chained.
 
-- [ ] **Step 2:** on the branch — first confirm `git show origin/v3-pre-release:package.json` still reads `3.79.0-pre` (it did at 2026-09-13 14:15 EDT); if another branch merged first, use the next number everywhere below · the `docs/CHANGELOG.md` Unreleased entry becomes `## Pre-Release v3.80.0 — <computed YYYY-MM-DD HH:MM EDT> (#<PR>) — the second pin batch, decided and planned`, moved to the top of the released entries · `package.json` → `3.80.0-pre` · the DEVLOG entry through `node scripts/devlog-add.mjs --desc "Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)" --body-file -` with the body below · `npm run docs:audit` and `npm test`, each read by exit code. ⚠️ `docs:audit`'s `devlog-orphan` rejects the DEVLOG entry until the CHANGELOG heading reads `## Pre-Release v3.80.0`, which is why the entry was not written on the first commit.
+- [x] *(2026-09-13 14:33 EDT)* **Step 2:** on the branch — first confirm `git show origin/v3-pre-release:package.json` still reads `3.79.0-pre` (it did at 2026-09-13 14:15 EDT); if another branch merged first, use the next number everywhere below · the `docs/CHANGELOG.md` Unreleased entry becomes `## Pre-Release v3.80.0 — <computed YYYY-MM-DD HH:MM EDT> (#<PR>) — the second pin batch, decided and planned`, moved to the top of the released entries · `package.json` → `3.80.0-pre` · the DEVLOG entry through `node scripts/devlog-add.mjs --desc "Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)" --body-file -` with the body below · `npm run docs:audit` and `npm test`, each read by exit code. ⚠️ `docs:audit`'s `devlog-orphan` rejects the DEVLOG entry until the CHANGELOG heading reads `## Pre-Release v3.80.0`, which is why the entry was not written on the first commit.
 
 > ⟦ONE MESSAGE⟧ Step 3 — only after Harkirat approves the merge, restated.
 
