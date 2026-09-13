@@ -46,6 +46,10 @@ context-mode's server deletes a store whose write-ahead log looks abandoned the 
 
 The plan had a migration clearing the "Build 1", "Build 2" names from the database so the build number could be shown on its own. A review before merge found the bot still uses those names to work out the next build's number and its image, to match builds when pasting, and to delete a named build — clearing them would have overwritten a build's image. The plan now shows the number and hides ordinal names without changing stored data, and the choice of a deeper fix goes to Harkirat with the full list of places that depend on the name.
 
+### Two tests that only failed on CI
+
+The index-health orphan test never matched on Linux, where `lsof` names a deleted file `<path> (deleted)`; the name is now matched with that suffix removed. And a timestamp-hook test built its "future" stamp four minutes ahead at the top of the file and checked it much later, so on a slow runner the stamp had fallen inside the hook's three-minute tolerance; that case now takes its own stamp, thirty minutes ahead, at the moment it runs.
+
 ## Pre-Release v3.79.0 — 2026-09-06 (#186 · `efa5480`) — the deferred list stops lying, and the portal's write path is proven for the first time
 
 **No product code changed except two accepted design fixes. The subject of this entry is that a third of the repo's own work list was false, and it cost real turns before anyone measured it.**

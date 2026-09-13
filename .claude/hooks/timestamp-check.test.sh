@@ -165,8 +165,9 @@ ac "heredoc placeholder is CORRECTED, not denied" pre "allow:"            yes "$
 ac "heredoc correction carries updatedInput"      pre "FIXED<"            yes "$HEREDOC"
 ac "the substituted command holds the real minute" pre "${TODAY} $(date '+%H:%M')" yes "$HEREDOC"
 ac "the rest of the command survives intact"      pre "python3 - <<'EOF'" yes "$HEREDOC"
-# The deny tier must still reach a command — an impossible stamp is not autofixable and must stop.
-ac "future stamp in a command is DENIED"          pre "deny:"             yes "echo 'shipped ${FARFUTSTAMP} ${LOCALTZ}'"
+# The deny tier must still reach a command — an impossible stamp is not autofixable and must stop. ⚠️ ITS OWN STAMP, TAKEN HERE AND FAR AHEAD (2026-09-13, PR #187). This case reused FARFUTSTAMP, taken at the top of the file only four minutes ahead; the hook's tolerance is three minutes, and a CI runner that needs more than a minute to reach this line turns "four minutes ahead" into "under three", so the deny stays silent and the suite fails on a hook that is working. Every local run passed because a Mac reaches this line in seconds. The just-outside-tolerance edge is still tested near the top, where it belongs; this case only needs a stamp that is unmistakably in the future.
+FARFUTCMD=$(when '+30M')
+ac "future stamp in a command is DENIED"          pre "deny:"             yes "echo 'shipped ${FARFUTCMD} ${LOCALTZ}'"
 # And the overwhelming majority of Bash calls must pass through untouched, or this becomes noise on every single command.
 ac "an ordinary command is silent"                pre "SILENT"            yes "git status --porcelain"
 ac "a command with a REAL stamp is silent"        pre "SILENT"            yes "echo 'done ${PASTSTAMP} ${LOCALTZ}'"
