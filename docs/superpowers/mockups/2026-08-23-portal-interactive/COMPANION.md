@@ -472,7 +472,7 @@ Written per page, never a bare "No results" (§10.6):
 | Element | Selector | Behaviour | Wires to |
 |---|---|---|---|
 | Brand button | `#home` `.mk` | Navigates to `index.html`. It is a **button**, not decoration | — |
-| Breadcrumb | `.crumb` | `Realm › View`. The second half updates live when the view switches | — |
+| Breadcrumb | `.crumb` | `Realm › View`. The second half updates live when the view switches. ⚠️ **PORTAL DIVERGES since 2026-09-13 18:59 EDT: the portal has no crumb** (batch-2 spec §8, pin `pmtyiqqu3`); the masthead already names the realm | — |
 | **Command bar** | `#cmdBar` `#cbIn` `#cbDrop` | 🔴 **NOT a launcher.** It was a 44px `⌘K` chip in a header with ~700px of unused space — a keyboard shortcut wearing a button's clothes, whose palette then covered the realm you were searching. It is now the widest element in the header, says what it does in words, and drops results beneath itself with the page still visible. Opens on INTENT (`pointerdown`, typing, `⌘K`) and **never on focus**: the audit's own focus-ring sweep fired the old `focus` handler and every realm loaded with the palette already open. | `Shell.commandBar` |
 | **Sign out** | `#hdrOut` | In the bar, not three clicks deep in a menu. Still confirms — it discards staged work — and shares ONE handler with the menu item so they cannot disagree | `session.end` |
 | Account chevron | `.whobtn .cv` | A drawn chevron that **rotates** when the menu opens. It was an 8px `▾` — at that size a smudge that says "something is here" without saying what, which is the only review a disclosure indicator can fail | — |
@@ -1082,7 +1082,7 @@ Harkirat named the class, not the instance: *"the page is just the visualization
 | Element | Selector | Behaviour | Wires to |
 |---|---|---|---|
 | Brand | `#home` `.mk` | navigates to `index.html` | — |
-| Breadcrumb | `.crumb` `#crumbView` | `Realm › View`, second half live | — |
+| Breadcrumb | `.crumb` `#crumbView` | `Realm › View`, second half live. ⚠️ Removed from the portal 2026-09-13 18:59 EDT (batch-2 spec §8) | — |
 | **Command bar** | `#cmdBar` / `#cbIn` / `#cbDrop` / `#cbList` | `flex:1 1 460px; max-width:520px`. Magnifier, input, `⌘K` hint (hidden on focus), dropdown at `top:calc(100% + 7px)` | `Shell.commandBar` |
 | **Sign out** | `#hdrOut` | icon + label, `--del` on hover, label hidden below 1100px, whole control hidden below 820px (the account menu still carries it) | `session.end` |
 | Account | `#whoBtn` / `.cv` | drawn chevron, `rotate(180deg)` at `aria-expanded=true` | Discord OAuth |

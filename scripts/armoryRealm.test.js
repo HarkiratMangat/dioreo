@@ -279,5 +279,19 @@ check('displayBuildLabel hides an ordinal, the schema default, and a gunsmith co
     assert.strictEqual(displayBuildLabel(B({ buildName: 'Build for Ranked' })), 'Build for Ranked');
 });
 
+// 2026-09-13 18:59 EDT — Discord refuses a whole modal when any text-input label passes 45 characters, and a JSON snapshot cannot know that. Agent B's relabel landed at exactly 45, so the limit is checked here, over every literal setLabel in the bot's commands and handlers.
+check('every modal text-input label is within Discord\'s 45-character limit', () => {
+    const files = ['commands', 'handlers/manage'].flatMap((d) => fs.readdirSync(path.join(__dirname, '..', d)).filter((f) => f.endsWith('.js')).map((f) => path.join(__dirname, '..', d, f)));
+    const labels = files.flatMap((f) => [...fs.readFileSync(f, 'utf8').matchAll(/TextInputBuilder\(\)[^;]*?\.setLabel\(\s*'([^']*)'/g)].map((m) => [path.basename(f), m[1]]));
+    assert.ok(labels.length >= 20, `found ${labels.length} labels — the scan has gone blind`);
+    const over = labels.filter(([, l]) => l.length > 45);
+    assert.deepStrictEqual(over, [], 'these labels break their modal in Discord');
+});
+check('THE LABEL GATE CAN FAIL: a 46-character label is caught', () => {
+    const src = "new TextInputBuilder().setCustomId('x').setLabel('" + 'x'.repeat(46) + "')";
+    const hit = [...src.matchAll(/TextInputBuilder\(\)[^;]*?\.setLabel\(\s*'([^']*)'/g)].map((m) => m[1]);
+    assert.strictEqual(hit.length, 1); assert.ok(hit[0].length > 45);
+});
+
 say(failures ? `\n✗ ${failures} failed` : '\n✅ armoryRealm: the rack groups by category and opens closed, the search returns a weapon\'s whole sibling set, and neither drawer stages nothing');
 process.exit(failures ? 1 : 0);

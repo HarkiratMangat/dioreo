@@ -9,7 +9,7 @@ related_targets: []
 
 **Analytics** — `portal/ui/analytics.js`. Mode: **Operate**. Views: Health · Usage · Timing · Reach · Search.
 
-Read what the bot actually did — health, usage, timing, reach — over one filterable event river, with revert as its single action.
+Read what the bot actually did — health, usage, timing, reach, search. The event river and its revert moved to History on 2026-09-13 18:59 EDT (batch-2 spec §4); Health's tiles and level rows open History pre-filtered.
 
 ## Audience and job
 
@@ -19,20 +19,18 @@ One admin today, a second one shortly: `models/AdminUser.js` and the per-page sc
 
 ## The task, and what proves it done
 
-Every mutation is a `core/ops` value — validate, preview, apply, invert. The realm's job is to make the preview truthful and the invert reachable; it is a driver of that algebra, never a second implementation of it.
+Nothing here is authored. The realm succeeds when a reader understands a number without translating it: no p50, p95 or headroom reaches the page.
 
 ## What must stay untouched
 
 - **Conformance is measured, not judged.** The design authority is `docs/superpowers/mockups/2026-08-23-portal-interactive/`, and this realm closes on the ENUMERATION of cited differences, never on a percentage.
 - Colour carries topic; shape carries state. A new state gets a new shape, never a new hue.
-- ⚠️ Four realm accents are aliases of state colours in `tokens.css`. Whether that is a defect or a deliberate pun is recorded as undecided in DESIGN.md and must not be silently resolved here.
+- The dev database carries synthetic traffic from `scripts/seedAnalyticsTraffic.js` since 2026-09-13 18:59 EDT; judge populated layouts on it, never real usage.
 
 ## Memorable moment
 
-The one realm that is READ shaped inside an Operate product: nothing here is authored, and its success is comprehension, not completion.
+The one realm that is READ shaped inside an Operate product: its success is comprehension, not completion.
 
 ## Unresolved
 
-Carried from `docs/superpowers/plans/2026-09-05-portal-interactive-surface.md`; do not re-derive these, and do not close them without Harkirat.
-
-*Written 2026-09-06 00:28 EDT — the first surface briefs this project has had. Every impeccable command reads one to pick its standard; without them each run re-inferred the mode from code, which the docs name as the main source of generic advice.*
+Batch-2 Session 2 owns the admin-traffic control (gate G2) and the small-text sort (gate G1).

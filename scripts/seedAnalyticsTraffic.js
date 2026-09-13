@@ -6,6 +6,8 @@
 //
 // ⚠️ NO REAL PERSON IN IT. `userHash` values are `seed-user-NN`, not HMAC-shaped, so they can never collide with or be mistaken for a pseudonym of a real account. Every row carries `detail.seed` so `--clear` removes exactly what this wrote and nothing else.
 //
+// 🔴 ROLL-UPS. utils/rollupStore.js rolls AnalyticsEvent into AnalyticsRollup from the dev bot's daily heartbeat, catching up 14 days. Once the dev bot runs, the seeded days become roll-up documents that deleting events alone would leave behind — measured 2026-09-13 18:59 EDT: 0 roll-ups written since seeding, because the dev bot was not running. So `--clear` also deletes the roll-ups for every day this seed covers; the next catch-up recomputes them from whatever real events remain.
+//
 // ⚠️ Deterministic (seeded PRNG), so two runs produce the same distribution and a screenshot is reproducible. Re-running clears its own rows first rather than appending.
 //
 //   node --env-file=.env.dev scripts/seedAnalyticsTraffic.js           # replace this seed's rows
@@ -83,7 +85,10 @@ function event(cmd, at, isAdmin) {
     const AnalyticsEvent = require('../models/AnalyticsEvent');
     const cleared = await AnalyticsEvent.deleteMany({ 'detail.seed': MARK });
     if (process.argv.includes('--clear')) {
-        console.log(`Cleared ${cleared.deletedCount} row(s) from ${db}.`);
+        const AnalyticsRollup = require('../models/AnalyticsRollup');
+        const days = Array.from({ length: DAYS + 1 }, (_, i) => new Date(Date.now() - i * DAY_MS).toISOString().slice(0, 10));
+        const rolled = await AnalyticsRollup.deleteMany({ day: { $in: days } });
+        console.log(`Cleared ${cleared.deletedCount} row(s) and ${rolled.deletedCount} roll-up(s) for the seeded days from ${db}.`);
         return mongoose.disconnect();
     }
     const now = Date.now();
@@ -105,6 +110,6 @@ function event(cmd, at, isAdmin) {
     const since7d = new Date(now - 7 * DAY_MS);
     const last7 = docs.filter((x) => x.createdAt >= since7d && !x.isAdmin).length;
     const searches = docs.filter((x) => x.search).length;
-    console.log(`Seeded ${docs.length} row(s) into ${db} (replaced ${cleared.deletedCount}) — ${last7} public in the last 7 days, ${searches} autocomplete searches. Remove with --clear.`);
+    console.log(`Seeded ${docs.length} row(s) into ${db} (replaced ${cleared.deletedCount}) — ${last7} public in the last 7 days, ${searches} autocomplete searches. SYNTHETIC: Analytics on the dev portal now shows this traffic as if it were real. Remove it, and any roll-ups the dev bot builds from it, with --clear.`);
     await mongoose.disconnect();
 })().catch((e) => { console.error(e.message); process.exit(1); });

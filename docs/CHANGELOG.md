@@ -29,7 +29,20 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.80.0 — 2026-09-13 14:33 EDT (#187) — the second pin batch, decided and planned
+## Pre-Release v3.81.0 — 2026-09-13 18:59 EDT (#188) — portal pins batch 2, Session 1: the colours, History, the header, and two agents
+
+**The portal's colours, its History realm, its header, and two Access fixes, plus the backend and data work the next sessions build on.** Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §3.
+
+- **Colour.** Every realm accent moved except Analytics, History gets `#00E1D9`, and Review gets a real accent. `--staged` is lime and `--ok` is a green that confirm buttons fill with. The 76 staged consumers were classified one by one, and focus rings keep their old cyan through `--focus`.
+- **History is its own realm.** The event river, its drawer and revert moved from `portal/ui/analytics.js` to `portal/ui/history.js`. Analytics' Health links hand their filter over in sessionStorage. The rail now reads Season, Armory, Broadcast, Access, Analytics, then a divider, History and Review.
+- **Header.** The crumb is gone and five ledger rows that cited it are retired. The command bar is centred. The palette names its highlighted option for screen readers (its keys already worked, so the pin did not reproduce). An icon-only sign-out sits beside the profile, and the account menu wears the avatar mesh, now in `portal/ui/avatarTint.js`.
+- **Access.** Revoke confirms inside the Edit drawer instead of stacking a second one. Session rows name the browser and OS, proven with real user-agent strings on the signed-in dev portal.
+- **Empty states and data.** The empty-state chip is a solid, realm-tinted edge. `scripts/seedAnalyticsTraffic.js` fills the dev database with 30 days of traffic.
+- **Agent A — Broadcast delivery.** Announcements gain an optional banner image and a repeat count with a 24-hour floor, and per-user delivery state lives on `UserPreference`. `docs/legal/PRIVACY.md` records the new field as 1.15 (pending) and `public/privacy.html` is rebuilt.
+- **Agent B — Armory data.** Coverage flags drop `no-badges` and add few-attachments and code-length-mismatch. `armory.logic.js` gains build numbers, copy text, share text and display-only build labels. `scripts/portalArmoryBuildNames.mjs` writes the read-only report gate G6 needs. No stored build name changes.
+- **Found by the pre-merge think-pass and fixed before merge.** Review told readers a committed change is reversed "from the event list in Analytics"; it says History now. Three staged surfaces still painted the old cyan through the `--focus-*` alias tokens, including the staged pulse. The seed now also clears roll-ups built from its fake days. Agent B's relabel sits exactly on Discord's 45-character label limit, so a test now checks every modal label. Agent B's predicate moved Home's repair count from 66 to 10, which falsified three ledger rows; they are marked. DESIGN.md, PRODUCT.md, COMPANION and the impeccable surface briefs (a new one for History) now describe the portal as built. The account-menu tint was proven on the dev portal with a session carrying a real avatar.
+
+## Pre-Release v3.80.0 — 2026-09-13 14:33 EDT (#187 · `dd35f70`) — the second pin batch, decided and planned
 
 **No product code changed.** Harkirat pinned 29 notes on the dev portal between 2026-09-11 22:46 EDT and 2026-09-12 12:31 EDT. This branch turns them into a frozen decisions spec and a live plan for two build sessions and one critique session, written 2026-09-13 11:37 EDT.
 
@@ -4617,18 +4630,3 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 # 📋 Unreleased (open branch/PR, not yet merged)
 
 **Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and no hash** — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead; that model is retired now that all work flows through a branch first.)
-
-## Unreleased
-
-### Proposed next pre-release — `feat/portal-pins2-identity` — portal pins batch 2, Session 1 (2026-09-13 18:17 EDT)
-
-**The portal's colours, its History realm, its header, and two Access fixes, plus the backend and data work the next sessions build on.** Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §3.
-
-- **Colour.** Every realm accent moved except Analytics, History gets `#00E1D9`, and Review gets a real accent. `--staged` is lime and `--ok` is a green that confirm buttons fill with. The 76 staged consumers were classified one by one, and focus rings keep their old cyan through `--focus`.
-- **History is its own realm.** The event river, its drawer and revert moved from `portal/ui/analytics.js` to `portal/ui/history.js`. Analytics' Health links hand their filter over in sessionStorage. The rail now reads Season, Armory, Broadcast, Access, Analytics, then a divider, History and Review.
-- **Header.** The crumb is gone and five ledger rows that cited it are retired. The command bar is centred. The palette names its highlighted option for screen readers (its keys already worked, so the pin did not reproduce). An icon-only sign-out sits beside the profile, and the account menu wears the avatar mesh, now in `portal/ui/avatarTint.js`.
-- **Access.** Revoke confirms inside the Edit drawer instead of stacking a second one. Session rows name the browser and OS, proven with real user-agent strings on the signed-in dev portal.
-- **Empty states and data.** The empty-state chip is a solid, realm-tinted edge. `scripts/seedAnalyticsTraffic.js` fills the dev database with 30 days of traffic.
-- **Agent A — Broadcast delivery.** Announcements gain an optional banner image and a repeat count with a 24-hour floor, and per-user delivery state lives on `UserPreference`. `docs/legal/PRIVACY.md` records the new field as 1.15 (pending) and `public/privacy.html` is rebuilt.
-- **Agent B — Armory data.** Coverage flags drop `no-badges` and add few-attachments and code-length-mismatch. `armory.logic.js` gains build numbers, copy text, share text and display-only build labels. `scripts/portalArmoryBuildNames.mjs` writes the read-only report gate G6 needs. No stored build name changes.
-
