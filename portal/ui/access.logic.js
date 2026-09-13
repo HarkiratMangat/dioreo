@@ -54,4 +54,16 @@ function grantReady({ discordId, lookupStatus, pickedCount, confirmText }) {
     return { ready: true, why: '' };
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { permsAfter, describePending, sessionIsLive, sessionSummary, SESSION_LIVE_MS, grantReady };
+// Batch-2 spec §8, 2026-09-13 18:04 EDT — a session row names the browser and the OS rather than printing a 130-character user-agent string. ORDER IS THE WHOLE RULE: Edge, Opera, Samsung and Firefox all say "Chrome" or "Safari" somewhere, and every Chrome says "Safari", so the specific brands are tested first. An iPhone or iPad says "Mac OS X" too, so the device is tested before macOS. Anything it cannot name comes back UNCHANGED — the harness fixture already stores readable strings, and a guess is worse than the raw text.
+function deviceOf(ua) {
+    const s = String(ua || '');
+    if (!/Mozilla\/|AppleWebKit|Gecko\//.test(s)) return s;
+    const browser = /Edg(e|A|iOS)?\//.test(s) ? 'Edge' : /OPR\/|Opera/.test(s) ? 'Opera' : /SamsungBrowser/.test(s) ? 'Samsung Internet'
+        : /Firefox\/|FxiOS/.test(s) ? 'Firefox' : /Chrome\/|CriOS/.test(s) ? 'Chrome' : /Safari\//.test(s) ? 'Safari' : null;
+    const os = /iPhone/.test(s) ? 'iPhone' : /iPad/.test(s) ? 'iPad' : /Android/.test(s) ? 'Android' : /Windows/.test(s) ? 'Windows'
+        : /CrOS/.test(s) ? 'ChromeOS' : /Mac OS X|Macintosh/.test(s) ? 'macOS' : /Linux/.test(s) ? 'Linux' : null;
+    if (!browser && !os) return s;
+    return [browser, os].filter(Boolean).join(' · ');
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { permsAfter, describePending, sessionIsLive, sessionSummary, SESSION_LIVE_MS, grantReady, deviceOf };

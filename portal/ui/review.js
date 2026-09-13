@@ -117,7 +117,7 @@ function OpDetail({ op, resolved, onResolve }) {
                 </div>`
             : html`
                 <p class="chint" style="margin-top:16px">Tier ${op.tier} — an exact inverse was captured when this was staged, so it can be
-                   reversed after it commits, from the event list in Analytics.</p>`}
+                   reversed after it commits, from the event list in History.</p>`}
         </div>`;
 }
 

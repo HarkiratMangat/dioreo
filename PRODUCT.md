@@ -32,7 +32,7 @@ The portal drives the **operation core** (`core/`) — the same algebra of `vali
 ## Operating Context
 
 - Reached at `portal.dioreo.app` through a Cloudflare Tunnel; served by `portal/server.js` with Discord OAuth (`portal/auth.js`) as the only way in.
-- Organised into **realms** — `season`, `armory`, `broadcast`, `access`, `analytics` — each a distinct administrative territory rather than a page of a settings tree. Season carries its own views (Board, Track, Repairs).
+- Organised into **realms** — `season`, `armory`, `broadcast`, `access`, `analytics`, and since 2026-09-13 `history` (the event river and revert, split out of Analytics) — each a distinct administrative territory rather than a page of a settings tree. Season carries its own views (Board, Track, Repairs).
 - The work is **editing live content that players see**: draws, calendar entries, patch notes, loadouts, seasons, announcements. A mistake is visible in Discord immediately, which is why preview-and-invert is load-bearing rather than decorative.
 - Sessions are short and errand-shaped. The portal is opened to do a specific thing and closed.
 

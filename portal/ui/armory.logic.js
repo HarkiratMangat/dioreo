@@ -123,6 +123,43 @@ function bulkFieldDiff(row, before) {
     return out;
 }
 
+// ── THE MANIFEST ROW: BUILD NUMBER, CODE COPY, THE SHARE COMMAND, THE HUMAN LABEL ────────────
+//
+// Pin pmtylf7gz (2026-09-13 17:38 EDT, pins batch 2, spec §6). buildName is being retired as the thing a reader is shown -- 131 of 133 dev-catalogue builds hold a bare ordinal ("Build 1") and one holds a gunsmith code sitting in the wrong field -- WITHOUT retiring it as an IDENTITY, because /autobuild derives the next build number and the Cloudinary imageKey from "Build N" names (utils/loadoutRender.js's computeWeaponKeyAndBuild), the add/bulk-upsert match on {weaponKey, mode, buildName} (core/ops/loadouts.js, portal/api/bulk.js), delete-by-"weapon | build" matches it (core/ops/loadouts.js), Cloudinary metadata parses Build_Number out of it (utils/loadoutImageCache.js), and the scope sort tie-breaks on it (utils/loadoutScopes.js). So this is DISPLAY-ONLY: no write path here, no migration, buildName stays exactly what it has always been in storage.
+
+// buildNumberOf(builds, build): this build's position among its own weapon+mode siblings, 1-based, ordered by _id -- the SAME tie-break utils/loadoutScopes.js's resolveScopeBuilds() uses, so a build shown here as "Build 2 of 5" is the same build /gunsmiths' own footer would call "Build 2 of 5".
+function buildNumberOf(builds, build) {
+    const key = String((build && (build._id ?? build.id)) ?? '');
+    const siblings = (builds || [])
+        .filter((b) => b.weaponKey === build.weaponKey && b.mode === build.mode)
+        .sort((a, b) => String(a._id ?? a.id).localeCompare(String(b._id ?? b.id)));
+    const at = siblings.findIndex((b) => String(b._id ?? b.id) === key);
+    return { n: at === -1 ? 1 : at + 1, of: siblings.length || 1 };
+}
+
+// copyCodeText(build): what the row's copy icon actually copies. DMZ has no code by design (spec §6) -- an empty string here is correct, not a missing value.
+function copyCodeText(build) {
+    return (build && build.shareCode) || '';
+}
+
+// shareCommandText(build, n): the literal text a share icon copies, pasteable straight into Discord. 🔴 PROVEN TO RESOLVE, NOT ASSERTED. commands/gunsmiths.js's `search` subcommand's `weapon` option is autocomplete-backed but not required to come FROM autocomplete -- Discord submits whatever text a user typed. utils/loadoutLookup.js's lookupAndRenderWeapon() resolves it with `weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '')`, and core/ops/loadouts.js's deriveWeaponKey() (the ONLY place a stored weaponKey is ever produced) is the exact same normalize applied to weaponName. So `build.weaponName`, typed back in verbatim, always re-derives the SAME weaponKey the document was saved under -- proven against the real normalize in scripts/armoryRealm.test.js, not by inspection.
+function shareCommandText(build, n) {
+    return `/gunsmiths search weapon:${build.weaponName} build:${n} visibility:Public`;
+}
+
+// The gunsmith-code shape utils/adminParser.js's own stripCodePrefix() comment already names: a genuine code is a contiguous digit-letter-digit-letter... run. Reused here so a stray code sitting in the buildName field (spec §6's dev-catalogue finding, "1C2B5B6D7O") is never shown as though it were a human label -- it already has a real home, the code column, and showing it twice would read as two different facts that happen to be identical.
+const GUNSMITH_CODE_SHAPE = /^(?:\d[A-Za-z]){3,}\d?$/;
+
+// displayBuildLabel(build): the human label the Manifest row/drawer show for buildName, or '' when there is nothing human to show -- an ordinal ("Build 3"), the schema default ("Standard Build"), or a gunsmith code in the wrong field. Storage is UNCHANGED either way; this decides what gets DISPLAYED, never what gets written. handlers/manage/loadouts.js and commands/manage.js relabel the Discord modal field around this same idea (an optional human build name) without changing the pipe share-code convention or what gets stored.
+function displayBuildLabel(build) {
+    const name = String((build && build.buildName) || '').trim();
+    if (!name) return '';
+    if (/^Build \d+$/.test(name)) return '';
+    if (name === 'Standard Build') return '';
+    if (GUNSMITH_CODE_SHAPE.test(name)) return '';
+    return name;
+}
+
 // ── THE RACK'S SHAPE, AND THE TWO SEARCHES OVER IT ────────────────────────────────────────────
 //
 // 🔴 THE RACK IS GROUPED BY CATEGORY AND OPENS CLOSED — Harkirat, Pin 21: "WHY do I have to scroll all the way". Grouped by rank tier it was five permanently-open rows over the whole catalogue, so every visit began by scrolling past everything to reach the one weapon class you came for. Category is the axis a reader arrives with ("show me the SMGs"); rank has not been lost, it has moved one level down — the weapon groups inside a category are ordered best-first and each carries its tier as a badge, so the board still answers "what is ranked where" once it is open.
@@ -244,5 +281,6 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = { bulkFieldDiff, findLocalBuild, buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken, bulkPasteSummary, armoryExportQuery, DMZ_RANGE_TOKENS, MP_RANK_TOKENS,
         RANK_ORDER, RANK_LABEL, RANK_KEY, CATEGORY_CHIP_LABEL, CATEGORY_CHIP_ORDER,
         rankOf, bestRankIndex, rackCategories, weaponOptions, matchWeapons,
-        addFormBlockers, editedFields, editorBlockers, EDIT_DIRTY_FIELDS };
+        addFormBlockers, editedFields, editorBlockers, EDIT_DIRTY_FIELDS,
+        buildNumberOf, copyCodeText, shareCommandText, displayBuildLabel, GUNSMITH_CODE_SHAPE };
 }

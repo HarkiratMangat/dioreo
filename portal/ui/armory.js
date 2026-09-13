@@ -61,10 +61,11 @@ const ARMORY_COLUMNS = [
 // 🔴 THE MODE CHIP WAS A DEAD END, and --triggers is what surfaced it: the portal offered `MP ×2`, `DMZ ×2` and `All ×2` where the design offers one of each, because the Manifest carried a Mode filter ON TOP OF the masthead's mode switch. The rows handed to the Manifest are already `inMode`, so picking the OTHER mode in that chip could only ever produce an empty table — a control whose every non-default value is guaranteed to show nothing. The mode switch above owns this question; the chipset now carries only Category, which is what armory.html's chip row is.
 const ARMORY_FILTERS = [];
 
+// 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:36 EDT (pins batch 2, pin pmtylf7gz) -- see portal/api/armory.js's coverageFlags for why neither was a real defect. 'few-attachments' and 'code-length-mismatch' are their replacements, not renames: the flag KEYS changed, not just the label text.
 const COVERAGE_LABEL = {
-    'missing-image': 'Missing image', 'no-badges': 'No badges', 'wrong-attachment-count': 'Wrong attachment count',
+    'missing-image': 'Missing image', 'few-attachments': '2 or fewer attachments',
     'stale-90d': 'Not updated in 90 days', 'near-duplicate': 'Near-duplicate code',
-    'no-code': 'No gunsmith code',
+    'no-code': 'No gunsmith code', 'code-length-mismatch': 'Code length doesn’t match attachments',
 };
 
 // Rack — what exists, in the bot's REAL per-category accent (spec §8.2).
@@ -232,11 +233,11 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
 // 🔴 AGE IS NOT A DEFECT, and the meter says so in a third colour rather than a second. `.cmeter.age` is the adopted sheet's own class for exactly this — the mockup's note records a bar meaning "85% of the collection is affected" painting in the success colour because a sibling selector never matched. The class is written by the card, opting IN, so it cannot silently stop applying.
 const COVERAGE_WHY = {
     'missing-image': 'The card renders with a dashed placeholder where the loadout image goes.',
-    'no-badges': 'Nothing marks where this build ranks, so it sorts below every ranked sibling.',
-    'wrong-attachment-count': 'Discord shows five attachment slots; this build fills a different number.',
+    'few-attachments': 'Two slots filled or fewer usually means the build was started and never finished.',
     'stale-90d': 'Still served, still correct as far as anything here knows — just not looked at in a while.',
     'near-duplicate': 'Two builds share a gunsmith code, so one of them is showing the other one’s guns.',
     'no-code': 'No gunsmith code, so a player reading this build has nothing to paste into the game.',
+    'code-length-mismatch': 'A real code pairs two characters per attachment; this one’s length disagrees with its own build.',
 };
 
 function Coverage({ builds, active, onFilter }) {

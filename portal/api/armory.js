@@ -13,13 +13,13 @@ const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 function coverageFlags(build, mpBuilds) {
     const flags = [];
     if (!build.imageKey) flags.push('missing-image');
-    const hasBadge = build.isMeta || build.categoryRank || build.dmzRangeRank || build.isToxic;
-    if (!hasBadge) flags.push('no-badges');
-    const expected = build.mode === 'DMZ' ? 9 : 5;
-    if ((build.attachments || []).length !== expected) flags.push('wrong-attachment-count');
+    // 🔴 "NO BADGES" IS NOT A DEFECT AND "EXACT ATTACHMENT COUNT" NEVER WAS ONE EITHER (2026-09-13 17:36 EDT, pins batch 2, pin pmtylf7gz, spec §6). A weapon with no Best/TopN badge simply hasn't been ranked yet -- that is a fact about the catalogue's coverage, not a fault on the build, and flagging it put a red mark on every unranked sibling of a ranked weapon for no reason a reader could act on. The exact-count check was worse: DMZ's own slot count VARIES with weapon rarity (models/Loadout.js/utils/loadoutRender.js never enforce exactly 9), so the exact-9 check flagged perfectly complete DMZ builds as broken, and MP's exact-5 called a build one optional slot short of full exactly as wrong as an empty one. The real defect either mode can have is a build that is NEARLY EMPTY -- 2 or fewer attachments -- which is a fact about the build regardless of mode.
+    if ((build.attachments || []).length <= 2) flags.push('few-attachments');
     if (build.lastUpdated && Date.now() - new Date(build.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
     // 🔴 AN MP BUILD WITH NO GUNSMITH CODE WAS UNFLAGGABLE. The eight checks covered image, badges, attachment count, staleness and near-duplicates, and none of them asked whether the code — the one field a player actually copies out of the bot — exists at all. Measured against the dev catalogue 2026-09-10 16:35 EDT: 10 of 133 builds have no shareCode, and 8 of those are DMZ, which HAS no code by design (see the build form's own note: "DMZ has no code — the card omits it"). The other 2 are MP, where it is a real gap, and the only way to find them was to scroll the tier board and notice.
     if (build.mode === 'MP' && !build.shareCode) flags.push('no-code');
+    // 🔴 A CODE'S LENGTH IS ARITHMETIC AGAINST ITS OWN ATTACHMENT COUNT (2026-09-13 17:36 EDT, pins batch 2). Every real MP gunsmith code pairs exactly two characters per attachment slot -- checked against the dev catalogue before adopting this: LOCUS Build 1, five attachments, `2A4B5A8C9C` (10 chars); ICR-1, five, `2C4A5A8D9A` (10 chars). A code whose length disagrees with `2 * attachments.length` is truncated, padded, or pasted from a different build's clipboard entirely -- `correctGunsmithCode()` (utils/adminParser.js) fixes look-alike CHARACTERS, never a wrong LENGTH, so this is a defect nothing upstream already catches.
+    if (build.mode === 'MP' && build.shareCode && build.shareCode.length !== (build.attachments || []).length * 2) flags.push('code-length-mismatch');
     if (build.mode === 'MP' && build.shareCode) {
         // 🔴 EXCLUDE THE BUILD FROM ITS OWN COMPARISON SET. `mpBuilds` is every MP build including this one — findDuplicateLoadouts's exact-code check trivially matches a build against itself (same shareCode, 100% attachment overlap), so every build with a shareCode and >=4 attachments always found at least one "duplicate": itself. That is what flagged 131 of 133 builds — measured against the real ported catalogue, not a design number.
         const others = mpBuilds.filter((b) => String(b._id) !== String(build._id));

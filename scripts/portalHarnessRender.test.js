@@ -103,6 +103,7 @@ function check(name, fn) {
         broadcast: ['../portal/public/.hrender/ui/broadcast.js', 'BroadcastRealm'],
         access: ['../portal/public/.hrender/ui/access.js', 'AccessRealm'],
         analytics: ['../portal/public/.hrender/ui/analytics.js', 'AnalyticsRealm'],
+        history: ['../portal/public/.hrender/ui/history.js', 'HistoryRealm'],
         review: ['../portal/public/.hrender/ui/review.js', 'ReviewRealm'],
         home: ['../portal/public/.hrender/ui/home.js', 'HomeRealm'],
     };

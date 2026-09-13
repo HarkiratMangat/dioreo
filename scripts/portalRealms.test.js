@@ -14,11 +14,33 @@ check('Armory Coverage flags a build with no image', () => {
     assert.ok(coverageFlags(build, []).includes('missing-image'));
 });
 
-check('Armory Coverage flags the wrong attachment count for the build\u0027s mode', () => {
-    const mp = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b'], isMeta: true, lastUpdated: new Date() };
-    assert.ok(coverageFlags(mp, []).includes('wrong-attachment-count'));
-    const dmz = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), isMeta: true, lastUpdated: new Date() };
-    assert.ok(!coverageFlags(dmz, []).includes('wrong-attachment-count'));
+// 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:39 EDT (pins batch 2, pin pmtylf7gz) -- neither was a real defect (see portal/api/armory.js's coverageFlags). Replaced by 'few-attachments' (<=2 attachments, either mode) and 'code-length-mismatch' (an MP code whose length disagrees with 2 * attachments.length).
+check('Armory Coverage flags 2 or fewer attachments regardless of mode', () => {
+    const mpThin = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b'], lastUpdated: new Date() };
+    assert.ok(coverageFlags(mpThin, []).includes('few-attachments'));
+    const mpFull = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b', 'c', 'd', 'e'], lastUpdated: new Date() };
+    assert.ok(!coverageFlags(mpFull, []).includes('few-attachments'));
+    // A DMZ build with a valid, non-thin slot count (9 here) must NOT be flagged -- the exact-9 check this replaces flagged perfectly complete DMZ builds because real slot counts vary with weapon rarity.
+    const dmzFull = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), lastUpdated: new Date() };
+    assert.ok(!coverageFlags(dmzFull, []).includes('few-attachments'));
+    const dmzThin = { mode: 'DMZ', imageKey: 'x', attachments: ['a'], lastUpdated: new Date() };
+    assert.ok(coverageFlags(dmzThin, []).includes('few-attachments'));
+});
+
+check('Armory Coverage no longer flags an unbadged build', () => {
+    const unbadged = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), lastUpdated: new Date() };
+    assert.ok(!coverageFlags(unbadged, []).includes('no-badges'));
+});
+
+check('Armory Coverage flags an MP gunsmith code whose length disagrees with its attachment count', () => {
+    // LOCUS Build 1 shape from the dev catalogue: 5 attachments, a 10-char code -- the CORRECT case.
+    const right = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), shareCode: '2A4B5A8C9C', lastUpdated: new Date() };
+    assert.ok(!coverageFlags(right, []).includes('code-length-mismatch'));
+    const truncated = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), shareCode: '2A4B5A8C', lastUpdated: new Date() };
+    assert.ok(coverageFlags(truncated, []).includes('code-length-mismatch'));
+    // DMZ never carries a code by design (spec §6) -- the check must never fire for it.
+    const dmz = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), shareCode: 'anything', lastUpdated: new Date() };
+    assert.ok(!coverageFlags(dmz, []).includes('code-length-mismatch'));
 });
 
 check('Armory Coverage flags a build not updated in 90 days', () => {
@@ -272,7 +294,29 @@ check('buildBroadcastEditOp edits an announcement via announcement.edit, targeti
 
 // ── WHO IS ACTUALLY SIGNED IN ─────────────────────────────────────────────────────────────────
 //
-// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal `'live'` on every row, so the panel whose whole job is telling an owner who is signed in RIGHT NOW could not tell a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — this is derived or it is a guess.
+// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal `'live'` on every row, so the panel whose whole job is telling an owner who is signed in RIGHT NOW could not tell a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — this is derived or it is a guess. Batch-2 spec §8, 2026-09-13 18:04 EDT: session rows name browser and OS. Real user-agent strings, because the harness fixture's are already readable and prove nothing (spec §9).
+const { deviceOf } = require('../portal/ui/access.logic');
+check('deviceOf names browser and OS from real user-agent strings, and passes through what it cannot name', () => {
+    const cases = [
+        ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36', 'Chrome · macOS'],
+        ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1', 'Safari · iPhone'],
+        ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.2739.42', 'Edge · Windows'],
+        ['Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0', 'Firefox · Linux'],
+        ['Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36', 'Chrome · Android'],
+        ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/128.0.6613.98 Mobile/15E148 Safari/604.1', 'Chrome · iPhone'],
+        ['Chrome on macOS', 'Chrome on macOS'],
+        ['portalSession (scripts/lib/portalSession.cjs)', 'portalSession (scripts/lib/portalSession.cjs)'],
+        ['', ''],
+    ];
+    for (const [ua, want] of cases) assert.strictEqual(deviceOf(ua), want, ua.slice(0, 60));
+});
+check('THE ORDER GATE CAN FAIL: testing Chrome before Edge names an Edge browser Chrome', () => {
+    const edge = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.2739.42';
+    const naive = (s) => (/Chrome\//.test(s) ? 'Chrome' : /Edg\//.test(s) ? 'Edge' : '?');
+    assert.strictEqual(naive(edge), 'Chrome', 'the naive order no longer misnames Edge, so this proof proves nothing');
+    assert.strictEqual(deviceOf(edge).split(' · ')[0], 'Edge');
+});
+
 const { sessionIsLive, sessionSummary, SESSION_LIVE_MS } = require('../portal/ui/access.logic');
 const NOW = Date.parse('2026-08-26T20:00:00.000Z');
 const ago = (ms) => ({ lastSeenAt: new Date(NOW - ms).toISOString() });

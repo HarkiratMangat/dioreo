@@ -68,6 +68,13 @@ const UserPreferenceSchema = new mongoose.Schema({
     // Announcement one-time delivery tracking. ⚠️ REDESIGNED 2026-08-13 from a single version number to a per-announcement id list -- Announcement moved from a singleton to a real collection (see models/Announcement.js's header), so "have you seen the CURRENT one" no longer makes sense when multiple can be queued/outstanding at once. An id lands here only after a successful delivery (utils/announcement.js) -- never pruned, but the collection this compares against stays tiny (a handful of announcements at most), so this never grows large.
     seenAnnouncementIds: [{ type: mongoose.Schema.Types.ObjectId }],
 
+    // Per-announcement delivery state for REPEATING announcements only (added 2026-09-13 17:34 EDT, portal pins batch 2). Distinct from seenAnnouncementIds above, which stays EXACTLY as it was -- a one-time-only "have you ever seen this" set, still the only thing consulted for a non-repeating announcement. A repeating announcement additionally needs, per user, how many times it has been shown and when it was most recently shown, so it gets its own array of {announcementId, count, lastShownAt} subdocuments rather than overloading the flat id list above (a plain id list has nowhere to put a count or a timestamp). utils/announcement.js's isAnnouncementDue() only ever consults this array for an announcement that actually declares a repeatCount -- a non-repeating announcement never gets an entry here, so this array stays empty for the overwhelming majority of users.
+    announcementDeliveries: [{
+        announcementId: { type: mongoose.Schema.Types.ObjectId, required: true },
+        count: { type: Number, default: 0 },
+        lastShownAt: { type: Date, default: null }
+    }],
+
     // Which storefront's prices /draw calculator quotes. Apple/Google prices are tier-locked PER STOREFRONT and are not proportional to each other, so the cheapest package combination genuinely differs by currency -- this is not a display setting. Overridable per-invocation on the slash command. See docs/reference/cp-package-prices.md for why this can't be derived from locale/timezone.
     cpCurrency: { type: String, default: 'USD' }
 });

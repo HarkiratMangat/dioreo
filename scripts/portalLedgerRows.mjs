@@ -12,7 +12,7 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LEDGER = path.join(ROOT, 'docs/reference/portal-decision-ledger.md');
 
 // A section is `## <Realm> — …`; its rows are the table lines under it. The header and separator rows are dropped by requiring a cell that is not all dashes. ⚠️ THE SEVEN REALMS, DECLARED. The first version counted every `##` in the file, so `How to read a row`, `Overlay tier` and `Instruments` came back looking like realms with 0, 16 and 6 decisions — and, worse, the realm that was genuinely ABSENT could not be told from the sections that were merely not realms. Declaring the list is what makes a missing section visible: **Analytics had no ledger section at all**, at 14.1% and 41 regions with zero recorded decisions, and this listing is what found it.
-export const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
+export const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'history', 'review', 'home'];
 
 export function rowsPerRealm(text) {
     const out = Object.fromEntries(REALMS.map((r) => [r, null]));

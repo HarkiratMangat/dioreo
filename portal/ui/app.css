@@ -94,8 +94,6 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;
   border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
 .mk{font-family:var(--data);font-size:var(--t-sm);letter-spacing:.16em;font-weight:600;white-space:nowrap}
 .mk b{color:var(--patch);font-weight:600}
-.crumb{font-size:var(--t-base);color:var(--ink3);letter-spacing:.02em}
-.crumb b{color:var(--ink2);font-weight:500}
 header .sp{margin-left:auto}
 .who{display:flex;align-items:center;gap:8px;font-size:var(--t-base);color:var(--ink2)}
 .who .av{width:24px;height:24px;border-radius:var(--rad-round);border:1px solid var(--rule2);flex:none;
@@ -454,9 +452,9 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
   line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);background:none;
   border:1px solid var(--rule2);border-radius:var(--rad-1);padding:4px 6px;cursor:pointer;text-decoration:none;
   transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
-.round-u:hover:not([disabled]){color:var(--staged);border-color:var(--staged)}
+.round-u:hover:not([disabled]){color:var(--focus);border-color:var(--focus)}
 .round.t3 .round-u:hover:not([disabled]){color:var(--warn);border-color:var(--warn)}
-.round-u:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.round-u:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .round-u[disabled]{opacity:.45;cursor:not-allowed}
 /* The un-undoable row states its reason on the row rather than behind a hover a disabled
  * control cannot receive. It is not a button, because nothing happens when you press it. */
@@ -476,7 +474,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
   transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease)}
 .btn:hover{background:var(--hi);color:var(--ink);border-color:var(--ink3)}
-.btn.go{background:var(--staged);color:var(--on-staged);border:1px solid var(--staged)}
+.btn.go{background:var(--ok);color:var(--on-ok);border:1px solid var(--ok)}
 .btn.go:hover{filter:brightness(1.09)}
 .btn.no{background:none;color:var(--ink3);border:1px solid var(--rule2)}
 .btn.no:hover{color:var(--ink2)}
@@ -555,14 +553,9 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
  * computed display:block / visibility:visible / opacity:1, and still reported a real 274x292
  * rect — every property a programmatic check would look at was healthy, and nothing was on
  * screen. (COMPANION §14: a measurement can measure the wrong thing precisely.) The clip was
- * only ever needed for the crumb's ellipsis, and .crumb carries its own on the next line. */
+ * only ever needed for the crumb's ellipsis. (The crumb itself was removed 2026-09-13 17:49 EDT, batch-2 spec §8.) */
 header{min-width:0}
-header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:768px){
-  /* The crumb is redundant on a phone: the masthead below states the realm in display type,
-     and the bottom tab bar shows which one is current. Dropping it is what lets the header
-     fit rather than forcing an ellipsis onto something already said twice. */
-  header .crumb{display:none}
   /* 🔴 AND THE COMMIT CHIP, for the same reason and a worse symptom — measured 2026-09-04 22:39 EDT at 375px on all
      seven realms: `clientWidth 0`, `scrollWidth 96`, a bounding rect of 2 × 70.25 hanging at top −11.6. Not
      cramped: destroyed, and above the header it belongs to. The header is a flex row with no shrink floor, so
@@ -910,8 +903,8 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bcard .actions{display:flex;gap:6px;margin-top:9px}
 .bcard .actions button{flex:1;background:var(--sunk);border:1px solid var(--rule2);color:var(--ink2);
   font-size:var(--t-sm);font-weight:600;padding:6px;border-radius:var(--rad-2);min-height:32px}
-.bcard .actions button.go{background:transparent;border:1px solid var(--staged);color:var(--staged);font-weight:600}
-.bcard .actions button.go:hover{background:var(--staged);color:var(--on-accent)}
+.bcard .actions button.go{background:transparent;border:1px solid var(--ok);color:var(--ok);font-weight:600}
+.bcard .actions button.go:hover{background:var(--ok);color:var(--on-ok)}
 .bcard .actions button:hover{filter:brightness(1.1)}
 .col .colnote{margin-top:auto;padding-top:10px;border-top:1px dashed var(--rule);color:var(--ink3)}
 
@@ -1100,7 +1093,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .bcol.collapsed .bcol-body{display:none}
 
 .bcol-body{display:flex;flex-direction:column;gap:9px;min-height:56px}
-.bcol.drop .bcol-body{outline:1.5px dashed var(--staged);outline-offset:5px;border-radius:var(--rad-2)}
+.bcol.drop .bcol-body{outline:1.5px dashed var(--focus);outline-offset:5px;border-radius:var(--rad-2)}
 .bempty{border:1px dashed var(--rule);border-radius:var(--rad-2);padding:18px 10px;text-align:center;
   font-size:var(--t-sm);color:var(--ink3);margin:0}
 .bcard .dot2{color:var(--ink3);padding:0 2px}
@@ -1225,13 +1218,13 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* Draft mode uses the same dashed-cyan language a staged bar uses, so "this is not live"
    reads the same way everywhere. The values always swapped correctly; nothing said so. */
 .draftnote{display:none;align-items:center;gap:8px;margin-bottom:12px;padding:9px 12px;
-  background:var(--focus-06);border:1px dashed var(--staged);border-radius:var(--rad-2);
+  background:color-mix(in srgb,var(--staged) 6%,transparent);border:1px dashed var(--staged);border-radius:var(--rad-2);
   font-size:var(--t-sm);color:var(--ink2)}
 .draftnote b{color:var(--staged);font-weight:600}
 .identity.editing-draft .draftnote{display:flex}
 .identity.editing-draft{border-color:var(--staged)}
 .identity.editing-draft .f-main input{border-color:var(--rule2)}
-.identity.editing-draft .f-main input:focus{border-color:var(--staged);box-shadow:0 0 0 3px var(--focus-13)}
+.identity.editing-draft .f-main input:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-13)}
 
 /* ══════════ DIFF ══════════ */
 .diff-r .dk{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);letter-spacing:.05em}
@@ -1288,7 +1281,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
   box-shadow:0 8px 22px -8px var(--scrim-90);transition:background var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
 #__backtotop:hover{background:var(--hi);border-color:var(--rule);transform:translateY(-2px)}
-#__backtotop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+#__backtotop:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 @media (max-width:768px){ #__backtotop{bottom:64px} }  /* clears the mobile rail, which docks at the bottom */
 
 .mtable tbody tr{transition:background .12s}
@@ -1401,20 +1394,20 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
    the work of showing what it spans. ⚠️ The height reduction is what lets the deadline rail sit tighter,
    which is worth ~20px of the Track's own fold budget. */
 .dspan{--c:var(--ok);justify-content:center;cursor:grab;overflow:hidden;min-height:20px;
-  background:rgba(61,220,151,.09);border-style:solid;position:relative;color:var(--ok)}
+  background:rgba(123,219,99,.09);border-style:solid;position:relative;color:var(--ok)}
 .dspan::before,.dspan::after{content:"";position:absolute;top:3px;bottom:3px;width:1.5px;background:var(--ok)}
 .dspan::before{left:3px} .dspan::after{right:3px}
 .dspan:hover{background:var(--hi)}
 /* the vertical line is now ONLY a line — it carries no label and needs no hit area */
 /* the global-span band: neutral, never a lane's colour */
 .win{position:absolute;top:0;bottom:0;pointer-events:none;
-  background:rgba(61,220,151,.05);
-  border-left:1.5px solid rgba(61,220,151,.5);border-right:1.5px solid rgba(61,220,151,.5)}
+  background:rgba(123,219,99,.05);
+  border-left:1.5px solid rgba(123,219,99,.5);border-right:1.5px solid rgba(123,219,99,.5)}
 /* Bracket ends, so the span reads as bounded rather than as a column laid over the lanes. */
 .win::before,.win::after{content:"";position:absolute;left:-1.5px;right:-1.5px;height:4px;
-  border-left:1.5px solid rgba(61,220,151,.5);border-right:1.5px solid rgba(61,220,151,.5)}
-.win::before{top:0;border-top:1.5px solid rgba(61,220,151,.5)}
-.win::after{bottom:0;border-bottom:1.5px solid rgba(61,220,151,.5)}
+  border-left:1.5px solid rgba(123,219,99,.5);border-right:1.5px solid rgba(123,219,99,.5)}
+.win::before{top:0;border-top:1.5px solid rgba(123,219,99,.5)}
+.win::after{bottom:0;border-bottom:1.5px solid rgba(123,219,99,.5)}
 .win .wh{pointer-events:auto}
 
 /* The rail ties each flag to its line with a short stem, so the pairing is seen rather
@@ -1469,7 +1462,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .mtable .det .none{color:var(--ink3);font-style:italic}
 .thumb{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.05em;padding:1px 5px;border-radius:var(--rad-1);
   margin-left:auto;white-space:nowrap}
-.thumb.ok{color:var(--ok);background:rgba(61,220,151,.1)}
+.thumb.ok{color:var(--ok);background:rgba(123,219,99,.1)}
 .thumb.no{color:var(--ink3);background:rgba(255,255,255,.04)}
 
 /* ══════════ FILTER CHIPS — a topic filter carries its topic's colour ══════════
@@ -1485,7 +1478,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .chip.topic[aria-pressed=true] i{box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 35%,transparent)}
 /* "Staged only" filters a STATE, so it wears the state's shape — dashed, not filled. */
 .chip.stagedchip[aria-pressed=true]{border:1.5px dashed var(--staged);color:var(--staged);
-  background:var(--focus-08)}
+  background:color-mix(in srgb,var(--staged) 8%,transparent)}
 
 /* ══════════ CROSSHAIR — read an exact date anywhere on the track ══════════
    Without this the only way to know when something started was to estimate against the
@@ -1666,7 +1659,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   font-size:var(--t-micro);letter-spacing:.08em}
 .health{font-family:var(--data);font-size:var(--t-xs);letter-spacing:.04em;padding:3px 8px;border-radius:var(--rad-1);
   white-space:nowrap}
-.health.ok{color:var(--ok);background:rgba(61,220,151,.1)}
+.health.ok{color:var(--ok);background:rgba(123,219,99,.1)}
 .health.bad{color:var(--warn);background:rgba(255,122,69,.12);cursor:help}
 /* The inset-ring .bdg set that lived here was deleted 2026-09-06 09:15 EDT: the filled set below ("the real badge set") is declared later and won every shared property, so a rank chip rendered a gold ring UNDER a blue border — two topic colours on one badge, and the duplicate-selector trap this file names at .t-epic, one screen over. */
 .dwissues{margin-top:16px;border-top:1px solid var(--rule);padding-top:13px}
@@ -1718,7 +1711,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .t-none{opacity:.86} .t-none .trow-k{color:var(--ink3);font-size:var(--t-sm);width:auto;letter-spacing:.1em}
 .trow-body{display:flex;flex-wrap:wrap;gap:8px;padding:11px 12px;min-height:58px;
   transition:background .14s,box-shadow .14s}
-.trow-body.over{background:var(--focus-07);box-shadow:inset 0 0 0 1.5px var(--staged)}
+.trow-body.over{background:var(--focus-07);box-shadow:inset 0 0 0 1.5px var(--focus)}
 .trow-empty{margin:0;align-self:center;font-size:var(--t-sm);color:var(--ink3);font-style:italic}
 
 .bc-top{display:flex;align-items:center;gap:7px}
@@ -1746,7 +1739,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .repf{color:var(--ink3);font-size:var(--t-micro);letter-spacing:.05em}
 .repin{background:var(--paper);border:1px solid var(--rule2);border-radius:var(--rad-2);color:var(--ink);
   font:400 var(--t-sm)/1 var(--data);padding:6px 9px;min-width:210px}
-.repin:focus{outline:none;border-color:var(--staged)}
+.repin:focus{outline:none;border-color:var(--focus)}
 
 /* ══════════ COMPARE ══════════ */
 .cmpbar{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px 0}
@@ -2000,7 +1993,8 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 
 /* ── 10.3 MOTION: three choreographed moments, everything else stays a fade ── */
 @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes stagePulse{0%{box-shadow:0 0 0 0 var(--focus-55)}100%{box-shadow:0 0 0 14px rgba(95,212,232,0)}}
+/* The staged pulse glows in the STAGED colour. It used the cyan --focus-55 because staged WAS cyan; when --staged became lime (2026-09-13 18:59 EDT, batch-2 spec §1.3) a search for var(--staged) could not see this alias, and the acknowledgement pulsed the wrong colour. */
+@keyframes stagePulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--staged) 55%,transparent)}100%{box-shadow:0 0 0 14px color-mix(in srgb,var(--staged) 0%,transparent)}}
 @keyframes countBump{0%{transform:scale(1)}40%{transform:scale(1.32)}100%{transform:scale(1)}}
 @keyframes settle{0%{transform:scale(1.06)}60%{transform:scale(.985)}100%{transform:scale(1)}}
 
@@ -2021,16 +2015,17 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* A staged change has to visibly GO somewhere, or the tray is a list nobody notices. */
 .staged-pulse{animation:stagePulse var(--dur-3) var(--ease) 1}
 .count-bump{animation:countBump var(--dur-2) var(--ease) 1}
-.trow-body.flash{box-shadow:inset 0 0 0 1.5px var(--staged);transition:box-shadow var(--dur-3)}
+.trow-body.flash{box-shadow:inset 0 0 0 1.5px var(--focus);transition:box-shadow var(--dur-3)}
 
 /* ── 10.6 EDGE STATES: name what is missing, why, and the one action that fixes it ── */
 .estate{display:flex;flex-direction:column;align-items:center;gap:11px;padding:38px 22px;text-align:center}
 .estate .eicon{width:34px;height:34px;border-radius:var(--rad-3);display:grid;place-items:center;
-  background:var(--sunk);border:1px dashed var(--rule2);color:var(--ink3);font-size:var(--t-lg)}
+  background:color-mix(in srgb,var(--realm-c,var(--ink3)) 8%,var(--sunk));border:1px solid color-mix(in srgb,var(--realm-c,var(--rule2)) 55%,transparent);
+  color:var(--realm-c,var(--ink3));font-size:var(--t-lg)} /* 2026-09-13 17:33 EDT — batch-2 spec §2: a solid edge tinted in the realm accent, not a dashed chip */
 .estate h4{margin:0;font:600 var(--t-md)/1.3 var(--ui);color:var(--ink2)}
 .estate p{margin:0;font-size:var(--t-base);color:var(--ink3);max-width:44ch;line-height:1.5}
 .estate .chip{margin-top:3px}
-.estate.good .eicon{border-style:solid;border-color:rgba(61,220,151,.4);color:var(--ok)}
+.estate.good .eicon{border-style:solid;border-color:rgba(123,219,99,.4);color:var(--ok)}
 .estate.good h4{color:var(--ok)}
 
 @media (prefers-reduced-motion: reduce){
@@ -2056,9 +2051,9 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border-radius:var(--rad-2);padding:11px 13px;cursor:grab;transition:transform var(--dur-1) var(--ease),
   border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
 .nscard:hover{background:var(--hi);border-color:var(--rule2);transform:translateY(-1px)}
-.nscard:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.nscard:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .nscard.dragging{opacity:.55;cursor:grabbing;transform:scale(.99)}
-.nscard.over{border-color:var(--staged);box-shadow:0 0 0 1px var(--staged) inset}
+.nscard.over{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus) inset}
 .nscard.staged{background:transparent;border-style:dashed;border-left-style:solid}
 .nscard.scheduled{opacity:.82}
 .nscard .np{font:600 var(--t-figure)/1 var(--data);color:var(--ink3);font-variant-numeric:tabular-nums;
@@ -2149,7 +2144,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 /* The whole cell is the target, so the FEEDBACK is on the mark: the button growing would move its neighbours. */
 .mxcell:hover i{border-color:var(--ink3);transform:scale(1.08)}
 .mxcell:focus-visible{outline:none}
-.mxcell:focus-visible i{outline:2px solid var(--staged);outline-offset:3px}
+.mxcell:focus-visible i{outline:2px solid var(--focus);outline-offset:3px}
 /* 🔴 `:not(.inh)` IS LOAD-BEARING, AND ITS ABSENCE SURVIVED THE FIX THAT CLAIMED TO REMOVE IT. An inherited cell keeps `aria-checked=true` -- an inherited permission IS held -- so this rule and `.mxcell.inh` below both match it at IDENTICAL specificity (0,2,0), and the hollow ring won only because `.inh` is declared later in the file. Dropping the `.on` class removed one fill source and left this one, while the commit message said the source-order dependency was gone. Moving these two rules apart would have filled every inherited cell solid. */
 .mxcell[aria-checked=true]:not(.inh) i{background:var(--c);border-color:var(--c)}
 .mxcell[aria-checked=true]::after{content:"";width:9px;height:5px;border-left:2px solid var(--on-accent);
@@ -2361,7 +2356,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .timleg{display:flex;gap:16px;align-items:center;margin-top:13px;font-size:var(--t-sm);color:var(--ink3)}
 .timleg i{display:inline-block;width:9px;height:9px;border-radius:var(--rad-1);margin-right:6px;vertical-align:-1px}
 
-/* ── ANALYTICS · the event river (Manifest) ────────────────────────────────*/
+/* ── HISTORY · the event river (Manifest) — Analytics until 2026-09-13 ─────*/
 .rivk{display:inline-block;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;padding:3px 7px;border-radius:var(--rad-1);border:1px solid var(--rule2);color:var(--ink3)}
 .rivk.change{border-color:var(--info);color:var(--info)}
@@ -2393,7 +2388,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
 .hcard::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,var(--ink4));
   opacity:.85}
 .hcard:hover{transform:translateY(-3px);border-color:var(--rule2);background:var(--raised)}
-.hcard:focus-visible{outline:2px solid var(--staged);outline-offset:3px}
+.hcard:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 .hcard .hi{display:flex;align-items:center;gap:10px;margin-bottom:13px}
 .hcard .hi svg{width:19px;height:19px;fill:none;stroke:var(--c,var(--ink2));stroke-width:1.6;
   stroke-linecap:round;stroke-linejoin:round}
@@ -2424,7 +2419,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);padding:11px 12px;
   cursor:pointer;transition:all var(--dur-1) var(--ease);width:100%}
 .rvop:hover{background:var(--hi);border-color:var(--rule2)}
-.rvop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.rvop:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .rvop[aria-pressed=true],.rvop[aria-selected=true]{border-color:var(--staged);background:var(--hi);
   box-shadow:inset 3px 0 0 var(--staged)}
 .rvop .rvt{font:600 var(--t-micro)/1 var(--data);letter-spacing:.04em;color:var(--ink3);
@@ -2456,7 +2451,7 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
   border:1px solid var(--danger-edge);border-radius:var(--rad-2);padding:13px 15px;margin-top:16px;flex-wrap:wrap}
 .rvexp b{font:600 var(--t-md)/1.35 var(--ui);color:var(--danger-ink)}
 .rvexp p{margin:3px 0 0;font-size:var(--t-sm);color:var(--ink3);line-height:1.5;flex-basis:100%}
-.rvexp.done{background:rgba(61,220,151,.07);border-color:#2E5C46}
+.rvexp.done{background:rgba(123,219,99,.07);border-color:#2E5C46}
 .rvexp.done b{color:var(--ok)}
 .rvfoot{display:flex;align-items:center;gap:13px;border-top:1px solid var(--rule);
   padding:14px 18px;background:var(--sunk);flex-wrap:wrap}
@@ -2558,7 +2553,7 @@ body.has-selbar .tray .rounds,body.has-selbar .tray .hint{display:none}
   transform:translateY(-70%) rotate(45deg);transition:transform var(--dur-1) var(--ease)}
 .tray.collapsed .tray-h::after{transform:translateY(-30%) rotate(-135deg)}
 .tray-h:hover::after{border-color:var(--ink)}
-.tray-h:focus-visible{outline:2px solid var(--staged);outline-offset:2px;border-radius:var(--rad-2)}
+.tray-h:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--rad-2)}
 body:has(.tray.collapsed) main{padding-bottom:90px}
 
 /* ── Analytics: tiles and usage rows are BUTTONS now ──────────────────────
@@ -2573,7 +2568,7 @@ button.tile{width:100%;text-align:left;cursor:pointer;font:inherit;
   background var(--dur-1) var(--ease)}
 button.tile > *{flex:none;width:100%}
 button.tile:hover{transform:translateY(-2px);border-color:var(--rule2);background:var(--hi)}
-button.tile:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+button.tile:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 button.tile::after{content:"";position:absolute;right:13px;top:15px;width:6px;height:6px;
   border-top:1.5px solid var(--ink3);border-right:1.5px solid var(--ink3);
   transform:rotate(45deg);opacity:0;transition:opacity var(--dur-1) var(--ease)}
@@ -2582,7 +2577,7 @@ button.tile:hover::after,button.tile:focus-visible::after{opacity:1}
 button.ub{width:100%;text-align:left;background:none;border:0;padding:0;font:inherit;cursor:pointer;
   border-radius:var(--rad-2);transition:background var(--dur-1) var(--ease)}
 button.ub:hover{background:var(--hi)}
-button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+button.ub:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .seg.rng button{min-width:42px}
 
 /* The evidence list inside a tile's panel — events that produced the number. */
@@ -2591,12 +2586,12 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
   text-align:left;background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);
   padding:10px 12px;cursor:pointer;transition:all var(--dur-1) var(--ease)}
 .evrow:hover{background:var(--hi);border-color:var(--rule2)}
-.evrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.evrow:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .evb b{display:block;font:500 var(--t-md)/1.3 var(--ui);color:var(--ink)}
 .evb span{display:block;font:400 var(--t-sm)/1.35 var(--data);color:var(--ink3);margin-top:2px}
 .evgo{font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);text-transform:uppercase;
   color:var(--ink3);white-space:nowrap}
-.evrow:hover .evgo{color:var(--staged)}
+.evrow:hover .evgo{color:var(--focus)}
 
 /* ── Access: bulk affordances on the matrix ───────────────────────────────
  * The grid used to offer exactly ONE interaction, repeated 28 times. A column
@@ -2611,7 +2606,7 @@ button.ub:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
   border-color var(--dur-1) var(--ease)}
 .mx tbody tr:hover .mxrow,.mxrow:focus-visible{opacity:1}
 .mxrow:hover{color:var(--ink);border-color:var(--ink3)}
-.mxrow:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.mxrow:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* 🔴 THE EDITOR ROLE DOES NOT EXIST IN THIS SYSTEM, so the two rules that drew its cells and the
    legend swatch that named them are deleted rather than kept as debt — removed 2026-09-09 14:29 EDT.
@@ -2641,7 +2636,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
 .rvopwrap:hover .rvdrop,.rvdrop:focus-visible{opacity:1}
 .rvdrop:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
-.rvdrop:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.rvdrop:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .chint kbd,.dw-p kbd{font-family:var(--data);font-size:var(--t-micro);background:var(--sunk);
   border:1px solid var(--rule2);border-radius:var(--rad-1);padding:1px 5px;color:var(--ink2)}
 
@@ -2656,7 +2651,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   border-radius:var(--rad-2);padding:14px 16px}
 .hbanner.warn{border-left-color:var(--warn)}
 .hbanner .hbi{width:22px;height:22px;border-radius:var(--rad-round);display:grid;place-items:center;
-  background:rgba(61,220,151,.14);color:var(--ok);font-size:var(--t-sm);line-height:1;flex:none}
+  background:rgba(123,219,99,.14);color:var(--ok);font-size:var(--t-sm);line-height:1;flex:none}
 .hbanner.warn .hbi{background:rgba(255,122,69,.14);color:var(--warn)}
 .hbanner h4{font:600 var(--t-md)/1.3 var(--ui);color:var(--ink);margin:0 0 3px}
 .hbanner p{font:400 var(--t-sm)/1.55 var(--ui);color:var(--ink2);margin:0}
@@ -2738,7 +2733,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .attx{width:26px;height:26px;border-radius:var(--rad-2);border:1px solid transparent;color:var(--ink3);
   font-size:var(--t-sm);line-height:1;transition:all var(--dur-1) var(--ease)}
 .attx:hover{color:var(--danger-ink);border-color:var(--danger-edge);background:rgba(255,107,107,.08)}
-.attx:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.attx:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .attfoot{display:flex;align-items:flex-start;gap:12px;margin-top:11px}
 .attnote{font-size:var(--t-xs);color:var(--ink3);line-height:1.5;flex:1}
 .attnote code{font-family:var(--data);color:var(--ink2)}
@@ -2749,7 +2744,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   padding:7px 11px;border-radius:var(--rad-2);border:1px solid var(--rule2);color:var(--ink3);
   background:var(--raised);transition:all var(--dur-1) var(--ease);min-height:32px}
 .bgt:hover{border-color:var(--ink3);color:var(--ink)}
-.bgt:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.bgt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .bgt.on{background:var(--patch);border-color:var(--patch);color:var(--on-accent)}
 .bgt.tox.on{background:var(--del);border-color:var(--del)}
 .bgt.rank.on{background:var(--info);border-color:var(--info);color:var(--on-accent)}
@@ -2802,7 +2797,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .bvcard textarea,.bvexpout{width:100%;background:var(--sunk);border:1px solid var(--rule2);
   border-radius:var(--rad-2);padding:10px 12px;font-family:var(--data);font-size:var(--t-xs);
   color:var(--ink2);line-height:1.6;resize:vertical}
-.bvcard textarea:focus,.bvexpout:focus{outline:2px solid var(--staged);outline-offset:1px}
+.bvcard textarea:focus,.bvexpout:focus{outline:2px solid var(--focus);outline-offset:1px}
 .bvact,.bvexp{display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap}
 .bvres{margin-top:13px}
 .bvsum{display:flex;gap:14px;font-size:var(--t-sm);color:var(--ink3);margin-bottom:9px}
@@ -2887,7 +2882,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
   gap:3px 11px;align-items:center;width:100%;text-align:left;padding:5px 6px;border-radius:var(--rad-2);
   transition:background var(--dur-1) var(--ease)}
 .lvlb:hover{background:var(--hi)}
-.lvlb:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.lvlb:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .lvlb .ln{grid-area:n;font:600 var(--t-micro)/1 var(--ui);letter-spacing:var(--tr-micro);
   text-transform:uppercase;color:var(--ink3)}
 /* An alert level is a decision about who gets interrupted, so error and caution carry their signal
@@ -2921,7 +2916,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .ub2{display:grid;grid-template-columns:170px 1fr 92px 62px;gap:12px;align-items:center;width:100%;
   text-align:left;padding:5px 7px;border-radius:var(--rad-2);transition:background var(--dur-1) var(--ease)}
 .ub2:hover{background:var(--hi)}
-.ub2:focus-visible{outline:2px solid var(--staged);outline-offset:2px}
+.ub2:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .ub2 .ubk{font:500 var(--t-md)/1 var(--data);color:var(--ink2);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis}
 .ubt2{display:flex;height:20px;background:var(--sunk);border-radius:var(--rad-2);overflow:hidden}
@@ -3114,7 +3109,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    MP/DMZ colour schemes depending on which toggle shape renders it. */
 .modesw button[aria-pressed=true],.modesw button[aria-selected=true]{background:var(--mode-mp);color:var(--on-accent)}
 .modesw button[data-arm=DMZ][aria-pressed=true],.modesw button[data-arm=DMZ][aria-selected=true]{background:var(--mode-dmz)}
-.modesw button:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
+.modesw button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .chip.topic em{font-style:normal;font-family:var(--data);font-size:var(--t-micro);color:var(--ink3);
   margin-left:5px}
 .chip.topic[aria-pressed=true] em{color:var(--on-accent);opacity:.75;background:var(--c,var(--patch))}
@@ -3275,7 +3270,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
    space between the button and the border -- which is the strip Harkirat saw the highlight stop short of. */
 .mx thead th[data-who]{padding-bottom:0}
 .mx thead th[data-who]:hover{background:var(--hi)}
-.colh:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
+.colh:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 /* Both lines are free text and both clip. The 22-character cut happens in JS so the ellipsis lands on a
    character boundary the reader can see; this is the belt for a narrow column at a narrow viewport. */
 .colh b{font:600 var(--t-sm)/1.2 var(--data);color:var(--ink);display:block;max-width:100%;
@@ -3467,7 +3462,7 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .bar.ended{background:transparent;border:1px solid var(--rule2);color:var(--ink3)}
 /* Same rule, same date: the dim was on the CARD, so "up 21d", "ends Aug 25" and the warn pin fell to 2.73–3.21:1
    on the one card whose whole job is to be noticed. It is not a disabled control, so no exemption applies. */
-.nscard.over{border-color:color-mix(in srgb,var(--staged) 62%,transparent)}
+.nscard.over{border-color:color-mix(in srgb,var(--focus) 62%,transparent)}
 .nspin.warn{background:rgba(242,153,74,.14);border-color:rgba(242,153,74,.4);color:var(--warn-ink)}
 .callout{margin:0;padding:12px 16px;font-size:var(--t-base);line-height:1.55;color:var(--ink2);
   border-left:3px solid var(--warn);background:rgba(242,153,74,.05)}
@@ -3853,6 +3848,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .cmdbar{position:relative;flex:1 1 460px;max-width:520px;min-width:0;display:flex;align-items:center;gap:9px;
   height:34px;padding:0 11px;border-radius:var(--rad-3);border:1px solid var(--rule);background:var(--sunk);
   transition:border-color .15s,background .15s}
+/* Centred on the header, not between its neighbours (batch-2 spec §8, 2026-09-13 17:49 EDT). With the crumb gone the flex spacers put the bar halfway between the wordmark and the account cluster, which are different widths, so it sat off-centre. Out of flow only where the header is wide enough that the right cluster cannot reach it; below 1200px it stays a flex item. The header is sticky, so it is the containing block. */
+@media (min-width:1200px){header > .cmdbar{position:absolute;left:50%;transform:translateX(-50%);width:520px}}
 .cmdbar:hover{border-color:var(--rule2)}
 .cmdbar.on,.cmdbar:focus-within{border-color:var(--patch);background:var(--paper)}
 .cb-mag{flex:none;width:13px;height:13px;border-radius:var(--rad-round);border:1.5px solid var(--ink4);position:relative}
@@ -3879,8 +3876,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .cb-drop .pitem:hover,.cb-drop .pitem.sel{background:var(--hi);color:var(--ink)}
 .cb-drop .pnone{margin:0;padding:14px 12px;font-size:var(--t-base);color:var(--ink3)}
 
-/* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. */
-.hdr-out{flex:none;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 11px;
+/* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. Icon-only since 2026-09-13 17:49 EDT (batch-2 spec §8): it sits beside the profile it ends, and its accessible name carries the word. */
+.hdr-out{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;width:32px;padding:0;
   border-radius:var(--rad-2);border:1px solid transparent;background:none;color:var(--ink3);cursor:pointer;
   font:500 var(--t-sm)/1 var(--ui)}
 .hdr-out svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
@@ -5126,7 +5123,7 @@ a.att-row .att-i{font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)
 .fxwas,.fxnow{font-family:var(--data);font-size:var(--t-sm);min-width:0;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;padding:3px 7px;border-radius:var(--rad-1)}
 .fxwas{color:var(--ink3);background:rgba(255,107,107,.10);text-decoration:line-through}
-.fxnow{color:var(--ok);background:rgba(61,220,151,.10)}
+.fxnow{color:var(--ok);background:rgba(123,219,99,.10)}
 .fxar{color:var(--ink3);text-align:center}
 .fxr:has(.fxc:not(:checked)){opacity:.45}
 .fxr:has(.fxc:not(:checked)) .fxnow{background:none;color:var(--ink3)}
@@ -5733,7 +5730,6 @@ button .ic,a .ic{pointer-events:none}
  * flex/grid child is the difference between an ellipsis and a blown-out column, and the two-column
  * splits below are the layout the mockup drew with inline styles. */
 .nw-f{min-width:0}
-.crumb-sep{display:inline-flex;align-items:center;color:var(--ink3);vertical-align:middle}
 .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 /* Home's clock is the page's lead and sits above a two-column live panel, so it centres its own
  * measure instead of running the full width the way Season's does — same component, one page's
@@ -5922,7 +5918,7 @@ button .ic,a .ic{pointer-events:none}
 
 /* ═══ BUILD-OUT 2026-09-06 01:21 EDT — unit A: the realm's own light, the page arriving, the drawer form ═══ */
 /* ── THE SIGNATURE (`bolder`): a realm-hue radial wash behind every masthead. `.app` carries data-realm
- * (shell.js) and each realm maps its own accent into --realm-c; Review and Home set none, so
+ * (shell.js) and each realm maps its own accent into --realm-c; Home sets none, so
  * var(--realm-c,transparent) collapses to nothing there — colourless on purpose, see tokens.css. The wash is
  * 10% at the top-left corner fading by 70%: a light the page is lit BY, never a coloured box. */
 .app[data-realm=season]{--realm-c:var(--r-season)}
@@ -5930,6 +5926,8 @@ button .ic,a .ic{pointer-events:none}
 .app[data-realm=broadcast]{--realm-c:var(--r-broadcast)}
 .app[data-realm=access]{--realm-c:var(--r-access)}
 .app[data-realm=analytics]{--realm-c:var(--r-analytics)}
+.app[data-realm=history]{--realm-c:var(--r-history)}
+.app[data-realm=review]{--realm-c:var(--r-review)} /* 2026-09-13 17:32 EDT — Review has a real accent now (batch-2 spec §1.1) */
 .masthead{background-image:radial-gradient(ellipse 64% 130% at 0% 0%,
   color-mix(in srgb,var(--realm-c,transparent) 10%,transparent) 0%,transparent 70%)}
 /* ── THE PAGE ARRIVES (`animate`): ONE orchestration, keyed on --dur-3. The masthead's figures rise in
@@ -6114,7 +6112,7 @@ button .ic,a .ic{pointer-events:none}
 /* A closed row has no body element rendered at all, so nothing here needs to hide one — but the border under the
  * header is a divider between two things, and with the body gone it is a line under nothing. */
 .trow.tcat.tclosed > .trow-h{border-bottom:0}
-.trow.tcat > .trow-h:focus-visible{outline:2px solid var(--staged);outline-offset:-2px}
+.trow.tcat > .trow-h:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .trow.tcat > .trow-h:hover{background:var(--hi)}
 
 /* The category's own accent, which is real data from the API (getMpCategoryAccent), not a token. The mark replaces the
@@ -6293,6 +6291,12 @@ button .ic,a .ic{pointer-events:none}
   border-color:color-mix(in srgb,var(--m1) 26%,var(--rule))}
 @media (prefers-reduced-motion:reduce){.idbar[data-mesh]{transition:none}}
 .idbar{transition:background var(--dur-2) var(--ease)}
+/* The account menu wears the same mesh on its own ground (batch-2 spec §8, 2026-09-13 17:49 EDT). Same bounded mix as the identity bar, so no avatar can lift the menu's text below its contrast floor. */
+.umenu[data-mesh]{background:
+  radial-gradient(115% 190% at 4% 0%, color-mix(in srgb,var(--m1) 10%,var(--raised)) 0%, transparent 58%),
+  radial-gradient(95% 165% at 90% 12%, color-mix(in srgb,var(--m2) 7%,var(--raised)) 0%, transparent 54%),
+  radial-gradient(120% 210% at 50% 100%, color-mix(in srgb,var(--m3) 6%,var(--raised)) 0%, transparent 62%),
+  var(--raised)}
 
 /* harden lens — names which single precondition is still missing before the Grant button in the drawer will
    enable (access.logic.js's grantReady drives the text; this is only the line's own styling). New class. */
@@ -6302,7 +6306,7 @@ button .ic,a .ic{pointer-events:none}
 /* delight lens (pin5/D1) — the admin row in the By-admin grid gets a one-time fade after a grant lands, so the
    change is visibly acknowledged in the table itself and not only via the toast. Cleared client-side by
    access.js's own highlightId timeout (2.4s), so the animation duration and that timeout should be kept in
-   step if either changes. --ok is an existing token (#3DDC97, the same green .thumb.ok/.health.ok already use). */
+   step if either changes. --ok is an existing token (#7BDB63 since the batch-2 recolour, the same green .thumb.ok/.health.ok already use). */
 .mx tbody tr.just-granted{animation:d-just-granted 2.2s ease-out}
 @keyframes d-just-granted{
   0%{background:color-mix(in srgb, var(--ok) 22%, transparent)}

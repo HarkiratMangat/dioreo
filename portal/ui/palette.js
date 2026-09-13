@@ -64,6 +64,7 @@ export function CommandBar({ commands = [], realmLabel }) {
         command.run();
     }
 
+    // ⚠️ THE KEYS ALREADY WORKED — checked 2026-09-13 17:49 EDT against pin batch 2, which said arrows did nothing: ArrowUp/ArrowDown moved the highlight, Enter ran it and Escape closed. What was missing was `aria-activedescendant`, so a screen reader heard none of that movement. The input now names the highlighted option, and each option carries the id it names.
     function onKeyDown(e) {
         if (e.key === 'Escape') { setQuery(''); setOpen(false); e.target.blur(); return; }
         if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setSel(Math.min(active + 1, hits.length - 1)); return; }
@@ -78,6 +79,7 @@ export function CommandBar({ commands = [], realmLabel }) {
             <!-- 🔴 data-bare OPTS THE INPUT OUT OF THE GLOBAL FORM RESET, and without it the command bar renders as TWO bars. The reset in app.css is an input selector carrying FOUR :not() attribute clauses — checkbox, radio, range, data-bare — which puts it at specificity 0,4,1, so the .cmdbar input.cb-in rule at 0,2,1 LOSES to it and the input keeps its own 44px min-height, its own 1px border, its own background and its own 6px radius inside a 34px wrapper that is already painting all four. Measured on the running page 2026-08-28 09:36 EDT: a 44px input in a 34px bar, exactly as COMPANION §5.9n.4 describes it. The migration carried the stylesheet and dropped this attribute, and every gate stayed green because a rule with no matching element is silent forever. An opt-out cannot lose an argument it is not having — see the long note at app.css:50. ⚠️ Do not "fix" this by out-specifying the reset instead: that argument has been had and lost twice. ⚠️ And no BACKTICKS in this comment — an HTML comment lives inside a template literal here, so one backtick ends the string and the build dies pointing at markup. -->
             <input class="cb-in" data-bare ref=${inputRef} value=${query} autocomplete="off" spellcheck="false"
                    role="combobox" aria-expanded=${open ? 'true' : 'false'} aria-controls="cbList" aria-autocomplete="list"
+                   aria-activedescendant=${open && hits[active] ? `cbopt-${active}` : null}
                    placeholder=${realmLabel ? `Search ${realmLabel}, or run a command` : 'Search, or run a command'}
                    aria-label=${realmLabel ? `Search ${realmLabel}, or run a command` : 'Search, or run a command'}
                    onPointerDown=${() => setOpen(true)}
@@ -91,7 +93,7 @@ export function CommandBar({ commands = [], realmLabel }) {
                     ${hits.length ? hits.map((c, i) => html`
                         ${SECTION_OF(c) !== SECTION_OF(hits[i - 1] || {}) || i === 0 ? html`
                             <p class=${'psec' + (SECTION_OF(c).key === 'account' ? ' psec-cut' : '')} role="presentation">${SECTION_OF(c).label}</p>` : null}
-                        <button class="pitem" role="option" key=${c.label} aria-selected=${i === active ? 'true' : 'false'}
+                        <button class="pitem" role="option" key=${c.label} id=${`cbopt-${i}`} aria-selected=${i === active ? 'true' : 'false'}
                                 style=${`--c:${c.accent || 'var(--ink3)'}`}
                                 onMouseEnter=${() => setSel(i)}
                                 onMouseDown=${(e) => e.preventDefault()}
