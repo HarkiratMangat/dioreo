@@ -18,7 +18,11 @@ const announcementSchema = new mongoose.Schema({
     // Scheduling (added with the operation core, 2026-08-21 09:31 EDT). Without this an announcement goes live the instant it is posted and the only time control is an END. null means "live now", which is exactly the pre-existing behaviour, so every existing document keeps working untouched.
     //
     // ⚠️ Declared here in the SAME change as the op that writes it -- root CLAUDE.md's schema-save gotcha. models/SeasonalData.js's draft.calendar is the recorded cost of getting this wrong.
-    startsAt: { type: Date, default: null }
+    startsAt: { type: Date, default: null },
+    // Optional banner/thumbnail image (added 2026-09-13 17:34 EDT, portal pins batch 2, spec section 7) -- an https URL string. There is no upload pipeline here: the portal Broadcast composer decides how a URL is produced (paste, or an upload elsewhere), this model only ever stores the resulting string. null/blank means no image, and it is put on the delivered embed's `image` field (utils/announcement.js's buildAnnouncementEmbed).
+    bannerImageUrl: { type: String, default: null },
+    // Optional repeat delivery (added 2026-09-13 17:34 EDT, same task). null/unset keeps today's existing seen-once-ever behaviour untouched. A whole number >= 1 means "show this announcement up to N times total per user", gated by a fixed 24h minimum between showings (utils/announcement.js's MIN_HOURS_BETWEEN_REPEATS -- not itself configurable per announcement). The per-user "how many times" / "when last" counters this needs live on UserPreference.announcementDeliveries, not here -- this field only ever says the BUDGET, never who has used how much of it.
+    repeatCount: { type: Number, default: null }
 });
 
 module.exports = mongoose.model('Announcement', announcementSchema);
