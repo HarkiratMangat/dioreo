@@ -970,6 +970,24 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P1 · L · Opus5-High]` The permission restructure — Portal tier, sub-tiers, /bot pages, the four-shape cell — PENDING DESIGN — filed 2026-09-13 11:37 EDT
+
+Harkirat pinned a full restructure of portal and bot permissions (pins `pmtyh3ep6`, `pmtyih6yt`, `pmtyii7ki`, 2026-09-12 10:21–11:00 EDT), answered several questions about it in the planning session, then deferred it: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* He also added, the same minute, a **view-only** sub-tier for the Portal realms — the admin can open and interact, every create/modify/delete control disabled. Every input and every constraint found is in `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` §5; the four shapes and their refit geometry are on the board (https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f); the Access panel bar's redesign (`pmtyioc0l`) waits with this item.
+
+**Do:** a design session — shown renderings, then his decisions — producing a dated spec that supersedes §5, then a plan. The conferral item beside this one is part of it. **Verify by:** a new spec under `docs/superpowers/specs/` states the permission model as decided, and Harkirat has approved it.
+
+### `[P1 · M · Opus5-High]` Portal pins batch 2 — the critique session (New Build drawer, Compare, composer inputs) — filed 2026-09-13 11:31 EDT
+
+The three surfaces Harkirat asked for a dedicated critique on (pins `pmtylhbxw`, `pmtylqtti`, and the composer inputs for `pmtyj3z8o`). Deliberately NOT run during planning. It runs after Session 1 of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` merges, and before Session 2, which builds from its output.
+
+**Do:** run §4 of the plan. **Verify by:** §10 of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` has no *Not yet written* line.
+
+### `[P2 · M · Sonnet5-High]` A `/compare` page on dioreo.app — the portal's Compare panel, ported — filed 2026-09-13 11:31 EDT
+
+Harkirat, pin `pmtylqtti` (2026-09-12 12:31 EDT): Compare is important enough to become its own public page on dioreo.app — *"file that as a near future project"*. It depends on the critique session redesigning the portal panel first, so the port carries the redesigned version rather than today's. ⚠️ The public site is built by `scripts/buildLegalPages.js` from Markdown sources and has no data layer; a page that compares live builds is a new kind of page there, so the first question is how it gets its data.
+
+**Do:** after §10.2 of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` is written and built, design the public page's data path, then build it. **Verify by:** `https://dioreo.app/compare` loads and compares two real weapons' builds.
+
 ### CLOSED `[P2 | M | Opus5-High]` THE PORTAL SHOWS TRUNCATED DISCORD IDS WHERE IT SHOULD SHOW PEOPLE - filed 2026-09-11 14:27 EDT
 
 **BUILT 2026-09-11 14:52 EDT - the Access grid and the edit bars resolve every id through `/api/discord/user`, the route the grant drawer's preview already used, and render the real avatar with the initial only as the fallback. Filed and built inside the hour because nothing needed building: the shape was already there.**
@@ -1016,6 +1034,8 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 
 
 ### `[P1 · M · Opus5-High]` WHICH COMMANDS CONFER WHICH `/manage` PAGES — the model has exactly one conferral and nobody chose that — filed 2026-09-11 13:21 EDT
+
+🟡 **ANSWERED, NOT DECIDED — 2026-09-13 11:37 EDT.** In the pins-batch-2 planning session Harkirat answered: `/autobuild` → MP and DMZ Loadouts; `/bot` → a new */bot pages* tier (health, alerts, changes, usage, timing), with the top-level grant conferring every /bot page and every /manage page. Minutes later he deferred the whole permission restructure as pending design, so these are inputs to that design rather than a decision. See the `[P1]` permission-restructure item under Queued and `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` §5. **The Verify line below still governs.**
 
 🔴 **Harkirat, 2026-09-11 13:21 EDT, designing the Access grid's inheritance ring:** *"say someone is given the Autobuild command permission, they would also gain access/inherit MP/DMZ /manage page permissions with it."* **They would not, today.** `portal/api/access.js:82` computes it in one line — `const inherited = scope.kind === 'page' && !direct && perms.includes('manage')` — so **`manage` is the only command that confers anything, and it confers all eight pages at once.** `autobuild`, `bot` and `destructive` confer nothing.
 
