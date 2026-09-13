@@ -86,6 +86,8 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+- `[P1 · S · Sonnet5-Medium]` **Every `announcement.edit` wipes an announcement's banner and repeat count.** *Found 2026-09-13 19:37 EDT by the pins-batch-2 critique, plan §10.3 row 8.* The edit apply writes `bannerImageUrl: payload.bannerImageUrl || null` and `repeatCount ?? null` (`core/ops/announcements.js:113`), while `buildBroadcastEditOp` (`portal/ui/broadcast.logic.js:12`) and `/manage`'s Discord edit (`handlers/manage/announcements.js:42`) send neither. Latent today — the dev database holds 0 announcements with either field — and real once the composer can set them; plan §8.3 brief D carries the fix. **Verify by:** stage a text edit on an announcement that has both fields, from the portal and from `/manage`, and read both unchanged after commit.
+
 ### ✅ `[P0 · M · Opus5-XHigh]` A stored season deadline is a DATE being read as an INSTANT — **CLOSED 2026-09-10 19:46 EDT. Reader fixed 17:18; the DISPLAY half was decided by Harkirat at 18:22 (fork 01, option B) and shipped in `b7648fbe`**
 
 🔴 **HYPOTHESIS CONFIRMED FROM THE DATA, THEN THE READER FOUND BY ARITHMETIC.** Dev and prod both hold `bpEnd` and `rankEnd` at exactly `2026-09-10T00:00:00.000Z` and `dmzEnd` at `2026-11-11T00:00:00.000Z`, all three with `TBD:false` — byte-identical, so a fix verified on dev is verified against what players' timers read. The storage was right and the escape hatch below (*"if it is NOT UTC midnight this is a schema question"*) does not fire.
