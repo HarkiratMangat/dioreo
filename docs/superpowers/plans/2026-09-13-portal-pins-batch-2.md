@@ -7,7 +7,7 @@ status: live
 
 > **For agentic workers:** execute INLINE, batched, per `superpowers:executing-plans`. Subagents run **only** where this plan names one — agents A and B in Session 1, agent D in Session 2 — dispatched with the brief written here and nowhere else. Announce each dispatch in one line. `- [ ]` marks steps; mark them `- [x]` with a computed timestamp as you go — this plan is `status: live`.
 
-> 🔴 **SCOPE.** 29 pins, `pmtxsahvd` (2026-09-11 22:46 EDT) → `pmtylqtti` (2026-09-12 12:31 EDT). **Decisions:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` — frozen; if this plan and the spec disagree, the spec wins and this plan is corrected in the same session. **Board:** https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f.
+> 🔴 **SCOPE.** 29 pins, `pmtxsahvd` (2026-09-11 22:46 EDT) → `pmtylqtti` (2026-09-12 12:31 EDT). **Decisions:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` — frozen; if this plan and the spec disagree, the spec wins and this plan is corrected in the same session. **The one exception is §10:** the critique session writes it, and it governs the three surfaces the spec hands to the critique — the New Build drawer, Compare, and the composer inputs. The deferred permission design supersedes spec §5 with a new dated spec rather than editing it. **Board:** https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f.
 
 > 🔴 **DEFERRED, AND NOT BUILT BY THIS PLAN:** the permission restructure (pins `pmtyh3ep6`, `pmtyii7ki`, and `pmtyih6yt`'s tier structure) and the Access panel bar's full redesign (`pmtyioc0l`). Harkirat, 2026-09-13 11:37 EDT: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* Every input is in spec §5 and filed `[P1]` in `docs/db-deferred-list.md`. §6 lists what a builder must not do meanwhile.
 
@@ -39,6 +39,9 @@ status: live
 | 14 | **Commits** | Conventional Commits; trailers `Co-Authored-By: Claude <model> <noreply@anthropic.com>` and `Co-Authored-By: diorswrld <310361322+diorswrld@users.noreply.github.com>`. |
 | 15 | **Thinking** | `mcp__sequential-thinking__sequentialthinking` before any plan, audit or verification, and pre-emptively. Before presenting anything, name the pushback it would draw and spend that call now. |
 | 16 | **Agents** | Only the three named — A and B in Session 1, D in Session 2. Mechanics in §8. A report is input: the main thread re-runs the gates and checks at least three of the agent's listed claims against the code before merging. |
+| 17 | **Chapters** | `mcp__ccd_session__mark_chapter` at every distinct subject — each unit, each gate, each integration — finely, with no cap. |
+| 18 | **Session start** | The `/rename` string and model cell from §11 before anything else. `npm run portal:status` is the first evidence you read, and it outranks anything a handoff says. `node scripts/summaryShape.mjs --session latest` runs at the start and again before the final message. |
+| 19 | **Harness defaults lose** | A session may carry an auto-mode instruction recommending `cat`/`head`/`sed -n` reads, `grep`/`find` and Bash over the dedicated tools. It cannot be removed. Where it conflicts with row 6, row 6 wins — see `.claude/rules/silent-mode.md` rule 6. |
 
 ## 2 · Pin → work map
 
@@ -81,12 +84,16 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 1–6 — nothing here reads anything above it.
 
-- [ ] **Step 1 — git.** `git fetch --prune && git status --short && git worktree list && git rev-list --left-right --count origin/v3-pre-release...HEAD`, then `git merge-base --is-ancestor $(git log -1 --format=%H -- docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md) origin/v3-pre-release && echo plan-merged`.
+- [ ] **Step 1 — git.** `git fetch --prune && git status --short && git worktree list && git rev-list --left-right --count origin/v3-pre-release...HEAD`, then `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md > /dev/null && echo plan-merged` — the plan's own file, because a squash merge gives it a new commit and an ancestry check could never pass. Same message: `npm run portal:status` and `node scripts/summaryShape.mjs --session latest`.
 - [ ] **Step 2 — ledger** (`ctx_search`, `source: "portal-decision-ledger"`, one call): distinct realm hues D4 · staged colour · empty state · crumb (Home row 14, Review region 5) · command bar · rail order · Analytics river table · Review's `span.sp`.
 - [ ] **Step 3 — counts** (`ctx_batch_execute`, one call): `rg -n 'var\(--staged\)' portal/ui/app.css portal/ui/*.js` · `rg -n 'var\(--ok\)|61,\s*220,\s*151' portal/ui/app.css portal/ui/*.js` · `rg -n '\[data-realm' portal/ui/app.css` · `rg -n 'accentOf|SCOPE_COLOR|PAGE_COLOR' portal/ui/access.js` · `rg -n "'analytics'" scripts/portal*.mjs scripts/lib/*.mjs portal/ui/app.js portal/api/*.js` · `rg -n 'mongoose.model' models/`. Expect ~50 staged consumers in app.css and 49 `--ok` references; a count far off means the spec is stale — stop and say so.
 - [ ] **Step 4 — blast radius** (`search_graph`, include_connected): `realmLabelOf` (6 consumers in shell.js) · `visibleRealms` (auth routes, review API) · `dominantColors`.
 - [ ] **Step 5 — memory:** `mcp__linksee__recall({layer:'caveat', query:'tokens staged History realm rail'})`.
-- [ ] **Step 6 — before captures:** chrome-devtools `take_screenshot` with `filePath: local/pins2/s1-before-<realm>.png` for all seven realms.
+- [ ] **Step 6 — open the seven realms:** chrome-devtools `new_page` once per realm (`http://localhost:8787/harness.html?fresh=1#/<realm>`), all seven in this message.
+
+> ⟦ONE MESSAGE⟧ Step 6b — needs the pages Step 6 opened.
+
+- [ ] **Step 6b — before captures:** `take_screenshot` with `filePath: local/pins2/s1-before-<realm>.png`, one per page, all seven in this message.
 
 ### 3.1 · Dispatch agents A and B
 
@@ -96,7 +103,8 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 8–9 — both `Agent` calls, `model: "sonnet"`, `run_in_background: true`, prompts = §8.3 briefs A and B verbatim.
 
-- [ ] **Step 8:** dispatch agent A. - [ ] **Step 9:** dispatch agent B.
+- [ ] **Step 8:** dispatch agent A.
+- [ ] **Step 9:** dispatch agent B.
 
 ### 3.2 · The token layer
 
@@ -107,11 +115,19 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 12 — one `browser_batch` across the realms.
 
-- [ ] **Step 12 — close the token layer:** on Review, `getComputedStyle(document.querySelector('.btn.go')).backgroundColor === 'rgb(123, 219, 99)'`; on Analytics Health the `59 synced` value reads `rgb(123, 219, 99)`; the rail's staged count reads `rgb(216, 242, 74)`; every realm's masthead lead figure reads its new accent. Take `local/pins2/s1-after-<realm>.png` for all seven.
+- [ ] **Step 12 — close the token layer:** on Review, `getComputedStyle(document.querySelector('.btn.go')).backgroundColor === 'rgb(123, 219, 99)'`; on Analytics Health the `59 synced` value reads `rgb(123, 219, 99)`; the rail's staged count reads `rgb(216, 242, 74)`; every realm's masthead lead figure reads its new accent. In the same message, reload the seven pages from Step 6 (`navigate_page`, `type: reload`).
+
+> ⟦ONE MESSAGE⟧ Step 12b — needs the reloads.
+
+- [ ] **Step 12b — after captures:** `take_screenshot` to `local/pins2/s1-after-<realm>.png`, all seven in one message.
 
 ### 3.3 · Empty state and dev-data seed
 
+> ⟦ONE MESSAGE⟧ Step 13 — the heredoc with its verify read chained.
+
 - [ ] **Step 13 — one heredoc:** `.estate .eicon` → solid border and tint from the realm accent (use the variable `.app[data-realm]` already exposes — Step 3 found it); `.estate.good` keeps `--ok`. Verify on `?fresh=1&empty=1#/analytics`, Usage tab: `borderTopStyle === 'solid'` and the border colour derives from `#9CC85A`.
+> ⟦ONE MESSAGE⟧ Step 14 — write and run the script in one heredoc chain; the four-view `browser_batch` that closes it is the next message.
+
 - [ ] **Step 14 — seed script**, new under `scripts/`: refuses to run unless the Mongo host is `localhost`/`127.0.0.1` and the database name ends in `-dev`; writes realistic events over 30 days into the model(s) Step 3 found. Close: on the real dev portal, Usage, Timing, Reach and Search each render a populated panel, not `.estate`.
 
 ### 3.4 · History
@@ -123,8 +139,14 @@ status: live
 
 ### 3.5 · Shell chrome
 
+> ⟦ONE MESSAGE⟧ Step 17 — one `browser_batch` plus the reverse-orphan query.
+
 - [ ] **Step 17 — reproduce first** (`browser_batch`): the crumb text, the command bar's x-centre vs the header's, Arrow keys in the ⌘/ palette doing nothing, the sign-out living only in the menu. Then `node scripts/portalReverseOrphans.mjs --why hdr-out`.
+> ⟦ONE MESSAGE⟧ Step 18 — one heredoc, gates chained.
+
 - [ ] **Step 18 — one heredoc:** remove the crumb (`shell.js:362-363`, `app.css:97-98`) and retire the two ledger rows that cited its wording · centre `.cmdbar` in the header (`app.css:3853`) · palette keyboard: ArrowUp/ArrowDown move an `aria-activedescendant` highlight, Enter runs it, Escape closes · icon-only sign-out after the profile button, reusing `.hdr-out` if Step 17 shows it is the intended rule, wired to the existing `session.end` confirm (`shell.js:487-495`) · move `dominantColors` (`access.js:80`) to a shared module and give the user menu (`shell.js:286`) the Edit drawer's mesh tint. Chain the gates as Step 11.
+> ⟦ONE MESSAGE⟧ Step 19 — one `browser_batch` across all seven realms.
+
 - [ ] **Step 19 — close:** `document.querySelector('.crumb') === null` on all seven realms · `|cmdbar centre − header centre| ≤ 1px` · keyboard walk selects and runs an item without a mouse · the sign-out icon has an accessible name and opens the confirm · the menu's computed background carries the tint.
 
 ### 3.5b · Access — Revoke and session rows
@@ -141,12 +163,15 @@ status: live
 
 - [ ] **Step 20:** read the report · `git -C .claude/worktrees/pins2-a log --oneline -5` · `git merge --no-ff feat/pins2-a-broadcast-delivery` · re-run every gate the agent listed · check three listed claims against the code with `read_smart`/`search_graph`.
 - [ ] **Step 21:** the same for B. **Do not run B's migration with `--write`** — its dry-run table goes to Harkirat at gate G6 in Session 2.
+> ⟦ONE MESSAGE⟧ Step 22 — one heredoc for every record, then `npm test` and `docs:audit` chained, exit codes read.
+
 - [ ] **Step 22 — records + close:** CHANGELOG Unreleased entry, DEVLOG via the script, ledger rows, this file's boxes, a pin mark per closed row in `local/portal-sync-notes.md`. Final `npm test` and `npm run docs:audit`, each read by exit code. Report; push only on a named approval.
 
 ## 4 · CRITIQUE SESSION — New Build drawer, Compare, composer inputs
 
 **When:** after Session 1 has merged, so the critique judges the new palette, and before Session 2, which builds from its output. **Model:** Premise High · Delib Medium → Opus5-High. **Branch:** `docs/portal-pins2-critique`.
 
+- [ ] **Precondition:** `git show origin/v3-pre-release:portal/ui/tokens.css | rg -c -- '--r-history'` prints at least 1 — Session 1 has merged. Stop otherwise.
 - [ ] Run `/impeccable critique` on each surface — its two agents are mandatory and are this session's only agents: **(1)** the New Build drawer (`armory.js`, `loadout.add`), including **where paste-many lives inside it** (spec §6); **(2)** the Compare panel in every state — empty, one weapon, two weapons, a weapon with one build; **(3)** the Broadcast composer's new inputs for a banner image and repeat-N (spec §7).
 - [ ] Write each surface's findings into §10 of this file, replacing its *Not yet written* line — one row per finding, `finding · severity · what the build must do`. A decision Harkirat makes goes in the ledger as a row.
 - [ ] Compare's port to dioreo.app as `/compare` is filed in `docs/db-deferred-list.md`; findings that only matter for that port go there, not here.
@@ -159,31 +184,43 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 1–5.
 
-- [ ] **Step 1 — git** as Session 1 Step 1, plus D's worktree: `git worktree add -b feat/pins2-d-drawer .claude/worktrees/pins2-d feat/portal-pins2-manifests && cp .env.dev .claude/worktrees/pins2-d/`.
+- [ ] **Step 1 — git** as Session 1 Step 1, plus the precondition `git show origin/v3-pre-release:portal/ui/tokens.css | rg -c -- '--r-history'` printing at least 1 (Session 1 merged), then D's worktree: `git worktree add -b feat/pins2-d-drawer .claude/worktrees/pins2-d feat/portal-pins2-manifests && cp .env.dev .claude/worktrees/pins2-d/`.
 - [ ] **Step 2 — ledger:** manifest widths by role · the add button · Broadcast's state column and StatePill · HeadsUp · admin traffic (2026-09-02, masthead stats) · Armory's columns (sortable, Stage deletion) and its single New build chip (2026-09-11) · every `span.sp`/`p.chint`/`p.pnote`/`.hint` row.
 - [ ] **Step 3 — critique output and sites:** §10 of this file must be fully written — **stop if any *Not yet written* line remains**. Same message: `rg -n 'class="sp"|class="chint|class="pnote|class="hint|class="nw-hint|class="bvnote|class="racknote| meta=' portal/ui/*.js` through `ctx_batch_execute`, plus every `Masthead` meta string.
 - [ ] **Step 4 — B's output:** its dry-run table (`local/pins2/migration-dry-run.txt`) and its new logic exports.
-- [ ] **Step 5 — before captures** of the History, Broadcast and Armory manifests.
+- [ ] **Step 5 — open** the History, Broadcast and Armory manifests with chrome-devtools `new_page`; their captures ride in Step 6's message.
 
-> ⟦ONE MESSAGE⟧ Step 6 — dispatch agent D with brief §8.3 D, `model: "sonnet"`, background.
+> ⟦ONE MESSAGE⟧ Step 6 — dispatch agent D with brief §8.3 D, `model: "sonnet"`, background, and take the Step 5 before-captures with `take_screenshot` on the pages Step 5 opened.
 
 ### 5.1 · Gates, front-loaded
+
+> ⟦ONE MESSAGE⟧ Steps 7–8 — write and publish the board, the popup, and Step 8's reproduction `browser_batch`, which does not need his answers.
 
 - [ ] **Step 7 — one board, one popup.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's migration dry-run table. Then one `AskUserQuestion`. **Build 5.2 while he looks** — it does not depend on the answers.
 
 ### 5.2 · The shared manifest
 
 - [ ] **Step 8 — reproduce** the floating add button on Armory and Broadcast, Secondaries' position, the When column's UTC value against the local clock, the Level chips' lack of severity.
+> ⟦ONE MESSAGE⟧ Step 9 — one heredoc, gates chained.
+
 - [ ] **Step 9 — one heredoc:** the tools row places `.madd` deliberately (`manifest.js:206`) and the category chips follow `CATEGORY_CHIP_ORDER` without an orphan · column roles, not widths (`manifest.js:222-225`): When, Source and Who narrow, What detail · History's When renders local time as `Sep 6, 7:25 PM` via `Intl.DateTimeFormat(undefined, …)` · Level chips take `LEVEL_ROW`'s severity classes · Broadcast's five column fixes, and HeadsUp moved to the top of its realm (it arrives through the Shell's `noticeSlot` — check whether the slot order affects other realms first) · the floating `p.chint` handled by its kind · Armory's export block removed (`armory.js:1080-1090`); `BulkView`'s paste stays until agent D folds it into New Build. Gates chained.
 
 ### 5.3 · After his answers
 
-- [ ] **Step 10 — one heredoc per answered gate:** G1 applied site by site, each ledger row cited or retired · G2 control · G3 card · G4 row, using B's derived build number and copy/share builders · G6: run B's migration with `--write` only if approved, then re-query the distribution.
+> ⟦ONE MESSAGE⟧ Step 10 — ONE heredoc for every answered gate, gates chained; G6's `--write` is a separate Bash call in this message only if approved.
+
+- [ ] **Step 10 — one heredoc for every answered gate:** G1 applied site by site, each ledger row cited or retired · G2 control · G3 card · G4 row, using B's derived build number and copy/share builders · G6: run B's migration with `--write` only if approved, then re-query the distribution.
+> ⟦ONE MESSAGE⟧ Step 11 — one `browser_batch`, captures included.
+
 - [ ] **Step 11 — close:** captures after; no `.madd` outside its tools-row slot; the When cell equals `new Date(r.at).toLocaleString` for three rows; What's rendered width exceeds When, Source and Who each; `document.querySelectorAll('.sp').length` matches the G1 table's keep count per realm.
 
 ### 5.4 · Integrate D and close
 
+> ⟦ONE MESSAGE⟧ Step 12 — D's report read, merge, gates re-run, three claims checked.
+
 - [ ] **Step 12:** integrate D as Session 1 Step 20, then run trap 10(c) on every selector D's appended block and the main thread both touched.
+> ⟦ONE MESSAGE⟧ Step 13 — the records heredoc and the final gates.
+
 - [ ] **Step 13:** records and close as Session 1 Step 22.
 
 ## 6 · DEFERRED — the permission restructure and the Access panel bar
@@ -333,6 +370,45 @@ You dispatch exactly one agent, D, with the brief in §8.3.
 docs/ideas/diors-notes.md is out of scope. Push, PR and merge need my approval restated.
 ```
 
+## 12 · Closing this planning branch — `docs/portal-pins-batch-2-plan`
+
+**Nothing in §3–§5 can start until this branch is on `v3-pre-release`** — Session 1 Step 1 checks for this file there. Added 2026-09-13 12:04 EDT, after a reader test found nothing tracked said how the branch closes.
+
+> ⟦ONE MESSAGE⟧ Step 1 — only after Harkirat approves the push, restated as `Approved by · to · when`.
+
+- [ ] **Step 1:** `git push -u origin docs/portal-pins-batch-2-plan && gh pr create --base v3-pre-release` in one Bash call, with the PR body ending in the Claude Code attribution line.
+
+> ⟦ONE MESSAGE⟧ Step 2 — the pre-merge checkpoint as one heredoc, gates chained.
+
+- [ ] **Step 2:** on the branch — the `docs/CHANGELOG.md` Unreleased entry becomes `## Pre-Release v3.80.0 — <computed YYYY-MM-DD HH:MM EDT> (#<PR>) — the second pin batch, decided and planned`, moved to the top of the released entries · `package.json` → `3.80.0-pre` · the DEVLOG entry through `node scripts/devlog-add.mjs --desc "Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)" --body-file -` with the body below · `npm run docs:audit` and `npm test`, each read by exit code. ⚠️ `docs:audit`'s `devlog-orphan` rejects the DEVLOG entry until the CHANGELOG heading reads `## Pre-Release v3.80.0`, which is why the entry was not written on the first commit.
+
+> ⟦ONE MESSAGE⟧ Step 3 — only after Harkirat approves the merge, restated.
+
+- [ ] **Step 3:** `gh pr merge --squash --delete-branch` with an explicit `--body` carrying one trailer block · `git log -1` shows this release before anything else · no tag (the v3 line mints none until v3.0.0) · `git fetch origin main:main v3-pre-release:v3-pre-release` · re-index per `CLAUDE.md`.
+
+**The DEVLOG body — canonical here; the gitignored draft it came from is `local/pins2/devlog-draft-for-merge.md`:**
+
+```text
+- 2026-09-13 11:40 EDT — Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)
+
+Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonnet session could execute without drifting. The planning session built nothing. It produced `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` (frozen) and `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` (live), and every design fork was decided on a board rendered from the portal's own tokens and real screenshots, not in prose.
+
+**What the board changed.** My hue-distance check flagged three of his seven accents as collisions; he explained a rule the instrument could not see — a permission wears its in-bot command's colour, so two matching colours are kinship when the things are related. I then told him `--ok` already meant "confirm"; he had never seen it, and a scan of all seven realms showed it is a status green that no button has ever used. Both corrections came from looking, not from a number.
+
+**Four pins named a cause that was not the cause.** The Analytics icons are empty states. The Build Name field exists, and the dev data holds ordinals plus one gunsmith code. The When column is in UTC. The harness fixture hides the session user-agent defect. Every build session now reproduces a pin before fixing it.
+
+**Deferred.** The permission restructure — tiers, create/modify/destructive plus a new view-only sub-tier, the four-shape cell — was answered question by question and then deferred by Harkirat as still having kinks. The plan dropped from three build sessions to two, and every answer is recorded as input under a `[P1]` design item.
+
+**Checked before it was handed on.** A reader test and `npm run handoff` found a merge check that could never pass after a squash, six step groups with no message boundary, screenshots placed before their pages existed, a precedence rule that would have overruled the critique, and no tracked record of how the branch closes. All fixed on the branch.
+
+### Lessons
+
+- A distance metric cannot tell kinship from collision. Show the colours and ask what they mean before calling a match a defect.
+- Mid-session Harkirat called out tool drift: `sed -n` and `head` reads, zero `codebase-memory` calls, and no ledger query before planning changes to cited surfaces. The ledger and graph queries that followed changed the plan — removing the crumb now retires two cited rows.
+- A tool-created worktree branches from `origin/main`. A subagent working on `v3-pre-release` must be handed a worktree made by hand and must assert its ancestry before doing anything.
+- An ancestry check on a file's last commit fails after a squash merge; check the file's presence on the target branch instead.
+```
+
 ## Audit log
 
 *Falsification pass run across the planning session's sequential-thinking passes and five rounds of forks with Harkirat, last updated 2026-09-13 11:37 EDT. Conformance pass applied: `⟦ONE MESSAGE⟧` groups, Step 0 evidence per session, the `[P1]` Verify line quoted, no turn estimates.*
@@ -358,6 +434,11 @@ docs/ideas/diors-notes.md is out of scope. Push, PR and merge need my approval r
 | 17 | Repeat-N adds a stored per-user field | False privacy policy | Agent A step 5 |
 | 18 | The permission restructure still had open kinks (Harkirat) | Scope | Deferred: spec §5 marked PENDING, plan §6, filed `[P1]`; the plan drops from three build sessions to two |
 | 19 | The new page and command colours fall in the 165–265° edit-identity band | Colour collision | Not applied to today's grid; an input to the deferred design (spec §1.2) |
+| 20 | Session 1's merge check used `is-ancestor` on the plan's last commit, which a squash merge makes impossible | Blocker | §3.0 Step 1 reads the file from `origin/v3-pre-release` — found by the reader test, 2026-09-13 12:04 EDT |
+| 21 | The conformance pass was partial: six step groups had no message boundary, screenshots sat in messages before their pages existed, Steps 8 and 9 shared a line | Loop risk | §3 and §5 marks, Steps 6b and 12b |
+| 22 | The header's precedence rule would have let the frozen spec overrule the critique's §10 | Contradiction | Header |
+| 23 | Nothing tracked said how this branch closes; the DEVLOG entry lived only in a gitignored file | Lost record | §12, body inline |
+| 24 | Neither the critique nor Session 2 checked that the session before it had merged | Wrong base | §4 precondition, §5.0 Step 1 |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 

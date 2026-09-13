@@ -976,11 +976,11 @@ Harkirat pinned a full restructure of portal and bot permissions (pins `pmtyh3ep
 
 **Do:** a design session — shown renderings, then his decisions — producing a dated spec that supersedes §5, then a plan. The conferral item beside this one is part of it. **Verify by:** a new spec under `docs/superpowers/specs/` states the permission model as decided, and Harkirat has approved it.
 
-### `[P1 · M · Opus5-High]` Portal pins batch 2 — the critique session (New Build drawer, Compare, composer inputs) — filed 2026-09-13 11:31 EDT
+### `[P1 · L · Sonnet5-XHigh]` Portal pins batch 2 — Session 1, the critique, Session 2, in that order — filed 2026-09-13 11:31 EDT · order added 2026-09-13 12:04 EDT
 
-The three surfaces Harkirat asked for a dedicated critique on (pins `pmtylhbxw`, `pmtylqtti`, and the composer inputs for `pmtyj3z8o`). Deliberately NOT run during planning. It runs after Session 1 of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` merges, and before Session 2, which builds from its output.
+The 29 portal pins of 2026-09-11 22:46 EDT → 2026-09-12 12:31 EDT, planned in `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`. **First this planning branch closes** (plan §12: push, PR, pre-merge checkpoint, merge — each on Harkirat's approval). Then **Session 1** — identity layer, History, shell chrome, Access fixes; agents A and B · **the critique session** — the New Build drawer, Compare, and the composer inputs (pins `pmtylhbxw`, `pmtylqtti`, and the inputs for `pmtyj3z8o`), deliberately not run during planning · **Session 2** — the manifests; agent D. Paste-ready prompts are in plan §11. The permission restructure is NOT part of this; it is its own `[P1]` item.
 
-**Do:** run §4 of the plan. **Verify by:** §10 of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` has no *Not yet written* line.
+**Do:** run them in that order. **Verify by:** every `- [ ]` in plan §3, §4, §5 and §12 is `- [x]`, and plan §10 has no *Not yet written* line.
 
 ### `[P2 · M · Sonnet5-High]` A `/compare` page on dioreo.app — the portal's Compare panel, ported — filed 2026-09-13 11:31 EDT
 
