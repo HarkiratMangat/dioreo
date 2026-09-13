@@ -4609,3 +4609,7 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 ### The search index stops disappearing under its own server
 
 context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a server that was killed leaves exactly that log. This repo's store vanished that way twice in three days, silently each time: search kept answering from the deleted file and missed everything written since. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that has lost its corpora instead of trusting its stamp, and `npm run index:health` reports whether either index's server is reading the file on disk.
+
+### Build names stay as they are stored
+
+The plan had a migration clearing the "Build 1", "Build 2" names from the database so the build number could be shown on its own. A review before merge found the bot still uses those names to work out the next build's number and its image, to match builds when pasting, and to delete a named build — clearing them would have overwritten a build's image. The plan now shows the number and hides ordinal names without changing stored data, and the choice of a deeper fix goes to Harkirat with the full list of places that depend on the name.
