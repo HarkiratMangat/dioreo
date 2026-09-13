@@ -4605,3 +4605,7 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 - **Four pins named a cause that was not the cause:** the Analytics icons are empty states · the Build Name field already exists and the dev data holds ordinals plus one gunsmith code · Analytics' When column is in UTC · the harness fixture hides the session user-agent defect.
 - **Deferred at Harkirat's call:** the permission restructure — tiers, create/modify/destructive plus a new view-only sub-tier, the four-shape cell — filed `[P1]` with every input recorded.
 - **Files:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` · `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` · `docs/db-deferred-list.md`.
+
+### The search index stops disappearing under its own server
+
+context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a server that was killed leaves exactly that log. This repo's store vanished that way twice in three days, silently each time: search kept answering from the deleted file and missed everything written since. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that has lost its corpora instead of trusting its stamp, and `npm run index:health` reports whether either index's server is reading the file on disk.

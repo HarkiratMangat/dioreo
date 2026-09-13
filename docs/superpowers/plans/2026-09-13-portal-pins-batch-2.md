@@ -386,7 +386,7 @@ docs/ideas/diors-notes.md is out of scope. Push, PR and merge need my approval r
 
 > ⟦ONE MESSAGE⟧ Step 3 — only after Harkirat approves the merge, restated.
 
-- [ ] **Step 3:** `gh pr merge --squash --delete-branch` with an explicit `--body` carrying one trailer block · `git log -1` shows this release before anything else · no tag (the v3 line mints none until v3.0.0) · `git fetch origin main:main v3-pre-release:v3-pre-release` · re-index per `CLAUDE.md`.
+- [ ] **Step 3:** `gh pr merge --squash --delete-branch` with an explicit `--body` carrying one trailer block · `git log -1` shows this release before anything else · no tag (the v3 line mints none until v3.0.0) · `git fetch origin main:main v3-pre-release:v3-pre-release` · re-index per `CLAUDE.md`, then `npm run index:health` exits 0.
 
 **The DEVLOG body — canonical here; the gitignored draft it came from is `local/pins2/devlog-draft-for-merge.md`:**
 
@@ -403,12 +403,15 @@ Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonn
 
 **Checked before it was handed on.** A reader test and `npm run handoff` found a merge check that could never pass after a squash, six step groups with no message boundary, screenshots placed before their pages existed, a precedence rule that would have overruled the critique, and no tracked record of how the branch closes. All fixed on the branch.
 
+**The search index was being deleted under its own server.** A plan written that morning never came back from `ctx_search`. context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a killed server leaves exactly that log — so this repo's store vanished twice in three days while search kept answering from the deleted file. The first diagnosis blamed the refresh hook's CLI; a repro disproved it, and a second repro against context-mode's real server reproduced the sweep. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that lost its corpora or is about to be pruned, and `npm run index:health` says whether a server is reading the file on disk.
+
 ### Lessons
 
 - A distance metric cannot tell kinship from collision. Show the colours and ask what they mean before calling a match a defect.
 - Mid-session Harkirat called out tool drift: `sed -n` and `head` reads, zero `codebase-memory` calls, and no ledger query before planning changes to cited surfaces. The ledger and graph queries that followed changed the plan — removing the crumb now retires two cited rows.
 - A tool-created worktree branches from `origin/main`. A subagent working on `v3-pre-release` must be handed a worktree made by hand and must assert its ancestry before doing anything.
 - An ancestry check on a file's last commit fails after a squash merge; check the file's presence on the target branch instead.
+- A mechanism narrated over a value nobody checked produced the wrong cause for the vanishing index, and a detector built on it was half-written before Harkirat asked whether the cause was found or only enough of it. The repro that could fail is what found the real one.
 ```
 
 ## Audit log
@@ -442,6 +445,7 @@ Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonn
 | 23 | Nothing tracked said how this branch closes; the DEVLOG entry lived only in a gitignored file | Lost record | §12, body inline |
 | 24 | Neither the critique nor Session 2 checked that the session before it had merged | Wrong base | §4 precondition, §5.0 Step 1 |
 | 25 | docs-audit `prompt-antiskim` failed once `.remember` named this plan: no anti-skim guard in the first 40 lines, so a session handed a §11 prompt could act on the prompt alone (2026-09-13 12:44 EDT) | Fails CI on the merge | Guard blockquote under the agentic-workers line |
+| 26 | The close-out re-indexed two stores with no check that the search server reads the file on disk; context-mode's startup sweep had deleted this repo's store under its own server twice that week (2026-09-13 13:18 EDT) | Silent stale search | §12 Step 3 ends with `npm run index:health` |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
