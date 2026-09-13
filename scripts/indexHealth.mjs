@@ -87,7 +87,7 @@ function pidsMatching(pattern) {
   }
 }
 
-// `lsof -F in` prints `i<inode>` then `n<name>` per open file. A deleted file keeps its original name in that listing, which is what lets a held inode be compared with the one now at the path. lsof prints the RESOLVED directory — a macOS temp path arrives as `/private/var/…` — so the name is matched both as given and resolved; matching only the given form made the test's own orphan invisible.
+// `lsof -F in` prints `i<inode>` then `n<name>` per open file. A deleted file keeps its original name in that listing, which is what lets a held inode be compared with the one now at the path. lsof prints the RESOLVED directory — a macOS temp path arrives as `/private/var/…` — so the name is matched both as given and resolved; matching only the given form made the test's own orphan invisible. And on Linux lsof appends ` (deleted)` to an unlinked file's name — exactly the file this looks for — so the suffix is stripped before matching; CI on PR #187 found it after every macOS run passed.
 export function inodesHeld(pid, path) {
   try {
     const out = execFileSync("lsof", ["-nP", "-p", String(pid), "-Fin"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
@@ -97,7 +97,7 @@ export function inodesHeld(pid, path) {
     let inode = null;
     for (const line of out.split("\n")) {
       if (line[0] === "i") inode = Number(line.slice(1));
-      else if (line[0] === "n" && names.has(line.slice(1)) && inode !== null) found.add(inode);
+      else if (line[0] === "n" && names.has(line.slice(1).replace(/ \(deleted\)$/, "")) && inode !== null) found.add(inode);
     }
     return [...found];
   } catch {
