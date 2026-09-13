@@ -7,6 +7,8 @@ status: live
 
 > **For agentic workers:** execute INLINE, batched, per `superpowers:executing-plans`. Subagents run **only** where this plan names one — agents A and B in Session 1, agent D in Session 2 — dispatched with the brief written here and nowhere else. Announce each dispatch in one line. `- [ ]` marks steps; mark them `- [x]` with a computed timestamp as you go — this plan is `status: live`.
 
+> 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE.** A prompt from §11, a `.remember` line or a deferred-list entry points here and carries almost nothing of it. Only this file carries the agent briefs A, B and D (§8.3, text fences — dispatch with those words and no others), the file-conflict map (§7), the gate board (§9), the canonical DEVLOG body for the pre-merge checkpoint (§12) and the portal traps inlined in §1 row 10. Read §0 before acting on anything the opener said.
+
 > 🔴 **SCOPE.** 29 pins, `pmtxsahvd` (2026-09-11 22:46 EDT) → `pmtylqtti` (2026-09-12 12:31 EDT). **Decisions:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` — frozen; if this plan and the spec disagree, the spec wins and this plan is corrected in the same session. **The one exception is §10:** the critique session writes it, and it governs the three surfaces the spec hands to the critique — the New Build drawer, Compare, and the composer inputs. The deferred permission design supersedes spec §5 with a new dated spec rather than editing it. **Board:** https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f.
 
 > 🔴 **DEFERRED, AND NOT BUILT BY THIS PLAN:** the permission restructure (pins `pmtyh3ep6`, `pmtyii7ki`, and `pmtyih6yt`'s tier structure) and the Access panel bar's full redesign (`pmtyioc0l`). Harkirat, 2026-09-13 11:37 EDT: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* Every input is in spec §5 and filed `[P1]` in `docs/db-deferred-list.md`. §6 lists what a builder must not do meanwhile.
@@ -439,6 +441,7 @@ Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonn
 | 22 | The header's precedence rule would have let the frozen spec overrule the critique's §10 | Contradiction | Header |
 | 23 | Nothing tracked said how this branch closes; the DEVLOG entry lived only in a gitignored file | Lost record | §12, body inline |
 | 24 | Neither the critique nor Session 2 checked that the session before it had merged | Wrong base | §4 precondition, §5.0 Step 1 |
+| 25 | docs-audit `prompt-antiskim` failed once `.remember` named this plan: no anti-skim guard in the first 40 lines, so a session handed a §11 prompt could act on the prompt alone (2026-09-13 12:44 EDT) | Fails CI on the merge | Guard blockquote under the agentic-workers line |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
