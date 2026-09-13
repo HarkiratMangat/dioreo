@@ -38,6 +38,27 @@ function validatePost(payload) {
         startsAt = parsed;
     }
 
+    // Optional banner image (added 2026-09-13 17:34 EDT, portal pins batch 2, spec section 7) -- an https URL string, or null for "no image". No upload pipeline here: the composer decides how a URL is produced, this op only ever validates the string it is handed. The raw shape (a string or null/blank) never differs between a fresh submission and a replayed invert, so this needs no alreadyNormalized-style branch.
+    let bannerImageUrl = payload?.bannerImageUrl;
+    bannerImageUrl = (bannerImageUrl == null ? '' : String(bannerImageUrl)).trim() || null;
+    if (bannerImageUrl && !/^https:\/\/\S+$/i.test(bannerImageUrl)) {
+        errors.push('The banner image needs to be a full https:// URL.');
+    }
+
+    // Optional repeat count (same task) -- a whole number >= 1, or null for the pre-existing one-time-only behaviour. The 24h minimum between showings is fixed (utils/announcement.js's MIN_HOURS_BETWEEN_REPEATS) and is not itself an input here.
+    let repeatCount = payload?.repeatCount;
+    if (repeatCount === undefined || repeatCount === null || repeatCount === '') {
+        repeatCount = null;
+    } else {
+        const n = Number(repeatCount);
+        if (!Number.isInteger(n) || n < 1) {
+            errors.push('Repeat count must be a whole number of 1 or more, or left blank to show only once.');
+            repeatCount = null;
+        } else {
+            repeatCount = n;
+        }
+    }
+
     if (errors.length) return { ok: false, errors };
     if (startsAt && expiresAt && startsAt > expiresAt) {
         return { ok: false, errors: ['An announcement that starts after it expires can never show.'] };
@@ -46,7 +67,7 @@ function validatePost(payload) {
         ok: true, errors: [],
         normalized: {
             payload: {
-                text, expiresAt, startsAt,
+                text, expiresAt, startsAt, bannerImageUrl, repeatCount,
                 color: payload?.color ?? null,
                 createdAt: payload?.createdAt ?? null,
                 createdBy: payload?.createdBy ?? null
@@ -67,6 +88,8 @@ registerEntity('announcements', {
                 createdBy: op.payload.createdBy || actorId,
                 expiresAt: op.payload.expiresAt,
                 startsAt: op.payload.startsAt || null,
+                bannerImageUrl: op.payload.bannerImageUrl || null,
+                repeatCount: op.payload.repeatCount ?? null,
                 color
             };
             if (op.payload.createdAt) doc.createdAt = op.payload.createdAt;
@@ -74,7 +97,7 @@ registerEntity('announcements', {
             return {
                 ok: true,
                 change: { action: 'add', model: 'Announcement', target: truncate(op.payload.text), summary: 'Posted a new announcement' },
-                applied: { id: res.id, color, createdAt: doc.createdAt || new Date(), createdBy: doc.createdBy, expiresAt: doc.expiresAt, startsAt: doc.startsAt }
+                applied: { id: res.id, color, createdAt: doc.createdAt || new Date(), createdBy: doc.createdBy, expiresAt: doc.expiresAt, startsAt: doc.startsAt, bannerImageUrl: doc.bannerImageUrl, repeatCount: doc.repeatCount }
             };
         },
         invert: (c) => ({ type: 'announcement.delete', target: { id: c.applied.id } })
@@ -87,13 +110,13 @@ registerEntity('announcements', {
         apply: async (op, { session }) => {
             const cur = await Announcement.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
-            const set = { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt || null };
+            const set = { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt || null, bannerImageUrl: op.payload.bannerImageUrl || null, repeatCount: op.payload.repeatCount ?? null };
             const res = await updateDocument({ Model: Announcement, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
             return {
                 ok: true,
                 change: { action: 'edit', model: 'Announcement', target: truncate(op.payload.text), summary: 'Edited an announcement' },
-                applied: { id: op.target.id, prior: { text: cur.text, expiresAt: cur.expiresAt, startsAt: cur.startsAt || null }, expiresAt: set.expiresAt, startsAt: set.startsAt }
+                applied: { id: op.target.id, prior: { text: cur.text, expiresAt: cur.expiresAt, startsAt: cur.startsAt || null, bannerImageUrl: cur.bannerImageUrl || null, repeatCount: cur.repeatCount ?? null }, expiresAt: set.expiresAt, startsAt: set.startsAt, bannerImageUrl: set.bannerImageUrl, repeatCount: set.repeatCount }
             };
         },
         invert: (c) => ({ type: 'announcement.edit', target: { id: c.applied.id }, payload: c.applied.prior })
