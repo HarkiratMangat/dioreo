@@ -52,13 +52,14 @@ for (const b of FIX.builds || []) {
     if (b.mode !== 'MP' || !b.shareCode) continue;
     MP_CODES.set(b.shareCode, (MP_CODES.get(b.shareCode) || 0) + 1);
 }
+// 🔴 KEPT IN STEP WITH portal/api/armory.js's coverageFlags, 2026-09-13 17:37 EDT (pins batch 2, pin pmtylf7gz) -- 'no-badges'/'wrong-attachment-count' retired, 'few-attachments' (<=2 regardless of mode) and 'code-length-mismatch' (shareCode.length !== attachments.length * 2) added. See that function's own comments for why.
 function armoryBuild(b) {
     const flags = [];
     if (!b.imageKey) flags.push('missing-image');
-    if (!(b.isMeta || b.categoryRank || b.dmzRangeRank || b.isToxic)) flags.push('no-badges');
-    if ((b.attachments || []).length !== (b.mode === 'DMZ' ? 9 : 5)) flags.push('wrong-attachment-count');
+    if ((b.attachments || []).length <= 2) flags.push('few-attachments');
     if (b.lastUpdated && Date.now() - new Date(b.lastUpdated).getTime() > NINETY_DAYS_MS) flags.push('stale-90d');
     if (b.mode === 'MP' && !b.shareCode) flags.push('no-code');
+    if (b.mode === 'MP' && b.shareCode && b.shareCode.length !== (b.attachments || []).length * 2) flags.push('code-length-mismatch');
     if (b.mode === 'MP' && b.shareCode && (MP_CODES.get(b.shareCode) || 0) > 1) flags.push('near-duplicate');
     return { ...b, _id: b._id || b.id, coverage: flags, accent: CAT_HEX[b.category] || 'var(--ink3)' };
 }
