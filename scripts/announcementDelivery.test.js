@@ -1,10 +1,6 @@
 // scripts/announcementDelivery.test.js
 //
-// Pure-logic test of utils/announcement.js's due-for-delivery decision (isAnnouncementDue), driven by
-// a FIXED simulated clock rather than a live database or a real Discord interaction --
-// announcementOps.test.js already covers the DB-touching op layer (validate/apply/invert); this file
-// is only about "given this state, is this announcement due right now", which is the function most
-// likely to get the 24h boundary math wrong.
+// Pure-logic test of utils/announcement.js's due-for-delivery decision (isAnnouncementDue), driven by a FIXED simulated clock rather than a live database or a real Discord interaction -- announcementOps.test.js already covers the DB-touching op layer (validate/apply/invert); this file is only about "given this state, is this announcement due right now", which is the function most likely to get the 24h boundary math wrong.
 const assert = require('assert');
 const { isAnnouncementDue, isRepeatingAnnouncement, MIN_HOURS_BETWEEN_REPEATS } = require('../utils/announcement');
 

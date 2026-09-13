@@ -1,21 +1,9 @@
 #!/usr/bin/env node
-// scripts/portalArmoryBuildNames.mjs — read-only report for pin pmtylf7gz (2026-09-13 17:41 EDT,
-// pins batch 2, spec §6): buildName is an IDENTITY in this codebase, not just a display string --
-// /autobuild derives the next build number AND the Cloudinary imageKey from "Build N" names
-// (utils/loadoutRender.js's computeWeaponKeyAndBuild), the add/bulk-upsert match on
-// {weaponKey, mode, buildName} (core/ops/loadouts.js, portal/api/bulk.js), delete-by-"weapon | build"
-// matches it (core/ops/loadouts.js), Cloudinary metadata parses Build_Number out of it
-// (utils/loadoutImageCache.js), and the scope sort tie-breaks on it (utils/loadoutScopes.js).
+// scripts/portalArmoryBuildNames.mjs — read-only report for pin pmtylf7gz (2026-09-13 17:41 EDT, pins batch 2, spec §6): buildName is an IDENTITY in this codebase, not just a display string -- /autobuild derives the next build number AND the Cloudinary imageKey from "Build N" names (utils/loadoutRender.js's computeWeaponKeyAndBuild), the add/bulk-upsert match on {weaponKey, mode, buildName} (core/ops/loadouts.js, portal/api/bulk.js), delete-by-"weapon | build" matches it (core/ops/loadouts.js), Cloudinary metadata parses Build_Number out of it (utils/loadoutImageCache.js), and the scope sort tie-breaks on it (utils/loadoutScopes.js).
 //
-// 🔴 THIS SCRIPT WRITES NOTHING. It exists so G6 can hand Harkirat two options with real numbers behind
-// them: (a) display-only labels — armory.logic.js's displayBuildLabel(), nothing stored changes — or
-// (b) an identity refactor, filed as its own item. No migration is written here on purpose.
+// 🔴 THIS SCRIPT WRITES NOTHING. It exists so G6 can hand Harkirat two options with real numbers behind them: (a) display-only labels — armory.logic.js's displayBuildLabel(), nothing stored changes — or (b) an identity refactor, filed as its own item. No migration is written here on purpose.
 //
-// ⚠️ DEV MONGO ONLY, ASSERTED RATHER THAN ASSUMED — same reasoning as scripts/lib/portalSession.cjs's
-// mintSession(): a report script that can read the production database by accident is not a report
-// script. Refuses anything whose URI is not localhost/127.0.0.1, AND whose database name does not look
-// like a dev database (contains "dev" — the only convention this repo has ever used, see
-// `diors-builds-dev` in CLAUDE.md's local-dev-bot section).
+// ⚠️ DEV MONGO ONLY, ASSERTED RATHER THAN ASSUMED — same reasoning as scripts/lib/portalSession.cjs's mintSession(): a report script that can read the production database by accident is not a report script. Refuses anything whose URI is not localhost/127.0.0.1, AND whose database name does not look like a dev database (contains "dev" — the only convention this repo has ever used, see `diors-builds-dev` in CLAUDE.md's local-dev-bot section).
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -43,12 +31,7 @@ function readDevMongoUri() {
 
 // ── THE CONSUMER LEDGER ───────────────────────────────────────────────────────────────────────
 //
-// ⚠️ THIS TABLE IS HAND-CURATED, NOT DERIVED — a grep can find every file that MENTIONS buildName,
-// but only a reader can tell whether a given use is a genuine identity dependency (a match key, a
-// derivation input, a delete target) or a display string with no consequence if it changes. The
-// FRESHNESS CHECK below re-greps the repo and warns if a file appears or disappears from that set,
-// so this table can go STALE LOUDLY instead of silently -- it can never go stale SILENTLY, but it can
-// absolutely go stale, and the warning is the whole point of running this instead of trusting memory.
+// ⚠️ THIS TABLE IS HAND-CURATED, NOT DERIVED — a grep can find every file that MENTIONS buildName, but only a reader can tell whether a given use is a genuine identity dependency (a match key, a derivation input, a delete target) or a display string with no consequence if it changes. The FRESHNESS CHECK below re-greps the repo and warns if a file appears or disappears from that set, so this table can go STALE LOUDLY instead of silently -- it can never go stale SILENTLY, but it can absolutely go stale, and the warning is the whole point of running this instead of trusting memory.
 const CONSUMERS = [
     { file: 'models/Loadout.js', kind: 'SCHEMA', why: 'declares buildName, default "Standard Build" -- the field every other row depends on existing' },
     { file: 'core/ops/loadouts.js', kind: 'IDENTITY', why: 'add/edit/bulk-upsert match existing docs on {weaponKey, mode, buildName}; delete-by-"weapon | build" matches buildName exactly' },
@@ -78,12 +61,7 @@ function printConsumerLedger() {
     }
 }
 
-// The freshness check: re-derive the file set with a plain filesystem walk (no subprocess -- rg via
-// execFileSync was observed returning a false "no matches" here, likely an environment/config
-// difference between an interactive shell's rg and a bare child_process spawn; a pure-Node regex
-// walk cannot have that class of failure), and warn (never fail -- this is a report, not a gate)
-// about anything the table doesn't cover, or anything the table lists that no longer mentions
-// buildName at all.
+// The freshness check: re-derive the file set with a plain filesystem walk (no subprocess -- rg via execFileSync was observed returning a false "no matches" here, likely an environment/config difference between an interactive shell's rg and a bare child_process spawn; a pure-Node regex walk cannot have that class of failure), and warn (never fail -- this is a report, not a gate) about anything the table doesn't cover, or anything the table lists that no longer mentions buildName at all.
 const SKIP_DIRS = new Set(['node_modules', '.git', 'docs', 'scripts', '.claude', 'public', 'local']);
 function walkJsFiles(dir, out) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
