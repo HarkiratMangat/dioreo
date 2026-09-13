@@ -509,11 +509,11 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 
 > ⟦ONE MESSAGE⟧ Step 1 — only after Harkirat approves the push, restated as `Approved by · to · when`.
 
-- [ ] **Step 1:** `git push -u origin <session branch> && gh pr create --base v3-pre-release` — `gh` defaults to `main`, which is the wrong base — with the PR body ending in the Claude Code attribution line.
+- [x] *(Session 1: 2026-09-13 19:04 EDT, #188 — pushed on Harkirat's popup answer "Push and open PR")* **Step 1:** `git push -u origin <session branch> && gh pr create --base v3-pre-release` — `gh` defaults to `main`, which is the wrong base — with the PR body ending in the Claude Code attribution line.
 
 > ⟦ONE MESSAGE⟧ Step 2 — the pre-merge checkpoint as one heredoc, gates chained.
 
-- [ ] **Step 2:** read the version from `git show origin/v3-pre-release:package.json` and take the next moderate step, `v3.(x+1).0-pre` — never a number copied from this plan · the session's CHANGELOG Unreleased entry becomes `## Pre-Release v3.(x+1).0 — <computed stamp> (#<PR>) — <what it did>` at the top of the released entries · `package.json` → that version · the DEVLOG entry through `node scripts/devlog-add.mjs --desc "<description> (v3.(x+1).0-pre)" --body-file -` · `npm run docs:audit` and `npm test`, each read by exit code.
+- [x] *(Session 1: 2026-09-13 19:04 EDT — origin read 3.80.0-pre → v3.81.0-pre; CHANGELOG heading with #188 and the v3.80.0 hash backfilled; package.json and package-lock.json; DEVLOG via the script; docs:audit and npm test exit 0. Steps 3 and 4 are ticked by the critique session, which reads this file after the merge)* **Step 2:** read the version from `git show origin/v3-pre-release:package.json` and take the next moderate step, `v3.(x+1).0-pre` — never a number copied from this plan · the session's CHANGELOG Unreleased entry becomes `## Pre-Release v3.(x+1).0 — <computed stamp> (#<PR>) — <what it did>` at the top of the released entries · `package.json` → that version · the DEVLOG entry through `node scripts/devlog-add.mjs --desc "<description> (v3.(x+1).0-pre)" --body-file -` · `npm run docs:audit` and `npm test`, each read by exit code.
 
 > ⟦ONE MESSAGE⟧ Step 3 — only after Harkirat approves the merge, restated.
 
