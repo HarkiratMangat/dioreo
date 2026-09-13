@@ -14,11 +14,33 @@ check('Armory Coverage flags a build with no image', () => {
     assert.ok(coverageFlags(build, []).includes('missing-image'));
 });
 
-check('Armory Coverage flags the wrong attachment count for the build\u0027s mode', () => {
-    const mp = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b'], isMeta: true, lastUpdated: new Date() };
-    assert.ok(coverageFlags(mp, []).includes('wrong-attachment-count'));
-    const dmz = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), isMeta: true, lastUpdated: new Date() };
-    assert.ok(!coverageFlags(dmz, []).includes('wrong-attachment-count'));
+// 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:39 EDT (pins batch 2, pin pmtylf7gz) -- neither was a real defect (see portal/api/armory.js's coverageFlags). Replaced by 'few-attachments' (<=2 attachments, either mode) and 'code-length-mismatch' (an MP code whose length disagrees with 2 * attachments.length).
+check('Armory Coverage flags 2 or fewer attachments regardless of mode', () => {
+    const mpThin = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b'], lastUpdated: new Date() };
+    assert.ok(coverageFlags(mpThin, []).includes('few-attachments'));
+    const mpFull = { mode: 'MP', imageKey: 'x', attachments: ['a', 'b', 'c', 'd', 'e'], lastUpdated: new Date() };
+    assert.ok(!coverageFlags(mpFull, []).includes('few-attachments'));
+    // A DMZ build with a valid, non-thin slot count (9 here) must NOT be flagged -- the exact-9 check this replaces flagged perfectly complete DMZ builds because real slot counts vary with weapon rarity.
+    const dmzFull = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), lastUpdated: new Date() };
+    assert.ok(!coverageFlags(dmzFull, []).includes('few-attachments'));
+    const dmzThin = { mode: 'DMZ', imageKey: 'x', attachments: ['a'], lastUpdated: new Date() };
+    assert.ok(coverageFlags(dmzThin, []).includes('few-attachments'));
+});
+
+check('Armory Coverage no longer flags an unbadged build', () => {
+    const unbadged = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), lastUpdated: new Date() };
+    assert.ok(!coverageFlags(unbadged, []).includes('no-badges'));
+});
+
+check('Armory Coverage flags an MP gunsmith code whose length disagrees with its attachment count', () => {
+    // LOCUS Build 1 shape from the dev catalogue: 5 attachments, a 10-char code -- the CORRECT case.
+    const right = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), shareCode: '2A4B5A8C9C', lastUpdated: new Date() };
+    assert.ok(!coverageFlags(right, []).includes('code-length-mismatch'));
+    const truncated = { mode: 'MP', imageKey: 'x', attachments: Array(5).fill('a'), shareCode: '2A4B5A8C', lastUpdated: new Date() };
+    assert.ok(coverageFlags(truncated, []).includes('code-length-mismatch'));
+    // DMZ never carries a code by design (spec §6) -- the check must never fire for it.
+    const dmz = { mode: 'DMZ', imageKey: 'x', attachments: Array(9).fill('a'), shareCode: 'anything', lastUpdated: new Date() };
+    assert.ok(!coverageFlags(dmz, []).includes('code-length-mismatch'));
 });
 
 check('Armory Coverage flags a build not updated in 90 days', () => {

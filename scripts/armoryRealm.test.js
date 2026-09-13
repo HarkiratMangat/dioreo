@@ -20,6 +20,7 @@ const ROOT = path.join(__dirname, '..');
 const {
     rackCategories, weaponOptions, matchWeapons, bestRankIndex, rankOf,
     addFormBlockers, editedFields, editorBlockers, CATEGORY_CHIP_ORDER,
+    buildNumberOf, copyCodeText, shareCommandText, displayBuildLabel,
 } = require('../portal/ui/armory.logic');
 
 // ── THE FIXTURE ───────────────────────────────────────────────────────────────────────────────
@@ -223,6 +224,59 @@ check('both Armory forms mount in the shared Drawer, in the overlay slot rather 
     assert.ok(overlay.includes('AddBuildForm') && overlay.includes('BuildEditor'),
         'a drawer moved back into the view slot, where Drawer\'s own inert call would disable it');
     assert.ok(src.includes('.bed-side'), 'the drawer lost the record/preview column the design puts on its right');
+});
+
+
+// ── BUILD NUMBER, CODE COPY, THE SHARE COMMAND, THE HUMAN LABEL (pin pmtylf7gz, 2026-09-13 17:40 EDT, pins batch 2) ──
+
+check('buildNumberOf orders siblings by _id, matching utils/loadoutScopes.js\'s own tie-break', () => {
+    // Deliberately inserted out of _id order, so an implementation that trusted array order would get this wrong.
+    const b2 = B({ _id: 'm2', weaponName: 'AK117', mode: 'MP' });
+    const b1 = B({ _id: 'm1', weaponName: 'AK117', mode: 'MP' });
+    const b3 = B({ _id: 'm3', weaponName: 'AK117', mode: 'MP' });
+    const other = B({ _id: 'x1', weaponName: 'AK117', mode: 'DMZ' }); // same weapon, DIFFERENT mode -- must not count
+    const builds = [b2, other, b1, b3];
+    assert.deepStrictEqual(buildNumberOf(builds, b1), { n: 1, of: 3 });
+    assert.deepStrictEqual(buildNumberOf(builds, b2), { n: 2, of: 3 });
+    assert.deepStrictEqual(buildNumberOf(builds, b3), { n: 3, of: 3 });
+});
+
+check('copyCodeText copies the real code, and is blank for DMZ (no code by design)', () => {
+    assert.strictEqual(copyCodeText(B({ mode: 'MP', shareCode: '2A4B5A8C9C' })), '2A4B5A8C9C');
+    assert.strictEqual(copyCodeText(B({ mode: 'DMZ', shareCode: undefined })), '');
+});
+
+// 🔴 THIS IS THE PROOF, NOT AN ASSERTION BY INSPECTION. commands/gunsmiths.js's `search` subcommand feeds whatever text a user typed to utils/loadoutLookup.js's lookupAndRenderWeapon(), which resolves it with `weaponKey = rawQuery.toLowerCase().replace(/\s+/g, '')` -- reproduced verbatim below rather than required, because the real function opens a live Mongo connection and does I/O this test must not perform. What is checked against the SOURCE, not just against this copy, is that both normalizes are textually identical -- so if either file's regex ever drifts from the other, this test fails instead of silently passing on two normalizes that happen to still agree today.
+const REAL_NORMALIZE = /weaponKey = rawQuery\.toLowerCase\(\)\.replace\(\/\\s\+\/g, ''\)/;
+function resolverWeaponKey(rawQuery) { return rawQuery.toLowerCase().replace(/\s+/g, ''); }
+
+check('shareCommandText\'s weapon token resolves through /gunsmiths search\'s real weapon lookup', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'utils', 'loadoutLookup.js'), 'utf8');
+    assert.ok(REAL_NORMALIZE.test(src), 'utils/loadoutLookup.js\'s normalize no longer matches this test\'s copy of it -- re-derive resolverWeaponKey() from the real source before trusting this check');
+    // core/ops/loadouts.js's deriveWeaponKey() is the ONLY place a stored weaponKey is ever produced -- same normalize, checked directly against ITS source too.
+    const opsSrc = fs.readFileSync(path.join(ROOT, 'core', 'ops', 'loadouts.js'), 'utf8');
+    assert.ok(/deriveWeaponKey = \(weaponName\) => \(weaponName \|\| ''\)\.toLowerCase\(\)\.replace\(\/\\s\+\/g, ''\)/.test(opsSrc),
+        'core/ops/loadouts.js\'s deriveWeaponKey no longer matches this test\'s copy of it');
+
+    const build = B({ weaponName: 'Holger 26', mode: 'MP' });
+    const text = shareCommandText(build, 2);
+    assert.strictEqual(text, '/gunsmiths search weapon:Holger 26 build:2 visibility:Public');
+    // Pull the weapon token back out of the command text exactly the way a human would type it in, then run it through the SAME normalize the real resolver uses -- it must land on the build's own weaponKey.
+    const typedWeapon = text.slice(text.indexOf('weapon:') + 7, text.indexOf(' build:'));
+    const storedWeaponKey = 'holger26'; // deriveWeaponKey('Holger 26') by hand, so this test has no dependency on the module under test to check itself against
+    assert.strictEqual(resolverWeaponKey(typedWeapon), storedWeaponKey);
+});
+
+check('displayBuildLabel hides an ordinal, the schema default, and a gunsmith code sitting in the name field; shows a real human label', () => {
+    assert.strictEqual(displayBuildLabel(B({ buildName: 'Build 1' })), '');
+    assert.strictEqual(displayBuildLabel(B({ buildName: 'Build 12' })), '');
+    assert.strictEqual(displayBuildLabel(B({ buildName: 'Standard Build' })), '');
+    // The real stray value from the dev catalogue (spec §6) -- a gunsmith code sitting in the name field.
+    assert.strictEqual(displayBuildLabel(B({ buildName: '1C2B5B6D7O' })), '');
+    assert.strictEqual(displayBuildLabel(B({ buildName: '' })), '');
+    assert.strictEqual(displayBuildLabel(B({ buildName: 'Aggressive Flex' })), 'Aggressive Flex');
+    // A name that merely CONTAINS the word "Build" but isn't the bare ordinal shape must still show.
+    assert.strictEqual(displayBuildLabel(B({ buildName: 'Build for Ranked' })), 'Build for Ranked');
 });
 
 say(failures ? `\n✗ ${failures} failed` : '\n✅ armoryRealm: the rack groups by category and opens closed, the search returns a weapon\'s whole sibling set, and neither drawer stages nothing');
