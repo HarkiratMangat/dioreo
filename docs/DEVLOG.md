@@ -244,6 +244,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-11 11:39 EDT — the matrix labels come off their side, and a sticky header that painted over itself (v3.79.0-pre)
 - 2026-09-11 13:25 EDT — the Access matrix turns ninety degrees, and three rejected label fixes were all the wrong question (v3.79.0-pre)
 - 2026-09-11 14:28 EDT — eighteen pins on the Access grid, and the ones that hurt were the ones I could have seen (v3.79.0-pre)
+- 2026-09-13 14:33 EDT — Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4290,6 +4291,28 @@ The colour pass was rejected a second time for the same reason in a new costume.
 The inherited-permission bug is the one worth keeping. Staging `manage` lit nothing below it, because the cell read the server's `inherited` flag, which stays false until save - so the single relationship this grid exists to show was invisible at exactly the moment you were creating it. A grid that only tells the truth after you commit is a grid you cannot use to decide whether to commit.
 
 And the structural one: in the artifact the grid and the legend sat on `--paper` inside a `--desk` page, so a soft-cornered bordered box read as a box. In the portal everything is `--paper`, so I shipped `--paper` boxes on a `--paper` panel - borders around nothing. That is what "you just slapped them in" means precisely, and it is the same root as this morning's failure: I ported a component out of a page and left the page behind.
+
+## 2026-09-13 14:33 EDT — Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)
+
+Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonnet session could execute without drifting. The planning session built nothing. It produced `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` (frozen) and `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` (live), and every design fork was decided on a board rendered from the portal's own tokens and real screenshots, not in prose.
+
+**What the board changed.** My hue-distance check flagged three of his seven accents as collisions; he explained a rule the instrument could not see — a permission wears its in-bot command's colour, so two matching colours are kinship when the things are related. I then told him `--ok` already meant "confirm"; he had never seen it, and a scan of all seven realms showed it is a status green that no button has ever used. Both corrections came from looking, not from a number.
+
+**Four pins named a cause that was not the cause.** The Analytics icons are empty states. The Build Name field exists, and the dev data holds ordinals plus one gunsmith code. The When column is in UTC. The harness fixture hides the session user-agent defect. Every build session now reproduces a pin before fixing it.
+
+**Deferred.** The permission restructure — tiers, create/modify/destructive plus a new view-only sub-tier, the four-shape cell — was answered question by question and then deferred by Harkirat as still having kinks. The plan dropped from three build sessions to two, and every answer is recorded as input under a `[P1]` design item.
+
+**Checked before it was handed on.** A reader test and `npm run handoff` found a merge check that could never pass after a squash, six step groups with no message boundary, screenshots placed before their pages existed, a precedence rule that would have overruled the critique, and no tracked record of how the branch closes. All fixed on the branch. A post-compact review then found that `buildName` is still an identity key in six places — /autobuild's next number and image key among them — so the planned name migration would have overwritten a build's image and merged builds on paste; build names are display-only until Harkirat chooses at gate G6.
+
+**The search index was being deleted under its own server.** A plan written that morning never came back from `ctx_search`. context-mode's server deletes a store whose write-ahead log looks abandoned the first time it opens that store in a session, and a killed server leaves exactly that log — so this repo's store vanished twice in three days while search kept answering from the deleted file. The first diagnosis blamed the refresh hook's CLI; a repro disproved it, and a second repro against context-mode's real server reproduced the sweep. A global guard now empties such logs before any context-mode tool runs, the refresh hook refills a store that lost its corpora or is about to be pruned, and `npm run index:health` says whether a server is reading the file on disk.
+
+### Lessons
+
+- A distance metric cannot tell kinship from collision. Show the colours and ask what they mean before calling a match a defect.
+- Mid-session Harkirat called out tool drift: `sed -n` and `head` reads, zero `codebase-memory` calls, and no ledger query before planning changes to cited surfaces. The ledger and graph queries that followed changed the plan — removing the crumb now retires two cited rows.
+- A tool-created worktree branches from `origin/main`. A subagent working on `v3-pre-release` must be handed a worktree made by hand and must assert its ancestry before doing anything.
+- An ancestry check on a file's last commit fails after a squash merge; check the file's presence on the target branch instead.
+- A mechanism narrated over a value nobody checked produced the wrong cause for the vanishing index, and a detector built on it was half-written before Harkirat asked whether the cause was found or only enough of it. The repro that could fail is what found the real one.
 
 # Part B — Lessons Ledger (thematic)
 

@@ -13,6 +13,7 @@ node_modules/
 # never meaningful content. Untracked 2026-08-18 10:07 EDT after an accidental `git add -A` picked
 # it up (this repo has no global ignore for it, unlike most repos on this machine).
 Icon?
+dioreo-context.xml
 
 
 # Dev-bot-only emoji overrides consumed by utils/emojiMap.js's refreshEmojiIds() when
@@ -24,7 +25,7 @@ gun-builds/
 local/
 .restart-reason
 builds.xlsx
-Dioreo logo/
+Dioreo-logo/
 
 
 # Python bytecode cache -- introduced 2026-08-15 01:42 EDT by scripts/syncNameplateCatalog.py, the

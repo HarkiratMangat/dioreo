@@ -58,6 +58,12 @@ code | grep -q 'EXT_STAMP' \
   && { echo "  PASS  external sources carry their OWN stamp (a memory write must not re-index docs/)"; pass=$((pass+1)); } \
   || { echo "  FAIL  one stamp for both — every auto-memory write would re-index all of docs/"; fail=$((fail+1)); }
 
+# ── 🔴 A STAMP IS NOT THE STORE (2026-09-13 13:18 EDT). context-mode's startup sweep deleted the store twice under a stamp that still matched, and this hook trusted the stamp. These name the guards so none can be dropped silently; their logic is proved in scripts/indexHealth.test.mjs and ~/.claude/hooks/context-mode-wal-guard.test.mjs.
+grep -q -- "--source vendor:impeccable-docs --no-gitignore" "$HOOK" && { echo "  PASS  indexes corpus vendor:impeccable-docs, past local/'s gitignore"; pass=$((pass+1)); } || { echo "  FAIL  vendor docs are not a corpus, or are indexed through the gitignore and come back empty"; fail=$((fail+1)); }
+code | grep -q '"$HEALTH" labels --root "$ROOT" $REPO_LABELS' && code | grep -q '"$HEALTH" labels --root "$ROOT" $EXT_LABELS' && { echo "  PASS  a stamp is checked against the corpora the store still holds"; pass=$((pass+1)); } || { echo "  FAIL  a matching stamp is trusted over a store that lost its rows"; fail=$((fail+1)); }
+code | grep -q '"$HEALTH" orphans' && { echo "  PASS  a server reading a deleted store is reported"; pass=$((pass+1)); } || { echo "  FAIL  a server reading a deleted store would go unreported"; fail=$((fail+1)); }
+awk '/MISSING=\$\(node/ && !m {m=NR} /> "\$STAMP"/ && !s {s=NR} END {exit !(m && s && m < s)}' "$HOOK" && { echo "  PASS  the stamp is written only after the post-index corpus check"; pass=$((pass+1)); } || { echo "  FAIL  the stamp can be written before checking the corpora landed"; fail=$((fail+1)); }
+
 # ── 🔴 A FAILURE MUST BE VISIBLE. v1 swallowed its own fatal error for its entire life.
 grep -q 'CTX INDEX REFRESH FAILED' "$HOOK" && { echo "  PASS  reports an indexing failure instead of hiding it"; pass=$((pass+1)); } || { echo "  FAIL  an index failure would be silent"; fail=$((fail+1)); }
 code | grep -q 'testCache' && { echo "  FAIL  still uses testCache, which throws on docs/'s nested dirs"; fail=$((fail+1)); } || { echo "  PASS  does not use testCache in code (it rejects nested inputs)"; pass=$((pass+1)); }
