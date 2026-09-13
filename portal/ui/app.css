@@ -94,8 +94,6 @@ header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:0 16px;
   border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40}
 .mk{font-family:var(--data);font-size:var(--t-sm);letter-spacing:.16em;font-weight:600;white-space:nowrap}
 .mk b{color:var(--patch);font-weight:600}
-.crumb{font-size:var(--t-base);color:var(--ink3);letter-spacing:.02em}
-.crumb b{color:var(--ink2);font-weight:500}
 header .sp{margin-left:auto}
 .who{display:flex;align-items:center;gap:8px;font-size:var(--t-base);color:var(--ink2)}
 .who .av{width:24px;height:24px;border-radius:var(--rad-round);border:1px solid var(--rule2);flex:none;
@@ -555,14 +553,9 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
  * computed display:block / visibility:visible / opacity:1, and still reported a real 274x292
  * rect — every property a programmatic check would look at was healthy, and nothing was on
  * screen. (COMPANION §14: a measurement can measure the wrong thing precisely.) The clip was
- * only ever needed for the crumb's ellipsis, and .crumb carries its own on the next line. */
+ * only ever needed for the crumb's ellipsis. (The crumb itself was removed 2026-09-13 17:49 EDT, batch-2 spec §8.) */
 header{min-width:0}
-header .crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (max-width:768px){
-  /* The crumb is redundant on a phone: the masthead below states the realm in display type,
-     and the bottom tab bar shows which one is current. Dropping it is what lets the header
-     fit rather than forcing an ellipsis onto something already said twice. */
-  header .crumb{display:none}
   /* 🔴 AND THE COMMIT CHIP, for the same reason and a worse symptom — measured 2026-09-04 22:39 EDT at 375px on all
      seven realms: `clientWidth 0`, `scrollWidth 96`, a bounding rect of 2 × 70.25 hanging at top −11.6. Not
      cramped: destroyed, and above the header it belongs to. The header is a flex row with no shrink floor, so
@@ -3854,6 +3847,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .cmdbar{position:relative;flex:1 1 460px;max-width:520px;min-width:0;display:flex;align-items:center;gap:9px;
   height:34px;padding:0 11px;border-radius:var(--rad-3);border:1px solid var(--rule);background:var(--sunk);
   transition:border-color .15s,background .15s}
+/* Centred on the header, not between its neighbours (batch-2 spec §8, 2026-09-13 17:49 EDT). With the crumb gone the flex spacers put the bar halfway between the wordmark and the account cluster, which are different widths, so it sat off-centre. Out of flow only where the header is wide enough that the right cluster cannot reach it; below 1200px it stays a flex item. The header is sticky, so it is the containing block. */
+@media (min-width:1200px){header > .cmdbar{position:absolute;left:50%;transform:translateX(-50%);width:520px}}
 .cmdbar:hover{border-color:var(--rule2)}
 .cmdbar.on,.cmdbar:focus-within{border-color:var(--patch);background:var(--paper)}
 .cb-mag{flex:none;width:13px;height:13px;border-radius:var(--rad-round);border:1.5px solid var(--ink4);position:relative}
@@ -3880,8 +3875,8 @@ tbody tr.preview-sel td:first-child{box-shadow:inset 2px 0 0 0 var(--patch)}
 .cb-drop .pitem:hover,.cb-drop .pitem.sel{background:var(--hi);color:var(--ink)}
 .cb-drop .pnone{margin:0;padding:14px 12px;font-size:var(--t-base);color:var(--ink3)}
 
-/* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. */
-.hdr-out{flex:none;display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 11px;
+/* Sign out, in the bar. It still confirms; finding it is not the part that should be hard. Icon-only since 2026-09-13 17:49 EDT (batch-2 spec §8): it sits beside the profile it ends, and its accessible name carries the word. */
+.hdr-out{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;width:32px;padding:0;
   border-radius:var(--rad-2);border:1px solid transparent;background:none;color:var(--ink3);cursor:pointer;
   font:500 var(--t-sm)/1 var(--ui)}
 .hdr-out svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.5;
@@ -5734,7 +5729,6 @@ button .ic,a .ic{pointer-events:none}
  * flex/grid child is the difference between an ellipsis and a blown-out column, and the two-column
  * splits below are the layout the mockup drew with inline styles. */
 .nw-f{min-width:0}
-.crumb-sep{display:inline-flex;align-items:center;color:var(--ink3);vertical-align:middle}
 .badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 /* Home's clock is the page's lead and sits above a two-column live panel, so it centres its own
  * measure instead of running the full width the way Season's does — same component, one page's
@@ -6296,6 +6290,12 @@ button .ic,a .ic{pointer-events:none}
   border-color:color-mix(in srgb,var(--m1) 26%,var(--rule))}
 @media (prefers-reduced-motion:reduce){.idbar[data-mesh]{transition:none}}
 .idbar{transition:background var(--dur-2) var(--ease)}
+/* The account menu wears the same mesh on its own ground (batch-2 spec §8, 2026-09-13 17:49 EDT). Same bounded mix as the identity bar, so no avatar can lift the menu's text below its contrast floor. */
+.umenu[data-mesh]{background:
+  radial-gradient(115% 190% at 4% 0%, color-mix(in srgb,var(--m1) 10%,var(--raised)) 0%, transparent 58%),
+  radial-gradient(95% 165% at 90% 12%, color-mix(in srgb,var(--m2) 7%,var(--raised)) 0%, transparent 54%),
+  radial-gradient(120% 210% at 50% 100%, color-mix(in srgb,var(--m3) 6%,var(--raised)) 0%, transparent 62%),
+  var(--raised)}
 
 /* harden lens — names which single precondition is still missing before the Grant button in the drawer will
    enable (access.logic.js's grantReady drives the text; this is only the line's own styling). New class. */

@@ -13,7 +13,8 @@
           }
         }
       ],
-      "expect": "#manifest .chipset button[aria-pressed=\"true\"]"
+      "expect": "#manifest .chipset button[aria-pressed=\"true\"]",
+      "note": "Since 2026-09-13 18:04 EDT the river lives in History (batch-2 spec §4): the level row hands its filter over and navigates, so the pressed chip this expects is on the History page the state lands on."
     },
     {
       "name": "health tile · navigates to what answers it",
@@ -27,33 +28,6 @@
         }
       ],
       "expect": ".seg button[aria-selected=\"true\"]"
-    },
-    {
-      "name": "event drawer · a river row opens with its fields",
-      "realm": "analytics",
-      "steps": [
-        {
-          "clickText": {
-            "sel": "#manifest tbody td",
-            "text": "Bot online"
-          }
-        }
-      ],
-      "expect": ".diff .diff-r",
-      "note": "Addressed by the CELL and by its words, not the row: a coordinate click on a <tr> lands wherever its centre falls, and the checkbox cell stops propagation. The row handler is what opens the drawer, and it fires from any cell that does not."
-    },
-    {
-      "name": "manifest · nothing matches the search",
-      "realm": "analytics",
-      "steps": [
-        {
-          "type": {
-            "sel": "#manifest input",
-            "text": "zzzznomatchzzzz"
-          }
-        }
-      ],
-      "expect": "#manifest .empty"
     }
   ]
 }

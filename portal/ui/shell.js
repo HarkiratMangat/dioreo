@@ -5,6 +5,7 @@
 // 🔴 THE NAV IS A RAIL, NOT A BAR, and that is a correction rather than a preference. `01-season-spine.html` is the FULL-STYLE mockup — one page, designed completely — and its chrome is a 76px left icon rail plus a thin top bar carrying only the wordmark, a breadcrumb and identity. Mockups 02–06 are COMPILED-STYLE sheets: several pages stacked into one file for review, wrapped in a document-navigation bar. The horizontal five-realm bar that shipped here is almost exactly 06's *document* nav — review scaffolding built as product. Measured before removing it: 863px of content in a 359px viewport. See the redesign spec §0.
 import { h, cloneElement } from '../vendor/preact.mjs';
 import { html } from '../vendor/htm-preact.mjs';
+import { useAvatarTint } from './avatarTint.js';
 import { Icon } from './icons.js';
 import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
 import { CommandBar } from './palette.js';
@@ -277,6 +278,8 @@ function Account({ session, staged, onSignOut, chrome }) {
         return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
     }, [open]);
 
+    // The menu wears the avatar's mesh, as the Access Grant drawer's identity bar does (batch-2 spec §8, 2026-09-13 17:49 EDT). Called above the early return: a hook's call order cannot depend on whether a session exists.
+    const tint = useAvatarTint(session ? avatarUrlOf(session) : null);
     if (!session) return null;
     const id = String(session.discordId);
     const realms = (session.visibleRealms || []).filter((r) => r !== 'review');
@@ -293,7 +296,8 @@ function Account({ session, staged, onSignOut, chrome }) {
                 <span class="id" title=${id}>${session.globalName || session.username || ('…' + id.slice(-4))}</span>
                 <span class="cv" aria-hidden="true"></span>
             </button>
-            <div class="umenu" role="menu" aria-label="Account" hidden=${!open}>
+            <div class="umenu" role="menu" aria-label="Account" hidden=${!open} data-mesh=${tint ? 'y' : null}
+                 style=${tint ? `--m1:${tint[0]};--m2:${tint[1] || tint[0]};--m3:${tint[2] || tint[1] || tint[0]}` : null}>
                 ${''/* 🔴 THE BANNER SLOT IS GONE — Harkirat's pick, 2026-09-10 18:22 EDT, fork 08. It was `--banner:none` hardcoded: a 38px strip reserving room for an image the session payload has never carried, so it rendered as a grey band that read as a broken header. A REAL banner needs a new field on /auth and a Discord fetch, and reserving space for a feature with no date is exactly how this strip came to exist. It returns with an image in it, the next time that payload is touched for something else. */}
                 <div class="uid">
                     <!-- D3 — the real Discord avatar and name, replacing a grey disc and the literal string
@@ -359,24 +363,16 @@ function Header({ realm, view, session, staged, commands, onSignOut, chrome }) {
     return html`
         <header id="hdr">
             <button class="mk" title="Home" onClick=${() => { location.hash = '#/home'; }}><span class="glyph"></span>DIOREO<b>/</b>PORTAL</button>
-            <!-- 🔴 THE SEPARATOR IS AN ICON HERE AND A GLYPH IN THE DESIGN, and it is the audit's FIRST
-                 cascade finding on every Season view: top 17 to 21, height 17 to 11, with 1445 offsets
-                 reported beneath it. The icon is the better call and it stays — reference_never_text_glyphs
-                 _for_icons exists because a text chevron inherits font metrics nothing controls, which is
-                 exactly the 6px this measures. So it stands down for the comparison rather than being
-                 given up, and comes back with the rest of the re-apply queue. -->
-            <!-- 🔴 THE DESIGN SETS THIS SEPARATOR AS A TEXT CHEVRON AND THE PORTAL DOES NOT, DELIBERATELY.
-                 reference_never_text_glyphs_for_icons: a glyph inherits font metrics nothing here controls, so it
-                 lands differently on every stack. Lucide is already inlined in this package. Kept with the drawer's
-                 close in overlay.js — the two are one rule, and an SVG here beside a glyph there is two habits. -->
-            <span class="crumb">${realmLabelOf(realm)}${view
-                ? html` <b class="crumb-sep"><${Icon} name="chevron-right" cls="sm" /></b> ${view}` : null}</span>
             <span class="sp"></span>
             <${CommandBar} commands=${commands} realmLabel=${realm === 'home' ? null : realmLabelOf(realm)} />
             <span class="sp"></span>
             ${staged ? html`
                 <a class="hdr-commit" href="#/review"><b>${staged}</b>${' '}<span>staged · review</span></a>` : null}
             <${Account} session=${session} staged=${staged} onSignOut=${onSignOut} chrome=${chrome} />
+            ${''/* Sign out, one click from the profile it belongs to (batch-2 spec §8, 2026-09-13 17:49 EDT). The .hdr-out rules were written for exactly this and nothing emitted them. It still confirms, through the same session.end drawer as the menu item, which stays. */}
+            <button class="hdr-out" type="button" aria-label="Sign out" title="Sign out" onClick=${() => onSignOut(staged)}>
+                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3H4v10h6" /><path d="M8 8h6M12 6l2 2-2 2" /></svg>
+            </button>
         </header>
     `;
 }

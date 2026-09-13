@@ -272,7 +272,29 @@ check('buildBroadcastEditOp edits an announcement via announcement.edit, targeti
 
 // ── WHO IS ACTUALLY SIGNED IN ─────────────────────────────────────────────────────────────────
 //
-// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal `'live'` on every row, so the panel whose whole job is telling an owner who is signed in RIGHT NOW could not tell a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — this is derived or it is a guess.
+// 🔴 EVERY SESSION READ "LIVE", INCLUDING ONE LAST SEEN YESTERDAY. The Access table stamped the literal `'live'` on every row, so the panel whose whole job is telling an owner who is signed in RIGHT NOW could not tell a tab open two minutes ago from one abandoned five hours back. A browser session has no logout event unless somebody clicks one — this is derived or it is a guess. Batch-2 spec §8, 2026-09-13 18:04 EDT: session rows name browser and OS. Real user-agent strings, because the harness fixture's are already readable and prove nothing (spec §9).
+const { deviceOf } = require('../portal/ui/access.logic');
+check('deviceOf names browser and OS from real user-agent strings, and passes through what it cannot name', () => {
+    const cases = [
+        ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36', 'Chrome · macOS'],
+        ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1', 'Safari · iPhone'],
+        ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.2739.42', 'Edge · Windows'],
+        ['Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0', 'Firefox · Linux'],
+        ['Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36', 'Chrome · Android'],
+        ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/128.0.6613.98 Mobile/15E148 Safari/604.1', 'Chrome · iPhone'],
+        ['Chrome on macOS', 'Chrome on macOS'],
+        ['portalSession (scripts/lib/portalSession.cjs)', 'portalSession (scripts/lib/portalSession.cjs)'],
+        ['', ''],
+    ];
+    for (const [ua, want] of cases) assert.strictEqual(deviceOf(ua), want, ua.slice(0, 60));
+});
+check('THE ORDER GATE CAN FAIL: testing Chrome before Edge names an Edge browser Chrome', () => {
+    const edge = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.2739.42';
+    const naive = (s) => (/Chrome\//.test(s) ? 'Chrome' : /Edg\//.test(s) ? 'Edge' : '?');
+    assert.strictEqual(naive(edge), 'Chrome', 'the naive order no longer misnames Edge, so this proof proves nothing');
+    assert.strictEqual(deviceOf(edge).split(' · ')[0], 'Edge');
+});
+
 const { sessionIsLive, sessionSummary, SESSION_LIVE_MS } = require('../portal/ui/access.logic');
 const NOW = Date.parse('2026-08-26T20:00:00.000Z');
 const ago = (ms) => ({ lastSeenAt: new Date(NOW - ms).toISOString() });

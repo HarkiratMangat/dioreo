@@ -8,6 +8,7 @@ import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell } from './async.js';
 import { Drawer, useOverlay } from './overlay.js';
 import { Icon } from './icons.js';
+import { useAvatarTint } from './avatarTint.js';
 
 // ⚠️ SESSION_COLUMNS IS GONE WITH THE MANIFEST IT FED. Sessions are a view now — see the Sessions component for why the shared table was the wrong home and how it produced a hardcoded `state: 'live'` on every row.
 
@@ -76,52 +77,6 @@ function useIdentities(ids) {
     return map;
 }
 
-// 🔴 THE BAR TAKES ITS GROUND FROM THE FACE ON IT. Harkirat asked whether a soft mesh tint from the profile picture was doable, 2026-09-11 17:25 EDT -- it is, and it needs no server: Discord's CDN sends a permissive `Access-Control-Allow-Origin`, verified live against both a default avatar and a real user's before a line of this was written, so `crossOrigin="anonymous"` plus `getImageData` reads real pixels instead of tainting the canvas. The extraction is deliberately crude and deterministic: 28x28 samples, binned into 24 hue buckets of 15 degrees, with grey, near-black and near-white discarded so a dark avatar on a dark bar does not produce a tint of nothing. The three fullest buckets become three blobs. It is NOT the bot's k-means (utils/accentColor.js) and should not become it -- that runs server-side over a full-size image to pick ONE accent a user will live with, and this is three decorative blobs at 15% alpha that must cost nothing on a drawer open. ⚠️ EVERY FAILURE PATH ENDS IN NO TINT, NEVER A BROKEN BAR: a blocked image, a tainted canvas, an avatar with no colourful pixels at all. The bar's own `--sunk` is what shows, which is exactly what it looked like yesterday.
-function dominantColors(img, n = 3) {
-    const S = 28;
-    const c = document.createElement('canvas');
-    c.width = S; c.height = S;
-    const x = c.getContext('2d', { willReadFrequently: true });
-    x.drawImage(img, 0, 0, S, S);
-    const d = x.getImageData(0, 0, S, S).data;
-    const bins = new Map();
-    for (let i = 0; i < d.length; i += 4) {
-        const r = d[i], g = d[i + 1], b = d[i + 2];
-        if (d[i + 3] < 200) continue;
-        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), chroma = mx - mn, lum = (mx + mn) / 2;
-        if (chroma < 28 || lum < 26 || lum > 234) continue;
-        let h = mx === r ? ((g - b) / chroma) % 6 : mx === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
-        h = (h * 60 + 360) % 360;
-        const k = Math.floor(h / 15);
-        const e = bins.get(k) || { n: 0, r: 0, g: 0, b: 0 };
-        e.n += 1; e.r += r; e.g += g; e.b += b;
-        bins.set(k, e);
-    }
-    return [...bins.values()].sort((p, q) => q.n - p.n).slice(0, n)
-        .map((e) => `rgb(${Math.round(e.r / e.n)} ${Math.round(e.g / e.n)} ${Math.round(e.b / e.n)})`);
-}
-
-function useAvatarTint(url) {
-    const [tint, setTint] = useState(null);
-    useEffect(() => {
-        setTint(null);
-        if (!url) return undefined;
-        let dead = false;
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            if (dead) return;
-            try {
-                const cols = dominantColors(img);
-                if (cols.length) setTint(cols);
-            } catch { /* a tainted canvas means no tint, and no tint is a perfectly good bar */ }
-        };
-        img.src = url;
-        return () => { dead = true; };
-    }, [url]);
-    return tint;
-}
-
 function useDiscordLookup(discordId) {
     const [state, setState] = useState(() => (IDENTITY.has(discordId) ? { status: 'ok', user: IDENTITY.get(discordId) } : { status: 'idle' }));
     useEffect(() => {
@@ -146,7 +101,7 @@ function useDiscordLookup(discordId) {
 // ⚠️ THE OWNER-ONLY LOCK IS SHOWN, NOT ENFORCED HERE. `destructive` is excluded from `all` and grantable only by the owner — the server decides that, and a chip that hid it would leave an owner unable to grant the one permission only they can grant. The mark says why it is different.
 //
 // ⚠️ grantReady (access.logic.js) is the single source for when the Grant button may fire and what the `.why` line says when it may not — kept pure and unit-tested (scripts/portalSession.test.js) precisely so this readiness rule can be checked without a DOM. 🔴 ONE FORM, TWO MODES, BECAUSE THE SECOND ONE IS THE FIRST ONE WITH ITS ID ALREADY DECIDED. Passing an `admin` turns this into the design's Edit drawer: the id is fixed and read-only, the chips arrive pre-filled from what that account already holds, and the label is the value being edited rather than a blank. ⚠️ THE LOOKUP IS SKIPPED IN EDIT MODE, DELIBERATELY. `useDiscordLookup` exists to catch a typo'd or nonexistent id before a grant creates an unreachable row; an id already in the grid was resolved when it was granted and cannot be retyped here, so a second round-trip would buy nothing and would leave the Save button disabled for 400ms every time the drawer opens. `grantReady` is handed `'ok'` for exactly that reason and for no other. ⚠️ AND THE TYPED CONFIRMATION STAYS. An edit replaces the whole permission list — it can revoke as easily as grant — so it is the same act at the same tier as the grant it reuses, and dropping the gate because the row already exists would be reading "edit" as "smaller".
-function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
+function GrantForm({ admin, onGrant, scopes, onCancel, onRevokeNow, nameOf }) {
     const editing = Boolean(admin);
     const scopeKeys = new Set((scopes || []).map((sc) => sc.key));
     const [discordId, setDiscordId] = useState(editing ? admin.discordId : '');
@@ -156,6 +111,9 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
     const [note, setNote] = useState(editing ? (admin.title ? (admin.note || '') : '') : '');
     // 🔴 THE SECOND STEP IS ITS OWN SCREEN, NOT A RELABELLED BUTTON IN THE SAME PLACE. The first version swapped the footer's text and left everything else standing, and Harkirat read it as a button that had not registered his click -- 2026-09-11 17:10 EDT: "I DIDN'T MEAN IN THE EXACT SAME SPOT... the 1st time i didn't even notice it and thought the button was just bugged." A confirmation that looks like the thing it is confirming is not one. The drawer replaces its whole body with a summary of exactly what is about to be written. ⚠️ THE WIRE CONTRACT IS UNCHANGED: portal/api/access.js's confirmMatchesTarget still requires the target's own id, and `submit` sends it, so the server's gate is where it always was.
     const [armed, setArmed] = useState(false);
+    // 🔴 REVOKE CONFIRMS INSIDE THIS DRAWER, THE WAY SAVE DOES (batch-2 spec §8, 2026-09-13 18:04 EDT). It used to open the shared Confirm, a SECOND drawer stacked over this one — measured: two open drawers, the Edit drawer still standing behind "Revoke this admin entirely?". The gate is unchanged: the target's own id is typed, and that id is what portal/api/access.js's confirmMatchesTarget checks on the wire. The grid's own Revoke control, outside any drawer, still uses the shared Confirm. `deviceOf` and `typedConfirmReady` are classic-script globals from access.logic.js and overlay.logic.js, like grantReady.
+    const [revoking, setRevoking] = useState(false);
+    const [revokeText, setRevokeText] = useState('');
     const lookup = useDiscordLookup(discordId);
     const tint = useAvatarTint(lookup.status === 'ok' && lookup.user ? lookup.user.avatarUrl : null);
     const toggle = (key) => setPicked(picked.includes(key) ? picked.filter((k) => k !== key) : [...picked, key]);
@@ -175,6 +133,26 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
     const submit = () => onGrant(discordId, picked, discordId, note, title.trim());
 
     // 🔴 AND THE COMMITTING BUTTON MUST NOT SIT WHERE THE PREVIOUS ONE DID. The confirm screen was its own screen and still failed, because "Save changes" landed on the exact pixels "Save changes" had just occupied -- so a double click commits and the second step is decoration. Harkirat, 2026-09-11 17:18 EDT: "THE SAVE BUTTON IS STILL IN THE SAME SPOT. Which defeats the entire purpose." The commit takes the footer's FAR LEFT and Back takes the right, so the pixels under the cursor are the harmless action.
+    if (revoking) {
+        const held = (admin.permissions || []).filter((k) => scopeKeys.has(k)).length;
+        const typedOk = typeof typedConfirmReady === 'function' ? typedConfirmReady(revokeText, admin.discordId) : revokeText.trim() === admin.discordId;
+        return html`
+            <${Drawer} eyebrow="admin.revoke · tier 3 · confirm" title=${`Revoke ${label} entirely?`}
+                       onClose=${() => setRevoking(false)}
+                       actions=${html`
+                           <button class="btn dang cfmgo" disabled=${!typedOk} onClick=${() => typedOk && onRevokeNow(admin.discordId)}>Yes, revoke all access</button>
+                           <button class="btn" onClick=${() => { setRevoking(false); setRevokeText(''); }}>Back</button>`}>
+                <div class="dwbody">
+                    <p class="dw-lead">Written immediately. No review screen, no undo — granting it back is a new grant.</p>
+                    <p class="dw-p">Every one of <b>${held}</b> permission${held === 1 ? '' : 's'} held by${' '}<b>${label}</b> is removed. They keep any portal session already open until you end it, but every action re-checks server-side, so nothing they hold now will work.</p>
+                </div>
+                <label class="tc-l" for="tc-rv">Type <b>${admin.discordId}</b> to confirm</label>
+                <input class="tc-in" id="tc-rv" autocomplete="off" spellcheck="false" placeholder=${admin.discordId}
+                       value=${revokeText} onInput=${(e) => setRevokeText(e.target.value)} />
+            <//>
+        `;
+    }
+
     if (armed) {
         return html`
             <${Drawer} eyebrow="admin.grant · tier 3 · confirm"
@@ -203,8 +181,8 @@ function GrantForm({ admin, onGrant, scopes, onCancel, onRevoke, nameOf }) {
         <${Drawer} eyebrow=${editing ? 'admin.grant · tier 3 · replaces the whole list' : 'admin.grant · tier 3'}
                    title=${editing ? `Edit ${label}` : 'Grant portal access'} onClose=${onCancel}
                    actions=${html`
-                       ${editing && onRevoke ? html`<button class="btn danger" style="margin-right:auto"
-                               onClick=${() => onRevoke(admin.discordId)}>Revoke access</button>` : null}
+                       ${editing && onRevokeNow ? html`<button class="btn danger" style="margin-right:auto"
+                               onClick=${() => setRevoking(true)}>Revoke access</button>` : null}
                        <button class="btn" onClick=${onCancel}>Cancel</button>
                        <button class="btn go" disabled=${!ready} onClick=${() => setArmed(true)}>${editing ? 'Save changes' : 'Grant now'}</button>`}>
             <div class="dwbody">
@@ -275,7 +253,7 @@ function SessionRow({ s, live, name, user, onEnd }) {
             <span class="sdot" aria-hidden="true"></span>
             <span class="sessb">
                 <b>${name}</b>
-                <span>${s.userAgent || 'device not recorded'}</span>
+                <span title=${s.userAgent || null}>${s.userAgent ? deviceOf(s.userAgent) : 'device not recorded'}</span>
             </span>
             <!-- 🔴 WHEN THEY WERE LAST HERE IS THE FACT THIS PANEL EXISTS FOR, and it was the tail of a
                  130-character user-agent string -- the least readable position on the row, after the part
@@ -894,7 +872,7 @@ export function AccessRealm({ session }) {
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
-                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} nameOf=${nameOf} onCancel=${() => setShowGrant(false)} />` : null}${editAdmin ? html`<${GrantForm} admin=${editAdmin} onRevoke=${confirmRevoke} onGrant=${handleEdit} scopes=${matrix.scopes} nameOf=${nameOf} onCancel=${() => setEditAdmin(null)} />` : null}`}
+                  overlaySlot=${html`${overlay.render()}${showGrant ? html`<${GrantForm} onGrant=${handleGrant} scopes=${matrix.scopes} nameOf=${nameOf} onCancel=${() => setShowGrant(false)} />` : null}${editAdmin ? html`<${GrantForm} admin=${editAdmin} onRevokeNow=${(id) => { setEditAdmin(null); revoke(id, id); }} onGrant=${handleEdit} scopes=${matrix.scopes} nameOf=${nameOf} onCancel=${() => setEditAdmin(null)} />` : null}`}
                   masthead=${html`<${Masthead} title="Access" sub="Who can do what — and where you are the only one who can do it."
                                                stats=${[
                                                    { value: data.admins.length, label: 'granted', lead: true, accent: 'var(--r-access)' },
