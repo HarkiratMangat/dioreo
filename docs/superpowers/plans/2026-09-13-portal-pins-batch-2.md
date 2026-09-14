@@ -76,7 +76,7 @@ status: live
 | 25 | `pmtylf7gz` | Armory | Manifest row redesign + build number/name | S1 · agent B → S2 · main · G4, G6 | §6 |
 | 26 | `pmtylhbxw` | Armory | New Build drawer | critique → S2 · agent D | §6 |
 | 27 | `pmtylle3x` | Armory | Bulk & Export: drop export, fold paste | S2 · main + S2 · agent D | §6 |
-| 28 | `pmtylqtti` | Armory | Compare panel | critique; /compare filed | §6 |
+| 28 | `pmtylqtti` | Armory | Compare panel | critique → S2 · main · G10; /compare filed | §6 · §10.2 |
 
 ## 3 · SESSION 1 — identity layer, History, shell chrome · agents A and B
 
@@ -264,7 +264,7 @@ status: live
 
 ## 5 · SESSION 2 — the manifests · agent D
 
-**Branch:** `feat/portal-pins2-manifests` off `v3-pre-release` after Session 1 and the critique have merged. **Model:** Premise Low · Delib Very high → Sonnet5-XHigh.
+**Branch:** `feat/portal-pins2-manifests` off `v3-pre-release` after Session 1 and the critique have merged. **Model:** Premise Med · Delib Very high → Opus5-High (Harkirat's choice, recorded 2026-09-13 22:47 EDT; was Sonnet5-XHigh).
 
 ### 5.0 · Evidence + agent D
 
@@ -276,13 +276,13 @@ status: live
 - [ ] **Step 4 — B's output:** its build-name report (`local/pins2/build-name-report.txt`) and its new logic exports.
 - [ ] **Step 5 — open** the History, Broadcast and Armory manifests with chrome-devtools `new_page`; their captures ride in Step 6's message.
 
-> ⟦ONE MESSAGE⟧ Step 6 — dispatch agent D with brief §8.3 D, `model: "sonnet"`, background, and take the Step 5 before-captures with `take_screenshot` on the pages Step 5 opened.
+> ⟦ONE MESSAGE⟧ Step 6 — take the Step 5 before-captures with `take_screenshot` on the pages Step 5 opened. **Agent D is NOT dispatched here** — it is dispatched in §5.3 Step 10b after Harkirat's G8–G10 answers, because until then D would build from text he has not seen.
 
 ### 5.1 · Gates, front-loaded
 
 > ⟦ONE MESSAGE⟧ Steps 7–8 — write and publish the board, the popup, and Step 8's chrome-devtools reproduction, which does not need his answers.
 
-- [ ] **Step 7 — one board, one popup.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's build-name report with its two options (brief B step 5). **G8** the composer preview from §10.3 row 4, rendered with a real banner. Then one `AskUserQuestion`. **Build 5.2 while he looks** — it does not depend on the answers.
+- [ ] **Step 7 — one board, two popups.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's build-name report with its two options (brief B step 5). **G8** the whole Broadcast composer per §10.3, its preview rendered with a real banner · **G9** the New Build drawer per §10.1, in One build and Paste many · **G10** Compare per §10.2 in its four states — empty, one weapon, two weapons, one build. G8–G10 are static HTML on the real `portal/ui/tokens.css` values, each with its §10 rows beside it. Then two `AskUserQuestion` calls in the same message, because one call takes at most four questions: G1–G4 first, then G6, G8, G9 and G10. **Build 5.2 while he looks** — it does not depend on the answers.
 
 ### 5.2 · The shared manifest
 
@@ -296,6 +296,10 @@ status: live
 > ⟦ONE MESSAGE⟧ Step 10 — ONE heredoc for every answered gate, gates chained; G6's single write is a separate Bash call, and only if approved.
 
 - [ ] **Step 10 — one heredoc for every answered gate:** G1 applied site by site, each ledger row cited or retired · G2 control · G3 card · G4 row, using B's derived build number and copy/share builders · G6: if he picks display-only labels, apply `displayBuildLabel` and, only if he approves it, move the one gunsmith code out of its name field in a single write; if he picks the identity refactor, file it `[P1]` with B's dependents list and build nothing more for names here.
+> ⟦ONE MESSAGE⟧ Step 10b — after G8–G10 are answered.
+
+- [ ] **Step 10b — the three critique surfaces:** write each G8–G10 answer into §10 first, as amended rows with a dated note per changed row · then dispatch agent D with brief §8.3 D (`model: "sonnet"`, background, the worktree from Step 1) · then the main thread builds Compare per §10.2 as amended, closing on chrome-devtools reads in all four states (empty, one weapon, two weapons, one build).
+
 > ⟦ONE MESSAGE⟧ Step 11 — after a reload in its own message: chrome-devtools reads and captures together.
 
 - [ ] **Step 11 — close:** captures after; no `.madd` outside its tools-row slot; the When cell equals `new Date(r.at).toLocaleString` for three rows; What's rendered width exceeds When, Source and Who each; `document.querySelectorAll('.sp').length` matches the G1 table's keep count per realm.
@@ -327,7 +331,8 @@ status: live
 | `portal/ui/analytics.js` / the new History module | ✏️ split | | | ✏️ | |
 | `portal/ui/manifest.js` | | | | ✏️ | |
 | `portal/ui/broadcast.js`, `portal/ui/composer.js` | | | | ✏️ manifest | ✏️ composer |
-| `portal/ui/armory.js` | | | | ✏️ row | ✏️ drawer, Bulk & Export removal |
+| `portal/ui/broadcast.logic.js`, `handlers/manage/announcements.js`, `core/ops/announcements.js` (apply), `utils/announcementBannerCache.js` (new) | | | | | ✏️ §10.3 rows 1, 2, 8 |
+| `portal/ui/armory.js` | | | | ✏️ row, Compare | ✏️ drawer, Bulk & Export removal |
 | `portal/ui/armory.logic.js`, `portal/api/armory.js` | | | ✏️ | | |
 | `portal/ui/access.js`, `portal/ui/overlay.js` | ✏️ revoke, sessions, import | | | | |
 | `portal/api/realmAccess.js` | ✏️ History visibility | | | | |
@@ -407,9 +412,11 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 | G3 | S2 | Two or three announcement cards | Which one |
 | G4 | S2 | Two or three Armory rows on real data | Which one |
 | G6 | S2 | Agent B's build-name report: every build, and every place `buildName` is still an identity | Display-only labels now, or an identity refactor filed as its own item? |
-| G8 | S2 | The Broadcast composer's Discord-shaped preview (§10.3 row 4) — heading, body and re-hosted banner, beside the live queue's own cards | Build the preview, or leave the drawer without one? |
+| G8 | S2 | The whole Broadcast composer (§10.3) — its fields and copy, and the Discord-shaped preview with a re-hosted banner beside the live queue's own cards | Keep, change or cut each part; build the preview or not? |
+| G9 | S2 | The New Build drawer (§10.1) — One build and Paste many, the derived build number and optional label | Build as drawn, or which change? |
+| G10 | S2 | Compare (§10.2) in its four states, cards behind "Show cards" | Build as drawn, or which change? |
 
-All six — G1–G4, G6 and G8 — go on ONE board with ONE popup at Session 2 Step 7. G5 and G7 belonged to the deferred permission work and are gone.
+All eight — G1–G4, G6 and G8–G10 — go on ONE board at Session 2 Step 7, asked in TWO popups in the same message because `AskUserQuestion` takes at most four questions: G1–G4, then G6 and G8–G10. G5 and G7 belonged to the deferred permission work and are gone.
 
 ## 10 · Reserved — written by the critique session
 
@@ -511,14 +518,14 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 ```
 
 ```text
-/rename Sonnet5-XHigh · Pins2 S2 manifests · <Mon DD>
-Premise Low · Delib Very high -> Sonnet5-XHigh
+/rename Opus5-High · Pins2 S2 manifests · <Mon DD>
+Premise Med · Delib Very high -> Opus5-High
 
 You are Session 2 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 1 and the critique must both be on v3-pre-release; §5.0 Step 1 proves it.
 Read in full: the plan's §0, §1, §7, §8, §9, §10 and §13, then §5, plus §3.0 Step 1 and §3.6 Steps 20 and 22, which §5 reuses; the spec's §3, §6, §7 and §8.
 Step 0 is §5.0 Steps 1-5 as ONE message. Stop at Step 3 if §10 still has a "Not yet written" line. If npm run index:health exits 4, stop and tell me.
-G1-G4, G6 and G8 go to me on ONE board with ONE popup (Step 7); build §5.2 while I look. G6 is a data decision: show agent B's build-name report, and run no write I have not approved.
-You dispatch exactly one agent, D, with the §8.3 brief verbatim.
+G1-G4, G6 and G8-G10 go to me on ONE board with TWO popups in one message (Step 7); build §5.2 while I look. G6 is a data decision: show agent B's build-name report, and run no write I have not approved.
+You dispatch exactly one agent, D, with the §8.3 brief verbatim, in §5.3 Step 10b after my G8-G10 answers and never before. The main thread builds Compare.
 docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
 ```
 
@@ -632,6 +639,7 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 | 38 | §12 hardcoded v3.80.0 | Wrong version if another branch merges first | §12 Step 2 check |
 | 39 | The critique was told its "two agents" are the only agents, but three surfaces are three runs | Rule contradiction | §4, §11 |
 | 40 | A session whose context-mode server reads a deleted store would trust empty ledger searches | Silent stale search | §1 row 18, §3 Step 1, §11 |
+| 41 | §4 had the critique write prose-only §10 rows for three surfaces and no step or brief built Compare, so Session 2 would have built designs Harkirat never saw — breaking this plan's own §1 row 2 | Silent scope gap | Cross-session exchange 2026-09-13 22:47 EDT: the critique session asked, the planning session ("Opus5-Extra · Portal-sync planning and scope") answered that both were its planning gaps. Compare → S2 main (§2 row 28, §7, §5.3 Step 10b); G9 and G10 added, G8 widened to the whole composer (§5.1 Step 7, §9); D dispatched after the answers (§5.0 Step 6, Step 10b); two popups, because `AskUserQuestion` takes at most four questions; §5 and §11 Opus5-High |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
