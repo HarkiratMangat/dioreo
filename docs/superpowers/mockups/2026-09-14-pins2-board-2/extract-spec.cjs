@@ -4,6 +4,8 @@
 const puppeteer = require(require('path').resolve(__dirname, '../../../../node_modules/puppeteer-core'));
 const fs = require('fs'); const path = require('path');
 const [htmlArg, outArg] = process.argv.slice(2);
+// A declaration written across several source lines must stay on ONE table row, or the row breaks and prose reflow cannot round-trip the file (found when the first tracked copy failed reflow verification).
+const cell = (v) => String(v).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
 const PROPS = ['display', 'grid-template-columns', 'gap', 'column-gap', 'row-gap', 'align-items', 'align-self', 'justify-self', 'place-items', 'flex', 'flex-wrap', 'width', 'min-width', 'max-width', 'height', 'min-height', 'padding', 'padding-block', 'padding-left', 'padding-right', 'margin', 'margin-left', 'margin-right', 'inset', 'top', 'right', 'bottom', 'left', 'border-radius', 'background', 'background-color', 'background-image', 'box-shadow', 'outline', 'outline-offset', 'font', 'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'text-transform', 'text-decoration', 'text-underline-offset', 'color', 'opacity', 'white-space', 'overflow', 'clip-path', 'transition', 'cursor', 'content', 'isolation', 'z-index'];
 const ALWAYS = ['font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'color'];
 // [label, selector, pseudo list, state setup key]
@@ -61,12 +63,12 @@ const TOKENS = ['--tap', '--rad-1', '--rad-2', '--rad-3', '--rad-pill', '--t-mic
       const box = await p.evaluate((s) => { const r = document.querySelector(s).getBoundingClientRect(); return `${Math.round(r.width)}×${Math.round(r.height)}`; }, sel);
       out.push(`### ${label}\n\n\`${sel}\` · rendered ${box}\n`);
       const rows = [];
-      PROPS.forEach((pr) => { const w = win(m.matchedCSSRules, m.inlineStyle, pr); if (w || ALWAYS.includes(pr)) rows.push(`| ${pr} | ${w ? '`' + w.v.replace(/\|/g, '\\|') + '`' : '—'} | \`${String(comp[pr] ?? '').replace(/\|/g, '\\|')}\` |`); });
+      PROPS.forEach((pr) => { const w = win(m.matchedCSSRules, m.inlineStyle, pr); if (w || ALWAYS.includes(pr)) rows.push(`| ${pr} | ${w ? '`' + cell(w.v) + '`' : '—'} | \`${cell(comp[pr] ?? '')}\` |`); });
       out.push('| property | winning declaration | computed |\n|---|---|---|\n' + rows.join('\n') + '\n');
       for (const ps of pseudos) {
         const pe = (m.pseudoElements || []).find((x) => x.pseudoType === ps);
         if (!pe) continue;
-        const prow = []; PROPS.forEach((pr) => { const w = win(pe.matches, null, pr); if (w) prow.push(`| ${pr} | \`${w.v.replace(/\|/g, '\\|')}\` |`); });
+        const prow = []; PROPS.forEach((pr) => { const w = win(pe.matches, null, pr); if (w) prow.push(`| ${pr} | \`${cell(w.v)}\` |`); });
         out.push(`**::${ps}**\n\n| property | winning declaration |\n|---|---|\n` + prow.join('\n') + '\n');
       }
     }

@@ -249,8 +249,7 @@ status: frozen
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### List · By slot switch
@@ -332,8 +331,7 @@ status: frozen
 | letter-spacing | `inherit` | `1.33px` |
 | text-transform | `inherit` | `uppercase` |
 | color | `var(--ink)` | `rgb(232, 237, 241)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Collapse all
@@ -365,8 +363,7 @@ status: frozen
 | letter-spacing | `0px` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -600,8 +597,7 @@ status: frozen
 | text-transform | `none` | `none` |
 | color | `var(--warn-ink)` | `rgb(255, 158, 114)` |
 | white-space | `nowrap` | `` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Fix chip build number
@@ -748,8 +744,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -918,8 +913,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `inherit` | `rgb(232, 237, 241)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Build number
@@ -1258,8 +1252,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `inherit` | `rgb(232, 237, 241)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `copy` | `copy` |
 
 ### Code field group
@@ -1453,8 +1446,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -1526,8 +1518,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -1581,9 +1572,8 @@ status: frozen
 | line-height | `inherit` | `19.5px` |
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
-| color | `var(--ink3)` | `rgb(134, 148, 160)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| color | `var(--ink3)` | `rgb(137, 151, 163)` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -1635,8 +1625,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -1686,8 +1675,7 @@ status: frozen
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `inherit` | `rgb(232, 237, 241)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `copy` | `copy` |
 
 ### Copy segment, hovered
@@ -1886,8 +1874,7 @@ Reached with the List · By slot switch.
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Broadcast heads
@@ -1945,8 +1932,7 @@ Reached with the List · By slot switch.
 | letter-spacing | `inherit` | `1.33px` |
 | text-transform | `inherit` | `uppercase` |
 | color | `inherit` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Announcement row
@@ -2220,8 +2206,7 @@ Reached with the List · By slot switch.
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -2302,8 +2287,7 @@ Reached with the List · By slot switch.
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Level chip
@@ -2337,8 +2321,7 @@ Reached with the List · By slot switch.
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Severity bars
@@ -2409,8 +2392,7 @@ Reached with the List · By slot switch.
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 
@@ -2632,8 +2614,7 @@ Reached with the board's "One staged" switch.
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Lifespan row
@@ -2919,8 +2900,7 @@ Reached with the board's "One staged" switch.
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 | isolation | `isolate` | `isolate` |
 
@@ -3288,7 +3268,7 @@ Reached with the board's "One staged" switch.
 | margin-right | `0em` | `0px` |
 | border-radius | `var(--rad-pill)` | `` |
 | background | `color-mix(in srgb,var(--r-analytics) 14%,transparent)` | `` |
-| background-color | `` | `oklab(0.574739 -0.0615607 0.0753536 / 0.1959)` |
+| background-color | `` | `oklab(0.672375 -0.0751905 0.0952017 / 0.16437)` |
 | background-image | `` | `none` |
 | font | `inherit` | `` |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` |
@@ -3298,9 +3278,8 @@ Reached with the board's "One staged" switch.
 | letter-spacing | `normal` | `normal` |
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
-| color | `var(--ink)` | `rgb(227, 233, 237)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| color | `var(--ink)` | `rgb(230, 235, 239)` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
 
 ### Admin traffic chip, on
@@ -3322,7 +3301,7 @@ Reached with the board's "One staged" switch.
 | margin-right | `0em` | `0px` |
 | border-radius | `var(--rad-pill)` | `` |
 | background | `color-mix(in srgb,var(--r-analytics) 14%,transparent)` | `` |
-| background-color | `` | `oklab(0.737865 -0.0843329 0.108515 / 0.148353)` |
+| background-color | `` | `oklab(0.738029 -0.0843557 0.108548 / 0.148317)` |
 | background-image | `` | `none` |
 | font | `inherit` | `` |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` |
@@ -3333,6 +3312,5 @@ Reached with the board's "One staged" switch.
 | text-transform | `none` | `none` |
 | text-decoration | `none` | `` |
 | color | `var(--ink)` | `rgb(231, 236, 240)` |
-| transition | `transform var(--dur-1) var(--ease),
-  background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` |
 | cursor | `pointer` | `pointer` |
