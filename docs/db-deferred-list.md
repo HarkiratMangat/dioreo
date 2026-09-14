@@ -980,6 +980,10 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · M]` Event and draw reminders when a player runs a command — needs a design session, after v3-pre-release launches
+
+Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
+
 ### `[P2 · S · Sonnet5-Medium]` Copy the attachment slots from Cloudinary metadata into `Loadout.attachmentSlots` — filed 2026-09-14 00:35 EDT
 
 The 2026-07-21 vision backfill (`scripts/backfillLoadoutSlots.js`) wrote each build's slots to Cloudinary structured metadata; the line that also writes Mongo (`:77-78`) was added 2026-07-24, after it ran. Measured 2026-09-14 00:35 EDT: `attachmentSlots` is empty on all 133 prod builds while 130 of 134 loadout images carry slot metadata (217 names, none under two slots). The New Build drawer's slot search and Compare's slot rows (plan `2026-09-13-portal-pins-batch-2.md` §10.1/§10.2 v4 notes) need the slots in Mongo or a catalogue read from Cloudinary.
