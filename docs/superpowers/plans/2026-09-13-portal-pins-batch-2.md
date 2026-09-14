@@ -274,7 +274,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 1 — precondition and every read, as one message.
 
-- [ ] **Step 1 — precondition and evidence:**
+- [x] *(2026-09-14 03:35 EDT — precondition printed 1; `index:health` exit 0; four harness captures in `local/pins2/b2-live-*.png`; dev builds exported to `local/pins2-board-2/builds.json`)* **Step 1 — precondition and evidence:**
   - `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg -c 'G8, G9 and G10 are answere[d]'` prints 1 (the follow-ups merged); then `git switch -c docs/pins2-board-2 origin/v3-pre-release`.
   - `npm run portal:status`, `npm run index:health` (exit 4 → stop), `node scripts/summaryShape.mjs --session latest`.
   - The pins, verbatim, in spec §10: `pmtylf7gz` (G4), `pmtyioc0l` · `pmtyj6u8y` · `pmtyj9low` · `pmtyj9r49` (G1), `pmtxvrjls` (G2), `pmtyj69wu` (G3), `pmtyizssz` · `pmtyj0bqw` · `pmtxviaom` · `pmtyjbql6` (G11). Spec §3, §6, §7 and §8 in full.
@@ -297,8 +297,8 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 2–3 — write, render, look, publish.
 
-- [ ] **Step 2 — build it the way the G8–G10 board was built:** source `local/pins2-board-2/board.html`, linking the portal's own stylesheet (`node -e "require('./scripts/buildPortal').build()"` first, then copy `portal/public/app.css` beside the board). **Every board-only class is prefixed `pb-`** — the portal already owns `.panel`, `.card`, `.bar`, `.row`, `.win`, `.d`, `.thumb`, `.cv`, `.ln`, `.code`, `.rep`, `.no`, `.bad`, `.nums`, `.mono`, and unprefixed names produced double frames and stray shapes on the first board. Every clickable control 44px (chips 32px); one switch style, the portal's `.seg` pill with a thumb measured from the pressed button; no hint prose; real dev data; each gate gets a notes column naming its pins and ledger rows. **Render locally and look before every publish:** serve the repo with a no-store static server on `127.0.0.1:8900` (`python3 -c` with `http.server.SimpleHTTPRequestHandler`, adding `Cache-Control: no-store`), screenshot each state with `puppeteer-core` driving `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (its own `--user-data-dir`, because the chrome-devtools MCP profile may be held by another session), and read every screenshot.
-- [ ] **Step 3 — publish:** `Artifact` from the repo root with `files: {"app.css": "<the copied app.css>"}`; keep one file path so every republish keeps the URL; put the URL at the top of §10.4 at once.
+- [x] *(2026-09-14 03:35 EDT — `local/pins2-board-2/`, built by `build.py` from a template and rendered from disk by `shoot.cjs`, no server)* **Step 2 — build it the way the G8–G10 board was built:** source `local/pins2-board-2/board.html`, linking the portal's own stylesheet (`node -e "require('./scripts/buildPortal').build()"` first, then copy `portal/public/app.css` beside the board). **Every board-only class is prefixed `pb-`** — the portal already owns `.panel`, `.card`, `.bar`, `.row`, `.win`, `.d`, `.thumb`, `.cv`, `.ln`, `.code`, `.rep`, `.no`, `.bad`, `.nums`, `.mono`, and unprefixed names produced double frames and stray shapes on the first board. Every clickable control 44px (chips 32px); one switch style, the portal's `.seg` pill with a thumb measured from the pressed button; no hint prose; real dev data; each gate gets a notes column naming its pins and ledger rows. **Render locally and look before every publish:** serve the repo with a no-store static server on `127.0.0.1:8900` (`python3 -c` with `http.server.SimpleHTTPRequestHandler`, adding `Cache-Control: no-store`), screenshot each state with `puppeteer-core` driving `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (its own `--user-data-dir`, because the chrome-devtools MCP profile may be held by another session), and read every screenshot.
+- [x] *(2026-09-14 03:35 EDT — version 1)* **Step 3 — publish:** `Artifact` from the repo root with `files: {"app.css": "<the copied app.css>"}`; keep one file path so every republish keeps the URL; put the URL at the top of §10.4 at once.
 
 ### 4b.3 · The review
 
@@ -561,6 +561,8 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 | 12 | `clarify` — the footer opens in the blocked red, "Write the announcement first.", before anything has been typed | **P3** | Neutral ink until Text has been touched; the disabled Stage button already carries the state |
 
 ### 10.4 · Session 2's gates — G1, G2, G3, G4, G6 and G11
+
+**Board:** https://claude.ai/code/artifact/55493bbe-74e7-4ec4-b2e5-02af33654aef — in review.
 
 *Not yet written — the design-board session (§4b) writes it.*
 
