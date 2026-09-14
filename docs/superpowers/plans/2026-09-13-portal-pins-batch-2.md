@@ -9,7 +9,7 @@ status: live
 
 > 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE.** A prompt from §11, a `.remember` line or a deferred-list entry points here and carries almost nothing of it. Only this file carries the agent briefs A, B and D (§8.3, text fences — dispatch with those words and no others), the file-conflict map (§7), the gate board (§9), the canonical DEVLOG body for the pre-merge checkpoint (§12) and the portal traps inlined in §1 row 10. Read §0 before acting on anything the opener said.
 
-> 🔴 **SCOPE.** 29 pins, `pmtxsahvd` (2026-09-11 22:46 EDT) → `pmtylqtti` (2026-09-12 12:31 EDT). **Decisions:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` — frozen; if this plan and the spec disagree, the spec wins and this plan is corrected in the same session. **The one exception is §10:** the critique session writes it, and it governs the three surfaces the spec hands to the critique — the New Build drawer, Compare, and the composer inputs. The deferred permission design supersedes spec §5 with a new dated spec rather than editing it. **Two more exceptions, found by the post-compact review (2026-09-13 14:15 EDT):** spec §6's migration line (ordinals → blank) is superseded by §8.3 brief B and gate G6, because `buildName` is still an identity key in six places and blanking it would overwrite images and merge builds; and spec §1.3's consumer counts were approximations — §3 Step 3's measured numbers govern. **Board:** https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f. **Design board — the visual spec for §10:** https://claude.ai/code/artifact/40a477ad-8237-48c4-9795-8594ea1f84ee, tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`. Harkirat reviewed New Build, Compare and the composer on it in five versions (2026-09-13 23:09 EDT → 2026-09-14 01:18 EDT), which answers gates G8–G10; §10 records every answer, and where §10 and the board disagree §10 governs and the board is corrected in the same change.
+> 🔴 **SCOPE.** 29 pins, `pmtxsahvd` (2026-09-11 22:46 EDT) → `pmtylqtti` (2026-09-12 12:31 EDT). **Decisions:** `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` — frozen; if this plan and the spec disagree, the spec wins and this plan is corrected in the same session. **The one exception is §10:** the critique session writes it, and it governs the three surfaces the spec hands to the critique — the New Build drawer, Compare, and the composer inputs. The deferred permission design supersedes spec §5 with a new dated spec rather than editing it. **Two more exceptions, found by the post-compact review (2026-09-13 14:15 EDT):** spec §6's migration line (ordinals → blank) is superseded by §8.3 brief B and gate G6, because `buildName` is still an identity key in six places and blanking it would overwrite images and merge builds; and spec §1.3's consumer counts were approximations — §3 Step 3's measured numbers govern. **Board:** https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f. **Design board — the visual spec for §10:** https://claude.ai/code/artifact/40a477ad-8237-48c4-9795-8594ea1f84ee, tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`. Harkirat reviewed New Build, Compare and the composer on it in five versions (2026-09-13 23:09 EDT → 2026-09-14 01:18 EDT), which answers gates G8–G10; a second board session (§4b) answers G1–G4 and G6 before Session 2 starts; §10 records every answer, and where §10 and the board disagree §10 governs and the board is corrected in the same change.
 
 > 🔴 **DEFERRED, AND NOT BUILT BY THIS PLAN:** the permission restructure (pins `pmtyh3ep6`, `pmtyii7ki`, and `pmtyih6yt`'s tier structure) and the Access panel bar's full redesign (`pmtyioc0l`). Harkirat, 2026-09-13 11:37 EDT: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* Every input is in spec §5 and filed `[P1]` in `docs/db-deferred-list.md`. §6 lists what a builder must not do meanwhile.
 
@@ -55,25 +55,25 @@ status: live
 | 4 | `pmtxviaom` | Analytics→History | Level chips carry severity | S2 · main | §8 |
 | 5 | `pmtxvmcte` | Analytics→History | When in local time (UTC today) | S2 · main | §8 |
 | 6 | `pmtxvp1qa` | Analytics→History | Column widths by role | S2 · main | §8 |
-| 7 | `pmtxvrjls` | Analytics | Admin-traffic control redesign | S2 · main · G2 | §8 |
+| 7 | `pmtxvrjls` | Analytics | Admin-traffic control redesign | board §4b → S2 · main · G2 | §8 |
 | 8 | `pmtyfklwl` | Access | Revoke inside the Edit drawer | S1 · main | §8 |
 | 9 | `pmtyh3ep6` | Access | Permission restructure | **DEFERRED** — design pending | §5 |
 | 10 | `pmtyih6yt` | All | Realm accents ship; page/command colours + tiers deferred | S1 · main · rest **DEFERRED** | §1 §5 |
 | 11 | `pmtyii7ki` | Access | Retire the destructive token | **DEFERRED** — design pending | §5 |
 | 12 | `pmtyikesy` | History | History realm split | S1 · main | §4 |
-| 13 | `pmtyioc0l` | Access | Noise line sorted by kind; panel bar deferred | S2 · main · G1 · rest **DEFERRED** | §3 §8 |
+| 13 | `pmtyioc0l` | Access | Noise line sorted by kind; panel bar deferred | board §4b → S2 · main · G1 · rest **DEFERRED** | §3 §8 |
 | 14 | `pmtyiqqu3` | Shell | Remove the crumb | S1 · main | §8 |
 | 15 | `pmtyisiuz` | Shell | Centre the command bar + keyboard nav | S1 · main | §8 |
 | 16 | `pmtyiv9te` | Shell | Icon-only sign-out | S1 · main | §8 |
 | 17 | `pmtyizssz · pmtyj0bqw` | Broadcast | Manifest — five fixes | S2 · main | §7 |
 | 18 | `pmtyj3z8o` | Broadcast | Banner image + repeat N (24h floor) | S1 · agent A → critique → board (G8, 2026-09-14 01:18 EDT) → S2 · agent D | §7 |
 | 19 | `pmtyj4nhx` | Broadcast | HeadsUp placement | S2 · main | §7 |
-| 20 | `pmtyj69wu` | Broadcast | Announcement card redesign | S2 · main · G3 | §7 |
-| 21 | `pmtyj6u8y` | Broadcast | Floating hint paragraph | S2 · main · G1 | §3 |
-| 22 | `pmtyj9low` | Broadcast | Panel meta line | S2 · main · G1 | §3 |
-| 23 | `pmtyj9r49` | All | Hint text, portal-wide | S2 · main · G1 | §3 |
+| 20 | `pmtyj69wu` | Broadcast | Announcement card redesign | board §4b → S2 · main · G3 | §7 |
+| 21 | `pmtyj6u8y` | Broadcast | Floating hint paragraph | board §4b → S2 · main · G1 | §3 |
+| 22 | `pmtyj9low` | Broadcast | Panel meta line | board §4b → S2 · main · G1 | §3 |
+| 23 | `pmtyj9r49` | All | Hint text, portal-wide | board §4b → S2 · main · G1 | §3 |
 | 24 | `pmtyjbql6` | Armory | Add-build button + Secondaries chip | S2 · main | §6 |
-| 25 | `pmtylf7gz` | Armory | Manifest row redesign + build number/name | S1 · agent B → S2 · main · G4, G6 | §6 |
+| 25 | `pmtylf7gz` | Armory | Manifest row redesign + build number/name | S1 · agent B → board §4b (G4, G6) → S2 · main | §6 |
 | 26 | `pmtylhbxw` | Armory | New Build drawer | critique → board (G9, 2026-09-14 01:18 EDT) → S2 · agent D | §6 · §10.1 |
 | 27 | `pmtylle3x` | Armory | Bulk & Export: drop export, fold paste | S2 · main + S2 · agent D (the paste folds into Bulk create) | §6 · §10.1 row 2 |
 | 28 | `pmtylqtti` | Armory | Compare panel | critique → board (G10, 2026-09-14 01:18 EDT) → S2 · main after §5.2 Step 9b; /compare filed | §6 · §10.2 |
@@ -264,15 +264,35 @@ status: live
 
 **The design-board follow-up — branch `docs/pins2-followups` (added 2026-09-14 01:37 EDT).** The critique wrote §10 as prose; Harkirat asked to see the three surfaces before anything was built. On this branch, cut from `v3-pre-release` at `f7a39bc0` and still unpushed, the same session (after a compact) wrote the planning session's answer into the plan (Compare to Session 2's main thread, G9 and G10 added, D dispatched only after the answers, Opus5-High, audit row 41), then built the design board (https://claude.ai/code/artifact/40a477ad-8237-48c4-9795-8594ea1f84ee, now tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`) on the portal's own `app.css` and iterated it through five versions on Harkirat's artifact comments. His answers are §10's amended rows and preamble, §5.2 Step 9b, §5.3 Step 10b, §7, brief D, §9, §11 and audit rows 42–53. It changes no code. **Close it by §13 like a build session:** Step 0 before any push is asked for; its version is the next moderate step read from `origin/v3-pre-release` at the pre-merge checkpoint (v3.83.0-pre if nothing else merges first). The `[P1 · XS]` "Land the pins-batch-2 plan follow-ups" reminder in `docs/db-deferred-list.md` closes when it merges.
 
+## 4b · DESIGN-BOARD SESSION — Session 2's gates G1, G2, G3, G4 and G6
+
+*Added 2026-09-14 02:17 EDT. Harkirat asked whether the Armory manifest-row redesign (pin `pmtylf7gz`, spec §6) had been shown to him — it had not: the plan left it, with G1–G3 and G6, to two or three options and one popup inside Session 2. The G8–G10 board needed five versions and about forty comments before it matched what he wanted, so one popup is the wrong instrument. His call, the same minute: a board session first, for G4 and for G1, G2, G3 and G6.*
+
+**When:** after `docs/pins2-followups` has merged and before Session 2. **Model:** Premise High · Delib Medium → Opus5-High. **Branch:** `docs/pins2-board-2` off `v3-pre-release`. **Builds nothing and dispatches no agents.**
+
+> ⟦ONE MESSAGE⟧ Step 1 — evidence.
+
+- [ ] **Step 1 — precondition and evidence:** `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg -c 'G8, G9 and G10 are answere[d]'` prints 1 (the follow-ups merged) · the ledger rows §5.0 Step 2 lists (`ctx_search`, source `project:dioreo-docs`) · §5.0 Step 3's small-text sites through `ctx_batch_execute` · agent B's build-name report, `local/pins2/build-name-report.txt` (gitignored, on the main checkout; if absent, re-run B's read-only report script against the dev database) · spec §3, §6, §7 and §8 · the tracked G8–G10 board (`docs/superpowers/mockups/2026-09-14-pins2-board/index.html`) as the pattern to follow · `npm run portal:status`.
+
+> ⟦ONE MESSAGE⟧ Step 2 — build, render and publish the board.
+
+- [ ] **Step 2 — the board:** one Artifact on the portal's own `app.css`, built the way the G8–G10 board was — board-only classes prefixed `pb-`, rendered locally with puppeteer and looked at before every publish, every clickable control 44px, one switch style, no hint prose, real dev data. **G4** the Armory manifest row in two or three directions carrying everything spec §6 lists (coloured chip, weapon, category, badges, image set or not, up to five attachments — with DMZ's nine — gunsmith code, build number, build name only when set), reusing the G9 answers where they overlap (Tier colours, slot names, the build-number numeral) · **G6** agent B's report with its two options · **G1** the small-text table, every site with realm, string, kind, ledger row and proposed treatment · **G2** three admin-traffic controls · **G3** two or three announcement cards. Source `local/pins2-board-2/board.html`; tracked copy under `docs/superpowers/mockups/<date>-pins2-board-2/`.
+
+- [ ] **Step 3 — the review:** Harkirat comments on the Artifact; read the comments, apply them, re-render, look, republish, as many rounds as he takes, until he says he is done. A structural fork he must choose goes in `AskUserQuestion` after it is drawn. Never build from a version he has not closed.
+
+> ⟦ONE MESSAGE⟧ Step 4 — the records heredoc and the gates.
+
+- [ ] **Step 4 — write the answers:** §10.4 below, one row per gate with his words and dated notes, replacing its placeholder · a ledger row per decision · G6's data write, if he chooses one, is NOT run here — §5.3 Step 10 runs it on his approval · the tracked board copy · this section's boxes. Close by §13.
+
 ## 5 · SESSION 2 — the manifests · agent D
 
-**Branch:** `feat/portal-pins2-manifests` off `v3-pre-release` after Session 1 and the critique have merged. **Model:** Premise Med · Delib Very high → Opus5-High (Harkirat's choice, recorded 2026-09-13 22:47 EDT; was Sonnet5-XHigh).
+**Branch:** `feat/portal-pins2-manifests` off `v3-pre-release` after Session 1, the critique, the design-board follow-up and the §4b board session have merged. **Model:** Premise Med · Delib Very high → Opus5-High (Harkirat's choice, recorded 2026-09-13 22:47 EDT; was Sonnet5-XHigh).
 
 ### 5.0 · Evidence + agent D
 
 > ⟦ONE MESSAGE⟧ Steps 1–5.
 
-- [ ] **Step 1 — git** as Session 1 Step 1, plus the precondition `git show origin/v3-pre-release:portal/ui/tokens.css | rg -c -- '--r-history'` printing at least 1 (Session 1 merged), and `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg 'Not yet writte[n]'` printing nothing (the critique merged; scoped to §10 and bracketed so the check cannot match its own text, which appears four times elsewhere in this file — `rg` prints nothing and exits 1 on zero matches, so read the output, not a count), then D's worktree: `git worktree add -b feat/pins2-d-drawer .claude/worktrees/pins2-d feat/portal-pins2-manifests && cp .env.dev .claude/worktrees/pins2-d/`.
+- [ ] **Step 1 — git** as Session 1 Step 1, plus the precondition `git show origin/v3-pre-release:portal/ui/tokens.css | rg -c -- '--r-history'` printing at least 1 (Session 1 merged), and `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg 'Not yet writte[n]'` printing nothing (the critique AND the §4b board session merged — §10.4 carries a placeholder until §4b writes it; scoped to §10 and bracketed so the check cannot match its own text, which appears four times elsewhere in this file — `rg` prints nothing and exits 1 on zero matches, so read the output, not a count), then D's worktree: `git worktree add -b feat/pins2-d-drawer .claude/worktrees/pins2-d feat/portal-pins2-manifests && cp .env.dev .claude/worktrees/pins2-d/`.
 - [ ] **Step 2 — ledger:** manifest widths by role · the add button · Broadcast's state column and StatePill · HeadsUp · admin traffic (2026-09-02, masthead stats) · Armory's columns (sortable, Stage deletion) and its single New build chip (2026-09-11) · every `span.sp`/`p.chint`/`p.pnote`/`.hint` row.
 - [ ] **Step 3 — critique output and sites:** §10 of this file must be fully written — **stop if any *Not yet written* line remains**. Same message: `rg -n 'class="sp"|class="chint|class="pnote|class="hint|class="nw-hint|class="bvnote|class="racknote| meta=' portal/ui/*.js` through `ctx_batch_execute`, plus every `Masthead` meta string. Also stop unless `awk '/^## 10 /,/^## 11 /' docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | rg -c 'G8, G9 and G10 are answere[d]'` prints 1 — the preamble that records Harkirat's board answers (this file is the one Step 1 just proved is on `origin/v3-pre-release`, because the session branch was cut from it) — and open the design board §10's first paragraph names — it is the visual spec for D and for Compare.
 - [ ] **Step 4 — B's output:** its build-name report (`local/pins2/build-name-report.txt`) and its new logic exports.
@@ -282,9 +302,9 @@ status: live
 
 ### 5.1 · Gates, front-loaded
 
-> ⟦ONE MESSAGE⟧ Steps 7–8 — write and publish the board, the popup, and Step 8's chrome-devtools reproduction, which does not need his answers.
+> ⟦ONE MESSAGE⟧ Steps 7–8 — read §10.4 and reproduce Step 8's symptoms with chrome-devtools.
 
-- [ ] **Step 7 — one board, two popups.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's build-name report with its two options (brief B step 5). **G8–G10 are NOT on this board** — Harkirat answered them on the design board (by 2026-09-14 01:18 EDT, §10's first paragraph); do not redraw or re-ask them. Then two `AskUserQuestion` calls in the same message, because one call takes at most four questions: G1–G4 first, then G6. **Build 5.2 while he looks** — it does not depend on the answers.
+- [ ] **Step 7 — no board, no popups.** Every design gate this session touches is answered in §10: G8–G10 on the 2026-09-14 design board, G1–G4 and G6 by the §4b board session in §10.4. Read §10.4 in full and open its tracked board; do not redraw or re-ask any gate. *(Rewritten @S@ — this step used to render G1–G4 and G6 and ask two popups.)*
 
 ### 5.2 · The shared manifest
 
@@ -302,7 +322,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 10 — ONE heredoc for every answered gate, gates chained; G6's single write is a separate Bash call, and only if approved.
 
-- [ ] **Step 10 — one heredoc for every answered gate:** G1 applied site by site, each ledger row cited or retired · G2 control · G3 card · G4 row, using B's derived build number and copy/share builders · G6: if he picks display-only labels, apply `displayBuildLabel` and, only if he approves it, move the one gunsmith code out of its name field in a single write; if he picks the identity refactor, file it `[P1]` with B's dependents list and build nothing more for names here.
+- [ ] **Step 10 — one heredoc for every gate §10.4 records:** G1 applied site by site, each ledger row cited or retired · G2 control · G3 card · G4 row, using B's derived build number and copy/share builders · G6: if he picks display-only labels, apply `displayBuildLabel` and, only if he approves it, move the one gunsmith code out of its name field in a single write; if he picks the identity refactor, file it `[P1]` with B's dependents list and build nothing more for names here.
 > ⟦ONE MESSAGE⟧ Step 10b — after Step 9b's dev write closes.
 
 - [ ] **Step 10b — the three critique surfaces:** §10 is final — G8–G10 were answered on the design board by 2026-09-14 01:18 EDT — so do not rewrite it · dispatch agent D with brief §8.3 D (`model: "sonnet"`, background, the worktree from Step 1) · then the main thread builds Compare per §10.2 and the board's G10 states, closing on chrome-devtools reads in all four states (empty, one weapon, two weapons, one build), including a two-weapon comparison whose builds use different slots.
@@ -419,16 +439,16 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 
 | Gate | Session | Rendered first | Asked |
 |---|---|---|---|
-| G1 | S2 | Every small-text site: realm · string · kind · ledger row · treatment | Keep / cut / change per site, overruling any row |
-| G2 | S2 | Three admin-traffic controls | Which one |
-| G3 | S2 | Two or three announcement cards | Which one |
-| G4 | S2 | Two or three Armory rows on real data | Which one |
-| G6 | S2 | Agent B's build-name report: every build, and every place `buildName` is still an identity | Display-only labels now, or an identity refactor filed as its own item? |
+| G1 | Board session §4b | Every small-text site: realm · string · kind · ledger row · treatment | Keep / cut / change per site, overruling any row |
+| G2 | Board session §4b | Three admin-traffic controls | Which one |
+| G3 | Board session §4b | Two or three announcement cards | Which one |
+| G4 | Board session §4b | Two or three Armory rows on real data | Which one |
+| G6 | Board session §4b | Agent B's build-name report: every build, and every place `buildName` is still an identity | Display-only labels now, or an identity refactor filed as its own item? |
 | G8 | **Answered 2026-09-14 01:18 EDT** on the design board | The whole Broadcast composer (§10.3) — its fields and copy, and the Discord-shaped preview | Answered: build the preview; §10.3 as amended |
 | G9 | **Answered 2026-09-14 01:18 EDT** on the design board | The New Build drawer (§10.1) — Add build and Bulk create, MP and DMZ | Answered: §10.1 as amended, rows 15–18 added |
 | G10 | **Answered 2026-09-14 01:18 EDT** on the design board | Compare (§10.2) in its four states, cards behind "Show cards" | Answered: §10.2 as amended |
 
-Five — G1–G4 and G6 — go on ONE board at Session 2 Step 7, asked in TWO popups in the same message because `AskUserQuestion` takes at most four questions: G1–G4, then G6. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
+G1–G4 and G6 are answered by the §4b board session, in comment rounds on an Artifact until Harkirat closes it, and written into §10.4 — decided 2026-09-14 02:17 EDT, replacing the two popups Session 2 Step 7 used to ask. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
 
 ## 10 · Reserved — written by the critique session
 
@@ -511,6 +531,10 @@ Five — G1–G4 and G6 — go on ONE board at Session 2 Step 7, asked in TWO po
 | 11 | `harden` — Stage post has no busy state; a double click stages two identical announcements | **P2** | Disable and show "Staging…" until the result returns |
 | 12 | `clarify` — the footer opens in the blocked red, "Write the announcement first.", before anything has been typed | **P3** | Neutral ink until Text has been touched; the disabled Stage button already carries the state |
 
+### 10.4 · Session 2's gates — G1, G2, G3, G4 and G6
+
+*Not yet written — the design-board session (§4b) writes it.*
+
 ## 11 · Prompts
 
 Each prompt is a pointer, never a summary — the plan's header says so. Each names what to read; a session reads exactly that before its first tool call.
@@ -543,13 +567,24 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 ```
 
 ```text
+/rename Opus5-High · Pins2 board 2 · <Mon DD>
+Premise High · Delib Medium -> Opus5-High
+
+You are the design-board session of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md (§4b). docs/pins2-followups must be on v3-pre-release; §4b Step 1 proves it.
+Read in full: the plan's §0, §1, §4b, §9, §10 and §13; the spec's §3, §6, §7 and §8; the decision ledger's Armory, Broadcast, Access and Analytics rows (ctx_search, source project:dioreo-docs). Open the tracked G8-G10 board named in §10's first paragraph: it is the pattern.
+If npm run index:health exits 4, stop and tell me.
+Build ONE board for G4 (the Armory manifest row), G6, G1, G2 and G3 on real dev data and the portal's own app.css; render and look before every publish. I review it in artifact comments over as many rounds as I need; a structural fork goes in a popup after it is drawn. You build nothing and dispatch no agents.
+Write every answer into §10.4 with dated notes and ledger rows. docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
+```
+
+```text
 /rename Opus5-High · Pins2 S2 manifests · <Mon DD>
 Premise Med · Delib Very high -> Opus5-High
 
-You are Session 2 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 1 and the critique must both be on v3-pre-release; §5.0 Step 1 proves it.
+You are Session 2 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 1, the critique, the design-board follow-up and the §4b board session must all be on v3-pre-release; §5.0 Step 1 proves it.
 Read in full: the plan's §0, §1, §7, §8, §9, §10 and §13, then §5, plus §3.0 Step 1 and §3.6 Steps 20 and 22, which §5 reuses; the spec's §3, §6, §7 and §8. Open the design board §10's first paragraph names before building anything it draws.
 Step 0 is §5.0 Steps 1-5 as ONE message. Stop at Step 3 if §10 still has a "Not yet written" line. If npm run index:health exits 4, stop and tell me.
-G1-G4 and G6 go to me on ONE board with TWO popups in one message (Step 7); build §5.2 while I look. G8-G10 are already answered on the design board and §10 is final: do not redraw or re-ask them. G6 is a data decision: show agent B's build-name report, and run no write I have not approved.
+Every design gate is already answered in §10 — G8-G10 on the 2026-09-14 board, G1-G4 and G6 in §10.4 by the board session: do not redraw or re-ask any of them. G6's data write, if §10.4 records one, runs in Step 10 only after my approval restated.
 §5.2 Step 9b copies the attachment slots from Cloudinary into Mongo: the dev write is free; the prod write needs my approval restated.
 You dispatch exactly one agent, D, with the §8.3 brief verbatim, in §5.3 Step 10b after Step 9b's dev write and never before. The main thread builds Compare.
 docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
@@ -595,7 +630,7 @@ Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonn
 - A mechanism narrated over a value nobody checked produced the wrong cause for the vanishing index, and a detector built on it was half-written before Harkirat asked whether the cause was found or only enough of it. The repro that could fail is what found the real one.
 ```
 
-## 13 · Closing a build session — Session 1, the critique, Session 2
+## 13 · Closing a session — Session 1, the critique, the two board sessions, Session 2
 
 Each session's work must be on `v3-pre-release` before the next session starts: the next precondition reads the merged file, not your branch.
 
@@ -678,6 +713,7 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 | 51 | Step 9b matched images to builds by `imageKey`, but 104 of 133 prod keys end in `.png` and Cloudinary public ids do not — the backfill would have written slots for about one build in five and reported success | Silent partial result | §5.2 Step 9b strips the extension |
 | 52 | Brief D said the composer's "banner-image and repeat inputs" while G8 answered the whole composer — preview, meter, Never switch, echoes | Scope an agent would read narrowly | Brief D step 2 |
 | 53 | A cold reader (a Sonnet agent with no transcript, @S@) found four more: Step 3's added review check searched for a phrase this pass had already deleted, so it could never fail · `CANONICAL_SLOT_ORDER` holds ten entries including `trigger action`, which no build carries, while rows 15 and 17 speak of nine slots · Step 3 read the local plan while Step 1 read `origin`, unstated · no step copied an agent's gitignored artefacts out of its worktree before removal | Vacuous check · Silent wrong row · Confusion · Lost artefact | Step 3 now asserts the preamble; row 17 and brief D 1b skip `trigger action`; Step 3 names its source; §5.4 Step 12 copies D's captures. Cleared by the reader: the Bulk create staging and slot order fixes are on the board; the composer's other-live-posts total is computable from `/api/broadcast`'s full `text`; blank Ends and never match `core/ops/announcements.js`; the ledger and deferred entries agree with §10 |
+| 54 | G4 — the drastic Armory manifest-row redesign — and G1–G3 and G6 were left to two or three options and one popup inside Session 2, the instrument that had just needed five board versions to get G8–G10 right; Harkirat had seen nothing of the row (asked 2026-09-14 02:17 EDT) | Design built from a popup | New §4b board session; §10.4 placeholder stops Session 2 until it is written; §2, §5, §9, §11, §13 |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
