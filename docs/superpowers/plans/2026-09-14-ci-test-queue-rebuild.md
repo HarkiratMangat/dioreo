@@ -131,6 +131,21 @@ The full report is `local/ci-test-audit-2026-09-14.md`, which is gitignored, so 
 
 60–90 turns, estimated once Step 0 had enumerated the unknowns. Each phase boundary re-reads §1.
 
+## §6 — Outcome: what the build changed relative to this plan (written 2026-09-14 19:58 EDT)
+
+Built on `ci/test-queue-rebuild` in the session that wrote the plan. Measured on the final tree: see the commit that carries this section and `local/ci-rebuild-report-2026-09-14.md`. **Deviations and additions, each forced by something a verification step found:**
+
+| Plan said | What was built instead, and why |
+|---|---|
+| B1: wait for the target | Built. The first run then failed one state 3 of 3: Analytics' health tile clicked a label pin 37 had renamed, so the state had tested nothing for eleven days. Its registry entry was rewritten |
+| B2: workers in separate contexts | Built, plus **every state starts from empty storage**. Spread across workers, Season's "identity · closed again" failed 3 of 3: it had passed serially only because the state before it left the panel closed in sessionStorage |
+| (not planned) | **The walk reports a state whose `expect` matched before its steps ran** (report-only). Five found; two fixed (the account menu's hidden items; the Track crosshair), three filed |
+| (not planned) | **Hover is a real pointer** (`page.hover`). The crosshair state had never once shown its crosshair: synthetic mouseover produces no pointermove |
+| C2: measure write conflicts | Measured from the runner's own store: three entries write `.js` into the tree while `npm run check` reads every `.js` file. Answered with a **tree lock** (`lock: tree:write / tree:read`) instead of an exclusive group |
+| D1: the cache key | Built, then widened in the end-of-session pass to **git, rg, jq and bash versions plus TZ and TS_TZ**: Xcode's command line tools vanished mid-session and 12 hook tests failed with no file changed, which a files-only key would have hidden behind cached passes |
+| D2: `syntax-check` fails unless hooks-macos succeeded or was skipped | **hooks-macos is advisory** (a warning and a summary line) until it has been green on real macOS runs; it had never run on a macOS image, and a first-run mismatch must not block every hooks PR. Promotion is filed. `.claude/settings.json` also counts as a hook change |
+| (not planned) | `self-check.test.sh` stopped piping into `grep -q` under pipefail (a SIGPIPE false FAIL under load); two missing-rg cases stopped hiding git; the runner self-test compares parallel against serial instead of against wall-clock constants, which would have flaked on a loaded CI runner; `handoffCheck.mjs` stopped describing `npm test` as an `&&` chain |
+
 ## Audit log
 
 Falsification pass, 2026-09-14 before this plan was written: `sequentialthinking`, five thoughts, on the question *"where is this plan WRONG?"* Every finding below changed the plan.
