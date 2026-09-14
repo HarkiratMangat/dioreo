@@ -29,7 +29,14 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.81.0 — 2026-09-13 18:59 EDT (#188) — portal pins batch 2, Session 1: the colours, History, the header, and two agents
+## Pre-Release v3.82.0 — 2026-09-13 22:17 EDT (#189) — portal pins batch 2, the critique: §10 for the New Build drawer, Compare and the composer
+**The critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
+- **§10 written, 39 rows (13 · 14 · 12).** New Build drawer and Compare ran `/impeccable critique` (two agents each, 22/40 apiece); the Broadcast composer ran `/design-critique` at Harkirat's call, recorded as a Broadcast ledger row.
+- **Two silent defects found in merged code, handed to Session 2:** a blank composer "Ends" stores a never-ending announcement while the drawer promises the 60-day default (the existing `[P2 · S]` expiry item is raised with the measurement); and every `announcement.edit` — the portal's inline edit and `/manage`'s — omits `bannerImageUrl` and `repeatCount`, so an edit wipes both.
+- **Compare's `/compare` port item** gains the port-only notes. §13 Steps 3–4 ticked for Session 1; §4 scope corrected in the plan and its §11 prompt.
+- **In-line impeccable passes** (`audit`, `harden`, `clarify`), added after Harkirat asked: seven portal writes report "Staged" on a refused stage, and one long announcement stops all delivery — both filed under Active Bugs; §10 gains 9 rows. Banner images are re-hosted to Cloudinary keyed on the announcement's id (Harkirat's call, recorded in the ledger).
+
+## Pre-Release v3.81.0 — 2026-09-13 18:59 EDT (#188 · `06acb2f1`) — portal pins batch 2, Session 1: the colours, History, the header, and two agents
 
 **The portal's colours, its History realm, its header, and two Access fixes, plus the backend and data work the next sessions build on.** Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §3.
 
@@ -4630,10 +4637,3 @@ Three commits pushed together as ONE version. They were only ever live as a sing
 # 📋 Unreleased (open branch/PR, not yet merged)
 
 **Redefined 2026-07-24 12:24 EDT for the Branch → Commit → Push → PR → Merge → Deploy workflow:** an open branch/PR IS "Unreleased" now — this section holds the PROPOSED number + summary for whatever's on `feat/*` awaiting merge, sourced from the branch's own draft changelog entry. It has no permanent version until the squash-merge mints one. Graduate this content up into a real numbered entry (newest-first, at the TOP of the list above) **in the final pre-merge checkpoint on the branch, citing the PR number and no hash** — the hash is backfilled one release later (see the citation-format note in the versioning header) — and reset this section to empty. (Historically — pre-2026-07-24 — this section held committed-but-unpushed work on `main` instead; that model is retired now that all work flows through a branch first.)
-
-## Proposed Pre-Release v3.82.0 — 2026-09-13 19:33 EDT — the pins batch 2 critique, written into the plan (`docs/portal-pins2-critique`, PR pending)
-**The critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
-- **§10 written, 39 rows (13 · 14 · 12).** New Build drawer and Compare ran `/impeccable critique` (two agents each, 22/40 apiece); the Broadcast composer ran `/design-critique` at Harkirat's call, recorded as a Broadcast ledger row.
-- **Two silent defects found in merged code, handed to Session 2:** a blank composer "Ends" stores a never-ending announcement while the drawer promises the 60-day default (the existing `[P2 · S]` expiry item is raised with the measurement); and every `announcement.edit` — the portal's inline edit and `/manage`'s — omits `bannerImageUrl` and `repeatCount`, so an edit wipes both.
-- **Compare's `/compare` port item** gains the port-only notes. §13 Steps 3–4 ticked for Session 1; §4 scope corrected in the plan and its §11 prompt.
-- **In-line impeccable passes** (`audit`, `harden`, `clarify`), added after Harkirat asked: seven portal writes report "Staged" on a refused stage, and one long announcement stops all delivery — both filed under Active Bugs; §10 gains 9 rows. Banner images are re-hosted to Cloudinary keyed on the announcement's id (Harkirat's call, recorded in the ledger).

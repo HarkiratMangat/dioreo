@@ -246,6 +246,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-11 14:28 EDT — eighteen pins on the Access grid, and the ones that hurt were the ones I could have seen (v3.79.0-pre)
 - 2026-09-13 14:33 EDT — Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)
 - 2026-09-13 18:59 EDT — Portal pins batch 2, Session 1 — the identity colours, History as its own realm, the shell chrome, and two agents (v3.81.0-pre)
+- 2026-09-13 22:17 EDT — Portal pins batch 2, the critique: plan §10 for the New Build drawer, Compare and the composer (v3.82.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4337,6 +4338,16 @@ Session 1 of the second pin batch built the identity layer, split History out of
 - Moving code between files moves its baselined findings too. The ratchet reports the entry as new in one file and fixed in the other, so fix it during the move.
 - A harness session with no avatar cannot show an avatar tint. When the fixture cannot reach a state, split the proof into the rule painting and the hook firing somewhere it can.
 - A gate asks whether the thing you changed landed. The think-pass has to ask what else READS the thing you changed: here that was an alias token, a predicate's other surface, a copy line, a Discord limit and a session field.
+
+## 2026-09-13 22:17 EDT — Portal pins batch 2, the critique: plan §10 for the New Build drawer, Compare and the composer (v3.82.0-pre)
+
+The critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` wrote §10 for the three surfaces Session 2 builds from — the Armory New Build drawer, the Compare panel, and the Broadcast composer's new banner and repeat inputs. PR #189.
+
+**What it found.** Two dual-agent `/impeccable critique` runs scored New Build and Compare 22/40 each; the composer was reviewed with `/design-critique` at Harkirat's call. The findings that mattered were measured in code rather than judged: a blank composer end posts a never-ending announcement while the drawer promises the 60-day default; every announcement edit wipes the banner and repeat count Session 1 had just shipped; Compare marks no differing cell at all. An in-line `harden` pass — which the session only ran after Harkirat asked whether the in-line verbs had been considered — found the widest defect of the day: seven portal writes that toast "Staged" on a refused stage. It also found that one oversized announcement stops all delivery, because every due announcement goes out in one Discord message capped at 6,000 embed characters.
+
+**Decisions.** The composer is critiqued with `/design-critique`; Compare keeps its Discord cards behind a "Show cards" toggle; banner links are re-hosted to Cloudinary keyed on the announcement's id, the way every other pasted link in the repo is.
+
+**What went wrong, and what changed because of it.** Two impeccable agents were dispatched on the composer before the method was corrected. Parallel agents fought over one chrome-devtools profile and fell back to puppeteer. A citation said the mockup's composer had a preview card; it was the page's live-queue preview. A question about where banner images come from was answerable from sibling code. And the session asked for a push three times with its end-of-session work undone — each round of pushback found more. The plan's §13 now opens with a Step 0 pre-push close-out, and §4 and the §11 prompt name the in-line verbs, so the next two sessions execute those rather than remember them.
 
 # Part B — Lessons Ledger (thematic)
 
