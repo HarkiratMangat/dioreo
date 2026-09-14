@@ -8,7 +8,9 @@
   },
   "detector": {
     "ignoreRules": [],
-    "ignoreFiles": [],
+    "ignoreFiles": [
+      "local/2026-09-12-pins-fork-board.html"
+    ],
     "ignoreValues": [
       {
         "rule": "design-system-color",

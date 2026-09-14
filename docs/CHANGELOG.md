@@ -29,7 +29,16 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.82.0 — 2026-09-13 22:17 EDT (#189) — portal pins batch 2, the critique: §10 for the New Build drawer, Compare and the composer
+## Pre-Release v3.83.0 — 2026-09-14 02:45 EDT (#190) — portal pins batch 2: the design board answers G8–G10, and a second board session is planned
+**The follow-up to the critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
+- **Design board for the New Build drawer, Compare and the composer**, built on the portal's own `app.css` and reviewed by Harkirat in five versions and about forty artifact comments. Tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`. Every answer is in plan §10 as amended rows and an opening section; New Build gains rows 15–18 (a pasted gunsmith code fills attachments per weapon, fuzzy slot-aware search, DMZ's nine slots and no code, a tier switch coloured by tier).
+- **Measured facts the rows rest on:** `Loadout.attachmentSlots` is empty on 133 of 133 prod builds while Cloudinary metadata holds slots on 130 of 134 images; a code's digit–letter pair names one attachment per weapon (0 conflicts over 413 keys; 311 of 587 attachments refilled leave-one-out, none wrong); 104 of 133 image keys end in `.png`.
+- **Session 2 re-planned:** a new §5.2 Step 9b copies slots from Cloudinary into Mongo (prod write on approval); brief D covers the code fill, the upload route and the whole composer; G8–G10 are no longer redrawn or re-asked.
+- **New §4b design-board session** for Session 2's remaining gates G1–G4, G6 and G11 — Harkirat had not been shown the Armory manifest-row redesign. Session 2's first step stops until §10.4 is written.
+- **Corrected before merge:** two board choices that reversed earlier decisions (Bulk create staging, slot display order); Session 2 checks that could never pass or never fail; brief D's narrow composer scope; ledger rows the reader could not find — from a falsification pass and two cold reader agents (audit rows 42–56).
+- **Tool routing:** a file changed by `python3` heredoc is read with `read_smart` (`.claude/rules/silent-mode.md` rule 6, `portal-editing.md`, the plan's §1).
+
+## Pre-Release v3.82.0 — 2026-09-13 22:17 EDT (#189 · `f7a39bc0`) — portal pins batch 2, the critique: §10 for the New Build drawer, Compare and the composer
 **The critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
 - **§10 written, 39 rows (13 · 14 · 12).** New Build drawer and Compare ran `/impeccable critique` (two agents each, 22/40 apiece); the Broadcast composer ran `/design-critique` at Harkirat's call, recorded as a Broadcast ledger row.
 - **Two silent defects found in merged code, handed to Session 2:** a blank composer "Ends" stores a never-ending announcement while the drawer promises the 60-day default (the existing `[P2 · S]` expiry item is raised with the measurement); and every `announcement.edit` — the portal's inline edit and `/manage`'s — omits `bannerImageUrl` and `repeatCount`, so an edit wipes both.
