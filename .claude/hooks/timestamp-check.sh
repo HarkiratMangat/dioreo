@@ -49,8 +49,14 @@ content=$(printf '%s' "$payload" | jq -r '.tool_input.new_string // .tool_input.
 # `TS_TZ` overrides it, so the pin is testable rather than an assumption baked in.
 export TZ="${TS_TZ:-America/New_York}"
 
-today=$(date +%Y-%m-%d)
-now="$(date '+%Y-%m-%d %H:%M')"
+# TS_NOW_EPOCH pins "now" for the self-test. Unset, `ts_date` is the plain `date` it always was. Set, the hook reads that one instant everywhere it reads the clock, so a test that builds a stamp N minutes ahead and a hook that re-reads the clock a moment later can no longer land on opposite sides of the 180-second boundary — the race behind six CI failures between 2026-09-01 and 2026-09-13 (counted 2026-09-14 17:49 EDT). GNU date takes `-d @epoch`; BSD date takes `-r epoch`.
+if [ -n "${TS_NOW_EPOCH:-}" ]; then
+  ts_date() { date -d "@$TS_NOW_EPOCH" "$@" 2>/dev/null || date -r "$TS_NOW_EPOCH" "$@"; }
+else
+  ts_date() { date "$@"; }
+fi
+today=$(ts_date +%Y-%m-%d)
+now="$(ts_date '+%Y-%m-%d %H:%M')"
 
 # Rejoin a timestamp split across a line break, optionally through a comment leader (`#`, `//`, `*`) — see defect 4. Without this, wrapped prose reads as a bare date.
 joined=$(printf '%s' "$content" | perl -0pe 's/(\d{4}-\d{2}-\d{2})[ \t]*\n[ \t]*(?:#+|\/\/|\*)?[ \t]*(\d{2}:\d{2})/$1 $2/g' 2>/dev/null) || joined="$content"
@@ -59,14 +65,14 @@ joined=$(printf '%s' "$content" | perl -0pe 's/(\d{4}-\d{2}-\d{2})[ \t]*\n[ \t]*
 # --- (A) IMPOSSIBLE: a date-time later than now was not observed. NOT backtick-exempt. ---------- ⚠️ FOREIGN TIMEZONES ARE NOT COMPARABLE — added 2026-08-02 17:21 EDT, when this gate denied a perfectly good UTC stamp (TS-EXAMPLE: `2026-08-02 20:05 UTC`, which is 16:05 local, comfortably past) while writing the CLAUDE.md paragraph about CI. GitHub API times are UTC, so that is not a rare shape in this repo.
 #
 # Comparing a stamp in another zone against the LOCAL clock is meaningless without conversion, and converting inside a hook invites a subtler class of bug. So a stamp carrying an explicit timezone that is not the local one is skipped — out of scope, rather than guessed at. Anything with no zone, or with the local zone, is still compared, which covers every stamp the records convention actually asks for (`YYYY-MM-DD HH:MM TZ`, local).
-localtz=$(date '+%Z')
+localtz=$(ts_date '+%Z')
 # ⚠️ `TS-DEADLINE` — the second escape, added 2026-08-02 18:20 EDT because this gate denied a real one. The deny message says "if you mean a future deadline, write the date with NO clock time", and that advice is simply wrong for scheduled events: `docs/db-deferred-list.md` carries a reminder reading "⏰ 2026-08-09 17:00 EDT — CLOSE OUT the MCP observation window" (TS-EXAMPLE), where the clock time IS the content — the window closes at an hour, not on a day. Merely editing NEAR that line was refused, which is a gate blocking correct work.
 #
 # Kept as a separate token from TS-EXAMPLE rather than folded into it: they mean different things, and a reviewer grepping `rg TS-EXAMPLE` to audit for hidden fabrications should not have to wade through scheduled deadlines. Both are per-line and must be typed deliberately.
 #
 # ⚠️ PORTABLE EPOCH PARSE — added 2026-08-07 10:05 EDT, CI (ubuntu-latest, GNU date) vs. this project's own Darwin dev machine (BSD date). `date -j -f '%Y-%m-%d %H:%M' ... ` is BSD-only syntax; on GNU date it's an unrecognized-option error. That error was being swallowed by `2>/dev/null`, so every parse silently failed in CI, `future` was always empty, and the whole gate went permanently silent there — 46 of 47 test-suite assertions failed on PR #93 while all 47 passed locally on this Mac. Try BSD syntax first (this is still the primary dev environment), fall back to GNU `date -d` on failure.
 TOLERANCE_SECS=180
-now_epoch=$(date +%s)
+now_epoch=${TS_NOW_EPOCH:-$(date +%s)}
 future=$(printf '%s' "$joined" \
   | grep -v 'TS-EXAMPLE' \
   | grep -v 'TS-DEADLINE' \
@@ -109,7 +115,7 @@ if [ -n "$placeholder" ]; then
   if [ "$mode" = "pre" ]; then
     # 🔬 AUTOFIX PROBE, added 2026-09-01 19:24 EDT. Harkirat: "how exactly are you going to make it durable when the hooks already exist?" — and he is right that a fourth prose restatement is not a mechanism. Denying is correct but costs a whole round trip every time, and this branch has been firing for weeks. The only remedy that removes the cost is SUBSTITUTION: hand the harness a corrected tool_input instead of a refusal. Whether PreToolUse honours `updatedInput` in this build is NOT documented anywhere reachable (the CLI ships as a binary) and no hook in this repo has ever tried it, so this emits BOTH the substitution and the deny fallback and lets the observed behaviour settle it. If the write lands corrected, updatedInput is honoured and the deny can go. If it is still denied, it is not, and the honest conclusion is that no mechanism exists at this layer. 🔴 THIS BRANCH USED TO DENY, AND DENYING IS WHY IT KEPT COSTING A WHOLE ROUND TRIP. Harkirat, 2026-09-01 19:10 EDT: "the timestamp injection has been a hook into EVERY tool call you make for WEEKS now... and yet nearly every time you edit a file and input a timestamp, it triggers the denial... LIKE ARE WE DEADASS???" He was right that a fourth prose restatement of the rule is not a mechanism — three surfaces already carried it and the placeholder still got typed. A refusal detects the defect and then hands the work back; a SUBSTITUTION detects it and finishes the job, because the hook already knows the one value the write was missing. ⚠️ `updatedInput` IS HONOURED BY THIS BUILD — measured 2026-09-01 19:16 EDT, not assumed. The CLI ships as a binary so the capability is not greppable; a scratch write carrying `19:xx` landed on disk reading `19:16`. If a future build stops honouring it the fallback below still denies, so the failure mode is the old behaviour rather than a placeholder reaching disk. ⚠️ THE FALLBACK EXISTS FOR A CAPABILITY REGRESSION, AND NO CONTENT CAN SIMULATE ONE. Every placeholder the detector finds is by construction one the substitution can repair — the two use the same pattern — so there is no input that reaches the deny path, and a branch no test can enter is a branch that rots. `TS_NO_AUTOFIX=1` is a test-only seam that stands in for the day `updatedInput` stops being honoured; it is what makes the deny path a checked claim rather than a hope. Naming it here because a seam whose purpose is undocumented gets deleted as dead code.
     [ -n "${TS_NO_AUTOFIX:-}" ] && { jq -n --arg r "$pmsg" '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'; exit 0; }
-    now_hm=$(date '+%H:%M')
+    now_hm=$(ts_date '+%H:%M')
     # 🔴 SUBSTITUTE ONLY WHAT THE DETECTOR ACTUALLY FOUND — corrected 2026-09-02 18:21 EDT by a code review. The detector above was narrowed to `${today}`, and this gsub was left matching ANY date with a `[0-9xX?]{1,2}:[0-9xX?]{2}` slot. That character class also matches real digits, so an edit containing today's `18:xx` alongside a correct historical `2026-08-03 18:12 EDT` came back auto-allowed with the HISTORICAL stamp rewritten to the current minute -- the exact "inventing a precise time for a past event" this branch had just claimed to fix, now reaching heredocs too because the matcher gained Bash in the same change.
     #
     # The fix is to stop describing the target twice. `$placeholder` already holds the exact strings the detector matched; each is replaced literally, so the substitution cannot reach anything the detector did not flag, and the two can never drift apart again. `?` is the only regex-special character a placeholder can contain, so it is the only one escaped. Replacing each matched string LITERALLY needed the match escaped as a regex, and `?` -- which a placeholder is made of -- is the one character that makes that fiddly enough to get wrong; it was, twice. The pattern instead carries `$today` (so it cannot reach a past date) and REQUIRES a placeholder character in the hour or the minute (so it cannot reach a correct stamp). Those are the two properties that matter, stated directly, with nothing to escape.
@@ -186,7 +192,7 @@ if [ -n "$bare" ]; then
      wrapped across a line break are all stripped before this check, so this is prose. Add the
      time, or confirm it is a deliberate bare date (a historical reference, a list of dates, a range
      endpoint, or the player-facing summary).
-     ⏰ RIGHT NOW IT IS: $(date '+%Y-%m-%d %H:%M %Z') — paste that, do not derive it.
+     ⏰ RIGHT NOW IT IS: $(ts_date '+%Y-%m-%d %H:%M %Z') — paste that, do not derive it.
      ⚠️ This branch runs AFTER the bytes land, so it cannot prevent anything: reaching it already
      cost an extra edit. It is a backstop for the rare miss, NOT the mechanism. The mechanism is
      that the moment you type the year inside content, the time follows it in the same keystroke."

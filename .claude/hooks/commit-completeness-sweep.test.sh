@@ -147,7 +147,9 @@ a "uncommitted deletion is still swept" "CONSERVATION" yes "$out_unc"
 
 # ---- 🔴 MISSING rg: must fail LOUD, never fabricate ---- Without rg the conservation loop's `rg -q` fails for EVERY line, so a missing binary would report 100% data loss on every deleted file — a confident FABRICATED alarm, worse than silence because it trains dismissal. The sibling sweep guards this and CI proved it real (the ubuntu runner has no ripgrep); this hook shipped with the inverse of that bug.
 NORG=$(mkrepo r1 delete)
-out_norg=$(PATH="/usr/bin:/bin" CLAUDE_PROJECT_DIR="$NORG" bash "$HOOK" main "" pr 2>/dev/null \
+# ⚠️ git and jq are linked into a private bin, then that bin leads the minimal PATH (changed 2026-09-14 19:38 EDT). The minimal PATH existed to hide rg, and it hid git too the moment git stopped living in /usr/bin: on a Mac with Homebrew git and no Xcode command line tools the hook could not run git, printed nothing, and this case failed for a reason that had nothing to do with rg.
+NORG_BIN="$TMP/no-rg-bin"; mkdir -p "$NORG_BIN"; for tool in git jq; do p=$(command -v "$tool") && ln -sf "$p" "$NORG_BIN/$tool"; done
+out_norg=$(PATH="$NORG_BIN:/usr/bin:/bin" CLAUDE_PROJECT_DIR="$NORG" bash "$HOOK" main "" pr 2>/dev/null \
            | jq -r '.hookSpecificOutput.additionalContext // "SILENT"' 2>/dev/null)
 if command -v rg >/dev/null 2>&1 && ! PATH="/usr/bin:/bin" command -v rg >/dev/null 2>&1; then
   a "missing rg is REPORTED, not fabricated" "CANNOT RUN" yes "$out_norg"

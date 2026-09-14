@@ -18,8 +18,9 @@ pass=0
 ok()  { pass=$((pass + 1)); printf '  PASS  %s\n' "$1"; }
 bad() { fails=$((fails + 1)); printf '  FAIL  %s\n        %s\n' "$1" "$2"; }
 
-check()  { if printf '%s' "$OUT" | grep -qF -- "$2"; then ok "$1"; else bad "$1" "missing: $2"; fi; }
-absent() { if printf '%s' "$OUT" | grep -qF -- "$2"; then bad "$1" "present but must NOT be: $2"; else ok "$1"; fi; }
+# A here-string, never `printf | grep -q`. Under `set -o pipefail`, grep -q exits at its first match, printf takes SIGPIPE writing the rest, and the pipeline reports failure for a needle that WAS found. Measured 2026-09-14 18:52 EDT: "printf: write error: Broken pipe" and a false FAIL while the suite ran beside other load, a clean pass alone.
+check()  { if grep -qF -- "$2" <<< "$OUT"; then ok "$1"; else bad "$1" "missing: $2"; fi; }
+absent() { if grep -qF -- "$2" <<< "$OUT"; then bad "$1" "present but must NOT be: $2"; else ok "$1"; fi; }
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
