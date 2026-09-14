@@ -34,6 +34,8 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.merge.outputs.sha }}
     steps:
       # Full history: a shallow clone has no merge base, so the merge below would fail or produce
       # a bogus result.
@@ -54,6 +56,7 @@ jobs:
           fi
 
       - name: Merge main into v3-pre-release
+        id: merge
         if: steps.check.outputs.exists == 'true'
         run: |
           set -euo pipefail
@@ -72,4 +75,15 @@ jobs:
             exit 1
           fi
           git push origin v3-pre-release
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "::notice::Synced main into v3-pre-release."
+
+  # 🔴 THE SYNC COMMIT GETS CI — added 2026-09-14 19:03 EDT. The push above is made with GITHUB_TOKEN, and a GITHUB_TOKEN push never triggers a workflow, so the merge commit it creates on v3-pre-release was never tested by anything: the branch's head could be red with no run to say so. This calls the same CI workflow on exactly that commit. It only runs when a merge was actually pushed (an already-current branch pushes nothing and outputs no sha).
+  test-synced:
+    needs: sync
+    if: needs.sync.outputs.sha != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.sync.outputs.sha }}
