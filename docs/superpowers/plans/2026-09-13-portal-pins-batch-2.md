@@ -52,7 +52,7 @@ status: live
 | 1 | `pmtxsahvd` | Access | Session rows name browser and OS | S1 · main | §8 |
 | 2 | `pmtxvdale` | Shell | Profile menu mesh tint | S1 · main | §8 |
 | 3 | `pmtxvgtt6` | Analytics | Empty-state edge + dev-DB traffic seed | S1 · main | §2 |
-| 4 | `pmtxviaom` | Analytics→History | Level chips carry severity | S2 · main | §8 |
+| 4 | `pmtxviaom` | Analytics→History | Level chips carry severity | board §4b (G11) → S2 · main | §8 |
 | 5 | `pmtxvmcte` | Analytics→History | When in local time (UTC today) | S2 · main | §8 |
 | 6 | `pmtxvp1qa` | Analytics→History | Column widths by role | S2 · main | §8 |
 | 7 | `pmtxvrjls` | Analytics | Admin-traffic control redesign | board §4b → S2 · main · G2 | §8 |
@@ -65,14 +65,14 @@ status: live
 | 14 | `pmtyiqqu3` | Shell | Remove the crumb | S1 · main | §8 |
 | 15 | `pmtyisiuz` | Shell | Centre the command bar + keyboard nav | S1 · main | §8 |
 | 16 | `pmtyiv9te` | Shell | Icon-only sign-out | S1 · main | §8 |
-| 17 | `pmtyizssz · pmtyj0bqw` | Broadcast | Manifest — five fixes | S2 · main | §7 |
+| 17 | `pmtyizssz · pmtyj0bqw` | Broadcast | Manifest — five fixes | board §4b (G11) → S2 · main | §7 |
 | 18 | `pmtyj3z8o` | Broadcast | Banner image + repeat N (24h floor) | S1 · agent A → critique → board (G8, 2026-09-14 01:18 EDT) → S2 · agent D | §7 |
 | 19 | `pmtyj4nhx` | Broadcast | HeadsUp placement | S2 · main | §7 |
 | 20 | `pmtyj69wu` | Broadcast | Announcement card redesign | board §4b → S2 · main · G3 | §7 |
 | 21 | `pmtyj6u8y` | Broadcast | Floating hint paragraph | board §4b → S2 · main · G1 | §3 |
 | 22 | `pmtyj9low` | Broadcast | Panel meta line | board §4b → S2 · main · G1 | §3 |
 | 23 | `pmtyj9r49` | All | Hint text, portal-wide | board §4b → S2 · main · G1 | §3 |
-| 24 | `pmtyjbql6` | Armory | Add-build button + Secondaries chip | S2 · main | §6 |
+| 24 | `pmtyjbql6` | Armory | Add-build button + Secondaries chip | board §4b (G11) → S2 · main | §6 |
 | 25 | `pmtylf7gz` | Armory | Manifest row redesign + build number/name | S1 · agent B → board §4b (G4, G6) → S2 · main | §6 |
 | 26 | `pmtylhbxw` | Armory | New Build drawer | critique → board (G9, 2026-09-14 01:18 EDT) → S2 · agent D | §6 · §10.1 |
 | 27 | `pmtylle3x` | Armory | Bulk & Export: drop export, fold paste | S2 · main + S2 · agent D (the paste folds into Bulk create) | §6 · §10.1 row 2 |
@@ -264,25 +264,53 @@ status: live
 
 **The design-board follow-up — branch `docs/pins2-followups` (added 2026-09-14 01:37 EDT).** The critique wrote §10 as prose; Harkirat asked to see the three surfaces before anything was built. On this branch, cut from `v3-pre-release` at `f7a39bc0` and still unpushed, the same session (after a compact) wrote the planning session's answer into the plan (Compare to Session 2's main thread, G9 and G10 added, D dispatched only after the answers, Opus5-High, audit row 41), then built the design board (https://claude.ai/code/artifact/40a477ad-8237-48c4-9795-8594ea1f84ee, now tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`) on the portal's own `app.css` and iterated it through five versions on Harkirat's artifact comments. His answers are §10's amended rows and preamble, §5.2 Step 9b, §5.3 Step 10b, §7, brief D, §9, §11 and audit rows 42–54, and §4b. It changes no code. **Close it by §13 like a build session:** Step 0 before any push is asked for; its version is the next moderate step read from `origin/v3-pre-release` at the pre-merge checkpoint (v3.83.0-pre if nothing else merges first). The `[P1 · XS]` "Land the pins-batch-2 plan follow-ups" reminder in `docs/db-deferred-list.md` closes when it merges.
 
-## 4b · DESIGN-BOARD SESSION — Session 2's gates G1, G2, G3, G4 and G6
+## 4b · DESIGN-BOARD SESSION — Session 2's design gates G1, G2, G3, G4, G6 and G11
 
-*Added 2026-09-14 02:17 EDT. Harkirat asked whether the Armory manifest-row redesign (pin `pmtylf7gz`, spec §6) had been shown to him — it had not: the plan left it, with G1–G3 and G6, to two or three options and one popup inside Session 2. The G8–G10 board needed five versions and about forty comments before it matched what he wanted, so one popup is the wrong instrument. His call, the same minute: a board session first, for G4 and for G1, G2, G3 and G6.*
+*Added 2026-09-14 02:17 EDT; rewritten 2026-09-14 02:34 EDT to the same depth as the other sessions. Harkirat asked whether the Armory manifest-row redesign (pin `pmtylf7gz`, spec §6) had been shown to him — it had not: the plan left it, with G1–G3 and G6, to two or three options and one popup inside Session 2. The G8–G10 board needed five versions and about forty comments before it matched what he wanted, so one popup is the wrong instrument. His call (2026-09-14 02:14 EDT): a board session first, for G4 and for G1, G2, G3 and G6. **G11 is added by this rewrite** — the Broadcast manifest's state column and chips, History's level chips and the shared Manifest tools row are visual redesigns his pins ask for that no gate would have shown him (audit row 55); it is reviewed on the same board.*
 
-**When:** after `docs/pins2-followups` has merged and before Session 2. **Model:** Premise High · Delib Medium → Opus5-High. **Branch:** `docs/pins2-board-2` off `v3-pre-release`. **Builds nothing and dispatches no agents.**
+**When:** after `docs/pins2-followups` has merged, before Session 2. **Model:** Premise High · Delib Medium → Opus5-High. **Branch:** `docs/pins2-board-2` off `v3-pre-release`. **Builds no portal code and dispatches no agents** except the one reader test in Step 6. **Output:** §10.4 written, ledger rows, a tracked board copy — Session 2's §5.0 Step 1 stops until §10.4's placeholder is gone.
 
-> ⟦ONE MESSAGE⟧ Step 1 — evidence.
+### 4b.0 · Evidence
 
-- [ ] **Step 1 — precondition and evidence:** `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg -c 'G8, G9 and G10 are answere[d]'` prints 1 (the follow-ups merged) · the ledger rows §5.0 Step 2 lists (`ctx_search`, source `project:dioreo-docs`) · §5.0 Step 3's small-text sites through `ctx_batch_execute` · agent B's build-name report, `local/pins2/build-name-report.txt` (gitignored, on the main checkout; if absent, re-run B's read-only report script against the dev database) · spec §3, §6, §7 and §8 · the tracked G8–G10 board (`docs/superpowers/mockups/2026-09-14-pins2-board/index.html`) as the pattern to follow · `npm run portal:status`.
+> ⟦ONE MESSAGE⟧ Step 1 — precondition and every read, as one message.
 
-> ⟦ONE MESSAGE⟧ Step 2 — build, render and publish the board.
+- [ ] **Step 1 — precondition and evidence:**
+  - `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | awk '/^## 10 /,/^## 11 /' | rg -c 'G8, G9 and G10 are answere[d]'` prints 1 (the follow-ups merged); then `git switch -c docs/pins2-board-2 origin/v3-pre-release`.
+  - `npm run portal:status`, `npm run index:health` (exit 4 → stop), `node scripts/summaryShape.mjs --session latest`.
+  - The pins, verbatim, in spec §10: `pmtylf7gz` (G4), `pmtyioc0l` · `pmtyj6u8y` · `pmtyj9low` · `pmtyj9r49` (G1), `pmtxvrjls` (G2), `pmtyj69wu` (G3), `pmtyizssz` · `pmtyj0bqw` · `pmtxviaom` · `pmtyjbql6` (G11). Spec §3, §6, §7 and §8 in full.
+  - The ledger (`ctx_search`, source `project:dioreo-docs`), rows for: Armory's sortable columns, Stage deletion, masthead stats, `.thumb`/`.detcell` in the Attachments cell, the single New build chip (2026-09-11), the Manifest's `mode` chip · manifest widths by role · Broadcast's State column, `StatePill`, `.stt.saved` ink and `PILL` map, HeadsUp · Analytics' admin traffic switch and masthead stats (2026-09-02) · every `span.sp` / `p.chint` / `p.pnote` / `.hint` row · Access's "1 admin × 12 permissions". Carry each row's id into the board notes beside the gate it bears on.
+  - The small-text sites: `rg -n 'class="sp"|class="chint|class="pnote|class="hint|class="nw-hint|class="bvnote|class="racknote| meta=' portal/ui/*.js` through `ctx_batch_execute`, plus every `Masthead` meta string.
+  - Agent B's build-name report `local/pins2/build-name-report.txt` (gitignored, on the main checkout; if it is absent, re-run B's read-only report script from Session 1 against the dev database) and B's proven share text in `portal/ui/armory.logic.js` (`shareCommandText`).
+  - The live surfaces, reproduced before drawing (§1 row 8): `http://localhost:8787/harness.html?fresh=1#/armory`, `#/broadcast`, `#/analytics`, `#/history` with chrome-devtools `new_page`, one capture each; real dev rows through `node scripts/portalRealWalk.mjs --realm armory`.
+  - The tracked G8–G10 board, `docs/superpowers/mockups/2026-09-14-pins2-board/index.html` — the pattern, including the G9 answers G4 must agree with.
 
-- [ ] **Step 2 — the board:** one Artifact on the portal's own `app.css`, built the way the G8–G10 board was — board-only classes prefixed `pb-`, rendered locally with puppeteer and looked at before every publish, every clickable control 44px, one switch style, no hint prose, real dev data. **G4** the Armory manifest row in two or three directions carrying everything spec §6 lists (coloured chip, weapon, category, badges, image set or not, up to five attachments — with DMZ's nine — gunsmith code, build number, build name only when set), reusing the G9 answers where they overlap (Tier colours, slot names, the build-number numeral) · **G6** agent B's report with its two options · **G1** the small-text table, every site with realm, string, kind, ledger row and proposed treatment · **G2** three admin-traffic controls · **G3** two or three announcement cards. Source `local/pins2-board-2/board.html`; tracked copy under `docs/superpowers/mockups/<date>-pins2-board-2/`.
+### 4b.1 · What each gate must show
 
-- [ ] **Step 3 — the review:** Harkirat comments on the Artifact; read the comments, apply them, re-render, look, republish, as many rounds as he takes, until he says he is done. A structural fork he must choose goes in `AskUserQuestion` after it is drawn. Never build from a version he has not closed.
+- **G4 — the Armory manifest row** (pin `pmtylf7gz`, spec §6). Two or three directions, each on real dev builds (at least: a BAL-27 MP build with five attachments and a code, a DMZ build with nine attachments and no code, a build with a coverage flag, a build with no image, a build whose name is set). Every direction carries the spec §6 list — category colour chip, weapon, category, badges, image set or not (not by colour alone), the attachments (MP up to five, DMZ up to nine, in `CANONICAL_SLOT_ORDER` as §10.1 row 17), the gunsmith code with a copy icon (MP only), the build number, the build name only when set, a share icon copying `shareCommandText`, a tasteful category-accent tint on hover — and drops "MP" and "5 attachments". Must also show: the needs-repair shape for a coverage flag, the selection checkbox and bulk "Stage deletion", the row click that opens the edit drawer, and how weapon-name order reads with the category chips. **Must answer, with the ledger row beside it:** his pin says he never sorts by anything but weapon name, while the ledger keeps sortable Category, Gunsmith code and Attachments headers (2026-08-31, reopens "if the sort feature is found to be broken or unused") — show the row with and without them and let his comment retire or keep that row. **Must say** whether Armory gets its own row renderer inside the shared `portal/ui/manifest.js` (edited by Session 2's main thread) or the shared table grows a slot, because six realms render that component. Reuse the G9 answers where they overlap: the Tier colours (§10.1 row 18), slot names, the build-number numeral (row 4).
+- **G6 — build names.** Agent B's report — every build's `buildName`, `displayBuildLabel` and derived "n of m", and every `buildName` consumer marked IDENTITY or DISPLAY — with its two options drawn as they would look in the G4 row: display-only labels now, or an identity refactor filed as its own item. The one gunsmith code sitting in a name field is listed. No data write happens in this session (§5.3 Step 10 runs it on his approval).
+- **G1 — the small text** (spec §3; pins `pmtyioc0l`, `pmtyj6u8y`, `pmtyj9low`, `pmtyj9r49`). A table of every site: realm · string · kind (restatement / fact / finding) · the ledger row that cites it · the proposed treatment (cut · move to its control · a spec strip · a filter chip). Never a sweep: a site with a ledger row shows that row. Access's "1 admin × 12 permissions" noise line is sorted by kind here; its panel-bar redesign stays deferred (§6). Where a treatment changes a visible surface, draw the after state beside the table.
+- **G2 — the admin-traffic control** (pin `pmtxvrjls`). Today a native checkbox, `.adminsw` (`portal/ui/analytics.js:689`, `app.css:2842`), in the Traffic panel header since v3.73.0. Three renderings in place in that header; one may reuse the G8 board's `Never ends` switch so the portal has one switch language.
+- **G3 — the announcement card** (pin `pmtyj69wu`). The live-queue card `.nscard` (`portal/ui/broadcast.js:118-124`): keep the position number and "Never ends"; redesign how the announcement text and "up Nd" sit. Two or three directions on the real seeded announcements, each showing a card with the G8 answers' banner and a repeat count, because those fields now exist.
+- **G11 — the manifest visuals no gate covered** (pins `pmtyizssz`/`pmtyj0bqw`, `pmtxviaom`, `pmtyjbql6`). Broadcast's manifest: the State column's badges and states, the State filter chips' colour identity, the tiny colour chips beside the Announcement column, its column spacing · History's Level filter chips carrying severity in the `LEVEL_ROW` vocabulary · the shared Manifest tools row with `+ Add build` / `+ Post announcement` placed deliberately and the category chips with no orphaned Secondaries. One direction each is enough unless a real fork appears; the column-width roles and HeadsUp's move stay Session 2's without a drawing.
 
-> ⟦ONE MESSAGE⟧ Step 4 — the records heredoc and the gates.
+### 4b.2 · The board
 
-- [ ] **Step 4 — write the answers:** §10.4 below, one row per gate with his words and dated notes, replacing its placeholder · a ledger row per decision · G6's data write, if he chooses one, is NOT run here — §5.3 Step 10 runs it on his approval · the tracked board copy · this section's boxes. Close by §13.
+> ⟦ONE MESSAGE⟧ Steps 2–3 — write, render, look, publish.
+
+- [ ] **Step 2 — build it the way the G8–G10 board was built:** source `local/pins2-board-2/board.html`, linking the portal's own stylesheet (`node -e "require('./scripts/buildPortal').build()"` first, then copy `portal/public/app.css` beside the board). **Every board-only class is prefixed `pb-`** — the portal already owns `.panel`, `.card`, `.bar`, `.row`, `.win`, `.d`, `.thumb`, `.cv`, `.ln`, `.code`, `.rep`, `.no`, `.bad`, `.nums`, `.mono`, and unprefixed names produced double frames and stray shapes on the first board. Every clickable control 44px (chips 32px); one switch style, the portal's `.seg` pill with a thumb measured from the pressed button; no hint prose; real dev data; each gate gets a notes column naming its pins and ledger rows. **Render locally and look before every publish:** serve the repo with a no-store static server on `127.0.0.1:8900` (`python3 -c` with `http.server.SimpleHTTPRequestHandler`, adding `Cache-Control: no-store`), screenshot each state with `puppeteer-core` driving `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` (its own `--user-data-dir`, because the chrome-devtools MCP profile may be held by another session), and read every screenshot.
+- [ ] **Step 3 — publish:** `Artifact` from the repo root with `files: {"app.css": "<the copied app.css>"}`; keep one file path so every republish keeps the URL; put the URL at the top of §10.4 at once.
+
+### 4b.3 · The review
+
+- [ ] **Step 4 — rounds:** Harkirat comments on the Artifact. Read them with `Artifact` `action: "comments"` (threads are not activated for Claude, so they cannot be replied to or resolved — say which stay open). Run a `sequentialthinking` pass on each round before editing; check sibling code before asking him anything; apply, re-render, look, republish — as many rounds as he takes, until he says he is done. A structural fork he must choose goes in `AskUserQuestion` after it is drawn. Between rounds, write nothing into §10.4 except the URL: interim notes stacked beside rows went stale three times on the first board (audit row 46).
+
+### 4b.4 · Write the answers, falsify, close
+
+> ⟦ONE MESSAGE⟧ Step 5 — the records heredoc, gates chained.
+
+- [ ] **Step 5 — write:** §10.4, replacing its placeholder: an opening paragraph (the board URL and tracked path, his cross-gate rules, anything measured) and one table per gate — `finding · severity · what Session 2 must build` — each row quoting his comment with its time (the artifact stamps are UTC; convert) · a ledger row per decision, retiring or citing every row the gate touched (the sortable-columns row above among them) · the tracked board copy under `docs/superpowers/mockups/<date>-pins2-board-2/index.html`, its stylesheet link pointed at `../../../../portal/public/app.css` · §5.2 Step 9 and §5.3 Step 10 amended where an answer changes what they build · §2, §7 and §9 where ownership moves · this section's boxes.
+- [ ] **Step 6 — falsify, then a reader test:** a `sequentialthinking` pass whose job is to find where §10.4 is wrong — above all, any board choice he never commented on that silently reverses a ledger row or shipped behaviour (the first board did this twice, audit rows 42–43); correct the board and say so. Then, with his approval, one read-only Sonnet reader agent with no transcript over §4b, §5 and §10.4, told to find what would make Session 2 fail. Fix what it finds and log it.
+- [ ] **Step 7 — close by §13:** Step 0 before any push is asked for; the version is the next moderate step read from `origin/v3-pre-release`.
 
 ## 5 · SESSION 2 — the manifests · agent D
 
@@ -304,14 +332,14 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 7–8 — read §10.4 and reproduce Step 8's symptoms with chrome-devtools.
 
-- [ ] **Step 7 — no board, no popups.** Every design gate this session touches is answered in §10: G8–G10 on the 2026-09-14 design board, G1–G4 and G6 by the §4b board session in §10.4. Read §10.4 in full and open its tracked board; do not redraw or re-ask any gate. *(Rewritten @S@ — this step used to render G1–G4 and G6 and ask two popups.)*
+- [ ] **Step 7 — no board, no popups.** Every design gate this session touches is answered in §10: G8–G10 on the 2026-09-14 design board, G1–G4, G6 and G11 by the §4b board session in §10.4. Read §10.4 in full and open its tracked board; do not redraw or re-ask any gate. *(Rewritten @S@ — this step used to render G1–G4 and G6 and ask two popups.)*
 
 ### 5.2 · The shared manifest
 
 - [ ] **Step 8 — reproduce** the floating add button on Armory and Broadcast, Secondaries' position, the When column's UTC value against the local clock, the Level chips' lack of severity.
 > ⟦ONE MESSAGE⟧ Step 9 — one heredoc, gates chained.
 
-- [ ] **Step 9 — one heredoc:** the tools row places `.madd` deliberately (`manifest.js:206`) and the category chips follow `CATEGORY_CHIP_ORDER` without an orphan · column roles, not widths (`manifest.js:222-225`): When, Source and Who narrow, What detail · History's When renders local time as `Sep 6, 7:25 PM` via `Intl.DateTimeFormat(undefined, …)` · Level chips take `LEVEL_ROW`'s severity classes · Broadcast's five column fixes, and HeadsUp moved to the top of its realm (it arrives through the Shell's `noticeSlot` — check whether the slot order affects other realms first) · the floating `p.chint` handled by its kind · Armory's Bulk & Export panel is left alone here — agent D removes it whole after folding the paste into New Build, because two streams editing `armory.js:960-1090` at once is the conflict §7 exists to prevent. Gates chained.
+- [ ] **Step 9 — one heredoc:** the tools row places `.madd` deliberately (`manifest.js:206`) and the category chips follow `CATEGORY_CHIP_ORDER` without an orphan · column roles, not widths (`manifest.js:222-225`): When, Source and Who narrow, What detail · History's When renders local time as `Sep 6, 7:25 PM` via `Intl.DateTimeFormat(undefined, …)` · Level chips take `LEVEL_ROW`'s severity classes as §10.4's G11 row draws them · Broadcast's five column fixes as §10.4's G11 rows draw them, and HeadsUp moved to the top of its realm (it arrives through the Shell's `noticeSlot` — check whether the slot order affects other realms first) · the floating `p.chint` handled by its kind · Armory's Bulk & Export panel is left alone here — agent D removes it whole after folding the paste into New Build, because two streams editing `armory.js:960-1090` at once is the conflict §7 exists to prevent. Gates chained.
 
 > ⟦ONE MESSAGE⟧ Step 9b — the slot backfill: the script, its dry run and the dev write chained in one Bash call. The prod write is its own message, and only after Harkirat approves it.
 
@@ -444,11 +472,12 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 | G3 | Board session §4b | Two or three announcement cards | Which one |
 | G4 | Board session §4b | Two or three Armory rows on real data | Which one |
 | G6 | Board session §4b | Agent B's build-name report: every build, and every place `buildName` is still an identity | Display-only labels now, or an identity refactor filed as its own item? |
+| G11 | Board session §4b | Broadcast's manifest state column, state chips and colour chips · History's level chips · the shared Manifest tools row | Build as drawn, or which change? (added 2026-09-14 02:34 EDT) |
 | G8 | **Answered 2026-09-14 01:18 EDT** on the design board | The whole Broadcast composer (§10.3) — its fields and copy, and the Discord-shaped preview | Answered: build the preview; §10.3 as amended |
 | G9 | **Answered 2026-09-14 01:18 EDT** on the design board | The New Build drawer (§10.1) — Add build and Bulk create, MP and DMZ | Answered: §10.1 as amended, rows 15–18 added |
 | G10 | **Answered 2026-09-14 01:18 EDT** on the design board | Compare (§10.2) in its four states, cards behind "Show cards" | Answered: §10.2 as amended |
 
-G1–G4 and G6 are answered by the §4b board session, in comment rounds on an Artifact until Harkirat closes it, and written into §10.4 — decided 2026-09-14 02:17 EDT, replacing the two popups Session 2 Step 7 used to ask. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
+G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on an Artifact until Harkirat closes it, and written into §10.4 — decided 2026-09-14 02:17 EDT, replacing the two popups Session 2 Step 7 used to ask. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
 
 ## 10 · Reserved — written by the critique session
 
@@ -531,7 +560,7 @@ G1–G4 and G6 are answered by the §4b board session, in comment rounds on an A
 | 11 | `harden` — Stage post has no busy state; a double click stages two identical announcements | **P2** | Disable and show "Staging…" until the result returns |
 | 12 | `clarify` — the footer opens in the blocked red, "Write the announcement first.", before anything has been typed | **P3** | Neutral ink until Text has been touched; the disabled Stage button already carries the state |
 
-### 10.4 · Session 2's gates — G1, G2, G3, G4 and G6
+### 10.4 · Session 2's gates — G1, G2, G3, G4, G6 and G11
 
 *Not yet written — the design-board session (§4b) writes it.*
 
@@ -571,10 +600,10 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 Premise High · Delib Medium -> Opus5-High
 
 You are the design-board session of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md (§4b). docs/pins2-followups must be on v3-pre-release; §4b Step 1 proves it.
-Read in full: the plan's §0, §1, §4b, §9, §10 and §13; the spec's §3, §6, §7 and §8; the decision ledger's Armory, Broadcast, Access and Analytics rows (ctx_search, source project:dioreo-docs). Open the tracked G8-G10 board named in §10's first paragraph: it is the pattern.
+Read in full: the plan's §0, §1, §2, §4b, §5, §9, §10 and §13; the spec's §3, §6, §7, §8 and the pins §4b Step 1 names in §10; the decision ledger's Armory, Broadcast, Access and Analytics rows (ctx_search, source project:dioreo-docs). Open the tracked G8-G10 board named in §10's first paragraph: it is the pattern.
 If npm run index:health exits 4, stop and tell me.
-Build ONE board for G4 (the Armory manifest row), G6, G1, G2 and G3 on real dev data and the portal's own app.css; render and look before every publish. I review it in artifact comments over as many rounds as I need; a structural fork goes in a popup after it is drawn. You build nothing and dispatch no agents.
-Write every answer into §10.4 with dated notes and ledger rows. docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
+Build ONE board for G4 (the Armory manifest row), G6, G1, G2, G3 and G11 exactly as §4b.1 lists, on real dev data and the portal's own app.css, by §4b.2's method; render and look before every publish. I review it in artifact comments over as many rounds as I need; a structural fork goes in a popup after it is drawn. You build nothing and dispatch no agents.
+Write every answer into §10.4 with dated notes and ledger rows, then run §4b Step 6: a falsification pass, and a reader agent only after I approve it. docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
 ```
 
 ```text
@@ -584,7 +613,7 @@ Premise Med · Delib Very high -> Opus5-High
 You are Session 2 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 1, the critique, the design-board follow-up and the §4b board session must all be on v3-pre-release; §5.0 Step 1 proves it.
 Read in full: the plan's §0, §1, §7, §8, §9, §10 and §13, then §5, plus §3.0 Step 1 and §3.6 Steps 20 and 22, which §5 reuses; the spec's §3, §6, §7 and §8. Open the design board §10's first paragraph names before building anything it draws.
 Step 0 is §5.0 Steps 1-5 as ONE message. Stop at Step 3 if §10 still has a "Not yet written" line. If npm run index:health exits 4, stop and tell me.
-Every design gate is already answered in §10 — G8-G10 on the 2026-09-14 board, G1-G4 and G6 in §10.4 by the board session: do not redraw or re-ask any of them. G6's data write, if §10.4 records one, runs in Step 10 only after my approval restated.
+Every design gate is already answered in §10 — G8-G10 on the 2026-09-14 board, G1-G4, G6 and G11 in §10.4 by the board session: do not redraw or re-ask any of them. G6's data write, if §10.4 records one, runs in Step 10 only after my approval restated.
 §5.2 Step 9b copies the attachment slots from Cloudinary into Mongo: the dev write is free; the prod write needs my approval restated.
 You dispatch exactly one agent, D, with the §8.3 brief verbatim, in §5.3 Step 10b after Step 9b's dev write and never before. The main thread builds Compare.
 docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
@@ -714,6 +743,7 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 | 52 | Brief D said the composer's "banner-image and repeat inputs" while G8 answered the whole composer — preview, meter, Never switch, echoes | Scope an agent would read narrowly | Brief D step 2 |
 | 53 | A cold reader (a Sonnet agent with no transcript, @S@) found four more: Step 3's added review check searched for a phrase this pass had already deleted, so it could never fail · `CANONICAL_SLOT_ORDER` holds ten entries including `trigger action`, which no build carries, while rows 15 and 17 speak of nine slots · Step 3 read the local plan while Step 1 read `origin`, unstated · no step copied an agent's gitignored artefacts out of its worktree before removal | Vacuous check · Silent wrong row · Confusion · Lost artefact | Step 3 now asserts the preamble; row 17 and brief D 1b skip `trigger action`; Step 3 names its source; §5.4 Step 12 copies D's captures. Cleared by the reader: the Bulk create staging and slot order fixes are on the board; the composer's other-live-posts total is computable from `/api/broadcast`'s full `text`; blank Ends and never match `core/ops/announcements.js`; the ledger and deferred entries agree with §10 |
 | 54 | G4 — the drastic Armory manifest-row redesign — and G1–G3 and G6 were left to two or three options and one popup inside Session 2, the instrument that had just needed five board versions to get G8–G10 right; Harkirat had seen nothing of the row (asked 2026-09-14 02:17 EDT) | Design built from a popup | New §4b board session; §10.4 placeholder stops Session 2 until it is written; §2, §5, §9, §11, §13 |
+| 55 | §4b was first written as four thin steps — no pin list, no ledger rows, no per-gate content, no board method, no falsification or reader step — while the sessions beside it carry all of those; and three of Harkirat's visual pins (the Broadcast manifest's state column and chips, History's level chips, the Manifest tools row) had no gate at all, so Session 2 would have designed them unseen (found when he asked whether §4b was a full session, 2026-09-14 02:34 EDT) | Thin handoff · Design built unseen | §4b rewritten to the other sessions' depth; G11 added to §2, §9, §10.4, §11 and §5.2 Step 9 |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
