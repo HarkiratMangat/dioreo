@@ -75,6 +75,10 @@ Each one cost a wasted verification round, and none is visible from the file you
 
 ⚠️ **And an assert is scoped to the EDIT, not to the file.** Asserting that a short declaration is absent from a 5,000-line stylesheet fails on any unrelated rule that happens to end the same way. Assert the exact text you removed, and assert a SURVIVOR beside it.
 
+## 🔴 Refinement is a measured sweep of RELATIONS, run before anything is shown — added 2026-09-14 16:12 EDT
+
+Pins-2 design board 2 took **21 versions** because nearly every correction Harkirat made was a relation between elements that no gate here measures: a label's gap to its controls, a group pushed right instead of inline behind a divider, a boxed icon's visible edge sitting off the line its neighbours end on, a bar left short after its end moved, dead space inside a fixed-width field, an action run with no divider before delete. **Before showing or closing any portal surface, measure those relations across the whole page at 1282×888 and on a phone width** — the rules and their targets are plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.4 (C1–C14) and the worked instrument is `docs/superpowers/mockups/2026-09-14-pins2-board-2/measure.cjs`. ⚠️ A board or mockup stylesheet built in rounds lies to a top-down reader; port values from a resolved-value extraction (`extract-spec.cjs` beside it), never from the CSS.
+
 ## 🎨 The impeccable verbs are REACHABLE HERE, and only one of them is expensive
 
 *Added 2026-09-09 21:17 EDT. Measured against the installed skill, not inferred.*
