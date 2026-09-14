@@ -247,6 +247,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-13 14:33 EDT — Portal pins batch 2 — four fork rounds, four pins that named the wrong cause, and a permission redesign deferred (v3.80.0-pre)
 - 2026-09-13 18:59 EDT — Portal pins batch 2, Session 1 — the identity colours, History as its own realm, the shell chrome, and two agents (v3.81.0-pre)
 - 2026-09-13 22:17 EDT — Portal pins batch 2, the critique: plan §10 for the New Build drawer, Compare and the composer (v3.82.0-pre)
+- 2026-09-14 02:45 EDT — The pins-2 design board: G8–G10 answered on the page, and a second board session planned (v3.83.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4348,6 +4349,25 @@ The critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.m
 **Decisions.** The composer is critiqued with `/design-critique`; Compare keeps its Discord cards behind a "Show cards" toggle; banner links are re-hosted to Cloudinary keyed on the announcement's id, the way every other pasted link in the repo is.
 
 **What went wrong, and what changed because of it.** Two impeccable agents were dispatched on the composer before the method was corrected. Parallel agents fought over one chrome-devtools profile and fell back to puppeteer. A citation said the mockup's composer had a preview card; it was the page's live-queue preview. A question about where banner images come from was answerable from sibling code. And the session asked for a push three times with its end-of-session work undone — each round of pushback found more. The plan's §13 now opens with a Step 0 pre-push close-out, and §4 and the §11 prompt name the in-line verbs, so the next two sessions execute those rather than remember them.
+
+## 2026-09-14 02:45 EDT — The pins-2 design board: G8–G10 answered on the page, and a second board session planned (v3.83.0-pre)
+
+The critique had written the New Build drawer, Compare and the composer as prose, and Harkirat asked to see them before anything was built. So the session drew them on a board built from the portal's own stylesheet, and he reviewed it in five versions.
+
+**What the board taught.** The first version was a mess because its own wrapper classes collided with classes the portal already owned — frames inside frames, black bands, stray capsules. Prefixing every board-only class fixed that, and rendering locally before each publish stopped shipping pages nobody had looked at. From there the rounds were his: the gunsmith code as a plain field, an upload path for images, badges that look like badges, a switch for "never ends", no dated repeat dots because players do not open the bot on a schedule, and a thin budget bar borrowed from Armory's Repairs cards.
+
+**He remembered what the database had forgotten.** Asked how an attachment's slot could be known, the first check read Mongo and found none. Harkirat recalled the vision run; the slots were in Cloudinary's metadata all along, on 130 of 134 images. That turned a guess into a feature: a pasted gunsmith code's digit names the slot, and the same digit–letter pair names the same attachment on every build of a weapon, so the drawer can fill most of a build from its code.
+
+**Where the board was wrong.** Two choices on it had quietly reversed earlier decisions — Bulk create's staging rule and the slot order he set in July — and he had never commented on either, so the plan keeps the old decisions. Two cold reader agents then found checks that could never pass or never fail, and an image-key match that would have missed four builds in five.
+
+**What comes next.** He had not been shown the Armory manifest-row redesign either, so a second board session now answers Session 2's remaining gates before it builds anything.
+
+### Lessons
+
+- A board built on the real stylesheet has to avoid the real stylesheet's class names, or it shows defects that are not in the design.
+- Check every store a pipeline writes before calling data missing.
+- A design board's unreviewed choices are not his decisions; falsify them against the ledger before writing them into a plan.
+- A check that searches a document for a phrase the same document quotes can never pass.
 
 # Part B — Lessons Ledger (thematic)
 
