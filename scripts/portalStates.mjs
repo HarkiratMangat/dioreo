@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
 const { runPasses, diffAgainstKnown, keyOf, stepSettle } = require('./lib/portalStatePasses.cjs');
+const { walkJobs } = require('./lib/walkJobs.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'portal', 'public');
 const REGISTRY = path.join(ROOT, 'portal', 'fixtures', 'states');
@@ -136,6 +137,24 @@ export function isStall(message) {
     return /did not reach its own subject|stalled: nothing matched/.test(String(message || ''));
 }
 
+// 🔴 WAIT FOR THE TARGET, THEN ACT — added 2026-09-14 18:30 EDT. Every step used to run `querySelector(s); if (el) el.click()`, so a step that fired before its target had rendered clicked NOTHING and said nothing; the walk then waited up to 45 s for a subject that could never appear and reported a stall. That is the signature of every CI failure of this walk (six, counted 2026-09-14) and it is why the 4000 → 12000 → 45000 deadline raises never fixed it: the missing wait was the one IN FRONT of the step. The thrown message keeps the `stalled: nothing matched` wording, so isStall still classifies it and the patience retry still gets its one attempt — but a target that never appears is now named, not skipped.
+export const TARGET_MS = 10000;
+const VACUOUS = [];
+async function waitForTarget(page, state, selector, patience = 1) {
+    try {
+        await page.waitForSelector(selector, { timeout: TARGET_MS * patience });
+    } catch {
+        throw new Error(`state "${state.name}" stalled: nothing matched ${selector} to act on within ${TARGET_MS * patience}ms, so its step would have acted on nothing`);
+    }
+}
+async function waitForTargetText(page, state, target, patience = 1) {
+    try {
+        await page.waitForFunction((t) => [...document.querySelectorAll(t.sel)].some((x) => (x.textContent || '').includes(t.text)), { timeout: TARGET_MS * patience }, target);
+    } catch {
+        throw new Error(`state "${state.name}" stalled: nothing matched ${target.sel} containing "${target.text}" to act on within ${TARGET_MS * patience}ms, so its step would have acted on nothing`);
+    }
+}
+
 // 🔴 `patience` IS WHAT MAKES THE RETRY A DIFFERENT EXPERIMENT RATHER THAN THE SAME ONE TWICE — added 2026-09-09 17:28 EDT, closing the filed [P2 · M] entry's own first option. The retry below used to re-run `walk` with identical arguments, and the filed measurement is that the stall fires roughly half the time, so two consecutive failures happen about a quarter of the time by chance: repeating an experiment cannot separate the two cases it claims to separate. ⚠️ AND THE VARIED THING IS DELIBERATELY **NOT THE DEADLINE**. This file's history raised the subject wait 4000 → 12000 → 45000 and it still failed; the entry rules a fourth raise out explicitly. The diagnosis written fourteen lines below is that a step CLICKS BEFORE ITS TARGET MOUNTS, so the wait that was missing is the one BEFORE the step, not after it. `patience` buys exactly that, and leaves every deadline where it is.
 async function walk(page, state, port, patience = 1) {
     // ⚠️ SET BEFORE THE NAVIGATION, and cleared for every state that did not ask — an emulated media feature is sticky on the page, so one reduced-motion state would silently put every state after it into reduced motion and their clean results would mean something else entirely.
@@ -147,19 +166,32 @@ async function walk(page, state, port, patience = 1) {
     await page.waitForSelector('main', { timeout: 15000 });
     // ⚠️ `slow` DELAYS THE FIRST LOAD TOO, so a state that injects it and then clicks something immediately clicks into a skeleton. `preSettleMs` waits for the data to arrive BEFORE the steps run — which is the whole point of the refreshing state: it only exists when there is already data on screen to keep.
     if (state.preSettleMs) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), state.preSettleMs * patience);
+    // 🔴 A SUBJECT ALREADY ON THE PAGE PROVES NOTHING ABOUT THE STEPS — added 2026-09-14, refined 2026-09-14 19:11 EDT. The analytics tile state clicked a label that no longer existed and still passed for eleven days, because its expect (any selected view tab) was true before any step ran. Waiting for a step's target catches a MISSING target; this reports the other half, a subject that cannot tell whether the steps did anything. It waits for the first step's target before looking, because the first version looked immediately and reported a state in one run and not the next as the page raced it; and a state with an `until` on any step is exempt, because the `until` already proves a transition happened. Report-only: VACUOUS is printed at the end of the walk.
+    if (patience === 1 && state.expect && (state.steps || []).length && !state.steps.some((s) => s.until)) {
+        const first = state.steps[0];
+        if (first.click || first.hover) await waitForTarget(page, state, first.click || first.hover, patience);
+        else if (first.clickText) await waitForTargetText(page, state, first.clickText, patience);
+        else if (first.type) await waitForTarget(page, state, (typeof first.type === 'object' ? first.type : first).sel, patience);
+        if (await page.$(state.expect)) VACUOUS.push(state.name);
+    }
     for (const step of state.steps || []) {
         // The pre-step wait, and it exists only on a retry: at patience 1 this is zero and the first attempt is byte-for-byte the run it always was, so a green suite keeps meaning what it meant.
         const pause = stepPause(patience);
         if (pause) await page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), pause);
         if (step.key) await page.evaluate((k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k.key, metaKey: !!k.meta, bubbles: true })), step);
+        if (step.click) await waitForTarget(page, state, step.click, patience);
         if (step.click) await page.evaluate((s) => { const el = document.querySelector(s); if (el) el.click(); }, step.click);
         // ⚠️ A MENU ITEM IS IDENTIFIED BY ITS WORDS, NOT ITS POSITION. `.who [role=menuitem]` matched the FIRST item — "What you can do", which navigates away — so the state named "toast after an account action" walked to a different realm and reported clean. A registry that addresses controls positionally breaks every time a menu gains an entry, silently.
+        if (step.clickText) await waitForTargetText(page, state, step.clickText, patience);
         if (step.clickText) await page.evaluate((s) => { const el = [...document.querySelectorAll(s.sel)].find((x) => (x.textContent || '').includes(s.text)); if (el) el.click(); }, step.clickText);
         // ⚠️ A TOOLTIP IS CONTENT AND IS INVISIBLE TO A SCREENSHOT, so the runtime that renders it has to be walked like any other state. tips.js delegates from the document, so a synthetic pointerover on the host is what a real pointer would produce.
-        if (step.hover) await page.evaluate((sel) => { const el = document.querySelector(sel); if (el) { el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true })); el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); } }, step.hover);
+        if (step.hover) await waitForTarget(page, state, step.hover, patience);
+        // 🔴 A REAL POINTER, NOT SYNTHETIC EVENTS — changed 2026-09-14 19:31 EDT. This dispatched pointerover and mouseover on the element, which never produces a pointermove, and the Track's crosshair follows pointermove: the one state that hovers never showed its crosshair, and passed anyway because its expect named the hover target itself. page.hover moves the real mouse, so every pointer event a person would cause fires.
+        if (step.hover) await page.hover(step.hover);
         // ⚠️ `type` ACCEPTS BOTH SHAPES, and it did not until 2026-08-28. Every other step that needs two values nests them (`clickText: {sel, text}`), so a registry written by hand naturally writes `type: {sel, text}` — which this read as `step.sel`/`step.text`, found undefined, and typed nothing into nothing. The step then "ran", and only `expect` reported that the state had not been reached. Cost a real debugging loop; a driver that accepts the shape its own siblings teach costs nothing.
         if (step.type) {
             const t = (typeof step.type === 'object') ? step.type : step;
+            await waitForTarget(page, state, t.sel, patience);
             await page.evaluate((s) => { const el = document.querySelector(s.sel); if (el) { el.value = s.text; el.dispatchEvent(new Event('input', { bubbles: true })); } }, { sel: t.sel, text: t.text });
         }
         // ⚠️ 160ms IS A DEFAULT, NOT A CONTRACT. A step whose effect is a re-render that MOUNTS the next step's target needs longer, and when it does not get it the following step clicks nothing — which `expect` then reports as "did not reach its own subject". That is the gate working, but the state is still unwalked, so a step may name its own settle. Season's "closed again from the header's dead space" is the case: the first click mounts `.idbody`, and `.idhead` does not exist until it has.
@@ -197,56 +229,9 @@ async function walk(page, state, port, patience = 1) {
     }
     // ⚠️ THE PRESENCE PROOF IS ELEMENTS, NOT FOCUSABLES. A skeleton is a legitimate state with nothing to focus — asserting on focusables made the deliberately-slow state fail as if it were broken, which would have pushed the next session to delete the state rather than the assertion.
     if (!records.counts.elements) throw new Error(`state "${state.name}" examined 0 elements inside <main> — the page had not rendered, so a clean result would be meaningless`);
+    // The mouse is per page, and a worker walks many states on one page: park it off the page after a hover so the next state does not start with something hovered.
+    if ((state.steps || []).some((s) => s.hover)) await page.mouse.move(-10, -10);
     return records;
-}
-
-// 🔴 A RED GATE ON A DIFF THAT CANNOT HAVE CAUSED IT IS WORSE THAN NO GATE. Added 2026-09-02 18:07 EDT after PR #181 -- 31 files of hooks, rules, docs and two doc-audit scripts, ZERO portal files and zero runtime .js -- failed `syntax-check` three consecutive times on `manifest . nothing matches the search`, while this same script passed locally on that same tree, 44 states walked, exit 0. `syntax-check` is a REQUIRED check, so a non-deterministic browser walk was able to block any pull request in the repository. That coupling is the defect being fixed here; the underlying non-determinism is filed separately in docs/db-deferred-list.md and is NOT claimed to be solved.
-//
-// ⚠️ IT FAILS CLOSED, AND THAT IS THE WHOLE SAFETY ARGUMENT. If the changed-file list cannot be determined -- no git, no reachable base, an empty diff -- the walk RUNS. A skip is only ever taken from a list that was actually read and actually contains nothing this script measures. The dangerous direction is skipping on uncertainty, because that turns a portal change into a silent pass, which is the exact vacuous-pass shape the rest of this file exists to prevent.
-//
-// ⚠️ AND IT SHOUTS. The skip prints as `⚠ SKIPPED` with the base it compared against and the file count, in the same shape as the no-Chrome branch below, because a skip that reads like a pass is how a gate quietly stops being one.
-export const PORTAL_TOUCHED = [
-    (f) => f.startsWith('portal/'),
-    (f) => f.startsWith('scripts/portal'),
-    (f) => f.startsWith('docs/superpowers/mockups/'),
-    // A dependency bump can move puppeteer or Chrome under the walk without any portal file changing. ⚠️ But a VERSION BUMP is not a dependency change, and treating it as one made this filter useless on the first PR it met: every release touches package.json and package-lock.json, so the walk would have run on every diff regardless. `manifestChangedBeyondVersion` below reads the actual diff and keeps these two only when something other than the version field moved.
-    (f) => f === 'package.json' || f === 'package-lock.json',
-];
-
-// Exported for the test. A package.json diff that only moves `"version"` cannot affect a browser walk, and counting it as if it could is how a narrowing filter quietly widens back to everything — every release touches that file.
-//
-// ⚠️ IT IS DELIBERATELY BROADER THAN ITS OLD NAME (`depsChanged`) CLAIMED, and the name was the half that was wrong — renamed 2026-09-02 18:23 EDT by a code review. ANY non-version change here re-arms the walk, a `scripts` edit included, because `scripts` decides what actually runs. That is conservative on purpose: this branch edits `scripts` and therefore correctly does NOT skip its own walk. Narrowing until my own PR went green would be the "tune the gate until it passes" failure this repo has receipts for.
-export function manifestChangedBeyondVersion(diffText) {
-    if (!diffText) return false;
-    return diffText
-        .split('\n')
-        .filter((l) => (l.startsWith('+') || l.startsWith('-')) && !l.startsWith('+++') && !l.startsWith('---'))
-        .some((l) => !/^[+-]\s*"version"\s*:/.test(l));
-}
-export function portalTouched(changed) {
-    if (!Array.isArray(changed) || !changed.length) return true;   // unknown or empty => RUN
-    return changed.some((f) => PORTAL_TOUCHED.some((m) => m(f)));
-}
-
-function changedAgainstBase() {
-    const { execFileSync } = require('child_process');
-    const bases = [];
-    if (process.env.GITHUB_BASE_REF) bases.push(`origin/${process.env.GITHUB_BASE_REF}`);
-    bases.push('origin/v3-pre-release', 'origin/main');
-    for (const base of bases) {
-        try {
-            const out = execFileSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-            let files = out.split('\n').map((x) => x.trim()).filter(Boolean);
-            const manifests = files.filter((f) => f === 'package.json' || f === 'package-lock.json');
-            if (manifests.length) {
-                const d = execFileSync('git', ['diff', `${base}...HEAD`, '--', ...manifests], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-                if (!manifestChangedBeyondVersion(d)) files = files.filter((f) => !manifests.includes(f));
-            }
-            // 🔴 RETURN ON THE FIRST BASE THAT RESOLVED, not the first that survives filtering -- corrected 2026-09-02 18:23 EDT by a code review. When the version-only filter emptied `files`, the loop fell through and tried the NEXT base, so a PR branched from v3-pre-release could end up judged against origin/main. An empty post-filter list is a real answer ("nothing here concerns the walk"), not a failed lookup to retry elsewhere.
-            return { base, files };
-        } catch { /* this base is unreachable -- try the next */ }
-    }
-    return null;
 }
 
 async function run() {
@@ -254,17 +239,7 @@ async function run() {
     const flag = (n) => args.includes(n);
     const only = args.includes('--realm') ? args[args.indexOf('--realm') + 1] : null;
 
-    // Only in --ci. An interactive run is someone asking the question directly, and the answer to "walk the states" is never "I decided you did not mean it".
-    if (flag('--ci')) {
-        const diff = changedAgainstBase();
-        if (diff && !portalTouched(diff.files)) {
-            console.error(`  ⚠ SKIPPED — none of the ${diff.files.length} file(s) changed against ${diff.base} is one this walk measures (portal/, scripts/portal*, the mockups, or a dependency bump).`);
-            console.error('    NOT a pass: no state was walked. Run it without --ci to walk them anyway.');
-            console.error('    This exists because a browser walk that is red on a diff it cannot have caused blocks every PR in the repo -- see docs/db-deferred-list.md for the non-determinism itself, which this does NOT fix.');
-            return;
-        }
-    }
-
+    // 🚫 The --ci diff skip that stood here (2026-09-02 → 2026-09-14 18:30 EDT) is RETIRED. It existed because this walk raced, and a red run on a diff that could not have caused it blocked every PR. The race is fixed at its root (waitForTarget, above), and on 2026-09-14 Harkirat decided that CI runs everything: skipping unchanged work belongs to the local runner's cache, never to CI.
     fs.mkdirSync(REGISTRY, { recursive: true });
     const files = fs.readdirSync(REGISTRY).filter((f) => f.endsWith('.json')).filter((f) => !only || f === `${only}.json`);
     if (!files.length) { console.log(`portal:states — no registries in portal/fixtures/states${only ? ` matching "${only}"` : ''}. Each realm registers its own states as it walks them.`); return; }
@@ -282,26 +257,33 @@ async function run() {
     const puppeteer = require('puppeteer-core');
     const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
     let bad = false, walked = 0; const flaked = [];
+    // 🔴 WORKERS, EACH IN ITS OWN BROWSER CONTEXT — added 2026-09-14 18:30 EDT. Every state navigates fresh, so the states are independent and spread across walkJobs(PORTAL_STATES_JOBS) pages. A separate context per worker, never one shared context: pages in one context share localStorage and sessionStorage, and a state that clears storage on load would wipe a neighbour mid-walk. Output is buffered per state and printed in registry order, so a parallel run reads exactly like the serial one, and --record still writes each registry once, after all of its states.
+    const regs = files.map((f) => { const file = path.join(REGISTRY, f); return { f, file, registry: JSON.parse(fs.readFileSync(file, 'utf8')), out: [] }; });
+    const queue = regs.flatMap((reg) => reg.registry.states.map((state, i) => ({ reg, state, i })));
+    const jobs = Math.max(1, Math.min(walkJobs(process.env.PORTAL_STATES_JOBS), queue.length));
+    let failure = null;
     try {
-        const page = await browser.newPage();
-    // 🔴 THE CLOCK IS FROZEN, for the reason portalGeometry's was on 2026-08-31: an instrument that
-    //    measures a page which moves while it is being measured reports drift as a finding. The season
-    //    countdown reads Date.now() now (the design's start-of-day source was refused as class (b)), so a
-    //    live clock changes the WIDTH of its readout between two runs. Same instant portalDiff pins.
-    await page.evaluateOnNewDocument((t) => {
-        const RealDate = Date;
-        const Frozen = function (...a) { return a.length ? new RealDate(...a) : new RealDate(t); };
-        Frozen.prototype = RealDate.prototype;
-        Frozen.now = () => t; Frozen.parse = RealDate.parse; Frozen.UTC = RealDate.UTC;
-        window.Date = Frozen;
-        try { performance.now = () => 0; } catch { /* read-only in some builds */ }
-    }, Date.parse('2026-08-24T18:41:00Z'));
-        await page.setViewport({ width: VIEWPORT.w, height: VIEWPORT.h });
-        for (const f of files) {
-            const file = path.join(REGISTRY, f);
-            const registry = JSON.parse(fs.readFileSync(file, 'utf8'));
-            console.log(`\n${registry.surface} — ${registry.states.length} state(s)`);
-            for (const state of registry.states) {
+        const worker = async () => {
+            const context = await browser.createBrowserContext();
+            const page = await context.newPage();
+            // 🔴 EVERY STATE STARTS FROM EMPTY STORAGE — added 2026-09-14 19:07 EDT. States used to share one page for the whole walk, so sessionStorage written by one state was read by the next: Season's identity panel remembers open/closed in sessionStorage, and "closed again from the header's dead space" passed only because the state before it happened to leave the panel closed. Spread across workers, it failed 3 runs of 3 (the worker's previous state had left it open) while Season alone, serial or parallel, passed. A state is now self-contained, which is what its registry entry always claimed.
+            await page.evaluateOnNewDocument(() => { try { sessionStorage.clear(); localStorage.clear(); } catch { /* a sandboxed context can refuse */ } });
+        // 🔴 THE CLOCK IS FROZEN, for the reason portalGeometry's was on 2026-08-31: an instrument that
+        //    measures a page which moves while it is being measured reports drift as a finding. The season
+        //    countdown reads Date.now() now (the design's start-of-day source was refused as class (b)), so a
+        //    live clock changes the WIDTH of its readout between two runs. Same instant portalDiff pins.
+        await page.evaluateOnNewDocument((t) => {
+            const RealDate = Date;
+            const Frozen = function (...a) { return a.length ? new RealDate(...a) : new RealDate(t); };
+            Frozen.prototype = RealDate.prototype;
+            Frozen.now = () => t; Frozen.parse = RealDate.parse; Frozen.UTC = RealDate.UTC;
+            window.Date = Frozen;
+            try { performance.now = () => 0; } catch { /* read-only in some builds */ }
+        }, Date.parse('2026-08-24T18:41:00Z'));
+            await page.setViewport({ width: VIEWPORT.w, height: VIEWPORT.h });
+            while (queue.length && !failure) {
+                const { reg, state, i } = queue.shift();
+                const out = (reg.out[i] = []);
                 // 🔴 A STALL IS RETRIED ONCE AND CLASSIFIED, BECAUSE A BIGGER DEADLINE HAS ALREADY BEEN TRIED THREE TIMES AND IS NOT THE ANSWER. This file's own history raised the subject wait 4000 → 12000 → 45000, and on 2026-09-01 20:14 EDT it still failed four times across four runs on FOUR DIFFERENT states -- `identity · closed again`, `composer · the paste box`, `manifest selection bar`, and one in CI. Forty-five seconds of absence is not impatience; it is a step that clicked before its target mounted, so the subject never arrives at all and no deadline reaches it. 🔴 AND THE COST IS NOT A WASTED RE-RUN. `npm test` is one `&&` chain, so a stall here TRUNCATES every gate after it: on this very branch it hid a real defect -- `/api/access` promising a `sessionTtlHours` key the harness stub did not serve -- which only CI found, on a run where the stall happened not to fire. A suite that stops at a race reports the race's name instead of the defect's. ⚠️ RETRY-THEN-CLASSIFY, NEVER RETRY-UNTIL-GREEN. A second attempt distinguishes a race (passes) from a genuinely unreachable subject (fails twice, and still fails the suite with the same sentence). A FLAKED state is printed by name so it can never be silent, and the run's exit code is unchanged by it -- which is the whole point: the states AFTER it now get to run.
                 let records;
                 try {
@@ -311,7 +293,7 @@ async function run() {
                     try {
                         records = await walk(page, state, port, 3);
                         flaked.push(state.name);
-                        console.log(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled at patience 1, reached its subject at patience 3 — a slower run gets there, which is the race, not a defect`);
+                        out.push(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled at patience 1, reached its subject at patience 3 — a slower run gets there, which is the race, not a defect`);
                     } catch (again) {
                         // 🔴 THE SENTENCE THIS THROW USED TO CARRY WAS AN INVALID INFERENCE, corrected 2026-09-05 09:34 EDT. It asserted that two failures prove the stall is not the filed race. The filed entry measures that stall at roughly 50% in-suite, so two consecutive failures happen about a quarter of the time by chance alone: the retry cannot separate the two cases it claimed to separate. ⚠️ THE DISPROOF WAS ALREADY WRITTEN FOURTEEN LINES ABOVE AND THE CLAIM WAS MADE ANYWAY — four failures across four runs on FOUR DIFFERENT states is the signature of a race, not of one broken subject. ⚠️ IT COST A REAL INVESTIGATION ON 2026-09-05: CI failed here while the same tree passed 44/44 locally, and this sentence asserted the one thing that would have made that a defect. Re-running settled it in one command — the failing state MOVED, which is the only observation that discriminates, and it is named in the message now so the next reader has it at the point of failure rather than in a tracker they would have to already suspect.
                         throw new Error(`${again.message}\n           ⚠️ The retry ran at PATIENCE 3 — a 500ms wait before every step and a tripled pre-settle — and still did not reach the subject. That is a stronger signal than the identical re-run this used to do, but it is still not proof: the filed stall is ~50% in-suite, so two failures happen about a quarter of the time by chance (docs/db-deferred-list.md, [P2 · M]).\n           ⚠️ WHAT DISCRIMINATES: does this state's selector belong to anything you edited? If not, re-run — and if the failing STATE changes between runs on the same tree, it is the race.`);
@@ -321,21 +303,29 @@ async function run() {
                 const { fresh, fixed } = diffAgainstKnown(findings, state.known || []);
                 walked++;
                 const tally = `${records.counts.controls} control(s), ${records.counts.focusables} focusable`;
-                if (!findings.length) console.log(`  ✓ ${state.name.padEnd(34)} ${tally}`);
-                else console.log(`  · ${state.name.padEnd(34)} ${tally} — ${findings.length} finding(s), ${fresh.length} new`);
-                for (const x of fresh) console.log(`      ❌ PASS ${x.pass}  ${x.id}\n           ${x.detail}`);
-                for (const k of fixed) console.log(`      ✅ fixed since the last recording: ${k}`);
+                if (!findings.length) out.push(`  ✓ ${state.name.padEnd(34)} ${tally}`);
+                else out.push(`  · ${state.name.padEnd(34)} ${tally} — ${findings.length} finding(s), ${fresh.length} new`);
+                for (const x of fresh) out.push(`      ❌ PASS ${x.pass}  ${x.id}\n           ${x.detail}`);
+                for (const k of fixed) out.push(`      ✅ fixed since the last recording: ${k}`);
                 if (flag('--record')) state.known = findings.map(keyOf);
                 if (flag('--ci') && (fresh.length || fixed.length)) bad = true;
             }
-            if (flag('--record')) { fs.writeFileSync(file, JSON.stringify(registry, null, 2) + '\n'); console.log(`  ✅ recorded → portal/fixtures/states/${f}`); }
-        }
+        };
+        await Promise.all(Array.from({ length: jobs }, () => worker().catch((e) => { if (!failure) failure = e; })));
     } finally {
+        for (const reg of regs) {
+            console.log(`\n${reg.registry.surface} — ${reg.registry.states.length} state(s)`);
+            for (const lines of reg.out) for (const line of lines || []) console.log(line);
+            if (!failure && flag('--record')) { fs.writeFileSync(reg.file, JSON.stringify(reg.registry, null, 2) + '\n'); console.log(`  ✅ recorded → portal/fixtures/states/${reg.f}`); }
+        }
         await browser.close();
         server.close();
     }
+    if (failure) throw failure;
+    if (jobs > 1) console.log(`\n(${jobs} workers, PORTAL_STATES_JOBS to change it)`);
     console.log(`\n${walked} state(s) walked at ${VIEWPORT.w}x${VIEWPORT.h}.`);
     // A FLAKED run is not a clean run, and the summary says so rather than letting the exit code speak alone. It does not fail the suite -- the states after it are exactly what a hard failure was costing -- but a reader who sees this line knows the tree was measured through a retry.
+    if (VACUOUS.length) console.log(`⚠️  ${VACUOUS.length} state(s) whose expect matched BEFORE their steps ran, so a step that did nothing would still pass: ${VACUOUS.join(' · ')}`);
     if (flaked.length) console.log(`⚠️  ${flaked.length} state(s) stalled once and passed on retry: ${flaked.join(' · ')} — the known race, filed [P2 · M]. NOT a clean run.`);
     if (bad) { console.log('❌ a finding is new, or a recorded one is fixed and still listed. Fix it, or re-record with --record in the same commit.'); process.exit(1); }
 }

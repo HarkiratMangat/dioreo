@@ -278,8 +278,8 @@ const MOCKUP_ASSETS = path.join(ROOT, 'docs', 'superpowers', 'mockups', '2026-08
 //
 // ⚠️ fixtures.js and the two instruments are still SOURCED FROM THE MOCKUP PACKAGE. That is the one remaining dependency on it and it is deliberate: copying 135KB of fixtures into git twice during a migration is how the two copies drift. When the mockup package retires (see docs/superpowers/specs/2026-08-25-portal-preact-migration-design.md) these three files move into portal/ui/harness/ and this function's paths change with them.
 function buildHarness(cssHash) {
-    // 🔴 A CACHE BUSTER, BECAUSE A PLAIN RELOAD SERVED STALE MODULES. The harness page is sent with `no-store`, but the browser's ES MODULE MAP is keyed by URL and survives a reload — so edited components kept rendering their previous version and a verification pass looked at code that was no longer on disk. Measured: the season identity strip and the rebuilt staged strip both reported ABSENT on a fresh navigation while sitting in the built file.
-    const bust = Date.now();
+    // 🔴 A CACHE BUSTER, BECAUSE A PLAIN RELOAD SERVED STALE MODULES. The harness page is sent with `no-store`, but the browser's ES MODULE MAP is keyed by URL and survives a reload — so edited components kept rendering their previous version and a verification pass looked at code that was no longer on disk. Measured: the season identity strip and the rebuilt staged strip both reported ABSENT on a fresh navigation while sitting in the built file. 🔴 THE BUST IS A CONTENT HASH, NOT `Date.now()` — changed 2026-09-14 18:32 EDT. A timestamp gave every build different bytes, so a build with nothing to do still rewrote harness.html, anything keyed on its contents (the local test cache) could never hit, and fifteen test scripts each calling build() raced one another rewriting the same files. A hash of everything the harness serves still changes the moment any of it changes, which is all a cache-buster is for.
+    const bust = require('crypto').createHash('sha256').update(inputsHash() + cssHash).digest('hex').slice(0, 12);
 
     const HARNESS_SRC = path.join(UI_DIR, 'harness');
     if (!fs.existsSync(HARNESS_SRC)) return null;
@@ -314,14 +314,38 @@ function buildHarness(cssHash) {
     return page;
 }
 
+// Everything a build reads, hashed: this file, portal/ui (recursively, harness included), the mockup assets the harness copies, and the two vendored package versions. Missing paths hash as missing, so a deletion also invalidates.
+function inputsHash() {
+    const h = require('crypto').createHash('sha256');
+    const add = (p) => {
+        if (!fs.existsSync(p)) { h.update(`missing:${path.relative(ROOT, p)}\0`); return; }
+        if (fs.statSync(p).isDirectory()) { for (const n of fs.readdirSync(p).sort()) add(path.join(p, n)); return; }
+        h.update(`${path.relative(ROOT, p)}\0`); h.update(fs.readFileSync(p)); h.update('\0');
+    };
+    [__filename, UI_DIR, path.join(MOCKUP_ASSETS, 'assets', 'fixtures.js'), path.join(MOCKUP_ASSETS, '.peers.js'), path.join(MOCKUP_ASSETS, '.grid.js'),
+        path.join(ROOT, 'node_modules', 'preact', 'package.json'), path.join(ROOT, 'node_modules', 'htm', 'package.json')].forEach(add);
+    return h.digest('hex');
+}
+
+// 🔴 IDEMPOTENT — added 2026-09-14 18:32 EDT. Fifteen test scripts call build(), and the test runner runs them concurrently, so a build that always rewrites portal/public lets one test serve a file another is halfway through writing. When nothing the build reads has changed since the last COMPLETED build (the stamp is written last and deleted first), it returns the existing outputs without touching them. Every gate inside copyUiScripts() already passed for exactly these inputs, or the stamp would not exist. PORTAL_BUILD_FORCE=1 rebuilds regardless.
+const STAMP_FILE = path.join(OUT_DIR, '.build-stamp');
 function build() {
+    const want = inputsHash();
+    const read = (f) => fs.readFileSync(path.join(OUT_DIR, f), 'utf8');
+    if (!process.env.PORTAL_BUILD_FORCE && fs.existsSync(STAMP_FILE) && fs.readFileSync(STAMP_FILE, 'utf8') === want
+        && fs.existsSync(path.join(OUT_DIR, 'app.css')) && fs.existsSync(path.join(OUT_DIR, 'index.html'))) {
+        const harnessFile = path.join(OUT_DIR, 'harness.html');
+        return { uiFiles: fs.readdirSync(UI_DIR).filter((f) => f.endsWith('.js')), css: read('app.css'), indexHtml: read('index.html'), harness: fs.existsSync(harnessFile) ? read('harness.html') : null, skipped: true };
+    }
+    fs.rmSync(STAMP_FILE, { force: true });
     vendorPreactAndHtm();
     const uiFiles = copyUiScripts();
     const css = buildCss();
     const cssHash = cssBust(css);
     const indexHtml = buildIndexHtml(cssHash);
     const harness = buildHarness(cssHash);
-    return { uiFiles, css, indexHtml, harness };
+    fs.writeFileSync(STAMP_FILE, want);
+    return { uiFiles, css, indexHtml, harness, skipped: false };
 }
 
 function runCli() {
@@ -333,4 +357,4 @@ function runCli() {
 }
 
 if (require.main === module) { runCli(); }
-module.exports = { build, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio, assertNamedImportsResolve };
+module.exports = { build, inputsHash, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio, assertNamedImportsResolve };
