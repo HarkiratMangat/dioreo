@@ -120,7 +120,10 @@ function gitSig() {
     return gitSigValue;
 }
 
-const ENV_SIG = createHash('sha1').update([process.version, process.platform, process.arch, fileSig(path.join(ROOT, 'package-lock.json'))].join('|')).digest('hex');
+// 🔴 THE KEY INCLUDES THE TOOLS AND TWO VARIABLES — added 2026-09-14 19:56 EDT. The day this runner was written, Xcode's command line tools vanished mid-session and /usr/bin/git became an install prompt: twelve hook tests failed with no file changed. A key of files alone would have kept serving their cached passes. The hook suite shells out to git, rg, jq and bash, and the clock tests read TZ; the rest of the environment is deliberately NOT hashed, because it differs every session and would make the cache never hit.
+const toolVersion = (bin, args = ['--version']) => { try { return execFileSync(bin, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5000 }).split('\n')[0]; } catch { return `${bin}:absent`; } };
+const ENV_SIG = createHash('sha1').update([process.version, process.platform, process.arch, fileSig(path.join(ROOT, 'package-lock.json')),
+    toolVersion('git'), toolVersion('rg'), toolVersion('jq'), toolVersion('bash'), process.env.TZ || '', process.env.TS_TZ || ''].join('|')).digest('hex');
 const real = (p) => { try { return fs.realpathSync(p); } catch { return p; } };
 const IGNORED_PREFIXES = [...new Set([os.tmpdir(), real(os.tmpdir()), '/tmp', '/private/tmp', '/var/folders', '/private/var/folders', '/dev', '/proc',
     path.resolve(path.dirname(process.execPath), '..'), CACHE_DIR, path.join(ROOT, '.git'), path.join(os.homedir(), '.npm'), path.join(os.homedir(), 'Library', 'Caches')])];

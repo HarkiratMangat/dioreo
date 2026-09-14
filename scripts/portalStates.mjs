@@ -293,10 +293,10 @@ async function run() {
                     try {
                         records = await walk(page, state, port, 3);
                         flaked.push(state.name);
-                        out.push(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled at patience 1, reached its subject at patience 3 — a slower run gets there, which is the race, not a defect`);
+                        out.push(`  ⚠ FLAKED ${state.name.padEnd(30)} stalled at patience 1, reached its subject at patience 3 — steps wait for their targets now, so this is not the old click race: something in this state is slower than its own wait, and it is worth a look`);
                     } catch (again) {
                         // 🔴 THE SENTENCE THIS THROW USED TO CARRY WAS AN INVALID INFERENCE, corrected 2026-09-05 09:34 EDT. It asserted that two failures prove the stall is not the filed race. The filed entry measures that stall at roughly 50% in-suite, so two consecutive failures happen about a quarter of the time by chance alone: the retry cannot separate the two cases it claimed to separate. ⚠️ THE DISPROOF WAS ALREADY WRITTEN FOURTEEN LINES ABOVE AND THE CLAIM WAS MADE ANYWAY — four failures across four runs on FOUR DIFFERENT states is the signature of a race, not of one broken subject. ⚠️ IT COST A REAL INVESTIGATION ON 2026-09-05: CI failed here while the same tree passed 44/44 locally, and this sentence asserted the one thing that would have made that a defect. Re-running settled it in one command — the failing state MOVED, which is the only observation that discriminates, and it is named in the message now so the next reader has it at the point of failure rather than in a tracker they would have to already suspect.
-                        throw new Error(`${again.message}\n           ⚠️ The retry ran at PATIENCE 3 — a 500ms wait before every step and a tripled pre-settle — and still did not reach the subject. That is a stronger signal than the identical re-run this used to do, but it is still not proof: the filed stall is ~50% in-suite, so two failures happen about a quarter of the time by chance (docs/db-deferred-list.md, [P2 · M]).\n           ⚠️ WHAT DISCRIMINATES: does this state's selector belong to anything you edited? If not, re-run — and if the failing STATE changes between runs on the same tree, it is the race.`);
+                        throw new Error(`${again.message}\n           ⚠️ The retry ran at PATIENCE 3 — a 500ms wait before every step and a tripled pre-settle — and still did not reach it. Every step waits for its target now, so this is not the old click race: the selector is stale, or the step no longer produces what the state expects. Open the state in the harness and look.`);
                     }
                 }
                 const findings = runPasses(records);
@@ -326,7 +326,7 @@ async function run() {
     console.log(`\n${walked} state(s) walked at ${VIEWPORT.w}x${VIEWPORT.h}.`);
     // A FLAKED run is not a clean run, and the summary says so rather than letting the exit code speak alone. It does not fail the suite -- the states after it are exactly what a hard failure was costing -- but a reader who sees this line knows the tree was measured through a retry.
     if (VACUOUS.length) console.log(`⚠️  ${VACUOUS.length} state(s) whose expect matched BEFORE their steps ran, so a step that did nothing would still pass: ${VACUOUS.join(' · ')}`);
-    if (flaked.length) console.log(`⚠️  ${flaked.length} state(s) stalled once and passed on retry: ${flaked.join(' · ')} — the known race, filed [P2 · M]. NOT a clean run.`);
+    if (flaked.length) console.log(`⚠️  ${flaked.length} state(s) stalled once and passed on retry: ${flaked.join(' · ')} — steps wait for their targets since 2026-09-14, so a retry that passes is a slow state to look at, not the old race. NOT a clean run.`);
     if (bad) { console.log('❌ a finding is new, or a recorded one is fixed and still listed. Fix it, or re-record with --record in the same commit.'); process.exit(1); }
 }
 

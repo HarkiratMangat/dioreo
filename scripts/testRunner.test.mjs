@@ -72,8 +72,9 @@ try {
         const ser = run(m, ['--no-cache', '--serial']);
         assert.strictEqual(par.status, 0, par.out);
         assert.strictEqual(ser.status, 0, ser.out);
-        assert.ok(par.ms < 2300, `2 slots took ${par.ms} ms`);
+        // Compared with each other, never with a wall-clock constant: on a loaded 4-vCPU CI runner both runs inflate together, while the gap between one-at-a-time and together stays about one 1.2 s entry.
         assert.ok(ser.ms >= 2400, `--serial took ${ser.ms} ms, so it did not run one at a time`);
+        assert.ok(ser.ms - par.ms > 700, `2 slots (${par.ms} ms) were not meaningfully faster than --serial (${ser.ms} ms)`);
     });
 
     await check('a weight above the slot count is clamped, never a deadlock', () => {
@@ -87,7 +88,7 @@ try {
         const readers = run(manifest([{ cmd: nap, lane: 'unit', lock: 'tree:read' }, { cmd: nap, lane: 'unit', lock: 'tree:read' }]), ['--no-cache', '--jobs', '2']);
         assert.strictEqual(mixed.status, 0, mixed.out);
         assert.ok(mixed.ms >= 2200, `a writer and a reader overlapped: ${mixed.ms} ms`);
-        assert.ok(readers.ms < 2100, `two readers did not share: ${readers.ms} ms`);
+        assert.ok(mixed.ms - readers.ms > 700, `two readers (${readers.ms} ms) did not share any better than a writer and a reader (${mixed.ms} ms)`);
     });
 
     await check('a hung entry is killed at its timeout and reported as timed out', () => {
