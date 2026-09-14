@@ -980,6 +980,12 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### `[P2 · S · Sonnet5-Medium]` Copy the attachment slots from Cloudinary metadata into `Loadout.attachmentSlots` — filed 2026-09-14 00:35 EDT
+
+The 2026-07-21 vision backfill (`scripts/backfillLoadoutSlots.js`) wrote each build's slots to Cloudinary structured metadata; the line that also writes Mongo (`:77-78`) was added 2026-07-24, after it ran. Measured 2026-09-14 00:35 EDT: `attachmentSlots` is empty on all 133 prod builds while 130 of 134 loadout images carry slot metadata (217 names, none under two slots). The New Build drawer's slot search and Compare's slot rows (plan `2026-09-13-portal-pins-batch-2.md` §10.1/§10.2 v4 notes) need the slots in Mongo or a catalogue read from Cloudinary.
+
+**Do:** a dry-run-first script that reads each image's metadata and writes the aligned `attachmentSlots` array onto its build, never logging a raw Cloudinary error. **Verify by:** a count of prod builds with a non-empty `attachmentSlots` equals the images carrying slot metadata, and BAL-27 Build 1 reads Muzzle · Barrel · Laser · Ammunition · Rear grip.
+
 ### `[P1 · L · Opus5-High]` The permission restructure — Portal tier, sub-tiers, /bot pages, the four-shape cell — PENDING DESIGN — filed 2026-09-13 11:37 EDT
 
 Harkirat pinned a full restructure of portal and bot permissions (pins `pmtyh3ep6`, `pmtyih6yt`, `pmtyii7ki`, 2026-09-12 10:21–11:00 EDT), answered several questions about it in the planning session, then deferred it: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* He also added, the same minute, a **view-only** sub-tier for the Portal realms — the admin can open and interact, every create/modify/delete control disabled. Every input and every constraint found is in `docs/superpowers/specs/2026-09-13-portal-pins-batch-2-design.md` §5; the four shapes and their refit geometry are on the board (https://claude.ai/code/artifact/dd0656fb-ab13-4358-8077-c0dd9089b24f); the Access panel bar's redesign (`pmtyioc0l`) waits with this item.
