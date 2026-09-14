@@ -282,7 +282,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 7–8 — write and publish the board, the popup, and Step 8's chrome-devtools reproduction, which does not need his answers.
 
-- [ ] **Step 7 — one board, one popup.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's build-name report with its two options (brief B step 5). Then one `AskUserQuestion`. **Build 5.2 while he looks** — it does not depend on the answers.
+- [ ] **Step 7 — one board, one popup.** Render, on one Artifact: **G1** the small-text table — every site with realm, string, kind (restatement / fact / finding), ledger row and proposed treatment, Access's "1 admin × 12 permissions" included; **G2** three renderings of the admin-traffic control; **G3** two or three announcement-card redesigns; **G4** two or three Armory manifest rows on real dev data, carrying everything spec §6 lists; **G6** agent B's build-name report with its two options (brief B step 5). **G8** the composer preview from §10.3 row 4, rendered with a real banner. Then one `AskUserQuestion`. **Build 5.2 while he looks** — it does not depend on the answers.
 
 ### 5.2 · The shared manifest
 
@@ -407,8 +407,9 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 | G3 | S2 | Two or three announcement cards | Which one |
 | G4 | S2 | Two or three Armory rows on real data | Which one |
 | G6 | S2 | Agent B's build-name report: every build, and every place `buildName` is still an identity | Display-only labels now, or an identity refactor filed as its own item? |
+| G8 | S2 | The Broadcast composer's Discord-shaped preview (§10.3 row 4) — heading, body and re-hosted banner, beside the live queue's own cards | Build the preview, or leave the drawer without one? |
 
-All five go on ONE board with ONE popup at Session 2 Step 7. G5 and G7 belonged to the deferred permission work and are gone.
+All six — G1–G4, G6 and G8 — go on ONE board with ONE popup at Session 2 Step 7. G5 and G7 belonged to the deferred permission work and are gone.
 
 ## 10 · Reserved — written by the critique session
 
