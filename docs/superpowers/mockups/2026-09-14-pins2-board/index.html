@@ -1,0 +1,737 @@
+<meta charset="utf-8">
+<title>Pins 2 Design Board</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Big+Shoulders+Display:wght@600;700&display=swap">
+<!-- Tracked copy of the pins-2 design board (plan 2026-09-13-portal-pins-batch-2 §10). It links the portal's own built stylesheet, portal/public/app.css, which is gitignored build output: run node -e "require('./scripts/buildPortal').build()" first in a fresh clone. The portal's own built stylesheet (portal/public/app.css, v3.82.0-pre). Real portal classes below are used as-is.
+     Every class this board adds is prefixed pb- so nothing collides with the ~2,000 rules in that file. -->
+<link rel="stylesheet" href="../../../../portal/public/app.css">
+<style>
+/* ═══ Board scaffolding ═══ */
+html,body{height:auto}
+body{font-size:var(--t-base)}
+.pb{max-width:1360px;margin:0 auto;padding:40px 32px 120px;display:grid;gap:72px;position:relative;z-index:1}
+.pb-realm.app{display:block;height:auto;grid-template-columns:none;grid-template-rows:none}
+.pb-stage{padding:32px;border-radius:var(--rad-3);background:radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 8%,transparent),transparent 70%),var(--sunk)}
+.pb-stage .drawer{position:relative;left:auto;top:auto;transform:none;opacity:1;pointer-events:auto;z-index:auto;max-height:none;margin:0 auto;width:880px;
+  box-shadow:0 40px 80px -24px rgba(0,0,0,.75)}
+.pb-mast{display:grid;gap:10px;max-width:720px}
+.pb-mast h1{margin:0;font:700 56px/.92 var(--display);letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+.pb-mast p{margin:0;font-size:var(--t-md);line-height:1.55;color:var(--ink2)}
+.pb-gate{display:grid;gap:20px}
+.pb-head{display:flex;align-items:flex-end;gap:18px}
+.pb-head .pb-id{font:700 64px/.78 var(--display);color:var(--realm-c)}
+.pb-head h2{margin:0 0 2px;font:600 var(--t-h1)/1.15 var(--ui);color:var(--ink);letter-spacing:var(--tr-h1)}
+.pb-head p{margin:0;font-size:var(--t-base);color:var(--ink2)}
+.pb-grid{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:28px;align-items:start}
+@media (max-width:1280px){.pb-grid{grid-template-columns:1fr}}
+.pb-notes{position:sticky;top:20px;display:grid}
+.pb-notes h3{margin:0 0 6px;font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink)}
+.pb-note{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--rule3);font-size:var(--t-sm);line-height:1.45;color:var(--ink2)}
+.pb-note code{font:600 var(--t-sm)/1.45 var(--data);color:var(--realm-c)}
+.pb-note b{color:var(--ink);font-weight:600}
+.pb-states{display:flex;align-items:center;gap:12px;margin:0 auto 20px;width:880px}
+.pb-states > span{font-size:var(--t-sm);color:var(--ink3)}
+.pb-view[hidden]{display:none!important}
+.pb-in{animation:pb-in .2s ease both}
+@keyframes pb-in{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.pb-in{animation:none}.pb-thumb{transition:none!important}}
+
+/* ═══ Controls: one height for anything a pointer lands on ═══ */
+.pb-stage .dwfield input,.pb-stage .dwfield select{min-height:var(--tap);font-size:var(--t-base)}
+.pb-stage .dwfield{margin-bottom:0}
+.pb-stage .bed-g2{align-items:end}
+
+/* ═══ PROPOSED · switch with a measured thumb (portal .seg underneath) ═══ */
+.pb-seg.seg{position:relative;display:inline-flex}
+.pb-seg.seg button{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 14px;cursor:pointer;background:none!important}
+.pb-seg.seg button[aria-pressed=true]{color:var(--ink)}
+.pb-seg .pb-thumb{position:absolute;top:3px;bottom:3px;left:0;width:0;border-radius:var(--rad-pill);background:var(--hi);box-shadow:inset 0 0 0 1px var(--rule2);
+  transition:transform .26s cubic-bezier(.3,.7,.2,1),width .26s cubic-bezier(.3,.7,.2,1),background .2s}
+.pb-seg .ic{width:14px;height:14px}
+.pb-seg.pb-mode button[aria-pressed=true]{color:var(--on-accent)}
+.pb-seg.pb-mode .pb-thumb{background:var(--mode-mp);box-shadow:none}
+.pb-seg.pb-mode[data-arm=DMZ] .pb-thumb{background:var(--mode-dmz)}
+.pb-seg.pb-mode button{font:700 var(--t-sm)/1 var(--data);letter-spacing:.08em;padding:0 18px}
+
+/* ═══ PROPOSED · drawer toolbar: × stays alone in the header ═══ */
+.pb-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px var(--s5);border-bottom:1px solid var(--rule);background:var(--sunk)}
+.dw-ttl h2 .bf-n{margin-left:10px;vertical-align:4px}
+
+/* ═══ PROPOSED · named attachment slots ═══ */
+
+/* ═══ PROPOSED · gunsmith code as its pairs ═══ */
+.pb-copy{width:var(--tap);height:var(--tap);display:grid;place-items:center;border-radius:var(--rad-2);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink2);margin-left:4px}
+
+/* ═══ PROPOSED · a badge toggle is the badge ═══ */
+.pb-badges{display:flex;align-items:center;gap:8px;margin-top:12px}
+.pb-tog{display:inline-flex;align-items:center;gap:10px;height:var(--tap);padding:0 16px 0 12px;border:0;border-radius:var(--rad-2);cursor:pointer;
+  background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink3);font:700 var(--t-sm)/1 var(--data);letter-spacing:.08em}
+.pb-tog i{width:16px;height:16px;border-radius:var(--rad-1);display:grid;place-items:center;box-shadow:inset 0 0 0 1px var(--rule2)}
+.pb-tog i .ic{width:11px;height:11px;stroke-width:3.2;opacity:0;transform:scale(.3);transition:opacity .14s,transform .22s cubic-bezier(.3,1.7,.5,1)}
+.pb-tog[aria-pressed=true]{--b:var(--patch);color:var(--b);background:color-mix(in srgb,var(--b) 11%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--b) 50%,transparent)}
+.pb-tog[aria-pressed=true] i{background:var(--b);box-shadow:none;color:var(--on-accent)}
+.pb-tog[aria-pressed=true] i .ic{opacity:1;transform:none}
+.pb-tog.pb-tox[aria-pressed=true]{--b:var(--danger-ink)}
+.pb-badges .dwfield{flex:1}
+
+/* ═══ PROPOSED · image key with its thumbnail ═══ */
+.pb-echo{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font:600 var(--t-sm)/1 var(--data);color:var(--ok)}
+.pb-echo.pb-dim{color:var(--ink3)}
+.pb-echo.pb-dim b{color:var(--ink2);font-weight:600}
+.pb-echo.pb-warn{color:var(--warn)}
+
+/* ═══ PROPOSED · code as a plain field ═══ */
+.pb-codefield{position:relative;display:grid}
+.pb-codefield input{width:100%;padding-right:96px;font-family:var(--data)!important;letter-spacing:.08em}
+.pb-codefield .pb-ok-ic{position:absolute;right:56px;top:50%;transform:translateY(-50%);color:var(--ok);display:grid}
+.pb-codefield .pb-copy{position:absolute;right:4px;top:4px;width:36px;height:36px;margin:0;border:0;cursor:pointer}
+/* ═══ PROPOSED · image: upload or link, or an existing key ═══ */
+.pb-imghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pb-imghead .bf-h{margin:0}
+.pb-small.seg button{min-height:28px;padding:0 12px;font-size:var(--t-sm)}
+.pb-drop{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:stretch}
+.pb-shot{border-radius:var(--rad-2);box-shadow:inset 0 0 0 1px var(--rule2);min-height:112px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#1a2328 0%,#22313a 45%,#2c2320 100%)}
+.pb-shot-ui{position:absolute;inset:14px 16px;border-radius:var(--rad-1);box-shadow:inset 0 0 0 1px rgba(232,237,241,.08);
+  background:linear-gradient(90deg,rgba(232,237,241,.10) 0 38%,transparent 38%),linear-gradient(rgba(232,237,241,.06),rgba(232,237,241,.06)) 0 70%/60% 6px no-repeat}
+.pb-dropcol{display:grid;gap:12px;align-content:start}
+.pb-file{display:flex;align-items:center;gap:10px;min-height:var(--tap);padding:0 6px 0 12px;border-radius:var(--rad-2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.pb-file span{color:var(--ink);font-size:var(--t-base)}
+.pb-file em{font-style:normal;font:500 var(--t-sm)/1 var(--data);color:var(--ink3)}
+.pb-file .chip{margin-left:auto}
+.pb-imgview[hidden]{display:none!important}
+
+/* ═══ PROPOSED · paste many change list ═══ */
+
+/* ═══ PROPOSED · Compare ═══ */
+.pb-panel{margin:0 auto;width:100%;max-width:1040px;background:var(--paper);border-radius:var(--rad-3);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.pb-cmp{padding:4px 16px 16px;display:grid;gap:16px}
+.pb-tbl{width:100%;border-collapse:separate;border-spacing:0 6px;table-layout:fixed}
+.pb-tbl th,.pb-tbl td{padding:0 4px;text-align:left;vertical-align:middle;border:0;background:none;text-transform:none;letter-spacing:0}
+.pb-tbl thead th{padding:10px 12px 8px;font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
+.pb-tbl thead th small{display:block;margin-top:3px;font:500 var(--t-sm)/1.2 var(--data);color:var(--ink3)}
+.pb-tbl .pb-k{width:104px;padding-left:0;font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink3)}
+.pb-tbl .pb-base{background:var(--sunk);box-shadow:inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)}
+.pb-tbl thead .pb-base{border-radius:var(--rad-2) var(--rad-2) 0 0}
+.pb-tbl tbody tr:last-child .pb-base{border-radius:0 0 var(--rad-2) var(--rad-2)}
+.pb-tbl tbody td.pb-base{padding-block:3px}
+.pb-tbl tr.pb-gap th{padding:14px 0 2px;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.pb-v{display:flex;align-items:center;height:36px;padding:0 10px;border-radius:var(--rad-1);font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-v.pb-d{background:var(--raised);color:var(--ink);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--patch) 65%,transparent)}
+.pb-v.pb-x{color:var(--ink4)}
+.pb-v.pb-rm{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--patch) 65%,transparent);color:var(--warn);text-decoration:line-through}
+.pb-v.pb-m{font:600 var(--t-sm)/1 var(--data);letter-spacing:.04em}
+.pb-same{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pb-same > span{font-size:var(--t-sm);color:var(--ink3);margin-right:4px}
+.pb-same .pill{padding:6px 12px;font-size:var(--t-sm)}
+.pb-same .pill b{margin-left:6px;color:var(--ink);font-weight:600}
+.pb-fold{padding-top:14px;border-top:1px solid var(--rule3)}
+.pb-fold .chip{gap:8px}
+.chip.pb-cut{color:var(--ink4);text-decoration:line-through;background:none}
+.cmpstat.pb-over{border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.cmpstat.pb-over b,.cmpstat.pb-over span{color:var(--warn)}
+.pb-scroll{overflow-x:auto}
+
+/* ═══ PROPOSED · composer ═══ */
+.pb-banner{display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:end}
+.pb-banner .pb-th{height:var(--tap);border-radius:var(--rad-2);background:linear-gradient(115deg,#3b0d24,#7a1846 40%,#ec4899 70%,#ffc36b);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.pb-banner .pb-th.pb-bad{background:var(--sunk);display:grid;place-items:center;color:var(--warn);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 55%,transparent)}
+.pb-banner input.pb-bad{border-color:var(--warn)}
+.pb-rep{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.pb-step{display:inline-flex;align-items:center;height:var(--tap);border-radius:var(--rad-2);overflow:hidden;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.pb-step button{width:40px;height:100%;border:0;background:none;color:var(--ink2);display:grid;place-items:center;cursor:pointer}
+.pb-step button:hover{background:var(--hi);color:var(--ink)}
+.pb-step output{min-width:52px;height:100%;display:grid;place-items:center;font:700 var(--t-md)/1 var(--data);color:var(--ink);box-shadow:inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)}
+.pb-card .dcard{--c:#C23C7A}
+.pb-card .dcard .pb-h{margin:0 0 6px;font:700 16px/1.25 var(--ui);color:var(--dc-ink)}
+.pb-card .dcard p{margin:0 0 6px;font-size:13.5px;line-height:1.45}
+.pb-card .dcard code{font-family:var(--data);font-size:12px;background:var(--dc-sunk);padding:1px 5px;border-radius:var(--rad-1)}
+.pb-card .dcard .pb-img2{height:148px;border-radius:var(--rad-2);margin-top:10px;background:linear-gradient(115deg,#3b0d24,#7a1846 40%,#ec4899 70%,#ffc36b)}
+.pb-card .dcard .pb-img2.pb-bad{background:var(--dc-sunk);display:grid;place-items:center;color:var(--dc-dim)}
+.pb-card .dcard .pb-ts{font-size:11px;color:var(--dc-dim)}
+.pb-stage .dw-b .bed{grid-template-columns:1fr 320px}
+.pb-col{display:grid;gap:18px;align-content:start}
+
+[data-nb][data-arm=MP] [data-only=DMZ],[data-nb][data-arm=DMZ] [data-only=MP]{display:none!important}
+/* ═══ v4 · toolbar ═══ */
+.pb-bar{justify-content:flex-start}
+.pb-div{width:1px;height:28px;background:var(--rule2);margin:0 6px}
+/* ═══ v4 · weapon combobox, build number ═══ */
+.pb-combo{position:relative;display:grid}
+.pb-combo input{padding-right:40px}
+.pb-combo > .ic{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none}
+.pb-buildrow{display:grid;grid-template-columns:88px 1fr;gap:16px;margin-top:16px;align-items:end}
+.pb-num{display:flex;align-items:center;justify-content:center;height:var(--tap);border-radius:var(--rad-2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);font:700 var(--t-lg)/1 var(--data);color:var(--ink);font-variant-numeric:tabular-nums}
+.pb-num::before{content:"#";color:var(--ink4);margin-right:3px;font-weight:600}
+/* ═══ v4 · attachments resolve their slot from the catalogue ═══ */
+.pb-atts{display:grid;gap:8px;margin-top:12px}
+.pb-att{display:grid;grid-template-columns:96px 1fr 44px;gap:8px;align-items:center}
+.pb-slot{display:flex;align-items:center;height:var(--tap);padding:0 2px;font:500 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.pb-slot.pb-slot-q{color:var(--ink4);font-style:italic}
+.pb-att .ati{min-height:var(--tap);width:100%}
+.pb-rmv{width:var(--tap);height:var(--tap);display:grid;place-items:center;border:0;border-radius:var(--rad-2);background:none;color:var(--ink3);cursor:pointer}
+.pb-rmv:hover{background:var(--hi);color:var(--ink)}
+.pb-ac{position:relative;z-index:4}
+.pb-ac .ati{outline:2px solid var(--patch);outline-offset:1px}
+.pb-menu{position:absolute;left:0;right:-52px;top:calc(100% + 6px);margin:0;padding:6px;list-style:none;border-radius:var(--rad-2);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2),0 24px 48px -12px rgba(0,0,0,.8)}
+.pb-menu li{display:grid;grid-template-columns:18px 1fr auto 78px;gap:10px;align-items:center;min-height:var(--tap);padding:0 12px 0 8px;border-radius:var(--rad-1);font-size:var(--t-base);color:var(--ink)}
+.pb-menu li[aria-selected=true]{background:var(--hi)}
+.pb-menu li .ic{width:14px;height:14px;color:var(--ok)}
+.pb-menu mark{background:none;color:var(--patch);font-weight:600}
+.pb-menu .pb-ms{font:500 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.pb-menu .pb-mn{font:500 var(--t-sm)/1 var(--data);color:var(--ink3);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pb-menu li.pb-taken{color:var(--ink4)}
+.pb-menu li.pb-taken .pb-ms{color:var(--ink4)}
+.pb-menu hr{border:0;height:1px;background:var(--rule);margin:4px 6px}
+/* ═══ v4 · rank as a switch ═══ */
+.pb-rank{display:flex;align-items:center;gap:14px;margin-top:12px}
+.pb-rank > span{min-width:84px;font-size:var(--t-sm);color:var(--ink2)}
+.pb-rank[hidden]{display:none!important}
+/* ═══ v4 · many builds ═══ */
+.pb-bulk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.pb-edhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.pb-edhead label{font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.pb-edhead span{font:500 var(--t-sm)/1 var(--data);color:var(--ink3)}
+.pb-ed{counter-reset:ln;padding:10px 0;border-radius:var(--rad-2);background:var(--desk,#0b0f12);box-shadow:inset 0 0 0 1px var(--rule2);font:500 13px/22px var(--data);color:var(--ink2);outline:0}
+.pb-blk{--o:var(--ink4);position:relative;display:grid;grid-template-columns:34px 1fr;padding:2px 0}
+.pb-blk + .pb-blk{margin-top:22px}
+.pb-blk::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:3px;border-radius:0 2px 2px 0;background:var(--o)}
+.pb-blk[data-o=bad]::before{background:repeating-linear-gradient(-45deg,var(--o) 0 3px,transparent 3px 6px)}
+.pb-blk .pb-bn{justify-self:center;margin-top:2px}
+.pb-l{display:block;counter-increment:ln;position:relative;padding-left:30px;white-space:pre}
+.pb-l::before{content:counter(ln);position:absolute;left:0;width:20px;text-align:right;color:var(--ink4);font-size:11px}
+.pb-l.pb-hd{color:var(--ink);font-weight:700}
+.pb-l i{font-style:normal;color:var(--ink4)}
+.pb-l em{font-style:normal;color:var(--realm-c)}
+.pb-l.pb-hit{background:color-mix(in srgb,var(--patch) 12%,transparent);color:var(--ink)}
+.pb-l.pb-err{text-decoration:underline wavy var(--danger-ink) 1px;text-underline-offset:4px;color:var(--ink)}
+.pb-bn{display:grid;place-items:center;width:22px;height:22px;border-radius:var(--rad-round);font:700 11px/1 var(--data);color:var(--on-accent);background:var(--o)}
+[data-o=new]{--o:var(--ok)}
+[data-o=upd]{--o:var(--patch)}
+[data-o=warn]{--o:var(--warn)}
+[data-o=bad]{--o:var(--danger-ink)}
+.pb-tally{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border-radius:var(--rad-2);overflow:hidden;background:var(--rule);box-shadow:inset 0 0 0 1px var(--rule)}
+.pb-tally div{display:grid;gap:6px;padding:12px 12px 11px;background:var(--sunk)}
+.pb-tally b{font:700 30px/1 var(--data);color:var(--o,var(--ink));font-variant-numeric:tabular-nums}
+.pb-tally span{font-size:var(--t-sm);line-height:1.2;color:var(--ink2)}
+.pb-rows{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.pb-row{display:grid;grid-template-columns:22px 1fr auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:var(--rad-2);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule)}
+.pb-row[data-o=bad]{background:repeating-linear-gradient(-45deg,color-mix(in srgb,var(--danger-ink) 7%,transparent) 0 6px,transparent 6px 12px),var(--raised);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 35%,transparent)}
+.pb-rt{display:flex;align-items:baseline;gap:8px;min-width:0}
+.pb-rt strong{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
+.pb-rt span{font-size:var(--t-sm);color:var(--ink2)}
+.pb-oc{font:600 var(--t-sm)/1 var(--ui);color:var(--o)}
+.pb-rd{grid-column:2 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:var(--t-sm);color:var(--ink3)}
+.pb-rd .pb-sl{display:inline-flex;gap:0}
+.pb-rd .pb-sl span+span::before{content:"·";margin:0 6px;color:var(--ink4)}
+.pb-rd s{color:var(--ink3)}
+.pb-rd b{color:var(--ink);font-weight:600}
+.pb-rd .ic{width:14px;height:14px;color:var(--ink3)}
+.pb-rd .pb-k2{color:var(--ink2);min-width:56px}
+.pb-rd.pb-msg{color:var(--ink2)}
+.pb-rd.pb-msg code{font:600 var(--t-sm)/1 var(--data);color:var(--ink);background:var(--sunk);padding:3px 6px;border-radius:var(--rad-1)}
+/* ═══ v4 · compare cells ═══ */
+.pb-v.pb-rm{text-decoration:none;color:var(--warn);font-style:normal;box-shadow:none;outline:1px dashed color-mix(in srgb,var(--warn) 60%,transparent);outline-offset:-1px;background:none}
+/* ═══ v4 · composer ═══ */
+.pb-fill{display:grid;gap:2px;margin-top:10px}
+.pb-fill .erow{grid-template-columns:120px 1fr 52px;padding:2px 0}
+.pb-fill .et{position:relative}
+.pb-lrow{display:flex;align-items:center;justify-content:space-between;min-height:32px;margin-bottom:6px}
+.pb-lrow label{margin:0}
+.pb-sw{display:inline-flex;align-items:center;gap:10px;min-height:32px;padding:0 2px;border:0;background:none;color:var(--ink2);font:500 var(--t-sm)/1 var(--ui);cursor:pointer}
+.pb-swt{position:relative;width:38px;height:22px;border-radius:var(--rad-pill);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);transition:background .2s,box-shadow .2s}
+.pb-swt i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:var(--rad-round);background:var(--ink3);transition:transform .24s cubic-bezier(.3,.7,.2,1),background .2s}
+.pb-sw[aria-checked=true]{color:var(--ink)}
+.pb-sw[aria-checked=true] .pb-swt{background:var(--r-broadcast);box-shadow:none}
+.pb-sw[aria-checked=true] .pb-swt i{transform:translateX(16px);background:#fff}
+.pb-sw:focus-visible{outline:2px solid var(--patch);outline-offset:3px;border-radius:var(--rad-1)}
+.pb-neverval{display:none;align-items:center;gap:10px;min-height:var(--tap);padding:0 14px;border-radius:var(--rad-2);background:color-mix(in srgb,var(--r-broadcast) 10%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r-broadcast) 40%,transparent);color:var(--ink);font-size:var(--t-base)}
+.pb-neverval .ic{color:var(--r-broadcast)}
+.pb-endf[data-never=true] > input,.pb-endf[data-never=true] > .pb-echo{display:none}
+.pb-endf[data-never=true] .pb-neverval{display:flex}
+.pb-rep{display:flex;align-items:center;gap:20px}
+.pb-shows{list-style:none;margin:0;padding:0;display:flex;align-items:center;height:var(--tap)}
+.pb-tok{display:grid;place-items:center;width:28px;height:28px;flex:none;border-radius:var(--rad-round);background:var(--r-broadcast);color:#fff;font:700 12px/1 var(--data)}
+.pb-link{position:relative;width:58px;height:2px;flex:none;background:repeating-linear-gradient(90deg,var(--ink3) 0 4px,transparent 4px 8px)}
+.pb-link span{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font:600 11px/1 var(--data);color:var(--ink3);white-space:nowrap}
+.pb-stop{width:2px;height:16px;margin-left:10px;border-radius:1px;background:var(--ink3)}
+.pb-shows.pb-tight .pb-tok{width:24px;height:24px;font-size:11px}
+.pb-shows.pb-tight .pb-link{width:16px}
+.pb-tok.pb-over{background:none;color:var(--warn);box-shadow:inset 0 0 0 2px var(--warn)}
+.pb-link.pb-over{background:repeating-linear-gradient(90deg,var(--warn) 0 4px,transparent 4px 8px);opacity:.6}
+.pb-cut{position:relative;align-self:stretch;width:18px;flex:none}
+.pb-cut::before{content:"";position:absolute;left:8px;top:4px;bottom:4px;border-left:2px solid var(--warn)}
+.pb-cut span{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);font:600 11px/1 var(--data);color:var(--warn);white-space:nowrap}
+
+/* ═══ v5 ═══ */
+.pb-stage .bf-h{font:600 var(--t-md)/1.2 var(--ui);letter-spacing:-.005em;color:var(--ink);margin:0 0 14px;gap:10px}
+.pb-stage .bf-h::after{content:"";flex:1;height:1px;background:var(--rule2);margin-left:6px}
+.pb-stage .bf-sec{margin-bottom:26px;padding-bottom:0;border-bottom:0}
+.pb-imghead .bf-h{flex:1;margin:0 16px 0 0}
+.pb-labelf{display:grid;grid-template-columns:auto 1fr;align-items:stretch;min-height:var(--tap);border-radius:var(--rad-2);overflow:hidden;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.pb-labelf:focus-within{box-shadow:inset 0 0 0 1px var(--patch)}
+.pb-bno{display:flex;align-items:center;gap:10px;padding:0 16px 0 14px;background:color-mix(in srgb,var(--realm-c) 12%,var(--raised));box-shadow:inset -1px 0 0 var(--rule2)}
+.pb-bno small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.12em;color:var(--ink3)}
+.pb-bno b{font:700 26px/1 var(--display);letter-spacing:.02em;color:var(--realm-c)}
+.pb-labelf input{border:0!important;background:none!important;box-shadow:none!important;min-height:var(--tap);padding:0 14px}
+.pb-hfill{font:500 var(--t-sm)/1 var(--ui);color:var(--ink3);letter-spacing:0}
+.pb-hfill .ic{width:13px;height:13px;color:var(--patch);vertical-align:-2px;margin-right:4px}
+.pb-att.pb-auto .pb-slot::before{content:"";width:6px;height:6px;margin-right:8px;border-radius:var(--rad-round);background:var(--patch);flex:none}
+.pb-menu li{grid-template-columns:18px 1fr}
+.pb-seg[data-tier] .pb-thumb{background:var(--tc,var(--hi));box-shadow:none}
+.pb-seg[data-tier] button[aria-pressed=true]{color:var(--tink,var(--ink))}
+.pb-seg[data-tier=best]{--tc:#F2C230;--tink:#15120a}
+.pb-seg[data-tier=top3]{--tc:var(--info);--tink:#081520}
+.pb-seg[data-tier=top4]{--tc:color-mix(in srgb,var(--info) 70%,var(--raised));--tink:#081520}
+.pb-seg[data-tier=top5]{--tc:color-mix(in srgb,var(--info) 48%,var(--raised));--tink:var(--ink)}
+.pb-seg[data-tier=none]{--tc:var(--hi)}
+.pb-ed .pb-blk{grid-template-columns:14px 1fr}
+.pb-row{grid-template-columns:1fr auto;position:relative;padding-left:18px;overflow:hidden}
+.pb-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--o)}
+.pb-row[data-o=bad]::before{background:repeating-linear-gradient(-45deg,var(--o) 0 3px,transparent 3px 6px)}
+.pb-rd{grid-column:1 / -1}
+.pb-ln{font:500 var(--t-sm)/1 var(--data);color:var(--ink4);margin-left:4px}
+.pb-meter2{display:flex;align-items:center;gap:14px;margin-top:10px}
+.pb-meter2 .cmeter{flex:1;display:flex;height:4px}
+.pb-meter2 .cmeter i{border-radius:0}
+.pb-meter2 .cmeter i:first-child{border-radius:var(--rad-1) 0 0 var(--rad-1);background:color-mix(in srgb,var(--r-broadcast) 38%,var(--raised))}
+.pb-meter2 .cmeter i+i{border-radius:0 var(--rad-1) var(--rad-1) 0;background:var(--r-broadcast)}
+.pb-meter2 span{font:500 var(--t-sm)/1 var(--data);color:var(--ink3);white-space:nowrap}
+.pb-meter2 span b{color:var(--ink);font-weight:600}
+.pb-cards{display:flex;align-items:center;gap:8px;height:var(--tap)}
+.pb-mini{position:relative;width:34px;height:26px;flex:none;border-radius:var(--rad-1);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.pb-mini::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--r-broadcast)}
+.pb-mini::after{content:"";position:absolute;left:8px;right:7px;top:8px;height:3px;border-radius:2px;background:var(--ink3);box-shadow:0 6px 0 0 color-mix(in srgb,var(--ink3) 55%,transparent)}
+.pb-mini.pb-over{background:none;box-shadow:inset 0 0 0 1.5px var(--warn);opacity:.8}
+.pb-mini.pb-over::before{background:var(--warn)}
+.pb-mini.pb-over::after{background:color-mix(in srgb,var(--warn) 60%,transparent);box-shadow:0 6px 0 0 color-mix(in srgb,var(--warn) 30%,transparent)}
+.pb-gapday{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:0 10px;height:28px;border-radius:var(--rad-pill);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule);font:600 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
+.pb-gapday .ic{width:14px;height:14px;color:var(--ink3)}
+.pb-cutbar{width:2px;height:30px;margin:0 2px;border-radius:1px;background:var(--warn);flex:none}
+.pb-bno .pb-num{display:inline;height:auto;background:none;box-shadow:none;border-radius:0;font:700 26px/1 var(--display);color:var(--realm-c)}
+.pb-bno .pb-num::before{content:none}
+.pb-col{min-width:0}
+.pb-cards.pb-tight{gap:6px}
+.pb-cards.pb-tight .pb-mini{width:26px;height:22px}
+.pb-cards.pb-tight .pb-mini::after{left:7px;right:5px;top:7px}
+.pb-fit{font:600 var(--t-sm)/1 var(--data);color:var(--warn);white-space:nowrap;margin-left:8px}
+</style>
+
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-triangle-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h4"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+<symbol id="i-wand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-infinity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8"/></symbol>
+<symbol id="i-many" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="12" height="14" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/></symbol>
+</svg>
+
+<main class="pb">
+<header class="pb-mast">
+  <h1>Design board</h1>
+  <p>Plan §10’s three surfaces on the portal’s own stylesheet. The notes beside each name what is new. BAL-27’s builds are real; the announcement, dates and links are examples.</p>
+</header>
+
+<!-- ═══════════════ G9 ═══════════════ -->
+<section class="pb-gate pb-realm app" data-realm="armory">
+  <div class="pb-head"><span class="pb-id">G9</span><div><h2>New build</h2><p>One build or many, from the same drawer.</p></div></div>
+  <div class="pb-grid">
+    <div class="pb-stage">
+      <aside class="drawer wide" role="dialog" aria-label="New build" data-nb data-arm="MP" data-many="0">
+        <header class="dw-h">
+          <div class="dw-ttl"><span class="dw-eye" data-eye></span><h2 data-title></h2></div>
+          <button class="x" aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button>
+        </header>
+        <div class="pb-bar">
+          <div class="seg pb-seg pb-mode" data-seg="arm" data-arm="MP">
+            <span class="pb-thumb"></span>
+            <button aria-pressed="true" data-v="MP">MP</button><button aria-pressed="false" data-v="DMZ">DMZ</button>
+          </div>
+          <span class="pb-div" aria-hidden="true"></span>
+          <div class="seg pb-seg" data-seg="many">
+            <span class="pb-thumb"></span>
+            <button aria-pressed="true" data-v="0"><svg class="ic"><use href="#i-one"/></svg>Add build</button>
+            <button aria-pressed="false" data-v="1"><svg class="ic"><use href="#i-layers"/></svg>Bulk create</button>
+          </div>
+        </div>
+
+        <div class="pb-view" data-view="0">
+          <div class="dw-b"><div class="bed bform">
+            <div class="bed-main">
+              <section class="bf-sec">
+                <h4 class="bf-h">Build</h4>
+                <div class="bed-g2">
+                  <div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" value="BAL-27" role="combobox" aria-expanded="false" autocomplete="off"><svg class="ic"><use href="#i-chevron-down"/></svg></div></div>
+                  <div class="dwfield"><label>Category</label><select><option>AR — Assault Rifle</option></select></div>
+                </div>
+                <div class="dwfield" style="margin-top:16px"><label for="nb-label">Label</label>
+                  <div class="pb-labelf"><span class="pb-bno"><small>BUILD</small><b class="pb-num">6</b></span><input id="nb-label" placeholder="Build 6"></div></div>
+              </section>
+              <section class="bf-sec" data-only="MP">
+                <div class="dwfield"><label for="nb-code">Gunsmith code</label>
+                  <div class="pb-codefield"><input id="nb-code" value="1C2C4A8A9B" spellcheck="false" autocomplete="off"><button class="pb-copy" aria-label="Copy code"><svg class="ic"><use href="#i-copy"/></svg></button></div>
+                </div>
+              </section>
+              <section class="bf-sec" data-only="MP">
+                <h4 class="bf-h">Attachments <span class="pb-hfill"><svg class="ic"><use href="#i-wand"/></svg>4 of 5 filled from the code</span></h4>
+                <div class="pb-atts">
+                  <div class="pb-att pb-auto"><span class="pb-slot">Muzzle</span><input class="ati" value="Polarfire-S"><button class="pb-rmv" aria-label="Remove Polarfire-S"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att pb-auto"><span class="pb-slot">Barrel</span><input class="ati" value="Crown-H3 Barrel"><button class="pb-rmv" aria-label="Remove Crown-H3 Barrel"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att pb-auto"><span class="pb-slot">Stock</span><input class="ati" value="Clarent Light Stock"><button class="pb-rmv" aria-label="Remove Clarent Light Stock"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Rear grip</span>
+                    <div class="pb-ac"><input class="ati" value="grip" role="combobox" aria-expanded="true" aria-controls="nb-menu" autocomplete="off">
+                      <ul class="pb-menu" id="nb-menu" role="listbox">
+                        <li role="option" aria-selected="true"><svg class="ic"><use href="#i-check"/></svg><span>Highground <mark>Grip</mark></span></li>
+                        <li role="option"><span></span><span>Tidal Tac <mark>Grip</mark></span></li>
+                        <li role="option"><span></span><span>Granulated <mark>Grip</mark> Tape</span></li>
+                      </ul></div><span></span></div>
+                  <div class="pb-att pb-auto"><span class="pb-slot">Ammunition</span><input class="ati" value="60 Round Reload"><button class="pb-rmv" aria-label="Remove 60 Round Reload"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                </div>
+              </section>
+              <section class="bf-sec" data-only="DMZ">
+                <h4 class="bf-h">Attachments <span class="bf-n">9 of 9</span></h4>
+                <div class="pb-atts">
+                  <div class="pb-att"><span class="pb-slot">Optic</span><input class="ati" value="Classic Red Dot Sight"><button class="pb-rmv" aria-label="Remove Classic Red Dot Sight"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Muzzle</span><input class="ati" value="Monolithic Suppressor"><button class="pb-rmv" aria-label="Remove Monolithic Suppressor"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Barrel</span><input class="ati" value="OWC Marksman"><button class="pb-rmv" aria-label="Remove OWC Marksman"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Stock</span><input class="ati" value="No Stock"><button class="pb-rmv" aria-label="Remove No Stock"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Laser</span><input class="ati" value="OWC Laser - Tactical"><button class="pb-rmv" aria-label="Remove OWC Laser - Tactical"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Underbarrel</span><input class="ati" value="Operator Foregrip"><button class="pb-rmv" aria-label="Remove Operator Foregrip"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Rear grip</span><input class="ati" value="Granulated Grip Tape"><button class="pb-rmv" aria-label="Remove Granulated Grip Tape"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Ammunition</span><input class="ati" value="48 Round Extended Mag"><button class="pb-rmv" aria-label="Remove 48 Round Extended Mag"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                  <div class="pb-att"><span class="pb-slot">Perk</span><input class="ati" value="Long Shot"><button class="pb-rmv" aria-label="Remove Long Shot"><svg class="ic"><use href="#i-x"/></svg></button></div>
+                </div>
+              </section>
+              <section class="bf-sec">
+                <h4 class="bf-h">Badges <span class="bf-n" data-chip>all 6 BAL-27 builds</span></h4>
+                <div class="pb-badges">
+                  <button class="pb-tog" aria-pressed="true"><i><svg class="ic"><use href="#i-check"/></svg></i>META</button>
+                  <button class="pb-tog pb-tox" aria-pressed="false"><i><svg class="ic"><use href="#i-check"/></svg></i>TOXIC</button>
+                </div>
+                <div class="pb-rank" data-rank="MP"><span>Tier in AR</span>
+                  <div class="seg pb-seg" data-seg="rank" data-tier="best"><span class="pb-thumb"></span><button aria-pressed="false" data-t="none">None</button><button aria-pressed="true" data-t="best">Best</button><button aria-pressed="false" data-t="top3">Top 3</button><button aria-pressed="false" data-t="top4">Top 4</button><button aria-pressed="false" data-t="top5">Top 5</button></div></div>
+                <div class="pb-rank" data-rank="DMZ" hidden><span>Range tier</span>
+                  <div class="seg pb-seg" data-seg="rank" data-tier="best"><span class="pb-thumb"></span><button aria-pressed="false" data-t="none">None</button><button aria-pressed="true" data-t="best">Best close</button><button aria-pressed="false" data-t="best">Best mid–long</button><button aria-pressed="false" data-t="top3">Top 3</button><button aria-pressed="false" data-t="top5">Top 5</button></div></div>
+              </section>
+              <section class="bf-sec">
+                <div class="pb-imghead"><h4 class="bf-h">Image</h4>
+                  <div class="seg pb-seg pb-small" data-seg="img" data-imgseg><span class="pb-thumb"></span><button aria-pressed="true" data-v="up">Upload or link</button><button aria-pressed="false" data-v="key">Existing key</button></div></div>
+                <div class="pb-imgview" data-imgview="up">
+                  <div class="pb-drop">
+                    <div class="pb-shot" role="img" aria-label="Dropped screenshot"><span class="pb-shot-ui"></span></div>
+                    <div class="pb-dropcol">
+                      <div class="dwfield"><label for="nb-src">Screenshot or link</label><div class="pb-file"><svg class="ic"><use href="#i-image"/></svg><span>IMG_5630.png</span><em>1.2 MB</em><button class="chip">Replace</button></div></div>
+                      <div class="dwfield"><label for="nb-key">Key</label><input id="nb-key" value="BAL-27-6"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="pb-imgview" data-imgview="key" hidden>
+                  <div class="pb-drop">
+                    <div class="pb-shot" role="img" aria-label="Image found for this key"><span class="pb-shot-ui"></span></div>
+                    <div class="pb-dropcol">
+                      <div class="dwfield"><label for="nb-key2">Key</label><input id="nb-key2" value="BAL-27-1"></div>
+                      <span class="pb-echo"><svg class="ic sm"><use href="#i-check"/></svg>Found in gun-builds</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <aside class="bed-side"><div class="bed-sec"><h5>In Discord</h5>
+              <div class="dcard lc" data-only="MP" style="--c:#FF3B5C">
+                <h6>BAL-27</h6><div class="lc-badges"><span>META</span><span>BEST</span></div><div class="lc-rule"></div>
+                <div class="lc-h">Attachments</div>
+                <ul class="lc-att"><li><code>Polarfire-S</code></li><li><code>Crown-H3 Barrel</code></li><li><code>Clarent Light Stock</code></li><li><code>60 Round Reload</code></li></ul>
+                <div class="lc-h">Gunsmith Code</div><div class="lc-code">1C2C4A8A9C</div>
+                <div class="lc-foot" data-foot>AR • Build 6 of 6</div>
+              </div>
+              <div class="dcard lc" data-only="DMZ" style="--c:var(--mode-dmz)">
+                <h6>AK117</h6><div class="lc-badges"><span>META</span></div><div class="lc-rule"></div>
+                <div class="lc-h">Attachments</div>
+                <ul class="lc-att"><li><code>Classic Red Dot Sight</code></li><li><code>Monolithic Suppressor</code></li><li><code>OWC Marksman</code></li><li><code>No Stock</code></li><li><code>OWC Laser - Tactical</code></li><li><code>Operator Foregrip</code></li><li><code>Granulated Grip Tape</code></li><li><code>48 Round Extended Mag</code></li><li><code>Long Shot</code></li></ul>
+                <div class="lc-foot">DMZ • Build 2 of 2</div>
+              </div></div></aside>
+          </div></div>
+          <footer class="dw-f"><button class="btn no">Cancel</button><button class="btn">Stage and add another</button><button class="btn go" data-stage></button></footer>
+        </div>
+
+        <div class="pb-view" data-view="1" hidden>
+          <div class="dw-b"><div class="pb-bulk">
+            <div>
+              <div class="pb-edhead"><label for="pm">Builds</label><span>4 builds · 32 lines</span></div>
+              <div class="pb-ed" id="pm" role="textbox" aria-multiline="true" aria-label="Builds" contenteditable="true" spellcheck="false">
+                <div class="pb-blk" data-o="upd"><span></span><div><span class="pb-l pb-hd">BAL-27 <i>|</i> AR</span><span class="pb-l"><em>Build:</em> Build 2</span><span class="pb-l"><em>Image:</em> BAL-27-2</span><span class="pb-l pb-hit"><em>Code:</em> 1I2B4A8A9D</span><span class="pb-l"><em>Badges:</em> meta, best</span><span class="pb-l">- Gauge-9 Mono</span><span class="pb-l pb-hit">- Noctkill Long Barrel</span><span class="pb-l">- Clarent Light Stock</span><span class="pb-l">- 60 Round Reload</span><span class="pb-l">- Highground Grip</span></div></div>
+                <div class="pb-blk" data-o="new"><span></span><div><span class="pb-l pb-hd">FFAR 1 <i>|</i> AR</span><span class="pb-l"><em>Build:</em> Build 4</span><span class="pb-l"><em>Image:</em> FFAR-1-4</span><span class="pb-l"><em>Code:</em> 1B2E4F8E9E</span><span class="pb-l">- Agency Suppressor</span><span class="pb-l">- 20.3" Takedown</span><span class="pb-l">- SAS Combat Stock</span><span class="pb-l">- Salvo 44 Rnd Fast Mag</span><span class="pb-l">- Serpent Wrap</span></div></div>
+                <div class="pb-blk" data-o="warn"><span></span><div><span class="pb-l pb-hd">ICR-1 <i>|</i> AR</span><span class="pb-l"><em>Build:</em> Build 1</span><span class="pb-l pb-hit"><em>Badges:</em> meta, wobble</span><span class="pb-l">- YKM Integral Suppressor Light</span><span class="pb-l">- No Stock</span><span class="pb-l">- MacroMag IFS</span><span class="pb-l">- Granulated Grip Tape</span><span class="pb-l">- FMJ</span></div></div>
+                <div class="pb-blk" data-o="bad"><span></span><div><span class="pb-l pb-hd pb-err">AK117</span><span class="pb-l"><em>Build:</em> Build 2</span><span class="pb-l">- Monolithic Suppressor</span><span class="pb-l">- No Stock</span></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="pb-tally">
+                <div data-o="new"><b>1</b><span>new</span></div>
+                <div data-o="upd"><b>1</b><span>updated</span></div>
+                <div data-o="warn"><b>1</b><span>saved with a warning</span></div>
+                <div data-o="bad"><b>1</b><span>can’t be read</span></div>
+              </div>
+              <ol class="pb-rows">
+                <li class="pb-row" data-o="upd"><div class="pb-rt"><strong>BAL-27</strong><span>Build 2</span><span class="pb-ln">lines 1–10</span></div><span class="pb-oc">Update</span>
+                  <div class="pb-rd"><span class="pb-k2">Barrel</span><s>Crown-H3 Barrel</s><svg class="ic"><use href="#i-arrow-right"/></svg><b>Noctkill Long Barrel</b></div></li>
+                <li class="pb-row" data-o="new"><div class="pb-rt"><strong>FFAR 1</strong><span>Build 4</span><span class="pb-ln">lines 11–19</span></div><span class="pb-oc">New</span>
+                  <div class="pb-rd"><span class="pb-sl"><span>Muzzle</span><span>Barrel</span><span>Stock</span><span>Rear grip</span><span>Ammunition</span></span></div></li>
+                <li class="pb-row" data-o="warn"><div class="pb-rt"><strong>ICR-1</strong><span>Build 1</span><span class="pb-ln">line 22</span></div><span class="pb-oc">Warning</span>
+                  <div class="pb-rd pb-msg"><span><code>wobble</code> isn’t a badge — saved with Meta only</span></div></li>
+                <li class="pb-row" data-o="bad"><div class="pb-rt"><strong>AK117</strong><span class="pb-ln">line 28</span></div><span class="pb-oc">Can’t read</span>
+                  <div class="pb-rd pb-msg"><span>First line needs a category: <code>AK117 | AR</code></span></div></li>
+              </ol>
+            </div>
+          </div></div>
+          <footer class="dw-f"><span class="why">Block 4 is skipped</span><button class="btn no">Cancel</button><button class="btn go" data-stage-many></button></footer>
+        </div>
+      </aside>
+    </div>
+    <aside class="pb-notes"><h3>What’s new</h3>
+      <div class="pb-note"><code>bar</code><span>MP/DMZ, a rule, then <b>Add build · Bulk create</b>.</span></div>
+      <div class="pb-note"><code>build</code><span>The build number is <b>locked into the Label field</b>.</span></div>
+      <div class="pb-note"><code>code</code><span>Code comes first. Pasting it <b>fills every attachment it can</b>: the digit names the slot, and a digit–letter pair seen on another build of the same weapon names the attachment. Measured: same weapon, same pair, same attachment on all 413 pairs; 311 of 587 attachments refill from other builds, none wrong.</span></div>
+      <div class="pb-note"><code>search</code><span>A slot the code knows but can’t name stays open, and its search <b>lists only that slot’s attachments</b>.</span></div>
+      <div class="pb-note"><code>DMZ</code><span>DMZ builds take <b>up to nine slots and no gunsmith code</b>.</span></div>
+      <div class="pb-note"><code>tier</code><span><b>Tier in AR</b> takes the tier’s colour: gold for Best, blue fading through Top 3–5.</span></div>
+      <div class="pb-note"><code>bulk</code><span>The paste is <b>exactly what Export writes</b>. Each build’s lines share a coloured rail; its result names the lines. <b>Readable builds stage</b>; an unreadable block stays listed and is skipped.</span></div>
+      <div class="pb-note"><code>order</code><span>Slots list in <b>the display order set 2026-07-21</b>; the code’s digit only says which slot a pair fills.</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════ G10 ═══════════════ -->
+<section class="pb-gate pb-realm app" data-realm="armory">
+  <div class="pb-head"><span class="pb-id">G10</span><div><h2>Compare</h2><p>Builds of one or two weapons, slot by slot.</p></div></div>
+  <div class="pb-grid">
+    <div class="pb-stage" data-scope>
+      <div class="pb-states" style="width:auto;max-width:1040px"><span>State</span>
+        <div class="seg pb-seg" data-seg="views">
+          <span class="pb-thumb"></span>
+          <button aria-pressed="true" data-v="0">One weapon</button><button aria-pressed="false" data-v="1">Two weapons</button><button aria-pressed="false" data-v="2">One build</button><button aria-pressed="false" data-v="3">Empty</button>
+        </div>
+      </div>
+      <section class="pb-panel">
+        <div class="pb-view" data-view="0">
+          <div class="cmpbar">
+            <div class="wsrch" style="flex:1;max-width:340px"><label class="dwfield"><input placeholder="Add a weapon" aria-label="Add a weapon"></label></div>
+            <span class="cmppick"><button class="chip on">BAL-27</button><span class="cmpbrow"><button class="chip" aria-pressed="true">1</button><button class="chip" aria-pressed="true">2</button><button class="chip" aria-pressed="true">3</button><button class="chip" aria-pressed="true">4</button><button class="chip" aria-pressed="true">5</button></span></span>
+          </div>
+          <div class="cmpstats"><span class="cmpstat"><b>5</b><span>builds</span></span><span class="cmpstat"><b>6</b><span>slots used</span></span><span class="cmpstat"><b>5</b><span>differ</span></span></div>
+          <div class="pb-cmp">
+            <div class="pb-scroll"><table class="pb-tbl">
+              <thead><tr><th class="pb-k"></th><th class="pb-base">Build 1<small>baseline</small></th><th>Build 2</th><th>Build 3</th><th>Build 4</th><th>Build 5</th></tr></thead>
+              <tbody>
+<tr><th class="pb-k" scope="row">Muzzle</th><td class="pb-base"><span class="pb-v">Gauge-9 Mono</span></td><td><span class="pb-v">Gauge-9 Mono</span></td><td><span class="pb-v pb-d">Polarfire-S</span></td><td><span class="pb-v pb-d">VT-7 Spiritfire</span></td><td><span class="pb-v pb-d">Polarfire-S</span></td></tr>
+<tr><th class="pb-k" scope="row">Barrel</th><td class="pb-base"><span class="pb-v">Crown-H3</span></td><td><span class="pb-v">Crown-H3</span></td><td><span class="pb-v">Crown-H3</span></td><td><span class="pb-v">Crown-H3</span></td><td><span class="pb-v pb-d">Noctkill Long</span></td></tr>
+<tr><th class="pb-k" scope="row">Stock</th><td class="pb-base"><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-d">Clarent Light</span></td><td><span class="pb-v pb-d">Clarent Light</span></td><td><span class="pb-v pb-d">Clarent Light</span></td><td><span class="pb-v pb-d">Clarent Light</span></td></tr>
+<tr><th class="pb-k" scope="row">Laser</th><td class="pb-base"><span class="pb-v">Schlager PEQ Box IV</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-d">SZ 1MW PEQ</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-rm">Not equipped</span></td></tr>
+<tr><th class="pb-k" scope="row">Rear grip</th><td class="pb-base"><span class="pb-v">Highground</span></td><td><span class="pb-v">Highground</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v">Highground</span></td><td><span class="pb-v pb-d">Tidal Tac</span></td></tr>
+                <tr class="pb-gap"><th colspan="6">Code</th></tr>
+                <tr><th class="pb-k" scope="row"></th><td class="pb-base"><span class="pb-v pb-m">1I2C6B8A9D</span></td><td><span class="pb-v pb-m pb-d">1I2C4A8A9D</span></td><td><span class="pb-v pb-m pb-d">1C2C4A6A8A</span></td><td><span class="pb-v pb-m pb-d">1M2C4A8A9D</span></td><td><span class="pb-v pb-m pb-d">1C2B4A8A9C</span></td></tr>
+              </tbody></table></div>
+            <div class="pb-same"><span>Same on all 5</span><span class="pill">Ammunition<b>60 Round Reload</b></span><span class="pill">Rank<b>Best</b></span></div>
+            <div class="pb-fold"><button class="chip"><svg class="ic"><use href="#i-chevron-down"/></svg>Show cards</button></div>
+          </div>
+        </div>
+
+        <div class="pb-view" data-view="1" hidden>
+          <div class="cmpbar">
+            <div class="wsrch" style="flex:1;max-width:260px"><label class="dwfield"><input placeholder="6 of 6 columns" disabled aria-label="Add a weapon"></label></div>
+            <span class="cmppick"><button class="chip on">BAL-27</button><span class="cmpbrow"><button class="chip" aria-pressed="true">1</button><button class="chip" aria-pressed="true">2</button><button class="chip" aria-pressed="true">3</button><button class="chip pb-cut">4</button><button class="chip pb-cut">5</button></span></span>
+            <span class="cmppick"><button class="chip on">FFAR 1</button><span class="cmpbrow"><button class="chip" aria-pressed="true">1</button><button class="chip" aria-pressed="true">2</button><button class="chip" aria-pressed="true">3</button></span></span>
+          </div>
+          <div class="cmpstats"><span class="cmpstat"><b>6</b><span>builds</span></span><span class="cmpstat"><b>7</b><span>slots used</span></span><span class="cmpstat pb-over"><b>2</b><span>not shown</span></span></div>
+          <div class="pb-cmp"><div class="pb-scroll"><table class="pb-tbl">
+            <thead><tr><th class="pb-k"></th><th class="pb-base">BAL-27 · 1<small>baseline</small></th><th>BAL-27 · 2</th><th>BAL-27 · 3</th><th>FFAR 1 · 1</th><th>FFAR 1 · 2</th><th>FFAR 1 · 3</th></tr></thead>
+            <tbody>
+<tr><th class="pb-k" scope="row">Muzzle</th><td class="pb-base"><span class="pb-v">Gauge-9 Mono</span></td><td><span class="pb-v">Gauge-9 Mono</span></td><td><span class="pb-v pb-d">Polarfire-S</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-d">Agency</span></td><td><span class="pb-v pb-d">Agency</span></td></tr>
+<tr><th class="pb-k" scope="row">Barrel</th><td class="pb-base"><span class="pb-v">Crown-H3</span></td><td><span class="pb-v">Crown-H3</span></td><td><span class="pb-v">Crown-H3</span></td><td><span class="pb-v pb-d">20.3" Takedown</span></td><td><span class="pb-v pb-d">20.3" Takedown</span></td><td><span class="pb-v pb-d">19.5" Task Force</span></td></tr>
+<tr><th class="pb-k" scope="row">Stock</th><td class="pb-base"><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-d">Clarent Light</span></td><td><span class="pb-v pb-d">Clarent Light</span></td><td><span class="pb-v pb-d">Tactical Stock</span></td><td><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-d">SAS Combat</span></td></tr>
+<tr><th class="pb-k" scope="row">Laser</th><td class="pb-base"><span class="pb-v">Schlager PEQ Box IV</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-d">SZ 1MW PEQ</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-rm">Not equipped</span></td></tr>
+<tr><th class="pb-k" scope="row">Underbarrel</th><td class="pb-base"><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-x">—</span></td><td><span class="pb-v pb-d">Field Agent</span></td><td><span class="pb-v pb-d">BO Foregrip</span></td><td><span class="pb-v pb-x">—</span></td></tr>
+<tr><th class="pb-k" scope="row">Rear grip</th><td class="pb-base"><span class="pb-v">Highground</span></td><td><span class="pb-v">Highground</span></td><td><span class="pb-v pb-rm">Not equipped</span></td><td><span class="pb-v pb-d">Speed Tape</span></td><td><span class="pb-v pb-d">Serpent Wrap</span></td><td><span class="pb-v pb-d">Serpent Wrap</span></td></tr>
+<tr><th class="pb-k" scope="row">Ammunition</th><td class="pb-base"><span class="pb-v">60 Round Reload</span></td><td><span class="pb-v">60 Round Reload</span></td><td><span class="pb-v">60 Round Reload</span></td><td><span class="pb-v pb-d">Salvo 44 Rnd</span></td><td><span class="pb-v pb-d">Salvo 44 Rnd</span></td><td><span class="pb-v pb-d">Salvo 44 Rnd</span></td></tr>
+            </tbody></table></div>
+            <div class="pb-same"><span>Same on all 6</span><span class="pill">Category<b>AR</b></span></div>
+          </div>
+        </div>
+
+        <div class="pb-view" data-view="2" hidden>
+          <div class="cmpbar">
+            <div class="wsrch" style="flex:1;max-width:340px"><label class="dwfield"><input placeholder="Add a weapon" aria-label="Add a weapon"></label></div>
+            <span class="cmppick"><button class="chip on">DL Q33</button><span class="cmpbrow"><button class="chip" aria-pressed="true">1</button></span></span>
+          </div>
+          <div class="empty"><b>DL Q33 has one build</b>Add another sniper to line them up
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:16px"><button class="pill">+ Arctic .50</button><button class="pill">+ XPR-50</button><button class="pill">+ Locus</button></div></div>
+        </div>
+
+        <div class="pb-view" data-view="3" hidden>
+          <div class="cmpbar"><div class="wsrch" style="flex:1;max-width:340px"><label class="dwfield"><input placeholder="Add a weapon" aria-label="Add a weapon"></label></div></div>
+          <div class="empty"><b>Pick a weapon</b>Its builds line up slot by slot
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:16px"><button class="pill">BAL-27 · 5 builds</button><button class="pill">FFAR 1 · 3 builds</button></div></div>
+        </div>
+      </section>
+    </div>
+    <aside class="pb-notes"><h3>What’s new</h3>
+      <div class="pb-note"><code>slots</code><span>Rows are <b>every slot any shown build uses</b>, in the display order Harkirat set on 2026-07-21 — Two weapons mixes BAL-27’s Laser with FFAR 1’s Underbarrel.</span></div>
+      <div class="pb-note"><code>cells</code><span>Different from Build 1: <b>raised and ringed</b>. Build 1 has it, this build doesn’t: <b>dashed Not equipped</b>. Neither: a dash.</span></div>
+      <div class="pb-note"><code>data</code><span>All six BAL-27 and FFAR 1 builds shown are <b>the real ones</b>, from their image metadata.</span></div>
+      <div class="pb-note"><code>10.2·4</code><span>Identical fields fold into <b>one row of pills</b>.</span></div>
+      <div class="pb-note"><code>10.2·3</code><span>Cards sit behind <b>Show cards</b>.</span></div>
+      <div class="pb-note"><code>10.2·5</code><span>Past six columns, dropped builds are <b>struck chips</b> and an orange count.</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════ G8 ═══════════════ -->
+<section class="pb-gate pb-realm app" data-realm="broadcast">
+  <div class="pb-head"><span class="pb-id">G8</span><div><h2>Post an announcement</h2><p>Banner, repeats and how it looks in Discord, with each field showing its own result.</p></div></div>
+  <div class="pb-grid">
+    <div class="pb-stage" data-scope>
+      <div class="pb-states"><span>State</span>
+        <div class="seg pb-seg" data-seg="views"><span class="pb-thumb"></span>
+          <button aria-pressed="true" data-v="0">Filled</button><button aria-pressed="false" data-v="1">Bad link, short window</button></div>
+      </div>
+      <aside class="drawer wide" role="dialog" aria-label="Post an announcement">
+        <header class="dw-h"><div class="dw-ttl"><span class="dw-eye">announcement.post · tier 1</span><h2>Post an announcement</h2></div>
+          <button class="x" aria-label="Close"><svg class="ic"><use href="#i-x"/></svg></button></header>
+
+        <div class="pb-view" data-view="0">
+          <div class="dw-b"><div class="bed">
+            <div class="pb-col">
+              <div class="dwfield"><label>Text</label>
+<textarea rows="4"># New Legendary draw is live
+The Kilo Bolt-Action draw opens today. Check /draw prices before you spin.</textarea>
+                <div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width:45.4%"></i><i style="width:1.6%"></i></span><span><b>3,180</b> of 6,000 left</span></div></div>
+              <div class="dwfield"><label>Banner</label>
+                <div class="pb-banner"><span class="pb-th"></span><input value="https://example.com/kilo-draw.png"></div>
+                <span class="pb-echo" style="margin-left:92px"><svg class="ic sm"><use href="#i-check"/></svg>1600 × 900</span></div>
+              <div class="dw-grid2" style="gap:0 16px">
+                <div class="dwfield"><div class="pb-lrow"><label>Starts</label></div><input value="in 3 days"><span class="pb-echo"><svg class="ic sm"><use href="#i-check"/></svg>Wed Sep 16</span></div>
+                <div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label>Ends</label><button class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button></div><input placeholder="Blank"><div class="pb-neverval"><svg class="ic"><use href="#i-infinity"/></svg>Stays up until you remove it</div><span class="pb-echo pb-dim">default · <b>Sun Nov 15</b></span></div>
+              </div>
+              <div class="dwfield"><label>Show each player</label>
+                <div class="pb-rep">
+                  <div class="pb-step"><button aria-label="Fewer"><svg class="ic"><use href="#i-minus"/></svg></button><output>3</output><button aria-label="More"><svg class="ic"><use href="#i-plus"/></svg></button></div>
+                  <div class="pb-cards" role="img" aria-label="Shown to each player up to 3 times, at most once a day"><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-gapday"><svg class="ic"><use href="#i-clock"/></svg>1 a day max</span></div>
+                </div></div>
+            </div>
+            <aside class="bed-side pb-card"><div class="bed-sec"><h5>In Discord</h5>
+              <div class="dcard"><div class="pb-h">New Legendary draw is live</div>
+                <p>The Kilo Bolt-Action draw opens today. Check <code>/draw prices</code> before you spin.</p>
+                <div class="pb-ts">Posted in 3 days</div><div class="pb-img2"></div></div></div></aside>
+          </div></div>
+          <footer class="dw-f"><button class="btn no">Cancel</button><button class="btn go">Stage post</button></footer>
+        </div>
+
+        <div class="pb-view" data-view="1" hidden>
+          <div class="dw-b"><div class="bed">
+            <div class="pb-col">
+              <div class="dwfield"><label>Text</label>
+<textarea rows="3"># New Legendary draw is live
+The Kilo Bolt-Action draw opens today.</textarea>
+                <div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width:45.4%"></i><i style="width:1.1%"></i></span><span><b>3,212</b> of 6,000 left</span></div></div>
+              <div class="dwfield"><label>Banner</label>
+                <div class="pb-banner"><span class="pb-th pb-bad"><svg class="ic lg"><use href="#i-triangle-alert"/></svg></span><input class="pb-bad" value="https://cdn.example.net/old/banner.png"></div>
+                <span class="pb-echo pb-warn" style="margin-left:92px">didn’t load</span></div>
+              <div class="dw-grid2" style="gap:0 16px">
+                <div class="dwfield"><div class="pb-lrow"><label>Starts</label></div><input value="Sep 16"><span class="pb-echo"><svg class="ic sm"><use href="#i-check"/></svg>Wed Sep 16</span></div>
+                <div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label>Ends</label><button class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button></div><input value="Sep 20"><div class="pb-neverval"><svg class="ic"><use href="#i-infinity"/></svg>Stays up until you remove it</div><span class="pb-echo"><svg class="ic sm"><use href="#i-check"/></svg>Sun Sep 20</span></div>
+              </div>
+              <div class="dwfield"><label>Show each player</label>
+                <div class="pb-rep">
+                  <div class="pb-step"><button aria-label="Fewer"><svg class="ic"><use href="#i-minus"/></svg></button><output>7</output><button aria-label="More"><svg class="ic"><use href="#i-plus"/></svg></button></div>
+                  <div class="pb-cards pb-tight" role="img" aria-label="Only 5 of 7 showings fit before it ends Sep 20"><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-mini"></span><span class="pb-cutbar"></span><span class="pb-mini pb-over"></span><span class="pb-mini pb-over"></span><span class="pb-fit">5 fit by Sep 20</span></div>
+                </div></div>
+            </div>
+            <aside class="bed-side pb-card"><div class="bed-sec"><h5>In Discord</h5>
+              <div class="dcard"><div class="pb-h">New Legendary draw is live</div><p>The Kilo Bolt-Action draw opens today.</p><div class="pb-ts">Posted Sep 16</div>
+                <div class="pb-img2 pb-bad"><svg class="ic xl"><use href="#i-image"/></svg></div></div></div></aside>
+          </div></div>
+          <footer class="dw-f"><button class="btn no">Cancel</button><button class="btn go">Stage post</button></footer>
+        </div>
+      </aside>
+    </div>
+    <aside class="pb-notes"><h3>What’s new</h3>
+      <div class="pb-note"><code>budget</code><span>Repairs’ <b>thin meter</b> for the 6,000-character limit shared by every live post: dim pink for the others, full pink for this one.</span></div>
+      <div class="pb-note"><code>10.3·2</code><span><b>Banner</b> link with its thumbnail and size; a dead link shows orange.</span></div>
+      <div class="pb-note"><code>never</code><span><b>Never ends is a switch</b> beside Ends; turning it on replaces the date. Try it.</span></div>
+      <div class="pb-note"><code>10.3·3</code><span><b>Show each player</b>: one small card per showing, the way the post appears in Discord, and a <b>1 a day max</b> tag. Cards that can’t fit before the end day turn orange after a stop line.</span></div>
+      <div class="pb-note"><code>10.3·4</code><span><b>In Discord</b> beside the fields.</span></div>
+    </aside>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  function place(seg) {
+    var on = seg.querySelector('button[aria-pressed=true]'), t = seg.querySelector('.pb-thumb');
+    if (!on || !t || !seg.offsetWidth) return;
+    t.style.width = on.offsetWidth + 'px';
+    t.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+  }
+  function placeAll() { document.querySelectorAll('.pb-seg').forEach(place); }
+  function renderNB(d) {
+    var arm = d.dataset.arm, many = d.dataset.many === '1';
+    d.querySelector('[data-eye]').textContent = (many ? 'loadout.bulkAdd' : 'loadout.add') + ' · ' + arm + ' · tier 1';
+    d.querySelector('[data-title]').textContent = 'New ' + arm + (many ? ' builds' : ' build');
+    d.querySelector('[data-stage]').textContent = 'Stage this ' + arm + ' build';
+    d.querySelector('[data-stage-many]').textContent = 'Stage 3 ' + arm + ' builds';
+    var M = arm === 'DMZ' ? { w: 'AK117', n: '2', chip: 'all 2 AK117 DMZ builds', key: 'DMZ-AK117-2' } : { w: 'BAL-27', n: '6', chip: 'all 6 BAL-27 builds', key: 'BAL-27-6' };
+    d.querySelector('#nb-w').value = M.w; d.querySelector('.pb-num').textContent = M.n;
+    d.querySelector('#nb-label').placeholder = 'Build ' + M.n; d.querySelector('[data-chip]').textContent = M.chip;
+    d.querySelector('#nb-key').value = M.key;
+    d.querySelectorAll('[data-rank]').forEach(function (r) { r.hidden = r.dataset.rank !== arm; });
+    d.querySelectorAll('.pb-view').forEach(function (v) { v.hidden = (v.dataset.view === '1') !== many; });
+    placeAll();
+  }
+  document.querySelectorAll('.pb-seg').forEach(function (seg) {
+    seg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        seg.querySelectorAll('button').forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+        place(seg);
+        var kind = seg.dataset.seg, nb = seg.closest('[data-nb]');
+        if (kind === 'many' && nb) { nb.dataset.many = b.dataset.v; renderNB(nb); }
+        if (kind === 'arm' && nb) { nb.dataset.arm = b.dataset.v; seg.dataset.arm = b.dataset.v; renderNB(nb); }
+        if (kind === 'rank') { seg.dataset.tier = b.dataset.t; }
+        if (kind === 'img') { var sec = seg.closest('.bf-sec'); sec.querySelectorAll('[data-imgview]').forEach(function (v) { v.hidden = v.dataset.imgview !== b.dataset.v; }); }
+        if (kind === 'views') {
+          var scope = seg.closest('[data-scope]');
+          scope.querySelectorAll('.pb-view').forEach(function (v) {
+            var show = v.dataset.view === b.dataset.v; v.hidden = !show;
+            if (show) { v.classList.remove('pb-in'); void v.offsetWidth; v.classList.add('pb-in'); }
+          });
+          placeAll();
+        }
+      });
+    });
+  });
+  document.querySelectorAll('[data-nb]').forEach(renderNB);
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(placeAll);
+  window.addEventListener('resize', placeAll);
+  document.querySelectorAll('.pb-tog').forEach(function (b) {
+    b.addEventListener('click', function () { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); });
+  });
+  document.querySelectorAll('.pb-sw').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      var on = sw.getAttribute('aria-checked') !== 'true';
+      sw.setAttribute('aria-checked', on ? 'true' : 'false');
+      sw.closest('.pb-endf').dataset.never = on ? 'true' : 'false';
+    });
+  });
+})();
+</script>
