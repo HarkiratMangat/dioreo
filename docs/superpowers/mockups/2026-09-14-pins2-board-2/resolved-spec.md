@@ -1,6 +1,6 @@
 ---
 kind: reference
-status: frozen
+status: live
 ---
 
 # Pins-2 design board 2 — resolved values
