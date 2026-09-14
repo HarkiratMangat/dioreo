@@ -29,7 +29,15 @@ Only merged PRs get a permanent version number — see **Unreleased** at the bot
 ---
 
 
-## Pre-Release v3.83.0 — 2026-09-14 02:45 EDT (#190) — portal pins batch 2: the design board answers G8–G10, and a second board session is planned
+## Pre-Release v3.84.0 — 2026-09-14 16:42 EDT (#191) — portal pins batch 2: design board 2 answers G1–G4, G6 and G11 for Session 2
+**The §4b design-board session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
+- **Design board 2**, reviewed by Harkirat in 21 versions and closed at 2026-09-14 15:22 EDT, is tracked at `docs/superpowers/mockups/2026-09-14-pins2-board-2/` with `resolved-spec.md` — every element's winning CSS declaration as Chrome resolved it, because the board's stylesheet is thirteen override rounds — and `measure.cjs`, eighteen relation checks that all pass on the board
+- **Plan §10.4** records every answer with his dated words: Armory weapon groups sorted by name, a build-name plate capped at 32 characters, slot-tinted attachment tags in `CANONICAL_SLOT_ORDER`, a code field with its copy button joined, share · divider · delete, and faults shown as shape with a Fix build popover; Broadcast's Tab state column, "On posting" and "No end"; History's severity chips; the announcement card and the Changes ahead column; the Include · Admin traffic chip; G6 display-only labels; G1 applied as rewritten
+- **The refinement contract C1–C14** — label gaps, dividers, button runs, shared edges, centre lines, heights, dead space, truncation — is Session 2's close condition, and the shared `Manifest` gains one body prop whose contract is written out
+- **Ledger:** a board-2 section; seven older rows retired, superseded, closed or amended. **Plan:** header precedence, §2, §3.1, §5, §7, brief D, §9, §10.1 row 4, §11 and audit rows 57–72 — a Sonnet cold reader found six defects, all fixed
+- The closed `[P1]` follow-ups reminder moved to `docs/archive/resolved-list.md`; `.claude/rules/portal-editing.md` gains the refinement rule
+
+## Pre-Release v3.83.0 — 2026-09-14 02:45 EDT (#190 · `30de6408`) — portal pins batch 2: the design board answers G8–G10, and a second board session is planned
 **The follow-up to the critique session of `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.** Docs only; no runtime change.
 - **Design board for the New Build drawer, Compare and the composer**, built on the portal's own `app.css` and reviewed by Harkirat in five versions and about forty artifact comments. Tracked at `docs/superpowers/mockups/2026-09-14-pins2-board/index.html`. Every answer is in plan §10 as amended rows and an opening section; New Build gains rows 15–18 (a pasted gunsmith code fills attachments per weapon, fuzzy slot-aware search, DMZ's nine slots and no code, a tier switch coloured by tier).
 - **Measured facts the rows rest on:** `Loadout.attachmentSlots` is empty on 133 of 133 prod builds while Cloudinary metadata holds slots on 130 of 134 images; a code's digit–letter pair names one attachment per weapon (0 conflicts over 413 keys; 311 of 587 attachments refilled leave-one-out, none wrong); 104 of 133 image keys end in `.png`.

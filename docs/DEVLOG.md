@@ -248,6 +248,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-13 18:59 EDT — Portal pins batch 2, Session 1 — the identity colours, History as its own realm, the shell chrome, and two agents (v3.81.0-pre)
 - 2026-09-13 22:17 EDT — Portal pins batch 2, the critique: plan §10 for the New Build drawer, Compare and the composer (v3.82.0-pre)
 - 2026-09-14 02:45 EDT — The pins-2 design board: G8–G10 answered on the page, and a second board session planned (v3.83.0-pre)
+- 2026-09-14 16:42 EDT — Pins-2 design board 2 — twenty-one versions to refined, and the relation sweep that should have run first (v3.84.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4368,6 +4369,26 @@ The critique had written the New Build drawer, Compare and the composer as prose
 - Check every store a pipeline writes before calling data missing.
 - A design board's unreviewed choices are not his decisions; falsify them against the ledger before writing them into a plan.
 - A check that searches a document for a phrase the same document quotes can never pass.
+
+## 2026-09-14 16:42 EDT — Pins-2 design board 2 — twenty-one versions to refined, and the relation sweep that should have run first (v3.84.0-pre)
+
+Harkirat asked for a second design board after the first one showed him the New Build drawer, Compare and the composer: the Armory manifest-row redesign had never been drawn, and neither had the small-text sweep, the admin-traffic control, the announcement card, the build-name decision or the Broadcast and History manifest visuals. The board took twenty-one versions, from 03:35 to 15:22 EDT, across artifact comments, chat from his phone, and five popups.
+
+**What the rounds actually corrected.** Almost none of his notes were about a single element. They were about how elements relate to each other: a label seventy pixels from its chips beside another eight pixels from its own; a toggle pushed right instead of sitting inline behind a divider; icon buttons whose visible box sat five pixels off the edge the text box ended on; a bar left short after its end date moved; sixty pixels of empty space inside the code field; share and delete crowded with no divider. He closed it with *"THIS IS WHAT REFINEMENT IS… what you should've done autonomously"*, and he is right. Every check this repo runs looks at one element or at structure, and a screenshot of the part just edited cannot show a disagreement with a part that was not.
+
+**Three misses of my own that cost rounds.** I re-offered code styles he had already refused so I could show three variants. I kept decorating five attachment names that never fit on one line, when the uneven wrap itself was the problem. The fix came from asking him four scope questions: names only, wrap freely, separate objects, and which past look came closest. And I patched single instances until he said *"don't fix the instance, fix the class"*.
+
+**Making it transferable.** The board's CSS is thirteen rounds of overrides, so a builder reading it top-down would port the wrong values. `extract-spec.cjs` asks Chrome for each element's winning declaration instead. `measure.cjs` turns his corrections into eighteen relation checks. Its first run failed twice on its own mistakes: it measured across the delete divider, and it counted a deliberately centred field as padding.
+
+**Checked before it was handed on.** The end-of-session pass found that the plan's precedence rule let the frozen spec's Armory row — square chip, "Build 1 of 5", red-or-green image — override the board. It also found that the board had drawn attachments in the gunsmith code's digit order, which an earlier audit had already refused. A Sonnet cold reader then found six more problems: a Discord length cap aimed at the parser instead of the modal (and one that would have cut off the share code), two gates sent to a file that cannot hold them, a stale severity vocabulary, an unspecified `Manifest` body contract, and unticked Session 1 boxes. All were fixed before merge.
+
+### Lessons
+
+- Refinement is a measured sweep of relations across the whole surface, run before anything is shown. It is never a patch on the element someone pointed at.
+- After two rejected variants, stop guessing and get the brief in popups.
+- Hand a builder resolved values, never a stylesheet built in rounds.
+- An instrument's first FAIL is a claim about the page, and it can be wrong.
+- The records pass drifted off this repo's tool routing within two calls of being asked to follow it. The routing has to be applied by habit from the first call, not remembered once someone objects.
 
 # Part B — Lessons Ledger (thematic)
 
