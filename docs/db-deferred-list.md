@@ -562,7 +562,6 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ## 🔔 Reminders / watch-for
 
-- `[P1 · XS · Opus5-High]` **Land the pins-batch-2 plan follow-ups before Session 2 starts.** *Filed 2026-09-13 22:44 EDT by the critique session (#189).* Three changes to `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`, in one docs PR: ① §11's Session 2 model becomes **Opus5-High** (Harkirat's answer in the critique session's popup, first recorded in `.remember` at 2026-09-13 22:43 EDT); ② an owner for Compare — §10.2's 14 rows are in no §8.3 brief and no §5 step; ③ where the New Build, Compare and composer designs get DRAWN for Harkirat before they are built — the critique wrote them as prose only. ② and ③ were put to the planning session ("Opus5-Extra · Portal-sync planning and scope") at 2026-09-13 22:43 EDT; build its answer into the plan. **Written into the plan 2026-09-13 22:47 EDT on `docs/pins2-followups`** (audit row 41) — this closes when that branch merges. **Held 2026-09-13 23:25 EDT by Harkirat** until he has reviewed the drawn designs: v2 of the design board (https://claude.ai/code/artifact/40a477ad-8237-48c4-9795-8594ea1f84ee, source `local/pins2-critique/design-board.html`, built on `portal/public/app.css`) answers his three artifact comments. His review feedback is written into §10 and G8–G10 before the branch is pushed. **Verify by:** his answer on the board recorded in §10 with a dated note per changed row, and no push of `docs/pins2-followups` before it. **Verify by:** `rg -n 'Opus5-High' ` on §11's Session 2 prompt, a §5 step or brief naming §10.2, and a step that renders the three surfaces before building them. *Updated 2026-09-14 01:37 EDT:* Harkirat reviewed the board through v5 (version 12 of the artifact) and closed his comments; the answers are written into the plan's §10, §5.2 Step 9b, §5.3 Step 10b, §7, brief D, §9, §11 and audit rows 42–54 and plan §4b on `docs/pins2-followups`. The branch is unpushed and closes by the plan's §13; this reminder closes when it merges. *Added 2026-09-14 02:17 EDT:* Harkirat chose a second design-board session (plan §4b) for Session 2's gates G1–G4, G6 and G11 — the Armory manifest-row redesign among them, and G11 the Broadcast and History manifest visuals no gate had shown him — so the order is now: this branch merges → the §4b board session → Session 2.
 
 ### `[P1 · S · Sonnet5-High]` The handoff requirements reach a session too LATE — put them at the WRITE, not at the end
 
@@ -979,6 +978,10 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 ---
 
 ## 🗂️ Queued — worth its own dedicated session
+
+### `[P2 · M]` Event and draw reminders when a player runs a command — needs a design session, after v3-pre-release launches
+
+Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
 
 ### `[P2 · S · Sonnet5-Medium]` Copy the attachment slots from Cloudinary metadata into `Loadout.attachmentSlots` — filed 2026-09-14 00:35 EDT
 
