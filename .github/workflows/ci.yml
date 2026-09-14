@@ -8,7 +8,7 @@ name: CI
 #   records       the documentation audit and its self-test, emoji captures, the committed site, the dependency audits
 #   changes       whether this change touches the hooks
 #   hooks-macos   the hook suite on macOS, only when `changes` says so: the hooks run on Harkirat's Mac (bash 3.2, BSD find and date) and CI's Linux has already hidden two real bugs of exactly that kind
-#   syntax-check  the aggregate, and the ONLY required status check. Its name is the one branch protection knows, so it must never be renamed; it fails unless tests, browser, records and changes succeeded and hooks-macos succeeded or was skipped
+#   syntax-check  the aggregate, and the ONLY required status check. Its name is the one branch protection knows, so it must never be renamed; it fails unless tests, browser, records and changes succeeded. hooks-macos is ADVISORY (a warning on the run, never a failure) until it has been green on real macOS runs — it had never run on a macOS image when it was added (2026-09-14 19:56 EDT), and a first-run environment mismatch must not block every hooks PR. Promoting it is filed in docs/db-deferred-list.md
 #
 # 🔴 CI RUNS EVERYTHING, EVERY TIME. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true).
 #
@@ -151,7 +151,8 @@ jobs:
           if [ -z "$base" ]; then echo "hooks=true" >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos runs."; exit 0; fi
           changed=$(git diff --name-only "$base"...HEAD)
           # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.
-          if grep -Eq '^(\.claude/hooks/|scripts/hookOutputCap)' <<< "$changed"; then echo "hooks=true" >> "$GITHUB_OUTPUT"; else echo "hooks=false" >> "$GITHUB_OUTPUT"; fi
+          # settings.json counts: the hook self-tests read it (self-check asserts every hook is registered there).
+          if grep -Eq '^(\.claude/hooks/|\.claude/settings\.json$|scripts/hookOutputCap)' <<< "$changed"; then echo "hooks=true" >> "$GITHUB_OUTPUT"; else echo "hooks=false" >> "$GITHUB_OUTPUT"; fi
 
   hooks-macos:
     name: hooks on macOS
@@ -198,5 +199,9 @@ jobs:
           for result in "$TESTS" "$BROWSER" "$RECORDS" "$CHANGES"; do
             [ "$result" = success ] || { echo "::error::a required job ended as '$result'"; exit 1; }
           done
-          # hooks-macos alone may be skipped: it only runs when the change touches the hooks.
-          case "$HOOKS_MACOS" in success|skipped) ;; *) echo "::error::hooks-macos ended as '$HOOKS_MACOS'"; exit 1;; esac
+          # hooks-macos is ADVISORY until promoted (see the header): skipped when the change does not touch the hooks, and a failure is a warning on the run and a line in the summary, not a red check.
+          case "$HOOKS_MACOS" in
+            success|skipped) ;;
+            *) echo "::warning::hooks on macOS ended as '$HOOKS_MACOS' — advisory, not blocking. Open that job: a BSD-vs-GNU difference in a hook is exactly what it exists to catch."
+               echo "⚠️ hooks on macOS ended as **$HOOKS_MACOS** (advisory, not blocking)" >> "$GITHUB_STEP_SUMMARY";;
+          esac
