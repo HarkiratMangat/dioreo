@@ -37,15 +37,6 @@
         "portal/server.js"
       ],
       "port": 8787
-    },
-    {
-      "name": "pins2-board-3-v2",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": [
-        "-c",
-        "import http.server,socketserver,os\nos.chdir('local/pins2-board-3/v2')\nclass H(http.server.SimpleHTTPRequestHandler):\n    def end_headers(self):\n        self.send_header('Cache-Control','no-store, must-revalidate')\n        self.send_header('Pragma','no-cache')\n        super().end_headers()\nsocketserver.TCPServer.allow_reuse_address=True\nsocketserver.TCPServer(('127.0.0.1',8911),H).serve_forever()\n"
-      ],
-      "port": 8911
     }
   ]
 }
