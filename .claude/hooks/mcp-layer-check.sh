@@ -108,11 +108,7 @@ if [ -r "$CC_CONFIG" ] && command -v jq >/dev/null 2>&1; then
   fi
 fi
 
-# The routing RULES block that sat here was removed 2026-09-14 21:59 EDT, as the context-carriers plan's WP4 decided on 2026-09-08
-# ("restatement collapse": this hook keeps the fragmentation measurement and drops its RULES block) and nobody had done.
-# Routing now lives AT THE CALL SITE (usage-guard.mjs, read-routing-nudge.sh, ctx-search-nudge.sh, codebase-memory-nudge.sh),
-# in ONE short always-on form (~/.claude/WORKING-AGREEMENT.md, Tool routing) and in the inventory (~/.claude/TOOLING.md section 3).
-# A session-start copy is the carrier the plan measured as not changing behaviour; do not restore it.
+# The routing RULES block that sat here was removed 2026-09-14 21:59 EDT, as the context-carriers plan's WP4 decided on 2026-09-08 ("restatement collapse": this hook keeps the fragmentation measurement and drops its RULES block) and nobody had done. Routing now lives AT THE CALL SITE (usage-guard.mjs, read-routing-nudge.sh, ctx-search-nudge.sh, codebase-memory-nudge.sh), in ONE short always-on form (~/.claude/WORKING-AGREEMENT.md, Tool routing) and in the inventory (~/.claude/TOOLING.md section 3). A session-start copy is the carrier the plan measured as not changing behaviour; do not restore it.
 
 # --- sequential-thinking: PERMANENTLY UNRESTRICTED ----------------------------------------------- ⚠️ THE MEASUREMENT WINDOW BLOCK THAT USED TO LIVE HERE WAS REMOVED 2026-08-14 15:10 EDT, AND IT WAS ACTIVELY WRONG, NOT MERELY STALE. It auto-expired on 2026-08-09 and from then on injected "the suspension has EXPIRED — explicit-request-only is in force again" into every single session. Harkirat closed the window that same day with the opposite verdict, on data: unrestricted, the trigger rate rose ~10x and every logged use was high-value, at a cost of ~4k tokens against a window total of 8.23 BILLION. So the hook spent five days telling sessions the tool was restricted when it had been permanently freed — a self-expiring block whose expiry text asserted a decision nobody had made.
 #
