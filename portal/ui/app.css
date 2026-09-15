@@ -443,6 +443,39 @@ main{overflow:auto;padding-bottom:140px}
 .chip.incchip .ic{width:14px;height:14px}
 .chip.incchip[aria-pressed=true]{background:color-mix(in srgb,var(--r-analytics) 14%,transparent);border-color:color-mix(in srgb,var(--r-analytics) 45%,transparent);color:var(--ink)}
 .wg-wrap{border-bottom:1px solid var(--rule)}
+/* ── Compare — plan pins batch 2 §10.2 and design board 1's G10, 2026-09-15 08:37 EDT ── values are the board's computed ones, read from the rendered board rather than its stylesheet */
+.cmpscroll{overflow-x:auto}
+.cmpt{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--t-md);color:var(--ink)}
+.cmpt th,.cmpt td{position:static;border:0;background:none;letter-spacing:normal;text-transform:none}
+.cmpt thead th{padding:10px 12px 8px;font:600 var(--t-base)/1.2 var(--ui);color:var(--ink);text-align:left;vertical-align:middle;white-space:nowrap}
+.cmpt th.k{width:104px;padding:0 4px 0 0;font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink3);text-align:left;white-space:nowrap}
+.cmpt thead th.k{padding:10px 12px 8px 0}
+.cmpt .base{background:var(--sunk);box-shadow:inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)}
+.cmpt thead th.base{border-radius:var(--rad-2) var(--rad-2) 0 0}
+.cmpt thead th small{display:block;margin-top:3px;font:500 var(--t-sm)/1.2 var(--data);color:var(--ink3)}
+.cmpt td{height:42px;padding:0 4px;vertical-align:middle;color:var(--ink2)}
+.cmpt td.base{padding:3px 4px}
+.cmpt tr.gap th{padding:14px 0 2px;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);text-align:left}
+.cv{display:flex;align-items:center;height:36px;padding:0 10px;border-radius:var(--rad-1);font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink2);white-space:nowrap}
+.cv.d{background:var(--raised);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--patch) 65%,transparent);font-weight:600;color:var(--ink)}
+.cv.rm{color:var(--warn);outline:1px dashed color-mix(in srgb,var(--warn) 60%,transparent);outline-offset:-1px}
+.cv.x{color:var(--ink3)}
+.cv.m{font:600 var(--t-sm)/1 var(--data);letter-spacing:.04em}
+.cmpsame{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);margin-top:var(--s3)}
+.cmpsame > span:first-child{margin-right:4px;font-size:var(--t-sm);color:var(--ink3)}
+.cmpsame .pill{gap:7px;padding:6px 12px;font:500 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.cmpsame .pill b{margin-left:6px;font-weight:600;color:var(--ink)}
+.cmpfold{margin-top:var(--s4);padding-top:14px;border-top:1px solid var(--rule3)}
+.cmpfold > .chip{gap:var(--s2)}
+.cmpfold .cmpcards{margin-top:var(--s3)}
+.cmpstat.over{border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.cmpbrow .chip.cut{background:var(--sunk);border-color:var(--rule2);color:var(--ink3);text-decoration:line-through}
+/* Row 3 of §10.2: .dcard.lc{max-width:none} beat the column's 360px on specificity, so a single open card stretched to 1,274px. */
+.cmpcards .dcard.lc{max-width:360px}
+/* The Season Track's visible window at the ruler's two ends (G1 row season.js:1300) — the view bar no longer repeats it. */
+.ruler .rend{position:absolute;top:2px;font:600 var(--t-micro)/1 var(--data);font-style:normal;letter-spacing:.08em;color:var(--ink3);pointer-events:none}
+.ruler .rend.l{left:6px}
+.ruler .rend.r{right:6px}
 /* ── G1, the small text sorted by kind (plan pins batch 2 §10.4, 2026-09-15 00:33 EDT) — a fact moved onto its control, a problem became a chip ── */
 .dwfield{position:relative}
 .fcount{margin-left:auto;font:500 var(--t-xs)/1 var(--data);font-style:normal;color:var(--ink3)}
@@ -1968,19 +2001,18 @@ tr[role=button]:focus-visible{outline:2px solid var(--patch);outline-offset:-2px
    because auto layout lets the longest cell decide. Two builds being compared must occupy
    IDENTICAL columns or the comparison misrepresents them. The field column is pinned and
    the remaining width splits exactly in two. Same fix .mtable already carries. */
-.cmptab{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--t-base)}
-.cmptab th:first-child,.cmptab td.cmpf{width:120px}
+
+
 /* Fixed layout will not wrap a long unbroken value, so it has to be told to. */
-.cmptab td{overflow-wrap:anywhere}
-.cmptab th{text-align:left;font:700 var(--t-micro)/1 var(--data);letter-spacing:.11em;text-transform:uppercase;
-  color:var(--ink3);padding:8px 12px;border-bottom:1px solid var(--rule)}
-.cmptab td{padding:8px 12px;border-bottom:1px solid var(--rule3);font-variant-numeric:tabular-nums}
-.cmpf{font-family:var(--data);font-size:var(--t-xs);color:var(--ink3);letter-spacing:.05em}
+
+
+
+
 /* Only the differing rows are lit — matching fields dim so the difference is what you see. */
-.cmptab tr.same td{color:var(--ink3);opacity:.55}
-.cmptab tr.diff td{color:var(--ink)}
-.cmptab tr.diff{background:rgba(242,194,48,.05)}
-.cmptab tr.diff .cmpf{color:var(--patch)}
+
+
+
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    ART DIRECTION — see COMPANION.md §10. All of it lives here, in the shared
@@ -6407,9 +6439,9 @@ button .ic,a .ic{pointer-events:none}
 .cmpbar .chip.on{display:inline-flex;align-items:center;gap:6px}
 
 /* One build of a weapon, and the six-column truncation, both say so in the same voice. */
-.cmpone{margin:0 0 10px;font-size:var(--t-sm);color:var(--ink2);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.cmpone b{color:var(--ink)}
-.cmptab th em{display:block;font-style:normal;font-weight:400;color:var(--ink3);letter-spacing:0;text-transform:none}
+
+
+
 
 
 /* The Add drawer's right column carries the record's own card rather than a Discord render — there is no id to ask
@@ -6427,8 +6459,8 @@ button .ic,a .ic{pointer-events:none}
 .trow-n{font-size:var(--t-sm)}          /* 10px → 11.5px. A count in a closed header is the header's only number. */
 .bf-n{font-size:var(--t-sm)}            /* 10px → 11.5px. "3 of 5" beside the attachments heading. */
 .bgrp-m .bgrp-n{font-size:var(--t-sm)}  /* 10px → 11.5px. */
-.cmpf{font-size:var(--t-sm)}            /* 10px → 11.5px. The field-name column of the comparison table. */
-.cmptab th{font-size:var(--t-sm)}       /* 9.5px → 11.5px. Column headers name the builds; they are read, not scanned. */
+            /* 10px → 11.5px. The field-name column of the comparison table. */
+       /* 9.5px → 11.5px. Column headers name the builds; they are read, not scanned. */
 .diff-r .dk{font-size:var(--t-sm)}      /* 10px → 11.5px. */
 .aflab{font-size:var(--t-micro)}        /* 9.5px → 9px, DOWN: "Showing" is a tracked uppercase eyebrow and was sitting
                                            between the two tokens, which is what makes a scale stop being a scale. */

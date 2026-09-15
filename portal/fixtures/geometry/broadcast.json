@@ -1,7 +1,7 @@
 {
   "realm": "broadcast",
-  "recordedAt": "2026-09-15T04:14:22.198Z",
-  "commit": "5bb2052d",
+  "recordedAt": "2026-09-15T12:41:23.794Z",
+  "commit": "c7973c25",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,22 +9,19 @@
   "views": {
     "Delivery queue": {
       "grid": {
-        "examined": 274,
-        "nearMisses": 8,
-        "sizeIssues": 14,
+        "examined": 324,
+        "nearMisses": 6,
+        "sizeIssues": 11,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
-          "dcard>row|TOP-OFFSET",
-          "dcard>row|h",
-          "nscard>nsmeta|h",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
-          "row>b|TOP-OFFSET",
-          "row>span|TOP-OFFSET",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"
         ]
@@ -48,9 +45,9 @@
     },
     "Airtime": {
       "grid": {
-        "examined": 270,
-        "nearMisses": 11,
-        "sizeIssues": 13,
+        "examined": 267,
+        "nearMisses": 26,
+        "sizeIssues": 14,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -58,10 +55,11 @@
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
           "nums>bcdt|TOP-OFFSET",
-          "racknote>code|w",
+          "root>b|h",
           "ruler>span|w",
           "stat>k|TOP-OFFSET",
           "stat>v|TOP-OFFSET"

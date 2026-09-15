@@ -1288,7 +1288,7 @@ export function SeasonRealm({ session }) {
                   badges=${{ review: stagedCount }} exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   tools=${view === 'Track' ? html`<${Zoomer} win=${visibleWindow} full=${fullWindow} onWindow=${setZoomedWindow}
                                                               onToday=${() => setDayOpen(todayIso())} />` : null}
-                  meta=${`${TL.fmt(visibleWindow.start)} → ${TL.fmt(visibleWindow.end)}`}
+                  meta=${null}
                   masthead=${html`<${Masthead} eyebrow=${html`<${Eyebrow} live=${liveNow} staged=${stagedCount} flags=${flagCount} />`}
                                                title=${state.live?.currentSeasonTitle || 'Season'}
                                                sub="Everything scheduled this season on one axis — and whether it still fits inside the season’s own deadlines." 

@@ -850,7 +850,7 @@ function LoadoutCard({ build, siblings }) {
 
     return html`
         <div class="dcard lc" style=${`--c:${b.accent || 'var(--r-armory)'}`}>
-            <h6>${b.weaponName}</h6>
+            <h6 role="heading" aria-level="3">${b.weaponName}</h6>
             ${badges.length ? html`<div class="lc-badges">${badges.map((x) => html`<span key=${x}>${x}</span>`)}</div>` : null}
             <div class="lc-rule"></div>
             ${b.description ? html`<blockquote class="lc-desc">${b.description}</blockquote>` : null}
@@ -898,11 +898,11 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
     return html`
         <div class="wsrch">
             <label class="dwfield">
-                <span>Weapon</span>
+                <span class="sr">Add a weapon</span>
                 <input id="cmp-weapon" type="search" autocomplete="off" spellcheck="false" role="combobox"
                        aria-expanded=${matches.length ? 'true' : 'false'} aria-controls="cmp-weapon-list"
                        aria-activedescendant=${matches.length ? 'cmp-w-' + at : ''}
-                       placeholder=${full ? `${MAX_COMPARE_COLUMNS} builds is as many as this table lines up` : 'Type a weapon name — AK117, Fennec, KRM'}
+                       placeholder=${full ? `${MAX_COMPARE_COLUMNS} of ${MAX_COMPARE_COLUMNS} columns` : 'Add a weapon'}
                        disabled=${full} value=${q}
                        onInput=${(e) => { setQ(e.target.value); setHi(0); }} onKeyDown=${onKey} />
             </label>
@@ -921,8 +921,10 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
 }
 
 // ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted.
+// 🔴 COMPARE AS THE DESIGN BOARD DRAWS IT (plan pins batch 2 §10.2, G10 answered 2026-09-14 01:18 EDT; built 2026-09-15 08:37 EDT). One row per attachment SLOT in Harkirat's display order, never one comma-joined cell — two builds that differ by one attachment could not be told apart. The first column is the baseline, tinted and headed so; a value that differs from it is raised with a --patch ring and carries a visually hidden "differs" (colour is never the only signal); a slot the baseline has and a build lacks is a dashed Not equipped cell; a slot neither uses is a dash. Fields identical on every shown build fold into one "Same on all N" row. The table comes first and the Discord cards wait behind Show cards, closed on every open (Harkirat, 2026-09-13 20:52 EDT). Two weapons split the six columns between them rather than the first filling them, and a build that did not fit says so on its own chip.
 function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     const [excluded, setExcluded] = useState(() => new Set());
+    const [showCards, setShowCards] = useState(false);
     const toggleBuild = (id) => setExcluded((prev) => {
         const next = new Set(prev);
         if (next.has(id)) next.delete(id); else next.add(id);
@@ -931,13 +933,19 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     const options = weaponOptions(builds);
     const picked = (weapons || []).filter((w) => options.some((o) => o.weapon === w));
     const optionOf = (w) => options.find((o) => o.weapon === w) || { weapon: w, builds: [] };
-    const all = picked.flatMap((w) => optionOf(w).builds);
-    const visible = all.filter((b) => !excluded.has(String(b._id)));
-    const chosen = visible.slice(0, MAX_COMPARE_COLUMNS);
+    const numberOf = (b) => buildNumberOf(builds, b).n;
+    const queues = picked.map((w) => optionOf(w).builds.filter((b) => !excluded.has(String(b._id))).sort((x, y) => numberOf(x) - numberOf(y)));
+    const visibleCount = queues.reduce((n, q) => n + q.length, 0);
+    const chosen = [];
+    for (let round = 0; chosen.length < MAX_COMPARE_COLUMNS && round < MAX_COMPARE_COLUMNS; round++) {
+        for (const q of queues) { if (q[round] && chosen.length < MAX_COMPARE_COLUMNS) chosen.push(q[round]); }
+    }
+    chosen.sort((x, y) => picked.indexOf(x.weaponName) - picked.indexOf(y.weaponName) || numberOf(x) - numberOf(y));
+    const shownIds = new Set(chosen.map((b) => String(b._id)));
+    const twoWeapons = picked.length > 1;
     const siblingsOf = (b) => builds.filter((x) => x.weaponKey === b.weaponKey && x.mode === b.mode);
-    // 🔴 THE SUGGESTION OFFERED ONE WEAPON ON A PANEL CALLED COMPARE. Harkirat, 2026-09-10 15:50 EDT: "IT'S LITERALLY TITLED *COMPARE* yet the mechanism takes 1 weapon only? and what's the point of the single 'try bal-27 button'??" The mechanism was never one-weapon — MAX_COMPARE_WEAPONS is 2 and the chip row above holds the second — but every affordance on the empty screen described one, so the capability was there and hidden. A suggestion that seeds ONE weapon teaches the wrong shape on the first use of the panel. Two weapons IN THE SAME CATEGORY is the comparison worth offering: cross-category is apples to oranges (an AR against a sniper shares almost no field worth lining up), and same-category is exactly the "which of these two do I keep" question the near-duplicate flag is about. Falls back to the two with the most builds when no category has two, and to one weapon when the armory has only one.
-    const withSiblings = options.filter((o) => o.builds.length > 1);
     const catOf = (o) => (o.builds[0] && o.builds[0].category) || '';
+    const withSiblings = options.filter((o) => o.builds.length > 1);
     const pair = (() => {
         for (const a of withSiblings) {
             const b = withSiblings.find((x) => x.weapon !== a.weapon && catOf(x) && catOf(x) === catOf(a));
@@ -947,102 +955,120 @@ function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
         return two.length === 2 ? two : null;
     })();
     const suggest = withSiblings[0] || null;
-    // A weapon with one build reads as "nothing to compare" only when it is the SOLE thing picked -- paired with a second weapon it is not isolated, it is one side of the comparison in the table below. This message rendered even then before today and nobody had picked a 1-build weapon alongside a real second one to notice.
-    const singles = picked.length === 1 ? picked.map(optionOf).filter((o) => o.builds.length === 1) : [];
+    const colLabel = (b) => (twoWeapons ? `${b.weaponName} · ${numberOf(b)}` : `Build ${numberOf(b)}`);
 
     if (!options.length) {
         return html`
             <div id="compare">
-                <p class="empty"><b>Nothing to compare yet.</b>${' '}
-                    Compare lines up every build of one weapon, field by field — so it needs a weapon first.</p>
+                <p class="empty"><b>Nothing to compare yet.</b>${' '}Add a build and its slots line up here.</p>
                 <div class="racktools"><button class="pill lead" onClick=${onAdd}>Add a build</button></div>
             </div>`;
     }
 
+    // The rows, derived once. A slot row exists when any shown build uses the slot; a field that reads the same on every build folds into the Same row instead.
+    const slotOf = (b, s) => { const i = (b.attachmentSlots || []).indexOf(s); return i >= 0 ? b.attachments[i] : null; };
+    const same = [];
+    const rows = [];
+    if (chosen.length > 1) {
+        for (const s of SLOT_ORDER) {
+            const vals = chosen.map((b) => slotOf(b, s));
+            if (vals.every((v) => v == null)) continue;
+            if (vals.every((v) => v != null && v === vals[0])) { same.push([s, vals[0]]); continue; }
+            rows.push({ key: s, vals, slot: true });
+        }
+        if (chosen.some((b) => !(b.attachmentSlots || []).some(Boolean) && (b.attachments || []).length)) {
+            rows.push({ key: 'Attachments', vals: chosen.map((b) => ((b.attachmentSlots || []).some(Boolean) ? null : (b.attachments || []).join(', ') || null)), slot: false });
+        }
+        const fields = [
+            ['Rank', (b) => (b.dmzRangeRank || b.categoryRank ? String(b.dmzRangeRank || b.categoryRank).replace(/^top(\d)$/, 'Top $1').replace(/^best/, 'Best').replace(/-/g, ' ') : null)],
+            ['Meta', (b) => (b.isMeta ? 'Yes' : 'No')],
+            ['Toxic', (b) => (b.isToxic ? 'Yes' : 'No')],
+            ['Image', (b) => (b.imageKey ? 'Set' : 'Not set')],
+        ];
+        for (const [k, read] of fields) {
+            const vals = chosen.map(read);
+            if (vals.every((v) => v === vals[0])) { if (vals[0] != null) same.push([k, vals[0]]); continue; }
+            rows.push({ key: k, vals, slot: false });
+        }
+    }
+    const codeVals = chosen.map((b) => (b.mode === 'DMZ' ? null : b.shareCode || null));
+    const showCode = chosen.length > 1 && codeVals.some((v) => v != null);
+    const differing = rows.length + (showCode && !codeVals.every((v) => v === codeVals[0]) ? 1 : 0);
+    const slotsUsed = SLOT_ORDER.filter((s) => chosen.some((b) => slotOf(b, s) != null)).length;
+    const notShown = visibleCount - chosen.length;
+    const statLine = chosen.length > 1 ? `${chosen.length} builds · ${slotsUsed} slots used · ${differing} differ${notShown ? ` · ${notShown} not shown` : ''}` : '';
+    const cell = (v, i, base, slot) => {
+        if (i === 0) return v == null ? html`<span class="cv x">—</span>` : html`<span class="cv">${v}</span>`;
+        if (v == null) return slot && base != null ? html`<span class="cv rm">Not equipped</span>` : html`<span class="cv x">—</span>`;
+        return v === base ? html`<span class="cv">${v}</span>` : html`<span class="cv d">${v}<span class="sr"> differs</span></span>`;
+    };
+    const oneBuild = picked.length && chosen.length === 1 ? chosen[0] : null;
+    const rival = oneBuild ? options.find((o) => o.weapon !== oneBuild.weaponName && catOf(o) === oneBuild.category) : null;
+
     return html`
         <div id="compare">
             <div class="cmpbar">
-                <${WeaponSearch} options=${options} picked=${picked} roomLeft=${chosen.length < MAX_COMPARE_COLUMNS}
-                                 onPick=${(w) => onSetWeapons([...picked, w])} />
+                <${WeaponSearch} options=${options} picked=${picked} roomLeft=${chosen.length < MAX_COMPARE_COLUMNS} onPick=${(w) => onSetWeapons([...picked, w])} />
                 ${picked.map((w) => {
                     const o = optionOf(w);
                     return html`
-                    <span class="cmppick" key=${w}>
-                        <button class="chip on" onClick=${() => onSetWeapons(picked.filter((x) => x !== w))}
-                                aria-label=${`Remove ${w} from the comparison`}>
-                            ${w}<b>${o.builds.length}</b><${Icon} name="x" cls="sm" />
-                        </button>
+                    <span class="cmppick" key=${w} role="group" aria-label=${w}>
+                        <button class="chip on" onClick=${() => onSetWeapons(picked.filter((x) => x !== w))} aria-label=${`Remove ${w} from the comparison`}>${w}<${Icon} name="x" cls="sm" /></button>
                         ${o.builds.length > 1 ? html`
                             <span class="cmpbrow">
-                                ${o.builds.map((b) => html`
-                                    <button type="button" class=${'chip sm' + (excluded.has(String(b._id)) ? '' : ' on')}
-                                            aria-pressed=${excluded.has(String(b._id)) ? 'false' : 'true'}
-                                            onClick=${() => toggleBuild(String(b._id))}>
-                                        ${b.buildName || 'Standard Build'}</button>`)}
+                                ${[...o.builds].sort((x, y) => numberOf(x) - numberOf(y)).map((b) => { const id = String(b._id); const on = !excluded.has(id); const cut = on && !shownIds.has(id); return html`
+                                    <button type="button" key=${id} class=${'chip' + (cut ? ' cut' : '')} aria-pressed=${on ? 'true' : 'false'}
+                                            title=${cut ? 'Selected, but past the six columns this table shows' : null}
+                                            aria-label=${`${w} build ${numberOf(b)}${cut ? ', not shown' : ''}`}
+                                            onClick=${() => toggleBuild(id)}>${numberOf(b)}</button>`; })}
                             </span>` : null}
                     </span>`;
                 })}
             </div>
             ${!picked.length ? html`
-                <p class="empty"><b>Pick one weapon, or two.</b>${' '}
-                    Every build of each lines up here field by field, with the rows that differ marked — one weapon
-                    to choose between its own near-duplicates, two to decide which of them earns the slot.</p>
-                <div class="racktools">
-                    ${pair ? html`
-                        <button class="pill lead" onClick=${() => onSetWeapons([pair[0].weapon, pair[1].weapon])}>
-                            Compare ${pair[0].weapon} against ${pair[1].weapon}</button>` : null}
-                    ${suggest ? html`
-                        <button class="pill" onClick=${() => onSetWeapons([suggest.weapon])}>
-                            Or just ${suggest.weapon} — ${suggest.builds.length} builds</button>` : null}
+                <div class="cmp">
+                    <p class="empty"><b>Pick a weapon</b>${' '}Its builds line up slot by slot. Add a second weapon to set them side by side.</p>
+                    <div class="racktools">
+                        ${pair ? html`<button class="pill lead" onClick=${() => onSetWeapons([pair[0].weapon, pair[1].weapon])}>Compare ${pair[0].weapon} against ${pair[1].weapon}</button>` : null}
+                        ${suggest ? html`<button class="pill" onClick=${() => onSetWeapons([suggest.weapon])}>Or just ${suggest.weapon}</button>` : null}
+                    </div>
                 </div>`
             : html`
                 <div class="cmp">
-                    ${singles.map((o) => html`
-                        <p class="cmpone" key=${o.weapon}><b>${o.weapon}</b> has one build in this armory, so there is
-                            nothing to line it up against. Its card is below.${' '}
-                            <button class="chip" onClick=${() => onOpenRack(o.weapon)}>Show it in the tier board</button></p>`)}
-                    ${visible.length > chosen.length ? html`
-                        <p class="cmpone">Showing the first ${MAX_COMPARE_COLUMNS} of ${visible.length} selected builds
-                            — past that the table stops fitting the screen it is read on.</p>` : null}
-                    ${all.length > visible.length ? html`
-                        <p class="cmpone">${all.length - visible.length} build${all.length - visible.length === 1 ? '' : 's'}${' '}
-                            excluded above, not deleted.</p>` : null}
-                    <div class="cmpcards">
-                        ${chosen.map((b) => html`<${LoadoutCard} key=${String(b._id)} build=${b} siblings=${siblingsOf(b)} />`)}
-                    </div>
-                    <!-- ⚠️ THE TABLE ANSWERS "WHAT IS DIFFERENT" ONE FIELD AT A TIME AND NEVER TOTALS IT. Two builds
-                         that differ in one field and two that differ in nine look identical until you have read
-                         every row. -->
-                    ${(() => {
-                        const differing = COMPARE_FIELDS.filter(([, read]) => {
-                            const vs = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
-                            return !vs.every((v) => v === vs[0]);
-                        }).length;
-                        // 2026-09-11 09:16 EDT -- .diff-r is a SHARED 3-column grid (key, was, now) also used by analytics.js and season.js for real was->now rows; Compare only ever supplied 2 of its 3 columns, which is the empty space Harkirat flagged -- "they could literally be bordered in-line boxes". Its own markup now, not a shared class used at half capacity.
-                        return html`
-                            <div class="cmpstats">
-                                <span class="cmpstat"><b>${chosen.length}</b><span>builds lined up</span></span>
-                                <span class="cmpstat"><b>${COMPARE_FIELDS.length}</b><span>fields compared</span></span>
-                                <span class="cmpstat"><b>${chosen.length < 2 ? '—' : (differing || '0')}</b><span>${chosen.length < 2 ? 'nothing to differ from yet' : differing ? 'differ' : 'differ — same build twice'}</span></span>
-                            </div>`;
-                    })()}
+                    <div class="sr" aria-live="polite">${statLine}</div>
                     ${chosen.length > 1 ? html`
-                        <table class="cmptab">
-                            <thead><tr><th>Field</th>${chosen.map((b) => html`<th key=${String(b._id)}>${b.weaponName} <em>${b.buildName || 'Standard Build'}</em></th>`)}</tr></thead>
+                        <div class="cmpstats" aria-hidden="true">
+                            <span class="cmpstat"><b>${chosen.length}</b><span>builds</span></span>
+                            <span class="cmpstat"><b>${slotsUsed}</b><span>slots used</span></span>
+                            <span class="cmpstat"><b>${differing}</b><span>differ</span></span>
+                            ${notShown ? html`<span class="cmpstat over"><b>${notShown}</b><span>not shown</span></span>` : null}
+                        </div>
+                        <div class="cmpscroll">
+                        <table class="cmpt">
+                            <caption class="sr">${picked.join(' and ')} builds, compared slot by slot against ${colLabel(chosen[0])}</caption>
+                            <thead><tr><th class="k" scope="col"><span class="sr">Slot</span></th>${chosen.map((b, i) => html`<th key=${String(b._id)} scope="col" class=${i === 0 ? 'base' : ''}>${colLabel(b)}${i === 0 ? html`<small>baseline</small>` : null}</th>`)}</tr></thead>
                             <tbody>
-                                ${COMPARE_FIELDS.map(([label, read]) => {
-                                    const values = chosen.map(read).map((v) => (v == null ? '—' : String(v)));
-                                    const same = values.every((v) => v === values[0]);
-                                    // ⚠️ A DIFFERING CELL IS MARKED, AN AGREEING ONE IS NOT. The row already carries `diff`, which colours the whole line — but with three builds picked, two can agree and one differ, and a row-level mark cannot say which. `.dnow` is the cell-level version of the same signal.
-                                    return html`
-                                        <tr class=${same ? 'same' : 'diff'} key=${label}>
-                                            <td class="cmpf">${label}</td>
-                                            ${values.map((v, i) => html`
-                                                <td key=${i} class=${!same && v !== values[0] ? 'dnow' : ''}>${v}</td>`)}
-                                        </tr>`;
-                                })}
+                                ${rows.map((r) => html`
+                                    <tr key=${r.key}><th class="k" scope="row">${r.key}</th>${r.vals.map((v, i) => html`<td key=${i} class=${i === 0 ? 'base' : ''}>${cell(v, i, r.vals[0], r.slot)}</td>`)}</tr>`)}
+                                ${showCode ? html`
+                                    <tr class="gap"><th colspan=${chosen.length + 1} scope="rowgroup">Code</th></tr>
+                                    <tr><th class="k" scope="row"><span class="sr">Gunsmith code</span></th>${codeVals.map((v, i) => html`<td key=${i} class=${i === 0 ? 'base' : ''}>${v == null ? html`<span class="cv x">—</span>` : html`<span class=${'cv m' + (i && v !== codeVals[0] ? ' d' : '')}>${v}${i && v !== codeVals[0] ? html`<span class="sr"> differs</span>` : null}</span>`}</td>`)}</tr>` : null}
                             </tbody>
-                        </table>` : null}
+                        </table>
+                        </div>
+                        ${same.length ? html`<div class="cmpsame"><span>Same on all ${chosen.length}</span>${same.map(([k, v]) => html`<span class="pill" key=${k}>${k}<b>${v}</b></span>`)}</div>` : null}`
+                    : oneBuild ? html`
+                        <p class="empty"><b>${oneBuild.weaponName} has one build here</b>${' '}Add a second weapon to set it beside another.</p>
+                        <div class="racktools">
+                            ${rival ? html`<button class="pill lead" onClick=${() => onSetWeapons([...picked, rival.weapon])}>Compare ${oneBuild.weaponName} against ${rival.weapon}</button>` : null}
+                            <button class="pill" onClick=${() => onOpenRack(oneBuild.weaponName)}>Show it in the tier board</button>
+                        </div>`
+                    : html`<p class="empty"><b>Every build is switched off</b>${' '}Turn a build back on above.</p>`}
+                    ${chosen.length ? html`
+                        <div class="cmpfold">
+                            <button type="button" class="chip" aria-expanded=${showCards ? 'true' : 'false'} onClick=${() => setShowCards(!showCards)}><${Fold} open=${showCards} />${showCards ? 'Hide cards' : 'Show cards'}</button>
+                            ${showCards ? html`<div class="cmpcards">${chosen.map((b) => html`<${LoadoutCard} key=${String(b._id)} build=${b} siblings=${siblingsOf(b)} />`)}</div>` : null}
+                        </div>` : null}
                 </div>`}
         </div>
     `;
