@@ -85,8 +85,7 @@ registerEntity('announcements', {
         preview: (op) => ({ before: {}, after: { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt } }),
         apply: async (op, { session, actorId }) => {
             const color = op.payload.color ?? generateAccentColor();
-            // Minted ahead of the write (same move as core/ops/patchnotes.js's addSeason) so the banner
-            // re-host below has a real _id to key its Cloudinary public_id on before the document exists.
+            // Minted ahead of the write (same move as core/ops/patchnotes.js's addSeason) so the banner re-host below has a real _id to key its Cloudinary public_id on before the document exists.
             const _id = new mongoose.Types.ObjectId();
             let bannerImageUrl = op.payload.bannerImageUrl || null;
             let bannerUploadError = null;
@@ -126,10 +125,7 @@ registerEntity('announcements', {
             if (!cur) return { ok: false, reason: 'missing' };
             let bannerImageUrl = op.payload.bannerImageUrl || null;
             let bannerUploadError = null;
-            // Only re-hosts when the value actually CHANGED and is not already one of our own delivery
-            // URLs -- an edit that leaves the banner field untouched (the common Discord-modal path,
-            // which resends the CURRENT value verbatim, see handlers/manage/announcements.js) must not
-            // re-upload the same asset under a fresh hash on every unrelated text/date fix.
+            // Only re-hosts when the value actually CHANGED and is not already one of our own delivery URLs -- an edit that leaves the banner field untouched (the common Discord-modal path, which resends the CURRENT value verbatim, see handlers/manage/announcements.js) must not re-upload the same asset under a fresh hash on every unrelated text/date fix.
             if (bannerImageUrl && bannerImageUrl !== cur.bannerImageUrl) {
                 const up = await cacheAnnouncementBanner(op.target.id, bannerImageUrl);
                 bannerImageUrl = up.url;

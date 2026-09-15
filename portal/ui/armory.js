@@ -61,8 +61,7 @@ const ARMORY_COLUMNS = [
 // 🔴 THE MODE CHIP WAS A DEAD END, and --triggers is what surfaced it: the portal offered `MP ×2`, `DMZ ×2` and `All ×2` where the design offers one of each, because the Manifest carried a Mode filter ON TOP OF the masthead's mode switch. The rows handed to the Manifest are already `inMode`, so picking the OTHER mode in that chip could only ever produce an empty table — a control whose every non-default value is guaranteed to show nothing. The mode switch above owns this question; the chipset now carries only Category, which is what armory.html's chip row is.
 const ARMORY_FILTERS = [];
 
-// ─── The weapon groups — plan pins batch 2 §10.4 G4, design board 2 version 21, 2026-09-15 00:23 EDT ──────────────────
-// 🔴 ONE GROUP PER WEAPON, sorted by weapon name only (pin pmtylf7gz: "I'll never sort the armory's manifest by anything other than the Weapon Name"). Rendered through the shared Manifest's renderBody prop, so search, chips, selection, the bulk bar and the empty states stay the Manifest's own. Faults are colour and shape on the faulty cell, never prose in a row (C11); the details live in the header's Fix chip popover. Collapse state and List · By slot are Armory's, in memory, and reset on reload — the board never persisted them and Harkirat was not asked, so nothing is persisted.
+// ─── The weapon groups — plan pins batch 2 §10.4 G4, design board 2 version 21, 2026-09-15 00:23 EDT ────────────────── 🔴 ONE GROUP PER WEAPON, sorted by weapon name only (pin pmtylf7gz: "I'll never sort the armory's manifest by anything other than the Weapon Name"). Rendered through the shared Manifest's renderBody prop, so search, chips, selection, the bulk bar and the empty states stay the Manifest's own. Faults are colour and shape on the faulty cell, never prose in a row (C11); the details live in the header's Fix chip popover. Collapse state and List · By slot are Armory's, in memory, and reset on reload — the board never persisted them and Harkirat was not asked, so nothing is persisted.
 const SLOT_ORDER = ['Optic', 'Muzzle', 'Barrel', 'Stock', 'Laser', 'Underbarrel', 'Rear Grip', 'Ammunition', 'Perk'];
 const slotVar = (slot) => `var(--sl-${String(slot).toLowerCase().replace(/\s+/g, '-')})`;
 // Attachments in Harkirat's display order (utils/adminParser.js CANONICAL_SLOT_ORDER, 2026-07-21), never the code's digit order; a name with no recorded slot keeps its stored position after the known ones.
@@ -441,19 +440,12 @@ const CATEGORY_LABEL = {
 const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
     'Stock — e.g. No Stock', 'Ammunition — e.g. 48 Round Extended Mag', 'Rear grip — e.g. Granulated Grip Tape'];
 
-// Build name field cap (pins batch 2, plan §10.4 G6 row 2) — measured on the design board's plate: an
-// all-caps name never needs a third line at this length, and it is the shared limit the Discord modal's
-// own `Build Name (optional) | Share Code (optional)` field is sized around too.
+// Build name field cap (pins batch 2, plan §10.4 G6 row 2) — measured on the design board's plate: an all-caps name never needs a third line at this length, and it is the shared limit the Discord modal's own `Build Name (optional) | Share Code (optional)` field is sized around too.
 const BUILD_NAME_MAX = 32;
 
 // ── FUZZY FIELDS — a native <datalist>, not a custom dropdown ───────────────────────────────────
 //
-// Row 16 (Harkirat, 2026-09-13 23:53 EDT): "does the attachment's field support fuzzy search/auto-
-// complete? because it should. Same with the weapon name field." The MATCHING is real fuzzy (substring,
-// via matchWeapons/this module's own filter below) — only the WIDGET is the platform's own <datalist>
-// rather than a hand-built popover, which is the cheaper way to ship "type and see matches" without a
-// second focus-trap and keyboard contract to get right inside a drawer that already has one (the drawer
-// itself). candidates are recomputed per keystroke from an already-short catalogue, never the raw list.
+// Row 16 (Harkirat, 2026-09-13 23:53 EDT): "does the attachment's field support fuzzy search/auto- complete? because it should. Same with the weapon name field." The MATCHING is real fuzzy (substring, via matchWeapons/this module's own filter below) — only the WIDGET is the platform's own <datalist> rather than a hand-built popover, which is the cheaper way to ship "type and see matches" without a second focus-trap and keyboard contract to get right inside a drawer that already has one (the drawer itself). candidates are recomputed per keystroke from an already-short catalogue, never the raw list.
 function useCandidates(all, query, limit = 8) {
     const needle = String(query || '').trim().toLowerCase();
     if (!needle) return [];
@@ -479,12 +471,7 @@ function AttachmentRow({ n, slotLabel, value, onInput, onClear, catalogueNames, 
 
 // ── ADD BUILD ────────────────────────────────────────────────────────────────────────────────
 //
-// Row 4 (amended 2026-09-14 01:37 EDT, G9): Weapon — fuzzy search over existing weapons; picking one
-// fills Category. Build number is computed from real siblings and locked into the Label field's left
-// edge; the field itself is an OPTIONAL human label (spec §6/G6: display-only, nothing stored changes).
-// Row 15: a pasted MP gunsmith code fills attachment rows from another build of the SAME weapon+mode
-// that carries the identical digit-letter pair (codeFill, armory.logic.js) — never guessed, never
-// cross-weapon (that IS the falsifier: two weapons sharing a pair must never cross-fill).
+// Row 4 (amended 2026-09-14 01:37 EDT, G9): Weapon — fuzzy search over existing weapons; picking one fills Category. Build number is computed from real siblings and locked into the Label field's left edge; the field itself is an OPTIONAL human label (spec §6/G6: display-only, nothing stored changes). Row 15: a pasted MP gunsmith code fills attachment rows from another build of the SAME weapon+mode that carries the identical digit-letter pair (codeFill, armory.logic.js) — never guessed, never cross-weapon (that IS the falsifier: two weapons sharing a pair must never cross-fill).
 function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponNames, imgBusy, onImagePick }) {
     const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
     const dmz = f.mode === 'DMZ';
@@ -927,8 +914,7 @@ function WeaponSearch({ options, picked, roomLeft, onPick }) {
         </div>`;
 }
 
-// ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted.
-// 🔴 COMPARE AS THE DESIGN BOARD DRAWS IT (plan pins batch 2 §10.2, G10 answered 2026-09-14 01:18 EDT; built 2026-09-15 08:37 EDT). One row per attachment SLOT in Harkirat's display order, never one comma-joined cell — two builds that differ by one attachment could not be told apart. The first column is the baseline, tinted and headed so; a value that differs from it is raised with a --patch ring and carries a visually hidden "differs" (colour is never the only signal); a slot the baseline has and a build lacks is a dashed Not equipped cell; a slot neither uses is a dash. Fields identical on every shown build fold into one "Same on all N" row. The table comes first and the Discord cards wait behind Show cards, closed on every open (Harkirat, 2026-09-13 20:52 EDT). Two weapons split the six columns between them rather than the first filling them, and a build that did not fit says so on its own chip.
+// ⚠️ THE SAME ROWS ARE DRAWN WHETHER THEY MATCH OR NOT. Showing only the differences would be shorter and would answer a different question: "these two are identical apart from the image" is a conclusion you can only reach by seeing the fields that agree. `.cmptab tr.same` is the adopted sheet's own class for exactly that. 2026-09-11 09:15 EDT -- every build of both picked weapons used to auto-fill the columns; Harkirat, direct: "what if i only want to compare AK117 build 1 vs AS VAL build 2? why does it force load both AS VAL builds?" Picking a WEAPON and picking WHICH of its builds are two different acts, so a weapon with more than one build now gets its own row of toggle chips -- the same `.chip` control already used to remove a whole weapon, one level down. Unchecked means excluded, not deleted. 🔴 COMPARE AS THE DESIGN BOARD DRAWS IT (plan pins batch 2 §10.2, G10 answered 2026-09-14 01:18 EDT; built 2026-09-15 08:37 EDT). One row per attachment SLOT in Harkirat's display order, never one comma-joined cell — two builds that differ by one attachment could not be told apart. The first column is the baseline, tinted and headed so; a value that differs from it is raised with a --patch ring and carries a visually hidden "differs" (colour is never the only signal); a slot the baseline has and a build lacks is a dashed Not equipped cell; a slot neither uses is a dash. Fields identical on every shown build fold into one "Same on all N" row. The table comes first and the Discord cards wait behind Show cards, closed on every open (Harkirat, 2026-09-13 20:52 EDT). Two weapons split the six columns between them rather than the first filling them, and a build that did not fit says so on its own chip.
 function Compare({ builds, weapons, onSetWeapons, onOpenRack, onAdd }) {
     const [excluded, setExcluded] = useState(() => new Set());
     const [showCards, setShowCards] = useState(false);
@@ -1099,10 +1085,7 @@ function FilterBar({ weapon, flag, shown, total, onClear }) {
 
 // ── BULK CREATE ──────────────────────────────────────────────────────────────────────────────
 //
-// Row 2 (amended G9): paste-many folds INTO New Build as a second panel of the same drawer, carrying
-// BulkView's parse (server-side /api/parse-bulk/loadout) and BulkOverwrites' per-field preview
-// unchanged. Staging keeps the shipped rule (bulkPasteSummary.canStage): readable builds stage, an
-// unreadable block stays LISTED with its message rather than silently dropped.
+// Row 2 (amended G9): paste-many folds INTO New Build as a second panel of the same drawer, carrying BulkView's parse (server-side /api/parse-bulk/loadout) and BulkOverwrites' per-field preview unchanged. Staging keeps the shipped rule (bulkPasteSummary.canStage): readable builds stage, an unreadable block stays LISTED with its message rather than silently dropped.
 const BULK_EXAMPLE = ['AK117 | AR', 'Build: Aggressive Flex', 'Image: AK117-1', 'Code: 1C2B4A8B9A', 'Badges: meta, top3',
     '- Monolithic Suppressor', '- MIP Extended Light Barrel', '- No Stock', '- 48 Round Extended Mag', '- Granulated Grip Tape'].join('\n');
 
@@ -1210,10 +1193,7 @@ function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, set
 
 // ── THE DRAWER ITSELF ────────────────────────────────────────────────────────────────────────
 //
-// Row 2 (G9): the header holds only eyebrow/title/×; a toolbar under it carries the MP/DMZ switch
-// (unchanged look), a rule, then Add build · Bulk create. Row 5: Esc/scrim on a dirty draft asks first.
-// Row 11/12 (harden): handleAdd's stageOps() result is checked rather than assumed, and Stage shows a
-// busy state so a double click cannot stage the same build twice.
+// Row 2 (G9): the header holds only eyebrow/title/×; a toolbar under it carries the MP/DMZ switch (unchanged look), a rule, then Add build · Bulk create. Row 5: Esc/scrim on a dirty draft asks first. Row 11/12 (harden): handleAdd's stageOps() result is checked rather than assumed, and Stage shows a busy state so a double click cannot stage the same build twice.
 function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken, overlay, initialPanel = 'add' }) {
     const [panel, setPanel] = useState(initialPanel);
     const [f, setF] = useState({
@@ -1228,8 +1208,7 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
     const code = f.shareCode.trim();
     const codeEntries = (!dmz && code.length >= 2) ? codeFill(builds, weaponKey, 'MP', code) : [];
 
-    // Row 15: a code creates one row per pair and fills each name from a sibling build -- but never
-    // overwrites something the admin already typed by hand in that row.
+    // Row 15: a code creates one row per pair and fills each name from a sibling build -- but never overwrites something the admin already typed by hand in that row.
     useEffect(() => {
         if (!codeEntries.length) return;
         setAtts((prev) => codeEntries.map((e, i) => ((prev[i] && prev[i].trim()) ? prev[i] : (e.name || ''))));
@@ -1256,11 +1235,7 @@ function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken,
             onConfirm: onCancel,
         });
     }
-    // Bulk create's own dirty check lives inside BulkCreatePanel's local text state, which this drawer
-    // cannot see directly -- a discard prompt on an untouched Add panel while Bulk create holds a real
-    // paste would be a false negative in the other direction, so this stays conservative: dirty on
-    // EITHER panel closes the same way. (BulkCreatePanel's textarea is cleared on a successful stage,
-    // so this only ever fires on real unsaved input.)
+    // Bulk create's own dirty check lives inside BulkCreatePanel's local text state, which this drawer cannot see directly -- a discard prompt on an untouched Add panel while Bulk create holds a real paste would be a false negative in the other direction, so this stays conservative: dirty on EITHER panel closes the same way. (BulkCreatePanel's textarea is cleared on a successful stage, so this only ever fires on real unsaved input.)
     function panelDirty() { return false; }
 
     async function submit() {
@@ -1441,11 +1416,7 @@ export function ArmoryRealm({ session }) {
     // 🔴 A DRAWER OVER A ROW THAT NO LONGER EXISTS. The editor used to be handed `builds.find(...)` inline, so a staged bulk deletion followed by a refresh could hand it `undefined` and the first field read would throw inside a modal with the page behind it inert — a dead screen with no way out but Escape. Resolved once here, and the drawer is simply not rendered when the build it was opened for has gone.
     const editingBuild = editingId ? builds.find((b) => String(b._id) === editingId) || null : null;
 
-    // 🔴 STAGING WITH NO ACKNOWLEDGEMENT READS AS A DROPPED CLICK. The form closed, the table did not change (a staged build is not a live one), and nothing anywhere said the work had landed — so the only way to find out was to open Review and look. The toast carries the way there, because "it is staged" and "here is where staged things go" are the same sentence.
-    // 🔴 `harden` (pins batch 2, §10.1 row 11) — a 403, a CSRF refusal or a validation error resolves to a
-    // failure OBJECT here, never a throw. The old version never looked, so the drawer closed and said
-    // "Staged" while nothing had staged and the draft was gone. The drawer now keeps the draft open on a
-    // false return and shows the refusal inline (BulkView already did this right).
+    // 🔴 STAGING WITH NO ACKNOWLEDGEMENT READS AS A DROPPED CLICK. The form closed, the table did not change (a staged build is not a live one), and nothing anywhere said the work had landed — so the only way to find out was to open Review and look. The toast carries the way there, because "it is staged" and "here is where staged things go" are the same sentence. 🔴 `harden` (pins batch 2, §10.1 row 11) — a 403, a CSRF refusal or a validation error resolves to a failure OBJECT here, never a throw. The old version never looked, so the drawer closed and said "Staged" while nothing had staged and the draft was gone. The drawer now keeps the draft open on a false return and shows the refusal inline (BulkView already did this right).
     async function handleAdd(op) {
         const res = await stageOps('armory', [op], session.csrfToken);
         if (await reportFailure(overlay, res, 'The build could not be staged')) return false;

@@ -170,13 +170,7 @@ async function uploadLoadoutImage(sourceUrl, imageKey) {
 }
 
 
-// Ephemeral pre-commit staging upload for the web portal's New Build drawer (pins batch 2, spec §10.1
-// row 14). A dropped screenshot has no derived key yet -- the weapon name, and therefore the eventual
-// WEAPON-N key, can still change before the draft is staged or committed -- so it goes up under its own
-// random temporary Public ID first, never overwrite:true, so an abandoned draft never collides with
-// another one. The FINAL copy to the real key happens later, inside loadout.add/loadout.edit's own
-// apply() at commit time, via uploadLoadoutImage(stagingUrl, realKey) -- that function already accepts
-// any https source, staging URLs included, so no second upload path is needed there.
+// Ephemeral pre-commit staging upload for the web portal's New Build drawer (pins batch 2, spec §10.1 row 14). A dropped screenshot has no derived key yet -- the weapon name, and therefore the eventual WEAPON-N key, can still change before the draft is staged or committed -- so it goes up under its own random temporary Public ID first, never overwrite:true, so an abandoned draft never collides with another one. The FINAL copy to the real key happens later, inside loadout.add/loadout.edit's own apply() at commit time, via uploadLoadoutImage(stagingUrl, realKey) -- that function already accepts any https source, staging URLs included, so no second upload path is needed there.
 async function uploadStagingScreenshot(dataUrl) {
     const stagingId = `staging/${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     if (isCloudinaryWriteBlocked('upload', `${FOLDER}/${stagingId}`)) {

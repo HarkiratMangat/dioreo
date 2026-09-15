@@ -1017,6 +1017,16 @@ The 29 portal pins of 2026-09-11 22:46 EDT → 2026-09-12 12:31 EDT, planned in 
 
 🟡 **Session 1 BUILT on `feat/portal-pins2-identity`, 2026-09-13 18:17 EDT** — every §3 box and plan §12 Step 3 ticked; not yet pushed. Next: plan §13 on Harkirat's approval, then the critique session.
 
+🟡 **Session 2 BUILT on `feat/portal-pins2-manifests`, 2026-09-15 09:18 EDT** — plan §5 Steps 1–12 ticked, agent D merged (`a459e8dd`). Not yet pushed. **Waiting on Harkirat:** the prod slot backfill (§5.2 Step 9b) and the FSS Hurricane name write (§10.4 G6), each with its approval restated; then §13.
+
+### `[P3 · S · Sonnet5-Medium]` Health's emoji-missing chip has no Sync button — filed 2026-09-15 09:18 EDT
+
+Board 2's G1 row for `analytics.js:241` asks for "12 emoji missing · Sync". The chip shipped; the button did not, because no portal route triggers the bot's emoji sync — a button would do nothing. **Do:** add an admin route that runs the sync, or drop the button from the design. **Verify by:** clicking Sync on the harness and on the dev portal changes the chip's count.
+
+### `[P3 · XS · Sonnet5-Medium]` Two `.bf-h` rules disagree on gap (9px, 10px) — filed 2026-09-15 09:18 EDT
+
+Agent D's drawer block carries `.bf-h` twice; source order makes it 10px. Found by the duplicate-selector sweep after the merge (trap 10c). **Do:** delete the losing declaration. **Verify by:** searching `portal/ui/app.css` for a line starting `.bf-h{` finds one.
+
 ### `[P2 · M · Sonnet5-High]` A `/compare` page on dioreo.app — the portal's Compare panel, ported — filed 2026-09-13 11:31 EDT
 
 Harkirat, pin `pmtylqtti` (2026-09-12 12:31 EDT): Compare is important enough to become its own public page on dioreo.app — *"file that as a near future project"*. It depends on the critique session redesigning the portal panel first, so the port carries the redesigned version rather than today's. ⚠️ The public site is built by `scripts/buildLegalPages.js` from Markdown sources and has no data layer; a page that compares live builds is a new kind of page there, so the first question is how it gets its data.

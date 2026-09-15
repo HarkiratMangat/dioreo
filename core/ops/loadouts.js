@@ -109,16 +109,11 @@ registerEntity('loadouts', {
             return { before: { builds: siblings.length }, after: { builds: siblings.length + 1 } };
         },
         apply: async (op, { session }) => {
-            // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a
-            // pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo
-            // (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also
-            // leak it into every preview/diff downstream of this payload).
+            // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also leak it into every preview/diff downstream of this payload).
             const { imageSourceUrl, ...doc } = op.payload;
             const res = await createDocument({ Model: Loadout, doc, session });
             const saved = await Loadout.findById(res.id).session(session);
-            // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never
-            // fails the build itself -- coverageFlags already has 'missing-image' to catch the result,
-            // and the admin can retry via Edit.
+            // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never fails the build itself -- coverageFlags already has 'missing-image' to catch the result, and the admin can retry via Edit.
             let uploadError = null;
             if (imageSourceUrl && saved.imageKey) {
                 const up = await uploadLoadoutImage(imageSourceUrl, saved.imageKey);
@@ -146,8 +141,7 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const cur = await Loadout.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
-            // imageSourceUrl is portal-only staging, same as loadout.add above -- stripped before it can
-            // reach `set` (and therefore `prior`/the invert payload).
+            // imageSourceUrl is portal-only staging, same as loadout.add above -- stripped before it can reach `set` (and therefore `prior`/the invert payload).
             const { imageSourceUrl, ...payload } = op.payload;
             // Slot labels only ever come from /autobuild's vision extraction, and a plain-text edit can't supply new ones -- keep the existing mapping ONLY when the attachment list is byte-for-byte unchanged (same length + same names in the same order); any real change invalidates slot identity, so it's cleared rather than carried forward misaligned.
             const existingAttachments = cur.attachments || [];

@@ -1,6 +1,4 @@
-// scripts/armorySlotFill.test.js — portal/ui/armory.logic.js's slotCatalogue() and codeFill(), added for
-// pins batch 2 Session 2 (agent D, brief 1b). These run in the browser bundle, so they are tested here
-// directly against the real module rather than through a rendered page.
+// scripts/armorySlotFill.test.js — portal/ui/armory.logic.js's slotCatalogue() and codeFill(), added for pins batch 2 Session 2 (agent D, brief 1b). These run in the browser bundle, so they are tested here directly against the real module rather than through a rendered page.
 const assert = require('assert');
 const { slotCatalogue, codeFill, parseCodePairs } = require('../portal/ui/armory.logic.js');
 
@@ -79,9 +77,7 @@ check('codeFill leaves a pair open (null) when this weapon has never used it', (
     assert.strictEqual(barrel.name, 'MIP Light Barrel');
 });
 
-// 🔴 THE FALSIFIER (brief D 1b's own words): two weapons sharing a pair must never cross-fill. Row 15
-// measured this as a real disagreement (36 of 56 cases), so the registry MUST be scoped per weapon, not
-// merely usually right about it.
+// 🔴 THE FALSIFIER (brief D 1b's own words): two weapons sharing a pair must never cross-fill. Row 15 measured this as a real disagreement (36 of 56 cases), so the registry MUST be scoped per weapon, not merely usually right about it.
 check('FALSIFIER: two different weapons sharing the same pair never cross-fill', () => {
     const builds = [
         { _id: '1', weaponKey: 'locuskey', mode: 'MP', shareCode: '2A', attachments: ['Long Barrel'], attachmentSlots: ['Barrel'] },

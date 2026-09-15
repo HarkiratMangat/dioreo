@@ -392,7 +392,7 @@ main{overflow:auto;padding-bottom:140px}
 .btab.staged{background:none;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--lc) 55%,transparent);outline:1.5px dashed var(--lc);outline-offset:-1.5px}
 .btab .ic{width:14px;height:14px}
 /* ── Armory's weapon groups — design board 2 G4 (plan pins batch 2 §10.4), 2026-09-15 00:23 EDT ── Ported from resolved-spec.md, never the board's CSS; its 5px/6px/7px radii land on --rad-1/--rad-2 and its 8px button boxes on --rad-box. The refinement contract: 34px boxed controls on one centre line (C3), visible edges on the padding line (C4), 22px between action boxes and 17px either side of the divider (C9), information left and actions right (C10), faults as shape on the faulty cell (C11). */
-/* ── Broadcast's delivery queue — design board 2 G3 (plan pins batch 2 §10.4), 2026-09-15 00:28 EDT ── */
+/* ── Broadcast's delivery queue — design board 2 G3 (plan pins batch 2 §10.4). Named .qcard and .qbar, not .bcard and .bbar: Season's board card and the bulk bar already own those names, so the queue card was inheriting the board card's border, hover lift and radius on source order with no gate able to see it (trap 10c, found by the duplicate sweep after merging agent D). 2026-09-15 00:28 EDT ── */
 .bqueue{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;padding:var(--s4)}
 .bqcol{display:grid;gap:var(--s3);align-content:start;min-width:0}
 .bqhead{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
@@ -401,9 +401,9 @@ main{overflow:auto;padding-bottom:140px}
 .bqcount b{color:var(--ink);font-weight:600}
 .bqm{display:flex;width:96px;height:4px;border-radius:var(--rad-1);background:var(--rule);overflow:hidden}
 .bqm i{display:block;height:100%;background:var(--r-broadcast)}
-.bcard{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:var(--s4);align-items:start;padding:var(--s4) var(--s4) var(--s4) 18px;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule)}
-.bcard::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
-.bcard.over{opacity:.72}
+.qcard{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:var(--s4);align-items:start;padding:var(--s4) var(--s4) var(--s4) 18px;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule)}
+.qcard::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+.qcard.over{opacity:.72}
 /* The number takes the card's colour lifted toward the ink (2026-09-15 08:57 EDT): an announcement's stored colour can be a dark blue, and the raw hex measured 3.5:1 on the raised ground in portalContrastRendered — the mix keeps the hue and clears 4.5:1. */
 .bnum{justify-self:center;font:700 58px/.8 var(--display);color:color-mix(in oklab,var(--c) 55%,var(--ink))}
 .bbody{display:grid;gap:var(--s3);min-width:0}
@@ -419,7 +419,7 @@ main{overflow:auto;padding-bottom:140px}
 .bend{display:flex;align-items:center;justify-content:center;gap:6px;height:28px;border-radius:var(--rad-2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule);font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
 .bend .ic{width:13px;height:13px}
 .bend.nev{background:color-mix(in srgb,var(--warn) 12%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 40%,transparent);font-family:var(--ui);color:var(--warn-ink)}
-.bbar{position:relative;display:block;height:20px}
+.qbar{position:relative;display:block;height:20px}
 .btrack{position:absolute;left:0;right:0;top:7px;height:6px;border-radius:3px;background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
 .bspan{position:absolute;top:7px;height:6px;border-radius:3px;background:var(--c)}
 .bspan.open{right:0;border-radius:3px 0 0 3px;background:linear-gradient(90deg,var(--c) 0,var(--c) calc(100% - 90px),color-mix(in srgb,var(--c) 0%,transparent))}
@@ -440,9 +440,9 @@ main{overflow:auto;padding-bottom:140px}
 /* C14 at a phone's width: the side column drops under the queue, and the card's lifespan and actions stop assuming 700px. Measured before this: the end box, Show all and Remove ended 34–43px past a 390 viewport. */
 @media (max-width:640px){
   .bqueue{grid-template-columns:minmax(0,1fr)}
-  .bcard{grid-template-columns:36px minmax(0,1fr);gap:var(--s3);padding:var(--s3)}
+  .qcard{grid-template-columns:36px minmax(0,1fr);gap:var(--s3);padding:var(--s3)}
   .bnum{font-size:40px}
-  .bcard > .bban,.bcard > span:last-child{grid-column:1 / -1}
+  .qcard > .bban,.qcard > span:last-child{grid-column:1 / -1}
   .btl{grid-template-columns:auto minmax(0,1fr) auto}
   .bend{padding:0 8px}
   .bmeta{flex-wrap:wrap}

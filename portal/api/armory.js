@@ -59,11 +59,7 @@ function register(route) {
         sendJson(res, 200, { card });
     }));
 
-    // The New Build drawer's Image section (spec §10.1 row 14) -- "drop a screenshot" needs SOME https
-    // URL to exist before the drawer can stage or preview it, and only the server holds the Cloudinary
-    // credentials to make one. This is a STAGING upload only (see uploadStagingScreenshot's own header):
-    // the real, final upload to the derived WEAPON-N key happens inside loadout.add/loadout.edit's apply()
-    // at commit time, so renaming the weapon after a drop never orphans anything under the wrong key.
+    // The New Build drawer's Image section (spec §10.1 row 14) -- "drop a screenshot" needs SOME https URL to exist before the drawer can stage or preview it, and only the server holds the Cloudinary credentials to make one. This is a STAGING upload only (see uploadStagingScreenshot's own header): the real, final upload to the derived WEAPON-N key happens inside loadout.add/loadout.edit's apply() at commit time, so renaming the weapon after a drop never orphans anything under the wrong key.
     route('POST', /^\/api\/armory\/upload-image$/, requireAdmin(async (req, res, url, session) => {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
@@ -73,8 +69,7 @@ function register(route) {
         if (!/^data:image\/(png|jpe?g|webp|gif);base64,/.test(dataUrl)) {
             return sendJson(res, 400, { error: 'Drop an image file — that did not look like one.' });
         }
-        // A build card renders this at most a few hundred px wide; nothing here needs a screenshot large
-        // enough to approach the server's own general body cap.
+        // A build card renders this at most a few hundred px wide; nothing here needs a screenshot large enough to approach the server's own general body cap.
         if (dataUrl.length > 8 * 1024 * 1024) return sendJson(res, 413, { error: 'That image is too large.' });
         const { uploadStagingScreenshot } = require('../../utils/loadoutImageCache');
         const result = await uploadStagingScreenshot(dataUrl);

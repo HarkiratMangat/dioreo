@@ -6,8 +6,7 @@
 //        node --env-file=.env.dev scripts/backfillSlotsFromMetadata.js --write    (applies it)
 //        add --prod to allow a non-localhost database — prod is outward and needs Harkirat's restated approval.
 //
-// MATCHING, and the trap it avoids: an image matches its build by imageKey with any image extension stripped, compared case-insensitively. 104 of 133 prod keys end in ".png" while Cloudinary public ids carry none (measured 2026-09-14 01:46 EDT), so a literal match would silently miss four builds in five. A full-URL key is reported and never matched.
-// PLACEMENT: attachmentSlots is a PARALLEL array to attachments, so every stored attachment keeps its index — a name that cannot be placed gets '' at its index rather than shortening the array, which would shift every slot after it. The placement passes are alignSlots' from scripts/backfillLoadoutSlots.js (exact-normalised, substring, near-typo edit distance), copied rather than required because that file loads the vision SDK at require time.
+// MATCHING, and the trap it avoids: an image matches its build by imageKey with any image extension stripped, compared case-insensitively. 104 of 133 prod keys end in ".png" while Cloudinary public ids carry none (measured 2026-09-14 01:46 EDT), so a literal match would silently miss four builds in five. A full-URL key is reported and never matched. PLACEMENT: attachmentSlots is a PARALLEL array to attachments, so every stored attachment keeps its index — a name that cannot be placed gets '' at its index rather than shortening the array, which would shift every slot after it. The placement passes are alignSlots' from scripts/backfillLoadoutSlots.js (exact-normalised, substring, near-typo edit distance), copied rather than required because that file loads the vision SDK at require time.
 const mongoose = require('mongoose');
 const cloudinary = require('cloudinary').v2;
 const Loadout = require('../models/Loadout');

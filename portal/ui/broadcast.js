@@ -20,8 +20,7 @@ const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0
 
 // ⚠️ THE CONTENT LIFECYCLE, NAMED. An inline object literal inside a render closure is a vocabulary nothing else can see, and this column carries TWO of them — the staging state (StatePill) and this. Kept apart on purpose: `LIVE NOW` is not `SAVED`, and a reader who cannot tell a written-and-over post from a staged-and-not-yet-real one has been told half the answer.
 const LIFECYCLE_WORD = { live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' };
-// ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27.
-// 🔴 THE MANIFEST AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G11 rows 1–3, 2026-09-15 00:07 EDT). The name column gives the text the room and draws the announcement's own colour as a 4px embed-style bar at the row's edge; the three date columns and the state column take the board's widths through their col classes. Posted carries its age under the date, a blank Starts reads On posting (upright, never italic), and no end reads No end in amber with an infinity mark. The State column is one TAB: the lifecycle word and its icon, a 3px bar in the state colour and a 9% wash — and a staged row's tab is a dashed outline, which is the shape-carries-state rule in one control. This replaces StatePill beside a lifecycle word (2026-09-10, pin pmtvqq1xg), because two chips for two axes were the "poorly implemented" labels, and the board answered it with one.
+// ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27. 🔴 THE MANIFEST AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G11 rows 1–3, 2026-09-15 00:07 EDT). The name column gives the text the room and draws the announcement's own colour as a 4px embed-style bar at the row's edge; the three date columns and the state column take the board's widths through their col classes. Posted carries its age under the date, a blank Starts reads On posting (upright, never italic), and no end reads No end in amber with an infinity mark. The State column is one TAB: the lifecycle word and its icon, a 3px bar in the state colour and a 9% wash — and a staged row's tab is a dashed outline, which is the shape-carries-state rule in one control. This replaces StatePill beside a lifecycle word (2026-09-10, pin pmtvqq1xg), because two chips for two axes were the "poorly implemented" labels, and the board answered it with one.
 const LIFECYCLE = { live: { word: 'Live now', icon: 'radio', c: 'var(--ok)' }, scheduled: { word: 'Upcoming', icon: 'calendar', c: 'var(--sched)' }, expired: { word: 'Ended', icon: 'circle-check', c: 'var(--ink3)' } };
 function lifecycleOf(r) {
     if (LIFECYCLE[r.state]) return r.state;
@@ -99,8 +98,7 @@ function ChangesAhead({ all }) {
         </div>`;
 }
 
-// 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there.
-// 🔴 THE ANNOUNCEMENT CARD AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G3 rows 1–4, 2026-09-15 00:28 EDT). The position number is the delivery order, large, in the card's own colour; the text sits in an enclosure clamped to two lines with Show all; the lifespan is one bar between two equal end boxes, the same length on every card so their windows compare at a glance; the meta and the actions share the last row with the actions bottom right. The explanatory sentence under the stack became the heading "Delivery order" (G1), and a card past the cap still says it waits.
+// 🔴 NO PANEL OF ITS OWN. This opened its own div.panel with its own header row INSIDE the Shell's view panel — a panel nested in a panel, carrying the realm name a second time and a 42px band the design does not draw, which pushed everything below it down by 42px and rendered in the overlay as one page-sized region. The design puts this content directly in the view panel and its summary line at the RIGHT OF THE SWITCHER ROW, which the Shell already exposes as `tools`. The caller passes it there. 🔴 THE ANNOUNCEMENT CARD AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G3 rows 1–4, 2026-09-15 00:28 EDT). The position number is the delivery order, large, in the card's own colour; the text sits in an enclosure clamped to two lines with Show all; the lifespan is one bar between two equal end boxes, the same length on every card so their windows compare at a glance; the meta and the actions share the last row with the actions bottom right. The explanatory sentence under the stack became the heading "Delivery order" (G1), and a card past the cap still says it waits.
 function queueWindow(live) {
     const now = Date.now();
     let lo = now, hi = now + 7 * 86400000;
@@ -134,7 +132,7 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
                         const days = daysBetween(a.createdAt, Date.now());
                         const showings = a.repeatCount && a.repeatCount > 1 ? a.repeatCount : 1;
                         return html`
-                        <div class=${'bcard' + (waiting ? ' over' : '')} key=${id} role="listitem" style=${`--c:${accentOf(a)}`}
+                        <div class=${'qcard' + (waiting ? ' over' : '')} key=${id} role="listitem" style=${`--c:${accentOf(a)}`}
                              aria-label=${`Delivery position ${i + 1}${waiting ? `, waiting beyond the ${cap}-message cap` : ''}`}>
                             <span class="bnum">${i + 1}</span>
                             <div class="bbody">
@@ -145,7 +143,7 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
                                 </div>
                                 <div class="btl">
                                     <span class="bend"><${Icon} name="calendar-days" />${fmtDay(a.startsAt || a.createdAt)}</span>
-                                    <span class="bbar" aria-hidden="true">
+                                    <span class="qbar" aria-hidden="true">
                                         <span class="btrack"></span>
                                         <span class=${'bspan' + (end ? '' : ' open')} style=${end ? `left:${left}%;width:${Math.max(1, pct(end) - left)}%` : `left:${left}%`}></span>
                                         <span class="bnow" style=${`left:${pct(win.now)}%`}></span>
@@ -278,9 +276,7 @@ function HeadsUp({ all, onSetEnd }) {
     `;
 }
 
-// The shared 6,000-character embed budget every live post competes for (Discord's real limit on total
-// embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is
-// currently open in the composer, so editing one doesn't count its own old text against its new length.
+// The shared 6,000-character embed budget every live post competes for (Discord's real limit on total embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is currently open in the composer, so editing one doesn't count its own old text against its new length.
 const EMBED_BUDGET = 6000;
 function otherLiveLength(all, excludeId) {
     return (all || [])
@@ -298,15 +294,9 @@ function RepeatGlyphs({ n }) {
         </div>`;
 }
 
-// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a
-// repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the
-// server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
+// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
 //
-// ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's
-// "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post
-// announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries
-// bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see
-// core/ops/announcements.js's apply()).
+// ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
 function PostForm({ initial, allAnnouncements, onSubmit, onCancel }) {
     const editing = Boolean(initial);
     const [text, setText] = useState(initial?.text || '');
@@ -314,8 +304,7 @@ function PostForm({ initial, allAnnouncements, onSubmit, onCancel }) {
     const [startsIso, setStartsIso] = useState(initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
     const [expiresAt, setExpiresAt] = useState('');
     const [expiresIso, setExpiresIso] = useState(initial?.expiresAt ? String(initial.expiresAt).slice(0, 10) : null);
-    // "Never ends" is its own switch (row 1, G8) rather than inferred from a blank field, because blank
-    // and never are two different real values now (see broadcast.logic.js's buildBroadcastComposerOp).
+    // "Never ends" is its own switch (row 1, G8) rather than inferred from a blank field, because blank and never are two different real values now (see broadcast.logic.js's buildBroadcastComposerOp).
     const [neverEnds, setNeverEnds] = useState(Boolean(editing && initial && !initial.expiresAt));
     const [bannerLink, setBannerLink] = useState(initial?.bannerImageUrl || '');
     const [bannerBroken, setBannerBroken] = useState(false);
@@ -389,7 +378,7 @@ function PostForm({ initial, allAnnouncements, onSubmit, onCancel }) {
                                       value=${startsAt} iso=${startsIso}
                                       onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
                         <div class="dwfield ends-field">
-                            <label for="post-expires"><span>Ends</span>
+                            <label for="post-expires"><span>Ends</span>${' '}
                                 <label class="seg-sw-inline">
                                     <input type="checkbox" checked=${neverEnds} onChange=${(e) => setNeverEnds(e.target.checked)} />
                                     <span>Never ends</span>
@@ -484,10 +473,7 @@ export function BroadcastRealm({ session }) {
     const [editingAnn, setEditingAnn] = useState(null);
     const openEdit = (a) => { setEditingAnn(a); setShowAdd(true); };
 
-    // 🔴 `harden` (pins batch 2, §10.3 row 9) — a 403, a CSRF refusal or the op's own validation error
-    // (the banner's "needs a full https:// URL" refusal arrives only through this path) resolves to a
-    // failure OBJECT, never a throw. The old version never looked, so the drawer closed and said
-    // "staged" while nothing had staged and the draft was gone.
+    // 🔴 `harden` (pins batch 2, §10.3 row 9) — a 403, a CSRF refusal or the op's own validation error (the banner's "needs a full https:// URL" refusal arrives only through this path) resolves to a failure OBJECT, never a throw. The old version never looked, so the drawer closed and said "staged" while nothing had staged and the draft was gone.
     async function handleAdd(op) {
         const res = await stageOps('broadcast', [op], session.csrfToken);
         if (await reportFailure(overlay, res, 'The announcement could not be staged')) return false;
