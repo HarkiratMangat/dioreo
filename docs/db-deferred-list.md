@@ -1199,6 +1199,18 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 **Do:** give the roadmap a real `## v3 — launch scope` section that IS the checklist, built by reading the deferred list's bodies and the roadmap's own entries rather than by keyword; re-verify every entry against the code before listing it; and give each a `[P· E · Model]` tag. **Verify by:** one command printing the launch checklist, every item on it re-checked against the tree on the date it was listed, and no item on it already shipped.
 
 
+### `[P2 · S · Opus5-Medium]` TWO PIECES OF THE CONTEXT-CARRIERS PLAN'S WP4 WERE DECIDED AND NEVER BUILT
+
+*Filed 2026-09-14 22:00 EDT, found while answering whether linksee is used to its full capabilities.* The plan (`~/.claude/plans/okay-so-i-want-majestic-yao.md`, 2026-09-08) measured that routing rules restated at session start do not change behaviour — `read_smart` 0 calls until 2026-08-31 while Bash ran 11,462 calls in one week, most of them `cat` and `sed -n` reads — and decided that routing lives at the call site. Its WP4 line reads `[~]`. Three pieces were never done; one is done now:
+
+| # | Decided in WP4 | State |
+|---|---|---|
+| 1 | `mcp-layer-check.sh` drops its RULES block | ✅ done 2026-09-14 22:00 EDT on `ci/test-queue-rebuild` |
+| 2 | `ctx-search-nudge.sh` extended to whole-file `cat <path>` and `sed -n 'N,Mp' <path>` in Bash and `ctx_execute`, pointing at `read_smart` or a chunk-range slice; `rg -c` and aggregates stay quiet; test cases both ways | not built — the call site for the reads that bypass every Read hook |
+| 3 | global `~/.claude/CLAUDE.md` §1–3 shrink to the fallback chain plus the four call-site rules | not done; the file still restates `read_smart` in five places |
+
+**Verify by:** a `cat docs/README.md` in Bash produces the nudge and `rg -c x docs/README.md` does not, with both cases in `ctx-search-nudge.test.sh`; and `rg -c read_smart ~/.claude/CLAUDE.md` returns at most 1.
+
 ### ⚠️ `[P2 · M]` FOURTEEN `PreToolUse` GATES ARE REGISTERED ON `Bash` ALONE, AND `ctx_batch_execute` ROUTES AROUND EVERY ONE OF THEM
 
 *Filed 2026-09-09 16:14 EDT, from the fix that closed the same hole in the two routing nudges.*

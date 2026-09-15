@@ -43,7 +43,7 @@ echo "mcp-layer-check.sh — branch proofs"
 mkfixture 0; out="$(run 25)"
 assert "clean store: no warning"            "$WARN_MARKER"           no  "$out"
 assert "clean store: counts reported"       "misfiled elsewhere"     yes "$out"
-assert "clean store: routing rules present" "RECALL BY query"        yes "$out"
+assert "routing is not restated at session start (WP4 collapse)" "RECALL BY query" no "$out"
 
 # 2. 30 misfiled memories over a threshold of 25 -> warning MUST fire.
 mkfixture 30; out="$(run 25)"

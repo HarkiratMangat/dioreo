@@ -108,65 +108,11 @@ if [ -r "$CC_CONFIG" ] && command -v jq >/dev/null 2>&1; then
   fi
 fi
 
-read -r -d '' RULES <<'EOF'
-MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
-  · linksee RECALL BY query, NEVER entity_name — entity attribution is path-derived and
-    entity-scoped recall under-returns SILENTLY. On WRITE always pass entity_name explicitly.
-    Removed in v0.11.x: list_entities -> recall({overview:true}) · recall_file -> recall({path}) ·
-    update_memory -> remember({memory_id}) · consolidate -> auto-runs at startup, never call it.
-    SIX TOOLS since 0.15: recall() with no args = the session brief · recall({query}) (mark_accessed:false
-    to preview) · recall({where}) = map position + blast radius · recall({dream:true}) = proposals to triage
-    + the distill queue (rewrite each with remember({memory_id, content:{...,"distilled":true}})) ·
-    remember({content, anchor:{violation_signal}}) records AND enforces a decision · drift_status ·
-    declare_anchor({kind:'proposal'}) parks an option never answered · resolve_drift (fix/supersede/
-    acknowledge/dismiss/harden/soften). A supersede or a closure written only in prose or a tracked doc is
-    NOT recorded in linksee: call resolve_drift, or the brief keeps listing it as open.
-    Deliberate remember() writes have source=NULL so the Stop-hook sync never wipes them; only
-    auto-captured session rows are wiped+reinserted.
-  · [MEASURED 2026-09-08 13:30 EDT -- 10-symbol replay in local/2026-09-08-carrier-baseline.md]
-    codebase-memory-mcp indexes this JS repo (head_sha matched HEAD exactly at replay time). It WINS
-    over rg specifically for callers/callees, fan-in, dependents, impact and duplicate-definition
-    questions (5/10 clear wins, all of that shape). For a plain "where is X defined" lookup it TIES --
-    ~85% of its own results are destructuring-import noise nodes, so rg is less noisy for that case.
-    The blanket "search_graph before rg for ANY code exploration" instruction overclaims; scope it.
-  · [MEASURED, but on PAYLOAD not on hit rate: a 300-line file cost 5,632 tokens on first Read and
-    ~150 on a read_smart re-read, 97% saved, 2026-07-24 23:02 EDT. No hit-rate figure exists.]
-  · 🔴 read_smart IS NOT A RE-READ TOOL AND CALLING IT ONE IS WHY IT GOES UNUSED. Route EVERY read of a
-    file you are not about to Edit through it, first read included: the first read is what builds the AST
-    chunk map that makes every later one ~50 tokens, so it costs the same and buys the 97%. Measured
-    2026-09-06 18:37 EDT: a session read the deferred list, four rule files, 24 vendor doc pages and several dist
-    bundles with zero read_smart calls, because each was a FIRST read and the rule only spoke about re-reads.
-  · 🔴 read_smart's cache is SHARED BY EVERY SESSION (keyed by path alone), so "unchanged" -- and the unchanged
-    chunks of "modified" -- NEVER mean the text is in your context. After a new session or a compact, take the
-    chunk ranges it returns and slice only those (ctx_execute_file, or Read offset/limit for an Edit); force:true
-    only for a small file needed whole; never a full Read or cat. A file past the tool-result limit spills to
-    disk on a full return, so on a big file read_smart is the MAP and the slice is the READ. (2026-09-14 21:41 EDT)
-  · linksee publishes FIVE MCP PROMPTS (entity-handoff, summarize-session, extract-caveats, recall-and-write,
-    weekly-consolidation) on a surface neither a skill search nor ToolSearch can see. /linksee:* does NOT
-    route in Claude Code; fetch the body with prompts/get over stdio and follow it. It also publishes four
-    RESOURCES - memory://stats, memory://hot, memory://recent, memory://caveats. Read memory://caveats at
-    least once, 2026-09-08 13:20 EDT (159 memories across all projects, most Diors-Builds) -- filter by
-    entity/keyword before reading, the raw resource is 300KB+ and will not fit inline.
-  · context-mode ctx_execute/ctx_batch_execute/ctx_execute_file for anything whose output you
-    PROCESS; Bash only to observe short fixed output or mutate state.
-  · [MEASURED 2026-08-31 12:5x EDT, and this is the strongest routing figure in the system:
-    against the six selectors a portal audit finding actually prints, `rg` found 1 of 6 and
-    `ctx_search` found 5 of 5 — a ledger row is PROSE and a finding is a LITERAL. Ask a prose
-    QUESTION through ctx_search; reach for rg only when you already know the literal string.]
-  · perseus-vault for durable cross-session decisions; linksee for project/file-scoped caveats.
-  · Write to the memory layer at the real moments: a decision, a failure, a correction. An entire
-    session once passed with zero writes because nothing forced them.
-
-CLI ROUTING — installed 2026-08-02 15:25 EDT and listed HERE so they get used. shellcheck sat
-installed and unrun for weeks while the bug it catches shipped; being on disk is not being available.
-  · sd      instead of sed/perl for find-replace — no escaping/quoting minefield (several retries today)
-  · ast-grep (sg) for STRUCTURAL code search — `sg -p 'foo($A)'`; beats rg when the shape matters
-  · gron    to make unknown JSON greppable — `gron f.json | rg key`; better than hand-rolled node -e
-  · difft   for structural diffs when a plain git diff is unreadable
-  · deno    for one-off TS/JS scripts with no package.json (instead of long `node -e` one-liners)
-  · gtimeout (coreutils) to bound anything that might hang
-  · bats    is installed but the hook test suites are still hand-rolled — see db-deferred-list
-EOF
+# The routing RULES block that sat here was removed 2026-09-14 21:59 EDT, as the context-carriers plan's WP4 decided on 2026-09-08
+# ("restatement collapse": this hook keeps the fragmentation measurement and drops its RULES block) and nobody had done.
+# Routing now lives AT THE CALL SITE (usage-guard.mjs, read-routing-nudge.sh, ctx-search-nudge.sh, codebase-memory-nudge.sh),
+# in ONE short always-on form (~/.claude/WORKING-AGREEMENT.md, Tool routing) and in the inventory (~/.claude/TOOLING.md section 3).
+# A session-start copy is the carrier the plan measured as not changing behaviour; do not restore it.
 
 # --- sequential-thinking: PERMANENTLY UNRESTRICTED ----------------------------------------------- ⚠️ THE MEASUREMENT WINDOW BLOCK THAT USED TO LIVE HERE WAS REMOVED 2026-08-14 15:10 EDT, AND IT WAS ACTIVELY WRONG, NOT MERELY STALE. It auto-expired on 2026-08-09 and from then on injected "the suspension has EXPIRED — explicit-request-only is in force again" into every single session. Harkirat closed the window that same day with the opposite verdict, on data: unrestricted, the trigger rate rose ~10x and every logged use was high-value, at a cost of ~4k tokens against a window total of 8.23 BILLION. So the hook spent five days telling sessions the tool was restricted when it had been permanently freed — a self-expiring block whose expiry text asserted a decision nobody had made.
 #
@@ -186,5 +132,5 @@ case "$probe" in
   *)            probe_line="linksee MCP: probe could not run (no readable config or no jq) -- treat the db counts below as unverified.";;
 esac
 
-printf '%s\n%s\n%s%s%s' "$probe_line" "$frag_line" "$RULES" "$warn" "$window" \
+printf '%s\n%s\n%s%s' "$probe_line" "$frag_line" "$warn" "$window" \
   | jq -Rs '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:.}}'
