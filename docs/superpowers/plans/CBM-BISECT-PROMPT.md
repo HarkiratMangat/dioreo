@@ -7,7 +7,7 @@ status: live
 
 > 🔴 **IF YOU WERE HANDED A SHORT OPENER, IT IS NOT A SUMMARY OF THIS FILE.** Only this file carries the four causes already ruled out (so you do not re-run them), the Cypher trap that silently emptied an experiment, and the rule to index scratch copies under their own project name and delete them after.
 
-*Produced 2026-09-14 23:43 EDT with linksee's `entity-handoff` MCP prompt (fetched over stdio with `prompts/get`, since `/linksee:*` does not route in Claude Code). One deliberate deviation: its Step 1 recalls by `entity_name`, which under-returns silently in this repo, so the recall ran by `query` on the bisect topic with `max_tokens: 6000`. Deferred-list entry: `docs/db-deferred-list.md` → **WHY CODEBASE-MEMORY LEAVES 9 OF 10 FILES CALLING `mentionCommand` UNLINKED**.*
+*Produced 2026-09-14 23:43 EDT with linksee's `entity-handoff` MCP prompt, whose body is cached at `~/.claude/linksee-mcp-prompts.md` and indexed as `vendor:linksee-prompts` (`/linksee:*` does not route in Claude Code). One deliberate deviation: its Step 1 recalls by `entity_name`, which under-returns silently in this repo, so the recall ran by `query` on the bisect topic with `max_tokens: 6000`. Deferred-list entry: `docs/db-deferred-list.md` → **WHY CODEBASE-MEMORY LEAVES 9 OF 10 FILES CALLING `mentionCommand` UNLINKED**.*
 
 ## Identity
 - **Name:** codebase-memory-mcp's call graph for Diors-Builds · **kind:** tool behaviour, project-scoped · **canonical key:** project `Applications-Claude-Code-Diors-Builds`, binary `~/.local/bin/codebase-memory-mcp` 0.10.8, full index mode, scope set by the tracked `.cbmignore`.
