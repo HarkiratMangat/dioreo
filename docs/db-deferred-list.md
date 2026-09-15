@@ -1199,6 +1199,18 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 **Do:** give the roadmap a real `## v3 — launch scope` section that IS the checklist, built by reading the deferred list's bodies and the roadmap's own entries rather than by keyword; re-verify every entry against the code before listing it; and give each a `[P· E · Model]` tag. **Verify by:** one command printing the launch checklist, every item on it re-checked against the tree on the date it was listed, and no item on it already shipped.
 
 
+### `[P2 · M · Opus5-High]` WHY CODEBASE-MEMORY LEAVES 9 OF 10 FILES CALLING `mentionCommand` UNLINKED — BISECT THE REPO
+
+*Filed 2026-09-14 23:41 EDT at Harkirat's call: stop the investigation now, pick it up in the near future.* In this repo's index (0.10.8, full mode), `trace_path` links `mentionCommand` from `commands/help.js` only, while `search_code` finds calls in 10 files; `fetchWithTimeout` shows 0 callers. The record of what was measured is `docs/reference/tool-capability-tests.md` § codebase-memory-mcp 0.10.8 → *Why the graph and grep disagree*.
+
+**Already ruled out, each by a test that could have failed:** the slash-string argument (the tool's `detect_url_in_args` adds its fake Route AFTER the normal CALLS edge; the same real files link all 7 callers in a 4-file and a 64-file scratch repo); repo size and the parallel indexer (the 64-file repo is past its 50-file threshold); stale index state (a delete-and-rebuild changed nothing); single-threaded indexing (no change, though the env var may not reach the daemon-supervised worker).
+
+**The method:** copy the repo to the scratchpad, index it as a separate project, and remove one top-level directory at a time (`portal/`, `scripts/`, `.claude/`, `docs/`, then halves of what is left) until `mentionCommand`'s callers link. Query with `MATCH (f)-[:CALLS]->(t) WHERE t.name = 'mentionCommand' RETURN DISTINCT f.file_path`; delete each scratch project after. Roughly 6–10 full re-indexes.
+
+**Then:** if the trigger is general, open an upstream issue with a minimal repro, or comment on #1248 if it is the route extractor; if it is specific to this repo, record the workaround. Known upstream neighbours: #1248 and #598 (fake routes), #1642 (callbacks), #1091 (member expressions), #2150 (CLI array flags).
+
+**Verify by:** a named trigger with a repro that links the callers when the trigger is removed and unlinks them when it is restored.
+
 ### `[P3 · XS]` SEVEN FUNCTIONS IN `utils/` ARE DEFINED AND NEVER USED
 
 *Filed 2026-09-14 23:08 EDT, found while measuring codebase-memory's dead-code filter.* The graph's no-caller query over `utils/` returned 115 candidates; checked one by one against every reference in the code, these seven have none outside their own definition or export line: `parseAlertId` and `buildAlertExport` (`utils/alertStore.js`), `extractStillFrame` (`utils/stillFrame.js`), `pageForLoadoutMode` and `buttonsFor` (`utils/manageActions.js`), `buildChangeExport` (`utils/changeStore.js`), `capBannerPreviewWidth` (`utils/calendarBannerCache.js`). ⚠️ A test, a script outside `utils/`, or a portal module could still reach one by a dynamic name, so check each with `search_code` for the bare name before deleting it.
