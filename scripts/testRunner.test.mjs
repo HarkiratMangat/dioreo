@@ -26,6 +26,7 @@ const run = (m, extra = [], env = {}) => {
     return { status: r.status, ms: Date.now() - t, out: `${r.stdout || ''}${r.stderr || ''}` };
 };
 const node = (js) => `node -e ${JSON.stringify(js)}`;
+const expandCmd = (c, d = 0) => { const m = c.match(/^npm run (\S+)/); return m && d < 6 ? String(pkg.scripts[m[1]] || '').split(/\s*&&\s*/).map((x) => expandCmd(x, d + 1)).join(' ') : c; };
 
 console.log('testRunner self-test\n');
 try {
@@ -56,6 +57,23 @@ try {
         assert.ok(files.length > 100, `found only ${files.length} test files — the walk itself is broken`);
         const missing = files.filter((f) => !text.includes(f) && !UNWIRED_OK.includes(f));
         assert.deepStrictEqual(missing, [], `no manifest entry runs: ${missing.join(', ')}`);
+    });
+
+    await check('an entry whose own script starts a browser is in the browser lane, and the check can fail', () => {
+        // Direct scripts only: portalRealWalk.test imports pure functions from a file that also imports puppeteer, and following imports would misfile it.
+        const scriptsOf = (cmd) => [...expandCmd(cmd).matchAll(/[\w./-]+\.(?:c|m)?js\b/g)].map((m) => m[0]).filter((f) => fs.existsSync(path.join(ROOT, f)));
+        const launches = (f) => /require\(\s*['"]puppeteer|from\s+['"]puppeteer/.test(fs.readFileSync(path.join(ROOT, f), 'utf8'));
+        const offenders = (tests) => tests.filter((t) => t.lane !== 'browser' && scriptsOf(t.cmd).some(launches)).map((t) => t.cmd);
+        assert.deepStrictEqual(offenders(TESTS), [], 'these start Chrome and would share the CI tests job\'s 4 vCPUs with everything else — set lane: "browser"');
+        const flipped = TESTS.map((t) => (t.cmd === 'node scripts/portalContrastRendered.test.js' ? { ...t, lane: 'unit' } : t));
+        assert.deepStrictEqual(offenders(flipped), ['node scripts/portalContrastRendered.test.js'], 'the lane check did not catch a browser test filed as unit — it is a vacuous pass');
+    });
+
+    await check('an entry that writes .js into the tree without a tree lock is warned about, and a locked one is not', () => {
+        fs.mkdirSync(fixture, { recursive: true });
+        const writer = node(`require('fs').writeFileSync(${JSON.stringify(path.join(fixture, 'written.js'))}, '1')`);
+        assert.match(run(manifest([{ cmd: writer, lane: 'unit' }]), ['--no-cache']).out, /without lock: 'tree:write'/);
+        assert.doesNotMatch(run(manifest([{ cmd: writer, lane: 'unit', lock: 'tree:write' }]), ['--no-cache']).out, /without lock: 'tree:write'/);
     });
 
     await check('EVERY failure is reported, not only the first, and the exit code is 1', () => {

@@ -8,7 +8,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const UI_DIR = path.join(ROOT, 'portal', 'ui');
-const OUT_DIR = path.join(ROOT, 'portal', 'public');
+// PORTAL_BUILD_OUT redirects the output (added 2026-09-14 21:00 EDT) so scripts/buildPortalInputs.test.mjs can force a real build without rewriting portal/public while other portal tests read it.
+const OUT_DIR = process.env.PORTAL_BUILD_OUT ? path.resolve(process.env.PORTAL_BUILD_OUT) : path.join(ROOT, 'portal', 'public');
 const VENDOR_OUT = path.join(OUT_DIR, 'vendor');
 const UI_OUT = path.join(OUT_DIR, 'ui');
 
@@ -314,7 +315,9 @@ function buildHarness(cssHash) {
     return page;
 }
 
-// Everything a build reads, hashed: this file, portal/ui (recursively, harness included), the mockup assets the harness copies, and the two vendored package versions. Missing paths hash as missing, so a deletion also invalidates.
+// Everything a build reads, hashed: this file, portal/ui (recursively, harness included), the mockup assets the harness copies, and the two vendored package versions. Missing paths hash as missing, so a deletion also invalidates. ⚠️ A NEW READ GOES HERE, or local runs test a stale portal: build() skips when this hash is unchanged. scripts/buildPortalInputs.test.mjs traces a real build and fails on any repo file it read outside this list (a node_modules package is covered by its package.json). Added 2026-09-14 21:00 EDT.
+const BUILD_INPUTS = [__filename, UI_DIR, path.join(MOCKUP_ASSETS, 'assets', 'fixtures.js'), path.join(MOCKUP_ASSETS, '.peers.js'), path.join(MOCKUP_ASSETS, '.grid.js'),
+    path.join(ROOT, 'node_modules', 'preact', 'package.json'), path.join(ROOT, 'node_modules', 'htm', 'package.json')];
 function inputsHash() {
     const h = require('crypto').createHash('sha256');
     const add = (p) => {
@@ -322,8 +325,7 @@ function inputsHash() {
         if (fs.statSync(p).isDirectory()) { for (const n of fs.readdirSync(p).sort()) add(path.join(p, n)); return; }
         h.update(`${path.relative(ROOT, p)}\0`); h.update(fs.readFileSync(p)); h.update('\0');
     };
-    [__filename, UI_DIR, path.join(MOCKUP_ASSETS, 'assets', 'fixtures.js'), path.join(MOCKUP_ASSETS, '.peers.js'), path.join(MOCKUP_ASSETS, '.grid.js'),
-        path.join(ROOT, 'node_modules', 'preact', 'package.json'), path.join(ROOT, 'node_modules', 'htm', 'package.json')].forEach(add);
+    BUILD_INPUTS.forEach(add);
     return h.digest('hex');
 }
 
@@ -357,4 +359,4 @@ function runCli() {
 }
 
 if (require.main === module) { runCli(); }
-module.exports = { build, inputsHash, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio, assertNamedImportsResolve };
+module.exports = { build, inputsHash, BUILD_INPUTS, vendorPreactAndHtm, copyUiScripts, buildCss, buildIndexHtml, portalContrastAudit, contrastRatio, assertNamedImportsResolve };

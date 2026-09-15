@@ -223,6 +223,8 @@ const tree = { readers: 0, writer: false };
 const lockFree = (t) => (t.lock === 'tree:write' ? !tree.writer && tree.readers === 0 : t.lock === 'tree:read' ? !tree.writer : true);
 const lockTake = (t, sign) => { if (t.lock === 'tree:write') tree.writer = sign > 0; else if (t.lock === 'tree:read') tree.readers += sign; };
 
+// ⚠️ THE LOCK IS DECLARED BY HAND, SO ITS ABSENCE IS REPORTED — added 2026-09-14 20:54 EDT. The store's record of what each entry wrote is how the three tree writers were found; a new entry that writes a .js file into the working tree without `lock: 'tree:write'` gets a warning at the end of a local run, read from its own trace.
+const treeWarnings = [];
 let bailed = false;
 await new Promise((done) => {
     let free = capacity, running = 0;
@@ -236,6 +238,10 @@ await new Promise((done) => {
             lockTake(job.t, -1);
             const traced = r.traceFile ? readTrace(r.traceFile) : [];
             for (const x of traced) x.writes.forEach(forget);
+            if (job.t.lock !== 'tree:write') {
+                const js = [...new Set(traced.flatMap((x) => x.writes))].filter((p) => p.startsWith(ROOT + path.sep) && /\.(c|m)?js$/.test(p) && !ignored(p));
+                if (js.length) treeWarnings.push(`  ⚠ ${job.t.cmd} wrote ${js.slice(0, 3).map((p) => path.relative(ROOT, p)).join(', ')}${js.length > 3 ? ` and ${js.length - 3} more` : ''} into the working tree without lock: 'tree:write' — an entry that reads every .js file on disk can see it half-written. Add the lock in scripts/testManifest.mjs.`);
+            }
             const status = r.code === 0 ? 'passed' : r.timedOut ? 'timed out' : 'failed';
             if (status === 'passed') {
                 console.log(`  ✓ ${sec(r.ms).padStart(6)}  ${job.t.cmd}`);
@@ -274,6 +280,7 @@ if (failed.length) {
         console.log(lines.slice(-200).map((l) => `    ${l}`).join('\n'));
     }
 }
+if (treeWarnings.length) console.log(`\n${treeWarnings.join('\n')}`);
 const ran = results.filter((r) => r.status !== 'cached');
 const cachedN = results.length - ran.length;
 const notRun = selected.length - results.length;

@@ -78,6 +78,14 @@ tool: mcp__sequential-thinking__sequentialthinking
 
 ⚠️ **And the cheap tell that the question was skipped: the pass produced only findings you could have listed before running it.** A pass whose every answer is about the work at hand has not swept — it has elaborated.
 
+## A sixth failure mode — the pass audits the WORK and never the next AUTHOR (2026-09-14 21:00 EDT)
+
+🔴 **An end-of-session pass that asks only "is what I built right?" cannot find what the NEXT session needs in order to build the next thing right.** Measured the night CI and the test queue were rebuilt: a 16-thought end-of-session pass checked every number, record, carrier and CI risk of the branch — and then Harkirat asked whether a session adding a new test or hook would follow the new conventions. It would not have. The hook-test rules lived in commit messages, the manifest's lanes and locks were unenforced, a new step kind would have brought back the silent click, and a new build input would have let local runs test a stale portal. None of that was a defect in the branch; all of it was a defect in the handover to whoever builds next.
+
+- **For every convention the session created, ask: which future author meets it, on which surface, and what FAILS if they get it wrong?** Prose where that author actually looks, for the why; a failing test for the must.
+- **Check every fix as a class, the same file first.** A SIGPIPE pipe fixed on two lines survived on a third line of the same file, and the regex that "fixed" that third line broke it in a new way. The lint the pass should have asked for found both.
+- **Test each new rule against the existing tree before writing "never".** A rule the tree already breaks teaches the next author the violation, because they copy the nearest test, not the doc.
+
 ## Two failure modes this file exists to stop
 
 - 🔴 **Thinking AFTER, to verify a conclusion already reached.** That is a ritual, not a pass. The thoughts must be able to change the answer, which means they run before it is formed.

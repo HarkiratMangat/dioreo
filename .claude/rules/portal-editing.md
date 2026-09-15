@@ -52,6 +52,15 @@ An assert on edit 5 raises before that write, so edits 1–4 are lost **after pr
 **Write inside the helper, once per edit** — read, assert, replace, write, print. It costs nothing, and it makes a partial batch a partial success instead of a total loss reported as a success. If you keep a single trailing write, the `print()`s are not the receipt: `rg` the new anchor in the source **and** in `portal/public/ui/<realm>.js` before believing them.
 
 
+## Registering a portal state — four rules from 2026-09-14 (added 2026-09-14 20:54 EDT)
+
+`portal/fixtures/states/*.json` is walked by `scripts/portalStates.mjs` across parallel browser workers. Each rule below was a state that passed while testing nothing, or failed only when the order changed.
+
+- **The `expect` must be FALSE before the steps run.** Name what the step produces, never something already on the page. Analytics' health tile clicked a renamed label for eleven days and passed, because its expect (any selected tab) was true on load. The walk prints *"expect matched BEFORE their steps ran"* for each such state; a state with an `until` on a step is exempt, because the `until` proves the transition.
+- **A state is self-contained.** Every state starts from empty storage on whichever worker is free. Never rely on what the previous state left open or stored — Season's identity state did, and failed 3 of 3 once states ran in parallel.
+- **A step's target must exist.** The walk waits for it (10 s, then a retry at patience 3) and fails naming the selector: a stale selector is a failure now, not a silent no-op.
+- **`hover` is a real pointer** (`page.hover`), so pointermove-driven UI such as the Track crosshair reacts. Expect what the hover produces (`.xhair.on`), never the hover target.
+
 ## The six ORDERING traps — added 2026-09-03 22:32 EDT, Part 6b
 
 Each one cost a wasted verification round, and none is visible from the file you are editing.

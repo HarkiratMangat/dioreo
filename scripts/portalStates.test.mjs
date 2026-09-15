@@ -153,6 +153,14 @@ check('a hover is a real pointer, never synthetic events — the crosshair follo
     assert.ok(!/step\.hover\) await page\.evaluate/.test(src), 'a hover step dispatches synthetic events again');
     assert.ok(/page\.mouse\.move\(-10, -10\)/.test(src), 'the pointer is no longer parked off the page after a hover state');
 });
+check('every step kind that acts on an element waits for it first — a kind added later included, and the check can fail', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    const unwaited = (text) => [...new Set([...text.matchAll(/if \(step\.(\w+)\) await page\.(?:evaluate|hover|click|type|focus|tap)/g)].map((m) => m[1]))]
+        .filter((k) => k !== 'key' && !new RegExp(`if \\(step\\.${k}\\) await waitForTarget(Text)?\\(page, state, step\\.${k}, patience\\)`).test(text));
+    assert.deepStrictEqual(unwaited(src), [], 'a step kind acts without waiting for its target');
+    const withoutClickWait = src.replace('if (step.click) await waitForTarget(page, state, step.click, patience);', '');
+    assert.deepStrictEqual(unwaited(withoutClickWait), ['click'], 'the check did not notice a removed wait — it is a vacuous pass');
+});
 check('a target that never appears is a STALL, so the patience retry still gets its attempt', () => {
     assert.ok(isStall(`state "x" stalled: nothing matched .no-such-target to act on within ${TARGET_MS}ms, so its step would have acted on nothing`));
 });

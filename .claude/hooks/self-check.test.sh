@@ -117,7 +117,9 @@ check 'mode 3: re-shows the grid so it can be re-derived' 'Opus5-Max'
 # ⚠️ NO `-o` here, deliberately: -o prints only the matched span, which ENDS before the trailing
 #    MG-EXAMPLE -- so an -o pipeline can never see the escape and the check fails even when correct.
 #    That is exactly what happened on the first attempt. Match whole LINES.
-if printf '%s' "$OUT" | grep -iE 'Premise[ _-]*(Low|Med|Medium|High)[^A-Za-z]{1,8}Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)[^A-Za-z]{0,10}(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)' | grep -qv 'MG-EXAMPLE'; then
+# Captured, then tested with a here-string: the two-stage `printf | grep | grep -q` pipe that stood here is the SIGPIPE false-FAIL scripts/hookTestLint.test.mjs forbids under pipefail.
+derivations=$(grep -iE 'Premise[ _-]*(Low|Med|Medium|High)[^A-Za-z]{1,8}Delib(eration)?[ _-]*(Very high|Low|Med|Medium|High)[^A-Za-z]{0,10}(Sonnet5|Opus5)-(Low|Medium|High|XHigh|Max)' <<< "$OUT" || true)
+if [ -n "$derivations" ] && grep -qv 'MG-EXAMPLE' <<< "$derivations"; then
     bad 'mode 3: the correction does not self-match its own detector' 'an unescaped derivation is echoed back -- the hook will re-validate its own output forever'
 else
     ok 'mode 3: the correction does not self-match its own detector'

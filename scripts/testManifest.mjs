@@ -145,5 +145,7 @@ export const TESTS = [
     {"cmd": "npm run autofix:safety", "lane": "unit"},
     {"cmd": "npm run test:hooks", "lane": "hooks", "weight": 4, "declared": [".claude/hooks", "scripts/hookOutputCap.test.sh", "scripts/testCache.mjs", ".claude/settings.json"]},
     {"cmd": "node --no-warnings scripts/indexHealth.test.mjs", "lane": "unit"},
+    {"cmd": "node scripts/hookTestLint.test.mjs", "lane": "unit"},
+    {"cmd": "node scripts/buildPortalInputs.test.mjs", "lane": "unit"},
     {"cmd": "node scripts/testRunner.test.mjs", "lane": "unit"},
 ];
