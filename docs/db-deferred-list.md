@@ -86,8 +86,9 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
-- [ ] **The rebuilt CI has never run on GitHub** `[P1 · S · Opus5-Medium]` (filed 2026-09-14 19:44 EDT, `ci/test-queue-rebuild`)
+- [ ] **The rebuilt CI has never run on GitHub — and it MERGES ONLY AFTER portal Session 2** `[P1 · S · Opus5-Medium]` (filed 2026-09-14 19:44 EDT, `ci/test-queue-rebuild`)
   - `.github/workflows/ci.yml` is six jobs now (`tests`, `browser walks`, `records and site`, `what changed`, `hooks on macOS`, `syntax-check`), with PR concurrency and a `workflow_call` that `sync-v3-pre-release.yml` uses to test the merge commit it pushes. It was checked with actionlint and by running each job's commands locally with `CI=true` — nothing else. The macOS job's tool install (`rg`, `jq`, `gtimeout`) is unverified on a real macOS image.
+  - 🔴 **Merge order, decided by Harkirat 2026-09-14 20:15 EDT: after portal pins batch 2 Session 2.** Before merging this branch: `git merge origin/v3-pre-release`; add every test file Session 2 created to `scripts/testManifest.mjs` (the runner self-test fails otherwise); resolve the three `portal/fixtures/states/*.json` entries this branch rewrote (analytics, shell, season); then write the version bump, CHANGELOG and DEVLOG for the version that is next AT THAT MOMENT — drafts in `local/ci-rebuild-records-draft.md`.
   - **Verify:** the first PR from the branch shows all six checks; `syntax-check` green; `hooks on macOS` runs (the branch changes hooks) and its result is read, pass or fail; `browser walks` green on three consecutive runs; the next push to `main` runs `sync` and then `test-synced`.
 
 - [ ] **Promote `hooks on macOS` from advisory to blocking** `[P2 · XS · Sonnet5-Medium]` (filed 2026-09-14 19:58 EDT)

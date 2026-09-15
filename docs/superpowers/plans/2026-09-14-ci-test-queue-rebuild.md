@@ -15,6 +15,7 @@ status: live
 |---|---|---|
 | How to build | Plan, then build, all in this one session, autonomously | No check-ins. A push, a PR and a merge are still his: nothing leaves this branch |
 | Skip unaffected tests? | **Local only, CI runs everything** | The local runner caches by traced inputs. CI never caches and never skips, which also retires `portalStates.mjs`'s own `--ci` diff skip |
+| Merge order (asked 2026-09-14 20:15 EDT) | **After portal pins batch 2 Session 2**: "sure we can merge it after session 2" | Session 2 runs on the test setup its plan was written for. Before this branch merges it takes `git merge origin/v3-pre-release`, adds any test file Session 2 created to `scripts/testManifest.mjs`, resolves the three `portal/fixtures/states/*.json` entries it rewrote, and takes the NEXT version number at its own merge — so the version bump, CHANGELOG and DEVLOG are written then, not at PR time |
 | macOS hooks job | **Yes, only when hooks change** | A `macos-latest` job runs `npm run test:hooks` when `.claude/hooks/**` or `scripts/hookOutputCap*` changed |
 
 ## §1 — The working contract (re-read at every phase boundary)
