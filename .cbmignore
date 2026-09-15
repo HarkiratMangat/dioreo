@@ -1,0 +1,7 @@
+# codebase-memory-mcp index scope (read at the repo root on every index and auto-sync).
+# .claude/ is on the tool's built-in skip list, but here it holds tracked code: 78 hook scripts and their tests, 22 rule files and settings.json. Un-skip it so callers and definitions in hooks are answerable.
+!.claude/
+# Session worktrees under .claude/ are full copies of the repo; indexing them would duplicate every symbol.
+.claude/worktrees/
+# Minified vendor bundles: no human-written symbols, and they crowd semantic search results.
+*.min.js
