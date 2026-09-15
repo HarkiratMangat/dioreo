@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 7). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 8). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -29,33 +29,28 @@ record — every gate, the pins it answers, and every fork with its options — 
   options and those sub-options would still require a pick even if the overall direction is decided. So the pick is dynamic
   where decisions are still happening. It's only gone if all decisions are gone and only tweaks are happening."*
 
-## The gates
+## The surfaces
 
-| Gate | Title | Pins | Picks |
+One section per surface, because a surface is what you look at: the manifest's spacing, its badges, its tags, its problems
+and selecting are the same screen, so they read under one stage rather than as five gates (his correction, 2026-09-15
+19:27 EDT). The stage is sticky, so it stays with you while you work down the topics beneath it.
+
+| Surface | Topics inside it | Pins | Picks |
 |---|---|---|---|
-| A1 | Manifest rows and tools | 3 · 5 · 6 · 8 · 9 · 10 · 14 · 15 · 19 | — (fixes, values below) |
-| A2 | Badges | 7 | `p1` |
-| A3 | Attachment tags | 16 | `p2pal` · `p2sty` |
-| A4 | Build problems | 13 · 17 | `p3` |
-| A5 | Selecting builds | 18 · 20 · 22 | `p4` · `p5list` · `p5bg` · `p5hint` |
-| A6 | The build drawer | 2 | — (board 1 G9, built) |
-| A7 | Repairs | 23 | `p6` |
-| A8 | Command search | 25 | — ("exactly as shown") |
-| A9 | Export: pick your own | 26 | `exp` |
-| B1 | The delivery queue | 32 · 33 · 36 · 37 · 39 · 40 · 43 · 46 · 47 · 49 | `p8` |
-| B2 | The broadcast manifest | 44 · 45 · 50 | — (board 2 G11) |
-| B3 | The announcement drawer | 48 | — (board 1 G8) |
-| H1 | The history manifest | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
-| E1 | Buttons | 1 · 4 · 29 | `e1` |
-| E2 | Icon buttons | 10 · 11 · 12 · 43 · 47 | `e2` |
-| E3 | Corner radius | 21 | `e3` |
-| E4 | Labels and headings | 14 · 35 · 41 · 42 | `e4` |
-| E5 | Pills | 38 | `e5` |
-| E6 | Small text | 27 · 28 · 31 · 34 · 40 · 52 | `e6` |
+| M1 · The Armory manifest | Rows and tools · Badges · Attachment tags · Build problems · Selecting builds | 3 · 5 · 6 · 7 · 8 · 9 · 10 · 13 · 14 · 15 · 16 · 17 · 18 · 19 · 20 · 22 | `p1` `p2pal` `p2sty` `p3` `p4` `p5list` `p5bg` `p5hint` |
+| M2 · The build drawer | — | 2 | — (board 1 G9) |
+| M3 · Repairs | — | 23 | `p6` |
+| M4 · Command search | — | 25 | — (as shown) |
+| M5 · Export | — | 26 | `exp` |
+| B1 · The delivery queue | — | 32 · 33 · 36 · 37 · 39 · 40 · 43 · 46 · 47 · 49 | `p8` |
+| B2 · The broadcast manifest | — | 44 · 45 · 50 | — (board 2 G11) |
+| B3 · The announcement drawer | — | 48 | — (board 1 G8) |
+| H1 · The history manifest | — | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
+| E · The shared vocabulary | Buttons · Icon buttons · Radius · Labels · Pills · Small text | 1 · 4 · 10 · 11 · 12 · 14 · 21 · 27 · 28 · 29 · 31 · 34 · 35 · 38 · 40 · 41 · 42 · 43 · 47 · 52 | `e1`–`e6` |
 
 Pins **24** (account-menu tint — Session 5 reproduces it first) and **30** (the standardization session itself) are answered
-in the board's settled log rather than on a stage. The board asserts this coverage itself: any pin from 1 to 57 with no gate
-and no log row renders a red banner at the top.
+in the board's settled log. The page asserts this coverage itself: any pin from 1 to 57 with no surface and no log row
+renders a red banner at the top.
 
 ## The forks
 
@@ -81,7 +76,7 @@ These are the pins whose value is already decided; the board shows them applied,
 
 | Pin | Value |
 |---|---|
-| 3 | The Attachments group stays in the tools row's second row, **inline with the category toggles** with the `.mt-grp + .mt-grp` divider between them (his board 2 request), the row goes `flex-wrap: nowrap` so it can no longer drop to a second line, and Attachments pins right; `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ The first version of this moved the group to row one — wrong, corrected 2026-09-15 19:20 EDT |
+| 3 | **The tools row is a layout, not a nudge.** Row two is a grid: the category chips take the free column, the Attachments group holds its own column with the divider running its full height. The chips carry 8px padding and 5px gaps because eight of them needed 802px of a 772px column — without that, Secondaries orphans onto a second line. `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ Two earlier versions of this were wrong: row one (2026-09-15 19:20 EDT) and nowrap without closing the deficit (19:32 EDT) |
 | 5 | Board 2's fold / unfold marks on every fold control (`Fold` renders `i-b2-fold` / `i-b2-unfold`) |
 | 6 | `--sec` becomes `#3F6E8E` in the portal **and the accent is rewritten in the data** — chips, weapon bars and row accents all read `b.accent`, which the API still answers with `#023047`, so the token alone changes nothing visible; `utils/loadoutRender.js`'s `SECONDARIES` moves with it |
 | 8 | `.wg-ig` draws one ring in an `::after` above its children; `.wg-igf` keeps `inset 0 3px 4px -2px rgba(0,0,0,.45)`; `.wg-igb` loses its own ring for a left border |
@@ -100,6 +95,9 @@ These are the pins whose value is already decided; the board shows them applied,
 | 49 | The calendar button goes; Edit carries its word |
 | 50 | Broadcast columns `minmax(0,1fr) 104px 104px 104px 124px 44px`, column-gap 16px, padding `0 16px 0 22px` |
 | 51 | Chip counts upright, never italic |
+| — | **Row icon buttons** carry no box at rest and light on hover in their own intent — copy green, delete red, and the share button beside the code in the weapon's own accent (his comment 2026-09-15 19:23 EDT) |
+| — | **The weapon line on one axis**: `.wg-nb::before` drops its 2px bottom margin and the small line centres as an inline-flex, so the category and the build count share a baseline (19:24 EDT) |
+| — | **The build row's accent** is 2.5px, the weapon row's stays 4px (19:25 EDT) |
 | — | **Select-all alignment** (his comment 2026-09-15 19:20 EDT, not one of the 57): `.wg-heads` padding `0 var(--s4)` → `0 var(--s4) 0 20px`, so the column head, the weapon header and every build row share one left edge. Measured: all three checkboxes at x=139 with the fix, 135 vs 139 without it |
 
 ## How it is checked
@@ -107,4 +105,4 @@ These are the pins whose value is already decided; the board shows them applied,
 `local/pins2-board-3/redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: gates, picks
 and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its
 switch on **and** off; a pick actually written and painted; board 1's G8 frame loaded; and no horizontal overflow at 1282px
-or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:20 EDT: 19 gates, 18 picks, 39 options, 0 page errors, 0 overflow at 1282px and 390px.
+or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:43 EDT: 10 surfaces, 18 picks, 39 options, 0 page errors, the chip group one line at 32px, no overflow at 1282px or 390px.
