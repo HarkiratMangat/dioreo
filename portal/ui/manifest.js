@@ -97,7 +97,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
     // 🔴 THE ROWS ARE A WINDOW AND EVERY NUMBER BESIDE THEM WAS NOT. Analytics' river is the newest 100 of each of three collections; `totalRows` is all of them, all time. So the count read "2 of 1,307" under a filter -- a numerator drawn from a population the denominator does not describe -- and at the cap it read "100 of 100", which is indistinguishable from "you are seeing everything" and is the precise lie `totalRows` was added to prevent. A realm that hands over a WINDOW says so, and the line states the window instead of implying its absence. A realm that hands over a WINDOW says so, and the line then states three separate quantities instead of implying they are one: how many you can see, how big the window is, and how big the collection is. Left null, nothing changes. ⚠️ AND IT ALWAYS SAYS IT, NOT ONLY AT THE CAP -- the first version triggered on `rows.length >= pageCap`, which is the same lie one state over: an eleven-row window out of 1,323 reads "11 of 1,323" and invites the reader to scroll for the rest. The shape it lands on, `N shown · newest M of T`, is the design's own ("12 shown · 1323 recorded").
     pageCap = null,
     // A line under the toolbar, which is where the design puts its own (armory.html's activeFilter sits in exactly this slot). A PROP rather than something a realm renders beside the Manifest, because any sibling element between the two panels breaks the .panel + .panel selector that gives the table its ground.
-    caption = null}) {
+    caption = null,
+    // 🔴 THE ONE OPTIONAL BODY PROP (plan pins batch 2 §10.4 Architecture, 2026-09-15 00:23 EDT). Armory's weapon groups cannot be column renderers, so a realm may render the body itself from the rows this component has already searched, filtered, sorted and marked selected. The Manifest keeps its tools row, search, chips, selection, bulk bar, sort persistence, empty states and SelectionBar; only Armory passes this, and every other realm renders exactly as before.
+    renderBody = null}) {
     const [query, setQuery] = useState('');
     const [filters, setFilters] = useState({});
     useEffect(() => { if (filterSignal && filterSignal.filters) setFilters(filterSignal.filters); }, [filterSignal && filterSignal.seq]);
@@ -180,6 +182,9 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </div>` : null}
             </div>
             ${caption ? html`<p class="hint">${caption}</p>` : null}
+            ${renderBody ? renderBody({ visible, selected, sort, setSort, onRowClick, selectedRowId, onRemove, removeLabel, stateOf,
+                toggle: (id) => setSelected(toggleSelection(selected, id)),
+                setMany: (ids, on) => setSelected(setSelection(selected, ids, on)) }) : html`
             <div class="mscroll">
             <table class="mtable">
                 <!-- 🔴 table-layout:fixed NEEDS A COLGROUP OR EVERY COLUMN IS EQUAL. A realm supplies its
@@ -346,6 +351,7 @@ export function Manifest({ label = null, rows, columns, searchableFields, bulkAc
                 </tbody>
             </table>
             </div>
+            `}
             ${''/* ⚠️ A NO-MATCH STATE THAT NAMES NEITHER THE ACTION NOR THE TOTAL. It read "No rows match this search or filter." on every realm -- true, and it leaves the reader to work out that a filter is still set somewhere above and that the collection is not empty. The UX-copy audit calls this out (E2) and names the design's own template: `season.html:2431` says "Nothing matches that. Clear the search or a filter -- N alerts, N changes and N deploys are recorded in total." The rewrite keeps that shape generically: what to do, then how much is behind the filter, using the realm's own row noun. ⚠️ The two states stay DISTINCT -- an empty collection is not a filtered-out one, and collapsing them tells a reader with no data that their search is wrong. */}
             ${''/* ⚠️ AND IT DIVIDES BY THE SAME TOTAL THE HEADER USES, or the panel contradicts itself. This branch's first version divided by `rows` while the count line at :169 divides by `totalRows`, so a filtered-to-nothing Analytics read "0 of 1,307 events" at the top and "100 events in total" in the body -- and the body's whole job is to say how much sits behind the filter. */}
             ${visible.length === 0 ? html`<p class="empty">${rows.length

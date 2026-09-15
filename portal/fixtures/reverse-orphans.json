@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-09-13T21:50:56.847Z",
+  "recordedAt": "2026-09-15T04:34:06.922Z",
   "note": "The debt as measured. It only ever shrinks — --ci fails on a NEW entry and on a baseline entry that has been fixed without this file being updated.",
   "data": [],
   "vars": [],
@@ -26,7 +26,6 @@
     "dline",
     "door-cta",
     "dragging",
-    "durrow",
     "evb",
     "evgo",
     "evrow",
