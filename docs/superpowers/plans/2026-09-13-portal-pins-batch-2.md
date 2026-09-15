@@ -371,6 +371,7 @@ status: live
 > ⟦ONE MESSAGE⟧ Step 13 — the records heredoc and the final gates.
 
 - [ ] **Step 13:** records and close as Session 1 Step 22.
+  *(2026-09-15 09:37 EDT — records half in place, close half open. Staged-for-deletion row built (`e73979a8`: `/api/review` ops carry `targetIds`), captured in harness. Checked on a fresh dev portal: `?river` 100 / 300 / capped at total 1421; review ops carry `targetIds`. `docs:audit --diff origin/v3-pre-release` exit 0. `npm test` exit 1 at `test:hooks` only (38 passed, 1 failed): `~/.claude/settings.json` registers SessionStart `cbm-session-reminder` 4 times, a machine setting outside the repo. `indexHealth.test.mjs` 6 passed on its own. Re-indexed: codebase-memory, ctx docs and rules; `index:health` exit 0. Prod slot dry run: 130 builds would change, 16 with unplaced attachments (34 names). Push, PR, prod writes and merge wait on Harkirat's approval.)*
 
 ## 6 · DEFERRED — the permission restructure and the Access panel bar
 
