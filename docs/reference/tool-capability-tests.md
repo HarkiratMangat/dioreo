@@ -73,21 +73,23 @@ Cross-checked against `rg` ground truth, twice:
 
 **The scope.** The tool skips `.claude/` by default, so the 78 hook scripts, their tests and the rule files were absent: 625 of 732 tracked parseable files were indexed. A tracked `.cbmignore` now un-skips `.claude/`, keeps `.claude/worktrees/` out and drops `*.min.js`; after a full re-index **725 of 732** are indexed, the rest being `package.json`, `package-lock.json`, three JSON settings files and the excluded bundle.
 
-**The measurements**, over a seeded random sample of 20 functions plus the 5 that tied on 2026-09-08:
+**The measurements.** First pass through the CLI while this session's server was still 0.9.0; second pass 2026-09-14 23:08 EDT through the 0.10.8 MCP tools, after reading the tool schemas, the rewritten `SKILL.md` and the three agent definitions. ⚠️ **The first pass got three verdicts wrong, and each was a call made without reading its contract.** They are kept below as struck rows so the correction is visible.
 
-| Question | Method | Result |
+| Question | Call that works | Measured |
 |---|---|---|
-| Where is X defined | `rg` definition regex | 25 of 25 |
-| | `search_graph` with `query: "X"` | **24 of 25**, real definition first, ~250 B per answer against up to 8,171 B for `rg -w` |
-| | `search_graph` with bare `name_pattern: "^X$"` | returns every destructuring import site as a `Variable` node (10 rows for `resolvePanelActor`); this, not the graph, is why 2026-09-08 scored ties |
-| | the one miss | `parseCol`, a function nested inside another function; nested functions are not nodes |
-| Who calls X | `trace_path` inbound, compared file by file with real call sites | complete for `resolvePanelActor`, `buildSyntheticInteraction`, `hasAnyGuildOverride`, `deriveNameplateName`; `sendV2Payload` 26 of 28 and `flatIndexToPosition` 2 of 3 (the misses are test files); **`mentionCommand` 1 of 10**, because its calls sit inside template literals |
-| Dead code | `max_degree: 0, exclude_entry_points: true` | 8 of 8 functions checked have real callers (`mentionCommand` has 36 references across 11 files) |
-| Find code by what it does | `semantic_query` | **0 of 9** known targets across two full builds with 123 `SEMANTICALLY_RELATED` and 568 `SIMILAR_TO` edges present; results scored near zero and were dominated by shell scripts and mockup assets |
+| Where is X defined | `search_graph` with `query: "X"` | **24 of 25** real definitions first, ~250 B per answer against up to 8,171 B for `rg -w`. A bare `name_pattern` also returns every destructuring import site as a `Variable` row, which is why 2026-09-08 scored ties. The miss, `parseCol`, is nested inside another function; nested functions are not nodes |
+| Who calls X | `trace_path` with `include_tests: true`, then `search_code` for `"X("` | `sendV2Payload`: 35 callers including both test files. `mentionCommand`: `trace_path` links 2 callers in 1 of 10 calling files; `search_code` names all 10 containing functions. The unlinked calls sit in the same functions whose other calls resolve (`calendar.buildContainer` has 8 linked callees), and `check_index_coverage` reports `no_recorded_issue` for those files. **Cause undetermined** |
+| | ~~"calls inside template literals are missed"~~ | wrong: `formatMoney` is called inside a template literal and resolves, and so do `help.js`'s `mentionCommand` calls |
+| | ~~"some test-file calls are missed"~~ | wrong: test files are excluded by default; `include_tests: true` returns them |
+| Dead code | the no-caller Cypher (`NOT EXISTS` over CALLS, USAGE, CALL_REFERENCE) as a candidate list, then `search_code` per name | over `utils/`: **115 candidates → 7 truly unused**, 100 imported from another file (callers attach to the importer's `Variable` node, not the `Function`), 8 used only inside their own file. About 6% precise, recall unmeasured, and it did find real dead code |
+| Find code by what it does | `search_graph` with `query: "a plain phrase"` | 3 of 3 targets first (`prune orphaned patch folders`, `gateway reconnect troubled shard recovery`, `cheapest combination of CP packages` → `CHEAPEST` beside `solve`) |
+| | `semantic_query` with ONE keyword | `prune`, `cheapest`: target family in the top 5 at 0.92–0.95. `colors`, `cleanup`: right family, not the target. `approximate`, `reconnect`, `lookalike`: noise near 0.0. `debounce`: unrelated functions at 0.84, so a high score is not evidence of relevance |
+| | ~~three keywords per `semantic_query`~~ | a misuse: each keyword is min-cosine scored, so one weak word sinks every result; the earlier "0 of 9" measured that |
+| What a diff touches | `detect_changes` | runs: `since: HEAD~40` mapped 422 changed files to 3,463 seed symbols and 282 impacted. **Accuracy not measured** |
 
-**Verdict.** For where-is-X-defined the graph is as accurate as `rg` and far cheaper, **when asked with `query`**. For callers it is the right first call, but confirm with `rg` before deleting or renaming anything. Do not use its dead-code filter or `semantic_query` on this repo. The routing in `~/.claude/TOOLING.md` §3, `~/.claude/WORKING-AGREEMENT.md`, global `CLAUDE.md` §2 and `.claude/hooks/codebase-memory-nudge.sh` says exactly this.
+**Verdict.** Everything above is reachable inside codebase-memory; `rg` is not needed to close its gaps. Definitions: `query`. Callers: `trace_path({include_tests:true})` plus `search_code`. Dead code: candidates, then verify each. Concepts: a `query` phrase first, one-keyword `semantic_query` second. The vendor's own workflow says the same things this table had to learn: its Scout tier forbids dead-code and absence claims, and every tier checks coverage and falls back to source for gaps.
 
-⚠️ **Not re-tested:** whether the MCP tool's `index_repository` still drops `repo_path` (the 2026-09-01 entry below). This session's MCP server was still 0.9.0 when it was written; test it after a restart.
+⚠️ **Not re-tested:** whether the MCP tool's `index_repository` still drops `repo_path` (the 2026-09-01 entry below).
 
 ## ⚠️ ZERO invocations across an entire session despite being named PRIMARY — 2026-08-20 14:53 EDT (Hotpatch v1)
 Built and reviewed a 15-file, 20-commit change (a new require-graph classifier, a router refactor, a `/help` placement fix) with `rg`/`Read` as the only lookup tools — never called `search_graph`, `trace_path`, `get_dependents`, or even `list_projects` to check the index was healthy, despite the `CODE-DISCOVERY` hook firing on nearly every relevant Bash/Read call and CLAUDE.md's own "Tool Preferences & Fallback Logic" naming this the **primary** tool for symbol/call-graph lookups, not a situational option. Several of the session's actual lookups (finding `HANDLER_BINDINGS`'s real call sites, tracing `help.js`'s `CATEGORY_DEFS` consumers, checking whether `DELIBERATELY_ABSENT` was read anywhere) are exactly the call-graph-shaped questions this tool exists for.
