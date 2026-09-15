@@ -1209,6 +1209,8 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 
 **Then:** if the trigger is general, open an upstream issue with a minimal repro, or comment on #1248 if it is the route extractor; if it is specific to this repo, record the workaround. Known upstream neighbours: #1248 and #598 (fake routes), #1642 (callbacks), #1091 (member expressions), #2150 (CLI array flags).
 
+**Start from:** `docs/superpowers/plans/CBM-BISECT-PROMPT.md`, the handoff for this item, which ends with a paste-in opener.
+
 **Verify by:** a named trigger with a repro that links the callers when the trigger is removed and unlinks them when it is restored.
 
 ### `[P3 · XS]` SEVEN FUNCTIONS IN `utils/` ARE DEFINED AND NEVER USED
