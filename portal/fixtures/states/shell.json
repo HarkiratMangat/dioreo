@@ -198,8 +198,8 @@
       "steps": [
         {
           "clickText": {
-            "sel": "label.adminsw",
-            "text": "include admin"
+            "sel": "button.incchip",
+            "text": "Admin traffic"
           },
           "waitMs": 300
         }
@@ -207,7 +207,7 @@
       "known": [],
       "preSettleMs": 8500,
       "settleMs": 300,
-      "note": "Reached via Analytics' admin-traffic toggle, the one control in this portal that changes useAsync's deps while data is already on screen. preSettleMs clears the session mint AND the realm's own first fetch (both slow=4000) so s.data is populated before the toggle is clicked; the toggle's own re-fetch is then delayed by the same slow=4000, giving a 300ms-later check a wide window to catch main.is-refreshing before it clears.",
+      "note": "Reached via Analytics' Include · Admin traffic chip (the checkbox until pins batch 2, G2), the one control in this portal that changes useAsync's deps while data is already on screen. preSettleMs clears the session mint AND the realm's own first fetch (both slow=4000) so s.data is populated before the toggle is clicked; the toggle's own re-fetch is then delayed by the same slow=4000, giving a 300ms-later check a wide window to catch main.is-refreshing before it clears.",
       "expect": "main.is-refreshing"
     },
     {
