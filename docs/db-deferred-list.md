@@ -1019,6 +1019,8 @@ The 29 portal pins of 2026-09-11 22:46 EDT → 2026-09-12 12:31 EDT, planned in 
 
 🟡 **Session 2 BUILT on `feat/portal-pins2-manifests`, 2026-09-15 09:18 EDT** — plan §5 Steps 1–12 ticked, agent D merged (`a459e8dd`). Not yet pushed. **Waiting on Harkirat:** the prod slot backfill (§5.2 Step 9b) and the FSS Hurricane name write (§10.4 G6), each with its approval restated; then §13.
 
+- `[P2 · S · Sonnet5-High]` **Cloudinary side effects still run inside the changeset transaction for other ops.** *Found 2026-09-15 09:45 EDT in the Session 2 pre-push pass.* The loadout image upload moved to `afterCommit` (`core/changeset.js`), but `syncLoadoutMetadata` (loadout add/edit/bulk) and the draw-thumbnail, patch-note and calendar-banner caches still call Cloudinary from inside `apply()`, so a rolled-back changeset can leave metadata or a cached image describing a change that never happened. Lower severity than the image overwrite: the metadata re-syncs on the next edit. **Verify:** each such call returns through `afterCommit`, and a two-op changeset whose second op fails makes zero Cloudinary calls (the stub probe in the Session 2 checkpoint shows the method).
+
 ### `[P3 · S · Sonnet5-Medium]` Health's emoji-missing chip has no Sync button — filed 2026-09-15 09:18 EDT
 
 Board 2's G1 row for `analytics.js:241` asks for "12 emoji missing · Sync". The chip shipped; the button did not, because no portal route triggers the bot's emoji sync — a button would do nothing. **Do:** add an admin route that runs the sync, or drop the button from the design. **Verify by:** clicking Sync on the harness and on the dev portal changes the chip's count.

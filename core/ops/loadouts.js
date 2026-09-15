@@ -113,18 +113,17 @@ registerEntity('loadouts', {
             const { imageSourceUrl, ...doc } = op.payload;
             const res = await createDocument({ Model: Loadout, doc, session });
             const saved = await Loadout.findById(res.id).session(session);
-            // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never fails the build itself -- coverageFlags already has 'missing-image' to catch the result, and the admin can retry via Edit.
-            let uploadError = null;
-            if (imageSourceUrl && saved.imageKey) {
-                const up = await uploadLoadoutImage(imageSourceUrl, saved.imageKey);
-                if (!up.success) uploadError = up.error;
-            }
+            // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never fails the build itself -- coverageFlags already has 'missing-image' to catch the result, and the admin can retry via Edit. Runs after the commit (core/changeset.js afterCommit), so an aborted changeset never leaves an uploaded image behind a build that does not exist.
+            const imageKey = saved.imageKey;
             await syncLoadoutMetadata(saved);
             return {
                 ok: true,
+                afterCommit: (imageSourceUrl && imageKey) ? async () => {
+                    const up = await uploadLoadoutImage(imageSourceUrl, imageKey);
+                    return up.success ? null : `Image upload failed: ${up.error}. Fix the key later via Edit.`;
+                } : undefined,
                 change: { action: 'add', model: 'Loadout', target: `${op.payload.weaponName} (${op.payload.buildName})`,
-                          summary: `Added loadout "${op.payload.weaponName} (${op.payload.buildName})"`,
-                          detail: uploadError ? `Image upload failed: ${uploadError}. Fix the key later via Edit.` : undefined },
+                          summary: `Added loadout "${op.payload.weaponName} (${op.payload.buildName})"` },
                 applied: { id: res.id }
             };
         },
@@ -152,11 +151,6 @@ registerEntity('loadouts', {
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
-            let uploadError = null;
-            if (imageSourceUrl && set.imageKey) {
-                const up = await uploadLoadoutImage(imageSourceUrl, set.imageKey);
-                if (!up.success) uploadError = up.error;
-            }
             const propagateResult = await propagateBadges({
                 weaponKey: payload.weaponKey, mode: payload.mode, excludeId: op.target.id, session,
                 isMeta: payload.isMeta, categoryRank: payload.categoryRank, dmzRangeRank: payload.dmzRangeRank, isToxic: payload.isToxic
@@ -164,12 +158,14 @@ registerEntity('loadouts', {
             await syncSiblings(payload.weaponKey, payload.mode, session);
             return {
                 ok: true,
+                // 🔴 AFTER THE COMMIT: this key already has a live image, and overwrite:true would replace it even if this changeset later rolls back.
+                afterCommit: (imageSourceUrl && set.imageKey) ? async () => {
+                    const up = await uploadLoadoutImage(imageSourceUrl, set.imageKey);
+                    return up.success ? null : `Image upload failed: ${up.error}.`;
+                } : undefined,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
                           summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"`,
-                          detail: [
-                              propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : null,
-                              uploadError ? `Image upload failed: ${uploadError}.` : null,
-                          ].filter(Boolean).join(' ') || undefined },
+                          detail: propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : undefined },
                 applied: { id: op.target.id, prior, version: res.version, propagatedCount: propagateResult.modifiedCount }
             };
         },

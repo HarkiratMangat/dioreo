@@ -3,6 +3,7 @@
 // A changeset is N ops that commit together or not at all.
 //
 // ⚠️ ALL-OR-NOTHING IS NOT A NICETY. The bot re-reads SeasonalData on every single interaction (commands/draws.js, calendar.js, patchnotes.js all call findOne(...).lean() per interaction), so a half-applied set is served to real users within seconds. That is why this uses a real Mongo transaction and not a best-effort loop.
+const ChangeLog = require('../models/ChangeLog');
 const mongoose = require('mongoose');
 const { resolveOp, actionForOpType, pageForOpType } = require('./ops');
 const { recordChangeIn } = require('../utils/changeStore');
@@ -60,10 +61,13 @@ async function commitSet(ops, { actorId, source = 'discord' }) {
     // 🔴 SURFACED FOR CALLERS, not just for the audit log. A bulk op's apply() can carry warnings a handler needs to show the user (skipped items, reused thumbnails) — recordChangeIn already stores res.change.detail, but a Discord confirmation message needs res.applied directly, and nothing was returning it. Found during plan 1 Task 6 integration.
     let results = [];
     let failedAt = null;
+    // 🔴 SIDE EFFECTS OUTSIDE MONGO RUN AFTER THE COMMIT, NEVER INSIDE IT (pins batch 2 pre-push pass, 2026-09-15 09:43 EDT). A Cloudinary upload made inside withTransaction is not rolled back when a later op fails, so loadout.edit replaced a live image while its edit was discarded. apply() may return `afterCommit`; the list is reset on every retried attempt, like changeIds.
+    let afterCommit = [];
     try {
         await session.withTransaction(async () => {
             changeIds = [];
             results = [];
+            afterCommit = [];
             // invert() may return an ARRAY, so an inverse changeset is flattened before applying (the ops.flat() above already covers the outer `ops` array itself; this covers a normalized entry still nested one level).
             for (const [index, op] of v.normalized.flat().entries()) {
                 const impl = resolveOp(op.type);
@@ -76,12 +80,24 @@ async function commitSet(ops, { actorId, source = 'discord' }) {
                 });
                 changeIds.push(row.changeId);
                 results.push({ index, change: res.change, applied: res.applied });
+                if (typeof res.afterCommit === 'function') afterCommit.push({ at: results.length - 1, changeId: row.changeId, run: res.afterCommit });
             }
         });
     } catch (e) {
         return { ok: false, failedAt, error: e.message };
     } finally {
         await session.endSession();
+    }
+    // The commit has already happened, so nothing here may turn it into a reported failure: a step's message is appended to its audit row (History shows it) and to its result.
+    for (const job of afterCommit) {
+        let detail = null;
+        try { detail = await job.run(); } catch (e) { detail = `A post-commit step failed: ${e && e.message}`; }
+        if (!detail) continue;
+        results[job.at].postCommitDetail = detail;
+        try {
+            const row = await ChangeLog.findOne({ changeId: job.changeId }).lean();
+            await ChangeLog.updateOne({ changeId: job.changeId }, { $set: { detail: [row && row.detail, detail].filter(Boolean).join(' ') } });
+        } catch (e) { console.error(`Could not record a post-commit message on ${job.changeId}: ${e && e.message}`); }
     }
     return { ok: true, changeIds, results };
 }
