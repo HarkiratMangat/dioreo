@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 6). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 7). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -100,10 +100,11 @@ These are the pins whose value is already decided; the board shows them applied,
 | 49 | The calendar button goes; Edit carries its word |
 | 50 | Broadcast columns `minmax(0,1fr) 104px 104px 104px 124px 44px`, column-gap 16px, padding `0 16px 0 22px` |
 | 51 | Chip counts upright, never italic |
+| — | **Select-all alignment** (his comment 2026-09-15 19:20 EDT, not one of the 57): `.wg-heads` padding `0 var(--s4)` → `0 var(--s4) 0 20px`, so the column head, the weapon header and every build row share one left edge. Measured: all three checkboxes at x=139 with the fix, 135 vs 139 without it |
 
 ## How it is checked
 
 `local/pins2-board-3/redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: gates, picks
 and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its
 switch on **and** off; a pick actually written and painted; board 1's G8 frame loaded; and no horizontal overflow at 1282px
-or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`. Last run 2026-09-15 19:20 EDT: 19 gates, 18 picks, 39 options, 0 page errors, 0 overflow at 1282px and 390px.
+or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:20 EDT: 19 gates, 18 picks, 39 options, 0 page errors, 0 overflow at 1282px and 390px.
