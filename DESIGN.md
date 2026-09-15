@@ -136,7 +136,7 @@ Structure is carried by **borders** (`--rule`, `--rule2`) — but "no shadows" i
 
 **Five radii, named by size rather than by component:** `--rad-1:3px` (chips, ticks, tags — boxes under ~24px) · `--rad-2:6px` (**the default**: buttons, inputs, cards, panels) · `--rad-3:10px` (drawers, modals, the ⌘K palette) · `--rad-round:50%` (avatars, dots, beads) · `--rad-pill:999px` (a radius that always exceeds half the height). A workbench control reads as machined, not soft.
 
-**Slot hues, the box inset and the Best tier — added 2026-09-14 23:59 EDT (pins batch 2, design board 2).** Nine `--sl-<slot>` tokens, `oklch(76% .055 H)` with H muzzle 25 · barrel 65 · stock 105 · underbarrel 150 · optic 190 · laser 225 · rear grip 260 · perk 300 · ammunition 340, used only as a faint wash and outline on an attachment tag, never as ink. `--box-inset:5px` is how far a boxed icon button draws its visible box inside its 44px target. `--tier-best` is the legendary gold of the Best tier. The board's 5px and 7px radii port onto `--rad-2`; no radius step was added.
+**Slot hues, the box inset and the Best tier — added 2026-09-14 23:59 EDT (pins batch 2, design board 2).** Nine `--sl-<slot>` tokens, `oklch(76% .055 H)` with H muzzle 25 · barrel 65 · stock 105 · underbarrel 150 · optic 190 · laser 225 · rear grip 260 · perk 300 · ammunition 340, used only as a faint wash and outline on an attachment tag, never as ink. `--box-inset:5px` is how far a boxed icon button draws its visible box inside its 44px target. `--tier-best` is the legendary gold of the Best tier. The board's 5px and 7px radii port onto `--rad-2`. One step was added: `--rad-box:8px`, the visible box of a boxed icon button, which is 2px from either neighbour.
 
 ## Components
 

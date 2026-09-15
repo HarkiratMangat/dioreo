@@ -1,7 +1,7 @@
 {
   "realm": "armory",
-  "recordedAt": "2026-09-13T22:11:38.156Z",
-  "commit": "3dd55224",
+  "recordedAt": "2026-09-15T04:14:20.583Z",
+  "commit": "5bb2052d",
   "viewport": {
     "w": 1282,
     "h": 888
@@ -9,10 +9,11 @@
   "views": {
     "Tier board": {
       "grid": {
-        "examined": 3514,
+        "examined": 3518,
         "nearMisses": 14,
-        "sizeIssues": 184,
+        "sizeIssues": 185,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -222,10 +223,11 @@
     },
     "Repairs": {
       "grid": {
-        "examined": 3496,
+        "examined": 3500,
         "nearMisses": 11,
-        "sizeIssues": 205,
+        "sizeIssues": 206,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -456,10 +458,11 @@
     },
     "Compare": {
       "grid": {
-        "examined": 3443,
-        "nearMisses": 22,
-        "sizeIssues": 189,
+        "examined": 3447,
+        "nearMisses": 11,
+        "sizeIssues": 190,
         "sizeGroups": [
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -674,9 +677,9 @@
     },
     "Bulk & export": {
       "grid": {
-        "examined": 3462,
+        "examined": 3466,
         "nearMisses": 8,
-        "sizeIssues": 192,
+        "sizeIssues": 195,
         "sizeGroups": [
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
@@ -691,6 +694,7 @@
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "[object>[object.SVGAnimatedString]|TOP-OFFSET",
+          "[object>[object.SVGAnimatedString]|TOP-OFFSET",
           "attpeek>em|TOP-OFFSET",
           "attpeek>em|TOP-OFFSET",
           "attpeek>em|TOP-OFFSET",
@@ -830,6 +834,8 @@
           "attpeek>more|TOP-OFFSET",
           "attpeek>more|TOP-OFFSET",
           "attpeek>more|TOP-OFFSET",
+          "chip>[object.SVGAnimatedString]|h",
+          "chip>[object.SVGAnimatedString]|w",
           "chip>em|w",
           "det>detcell|TOP-OFFSET",
           "det>detcell|TOP-OFFSET",

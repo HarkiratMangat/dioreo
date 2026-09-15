@@ -349,8 +349,49 @@ main{overflow:auto;padding-bottom:140px}
    and a `.commit`, and neither of these two has ever had an element in either codebase. */
 
 /* ═══ MANIFEST — always present, never switches ═══ */
-.mtools{display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s3);border-bottom:1px solid var(--rule);flex-wrap:wrap}
-.srch{position:relative;display:flex;align-items:center;flex:1 1 240px;max-width:300px}
+/* ── The Manifest tools row — plan pins batch 2 §10.4 C1 C2 C5 C6, 2026-09-15 00:07 EDT ── Two rows: the Manifest's name, its search and the create verb; then the filter groups, each inline behind one divider with 16px on both sides (10px row gap + 6px margin, then 16px padding). Label to control is 12px everywhere: the row gap on row one, and the group gap plus 4px on row two. The first label on each row is 84px and right-aligned, so stacked rows start their controls on one line. */
+.mtools{display:grid;gap:var(--s3);padding:14px var(--s4);border-bottom:1px solid var(--rule)}
+.mt-r1{display:flex;align-items:center;gap:var(--s3);min-width:0}
+.mt-r2{display:flex;align-items:center;flex-wrap:wrap;column-gap:10px;row-gap:var(--s2);min-width:0}
+.mt-grp{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--s2)}
+.mt-grp .mlabel{margin-right:var(--s1)}
+.mt-grp + .mt-grp{margin-left:6px;padding-left:var(--s4);box-shadow:inset 1px 0 0 var(--rule2)}
+.mt-grp + .mt-grp .mlabel{min-width:0}
+/* A typed search's match count, a soft rectangle inside the field (C1, C2) — never a readout beside the table. */
+.mhits{position:absolute;right:6px;top:50%;transform:translateY(-50%);height:28px;display:inline-flex;align-items:center;padding:0 10px;border-radius:var(--rad-2);background:color-mix(in srgb,var(--realm-c,var(--ink3)) 14%,transparent);font:600 var(--t-sm)/1 var(--data);color:var(--ink);white-space:nowrap;pointer-events:none}
+.srch input.has-hits{padding-right:108px}
+/* History's Level chips: a four-bar severity meter, lit bars in the option's ink and the rest --ink4 at 60% (board 2 G11 row 4). */
+.msev{display:inline-flex;align-items:flex-end;gap:2px;height:12px;flex:none}
+.msev i{width:3px;height:4px;border-radius:1px;background:color-mix(in srgb,var(--ink4) 60%,transparent)}
+.msev i:nth-child(2){height:7px}
+.msev i:nth-child(3){height:10px}
+.msev i:nth-child(4){height:12px}
+.msev[data-n="1"] i:nth-child(-n+1),.msev[data-n="2"] i:nth-child(-n+2),.msev[data-n="3"] i:nth-child(-n+3),.msev[data-n="4"] i{background:var(--sv)}
+.chip.lvchip{gap:var(--s2)}
+/* History's When cell in the data face and on one line: in the name column's 14.5px UI face "Aug 23, 5:17 PM" wrapped its meridiem onto a second line inside a 150px column (seen on the harness, 2026-09-15 00:14 EDT). */
+.whent{font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
+.mmore{display:flex;justify-content:center;padding:var(--s4)}
+.mmore .chip{min-height:var(--tap);padding:0 18px;gap:var(--s2)}
+.mmore .chip em{font-style:normal;font-family:var(--data);color:var(--ink3)}
+/* ── Broadcast's manifest — board 2 G11 rows 1–3 ── Scoped by the realm attribute the Shell already sets, never a class built from the realm name: that is trap (d), invisible to portal:reverse-orphans, and the first version of this failed its gate exactly that way. Widths are the board's column plus its 16px gap, carried as 8px of cell padding each side; rows are 64px. */
+.mtable col.c-bc-text{width:auto}
+.mtable col.c-bc-date{width:120px}
+.mtable col.c-bc-state{width:140px}
+.app[data-realm=broadcast] .mtable td,.app[data-realm=broadcast] .mtable th{padding-left:var(--s2);padding-right:var(--s2)}
+.app[data-realm=broadcast] .mtable td{height:64px}
+.app[data-realm=broadcast] .mtable td:first-child,.app[data-realm=broadcast] .mtable th:first-child{position:relative;padding-left:22px;padding-right:20px}
+.app[data-realm=broadcast] .mtable td.ra,.app[data-realm=broadcast] .mtable th.ra{padding-right:var(--s4)}
+.app[data-realm=broadcast] .mtable .ncell > span{min-width:0}
+.mtable .ncell .bcbar{position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+.app[data-realm=broadcast] .mtable td:first-child b{display:block;font:600 var(--t-base)/1.35 var(--ui);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcdt{display:grid;gap:var(--s1);font:500 var(--t-sm)/1 var(--data);color:var(--ink2);white-space:nowrap}
+.bcdt small{font:500 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.bcdt.dim{font-family:var(--ui);color:var(--ink3)}
+.bcdt.never{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--warn-ink)}
+.btab{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 12px;border-radius:var(--rad-1);background:color-mix(in srgb,var(--lc) 9%,transparent);box-shadow:inset 3px 0 0 var(--lc),inset 0 0 0 1px color-mix(in srgb,var(--lc) 22%,transparent);font:600 var(--t-sm)/1 var(--ui);color:var(--lc);white-space:nowrap}
+.btab.staged{background:none;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--lc) 55%,transparent);outline:1.5px dashed var(--lc);outline-offset:-1.5px}
+.btab .ic{width:14px;height:14px}
+.srch{position:relative;display:flex;align-items:center;flex:0 1 340px;max-width:340px}
 .srch input{width:100%;--ctl-pl:40px}
 .srch svg{position:absolute;left:13px;top:50%;margin-top:-8px;width:16px;height:16px;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none}
 /* 🔴 ONE .srch BLOCK NOW, NOT TWO (2026-09-10 10:51 EDT). A second copy sat ~1300 lines below this one
@@ -372,7 +413,6 @@ main{overflow:auto;padding-bottom:140px}
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .chip[aria-pressed=true]{background:var(--hi);color:var(--ink);border-color:var(--ink4)}
 .chip:hover{color:var(--ink)}
-.mtools .rt{margin-left:auto;font-family:var(--data);font-size:var(--t-sm);color:var(--ink3)}
 table{width:100%;border-collapse:collapse;font-size:var(--t-md)}
 th{text-align:left;font-size:var(--t-micro);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-weight:700;
   padding:9px 11px;border-bottom:1px solid var(--rule);background:var(--sunk);white-space:nowrap;position:sticky;top:0}
@@ -465,8 +505,7 @@ main a:not([class]):hover{text-decoration-color:var(--ink3)}
 /* The Manifest's own name. Same eyebrow treatment as every other section label, and it sits
  * INSIDE the tools row rather than above it, so naming the component costs no vertical space
  * on three already-dense pages. */
-.mtools .mlabel{font-family:var(--data);font-size:var(--t-micro);letter-spacing:.16em;
-  text-transform:uppercase;color:var(--ink3);flex:none;align-self:center;margin-right:2px}
+.mtools .mlabel{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);flex:none;min-width:84px;text-align:right}
 @media (max-width:768px){ .mtools .mlabel{display:none} }
 .tray-f{display:flex;gap:var(--s2);padding:var(--s2) var(--s3);border-top:1px solid var(--rule)}
 .btn{flex:1;border-radius:var(--rad-2);font-size:var(--t-base);font-weight:700;padding:9px;min-height:var(--tap);
@@ -1261,6 +1300,7 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 .mtable col.c-spark{width:26%;min-width:200px}
 .mtable col.c-detail{width:auto;min-width:150px}
 .mtable col.c-state{width:104px}
+.mtable col.c-narrow{width:120px}
 .mtable th,.mtable td{padding:8px 12px}
 .mtable th:first-child,.mtable td:first-child{padding-right:0}
 .mtable td{vertical-align:middle;line-height:1.35}
@@ -1468,7 +1508,6 @@ td.n .edit:focus{border-color:var(--patch);background:var(--sunk);outline:none}
 /* ══════════ FILTER CHIPS — a topic filter carries its topic's colour ══════════
    These were all identical grey while every label named something that already has a
    colour in the bot. Colour is familiarity: the chip and the bar it filters must match. */
-.chipset{display:contents}
 .chip.topic{display:inline-flex;align-items:center;gap:7px}
 .chip.topic i{width:8px;height:8px;border-radius:var(--rad-1);background:var(--c);flex:none;
   box-shadow:0 0 0 1px var(--scrim-40)}
@@ -4327,20 +4366,21 @@ body.has-selbar .tray{transform:translateY(-78px);transition:transform var(--dur
 /* 52/12, not 40/8 (2026-09-06 01:21 EDT, pin 22): "tiny, at literally the edge of the manifest". The control is 32px; a 40px
    column with 8px of padding put its ring 0px from the table edge. 12px in, and the column wide enough that the
    ring never touches the rule. */
-.mtable td.ra,.mtable th.ra{width:52px;padding-right:12px;text-align:right}
+.mtable td.ra,.mtable th.ra{width:60px;padding-right:var(--s4);text-align:right}
+.mtable td.ra,.mtable th.ra{padding-left:0}
+.mtable td.ra{padding-top:0;padding-bottom:0}
 .mtable col.c-ra{width:64px}
 /* 32px, not 28 — 2026-09-04 22:43 EDT. `--tap:44px` is honoured by nine rules and bypassed here, on the one control in
    Access's ACTION column that destroys. `.mxcell` is also under the floor and has a written exception (a 44px
    cell in a twelve-column matrix fits on no laptop); this had none. 32 is what the row height allows without
    reflowing the table, and it is a floor rather than a target. */
-.rmv{width:32px;height:32px;border-radius:var(--rad-2);border:1px solid var(--rule);background:none;
-  color:var(--ink3);display:inline-grid;place-items:center;cursor:pointer;
-  transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
-.rmv svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;
-  stroke-linecap:round;stroke-linejoin:round}
-.rmv:hover{color:var(--danger-ink);border-color:var(--danger-edge);
-  background:color-mix(in srgb,var(--del) 13%,transparent)}
-.rmv:focus-visible{outline:2px solid var(--danger-ink);outline-offset:1px;color:var(--danger-ink)}
+/* A BOXED ICON BUTTON (plan pins batch 2 §10.4 C3 C4 C9, 2026-09-15 00:07 EDT): a 44px target that draws its visible 34px box --box-inset inside itself, so at a container's edge the BOX lands on the padding line and the target hangs out by the inset. Was a bare 32px bordered square whose visible edge sat 4px inside every other right edge. */
+.rmv{position:relative;isolation:isolate;display:inline-grid;place-items:center;width:var(--tap);height:var(--tap);margin-right:calc(-1 * var(--box-inset));padding:0;border:0;background:none;color:var(--ink3);cursor:pointer}
+.rmv::before{content:"";position:absolute;inset:var(--box-inset);z-index:-1;border-radius:var(--rad-box);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.rmv svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.rmv:hover{color:var(--danger-ink)}
+.rmv:hover::before{background:color-mix(in srgb,var(--danger-ink) 10%,var(--raised));box-shadow:inset 0 0 0 1px var(--danger-edge)}
+.rmv:focus-visible{outline:2px solid var(--danger-ink);outline-offset:-3px;color:var(--danger-ink)}
 
 /* ── THE ONE-WAY STRIP ──
    At the foot of a realm on purpose: the end of the page is where a reader has already seen
@@ -6345,7 +6385,8 @@ button .ic,a .ic{pointer-events:none}
    The Manifest's create verb leaves the filter set (pin pmtvqhfxh). `.mtools` wraps, so
    margin-left:auto pushes it to the trailing edge on a wide toolbar and it simply starts
    the next line when the chips fill the row — no fixed position to break at 820px. */
-.mtools .madd{margin-left:auto}
+.mtools .madd{margin-left:auto;min-height:var(--tap);padding:0 18px;gap:var(--s2);background:var(--sunk);color:var(--staged)}
+.mtools .madd .ic{width:14px;height:14px}
 
 /* The tier board's weapon name is a real <button> now (pin 60): it had no handler at all, so a
    reader clicking the most obvious target on the card got nothing. It must look exactly as it

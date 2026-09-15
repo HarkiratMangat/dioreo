@@ -551,6 +551,8 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                      the view layer with the Manifest and the Manifest stays recessive. Anything put here
                      must earn a permanent place above the realm's subject; if it is only sometimes present,
                      it belongs inside the view. -->
+                <!-- A notice sits at the TOP of the realm, directly under the masthead (plan pins batch 2 section 5.2 Step 9, board 2, 2026-09-15 00:07 EDT). It used to sit between the view layer and the Manifest; Broadcast is the only realm that passes one, so the move changes nothing anywhere else, and a wrapper div keeps it out of the adjacent-panel chain. -->
+                ${noticeSlot || null}
                 ${contextSlot || null}
                 <!-- 🔴 NO WRAPPER DIV AROUND EITHER PANEL. the adjacent-sibling rule in app.css (panel plus panel) is what makes the
                      Manifest RECESSIVE — transparent ground, quieter header — which is COMPANION §10.4's whole
@@ -611,10 +613,6 @@ export function Shell({ realm, session, view, viewOptions, onSetView, viewSlot, 
                         ${viewSlot}
                     </section>`
                 : viewSlot}
-                <!-- A notice sits BETWEEN the view layer and the Manifest, which is where the design draws it:
-                     it is a consequence of what the view just showed, and putting it INSIDE the view panel made
-                     the panel 45px taller than the design's and pushed the Manifest down by the same amount. -->
-                ${noticeSlot || null}
                 ${manifestSlot}
                 <!-- 🔴 THE FOOT IS AFTER THE MANIFEST, AND ON SEASON THAT IS WHERE TIER 3 BELONGS. The one-way
                      strip was rendered inside viewSlot, which put seven irreversible operations at y=1694 on a

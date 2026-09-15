@@ -200,10 +200,12 @@ function register(route) {
         const { computeUsageStats, computeTimingStats } = require('../../commands/bot');
         // ⚠️ ADMIN TRAFFIC IS OUT BY DEFAULT AND IN ON REQUEST. `/manage` is the heaviest thing this bot does, so counting it by default would let one admin's afternoon dominate a product-usage reading — and leaving it out permanently makes "did my own edit register" unanswerable from the one screen that should answer it.
         const includeAdmin = url.searchParams.get('admin') === '1';
+        // History's Load older events (plan pins batch 2 §10.4 G11 row 4, 2026-09-15 00:07 EDT): the window widens a hundred at a time, floored at the old 100 and capped at 2,000 per collection so one click can never ask Mongo for everything.
+        const riverLimit = Math.min(2000, Math.max(100, parseInt(url.searchParams.get('river'), 10) || 100));
         const { OUTCOME_KEYS, ENTRY_KEYS } = require('../../models/AnalyticsRollup');
         // 🔴 THE LIMITS ARE RAISED HERE, NOT IN THE SHARED FUNCTION. 8 and 6 are the numbers that fit a Discord panel; the portal has a scrolling page and the reason it exists is depth. Passing the limit keeps both true at once -- see the options bag on computeUsageStats.
         const [river, health, usageStats, timingStats, reach, searches, events7d, riverCount] = await Promise.all([
-            eventRiver({}), healthStats(),
+            eventRiver({ limit: riverLimit }), healthStats(),
             computeUsageStats({ limit: 25, includeAdmin }), computeTimingStats({ limit: 25, includeAdmin }),
             reachStats(), searchTerms(),
             AnalyticsEvent.find({ createdAt: { $gte: new Date(Date.now() - 7 * DAY_MS) } }).select('createdAt').lean(),

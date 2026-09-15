@@ -8,6 +8,7 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState } from '../vendor/preact-hooks.mjs';
 import { Shell, Masthead } from './shell.js';
 import { Manifest } from './manifest.js';
+import { Icon } from './icons.js';
 import { fetchJson } from './httpClient.js';
 import { useAsync, RealmShell, reportFailure } from './async.js';
 import { useOverlay, Drawer } from './overlay.js';
@@ -44,19 +45,31 @@ function summaryOf(row) {
 // The river's inline tag, same literal rule, read by `RIVER_COLUMNS` BELOW. ⚠️ This said "above" until 2026-09-02 11:18 EDT and carried the argument that came with it — "a module-scope const, so the closure that reads it always runs after this line" — which was the exact reasoning `npm run tdz` refuted when it flagged the read as a temporal dead zone. The block moved to fix that and its comment described the old position for two commits: moved text keeps asserting what was true where it used to be. ⚠️ `warn` shares the ERROR tag on purpose: neither stylesheet defines `.lvtag.lv-warn`, and the property that separates the loud tag from the quiet one is whether a human gets pinged, which alertWebhook:61 gives `warn` and `error` alike. The tag's text is the level's own name, so nothing is hidden by the shared colour. `info` carries `lv-info` even though neither sheet styles it: the design emits the modifier (`span.lv-info.lvtag`, five of them) and an element signature is what the overlay pairs on, so a bare class reads as a different element for no gain.
 const LEVEL_TAG = { error: 'lvtag lv-error', warn: 'lvtag lv-error', caution: 'lvtag lv-caution', info: 'lvtag lv-info' };
 
+// 🔴 THE VIEWER'S OWN CLOCK, NOT UTC (plan pins batch 2 §5.2 Step 9, 2026-09-15 00:07 EDT). This column printed toISOString's month-day and hour-minute, so every event read in UTC with no zone named — a correctness defect, not formatting, on the one screen that exists to say when something happened. Intl with an undefined locale reads the browser's locale and zone: "Sep 6, 7:25 PM". An unparseable date says so rather than throwing a RangeError mid-render.
+const WHEN_FMT = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+function whenText(v) {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? 'not recorded' : WHEN_FMT.format(d);
+}
+
+// Level counts ride on the Level chips (§10.4 C1: counts live on chips, never beside the table). Computed from the rows the page holds, so a count and the filter it labels always agree.
+function withLevelCounts(groups, rows) {
+    return groups.map((g) => (g.key !== 'level' ? g : { ...g, options: g.options.map((o) => ({ ...o, count: rows.filter((r) => r.level === o.value).length.toLocaleString() })) }));
+}
+
 const RIVER_COLUMNS = [
-    { key: 'at', label: 'When', dataKind: 'date', render: (r) => new Date(r.at).toISOString().slice(5, 16).replace('T', ' ') },
+    { key: 'at', label: 'When', col: 'c-win', dataKind: 'date', render: (r) => html`<span class="whent">${whenText(r.at)}</span>` },
     { key: 'kind', label: 'Kind', col: 'c-type', render: (r) => html`<span class=${'rivk ' + r.kind}>${KIND_LABEL[r.kind] || r.kind}</span>` },
     // ⚠️ The source is PLAIN TEXT in a monospaced column. It used to carry a `.src` chip class with no rule behind it, and a chip here would compete with the kind chip beside it for the same reading — one of the two has to be quieter, and the kind is the one that classifies.
-    { key: 'source', label: 'Source', render: (r) => sourceOf(r) },
+    { key: 'source', label: 'Source', role: 'narrow', render: (r) => sourceOf(r) },
     // 🔴 THE LEVEL WAS A FILTER AND NEVER A MARK. An error and a routine change read identically down the column, so the one thing you scan a log for — which rows are bad — needed the filter to be touched first. The dot carries severity, the tag names it, and both are absent on rows that have no level rather than defaulting to a reassuring one.
-    { key: 'summary', label: 'What', render: (r) => {
+    { key: 'summary', label: 'What', role: 'detail', render: (r) => {
         const sev = r.level === 'error' ? 'err' : r.level === 'caution' ? 'warn' : r.level ? 'info' : '';
         // ⚠️ THE ${' '} BEFORE THE TAG, for the same reason the tiles needed theirs: htm drops the whitespace across the newline, so the cell read "Bot onlineinfo" — and now that the row is focusable, that string is part of its accessible name.
         return html`<span class="sev ${sev}"></span>${summaryOf(r)}${' '}${r.kind === 'alert' && r.level
             ? html`<span class=${LEVEL_TAG[r.level] || 'lvtag'}>${r.level}</span>` : null}`;
     } },
-    { key: 'actor', label: 'Who', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
+    { key: 'actor', label: 'Who', role: 'narrow', render: (r) => (r.actorId ? String(r.actorId).slice(-6) : html`<span class="none">system</span>`) },
 ];
 
 // 🔴 A NAME IF ONE EXISTS, AND A HONEST SHORT ID IF NOT -- never nineteen digits truncated to six, which is what this column showed until 2026-09-10 15:08 EDT. The map comes from portal/api/analytics.js and holds only what the codebase actually stores: `owner`, plus each granted admin's own note. An unknown id keeps its last six digits behind an ellipsis, which at least reads as an identifier rather than as a number that means something.
@@ -76,8 +89,9 @@ const RIVER_FILTERS = [
     // 🔴 THIS FILTER IS WHERE THE DELETED ALERT EXPORT WENT. The Alerts pre block held the level and the describe() detail of every alert, and the river was already fetching whole AlertLog documents and throwing both away. Deleting a redundant layer is right; deleting the facts it carried is not — so level becomes a filter and detail becomes searchable, which is strictly more useful than the prose block was, because both compose with the kind filter and the search box.
     { key: 'level', label: 'Level', options: [
         // ⚠️ THE LEVEL'S OWN NAME, not a pluralisation, because this group carried TWO vocabularies: "errors" and "warnings" plural beside "caution" and "info" singular, inside one chip that cycles between them. The panel above writes the bare words (info is a record, caution is a look-when-convenient, error pings a human) and the design builds its own chips from the level values, so agreeing with the sentence above is what makes the chip readable.
-        { value: 'error', label: 'error' }, { value: 'warn', label: 'warn' },
-        { value: 'caution', label: 'caution' }, { value: 'info', label: 'info' },
+        // 🔁 THE SEVERITY RAMP REACHES THE CHIPS NOW — the decision the note above left open, answered on design board 2 (plan §10.4 G11 row 4, 09:59 EDT): a four-bar meter, error 4 in --danger-ink · warn 3 in --warn-ink · caution 2 in --warn · info 1 in --ink3. It is a meter, not a topic swatch, so the rule that severity is not a topic vocabulary still holds.
+        { value: 'error', label: 'error', bars: 4, sv: 'var(--danger-ink)' }, { value: 'warn', label: 'warn', bars: 3, sv: 'var(--warn-ink)' },
+        { value: 'caution', label: 'caution', bars: 2, sv: 'var(--warn)' }, { value: 'info', label: 'info', bars: 1, sv: 'var(--ink3)' },
     ] },
 ];
 
@@ -117,7 +131,7 @@ const EVENT_NOTE = {
 // ⚠️ A ROW WITH NO USABLE DATE MUST NOT TAKE THE REALM DOWN. `new Date(x).toISOString()` throws a RangeError on an unparseable value, and this renders inside the page rather than beside it -- one malformed `createdAt` in one of three collections would blank Analytics entirely, mid-render, with no error state.
 function EventDrawer({ row, onClose, onRevert }) {
     const at = new Date(row.at);
-    const atText = Number.isNaN(at.getTime()) ? 'not recorded' : at.toISOString().slice(0, 16).replace('T', ' ');
+    const atText = whenText(at);
     const revertable = row.kind === 'change' && !row.undone;
     return html`
         <${Drawer} eyebrow=${`${KIND_LABEL[row.kind] || row.kind} · ${atText}`}
@@ -136,9 +150,11 @@ function EventDrawer({ row, onClose, onRevert }) {
 }
 
 export function HistoryRealm({ session }) {
-    const load = useAsync(() => Promise.all([fetchJson('/api/analytics'), fetchJson('/api/review')])
+    // Load older events widens the window a hundred at a time; the route takes ?river=N (portal/api/analytics.js).
+    const [riverLimit, setRiverLimit] = useState(100);
+    const load = useAsync(() => Promise.all([fetchJson(riverLimit > 100 ? `/api/analytics?river=${riverLimit}` : '/api/analytics'), fetchJson('/api/review')])
         .then(([analytics, review]) => ({ ...analytics, stagedOps: (review && review.ops) || [],
-                                          stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), []);
+                                          stagedUnknown: Boolean(review && (review.forbidden || review.failed)) })), [riverLimit]);
     const [riverFilter] = useState(takeHandoff);
     const [openEvent, setOpenEvent] = useState(null);
     const overlay = useOverlay();
@@ -221,7 +237,7 @@ export function HistoryRealm({ session }) {
                                                    { value: reversible, label: 'reversible' },
                                                ]} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${RIVER_COLUMNS} searchableFields=${['summary', 'title', 'actor', 'detail']}
-                                                    title="One history, both front doors" label="Events" filterGroups=${RIVER_FILTERS}
+                                                    title="One history, both front doors" label="Events" filterGroups=${withLevelCounts(RIVER_FILTERS, rows)}
                                                     headerRight="Alerts, changes and boots are all events — filtering one stream beats switching between four lists."
                                                     emptyText="No changes, alerts or restarts have been recorded yet."
                                                     bulkNote="Immediate — a revert applies the inverse now, and is itself recorded"
@@ -231,6 +247,7 @@ export function HistoryRealm({ session }) {
                                                     onRowClick=${(row) => setOpenEvent(row)} selectedRowId=${openEvent && openEvent.id}
                                                     ${''/* The river is capped at 100 server-side, so without a total the count divides by the page and reads 11 of 11 over a collection holding thousands -- a number that can never say something is being withheld. */}
                                                     totalRows=${data.riverTotal ?? rows.length} pageCap=${100} countSuffix=" events"
-                                                    filterSignal=${riverFilter} />`} />
+                                                    filterSignal=${riverFilter}
+                                                    footRow=${rows.length < (data.riverTotal ?? rows.length) ? html`<div class="mmore"><button type="button" class="chip" onClick=${() => setRiverLimit((n) => n + 100)}><${Icon} name="history" />Load older events <em>${((data.riverTotal ?? rows.length) - rows.length).toLocaleString()} more</em></button></div>` : null} />`} />
     `;
 }

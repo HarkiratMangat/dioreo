@@ -6,7 +6,8 @@ import { html } from '../vendor/htm-preact.mjs';
 import { useState, useEffect } from '../vendor/preact-hooks.mjs';
 import { Shell, Masthead, MastheadNew } from './shell.js';
 import { DiscordCard } from './v2Render.js';
-import { Manifest, StatePill } from './manifest.js';
+import { Manifest } from './manifest.js';
+import { Icon } from './icons.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
 import { useAsync, RealmShell } from './async.js';
@@ -20,43 +21,36 @@ const fmtDay = (v) => new Date(v).toDateString().slice(4, 10).trim().replace(/ 0
 // ⚠️ THE CONTENT LIFECYCLE, NAMED. An inline object literal inside a render closure is a vocabulary nothing else can see, and this column carries TWO of them — the staging state (StatePill) and this. Kept apart on purpose: `LIVE NOW` is not `SAVED`, and a reader who cannot tell a written-and-over post from a staged-and-not-yet-real one has been told half the answer.
 const LIFECYCLE_WORD = { live: 'LIVE NOW', scheduled: 'UPCOMING', expired: 'ENDED' };
 // ⚠️ HOISTED ABOVE ITS READER 2026-09-11 18:49 EDT. `BROADCAST_COLUMNS`'s state renderer reads this four lines before it was declared -- a temporal dead zone `node --check` cannot see, which is the whole reason `scripts/tdzRatchet.mjs` exists. It does not throw TODAY only because the read happens inside a render closure that runs long after the module finishes evaluating; make that renderer eager, or hoist the array, and it becomes a crash. The ratchet counted it as one of two NEW findings against a baseline of 27.
+// 🔴 THE MANIFEST AS DESIGN BOARD 2 DRAWS IT (plan pins batch 2 §10.4 G11 rows 1–3, 2026-09-15 00:07 EDT). The name column gives the text the room and draws the announcement's own colour as a 4px embed-style bar at the row's edge; the three date columns and the state column take the board's widths through their col classes. Posted carries its age under the date, a blank Starts reads On posting (upright, never italic), and no end reads No end in amber with an infinity mark. The State column is one TAB: the lifecycle word and its icon, a 3px bar in the state colour and a 9% wash — and a staged row's tab is a dashed outline, which is the shape-carries-state rule in one control. This replaces StatePill beside a lifecycle word (2026-09-10, pin pmtvqq1xg), because two chips for two axes were the "poorly implemented" labels, and the board answered it with one.
+const LIFECYCLE = { live: { word: 'Live now', icon: 'radio', c: 'var(--ok)' }, scheduled: { word: 'Upcoming', icon: 'calendar', c: 'var(--sched)' }, expired: { word: 'Ended', icon: 'circle-check', c: 'var(--ink3)' } };
+function lifecycleOf(r) {
+    if (LIFECYCLE[r.state]) return r.state;
+    const now = Date.now();
+    if (r.expiresAt && new Date(r.expiresAt).getTime() <= now) return 'expired';
+    return r.startsAt && new Date(r.startsAt).getTime() > now ? 'scheduled' : 'live';
+}
+const agoText = (v) => { const d = daysBetween(v, Date.now()); return d <= 0 ? 'today' : `${d} day${d === 1 ? '' : 's'} ago`; };
 const BROADCAST_COLUMNS = [
-    // ⚠️ THE MARK RIDES INSIDE THE NAME CELL. Built first as a column of its own, which gave the table a headerless 38px strip of mostly-empty dots — and the mockup puts it in the name cell, beside the thing it qualifies, for the same reason Season's outlives-the-season mark rides beside the state. ownDot: this column draws `.sev` itself — the design's ONE swatch, which is a severity mark rather than a topic dot. Without the flag the row carried both, and the extra 17px wrapped a 46-character title onto a second line on every long row.
-    { key: 'text', label: 'Announcement', editable: true,
-      // ⚠️ NO `.warn` MODIFIER. `.sev.warn{background:var(--warn)}` exists in both stylesheets and could never win here: `dotStyle` sets `background` INLINE on the same element and an inline declaration beats a class rule, so the orange it promised had never rendered once. The never-expires finding is carried where it is actually visible -- the warn-coloured `never` in the Ends column, and HeadsUp naming the announcement in words underneath.
-      dotClass: () => 'sev',
-      dotStyle: (r) => `background:${accentOf(r)}`,
-      // The design truncates at 46 and puts the age under the title as row meta. Left whole, a long announcement wrapped to three lines and made its row 23px taller than the design's — four rows of that is the last of the height difference between the two pages.
-      render: (r) => html`<b>${String(r.text || '').replace(/^#{1,3}\s+/, '').slice(0, 46)}</b>`,
-      meta: (r) => `up ${daysBetween(r.createdAt, Date.now())}d` },
-    // ⚠️ `col` AND `dataKind` ARE TWO DIFFERENT DECISIONS and the colgroup only reads the first. dataKind names
-// the CELL (tabular figures here); col names the COLUMN WIDTH. Switching these to nums for the cell silently dropped them out of the c-win width class, and Posted went from the design's 100px to 284 — every date in the table then sat under a different heading than the design's. 🔴 `nums`, NOT `date`. broadcast.html writes `td.nums.drop-sm` here, and `td.d` is a DIFFERENT cell:
-    // `td.d` paints --ink3 (5.89:1) where `.mtable .nums` paints --ink2 (7.80:1), so declaring the date kind for its `drop-sm` side effect dimmed every Posted date one ink tier below the design's. `dropSm` now carries the responsive drop on its own, so cell kind and drop behaviour stay separable.
-    { key: 'createdAt', label: 'Posted', col: 'c-type', dataKind: 'nums', dropSm: true, render: (r) => fmtDay(r.createdAt) },
-    // startsAt has been schema-declared and settable since 2026-08-21 and no surface has ever shown it. Without this column a scheduled announcement is indistinguishable from a live one in the table, which is exactly the confusion the field was added to remove.
-    { key: 'startsAt', label: 'Starts', col: 'c-win', dataKind: 'nums', render: (r) => (r.startsAt ? fmtDay(r.startsAt) : html`<span class="none">immediately</span>`) },
-    // "never" is the finding, not a neutral value: 05-door-broadcast-ops.html's own callout is about an announcement that has been up 19 days because nobody set an end date. It is coloured as the warning it is, and the callout below states it in words for anyone who cannot see the colour.
-    { key: 'expiresAt', label: 'Ends', dataKind: 'nums', render: (r) => (r.expiresAt ? fmtDay(r.expiresAt) : html`<b style="color:var(--warn)">never</b>`) },
-    // TWO AXES, as the design draws them: the STAGING state is the chip (saved / staged) and the CONTENT lifecycle is the meta beside it. One word in one cell answered only half the question — a reader could not tell an announcement that is written-and-over from one that is staged-and-not-yet-real.
-    { key: 'state', label: 'State', dataKind: 'right',
-      // 🔴 THE CHIP IS `StatePill`, NOT A SECOND COPY OF IT (2026-09-10 17:24 EDT). This rendered its own
-      //    `<span class="stt …">` with its own STAGED/SAVED words — a hand-rolled duplicate of the component
-      //    that `manifest.js` exports for exactly this reason, and the reason it is exported at all is that
-      //    Season did the same thing and lost the pill entirely. Two copies of one vocabulary is how
-      //    `.stt.stag` / `.stt.sched` / `.stt.exp` came to be emitted against classes no stylesheet defines.
-      //    Harkirat, pin pmtvqq1xg: *"the state column's labels are so poorly implemented"* — and his own
-      //    standing rule, *fix the class, not just the instance*. The SECOND axis stays, because it is a
-      //    different fact: the chip is the STAGING state, the meta is the CONTENT lifecycle.
-      render: (r) => html`<${StatePill} state=${r.state === 'staged' ? 'staged' : 'saved'} accent=${accentOf(r)} />
-          <span class="rowmeta" style="margin-left:6px">${LIFECYCLE_WORD[r.state] || String(r.state || '').toUpperCase()}</span>` },
+    { key: 'text', label: 'Announcement', editable: true, col: 'c-bc-text',
+      dotClass: () => 'bcbar', dotStyle: (r) => `--c:${accentOf(r)}`,
+      render: (r) => { const t = String(r.text || '').replace(/^#{1,3}\s+/, ''); return html`<b title=${t}>${t}</b>`; } },
+    { key: 'createdAt', label: 'Posted', col: 'c-bc-date', dataKind: 'nums', render: (r) => html`<span class="bcdt">${fmtDay(r.createdAt)}<small>${agoText(r.createdAt)}</small></span>` },
+    { key: 'startsAt', label: 'Starts', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.startsAt ? html`<span class="bcdt">${fmtDay(r.startsAt)}</span>` : html`<span class="bcdt dim">On posting</span>`) },
+    { key: 'expiresAt', label: 'Ends', col: 'c-bc-date', dataKind: 'nums', render: (r) => (r.expiresAt ? html`<span class="bcdt">${fmtDay(r.expiresAt)}</span>` : html`<span class="bcdt never"><${Icon} name="infinity" />No end</span>`) },
+    { key: 'state', label: 'State', col: 'c-bc-state',
+      render: (r) => { const l = LIFECYCLE[lifecycleOf(r)]; return html`<span class=${'btab' + (r.state === 'staged' ? ' staged' : '')} style=${`--lc:${l.c}`}><${Icon} name=${l.icon} />${l.word}</span>`; } },
 ];
 
 
-const BROADCAST_FILTERS = [
-    { key: 'state', label: 'State', options: [
-        { value: 'live', label: 'live' }, { value: 'scheduled', label: 'scheduled' }, { value: 'expired', label: 'expired' },
-    ] },
-];
+// The State chips keep the portal's chip with its colour dot (board 2 popup, 13:06 EDT) and carry their counts (§10.4 C1). The words match the Tab in the column, so the filter and the thing it filters say the same thing.
+function broadcastFilters(all) {
+    const n = (s) => all.filter((a) => lifecycleOf(a) === s).length;
+    return [{ key: 'state', label: 'State', topic: true, options: [
+        { value: 'live', label: 'Live now', hex: 'var(--ok)', count: n('live') },
+        { value: 'scheduled', label: 'Upcoming', hex: 'var(--sched)', count: n('scheduled') },
+        { value: 'expired', label: 'Ended', hex: 'var(--ink3)', count: n('expired') },
+    ] }];
+}
 
 // The topic accent for an announcement is its OWN stored colour (models/Announcement.js's `color`, generated once at creation and never regenerated on edit), so the portal's dot matches the embed Discord actually renders rather than inventing a second palette. ⚠️ NEVER RETURNS NULL. models/Announcement.js makes `color` required, but a document written before that field existed -- or any future partial -- would leave --topic-accent unset, and the rules that consume it pair a fill with #000 ink. --patch is the safe floor (12.53:1 under #000).
 const accentOf = (a) => (typeof a.color === 'number' ? '#' + a.color.toString(16).padStart(6, '0') : 'var(--patch)');
@@ -441,7 +435,7 @@ export function BroadcastRealm({ session }) {
                       : `${data.all.length} announcement${data.all.length === 1 ? '' : 's'} on the axis`}
                   noticeSlot=${html`<${HeadsUp} all=${data.all} />`}
                   manifestSlot=${html`<${Manifest} rows=${rows} columns=${BROADCAST_COLUMNS} searchableFields=${['text']}
-                                                    label="Manifest" selectable=${false} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${BROADCAST_FILTERS}
+                                                    label="Manifest" selectable=${false} searchPlaceholder="Search the text…" addLabel="+ Post announcement" filterGroups=${broadcastFilters(data.all)}
                                                     bulkNote="Reversible — a staged deletion is discarded, never undone"
                                                     bulkTier=${2} rowNoun=${['announcement', 'announcements']}
                                                     onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Remove"

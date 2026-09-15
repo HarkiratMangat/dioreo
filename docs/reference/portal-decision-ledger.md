@@ -694,3 +694,16 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | G1 small text | ✅ **Session 2 applies the rewritten table** | Popup 15:59 EDT | He rejects a treatment on the built surface |
 | The refinement contract | ✅ **C1–C14 in plan §10.4 are close conditions**, measured by `measure.cjs` on the board and re-measured on the portal | 15:22 EDT: *"THIS IS WHAT REFINEMENT IS"* | A rule is shown to be wrong on a real surface |
 
+## Decided 2026-09-15 00:07 EDT — portal pins batch 2, Session 2
+
+*Built from plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.4 and design board 2; each row cites the board answer it ports. Measured on the harness at 1282×888 before a row is closed.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| The shared Manifest tools row, every realm that renders one (Season, Armory, Broadcast, History) | ✅ **Two rows**: name · search · create verb, then the filter groups inline behind one divider; **no count readout** beside the table | §10.4 C1, C2, C5, C6 and G4 row 11; the floating add button (pin `pmtyjbql6`) | A realm needs a toolbar that breaks one of the four rules |
+| History's When column | ✅ **The viewer's local time**, `Sep 6, 7:25 PM`, and the drawer's stamp the same | It printed UTC with no zone named (spec §8) | — |
+| History's column widths | ✅ **Roles**: When and the two short text columns narrow, What the detail column | The 2026-08-31 roles-not-widths decision, applied | A column gains a role the component does not name |
+| History's Level chips | ✅ **A four-bar severity meter** with counts; Kind chips keep their dot; the shown-count becomes **Load older events · N more** | §10.4 G11 row 4 | — |
+| Broadcast's State column | 🔁 **One Tab** (lifecycle word, icon, 3px bar, wash; staged = dashed outline) replaces `StatePill` beside a lifecycle word (2026-09-10, pin `pmtvqq1xg`) | §10.4 G11 row 3, board popup 13:06 EDT | The staging and lifecycle axes need to be read apart again |
+| HeadsUp | ✅ **Top of the realm**, under the masthead | §5.2 Step 9; Broadcast is the only realm with a notice | A second realm passes a notice that belongs beside its Manifest |
+| `.rmv`, every realm | ✅ **Boxed icon button**: 44px target, 34px visible box, `--rad-box` | §10.4 C3, C4, C9 — fix the class, not the instance | — |
