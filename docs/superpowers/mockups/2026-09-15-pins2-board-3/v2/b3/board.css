@@ -344,7 +344,7 @@ html[data-b3-p4=a] .wg-cb:focus-visible .cb,html[data-b3-p4=b] .wg-cb:focus-visi
 .b3-nb .pb-badges{display:flex;align-items:center;gap:8px}
 .b3-nb .pb-tog{display:inline-flex;align-items:center;gap:10px;height:var(--tap);padding:0 16px 0 12px;border:0;border-radius:var(--rad-2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink3);font:700 var(--t-sm)/1 var(--data);letter-spacing:.08em;cursor:pointer}
 .b3-nb .pb-tog i{display:grid;place-items:center;width:16px;height:16px;border-radius:var(--rad-1);box-shadow:inset 0 0 0 1px var(--rule2)}
-.b3-nb .pb-tog i .ic{width:11px;height:11px;stroke-width:3.2;opacity:0;transform:scale(.3);transition:opacity .14s,transform .22s cubic-bezier(.22,1,.36,1)}
+.b3-nb .pb-tog i .ic{width:11px;height:11px;stroke-width:3.2;opacity:0;transform:scale(.3);transition:opacity .14s,transform .22s cubic-bezier(.3,1.7,.5,1)}
 .b3-nb .pb-tog[aria-pressed=true]{--b:var(--patch);color:var(--b);background:color-mix(in srgb,var(--b) 11%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--b) 50%,transparent)}
 .b3-nb .pb-tog[aria-pressed=true] i{background:var(--b);box-shadow:none;color:var(--on-accent)}
 .b3-nb .pb-tog[aria-pressed=true] i .ic{opacity:1;transform:none}
