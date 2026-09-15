@@ -13,6 +13,8 @@ status: live
 
 > 🔴 **DEFERRED, AND NOT BUILT BY THIS PLAN:** the permission restructure (pins `pmtyh3ep6`, `pmtyii7ki`, and `pmtyih6yt`'s tier structure) and the Access panel bar's full redesign (`pmtyioc0l`). Harkirat, 2026-09-13 11:37 EDT: *"the permissions restructure still has some kinks that need to be worked out so let's defer that decision as still pending and needing better discussion and designing."* Every input is in spec §5 and filed `[P1]` in `docs/db-deferred-list.md`. §6 lists what a builder must not do meanwhile.
 
+> 🔴 **SESSION 3 ADDED 2026-09-15 10:20 EDT, by Harkirat.** Session 2 built everything and did not push. Harkirat has not yet looked at the built portal, so his review moves to a fresh session: he walks `dev-portal.dioreo.app`, drops pins, and **Session 3 (§5b) corrects them on the same branch**, then closes the whole build by §13. Session 2's push, PR, pre-merge checkpoint and merge move to Session 3's close.
+
 > 🔴 **WHAT THIS PLAN DOES NOT TOUCH.** `docs/superpowers/plans/2026-09-06-portal-step3-step4-completion.md`, `2026-08-27-portal-conformance.md` and `2026-08-31-post-compact-remediation.md` stay live and untouched — if a prompt handed you one of those, that one is your plan, not this. `docs/ideas/diors-notes.md` is out of scope: do not open it, act on it, or mention it, even when a hook reports open items. Pins before `pmtxsahvd` are out of scope.
 
 ## 0 · How to use this file
@@ -310,7 +312,7 @@ status: live
 
 - [x] *(2026-09-14 16:12 EDT — §10.4 with the refinement contract; a ledger section and seven rows retired or amended; tracked copy with `resolved-spec.md` and `measure.cjs`; §2, §5.0, §5.2, §5.3, §7, brief D, §9, §11 amended; audit rows 57–69)* **Step 5 — write:** §10.4, replacing its placeholder: an opening paragraph (the board URL and tracked path, his cross-gate rules, anything measured) and one table per gate — `finding · severity · what Session 2 must build` — each row quoting his comment with its time (the artifact stamps are UTC; convert) · a ledger row per decision, retiring or citing every row the gate touched (the sortable-columns row above among them) · the tracked board copy under `docs/superpowers/mockups/<date>-pins2-board-2/index.html`, its stylesheet link pointed at `../../../../portal/public/app.css` · §5.2 Step 9 and §5.3 Step 10 amended where an answer changes what they build · §2, §7 and §9 where ownership moves · this section's boxes.
 - [x] *(falsification pass run 2026-09-14 16:12 EDT — audit rows 57–69; a Sonnet reader, approved by Harkirat and run 2026-09-14 16:34 EDT, found six defects, all fixed — audit row 72)* **Step 6 — falsify, then a reader test:** a `sequentialthinking` pass whose job is to find where §10.4 is wrong — above all, any board choice he never commented on that silently reverses a ledger row or shipped behaviour (the first board did this twice, audit rows 42–43); correct the board and say so. Then, with his approval, one read-only Sonnet reader agent with no transcript over §4b, §5 and §10.4, told to find what would make Session 2 fail. Fix what it finds and log it.
-- [ ] **Step 7 — close by §13:** Step 0 before any push is asked for; the version is the next moderate step read from `origin/v3-pre-release`.
+- [x] *(ticked 2026-09-15 10:20 EDT by Session 2 — the board session merged as `8c5e8a90`, v3.84.0-pre, #191; `.remember`'s handoff and `git log origin/v3-pre-release` both carry it)* **Step 7 — close by §13:** Step 0 before any push is asked for; the version is the next moderate step read from `origin/v3-pre-release`.
 
 ## 5 · SESSION 2 — the manifests · agent D
 
@@ -336,7 +338,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Steps 7–8 — read §10.4 and reproduce Step 8's symptoms with chrome-devtools.
 
-- [ ] **Step 7 — no board, no popups.** Every design gate this session touches is answered in §10: G8–G10 on the 2026-09-14 design board, G1–G4, G6 and G11 by the §4b board session in §10.4. Read §10.4 in full and open its tracked board; do not redraw or re-ask any gate. *(Rewritten by the design-board follow-up on `docs/pins2-followups`, before it merged at 2026-09-14 02:43 EDT — this step used to render G1–G4 and G6 and ask two popups. Its original stamp was an unfilled placeholder, found and replaced 2026-09-14 16:13 EDT by the board-2 session; the exact minute is not recoverable.)*
+- [x] *(2026-09-15 10:20 EDT — no board drawn and no gate re-asked; values ported from `resolved-spec.md` and the `G1` constant. The only popups were the approvals §1 requires: G6's write, the dev-portal restart, the prod slot write and the push)* **Step 7 — no board, no popups.** Every design gate this session touches is answered in §10: G8–G10 on the 2026-09-14 design board, G1–G4, G6 and G11 by the §4b board session in §10.4. Read §10.4 in full and open its tracked board; do not redraw or re-ask any gate. *(Rewritten by the design-board follow-up on `docs/pins2-followups`, before it merged at 2026-09-14 02:43 EDT — this step used to render G1–G4 and G6 and ask two popups. Its original stamp was an unfilled placeholder, found and replaced 2026-09-14 16:13 EDT by the board-2 session; the exact minute is not recoverable.)*
 
 ### 5.2 · The shared manifest
 
@@ -370,7 +372,82 @@ status: live
 - [x] *(2026-09-15 09:18 EDT — merged `a459e8dd` with no conflicts. Claims checked against the code: the composer's `nw-hint` is gone, `PostForm` takes `initial` and stages through `buildBroadcastComposerOp`, `utils/announcementBannerCache.js` routes errors through `safeErrorMessage`, `#ab-build` shows `n / 32`. Trap 10(c) sweep over every session-added selector: `.bcard` and `.bbar` collided with older components and were renamed; `.bf-h`'s internal duplicate filed. D's two captures copied to `local/pins2/`. `npm test` passes every repo gate; its last check fails on `~/.claude/settings.json` registering one SessionStart hook four times, a machine setting outside the repo)* **Step 12:** integrate D as Session 1 Step 20, then run trap 10(c) on every selector D's appended block and the main thread both touched. Copy D's gitignored artefacts (`.claude/worktrees/pins2-d/local/pins2/d-after-*.png`) into the main checkout's `local/pins2/` before §13 Step 4 removes the worktree.
 > ⟦ONE MESSAGE⟧ Step 13 — the records heredoc and the final gates.
 
-- [ ] **Step 13:** records and close as Session 1 Step 22. *(2026-09-15 09:37 EDT — records half in place, close half open. Staged-for-deletion row built (`e73979a8`: `/api/review` ops carry `targetIds`), captured in harness. Checked on a fresh dev portal: `?river` 100 / 300 / capped at total 1421; review ops carry `targetIds`. `docs:audit --diff origin/v3-pre-release` exit 0. `npm test` exit 1 at `test:hooks` only (38 passed, 1 failed): `~/.claude/settings.json` registers SessionStart `cbm-session-reminder` 4 times, a machine setting outside the repo. `indexHealth.test.mjs` 6 passed on its own. Re-indexed: codebase-memory, ctx docs and rules; `index:health` exit 0. Prod slot dry run: 130 builds would change, 16 with unplaced attachments (34 names). Push, PR, prod writes and merge wait on Harkirat's approval. 2026-09-15 09:45 EDT: the pre-push pass found the image upload running inside the transaction and moved it to `afterCommit`, proven on dev against the old code; the FSS write ran on approval.)*
+- [x] *(2026-09-15 10:20 EDT — records done; the close half moved to Session 3 (§5b) by Harkirat, before he has reviewed the portal. Head `7bbc584d`, unpushed)* **Step 13:** records and close as Session 1 Step 22. *(2026-09-15 09:37 EDT — records half in place, close half open. Staged-for-deletion row built (`e73979a8`: `/api/review` ops carry `targetIds`), captured in harness. Checked on a fresh dev portal: `?river` 100 / 300 / capped at total 1421; review ops carry `targetIds`. `docs:audit --diff origin/v3-pre-release` exit 0. `npm test` exit 1 at `test:hooks` only (38 passed, 1 failed): `~/.claude/settings.json` registers SessionStart `cbm-session-reminder` 4 times, a machine setting outside the repo. `indexHealth.test.mjs` 6 passed on its own. Re-indexed: codebase-memory, ctx docs and rules; `index:health` exit 0. Prod slot dry run: 130 builds would change, 16 with unplaced attachments (34 names). Push, PR, prod writes and merge wait on Harkirat's approval. 2026-09-15 09:45 EDT: the pre-push pass found the image upload running inside the transaction and moved it to `afterCommit`, proven on dev against the old code; the FSS write ran on approval.)*
+
+## 5b · SESSION 3 — Harkirat's review of the built portal, and the corrections
+
+*Added 2026-09-15 10:20 EDT. Harkirat: "me physically seeing the completed work, let's move that part to a fresh session … I'll go over the dev-portal and point out anything i notice and the next session will basically be working on correcting or tweaking those nitpicks. As such, it's still part of this overall plan and should be aware of everything."*
+
+**Branch.** Session 3 works on `feat/portal-pins2-manifests` itself — not a new branch, and nothing is on `v3-pre-release` yet. Session 2 left it at `7bbc584d`, unpushed, with agent D merged and its worktree and branch removed.
+
+**What Session 2 left that Session 3 inherits.**
+
+| Item | State | Session 3's duty |
+|---|---|---|
+| Harkirat's review | Not started | His pins are the work (Step 2) |
+| Push, PR, pre-merge checkpoint, merge | Not done | §13 Steps 0–4 at the close, each approval restated |
+| Prod slot backfill (§5.2 Step 9b) | Dry run only: 130 builds change; 16 get blank slots for 34 names (table below). Harkirat asked to see the 16 first | Show the table in a popup's context; write only on approval restated (`node --env-file=.env scripts/backfillSlotsFromMetadata.js --prod --write`) |
+| FSS Hurricane (G6) | Prod and dev written 2026-09-15 09:40 EDT: `buildName` `Build 1`, `shareCode` `1C2B5B6D7O` | Its Cloudinary metadata (`FSS-HURRICANE-1`: `Build_Number`, `Gunsmith_Code`) was not re-synced; a prod Cloudinary write, asked with the backfill |
+| Loadout image upload inside the changeset transaction | Fixed (`afterCommit`, `core/changeset.js`), proven on dev against the old code | None; the other in-transaction Cloudinary calls are filed `[P2]` in `docs/db-deferred-list.md` |
+| Dev portal | Restarted from this checkout with `nohup`; nothing restarts it after a reboot or a killed shell | Step 0 proves it serves the branch's API (`/api/analytics?river=300` returns 300 rows) |
+| Dev and prod data differ | Dev has slots backfilled; prod does not | Judge slot surfaces on dev only until the prod write |
+| `npm test` | Every repo gate green; the last hook check fails on `~/.claude/settings.json` registering `cbm-session-reminder` four times | A machine setting outside the repo: report it, never edit it without his word |
+| CI branch `ci/test-queue-rebuild` | Merges after this branch | Its merge adds `scripts/manifestSelection.test.js` and `scripts/armorySlotFill.test.js` to `scripts/testManifest.mjs` |
+| Compare's "Build n" | Follows `_id` order (brief B's contract), not the image key's number | Tell him if a pin reads it as a bug |
+| Captures before his review | `local/pins2/review/*-desk.png` and `*-phone.png`, 11 surfaces, signed-in dev portal, last written 2026-09-15 10:17 EDT | Before-images for any correction |
+
+**The 16 builds the slot backfill could not fully place (prod dry run, 2026-09-15 09:33 EDT).**
+
+| Build | Image key | Attachments left without a slot |
+|---|---|---|
+| LW3-TUNDRA · MP · Build 1 | LW3-TUNDRA-1 | Bandit Steady Stock |
+| LW3-TUNDRA · MP · Build 3 | LW3-TUNDRA-3 | Tactical Suppressor |
+| STRIKER · MP · Build 1 | STRIKER-1 | Fast Reload Reload Case |
+| 3-LINE RIFLE · MP · Build 1 | 3-LINE-RIFLE-1 | 270mm VOZ Carbine |
+| 3-LINE RIFLE · MP · Build 2 | 3-LINE-RIFLE-2 | Empress 514mm F01 |
+| SP-R 208 · MP · Build 1 | SP-R-208-1 | Light Bolt |
+| SP-R 208 · MP · Build 2 | SP-R-208-2 | Light Bolt |
+| ARGUS · MP · Build 1 | ARGUS-1 | Classical Lever |
+| TYPE 19 · DMZ · Build 1 | DMZ-TYPE-19-1 | Agile Stock, FMJ, Hi-Accuracy Sniper Ammo |
+| TYPE 19 · DMZ · Build 2 | DMZ-TYPE-19-2 | Steady Stock, Long Shot, Fast Reload Mag |
+| MACHINE PISTOL · MP · Build 1 | MACHINE-PISTOL-1 | Rapid Action |
+| L-CAR 9 · MP · Build 1 | L-CAR-9-1 | BO Foregrip |
+| CROSSBOW · MP · Build 2 | CROSSBOW-2 | 2B Bowstring, Heavy Limb |
+| DOBVRA · MP · Build 1 | DOBVRA-1 | Lightweight Single-Action |
+| SHORTY · MP · Build 1 | SHORTY-1 | OWC Stable |
+| R9-0 · MP · Build 1 | R9-0-1 | MFT Heavy Smoothbore |
+
+### 5b.0 · Evidence
+
+> ⟦ONE MESSAGE⟧ Step 1 — branch, server, pins and indexes, as one message.
+
+- [ ] **Step 1:** `git status` clean on `feat/portal-pins2-manifests` and `git rev-list --left-right --count origin/v3-pre-release...HEAD` (behind must be 0, or merge `origin/v3-pre-release` first) · the dev portal answers on `127.0.0.1:8787` with a minted session (`scripts/lib/portalSession.cjs`) and `/api/analytics?river=300` returns 300 rows — if not, start it: `node --env-file=.env.dev portal/server.js` · `npm run index:health` exits 0 · the pins: every `## <realm> — <stamp> · <id>` block in `local/portal-sync-notes.md` stamped after **2026-09-15 10:20 EDT**, with its crop in `local/portal-pins/` — count them. **Stop and tell Harkirat if there are none**: the session has no input yet.
+
+### 5b.1 · Triage — before any edit
+
+> ⟦ONE MESSAGE⟧ Step 2 — one table, one row per pin.
+
+- [ ] **Step 2:** a table in `local/pins2/s3-triage.md`, one row per pin: `id · realm · element · what he said · bucket · the §10 row or ledger row it touches`. Three buckets: **(a) fix** — inside an answered gate's values or a plain defect: build it · **(b) fork** — it reverses a §10 or §10.4 answer or a ledger row: render the options on the portal, then one popup per fork, never prose · **(c) out of batch** — a new idea: file it in `docs/db-deferred-list.md` with a Verify line, build nothing. A pin whose bucket is unclear is (b).
+
+### 5b.2 · Corrections
+
+> ⟦ONE MESSAGE⟧ Step 3 — the (a) rows as heredocs grouped by file, each chained to its gates.
+
+- [ ] **Step 3:** build the (a) rows. Each edit obeys §1 row 10's traps; each surface a pin touched closes on §10.4's refinement contract C1–C14 measured on the portal at 1282×888 and 390×844. Gates chained: `node -e "require('./scripts/buildPortal').build()"` · `node scripts/portalReverseOrphans.mjs --ci` · `node scripts/portalStates.mjs --ci` · `node scripts/portalGeometry.mjs --all --check` (re-record with `--write` only for an intended change) · `npm run -s tdz` · `node scripts/reflow-comments.mjs --check`. Mark each pin `> ✅ Built … · Session 3` in `local/portal-sync-notes.md` in the same heredoc.
+
+> ⟦ONE MESSAGE⟧ Step 4 — the (b) forks: render, then popups.
+
+- [ ] **Step 4:** each fork rendered on the portal (a capture per option), then asked; each answer becomes a ledger row and is built as Step 3.
+
+> ⟦ONE MESSAGE⟧ Step 5 — his second look.
+
+- [ ] **Step 5:** tell Harkirat which pins are built, where to look, and which were filed. He re-walks the dev portal; new pins restart at Step 2. The session closes only when he says the portal is ready.
+
+### 5b.3 · Close
+
+> ⟦ONE MESSAGE⟧ Step 6 — records, then §13.
+
+- [ ] **Step 6:** the prod slot backfill and the FSS metadata re-sync asked in one popup (each its own option, approval restated) · the CHANGELOG entry already proposed for v3.85.0 gains Session 3's corrections, and `local/pins2/s2-devlog-draft.md` gains a paragraph for them · close by §13 as Session 2 would have: Step 0 before any push is asked, the version the next moderate step from `origin/v3-pre-release`.
 
 ## 6 · DEFERRED — the permission restructure and the Access panel bar
 
@@ -481,6 +558,7 @@ RETURN: plan §8.2 shape, plus local/pins2/d-after-*.png from chrome-devtools ta
 | G11 | Board session §4b | Broadcast's manifest state column, state chips and colour chips · History's level chips · the shared Manifest tools row | **Answered 2026-09-14 15:22 EDT** — board 2, version 21 (§10.4) |
 | G8 | **Answered 2026-09-14 01:18 EDT** on the design board | The whole Broadcast composer (§10.3) — its fields and copy, and the Discord-shaped preview | Answered: build the preview; §10.3 as amended |
 | G9 | **Answered 2026-09-14 01:18 EDT** on the design board | The New Build drawer (§10.1) — Add build and Bulk create, MP and DMZ | Answered: §10.1 as amended, rows 15–18 added |
+| G12 | Session 3 §5b | Each pin that reverses a §10 or §10.4 answer, rendered on the portal | **Open** — one popup per fork (§5b Step 4) |
 | G10 | **Answered 2026-09-14 01:18 EDT** on the design board | Compare (§10.2) in its four states, cards behind "Show cards" | Answered: §10.2 as amended |
 
 G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on an Artifact until Harkirat closes it, and written into §10.4 — decided 2026-09-14 02:17 EDT, replacing the two popups Session 2 Step 7 used to ask. G8–G10 were answered on the design board by 2026-09-14 01:18 EDT (§10's first paragraph). G5 and G7 belonged to the deferred permission work and are gone.
@@ -706,6 +784,18 @@ You dispatch exactly one agent, D, with the §8.3 brief verbatim, in §5.3 Step 
 docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge each need my approval restated.
 ```
 
+```text
+/rename Sonnet5-XHigh · Pins2 S3 review fixes · <Mon DD>
+Premise Med · Delib High -> Sonnet5-XHigh
+
+You are Session 3 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 2 built everything on feat/portal-pins2-manifests and did not push; you work on that same branch.
+Read in full: the plan's §0, §1, §7, §9, §10 and §13, then §5 (what Session 2 built and its ticks) and §5b (your section); the spec's §3, §6, §7 and §8; the decision ledger's "Decided 2026-09-15 00:07 EDT — portal pins batch 2, Session 2" section (ctx_search, source project:dioreo-docs).
+Step 1 is §5b Step 1 as ONE message. If there are no pins after the stamp §5b names, stop and tell me. If npm run index:health exits 4, stop and tell me.
+My pins are the work. Triage every pin before editing (§5b Step 2). A pin that reverses a §10 or §10.4 answer is a fork: render it on the portal, then a popup. A new idea is filed, not built.
+You dispatch no agents. docs/ideas/diors-notes.md is out of scope.
+The prod slot write and the FSS metadata re-sync each need my approval restated. Close by §13; push, PR and merge each need my approval restated.
+```
+
 ## 12 · Closing this planning branch — `docs/portal-pins-batch-2-plan`
 
 **Nothing in §3–§5 can start until this branch is on `v3-pre-release`** — Session 1 Step 1 checks for this file there. Added 2026-09-13 12:04 EDT, after a reader test found nothing tracked said how the branch closes.
@@ -746,7 +836,9 @@ Harkirat pinned 29 notes on the dev portal overnight and asked for a plan a Sonn
 - A mechanism narrated over a value nobody checked produced the wrong cause for the vanishing index, and a detector built on it was half-written before Harkirat asked whether the cause was found or only enough of it. The repro that could fail is what found the real one.
 ```
 
-## 13 · Closing a session — Session 1, the critique, the two board sessions, Session 2
+## 13 · Closing a session — Session 1, the critique, the two board sessions, Session 2, Session 3
+
+*Session 2 does not close here: its push, checkpoint and merge are Session 3's close (§5b Step 6), added 2026-09-15 10:20 EDT.*
 
 Each session's work must be on `v3-pre-release` before the next session starts: the next precondition reads the merged file, not your branch.
 
@@ -848,6 +940,11 @@ Each session's work must be on `v3-pre-release` before the next session starts: 
 | 70 | The plan header let the frozen spec win over §10.4: its only §10 exception covered the critique's three surfaces, while spec §6's row (square chip, "Build 1 of 5", red-or-green image) contradicts board 2 — found by the end-of-session pass | Silently reverted decision | Header exception extended to §10.4; G4 row 2 quotes the square-chip retirement |
 | 71 | §7 gave `portal/ui/tokens.css` only to Session 1 and had no `DESIGN.md` row, though §10.4 rule ② writes both in Session 2; brief D's gates never applied the refinement contract; §10.1 row 4 said nothing of the 32-character cap its own field now carries; C14 read as a phone layout against §10's phone-not-a-priority rule; §5.0 Step 2's ledger list predated the board-2 section | Unowned scope · Contradiction | §7 rows; brief D GATES; §10.1 row 4; C14; §5.0 Step 2 |
 | 72 | A cold reader (Sonnet, read-only, no transcript, 2026-09-14 16:34 EDT) over §4b, §5, §7, §8.3 D, §9, §10.4 and §11 found six: the Discord 32-character cap cited the parser `handlers/manage/loadouts.js` while the input is the combined `Build Name \| Share Code` field at `commands/manage.js:584`/`:609`, and a flat cap would have cut off the share code · G1 and G6 were sent to `resolved-spec.md`, which holds neither · History's severity chips cited `LEVEL_ROW` at a stale line while History has its own `LEVEL_TAG` · the `Manifest` body prop had no contract for selection, the weapon checkbox, keyboard, collapse state or the empty state · Session 1's dispatch Steps 8–9 were unticked · C13 was listed as measurable. It confirmed: both §5.0 precondition checks behave on the current text (run live), no step re-asks an answered gate, every G4 dimension §10.4 quotes is in `resolved-spec.md`, the slot hues and `CANONICAL_SLOT_ORDER` match, §2/§9/§11 agree with §10.4, and every other cited line points at its code | Silent wrong result · Confusion · Unbuildable spec | G6 row 2 and Step 10 (`setMaxLength(47)` plus a name-part check); preamble ①, §5.0 Step 3, §11; G11 row 4 and Step 9; Architecture contract; §3.1 Steps 8–9; C13 |
+| 73 | Session 2 asked for a push before the pre-push pass and before Harkirat had seen any built surface | Premature outward action | §5b added; the eye review is its input and the push its close |
+| 74 | Agent D's loadout image upload ran inside `session.withTransaction` with `overwrite: true`, so a rolled-back edit had already replaced the live image; every Session 2 check was shaped around surfaces, none around the operation core | Silent wrong result | `core/changeset.js` `afterCommit`; dev probe: old code 1 upload on rollback, new 0 |
+| 75 | The upload route's comment named a server-wide body cap that does not exist | False receipt comment | `readJsonBody` `maxBytes`; the route stops at 12MB with a 413 |
+| 76 | Armory rows could never show the staged state: `/api/review` ops named no targets | Unbuildable close condition | `targetIds` on review ops; `.wg-r.staged` captured |
+| 77 | The dev portal had run API code from 2026-09-11 all session, so a real-data check against it measured the old code | False verification | Restarted on approval; §5b Step 1 re-proves it |
 
 **Carried into the deferred permission design, not fixed here:** Access delegation without guardrails would be privilege escalation (his answer: guardrails) · retiring `destructive` removes the owner-only lock's derivation source · revoke symmetry was never asked · the view-only sub-tier has no shape.
 
