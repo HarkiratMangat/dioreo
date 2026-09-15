@@ -1206,7 +1206,7 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 | # | Decided in WP4 | State |
 |---|---|---|
 | 1 | `mcp-layer-check.sh` drops its RULES block | ✅ done 2026-09-14 22:00 EDT on `ci/test-queue-rebuild` |
-| 2 | `ctx-search-nudge.sh` extended to whole-file `cat <path>` and `sed -n 'N,Mp' <path>` in Bash and `ctx_execute`, pointing at `read_smart` or a chunk-range slice; `rg -c` and aggregates stay quiet; test cases both ways | not built — the call site for the reads that bypass every Read hook |
+| 2 | `ctx-search-nudge.sh` extended to whole-file `cat <path>` and `sed -n 'N,Mp' <path>` in Bash and `ctx_execute`, pointing at `read_smart` or a chunk-range slice; `rg -c` and aggregates stay quiet; test cases both ways | ✅ built 2026-09-14 22:38 EDT as `shell-read-nudge.sh` — a sibling hook rather than an extension, for the reason `codebase-memory-nudge.sh` is one: the prose-question gate and the file-read gate are mutually exclusive, and one script holding both is harder to falsify |
 | 3 | global `~/.claude/CLAUDE.md` §1–3 shrink to the fallback chain plus the four call-site rules | not done; the file still restates `read_smart` in five places |
 
 **Verify by:** a `cat docs/README.md` in Bash produces the nudge and `rg -c x docs/README.md` does not, with both cases in `ctx-search-nudge.test.sh`; and `rg -c read_smart ~/.claude/CLAUDE.md` returns at most 1.
