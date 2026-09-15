@@ -221,7 +221,9 @@ check('both Armory forms mount in the shared Drawer, in the overlay slot rather 
     assert.ok(!src.includes('id="build-editor"'), 'the build editor is an inline panel again');
     // 🔴 WHERE THEY RENDER IS LOAD-BEARING: Drawer marks `.app > main` inert, so a drawer rendered inside the view slot would mark ITSELF inert along with the page behind it.
     const overlay = src.slice(src.indexOf('overlaySlot=${html`'), src.indexOf('exports=${exportScopes}'));
-    assert.ok(overlay.includes('AddBuildForm') && overlay.includes('BuildEditor'),
+    // Renamed AddBuildForm -> NewBuildDrawer (pins batch 2, §10.1/G9): the New Build drawer now folds
+    // BulkView's paste-many mode into the same component instead of a separate top-level view.
+    assert.ok(overlay.includes('NewBuildDrawer') && overlay.includes('BuildEditor'),
         'a drawer moved back into the view slot, where Drawer\'s own inert call would disable it');
     assert.ok(src.includes('.bed-side'), 'the drawer lost the record/preview column the design puts on its right');
 });

@@ -271,9 +271,7 @@ export function Composer({ types, initialType, onStage, onStageMany, onCancel, o
                         <${PasteZone} kind=${type.key} onStageAll=${(rows, raw) => onStageMany(type.key, rows, raw)} />
                     </div>` : null}
                 <div class="nw-form">
-                    ${!type ? html`
-                        <p class="nw-hint">Pick what you are adding. The form follows the record — a release asks for
-                            one date, a window asks for two.</p>`
+                    ${!type ? null
                     : html`
                         <div class="nw-f nw-f-name">
                             <label class="nw-l" for="nw-name">${type.nameLabel || 'Name'}</label>

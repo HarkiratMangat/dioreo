@@ -6705,3 +6705,142 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
 .brow-e b{display:none;font:400 var(--t-micro)/1 var(--ui);font-weight:400}
 .brow:hover .brow-e,.brow:focus-visible .brow-e{color:var(--ink);border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px}
 .brow:hover .brow-e b,.brow:focus-visible .brow-e b{display:inline}
+
+/* ── Pins batch 2, Session 2 (agent D) — the New Build drawer and its Bulk create panel ──────────
+   §10.1 (New Build drawer) + G9. New block only; no existing rule above this line was touched. */
+
+.nb-toolbar{display:flex;align-items:center;gap:14px;padding:0 0 var(--s3);margin-bottom:var(--s3);
+  border-bottom:1px solid var(--rule)}
+.nb-rule{width:1px;align-self:stretch;background:var(--rule2)}
+
+/* A two-segment switch, siblings-behind-a-divider style — same shape as .modesw so the two controls
+   in the drawer's toolbar (which armory / which panel) read as one family. Reused for the Image
+   section's Upload-or-link / Existing-key switch too. */
+.segsw{display:flex;gap:0;border:1px solid var(--rule2);border-radius:var(--rad-2);overflow:hidden}
+.segsw button{font:600 var(--t-sm)/1 var(--ui);color:var(--ink3);background:var(--sunk);border:0;
+  padding:0 14px;min-height:var(--tap);display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.segsw button+button{border-left:1px solid var(--rule2)}
+.segsw button:hover{color:var(--ink2)}
+.segsw button[aria-pressed=true]{background:var(--raised);color:var(--ink)}
+
+/* A section heading with a hairline rule filling the rest of the row (row 9's amendment: real
+   headings, not intro prose). */
+.bf-h{display:flex;align-items:center;gap:10px}
+.bf-rule{flex:1 1 auto;height:1px;background:var(--rule)}
+
+/* The build-number numeral locked into the Label field's own left edge (row 4). */
+.bf-buildno-wrap{position:relative;display:flex;align-items:center}
+.bf-buildno{position:absolute;left:12px;font:700 var(--t-sm)/1 var(--data);letter-spacing:.06em;
+  color:var(--r-armory);pointer-events:none;z-index:1}
+/* #ab-build, not a class, on purpose: app.css's own `input:not([type=…]):not([type=…]):not([type=…])
+   :not([data-bare])` rule stacks four :not() clauses (specificity 0,4,1) and beats any class selector
+   here (0,n,1) regardless of source order — measured live, the class form silently lost. */
+#ab-build{padding-left:76px}
+
+/* The gunsmith code field with its copy button joined to the right edge (row 3's amendment). */
+.code-field{display:flex;align-items:stretch;gap:0;border:1px solid var(--rule2);border-radius:var(--rad-2);
+  overflow:hidden;background:var(--sunk)}
+.code-field input{flex:1 1 auto;border:0;background:transparent;min-height:var(--tap);
+  font:600 var(--t-sm)/1 var(--data);letter-spacing:.06em;padding:0 12px}
+.code-field input:focus{outline:none}
+.code-field input.bad{color:var(--warn)}
+.code-field .chip{border:0;border-left:1px solid var(--rule2);border-radius:0;min-height:var(--tap)}
+
+/* A code-filled attachment row (row 15) — a small patch-coloured dot beside the slot label. */
+.atr-fill .atn{color:var(--patch)}
+.atfill{display:inline-block;width:6px;height:6px;border-radius:var(--rad-round);background:var(--patch);
+  flex:none}
+
+/* The Image section's upload-or-link path (row 14). */
+.imgdrop{display:flex;flex-direction:column;gap:var(--s2);margin-top:var(--s2)}
+.filedrop{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);
+  cursor:pointer;align-self:flex-start}
+.imgpreview{display:flex;align-items:center;gap:10px;padding:8px;background:var(--sunk);
+  border:1px solid var(--rule2);border-radius:var(--rad-2)}
+.imgpreview img{width:64px;height:36px;object-fit:cover;border-radius:var(--rad-1);background:var(--raised)}
+.imgpreview img.bad{opacity:.35}
+.imgkey{font:600 var(--t-xs)/1 var(--data);letter-spacing:.05em;color:var(--ink2)}
+
+/* The drawer's Bulk create panel (row 2, G9) — folds the old paste-many view into this drawer,
+   dropping its export half (the masthead's own Export strip already covers that). */
+.bed-bulk{display:block}
+.bulkcreate{width:100%}
+.bulkgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+@media (max-width:900px){ .bulkgrid{grid-template-columns:1fr} }
+.bulkedit,.bulktally{background:var(--raised);border:1px solid var(--rule);border-radius:var(--rad-2);
+  padding:16px 17px}
+.builds-ta{width:100%;background:var(--sunk);border:1px solid var(--rule2);border-radius:var(--rad-2);
+  color:var(--ink);font:400 var(--t-sm)/1.5 var(--data);padding:10px 12px;resize:vertical}
+.builds-ta:focus{outline:2px solid var(--focus);outline-offset:1px}
+.bulkrows{display:flex;flex-direction:column;gap:2px;margin-top:var(--s2);max-height:340px;overflow:auto}
+.bulkrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline;padding:7px 0;
+  border-bottom:1px solid var(--rule);border-left:3px solid transparent;padding-left:8px}
+.bulkrow.new{border-left-color:var(--ok)}
+.bulkrow.upd{border-left-color:var(--patch)}
+.bulkrow.bad{border-left-color:var(--danger-ink)}
+.bulkrow .bvtag{font:700 var(--t-xs)/1 var(--data);letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--rule2);border-radius:var(--rad-1);padding:2px 6px;color:var(--ink3)}
+.bulkrow.new .bvtag{color:var(--ok);border-color:var(--ok)}
+.bulkrow.upd .bvtag{color:var(--patch);border-color:var(--patch)}
+.bulkrow.bad .bvtag{color:var(--danger-ink);border-color:var(--danger-edge)}
+.bulkrow em{font-style:normal;color:var(--ink3);margin-left:7px;font-size:var(--t-xs)}
+.bvsum{display:flex;gap:14px;font:600 var(--t-sm)/1 var(--ui);margin:var(--s2) 0}
+.bvsum .new b{color:var(--ok)}
+.bvsum .upd b{color:var(--patch)}
+.bvsum .bad b{color:var(--danger-ink)}
+
+/* ── Pins batch 2, Session 2 (agent D) — the Broadcast composer (§10.3 + G8) ──────────────────────
+   New block only; no existing rule above this line was touched. */
+
+.bcast-composer{display:grid;grid-template-columns:1fr 340px;gap:20px}
+@media (max-width:900px){ .bcast-composer{grid-template-columns:1fr} }
+
+/* Row 10 — the shared 6,000-char embed budget: other live posts dimmed, this post in full pink. */
+.cmeter.bcast{position:relative;background:var(--sunk)}
+.cmeter.bcast i{position:absolute;top:0;left:0;height:100%;background:var(--r-broadcast);border-radius:0}
+.cmeter.bcast.bad i{background:var(--danger-ink)}
+.meter-note{display:block;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3);margin-top:4px}
+.meter-note.bad{color:var(--danger-ink)}
+
+/* Row 2 — the Banner field: a link, a thumbnail, and a load/size echo. */
+.banner-row{display:flex;align-items:center;gap:10px}
+.banner-row input{flex:1 1 auto}
+.banner-thumb{width:72px;height:40px;flex:none;border-radius:var(--rad-2);overflow:hidden;
+  border:1px solid var(--rule2);background:var(--sunk)}
+.banner-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.banner-thumb.bad{border-color:var(--danger-edge)}
+.banner-thumb.bad img{opacity:.25}
+.banner-echo{display:block;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3);margin-top:4px}
+.banner-echo.bad{color:var(--danger-ink)}
+
+/* Row 1 — the Ends field's own Never-ends switch, and its pink-tinted replacement field. */
+.bcast-dates{align-items:start}
+.ends-field label span:first-child{display:inline-block;margin-right:8px}
+.seg-sw-inline{display:inline-flex;align-items:center;gap:6px;font:600 var(--t-xs)/1 var(--ui);
+  color:var(--ink3);cursor:pointer}
+.seg-sw-inline input{margin:0}
+.never-ends-field{min-height:var(--tap);display:flex;align-items:center;padding:0 12px;
+  background:color-mix(in srgb, var(--r-broadcast) 11%, var(--sunk));
+  border:1px solid color-mix(in srgb, var(--r-broadcast) 40%, var(--rule2));border-radius:var(--rad-2);
+  font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+
+/* Row 3 — Show each player: a stepper, one small card glyph per showing, and the fixed-interval tag. */
+.repeat-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--rule2);border-radius:var(--rad-2);
+  overflow:hidden;background:var(--sunk)}
+.step-btn{min-width:var(--tap);min-height:var(--tap);border:0;background:transparent;color:var(--ink2);
+  font:700 var(--t-md)/1 var(--ui);cursor:pointer}
+.step-btn:hover:not(:disabled){background:var(--raised);color:var(--ink)}
+.step-btn:disabled{color:var(--ink3);cursor:default}
+.step-val{min-width:28px;text-align:center;font:700 var(--t-sm)/1 var(--data)}
+.rp-glyphs{display:inline-flex;gap:3px}
+.rp-glyph{width:10px;height:14px;border-radius:2px;background:var(--r-broadcast);opacity:.7}
+.rp-more{font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.clock-tag{display:inline-flex;align-items:center;gap:5px;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+
+/* Row 4 — the composer's own "In Discord" preview. */
+.post-prev{border:1px solid var(--rule2);border-radius:var(--rad-2);background:var(--sunk);overflow:hidden}
+.post-prev-banner{width:100%;max-height:120px;object-fit:cover;display:block}
+.post-prev-text{margin:0;padding:12px 14px 4px;font:400 var(--t-sm)/1.5 var(--ui);color:var(--ink);
+  white-space:pre-wrap;word-break:break-word}
+.post-prev-when{display:block;padding:0 14px 12px;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}

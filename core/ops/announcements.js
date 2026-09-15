@@ -3,10 +3,12 @@
 // Three announcement mutations, as ops. Announcements are THEIR OWN DOCUMENTS (models/Announcement.js), so this uses core/mongo/document.js -- never core/mongo/positional.js, which would match nothing against a top-level document and return { ok:false, reason:'missing' }, indistinguishable from a legitimate outcome.
 //
 // ⚠️ `expiresAt` semantics: the real handler (handlers/manage/announcements.js) never accepts an absolute expiry date -- utils/announcement.js's computeExpiresAt() only understands blank (60-day default), "never"/"none", or a whole number of DAYS FROM NOW. `validatePost` below reproduces that exact contract via payload.expiry (a raw string), NOT payload.expiresAt as an absolute date string -- an earlier draft of this op's own test assumed the latter and would have rejected every valid post. `startsAt` (new field, this task) IS an absolute admin date, parsed the same UTC-0 way every other admin date field is (adminParser.js's parseAdminDate) -- "starts on" reads naturally as a calendar date, unlike "expires in".
+const mongoose = require('mongoose');
 const { registerEntity } = require('./index');
 const { updateDocument, createDocument, deleteDocument } = require('../mongo/document');
 const { computeExpiresAt, generateAccentColor } = require('../../utils/announcement');
 const { parseAdminDate } = require('../../utils/adminParser');
+const { cacheAnnouncementBanner } = require('../../utils/announcementBannerCache');
 const Announcement = require('../../models/Announcement');
 
 // An invert()-produced payload already carries a real `expiresAt` (Date|null) and `startsAt` (Date|null) -- re-running it through computeExpiresAt/parseAdminDate would either fail outright (a Date is not a day-count string) or, worse, silently reinterpret it. `hasOwnProperty` (not a truthy check) is required because `expiresAt: null` ("never expires") is a legitimate, real value.
@@ -83,12 +85,23 @@ registerEntity('announcements', {
         preview: (op) => ({ before: {}, after: { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt } }),
         apply: async (op, { session, actorId }) => {
             const color = op.payload.color ?? generateAccentColor();
+            // Minted ahead of the write (same move as core/ops/patchnotes.js's addSeason) so the banner
+            // re-host below has a real _id to key its Cloudinary public_id on before the document exists.
+            const _id = new mongoose.Types.ObjectId();
+            let bannerImageUrl = op.payload.bannerImageUrl || null;
+            let bannerUploadError = null;
+            if (bannerImageUrl) {
+                const up = await cacheAnnouncementBanner(String(_id), bannerImageUrl);
+                bannerImageUrl = up.url;
+                if (!up.cached && up.error) bannerUploadError = up.error;
+            }
             const doc = {
+                _id,
                 text: op.payload.text,
                 createdBy: op.payload.createdBy || actorId,
                 expiresAt: op.payload.expiresAt,
                 startsAt: op.payload.startsAt || null,
-                bannerImageUrl: op.payload.bannerImageUrl || null,
+                bannerImageUrl,
                 repeatCount: op.payload.repeatCount ?? null,
                 color
             };
@@ -96,7 +109,8 @@ registerEntity('announcements', {
             const res = await createDocument({ Model: Announcement, doc, session });
             return {
                 ok: true,
-                change: { action: 'add', model: 'Announcement', target: truncate(op.payload.text), summary: 'Posted a new announcement' },
+                change: { action: 'add', model: 'Announcement', target: truncate(op.payload.text), summary: 'Posted a new announcement',
+                          detail: bannerUploadError ? `Banner image upload failed: ${bannerUploadError}. The raw link was stored instead.` : undefined },
                 applied: { id: res.id, color, createdAt: doc.createdAt || new Date(), createdBy: doc.createdBy, expiresAt: doc.expiresAt, startsAt: doc.startsAt, bannerImageUrl: doc.bannerImageUrl, repeatCount: doc.repeatCount }
             };
         },
@@ -110,12 +124,24 @@ registerEntity('announcements', {
         apply: async (op, { session }) => {
             const cur = await Announcement.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
-            const set = { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt || null, bannerImageUrl: op.payload.bannerImageUrl || null, repeatCount: op.payload.repeatCount ?? null };
+            let bannerImageUrl = op.payload.bannerImageUrl || null;
+            let bannerUploadError = null;
+            // Only re-hosts when the value actually CHANGED and is not already one of our own delivery
+            // URLs -- an edit that leaves the banner field untouched (the common Discord-modal path,
+            // which resends the CURRENT value verbatim, see handlers/manage/announcements.js) must not
+            // re-upload the same asset under a fresh hash on every unrelated text/date fix.
+            if (bannerImageUrl && bannerImageUrl !== cur.bannerImageUrl) {
+                const up = await cacheAnnouncementBanner(op.target.id, bannerImageUrl);
+                bannerImageUrl = up.url;
+                if (!up.cached && up.error) bannerUploadError = up.error;
+            }
+            const set = { text: op.payload.text, expiresAt: op.payload.expiresAt, startsAt: op.payload.startsAt || null, bannerImageUrl, repeatCount: op.payload.repeatCount ?? null };
             const res = await updateDocument({ Model: Announcement, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
             return {
                 ok: true,
-                change: { action: 'edit', model: 'Announcement', target: truncate(op.payload.text), summary: 'Edited an announcement' },
+                change: { action: 'edit', model: 'Announcement', target: truncate(op.payload.text), summary: 'Edited an announcement',
+                          detail: bannerUploadError ? `Banner image upload failed: ${bannerUploadError}. The raw link was stored instead.` : undefined },
                 applied: { id: op.target.id, prior: { text: cur.text, expiresAt: cur.expiresAt, startsAt: cur.startsAt || null, bannerImageUrl: cur.bannerImageUrl || null, repeatCount: cur.repeatCount ?? null }, expiresAt: set.expiresAt, startsAt: set.startsAt, bannerImageUrl: set.bannerImageUrl, repeatCount: set.repeatCount }
             };
         },

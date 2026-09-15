@@ -12,10 +12,37 @@ function buildBroadcastAddOp(fields) {
 function buildBroadcastEditOp(row, columnKey, newValue) {
     return {
         type: 'announcement.edit', target: { id: row.id },
-        payload: { text: row.text, expiresAt: row.expiresAt || null, startsAt: row.startsAt || null, [columnKey]: newValue },
+        payload: { text: row.text, expiresAt: row.expiresAt || null, startsAt: row.startsAt || null, bannerImageUrl: row.bannerImageUrl || null, repeatCount: row.repeatCount ?? null, [columnKey]: newValue },
     };
 }
 
+// ── THE COMPOSER'S OWN BUILDER — pins batch 2, §10.3 ─────────────────────────────────────────────
+//
+// 🔴 ROW 1's BUG, FIXED HERE RATHER THAN AT THE CALL SITE, because it is a payload-SHAPE fact and
+// belongs beside the other payload-shape facts in this file. Measured against the real validate():
+// a portal blank sent `expiresAt: null` (alreadyNormalized -> true -> "never" adopted verbatim), while
+// a /manage blank sends no `expiresAt` key at all (alreadyNormalized -> false -> computeExpiresAt('')
+// -> the server's real 60-day default). Those are different facts and were colliding into the same
+// wrong one. `fields.expiresAt` now carries THREE distinct states rather than two: `undefined` (the
+// field was left blank -- omit the key so the 60-day default applies), `null` (the admin flipped
+// "Never ends" -- send the real never-expires value), or an ISO date string (a resolved date).
+function buildBroadcastComposerOp(fields, initial) {
+    const payload = {
+        text: fields.text,
+        startsAt: fields.startsAt || null,
+        bannerImageUrl: fields.bannerImageUrl || null,
+        // 1 (the floor) means "show once" in the record's own terms -- repeatCount is null there, not 1;
+        // see core/ops/announcements.js's own comment on the field. Anything above 1 is a real repeat.
+        repeatCount: fields.repeatCount && fields.repeatCount > 1 ? fields.repeatCount : null,
+    };
+    if (fields.expiresAt !== undefined) payload.expiresAt = fields.expiresAt;
+    if (!initial) {
+        payload.color = fields.color ?? null;
+        return { type: 'announcement.post', target: null, payload };
+    }
+    return { type: 'announcement.edit', target: { id: initial.id || initial._id }, payload };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { buildBroadcastAddOp, buildBroadcastEditOp };
+    module.exports = { buildBroadcastAddOp, buildBroadcastEditOp, buildBroadcastComposerOp };
 }

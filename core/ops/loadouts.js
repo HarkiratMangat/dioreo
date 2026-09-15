@@ -17,7 +17,7 @@ const { updateDocument, createDocument, deleteDocument } = require('../mongo/doc
 const { parseBulkLoadoutList, correctGunsmithCode } = require('../../utils/adminParser');
 const { fuzzyMatch } = require('../../utils/search');
 const { checkImageExists } = require('../../utils/loadoutRender');
-const { syncLoadoutMetadata } = require('../../utils/loadoutImageCache');
+const { syncLoadoutMetadata, uploadLoadoutImage } = require('../../utils/loadoutImageCache');
 const Loadout = require('../../models/Loadout');
 
 const MODES = ['MP', 'DMZ'];
@@ -109,13 +109,27 @@ registerEntity('loadouts', {
             return { before: { builds: siblings.length }, after: { builds: siblings.length + 1 } };
         },
         apply: async (op, { session }) => {
-            const res = await createDocument({ Model: Loadout, doc: op.payload, session });
-            const doc = await Loadout.findById(res.id).session(session);
-            await syncLoadoutMetadata(doc);
+            // imageSourceUrl is portal-only staging (spec §10.1 row 14, uploadStagingScreenshot) or a
+            // pasted link -- never a real Loadout field, so it is stripped before it ever reaches Mongo
+            // (Mongoose would silently drop it anyway per the schema, but leaving it in `doc` would also
+            // leak it into every preview/diff downstream of this payload).
+            const { imageSourceUrl, ...doc } = op.payload;
+            const res = await createDocument({ Model: Loadout, doc, session });
+            const saved = await Loadout.findById(res.id).session(session);
+            // Best-effort, same tolerance as /autobuild's own Confirm step: a failed image upload never
+            // fails the build itself -- coverageFlags already has 'missing-image' to catch the result,
+            // and the admin can retry via Edit.
+            let uploadError = null;
+            if (imageSourceUrl && saved.imageKey) {
+                const up = await uploadLoadoutImage(imageSourceUrl, saved.imageKey);
+                if (!up.success) uploadError = up.error;
+            }
+            await syncLoadoutMetadata(saved);
             return {
                 ok: true,
                 change: { action: 'add', model: 'Loadout', target: `${op.payload.weaponName} (${op.payload.buildName})`,
-                          summary: `Added loadout "${op.payload.weaponName} (${op.payload.buildName})"` },
+                          summary: `Added loadout "${op.payload.weaponName} (${op.payload.buildName})"`,
+                          detail: uploadError ? `Image upload failed: ${uploadError}. Fix the key later via Edit.` : undefined },
                 applied: { id: res.id }
             };
         },
@@ -132,25 +146,36 @@ registerEntity('loadouts', {
         apply: async (op, { session }) => {
             const cur = await Loadout.findById(op.target.id).session(session).lean();
             if (!cur) return { ok: false, reason: 'missing' };
+            // imageSourceUrl is portal-only staging, same as loadout.add above -- stripped before it can
+            // reach `set` (and therefore `prior`/the invert payload).
+            const { imageSourceUrl, ...payload } = op.payload;
             // Slot labels only ever come from /autobuild's vision extraction, and a plain-text edit can't supply new ones -- keep the existing mapping ONLY when the attachment list is byte-for-byte unchanged (same length + same names in the same order); any real change invalidates slot identity, so it's cleared rather than carried forward misaligned.
             const existingAttachments = cur.attachments || [];
-            const newAttachments = op.payload.attachments || [];
+            const newAttachments = payload.attachments || [];
             const attachmentsUnchanged = newAttachments.length === existingAttachments.length
                 && newAttachments.every((a, i) => a === existingAttachments[i]);
-            const set = { ...op.payload, attachmentSlots: attachmentsUnchanged ? (cur.attachmentSlots || []) : [] };
+            const set = { ...payload, attachmentSlots: attachmentsUnchanged ? (cur.attachmentSlots || []) : [] };
             const prior = Object.fromEntries(Object.keys(set).map(k => [k, cur[k]]));
             const res = await updateDocument({ Model: Loadout, id: op.target.id, expectVersion: cur.__v, set, session });
             if (!res.ok) return res;
+            let uploadError = null;
+            if (imageSourceUrl && set.imageKey) {
+                const up = await uploadLoadoutImage(imageSourceUrl, set.imageKey);
+                if (!up.success) uploadError = up.error;
+            }
             const propagateResult = await propagateBadges({
-                weaponKey: op.payload.weaponKey, mode: op.payload.mode, excludeId: op.target.id, session,
-                isMeta: op.payload.isMeta, categoryRank: op.payload.categoryRank, dmzRangeRank: op.payload.dmzRangeRank, isToxic: op.payload.isToxic
+                weaponKey: payload.weaponKey, mode: payload.mode, excludeId: op.target.id, session,
+                isMeta: payload.isMeta, categoryRank: payload.categoryRank, dmzRangeRank: payload.dmzRangeRank, isToxic: payload.isToxic
             });
-            await syncSiblings(op.payload.weaponKey, op.payload.mode, session);
+            await syncSiblings(payload.weaponKey, payload.mode, session);
             return {
                 ok: true,
                 change: { action: 'edit', model: 'Loadout', target: `${cur.weaponName} (${cur.buildName})`,
                           summary: `Edited loadout "${cur.weaponName} (${cur.buildName})"`,
-                          detail: propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : undefined },
+                          detail: [
+                              propagateResult.modifiedCount ? `Badges also synced to ${propagateResult.modifiedCount} other build(s) of this weapon.` : null,
+                              uploadError ? `Image upload failed: ${uploadError}.` : null,
+                          ].filter(Boolean).join(' ') || undefined },
                 applied: { id: op.target.id, prior, version: res.version, propagatedCount: propagateResult.modifiedCount }
             };
         },
