@@ -785,8 +785,8 @@ docs/ideas/diors-notes.md is out of scope. Close by §13; push, PR and merge eac
 ```
 
 ```text
-/rename Sonnet5-XHigh · Pins2 S3 review fixes · <Mon DD>
-Premise Med · Delib High -> Sonnet5-XHigh
+/rename Opus5-XHigh · Pins2 S3 review fixes · <Mon DD>
+Premise High · Delib High -> Opus5-XHigh
 
 You are Session 3 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 2 built everything on feat/portal-pins2-manifests and did not push; you work on that same branch.
 Read in full: the plan's §0, §1, §7, §9, §10 and §13, then §5 (what Session 2 built and its ticks) and §5b (your section); the spec's §3, §6, §7 and §8; the decision ledger's "Decided 2026-09-15 00:07 EDT — portal pins batch 2, Session 2" section (ctx_search, source project:dioreo-docs).
