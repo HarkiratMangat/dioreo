@@ -404,7 +404,8 @@ main{overflow:auto;padding-bottom:140px}
 .bcard{position:relative;display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:var(--s4);align-items:start;padding:var(--s4) var(--s4) var(--s4) 18px;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule)}
 .bcard::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
 .bcard.over{opacity:.72}
-.bnum{justify-self:center;font:700 58px/.8 var(--display);color:var(--c)}
+/* The number takes the card's colour lifted toward the ink (2026-09-15 08:57 EDT): an announcement's stored colour can be a dark blue, and the raw hex measured 3.5:1 on the raised ground in portalContrastRendered — the mix keeps the hue and clears 4.5:1. */
+.bnum{justify-self:center;font:700 58px/.8 var(--display);color:color-mix(in oklab,var(--c) 55%,var(--ink))}
 .bbody{display:grid;gap:var(--s3);min-width:0}
 .benc{display:block;border-radius:var(--rad-2);background:linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%);box-shadow:inset 0 0 0 1px var(--rule),inset 0 1px 0 color-mix(in srgb,var(--c) 30%,transparent);overflow:hidden;cursor:pointer}
 .benc p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:0;padding:13px 18px 2px;font:500 var(--t-md)/1.55 var(--ui);color:var(--ink);white-space:pre-line}
@@ -436,6 +437,18 @@ main{overflow:auto;padding-bottom:140px}
 .bchg-i b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font:600 var(--t-sm)/1.35 var(--ui);color:var(--ink)}
 .bchg-i em{display:inline-flex;align-items:center;gap:5px;font:600 var(--t-xs)/1 var(--ui);font-style:normal;color:var(--gc)}
 .bchg-none{margin:0;font-size:var(--t-sm);color:var(--ink3)}
+/* C14 at a phone's width: the side column drops under the queue, and the card's lifespan and actions stop assuming 700px. Measured before this: the end box, Show all and Remove ended 34–43px past a 390 viewport. */
+@media (max-width:640px){
+  .bqueue{grid-template-columns:minmax(0,1fr)}
+  .bcard{grid-template-columns:36px minmax(0,1fr);gap:var(--s3);padding:var(--s3)}
+  .bnum{font-size:40px}
+  .bcard > .bban,.bcard > span:last-child{grid-column:1 / -1}
+  .btl{grid-template-columns:auto minmax(0,1fr) auto}
+  .bend{padding:0 8px}
+  .bmeta{flex-wrap:wrap}
+  .bacts{margin-left:auto}
+  .bencf{flex-wrap:wrap;padding-right:4px}
+}
 /* ── Analytics' Include · Admin traffic — design board 2 G2 ── */
 .incg{display:inline-flex;align-items:center;gap:10px;padding-left:var(--s4);box-shadow:inset 1px 0 0 var(--rule2)}
 .incg > span{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
@@ -598,6 +611,28 @@ main{overflow:auto;padding-bottom:140px}
 .wg-slots{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:10px;min-width:0}
 .wg-sc{display:flex;align-items:center;min-width:0;min-height:32px;padding:4px 10px;border-radius:var(--rad-2);background:color-mix(in srgb,var(--sl,var(--ink4)) 8%,var(--sunk));box-shadow:inset 0 0 0 1px var(--rule),inset 0 -2px 0 color-mix(in srgb,var(--sl,var(--ink4)) 45%,transparent);font:500 var(--t-sm)/1.25 var(--ui);color:var(--ink)}
 .wg-sc.empty{background:none;box-shadow:inset 0 0 0 1px var(--rule3);color:var(--ink3)}
+/* C14 (plan pins batch 2 §10.4, 2026-09-15 08:56 EDT): at a phone's width nothing may clip a control, though a phone layout itself stays not a priority. Measured before this: at 390px the build row's delete button ended at 443 of a 390 viewport, on every row. The row keeps its first line (checkbox, number, content) and moves the image mark, the code and the actions onto a second line; the weapon header lets its tags wrap and drops the Fix chip under the name; the tools row lets its search shrink. */
+@media (max-width:640px){
+  .mt-r1{flex-wrap:wrap}
+  .srch{flex:1 1 180px;min-width:0;max-width:none}
+  .mtools .mlabel{min-width:0;text-align:left}
+  .wg-heads{padding:0 var(--s3)}
+  .wg-h{grid-template-columns:32px minmax(0,1fr) auto;row-gap:6px;padding:8px var(--s3) 8px 14px}
+  .wg-h > .wg-line{flex-wrap:wrap;row-gap:4px;column-gap:var(--s2)}
+  .wg-h > .wg-fwrap{grid-column:2;grid-row:2;justify-self:start;margin-right:0}
+  .wg-h > .wg-fbtn{grid-column:3;grid-row:1}
+  .wg-tags{margin-left:0;padding-left:0;box-shadow:none;flex-wrap:wrap}
+  .wg-fpop{right:auto;left:0;min-width:0;width:min(320px,calc(100vw - 48px))}
+  .wg-fpr > span{white-space:normal}
+  .wg-r,.wg-r.dmz{grid-template-columns:32px 22px minmax(0,1fr) auto;row-gap:4px;padding:6px var(--s3) 6px 14px}
+  .wg-r > .wg-main{grid-column:3 / 5;grid-row:1}
+  .wg-r > .wg-im{grid-column:2;grid-row:2}
+  .wg-r > .wg-code,.wg-r > .wg-ig.none{grid-column:3;grid-row:2;max-width:144px}
+  .wg-r > .wg-acts{grid-column:4;grid-row:2}
+  .wg-main.named{grid-template-columns:minmax(0,1fr);row-gap:6px}
+  .wg-plate::after{display:none}
+  .wg-strip{display:none}
+}
 .srch{position:relative;display:flex;align-items:center;flex:0 1 340px;max-width:340px}
 .srch input{width:100%;--ctl-pl:40px}
 .srch svg{position:absolute;left:13px;top:50%;margin-top:-8px;width:16px;height:16px;stroke:var(--ink3);fill:none;stroke-width:2;pointer-events:none}
