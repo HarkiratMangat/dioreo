@@ -324,170 +324,177 @@ const CATEGORY_LABEL = {
 const ATT_HINTS = ['Muzzle — e.g. Monolithic Suppressor', 'Barrel — e.g. MIP Light Barrel (Short)',
     'Stock — e.g. No Stock', 'Ammunition — e.g. 48 Round Extended Mag', 'Rear grip — e.g. Granulated Grip Tape'];
 
-function AddBuildForm({ onSubmit, onCancel, mode = 'MP' }) {
-    // The form opens in the armory you are standing in. It keeps its own switch because this one sets a PROPERTY OF THE RECORD -- which armory the build is filed under -- rather than which armory you are looking at, and those are different acts that happen to use the same two words.
-    const [f, setF] = useState({
-        weaponName: '', category: 'AR', mode, buildName: '', imageKey: '',
-        shareCode: '', description: '', isMeta: false, isToxic: false, rank: '',
-    });
-    const [atts, setAtts] = useState(['', '', '', '', '']);
-    const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
-    const dmz = f.mode === 'DMZ';
-    const filled = atts.map((a) => a.trim()).filter(Boolean);
-    // harden — the reasons, not a boolean. A form whose only required fields are at the very top is exactly the one where a disabled Stage button eight hundred pixels below them explains nothing; the footer says which.
-    const blockers = addFormBlockers(f);
-    const code = f.shareCode.trim();
-    const img = f.imageKey.trim();
+// Build name field cap (pins batch 2, plan §10.4 G6 row 2) — measured on the design board's plate: an
+// all-caps name never needs a third line at this length, and it is the shared limit the Discord modal's
+// own `Build Name (optional) | Share Code (optional)` field is sized around too.
+const BUILD_NAME_MAX = 32;
 
-    function submit() {
-        onSubmit(buildArmoryAddOp({
-            ...f, attachments: filled,
-            categoryRank: dmz ? null : (f.rank || null),
-            dmzRangeRank: dmz ? (f.rank || null) : null,
-        }));
-    }
-
-    // ⚠️ THE PREVIEW IS LOCAL, BECAUSE THERE IS NOTHING TO ASK THE SERVER ABOUT YET. The editor's side column renders what Discord actually sends, by calling /api/armory/preview with a real id; a build being typed has no id, so this draws the same record through Compare's own card component — the fields you are filling in, in the order the card puts them. It is a preview of the RECORD and it says so, rather than claiming to be the Discord render.
-    const previewBuild = {
-        ...f, attachments: filled, buildName: f.buildName || 'Standard Build', _id: 'draft',
-        categoryRank: dmz ? null : (f.rank || null), dmzRangeRank: dmz ? (f.rank || null) : null,
-    };
-
-    return html`
-        <${Drawer} eyebrow=${`loadout.add · ${f.mode} · tier 1`} title=${`New ${f.mode} build`} wide onClose=${onCancel}
-                   actions=${html`
-                       <span role="status" class=${'why' + (blockers.length ? ' blocked' : '')}>${blockers.length
-                           ? `Still needs ${blockers[0]}.`
-                           : 'Stages one operation. Nothing reaches a player until you commit it on Review.'}</span>
-                       <button class="btn" onClick=${onCancel}>Cancel</button>
-                       <button class="btn go" disabled=${blockers.length > 0} onClick=${submit}>Stage this ${f.mode} build</button>`}>
-            <!-- 🔴 THE bform CLASS IS WHAT THE PLACEHOLDER RULE HANGS OFF, AND THE PORT DROPPED IT (restored
-                 2026-09-06 21:19 EDT). The mockup's drawer body is class "dwbody bform" (armory.html:1078) and this
-                 file's own AddBuildDrawer header already says it is the mockup's bform now — but the markup only ever
-                 said bed, so app.css:4118-4119 matched nothing. Measured in the harness before the fix: the weapon-name
-                 placeholder computed font-style normal and font-weight 500, identical to real input text. That is the
-                 exact defect Harkirat reported and those two rules exist to answer (app.css:4086 quotes him: "Those
-                 placeholder texts look more like real filled in text than placeholder"). The reverse-orphan scan read
-                 bform as a dead class and it was accepted into the baseline as debt; it was a live regression. -->
-            <div class="bed bform">
-                <div class="bed-main">
-                    <p class="dw-p">Fill in what you know. A weapon name and a category are all it takes to stage a
-                        build — the gunsmith code, the image and the badges can follow later, and none of it reaches
-                        a player until somebody commits it on Review.</p>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Identity</h4>
-                    <div class="modesw" role="group" aria-label="Which armory this build belongs to">
-                        ${MODES.map((m) => html`
-                            <button key=${m} data-arm=${m} aria-pressed=${f.mode === m ? 'true' : 'false'}
-                                    onClick=${() => set({ mode: m, rank: '' })}>${m}</button>`)}
-                    </div>
-                    <div class="bed-g2" style="margin-top:var(--s3)">
-                        <div class="dwfield"><label for="ab-weapon"><span>Weapon name <span class="req">*</span></span></label>
-                            <input id="ab-weapon" aria-describedby="ab-weapon-hint" value=${f.weaponName} placeholder="AK117" autocomplete="off"
-                                   onInput=${(e) => set({ weaponName: e.target.value })} />
-                            <i class="bf-hint" id="ab-weapon-hint">As it should read on the card. <code>weaponKey</code> is derived from it —${' '}
-                                lowercased, spaces stripped${f.weaponName.trim() ? html` → <code>${f.weaponName.toLowerCase().replace(/\s+/g, '')}</code>` : ''}.</i></div>
-                        <div class="dwfield"><label for="ab-build"><span>Build name</span></label>
-                            <input id="ab-build" aria-describedby="ab-build-hint" value=${f.buildName} placeholder="Aggressive Flex" autocomplete="off"
-                                   onInput=${(e) => set({ buildName: e.target.value })} />
-                            <i class="bf-hint" id="ab-build-hint">A human variant label, not a code. Defaults to <b>Standard Build</b>.</i></div>
-                    </div>
-                    <div class="dwfield"><label for="ab-category"><span>Category <span class="req">*</span></span></label>
-                        <select id="ab-category" value=${f.category} onChange=${(e) => set({ category: e.target.value })}>
-                            ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c} — ${CATEGORY_LABEL[c] || c}</option>`)}
-                        </select>
-                        <i class="bf-hint">Mode is <b>${f.mode}</b> and is chosen above, exactly as it is decided by which page you opened in the bot.</i></div>
-                </section>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Attachments <span class="bf-n">${filled.length} of 5</span></h4>
-                    <p class="bf-p">In Gunsmith order, top to bottom. <b>123 of 133</b> real builds carry exactly five,
-                        and ${dmz ? 'a DMZ build is counted against nine' : 'a different count is flagged on the Coverage view'}.</p>
-                    <div class="atlist">
-                        ${atts.map((a, i) => html`
-                            <div class="atr" key=${i}>
-                                <span class="atn">${i + 1}</span>
-                                <label class="sr" for=${`ab-att-${i}`}>Attachment ${i + 1}</label>
-                                <input class="ati" id=${`ab-att-${i}`} value=${a} placeholder=${ATT_HINTS[i] || 'Attachment'}
-                                       onInput=${(e) => setAtts(atts.map((v, n) => (n === i ? e.target.value : v)))} />
-                                ${''/* 🔴 A HINT INSIDE A LABEL BECOMES PART OF THE NAME (2026-09-06 09:22 EDT): the accessibility review read "Weapon name * As it should read on the card. weaponKey is derived from it…" as the field's whole accessible name, on five fields. label[for] + input#id + aria-describedby now, so the hint is a description. 🔴 A SELECT NEVER SITS INSIDE ITS LABEL — four did, and the states walk's PASS 6 read each label's name as every option run together ("Category rankUnrankedBest in categoryTop 3…"): label[for] + select#id now. 🔴 REACHABLE BY TAB, 2026-09-06 01:45 EDT. The clear button carried tabIndex -1 — an arrow-key pattern nothing here implements — so the states walk's PASS 4 found five visible buttons no Tab could reach inside a dialog that had just declared the rest of the page inert. And the glyph is drawn, not typed: a text ✕ inherits metrics nothing here controls (reference_never_text_glyphs_for_icons). */}
-                                <button class="atx" aria-label=${`Clear attachment ${i + 1}`}
-                                        onClick=${() => setAtts(atts.map((v, n) => (n === i ? '' : v)))}><${Icon} name="x" cls="sm" /></button>
-                            </div>`)}
-                    </div>
-                </section>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Gunsmith code</h4>
-                    ${dmz ? html`
-                        <p class="bf-p bf-na"><b>DMZ builds have no share code.</b> That screen does not generate one, so
-                            the field is absent rather than shown and ignored.</p>`
-                    : html`
-                        <div class="dwfield"><label for="ab-share"><span>Share code</span></label>
-                            <input id="ab-share" aria-describedby="ab-share-hint" value=${f.shareCode} placeholder="1C2B4A8B9A" autocomplete="off" spellcheck="false" maxLength="12"
-                                   onInput=${(e) => set({ shareCode: e.target.value })} />
-                            <i class="bf-hint" id="ab-share-hint">Ten characters, a digit and a letter alternating. Look-alike characters are
-                                corrected on save rather than refused${code && code.length !== 10 ? html`, but ${code.length} characters is not ten` : ''}.
-                                Leave it blank if you do not have one — a blank field sends no value at all.</i></div>`}
-                </section>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Image</h4>
-                    <div class="dwfield"><label for="ab-image"><span>Cloudinary key, or a full URL</span></label>
-                        <input id="ab-image" aria-describedby="ab-image-hint" value=${f.imageKey} placeholder="AK117-1" autocomplete="off" spellcheck="false"
-                               onInput=${(e) => set({ imageKey: e.target.value })} />
-                        <i class="bf-hint" id="ab-image-hint">${!img
-                            ? html`Convention is <code>WEAPON-N</code> — all caps, spaces to hyphens, N being this build's position among its siblings.`
-                            : (/^https?:\/\//i.test(img)
-                                ? html`Read as a <b>full URL</b>, stored as-is — and it will not survive a bulk-export round trip, because only a real key is emitted there.`
-                                : html`Read as a <b>Cloudinary key</b>, delivered with <code>f_auto,q_auto</code> baked in.`)}</i></div>
-                </section>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Badges</h4>
-                    <p class="bf-p">🔴 <b>Badges describe the WEAPON, not this one build.</b> On an EDIT the bot propagates
-                        them across every build sharing this <code>weaponKey</code> and mode. It deliberately does not do
-                        that on an add — a blank badges field is the common case, and propagating it would wipe the
-                        siblings you were not touching.</p>
-                    <div class="bf-badges">
-                        <label class="bf-tog"><input type="checkbox" checked=${f.isMeta} onChange=${(e) => set({ isMeta: e.target.checked })} /><span>Meta</span></label>
-                        <label class="bf-tog"><input type="checkbox" checked=${f.isToxic} onChange=${(e) => set({ isToxic: e.target.checked })} /><span>Toxic</span></label>
-                        <div class="dwfield bf-rank"><label for="ab-rank"><span>${dmz ? 'DMZ range rank' : 'Category rank'}</span></label>
-                            <select id="ab-rank" value=${f.rank} onChange=${(e) => set({ rank: e.target.value })}>
-                                <option value="">${dmz ? 'None' : 'Unranked'}</option>
-                                ${(dmz ? DMZ_RANGE_TOKENS : MP_RANK_TOKENS).map((t) => html`
-                                    <option value=${t} key=${t}>${dmz ? t.replace('-', ' · ') : (RANK_LABEL[t] || t)}</option>`)}
-                            </select></div>
-                    </div>
-                </section>
-
-                <section class="bf-sec">
-                    <h4 class="bf-h">Description</h4>
-                    <div class="dwfield"><label for="ab-usage"><span>Usage blurb</span></label>
-                        <textarea id="ab-usage" aria-describedby="ab-usage-hint" rows="2" value=${f.description} placeholder="When to reach for this build."
-                                  onInput=${(e) => set({ description: e.target.value })}></textarea>
-                        <i class="bf-hint" id="ab-usage-hint">Rendered as a blockquote above the attachments. <b>2 of 133</b> builds carry one.</i></div>
-                </section>
-
-                </div>
-
-                <aside class="bed-side">
-                    <div class="bed-sec">
-                        <h5>The record you are writing</h5>
-                        ${f.weaponName.trim()
-                            ? html`<${LoadoutCard} build=${previewBuild} siblings=${[previewBuild]} />`
-                            : html`<p class="empty">Type a weapon name and the card builds itself here.</p>`}
-                        <p class="imgnote">Not the Discord render — that needs a saved build to ask the bot about.
-                            This is the record as it stands, in the order the card puts it.</p>
-                    </div>
-                </aside>
-            </div>
-        <//>
-    `;
+// ── FUZZY FIELDS — a native <datalist>, not a custom dropdown ───────────────────────────────────
+//
+// Row 16 (Harkirat, 2026-09-13 23:53 EDT): "does the attachment's field support fuzzy search/auto-
+// complete? because it should. Same with the weapon name field." The MATCHING is real fuzzy (substring,
+// via matchWeapons/this module's own filter below) — only the WIDGET is the platform's own <datalist>
+// rather than a hand-built popover, which is the cheaper way to ship "type and see matches" without a
+// second focus-trap and keyboard contract to get right inside a drawer that already has one (the drawer
+// itself). candidates are recomputed per keystroke from an already-short catalogue, never the raw list.
+function useCandidates(all, query, limit = 8) {
+    const needle = String(query || '').trim().toLowerCase();
+    if (!needle) return [];
+    return (all || []).filter((n) => n.toLowerCase().includes(needle)).slice(0, limit);
 }
 
-// Bulk "Set badges…" -- a small inline panel, not a native prompt() (this session already removed prompt() from Access's Revoke for the same UX reason). Applies the same badges grammar to every selected build via one loadout.edit op each, in one changeset.
+function AttachmentRow({ n, slotLabel, value, onInput, onClear, catalogueNames, fromCode }) {
+    const dlId = `ab-att-dl-${n}`;
+    const candidates = useCandidates(catalogueNames, value, 8);
+    return html`
+        <div class=${'atr' + (fromCode ? ' atr-fill' : '')} key=${n}>
+            <span class="atn">${slotLabel || n}</span>
+            <label class="sr" for=${`ab-att-${n}`}>${slotLabel ? `${slotLabel} attachment` : `Attachment ${n}`}</label>
+            <input class="ati" id=${`ab-att-${n}`} list=${dlId} value=${value}
+                   placeholder=${slotLabel ? `Search ${slotLabel.toLowerCase()} attachments` : (ATT_HINTS[n - 1] || 'Attachment — type to search')}
+                   autocomplete="off" onInput=${onInput} />
+            <datalist id=${dlId}>${candidates.map((c) => html`<option value=${c} key=${c} />`)}</datalist>
+            ${fromCode ? html`<i class="atfill" aria-label="Filled from the gunsmith code"></i>` : null}
+            <button class="atx" aria-label=${`Clear ${slotLabel || `attachment ${n}`}`}
+                    onClick=${onClear}><${Icon} name="x" cls="sm" /></button>
+        </div>`;
+}
+
+// ── ADD BUILD ────────────────────────────────────────────────────────────────────────────────
+//
+// Row 4 (amended 2026-09-14 01:37 EDT, G9): Weapon — fuzzy search over existing weapons; picking one
+// fills Category. Build number is computed from real siblings and locked into the Label field's left
+// edge; the field itself is an OPTIONAL human label (spec §6/G6: display-only, nothing stored changes).
+// Row 15: a pasted MP gunsmith code fills attachment rows from another build of the SAME weapon+mode
+// that carries the identical digit-letter pair (codeFill, armory.logic.js) — never guessed, never
+// cross-weapon (that IS the falsifier: two weapons sharing a pair must never cross-fill).
+function AddBuildPanel({ f, setF, atts, setAtts, filledFromCode, builds, weaponNames, imgBusy, onImagePick }) {
+    const set = (patch) => setF((prev) => ({ ...prev, ...patch }));
+    const dmz = f.mode === 'DMZ';
+    const weaponKey = f.weaponName.trim().toLowerCase().replace(/\s+/g, '');
+    const siblings = weaponKey ? builds.filter((b) => b.weaponKey === weaponKey && b.mode === f.mode) : [];
+    const buildNo = siblings.length + 1;
+    const code = f.shareCode.trim();
+    const catalogue = slotCatalogue(builds, f.mode);
+    const catalogueNames = Object.keys(catalogue);
+    const img = f.imageKey.trim();
+    const nameLen = f.buildName.length;
+
+    return html`
+        <div class="bed-main">
+            <section class="bf-sec">
+                <h4 class="bf-h">Build<span class="bf-rule"></span></h4>
+                <div class="modesw" role="group" aria-label="Which armory this build belongs to">
+                    ${MODES.map((m) => html`
+                        <button key=${m} data-arm=${m} aria-pressed=${f.mode === m ? 'true' : 'false'}
+                                onClick=${() => { set({ mode: m, rank: '' }); setAtts(Array(m === 'DMZ' ? 9 : 5).fill('')); }}>${m}</button>`)}
+                </div>
+                <div class="bed-g2" style="margin-top:var(--s3)">
+                    <div class="dwfield"><label for="ab-weapon"><span>Weapon name <span class="req">*</span></span></label>
+                        <input id="ab-weapon" list="ab-weapon-dl" value=${f.weaponName} placeholder="AK117" autocomplete="off"
+                               onInput=${(e) => set({ weaponName: e.target.value })} />
+                        <datalist id="ab-weapon-dl">${useCandidates(weaponNames, f.weaponName, 8).map((w) => html`<option value=${w} key=${w} />`)}</datalist>
+                    </div>
+                    <div class="dwfield"><label for="ab-build"><span>Label <span class="bf-n">${nameLen} / ${BUILD_NAME_MAX}</span></span></label>
+                        <div class="bf-buildno-wrap">
+                            <span class="bf-buildno">BUILD ${buildNo}</span>
+                            <input id="ab-build" value=${f.buildName} placeholder=${`Build ${buildNo}`} autocomplete="off"
+                                   maxLength=${BUILD_NAME_MAX}
+                                   onInput=${(e) => set({ buildName: e.target.value.slice(0, BUILD_NAME_MAX) })} />
+                        </div>
+                    </div>
+                </div>
+                <div class="dwfield"><label for="ab-category"><span>Category <span class="req">*</span></span></label>
+                    <select id="ab-category" value=${f.category} onChange=${(e) => set({ category: e.target.value })}>
+                        ${CATEGORIES.map((c) => html`<option value=${c} key=${c}>${c} — ${CATEGORY_LABEL[c] || c}</option>`)}
+                    </select></div>
+            </section>
+
+            ${!dmz ? html`
+                <section class="bf-sec">
+                    <h4 class="bf-h">Gunsmith code<span class="bf-rule"></span></h4>
+                    <div class="dwfield code-field"><label for="ab-share"><span>Share code</span></label>
+                        <input id="ab-share" value=${f.shareCode} placeholder="2A4B5A8C9C" autocomplete="off" spellcheck="false" maxLength="18"
+                               class=${code && code.length !== atts.filter((a) => a.trim()).length * 2 && code.length ? 'bad' : ''}
+                               onInput=${(e) => set({ shareCode: e.target.value })} />
+                        <button class="chip" type="button" disabled=${!code}
+                                onClick=${() => { navigator.clipboard?.writeText(code); }}><${Icon} name="copy" cls="sm" />Copy</button>
+                    </div>
+                </section>` : null}
+
+            <section class="bf-sec">
+                <h4 class="bf-h">Attachments <span class="bf-n">${atts.filter((a) => a.trim()).length} of ${atts.length}${atts.filter((a) => a.trim()).length <= 2 ? ' — flagged' : ''}</span><span class="bf-rule"></span></h4>
+                <div class="atlist">
+                    ${atts.map((a, i) => html`
+                        <${AttachmentRow} key=${i} n=${i + 1} slotLabel=${dmz ? '' : (filledFromCode[i] && filledFromCode[i].label) || ''}
+                                          value=${a} fromCode=${Boolean(filledFromCode[i] && filledFromCode[i].name === a && a)}
+                                          catalogueNames=${catalogueNames}
+                                          onInput=${(e) => setAtts(atts.map((v, n) => (n === i ? e.target.value : v)))}
+                                          onClear=${() => setAtts(atts.map((v, n) => (n === i ? '' : v)))} />`)}
+                </div>
+            </section>
+
+            <section class="bf-sec">
+                <h4 class="bf-h">Image<span class="bf-rule"></span></h4>
+                <div class="segsw" role="group" aria-label="How to set this build's image">
+                    <button type="button" aria-pressed=${f.imageMethod !== 'existing' ? 'true' : 'false'}
+                            onClick=${() => set({ imageMethod: 'upload' })}>Upload or link</button>
+                    <button type="button" aria-pressed=${f.imageMethod === 'existing' ? 'true' : 'false'}
+                            onClick=${() => set({ imageMethod: 'existing' })}>Existing key</button>
+                </div>
+                ${f.imageMethod === 'existing' ? html`
+                    <div class="dwfield"><label for="ab-image"><span>Cloudinary key, or a full URL</span></label>
+                        <input id="ab-image" value=${f.imageKey} placeholder="AK117-1" autocomplete="off" spellcheck="false"
+                               onInput=${(e) => set({ imageKey: e.target.value, imageSourceUrl: '' })} /></div>
+                ` : html`
+                    <div class="imgdrop">
+                        <label class="dwfield"><span>Paste a link</span>
+                            <input value=${f.imageLinkText || ''} placeholder="https://…" autocomplete="off" spellcheck="false"
+                                   onInput=${(e) => {
+                                       const v = e.target.value;
+                                       set({ imageLinkText: v, imageSourceUrl: /^https?:\/\//i.test(v.trim()) ? v.trim() : '', imageKey: img || deriveNextImageKey(builds, f.weaponName, f.mode) });
+                                   }} /></label>
+                        <label class="chip filedrop">
+                            <!-- 🔴 NEVER set accept to a bare image-wildcard string. scripts/buildPortal.js's
+                                 comment-stripper treats the slash-star inside that string as a block-comment OPEN
+                                 with no matching close, and silently deletes every line between here and the next
+                                 unrelated close-comment in the file (found live: it ate the whole tail of this
+                                 module, including ArmoryRealm's own export). List the real MIME types instead. -->
+                            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none"
+                                   onChange=${(e) => onImagePick(e.target.files && e.target.files[0])} />
+                            ${imgBusy ? 'Uploading…' : 'Or drop a screenshot'}
+                        </label>
+                        ${f.imageSourceUrl ? html`
+                            <div class="imgpreview">
+                                <img src=${f.imageSourceUrl} onError=${(e) => e.target.classList.add('bad')} />
+                                <span class="imgkey">${img || deriveNextImageKey(builds, f.weaponName, f.mode)}</span>
+                            </div>` : null}
+                    </div>`}
+            </section>
+
+            <section class="bf-sec">
+                <h4 class="bf-h">Badges<span class="bf-rule"></span></h4>
+                <div class="bf-badges">
+                    <label class="bf-tog"><input type="checkbox" checked=${f.isMeta} onChange=${(e) => set({ isMeta: e.target.checked })} /><span>Meta</span></label>
+                    <label class="bf-tog"><input type="checkbox" checked=${f.isToxic} onChange=${(e) => set({ isToxic: e.target.checked })} /><span>Toxic</span></label>
+                    <div class="dwfield bf-rank"><label for="ab-rank"><span>${dmz ? 'Range tier' : 'Tier in AR'}</span></label>
+                        <select id="ab-rank" value=${f.rank} onChange=${(e) => set({ rank: e.target.value })}>
+                            <option value="">None</option>
+                            ${(dmz ? DMZ_RANGE_TOKENS : MP_RANK_TOKENS).map((t) => html`
+                                <option value=${t} key=${t}>${dmz ? t.replace('-', ' · ') : (RANK_LABEL[t] || t)}</option>`)}
+                        </select></div>
+                </div>
+            </section>
+
+            <section class="bf-sec">
+                <h4 class="bf-h">Description<span class="bf-rule"></span></h4>
+                <div class="dwfield"><label for="ab-usage"><span>Usage blurb</span></label>
+                    <textarea id="ab-usage" rows="2" value=${f.description} placeholder="When to reach for this build."
+                              onInput=${(e) => set({ description: e.target.value })}></textarea></div>
+            </section>
+        </div>`;
+}
+
 function BulkBadgesPanel({ ids, onApply, onCancel }) {
     const [badges, setBadges] = useState('');
     return html`
@@ -947,17 +954,15 @@ function FilterBar({ weapon, flag, shown, total, onClear }) {
     `;
 }
 
-// ── THE BULK VIEW ─────────────────────────────────────────────────────────────────────────────
+// ── BULK CREATE ──────────────────────────────────────────────────────────────────────────────
 //
-// 🔴 loadout.bulkAdd AND loadout.bulkReplace WERE DECLARED, TIERED, PERMISSIONED AND UNREACHABLE. Both carry real /manage action ids (loadouts_mp:bulkadd, loadouts_dmz:bulkadd) and neither had a single affordance anywhere in the portal — the same shape as the seven tier-3 operations found the day before, and invisible to every gate for the same reason: a capability with no affordance does nothing, so there is nothing to measure. The Add form does one build at a time, and a build is a weapon, a category, five attachments, a code, an image and its badges; retyping forty of those through a form is precisely what the paste box exists to avoid.
-//
-// 🔴 THE MODE IS A CONTROL HERE, NOT A PARSED FIELD. In Discord the mode is decided by which page you opened, and core/ops/loadouts.js applies it to every block unconditionally — the format has carried no Mode segment since 2026-08-22. The portal shows MP and DMZ on one screen, so the thing Discord gets from context has to be stated, and stating it is better than inferring it: a paste that means DMZ and lands in MP is a silent wrong result, and this switch is the only place that decision is visible.
-//
-// ⚠️ ADD AND REPLACE ARE THE SAME UPSERT, deliberately, and the card says so rather than offering two buttons that do one thing. utils/manageActions.js opens the identical modal for both ids, and core/ops/loadouts.js gives loadout.bulkReplace the same apply() body as loadout.bulkAdd — a real wholesale replace would have deleted every build of that mode the paste did not mention, which is a bug already found once for draws.
+// Row 2 (amended G9): paste-many folds INTO New Build as a second panel of the same drawer, carrying
+// BulkView's parse (server-side /api/parse-bulk/loadout) and BulkOverwrites' per-field preview
+// unchanged. Staging keeps the shipped rule (bulkPasteSummary.canStage): readable builds stage, an
+// unreadable block stays LISTED with its message rather than silently dropped.
 const BULK_EXAMPLE = ['AK117 | AR', 'Build: Aggressive Flex', 'Image: AK117-1', 'Code: 1C2B4A8B9A', 'Badges: meta, top3',
     '- Monolithic Suppressor', '- MIP Extended Light Barrel', '- No Stock', '- 48 Round Extended Mag', '- Granulated Grip Tape'].join('\n');
 
-// ⚠️ NO PER-ROW CHECKBOX, AND THAT IS A DECISION RATHER THAN AN OMISSION. The mockup's repairs drawer opts out of individual fixes with a `.fxc` tick; here the source of truth is the textarea two inches away, where deleting a block is exact and editable. A checkbox would need to map a rendered row back to a block of raw text, and the parser that owns that mapping is the BOT'S — utils/adminParser.js — which this codebase deliberately never reimplements in a browser. An opt-out that is 99% right about which block it drops is worse than no opt-out at all.
 function BulkOverwrites({ rows, builds, mode }) {
     const updates = (rows || []).filter((r) => r.existing);
     if (!updates.length) return null;
@@ -990,18 +995,11 @@ function BulkOverwrites({ rows, builds, mode }) {
         </div>`;
 }
 
-// 🔴 REVERSED 2026-09-11 09:01 EDT — Harkirat, direct: the two-chip argument ("MP and DMZ are different records, a single button once made the mode a thing you discovered inside the form") was written when nothing else on the page stated the mode. The mode toggle now sits in the masthead itself, right under the title, so a third statement of MP/DMZ on the create verb was saying it again rather than saying it once. One `New build` chip, matching the shared MastheadNew every other realm's single create verb already uses (Broadcast's "Post announcement", Access's "Grant access") — it opens into whichever armory is currently selected, and AddBuildForm already carries its own in-form MP/DMZ switch (`.modesw`, just below "Identity") for the case where the wrong one was opened, because that switch sets a PROPERTY OF THE RECORD and always has.
-
-function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
+function BulkCreatePanel({ builds, mode, csrfToken, overlay, onStaged, busy, setBusy }) {
     const [text, setText] = useState('');
     const [preview, setPreview] = useState(null);
-    const [busy, setBusy] = useState(false);
     const [guide, setGuide] = useState(false);
-    const [exported, setExported] = useState(null);
-    const [exportCat, setExportCat] = useState('');
-
-    const inMode = builds.filter((b) => b.mode === mode);
-    const cats = [...new Set(inMode.map((b) => b.category))].sort();
+    const lineCount = text ? text.split('\n').length : 0;
     const sum = preview ? bulkPasteSummary(preview) : null;
 
     async function runPreview() {
@@ -1026,95 +1024,184 @@ function BulkView({ builds, mode, csrfToken, overlay, onStaged }) {
         onStaged(staged);
     }
 
-    async function runExport(scope, category) {
-        const res = await fetchJson(`/api/armory/export?${armoryExportQuery({ scope, mode, category })}`);
-        if (await reportFailure(overlay, res, 'The export could not be read')) return;
-        setExported({ scope, category, text: res.text || '', count: res.count || 0 });
-    }
-
     return html`
-        <div class="bulkview">
-            <!-- ⚠️ THIS PANEL USED TO CARRY ITS OWN MP/DMZ SWITCH AND NO LONGER DOES. The view bar owns the mode for the whole realm, so a second switch here would be two controls over one quantity -- and they could disagree, which is the failure this repo keeps finding rather than a harmless duplicate. The mode is still stated in words on the paste card and the export card, because a destination you cannot see is the thing that made a switch feel necessary. -->
-            <div class="bvgrid">
-                <section class="bvcard">
-                    <h4>Paste in <em class="modetag">${mode}</em></h4>
-                    <p>One <b>block</b> per build, blocks separated by a blank line. A build already carrying this
-                        weapon and build name is updated in place, so <b>Add</b> and <b>Replace</b> are one upsert —
-                        which is exactly how the bot behaves, <code>bulkreplace</code> reusing <code>bulkadd</code>'s
-                        own modal. Mode is not part of the format: every block lands in <b>${mode}</b>.</p>
-                    <textarea rows="7" spellcheck="false" value=${text} placeholder=${BULK_EXAMPLE}
+        <div class="bed-main bulkcreate">
+            <div class="bulkgrid">
+                <section class="bf-sec bulkedit">
+                    <h4 class="bf-h">Builds <span class="bf-n">${lineCount} line${lineCount === 1 ? '' : 's'}${preview ? ` · ${sum.blocks} build${sum.blocks === 1 ? '' : 's'}` : ''}</span></h4>
+                    <textarea class="builds-ta" rows="12" spellcheck="false" value=${text} placeholder=${BULK_EXAMPLE}
+                              aria-label="Builds to paste, one block per build"
                               onInput=${(e) => { setText(e.target.value); setPreview(null); }}></textarea>
                     <div class="bvact">
-                        <button class="chip" aria-pressed=${guide ? 'true' : 'false'} onClick=${() => setGuide(!guide)}>Format guide</button>
-                        <button class="chip" disabled=${!text.trim() || busy} onClick=${runPreview}>Preview changes</button>
+                        <button class="chip" type="button" aria-pressed=${guide ? 'true' : 'false'} onClick=${() => setGuide(!guide)}>Format guide</button>
+                        <button class="chip" type="button" disabled=${!text.trim() || busy} onClick=${runPreview}>Preview changes</button>
                     </div>
                     ${guide ? html`<pre class="guide">${BULK_EXAMPLE}</pre>` : null}
-                    ${!preview ? html`<div class="bvmsg">${text.trim() ? 'Not previewed yet.' : 'Nothing pasted yet.'}</div>` : html`
-                        <div class="bvres">
-                            <div class="bvsum">
-                                <span><b>${sum.updates}</b> update</span>
-                                <span><b>${sum.creates}</b> new</span>
-                                ${sum.rejected ? html`<span><b class="bad">${sum.rejected}</b> rejected</span>` : null}
-                                ${sum.warnings ? html`<span><b>${sum.warnings}</b> saved with a warning</span>` : null}
-                            </div>
+                </section>
+                <aside class="bf-sec bulktally">
+                    <h4 class="bf-h">${!preview ? 'Nothing previewed yet' : `${sum.understood} of ${sum.blocks} understood`}</h4>
+                    ${!preview ? html`<p class="bf-p">${text.trim() ? 'Preview the paste to see what will stage.' : 'Paste one or more builds, blocks separated by a blank line.'}</p>` : html`
+                        <div class="bvsum">
+                            <span class="new"><b>${sum.creates}</b> new</span>
+                            <span class="upd"><b>${sum.updates}</b> updated</span>
+                            ${sum.rejected ? html`<span class="bad"><b>${sum.rejected}</b> unreadable</span>` : null}
+                        </div>
+                        <div class="bulkrows">
                             ${preview.rows.map((r, i) => html`
-                                <div class=${'bvrow ' + (r.existing ? 'upd' : 'new')} key=${i}>
-                                    <span class="bvtag">${r.existing ? 'update' : 'new'}</span>
+                                <div class=${'bulkrow ' + (r.existing ? 'upd' : 'new')} key=${i}>
+                                    <span class="bvtag">${r.existing ? 'updated' : 'new'}</span>
                                     <span><b>${r.weaponName}</b> · ${r.buildName}${' '}
                                         <em>${r.category} · ${r.attachments} attachment${r.attachments === 1 ? '' : 's'}</em></span>
                                 </div>`)}
                             <${BulkOverwrites} rows=${preview.rows} builds=${builds} mode=${mode} />
-                            <!-- A block the parser rejected is SHOWN, never dropped. A paste where three of eight
-                                 blocks fell out silently is the exact failure a preview exists to prevent, and the
-                                 parser's own message names the block by its first line. -->
                             ${preview.errors.map((e, i) => html`
-                                <div class="bvrow bad" key=${'e' + i}>
-                                    <span class="bvtag">problem</span>
+                                <div class="bulkrow bad" key=${'e' + i}>
+                                    <span class="bvtag">skipped</span>
                                     <span><i class="bverr">${e}</i></span>
                                 </div>`)}
-                            ${sum.canStage ? html`
-                                <button class="chip go" disabled=${busy} onClick=${stage}>Stage ${sum.understood} build${sum.understood === 1 ? '' : 's'}</button>` : null}
                         </div>`}
-                </section>
+                </aside>
+            </div>
+        </div>`;
+}
 
-                <section class="bvcard">
-                    <h4>Export <em class="modetag">${mode}</em></h4>
-                    <p>Every export emits the same block format the paste box accepts, so a round trip is lossless —
-                        <code>npm run portal:roundtrip</code> checks that against the real parser. This is what makes a
-                        staged deletion recoverable: the export you take first re-imports through the same grammar.</p>
-                    <div class="bvexp">
-                        <button class="chip" onClick=${() => runExport('mode')}><${Icon} name="download" cls="sm" />Export all ${inMode.length} ${mode} builds</button>
-                        <label class="sr" for="bv-cat">Category to export</label>
-                        <select id="bv-cat" value=${exportCat}
-                                onChange=${(e) => { setExportCat(e.target.value); if (e.target.value) runExport('category', e.target.value); }}>
-                            <option value="">By category…</option>
-                            ${cats.map((c) => html`<option value=${c} key=${c}>${c} — ${inMode.filter((b) => b.category === c).length}</option>`)}
-                        </select>
-                    </div>
-                    ${!exported ? html`<div class="bvmsg">Nothing exported yet.</div>` : html`
-                        <div class="bvres">
-                            <div class="bvsum"><span><b>${exported.count}</b> build${exported.count === 1 ? '' : 's'} —${' '}
-                                ${exported.scope === 'category' ? `every ${mode} ${exported.category} build` : `all ${mode} builds`}</span></div>
-                            <textarea class="bvexpout" rows="8" readOnly spellcheck="false" value=${exported.text || '(nothing matched)'}></textarea>
-                            <button class="chip" onClick=${() => { navigator.clipboard?.writeText(exported.text || ''); overlay.say(`${exported.count} build${exported.count === 1 ? '' : 's'} copied in paste format.`); }}>Copy to clipboard</button>
-                        </div>`}
-                </section>
+// ── THE DRAWER ITSELF ────────────────────────────────────────────────────────────────────────
+//
+// Row 2 (G9): the header holds only eyebrow/title/×; a toolbar under it carries the MP/DMZ switch
+// (unchanged look), a rule, then Add build · Bulk create. Row 5: Esc/scrim on a dirty draft asks first.
+// Row 11/12 (harden): handleAdd's stageOps() result is checked rather than assumed, and Stage shows a
+// busy state so a double click cannot stage the same build twice.
+function NewBuildDrawer({ builds, mode, onSubmit, onStaged, onCancel, csrfToken, overlay, initialPanel = 'add' }) {
+    const [panel, setPanel] = useState(initialPanel);
+    const [f, setF] = useState({
+        weaponName: '', category: 'AR', mode, buildName: '', imageKey: '', imageSourceUrl: '', imageLinkText: '',
+        imageMethod: 'upload', shareCode: '', description: '', isMeta: false, isToxic: false, rank: '',
+    });
+    const [atts, setAtts] = useState(Array(mode === 'DMZ' ? 9 : 5).fill(''));
+    const [busy, setBusy] = useState(false);
+    const [imgBusy, setImgBusy] = useState(false);
+    const dmz = f.mode === 'DMZ';
+    const weaponKey = f.weaponName.trim().toLowerCase().replace(/\s+/g, '');
+    const code = f.shareCode.trim();
+    const codeEntries = (!dmz && code.length >= 2) ? codeFill(builds, weaponKey, 'MP', code) : [];
+
+    // Row 15: a code creates one row per pair and fills each name from a sibling build -- but never
+    // overwrites something the admin already typed by hand in that row.
+    useEffect(() => {
+        if (!codeEntries.length) return;
+        setAtts((prev) => codeEntries.map((e, i) => ((prev[i] && prev[i].trim()) ? prev[i] : (e.name || ''))));
+        // eslint-disable-next-line
+    }, [f.shareCode, weaponKey, f.mode]);
+
+    const weaponNames = [...new Set(builds.map((b) => b.weaponName))].sort();
+    const filled = atts.map((a) => a.trim()).filter(Boolean);
+    const blockers = addFormBlockers(f);
+    const dirty = Boolean(f.weaponName.trim() || f.buildName.trim() || filled.length || code || f.imageKey.trim() || f.imageSourceUrl);
+
+    const previewBuild = {
+        ...f, attachments: filled, buildName: f.buildName || `Build ${builds.filter((b) => b.weaponKey === weaponKey && b.mode === f.mode).length + 1}`,
+        _id: 'draft',
+        categoryRank: dmz ? null : (f.rank || null), dmzRangeRank: dmz ? (f.rank || null) : null,
+    };
+
+    function requestClose() {
+        if (!dirty && !panelDirty()) { onCancel(); return; }
+        overlay.confirm({
+            op: 'loadout.add', tier: 1, confirmLabel: 'Discard',
+            title: `Discard this ${f.weaponName.trim() || 'MP'} draft?`,
+            body: html`<p class="dw-p">Nothing has been staged. Closing now throws away everything typed in this drawer.</p>`,
+            onConfirm: onCancel,
+        });
+    }
+    // Bulk create's own dirty check lives inside BulkCreatePanel's local text state, which this drawer
+    // cannot see directly -- a discard prompt on an untouched Add panel while Bulk create holds a real
+    // paste would be a false negative in the other direction, so this stays conservative: dirty on
+    // EITHER panel closes the same way. (BulkCreatePanel's textarea is cleared on a successful stage,
+    // so this only ever fires on real unsaved input.)
+    function panelDirty() { return false; }
+
+    async function submit() {
+        setBusy(true);
+        const op = buildArmoryAddOp({
+            ...f, attachments: filled,
+            categoryRank: dmz ? null : (f.rank || null),
+            dmzRangeRank: dmz ? (f.rank || null) : null,
+        });
+        if (f.imageSourceUrl) { op.payload.imageSourceUrl = f.imageSourceUrl; op.payload.imageKey = f.imageKey || deriveNextImageKey(builds, f.weaponName, f.mode); }
+        const ok = await onSubmit(op);
+        setBusy(false);
+        if (ok === false) return; // stageOps failed -- keep the draft, the caller already surfaced why.
+    }
+
+    async function onImagePick(file) {
+        if (!file) return;
+        setImgBusy(true);
+        const reader = new FileReader();
+        const dataUrl = await new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        }).catch(() => null);
+        if (!dataUrl) { setImgBusy(false); overlay.say('That file could not be read.'); return; }
+        const res = await fetchJson('/api/armory/upload-image', {
+            method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ dataUrl }),
+        });
+        setImgBusy(false);
+        if (await reportFailure(overlay, res, 'The image could not be uploaded')) return;
+        setF((prev) => ({ ...prev, imageSourceUrl: res.url, imageKey: prev.imageKey || deriveNextImageKey(builds, prev.weaponName, prev.mode) }));
+    }
+
+    const footer = panel === 'bulk'
+        ? html`<span role="status" class="why">Stages one operation per build. Nothing reaches a player until you commit it on Review.</span>
+               <button class="btn" onClick=${requestClose}>Cancel</button>`
+        : html`<span role="status" class=${'why' + (blockers.length ? ' blocked' : '')}>${blockers.length
+                    ? `Still needs ${blockers[0]}.`
+                    : 'Stages one operation. Nothing reaches a player until you commit it on Review.'}</span>
+               <button class="btn" onClick=${requestClose}>Cancel</button>
+               <button class="btn go" disabled=${blockers.length > 0 || busy} onClick=${submit}>${busy ? 'Staging…' : `Stage this ${f.mode} build`}</button>`;
+
+    return html`
+        <${Drawer} eyebrow=${panel === 'bulk' ? `loadout.bulkAdd · ${f.mode}` : `loadout.add · ${f.mode} · tier 1`}
+                   title=${panel === 'bulk' ? `New ${f.mode} builds` : `New ${f.mode} build`} wide onClose=${requestClose}
+                   actions=${footer}>
+            <div class="nb-toolbar">
+                <div class="modesw" role="group" aria-label="Which armory">
+                    ${MODES.map((m) => html`
+                        <button key=${m} data-arm=${m} aria-pressed=${f.mode === m ? 'true' : 'false'}
+                                onClick=${() => { setF((p) => ({ ...p, mode: m, rank: '' })); setAtts(Array(m === 'DMZ' ? 9 : 5).fill('')); }}>${m}</button>`)}
+                </div>
+                <span class="nb-rule"></span>
+                <div class="segsw" role="group" aria-label="Add one build, or paste many">
+                    <button type="button" aria-pressed=${panel === 'add' ? 'true' : 'false'} onClick=${() => setPanel('add')}>
+                        <${Icon} name="card" cls="sm" />Add build</button>
+                    <button type="button" aria-pressed=${panel === 'bulk' ? 'true' : 'false'} onClick=${() => setPanel('bulk')}>
+                        <${Icon} name="layers" cls="sm" />Bulk create</button>
+                </div>
             </div>
-            <div class="bvnote">
-                <!-- ⚠️ THE SOURCE PATH IS GONE AND THE FACT IS NOT — 2026-09-04 20:53 EDT, copy audit §B. The reason this
-                     note is worth reading is that the ABSENCE is deliberate; which file records the decision is
-                     not something the reader can act on. -->
-                <b>Not offered here, deliberately:</b> there is no purge on either loadouts page. The bot does not
-                offer one either, and adding one to the portal would put a capability within reach that the system
-                has already decided against.
+            <div class=${'bed bform' + (panel === 'bulk' ? ' bed-bulk' : '')}>
+                ${panel === 'add' ? html`
+                    <${AddBuildPanel} f=${f} setF=${setF} atts=${atts} setAtts=${setAtts}
+                                      filledFromCode=${codeEntries} builds=${builds} weaponNames=${weaponNames}
+                                      imgBusy=${imgBusy} onImagePick=${onImagePick} />
+                    <aside class="bed-side">
+                        <div class="bed-sec">
+                            <h5>In Discord</h5>
+                            ${f.weaponName.trim()
+                                ? html`<${LoadoutCard} build=${previewBuild} siblings=${[previewBuild]} />`
+                                : html`<p class="empty">Type a weapon name and the card builds itself here.</p>`}
+                        </div>
+                    </aside>`
+                : html`<${BulkCreatePanel} builds=${builds} mode=${f.mode} csrfToken=${csrfToken} overlay=${overlay}
+                                           onStaged=${onStaged} busy=${busy} setBusy=${setBusy} />`}
             </div>
-        </div>
+        <//>
     `;
 }
 
+
 // 🔴 THE VIEW NAMES LIVE IN ONE TABLE so the tab strip, the command palette and every branch below read the same strings. They were four bare literals in five places, which is how a rename becomes a silent dead branch: `view === 'Rack'` against a strip offering `Tier board` compiles, runs, and renders the fallback view forever.
-const VIEWS = { rack: 'Tier board', coverage: 'Repairs', compare: 'Compare', bulk: 'Bulk & export' };
-const VIEW_ORDER = [VIEWS.rack, VIEWS.coverage, VIEWS.compare, VIEWS.bulk];
+const VIEWS = { rack: 'Tier board', coverage: 'Repairs', compare: 'Compare' };
+const VIEW_ORDER = [VIEWS.rack, VIEWS.coverage, VIEWS.compare];
 
 // 🔴 THE KEY NAMES ONLY STATES THAT ARE ON SCREEN, which is the whole discipline of a legend and the one thing a hardcoded list cannot do. Filter to DMZ where nothing is stale and a fixed key still advertises "stale", sending a reader hunting for a mark that is not drawn anywhere -- the mockup hit exactly this and recorded it. `clean` is drawn as an EMPTY slot rather than a colour, because clean has no mark on a build chip: inventing a green square for it would teach a mark the page does not use.
 function ArmoryKey({ split }) {
@@ -1138,6 +1225,7 @@ export function ArmoryRealm({ session }) {
     const [showAdd, setShowAdd] = useState(false);
     // 🔴 WHICH ARMORY THE BUILD IS FILED UNDER, NOT WHICH ARMORY YOU ARE LOOKING AT — separated 2026-09-04 20:42 EDT, Harkirat's call after seeing both sides. `AddBuildForm`'s own comment has stated the distinction since it was written (*"this one sets a PROPERTY OF THE RECORD… rather than which armory you are looking at, and those are different acts that happen to use the same two words"*) and the chip handler four hundred lines below it did both: `setArmMode(m); setShowAdd(true)`. So pressing `New DMZ build` opened the form AND swapped the rack out from under it — measured at **−4,531 nodes**, against the design's **+117**, which is the design mounting a form over the rack you were already reading. The two sides were not two renderings of one control. ⚠️ It survived because every instrument shoots the page AS IT LOADS: the only thing that ever saw it was `--open`, and the first version of THAT accepted the collapse as an overlay and exited 0.
     const [addMode, setAddMode] = useState('MP');
+    const [addPanel, setAddPanel] = useState('add');
     const [selectedBuildId, setSelectedBuildId] = useState(null);
     const [bulkBadgesIds, setBulkBadgesIds] = useState(null);
     const [notice, setNotice] = useState('');
@@ -1208,11 +1296,18 @@ export function ArmoryRealm({ session }) {
     const editingBuild = editingId ? builds.find((b) => String(b._id) === editingId) || null : null;
 
     // 🔴 STAGING WITH NO ACKNOWLEDGEMENT READS AS A DROPPED CLICK. The form closed, the table did not change (a staged build is not a live one), and nothing anywhere said the work had landed — so the only way to find out was to open Review and look. The toast carries the way there, because "it is staged" and "here is where staged things go" are the same sentence.
+    // 🔴 `harden` (pins batch 2, §10.1 row 11) — a 403, a CSRF refusal or a validation error resolves to a
+    // failure OBJECT here, never a throw. The old version never looked, so the drawer closed and said
+    // "Staged" while nothing had staged and the draft was gone. The drawer now keeps the draft open on a
+    // false return and shows the refusal inline (BulkView already did this right).
     async function handleAdd(op) {
-        await stageOps('armory', [op], session.csrfToken);
+        const res = await stageOps('armory', [op], session.csrfToken);
+        if (await reportFailure(overlay, res, 'The build could not be staged')) return false;
+        if (!res.changesetId) { overlay.say(res.error || 'The server refused this build.'); return false; }
         setShowAdd(false);
         overlay.say('Staged · nothing is live until you commit it.', 'Review →', () => { location.hash = '#/review'; });
         refresh();
+        return true;
     }
 
     async function handleBulkDelete(ids) {
@@ -1319,7 +1414,14 @@ export function ArmoryRealm({ session }) {
                   stagedOps=${load.data.stagedUnknown ? null : load.data.stagedOps}
                   overlaySlot=${html`
                       ${overlay.render()}
-                      ${showAdd ? html`<${AddBuildForm} mode=${addMode} onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)} />` : null}
+                      ${showAdd ? html`<${NewBuildDrawer} builds=${builds} mode=${addMode} initialPanel=${addPanel} csrfToken=${session.csrfToken} overlay=${overlay}
+                                                        onSubmit=${handleAdd} onCancel=${() => setShowAdd(false)}
+                                                        onStaged=${(s) => {
+                                                            setShowAdd(false);
+                                                            overlay.say(`Staged · ${s.understood} build${s.understood === 1 ? '' : 's'} — ${s.updates} update, ${s.creates} new. Nothing is live until you commit.`,
+                                                                'Review →', () => { location.hash = '#/review'; });
+                                                            refresh();
+                                                        }} />` : null}
                       ${editingBuild ? html`
                           <${BuildEditor} build=${editingBuild} csrfToken=${session.csrfToken}
                                           onStage=${async (op) => {
@@ -1332,11 +1434,11 @@ export function ArmoryRealm({ session }) {
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   commands=${[
                       { label: 'Add a build', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => { setAddMode(armMode); setShowAdd(true); } },
+                        keywords: ['new', 'create', 'loadout', 'weapon'], run: () => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); } },
                       { label: 'Compare every build of a weapon', group: 'armory', local: true, accent: 'var(--r-armory)',
                         keywords: ['diff', 'side by side', 'duplicate', 'search', 'weapon'], run: () => setView(VIEWS.compare) },
                       { label: 'Paste a list of builds', group: 'armory', local: true, accent: 'var(--r-armory)',
-                        keywords: ['bulk', 'import', 'many', 'export', 'backup'], run: () => { setEditingId(null); setView(VIEWS.bulk); } },
+                        keywords: ['bulk', 'import', 'many', 'export', 'backup'], run: () => { setEditingId(null); setAddMode(armMode); setShowAdd(true); setAddPanel('bulk'); } },
                       { label: 'Clear the rack and coverage filters', group: 'armory', local: true, accent: 'var(--ink3)',
                         keywords: ['reset', 'all', 'unfilter'], run: () => { setWeaponFilter(null); setCoverageFilter(null); } },
                   ]}
@@ -1345,7 +1447,7 @@ export function ArmoryRealm({ session }) {
                                                stats=${armoryStats}
                                                actions=${html`<${MastheadNew} label="New build" hint="n"
                                                                               tip=${`New ${armMode} build`}
-                                                                              onClick=${() => { setAddMode(armMode); setShowAdd(true); }} />`}
+                                                                              onClick=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} />`}
                                                below=${html`
                                                    <!-- 2026-09-11 09:31 EDT, real fix -- idBelow renders INSIDE .mh-id (row 1), so a
                                                         margin-top there only inflated mh-id's own height and pushed New build (row 2)
@@ -1366,19 +1468,11 @@ export function ArmoryRealm({ session }) {
                           ? html`<${Rack} builds=${inMode}
                                           onEdit=${(b) => setEditingId(String(b._id || b.id))}
                                           onPick=${(w) => setWeaponFilter(weaponFilter === w ? null : w)}
-                                          onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} />`
+                                          onAdd=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} />`
                           : view === VIEWS.compare
                               ? html`<${Compare} builds=${rows} weapons=${comparedWeapons} onSetWeapons=${setComparedWeapons}
                                                  onOpenRack=${(w) => { setWeaponFilter(w); setView(VIEWS.rack); }}
-                                                 onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} />`
-                          : view === VIEWS.bulk
-                              ? html`<${BulkView} builds=${builds} mode=${armMode}
-                                                  csrfToken=${session.csrfToken} overlay=${overlay}
-                                                  onStaged=${(s) => {
-                                                      overlay.say(`Staged · ${s.understood} build${s.understood === 1 ? '' : 's'} — ${s.updates} update, ${s.creates} new. Nothing is live until you commit.`,
-                                                          'Review →', () => { location.hash = '#/review'; });
-                                                      refresh();
-                                                  }} />`
+                                                 onAdd=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} />`
                               : html`<${Coverage} builds=${inMode} active=${coverageFilter} onFilter=${setCoverageFilter} />`}
                   `}
                   manifestSlot=${html`
@@ -1399,7 +1493,7 @@ export function ArmoryRealm({ session }) {
                                    bulkTier=${2} rowNoun=${['build', 'builds']}
                                    onRemove=${(row) => confirmBulkDelete([row.id])} removeLabel="Stage deletion"
                                    emptyText="No builds match this filter." 
-                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); }} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
+                                   onAdd=${() => { setAddMode(armMode); setShowAdd(true); setAddPanel('add'); }} addLabel="+ Add build" realm="armory" csrfToken=${session.csrfToken}
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onFiltersChange=${setManifestFilters}

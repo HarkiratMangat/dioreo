@@ -3,7 +3,7 @@
 // Armory realm \u2014 covers /manage's 'loadouts_mp' and 'loadouts_dmz' pages. No dates, so no Track \u2014 Rack (by category) and Coverage (data-quality flags) are both derived read-only views over the same Loadout collection. Mutations go through the generic changeset pathway (loadout.add, loadout.bulkReplace, etc.) built by the frontend.
 const Loadout = require('../../models/Loadout');
 const { findDuplicateLoadouts, getMpCategoryAccent, buildLoadoutCard, buildImageUrl } = require('../../utils/loadoutRender');
-const { sendJson, forbidden, isObjectId } = require('./httpUtil');
+const { sendJson, forbidden, isObjectId, readJsonBody } = require('./httpUtil');
 const { grantedPagesFor } = require('./realmAccess');
 
 const ARMORY_PAGES = ['loadouts_mp', 'loadouts_dmz'];
@@ -57,6 +57,29 @@ function register(route) {
         if (!build) return sendJson(res, 404, { error: 'no such loadout' });
         const card = buildLoadoutCard([build], 0, { color: getMpCategoryAccent(build.category), idPrefix: 'preview_' });
         sendJson(res, 200, { card });
+    }));
+
+    // The New Build drawer's Image section (spec §10.1 row 14) -- "drop a screenshot" needs SOME https
+    // URL to exist before the drawer can stage or preview it, and only the server holds the Cloudinary
+    // credentials to make one. This is a STAGING upload only (see uploadStagingScreenshot's own header):
+    // the real, final upload to the derived WEAPON-N key happens inside loadout.add/loadout.edit's apply()
+    // at commit time, so renaming the weapon after a drop never orphans anything under the wrong key.
+    route('POST', /^\/api\/armory\/upload-image$/, requireAdmin(async (req, res, url, session) => {
+        const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
+        if (grantedPages.length === 0) return forbidden(res, 'forbidden');
+        let body;
+        try { body = await readJsonBody(req); } catch { return sendJson(res, 400, { error: 'malformed body' }); }
+        const dataUrl = String(body.dataUrl || '');
+        if (!/^data:image\/(png|jpe?g|webp|gif);base64,/.test(dataUrl)) {
+            return sendJson(res, 400, { error: 'Drop an image file — that did not look like one.' });
+        }
+        // A build card renders this at most a few hundred px wide; nothing here needs a screenshot large
+        // enough to approach the server's own general body cap.
+        if (dataUrl.length > 8 * 1024 * 1024) return sendJson(res, 413, { error: 'That image is too large.' });
+        const { uploadStagingScreenshot } = require('../../utils/loadoutImageCache');
+        const result = await uploadStagingScreenshot(dataUrl);
+        if (!result.success) return sendJson(res, 502, { error: result.error });
+        sendJson(res, 200, { url: result.url });
     }));
 
     // Bulk "Export selection" — utils/adminParser.js's formatLoadoutsAsBulkText was only ever wired to Discord-side callers (handlers/manage/loadouts.js, utils/manageActions.js) before this.

@@ -277,10 +277,114 @@ function editorBlockers(build, draft) {
     return out;
 }
 
+
+// ── THE GUNSMITH CODE NAMES A SLOT PER DIGIT, AND CROSS-BUILD FACTS NAME THE ATTACHMENT ────────
+//
+// Brief D 1b, spec §6/§10.1 row 15. A CODM Gunsmith share code alternates Number-Letter for its whole
+// length (utils/adminParser.js's correctGunsmithCode comment), and the NUMBER is fixed to one slot --
+// this is a Gunsmith-code fact, not something any one build's data decides. Mirrored here rather than
+// imported because utils/adminParser.js is Node-only (chrono-node/dayjs) and the browser bundle never
+// loads it -- same pattern as parseBadgesToken above.
+const SLOT_DIGIT_TO_KEY = { '1': 'muzzle', '2': 'barrel', '3': 'optic', '4': 'stock', '5': 'perk',
+    '6': 'laser', '7': 'underbarrel', '8': 'ammunition', '9': 'rear grip' };
+// utils/adminParser.js's CANONICAL_SLOT_ORDER, mirrored (see SLOT_DIGIT_TO_KEY above for why). 'trigger
+// action' is carried for fidelity with that array but is never a slot any build actually populates --
+// visionExtract.js's prompt has no field for it -- so DISPLAY_SLOT_ORDER below drops it.
+const CANONICAL_SLOT_ORDER = ['optic', 'muzzle', 'barrel', 'stock', 'laser', 'underbarrel', 'trigger action', 'rear grip', 'ammunition', 'perk'];
+const DISPLAY_SLOT_ORDER = CANONICAL_SLOT_ORDER.filter((s) => s !== 'trigger action');
+const SLOT_LABEL_TEXT = { optic: 'Optic', muzzle: 'Muzzle', barrel: 'Barrel', stock: 'Stock', laser: 'Laser',
+    underbarrel: 'Underbarrel', 'rear grip': 'Rear Grip', ammunition: 'Ammunition', perk: 'Perk' };
+
+const canonicalSlot = (raw) => String(raw || '').toLowerCase().trim();
+
+// A code's pairs, in the order they appear -- "2A4B5A8C9C" -> [{pair:'2A',digit:'2',letter:'A'}, ...]. Tolerant of a code still mid-typing (an odd trailing digit with no letter yet is simply not a pair).
+function parseCodePairs(code) {
+    const out = [];
+    for (const m of String(code || '').matchAll(/(\d)([A-Za-z])/g)) {
+        out.push({ pair: `${m[1]}${m[2].toUpperCase()}`, digit: m[1], letter: m[2].toUpperCase() });
+    }
+    return out;
+}
+
+// slotCatalogue(builds, mode): attachment name -> slot label ("Barrel"), read off every build's parallel
+// attachments[]/attachmentSlots[] arrays (backfilled from Cloudinary metadata, scripts/backfillSlotsFromMetadata.js).
+// Mode-scoped: MP and DMZ draw from largely disjoint attachment pools, and a cross-mode collision would
+// misname a slot the way a cross-weapon one would (row 15's own measurement). Feeds the weapon/attachment
+// fuzzy search (row 16) -- narrowing which attachments a slot's search offers, and greying a match whose
+// slot is already filled.
+function slotCatalogue(builds, mode) {
+    const map = {};
+    for (const b of builds || []) {
+        if (mode && b.mode !== mode) continue;
+        const names = b.attachments || [];
+        const slots = b.attachmentSlots || [];
+        for (let i = 0; i < names.length; i++) {
+            const name = String(names[i] || '').trim();
+            const slot = canonicalSlot(slots[i]);
+            if (!name || !SLOT_LABEL_TEXT[slot]) continue;
+            map[name] = SLOT_LABEL_TEXT[slot];
+        }
+    }
+    return map;
+}
+
+// codeFill(builds, weaponKey, mode, code): one entry per digit-letter pair in `code`, in
+// DISPLAY_SLOT_ORDER, naming the attachment another build of the SAME weapon+mode carries at that exact
+// pair -- or null when this weapon has never used it. MP only (row 17: DMZ has no code).
+//
+// 🔴 THE REGISTRY IS SCOPED TO ONE WEAPON, NEVER GLOBAL -- this IS the falsifier (row 15: the same pair
+// disagrees across different weapons 36 of 56 times measured). A registry built over every weapon and
+// keyed only by pair would let a Fennec's "2A" answer for a LOCUS's "2A"; scoping the loop to
+// `b.weaponKey === weaponKey` up front makes that structurally impossible rather than merely untested.
+function codeFill(builds, weaponKey, mode, code) {
+    if (mode !== 'MP') return [];
+    const pairs = parseCodePairs(code);
+    if (!pairs.length) return [];
+    const registry = {}; // pair -> attachment name, built only from THIS weapon's own MP siblings.
+    for (const b of builds || []) {
+        if (b.mode !== 'MP' || b.weaponKey !== weaponKey || !b.shareCode) continue;
+        const names = b.attachments || [];
+        const slots = b.attachmentSlots || [];
+        const bPairs = parseCodePairs(b.shareCode);
+        for (let i = 0; i < names.length; i++) {
+            const slotKey = canonicalSlot(slots[i]);
+            const name = String(names[i] || '').trim();
+            if (!name || !SLOT_LABEL_TEXT[slotKey]) continue;
+            // The pair whose DIGIT matches this attachment's slot is the pair that named it in b's own code.
+            const found = bPairs.find((p) => SLOT_DIGIT_TO_KEY[p.digit] === slotKey);
+            if (found && registry[found.pair] === undefined) registry[found.pair] = name;
+        }
+    }
+    const byDigit = new Map(pairs.map((p) => [SLOT_DIGIT_TO_KEY[p.digit], p]));
+    return DISPLAY_SLOT_ORDER
+        .filter((slot) => byDigit.has(slot))
+        .map((slot) => {
+            const p = byDigit.get(slot);
+            return { pair: p.pair, digit: p.digit, slot, label: SLOT_LABEL_TEXT[slot], name: registry[p.pair] || null };
+        });
+}
+
+
+// deriveNextImageKey(builds, weaponName, mode): client-side mirror of utils/loadoutImageCache.js's
+// deriveImageKey -- same convention (WEAPON-NAME-N, DMZ- prefixed for DMZ), computed against every
+// imageKey already IN the loaded catalogue rather than a server round trip, so the New Build drawer can
+// show the real next key ("AK117-6") live as the weapon name is typed. Server-side deriveImageKey stays
+// the one place the ACTUAL upload uses (core/ops/loadouts.js, at commit) -- this is a preview only.
+function deriveNextImageKey(builds, weaponName, mode) {
+    const base = String(weaponName || '').trim().toUpperCase().replace(/\s+/g, '-');
+    if (!base) return '';
+    const prefix = mode === 'DMZ' ? 'DMZ-' : '';
+    const taken = new Set((builds || []).map((b) => String(b.imageKey || '').toUpperCase()));
+    let n = 1;
+    while (taken.has(`${prefix}${base}-${n}`)) n++;
+    return `${prefix}${base}-${n}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { bulkFieldDiff, findLocalBuild, buildArmoryAddOp, buildArmoryEditOp, parseBadgesToken, bulkPasteSummary, armoryExportQuery, DMZ_RANGE_TOKENS, MP_RANK_TOKENS,
         RANK_ORDER, RANK_LABEL, RANK_KEY, CATEGORY_CHIP_LABEL, CATEGORY_CHIP_ORDER,
         rankOf, bestRankIndex, rackCategories, weaponOptions, matchWeapons,
         addFormBlockers, editedFields, editorBlockers, EDIT_DIRTY_FIELDS,
-        buildNumberOf, copyCodeText, shareCommandText, displayBuildLabel, GUNSMITH_CODE_SHAPE };
+        buildNumberOf, copyCodeText, shareCommandText, displayBuildLabel, GUNSMITH_CODE_SHAPE,
+        slotCatalogue, codeFill, parseCodePairs, DISPLAY_SLOT_ORDER, SLOT_LABEL_TEXT, SLOT_DIGIT_TO_KEY, deriveNextImageKey };
 }
