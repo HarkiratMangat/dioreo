@@ -5,20 +5,21 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 5). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 6). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
 
 > **Version 1** (`index.html` beside this file) was the static board of 2026-09-15 afternoon. **Version 2** recreated the
 > whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing"*. Version 5 is
-> the redo in board 1 and 2's gate format. The v1 `census.*` and `palettes.json` beside this file are still the evidence
+> the redo in board 1 and 2's gate format, and version 6 answers his first two comments on it. The v1 `census.*` and `palettes.json` beside this file are still the evidence
 > they always were.
 
 ## How the board works
 
 - One **gate** per topic, in board 1 and 2's frame: a gate id, a title, a one-line sub, the pins it answers, a stage
   holding only the element, the notes, and then the picks.
+- A1's stage carries one weapon from **every** category, so the tools row's real spacing and wrap behaviour are on screen rather than implied.
 - A stage is the portal's own component — `Manifest`, `ArmoryGroups`, `RepairsPanel`, `NowShowing`, `B3History`,
   `B3BuildDrawer`, the command bar, the export drawer — running on the dev database with the mocked API. Drawers, the
   selection bar and popovers are `position:fixed` in the portal, so each stage carries a transform and becomes their window.
@@ -80,9 +81,9 @@ These are the pins whose value is already decided; the board shows them applied,
 
 | Pin | Value |
 |---|---|
-| 3 | The Attachments switch moves to the tools row's first row, ahead of Add build; `.mtools .mlabel` min-width 84px → 64px, which walks the search and chips 20px left |
+| 3 | The Attachments group stays in the tools row's second row, **inline with the category toggles** with the `.mt-grp + .mt-grp` divider between them (his board 2 request), the row goes `flex-wrap: nowrap` so it can no longer drop to a second line, and Attachments pins right; `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ The first version of this moved the group to row one — wrong, corrected 2026-09-15 19:20 EDT |
 | 5 | Board 2's fold / unfold marks on every fold control (`Fold` renders `i-b2-fold` / `i-b2-unfold`) |
-| 6 | `--sec` becomes `#3F6E8E`, in the portal and in `utils/loadoutRender.js` |
+| 6 | `--sec` becomes `#3F6E8E` in the portal **and the accent is rewritten in the data** — chips, weapon bars and row accents all read `b.accent`, which the API still answers with `#023047`, so the token alone changes nothing visible; `utils/loadoutRender.js`'s `SECONDARIES` moves with it |
 | 8 | `.wg-ig` draws one ring in an `::after` above its children; `.wg-igf` keeps `inset 0 3px 4px -2px rgba(0,0,0,.45)`; `.wg-igb` loses its own ring for a left border |
 | 9 | `.wg-code:hover` lights only `.wg-igb`, never the field |
 | 10 | `.wg-code { cursor: pointer }` |
@@ -105,4 +106,4 @@ These are the pins whose value is already decided; the board shows them applied,
 `local/pins2-board-3/redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: gates, picks
 and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its
 switch on **and** off; a pick actually written and painted; board 1's G8 frame loaded; and no horizontal overflow at 1282px
-or 390px. Last run 2026-09-15 19:01 EDT: 19 gates, 18 picks, 39 options, 0 page errors, 0 overflow.
+or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`. Last run 2026-09-15 19:20 EDT: 19 gates, 18 picks, 39 options, 0 page errors, 0 overflow at 1282px and 390px.
