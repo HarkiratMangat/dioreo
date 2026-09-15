@@ -1207,9 +1207,9 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 |---|---|---|
 | 1 | `mcp-layer-check.sh` drops its RULES block | ✅ done 2026-09-14 22:00 EDT on `ci/test-queue-rebuild` |
 | 2 | `ctx-search-nudge.sh` extended to whole-file `cat <path>` and `sed -n 'N,Mp' <path>` in Bash and `ctx_execute`, pointing at `read_smart` or a chunk-range slice; `rg -c` and aggregates stay quiet; test cases both ways | ✅ built 2026-09-14 22:38 EDT as `shell-read-nudge.sh` — a sibling hook rather than an extension, for the reason `codebase-memory-nudge.sh` is one: the prose-question gate and the file-read gate are mutually exclusive, and one script holding both is harder to falsify |
-| 3 | global `~/.claude/CLAUDE.md` §1–3 shrink to the fallback chain plus the four call-site rules | not done; the file still restates `read_smart` in five places |
+| 3 | global `~/.claude/CLAUDE.md` §1–3 shrink to the fallback chain plus the four call-site rules | ✅ done 2026-09-14 22:53 EDT: §1–4 cut to the four chains plus pointers to TOOLING §3 and the working agreement, and the three stale `codebase-index` routings renamed |
 
-**Verify by:** a `cat docs/README.md` in Bash produces the nudge and `rg -c x docs/README.md` does not, with both cases in `ctx-search-nudge.test.sh`; and `rg -c read_smart ~/.claude/CLAUDE.md` returns at most 1.
+**Verify by:** a `cat docs/README.md` in Bash produces the nudge and `rg -c x docs/README.md` does not, with both cases in `ctx-search-nudge.test.sh`; and global `~/.claude/CLAUDE.md` carries no paragraph restating how to use `read_smart` — only the pointer to the working agreement and TOOLING §3. *(Corrected 2026-09-14 22:54 EDT: this said `rg -c read_smart` returns at most 1, which counted the tool's name in inventory lists as a restatement and could never pass.)*
 
 ### ⚠️ `[P2 · M]` FOURTEEN `PreToolUse` GATES ARE REGISTERED ON `Bash` ALONE, AND `ctx_batch_execute` ROUTES AROUND EVERY ONE OF THEM
 

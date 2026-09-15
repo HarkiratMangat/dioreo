@@ -41,7 +41,7 @@ I had disabled plugins using "never invoked" as evidence of uselessness. **That 
 **The falsifier for this entry:** ask for a symbol you know exists and read `in_degree`. If `list_projects` returns an empty array or a node count in the tens, the index really has collapsed — and that is a different fact from the tool being broken.
 
 ## `codebase-memory-mcp` — ✅ MOSTLY WORKS, replaced codebase-index (tested 2026-07-25 01:05 EDT)
-v0.9.0, MIT, `DeusData/codebase-memory-mcp`. tree-sitter AST over 158 languages with Hybrid LSP for **JS/TS/JSX/TSX** — the gap codebase-index could not fill. Installed via **`npm install -g`, deliberately NOT the `curl | bash` one-liner**: piping a remote script into a shell is off-limits, and their installer auto-rewrites agent config files. Audited `install.js` first — downloads only from the project's own GitHub releases, **verifies checksums**, touches no agent config. Registered manually as a project MCP.
+⚠️ *Install method and version superseded 2026-09-14 22:53 EDT: one native 0.10.8 binary, see § codebase-memory-mcp 0.10.8 below.* v0.9.0, MIT, `DeusData/codebase-memory-mcp`. tree-sitter AST over 158 languages with Hybrid LSP for **JS/TS/JSX/TSX** — the gap codebase-index could not fill. Installed via **`npm install -g`, deliberately NOT the `curl | bash` one-liner**: piping a remote script into a shell is off-limits, and their installer auto-rewrites agent config files. Audited `install.js` first — downloads only from the project's own GitHub releases, **verifies checksums**, touches no agent config. Registered manually as a project MCP.
 
 | Capability | Result on this JS repo |
 |---|---|
@@ -64,6 +64,30 @@ Cross-checked against `rg` ground truth, twice:
 `search_graph(max_degree=0, exclude_entry_points=true)` claimed **24 dead functions**. Verified the first two — **both false positives**: `getRecentAlerts` is called at `commands/alerts.js:118`, and `buildGlobalNavRow` is called in 5+ command files. Both were reported with `in_degree: 0` **even though `trace_path` finds their callers correctly** — so the degree metric disagrees with the graph it is computed from. Most of the rest are discord.js interaction stubs (`deferReply`, `getString`, …) picked up from the synthetic-interaction object literal at `index.js:945`, not real functions. **Never report dead code from this tool without `rg` verification.** Also note `search_graph` returns very large per-node payloads (every metric + fingerprints) — always pass `limit`.
 
 **Verdict: the swap was correct.** codebase-memory-mcp does on JavaScript what codebase-index structurally could not: real call chains, verified accurate. Use `trace_path` for callers/callees; use `rg` to confirm anything before acting on it; ignore the dead-code feature.
+
+## `codebase-memory-mcp` 0.10.8 — upgraded, re-scoped and re-measured (2026-09-14 22:53 EDT)
+
+**Why this section exists.** Two copies were installed: 0.9.0 in `~/.local/bin`, used by the MCP entry, the hooks and `PATH`, and 0.10.8 from npm, used by nothing. Harkirat asked for the docs to be read in full and for the "`rg` is less noisy for where-is-X-defined" claim to be falsified rather than repeated.
+
+**The install.** The tool is built around its native binary: its `install`, `update` and `uninstall` coordinate the daemon, while an npm install is described as a portable wrapper whose updates do not stop running sessions. The npm copy was removed; the darwin-arm64 release archive and `checksums.txt` were downloaded, SHA-256 verified, and the extracted binary's own `install -y --clients=claude` replaced the 0.9.0 copy. It added three subagents (`codebase-memory`, `-scout`, `-auditor`), a post-Read coverage hook, and SessionStart/SubagentStart reminders, and it **left the old combined SessionStart entry in place beside four new ones**, so the reminder fired twice until that entry was removed. The re-index command with `--repo_path` still works on 0.10.8.
+
+**The scope.** The tool skips `.claude/` by default, so the 78 hook scripts, their tests and the rule files were absent: 625 of 732 tracked parseable files were indexed. A tracked `.cbmignore` now un-skips `.claude/`, keeps `.claude/worktrees/` out and drops `*.min.js`; after a full re-index **725 of 732** are indexed, the rest being `package.json`, `package-lock.json`, three JSON settings files and the excluded bundle.
+
+**The measurements**, over a seeded random sample of 20 functions plus the 5 that tied on 2026-09-08:
+
+| Question | Method | Result |
+|---|---|---|
+| Where is X defined | `rg` definition regex | 25 of 25 |
+| | `search_graph` with `query: "X"` | **24 of 25**, real definition first, ~250 B per answer against up to 8,171 B for `rg -w` |
+| | `search_graph` with bare `name_pattern: "^X$"` | returns every destructuring import site as a `Variable` node (10 rows for `resolvePanelActor`); this, not the graph, is why 2026-09-08 scored ties |
+| | the one miss | `parseCol`, a function nested inside another function; nested functions are not nodes |
+| Who calls X | `trace_path` inbound, compared file by file with real call sites | complete for `resolvePanelActor`, `buildSyntheticInteraction`, `hasAnyGuildOverride`, `deriveNameplateName`; `sendV2Payload` 26 of 28 and `flatIndexToPosition` 2 of 3 (the misses are test files); **`mentionCommand` 1 of 10**, because its calls sit inside template literals |
+| Dead code | `max_degree: 0, exclude_entry_points: true` | 8 of 8 functions checked have real callers (`mentionCommand` has 36 references across 11 files) |
+| Find code by what it does | `semantic_query` | **0 of 9** known targets across two full builds with 123 `SEMANTICALLY_RELATED` and 568 `SIMILAR_TO` edges present; results scored near zero and were dominated by shell scripts and mockup assets |
+
+**Verdict.** For where-is-X-defined the graph is as accurate as `rg` and far cheaper, **when asked with `query`**. For callers it is the right first call, but confirm with `rg` before deleting or renaming anything. Do not use its dead-code filter or `semantic_query` on this repo. The routing in `~/.claude/TOOLING.md` §3, `~/.claude/WORKING-AGREEMENT.md`, global `CLAUDE.md` §2 and `.claude/hooks/codebase-memory-nudge.sh` says exactly this.
+
+⚠️ **Not re-tested:** whether the MCP tool's `index_repository` still drops `repo_path` (the 2026-09-01 entry below). This session's MCP server was still 0.9.0 when it was written; test it after a restart.
 
 ## ⚠️ ZERO invocations across an entire session despite being named PRIMARY — 2026-08-20 14:53 EDT (Hotpatch v1)
 Built and reviewed a 15-file, 20-commit change (a new require-graph classifier, a router refactor, a `/help` placement fix) with `rg`/`Read` as the only lookup tools — never called `search_graph`, `trace_path`, `get_dependents`, or even `list_projects` to check the index was healthy, despite the `CODE-DISCOVERY` hook firing on nearly every relevant Bash/Read call and CLAUDE.md's own "Tool Preferences & Fallback Logic" naming this the **primary** tool for symbol/call-graph lookups, not a situational option. Several of the session's actual lookups (finding `HANDLER_BINDINGS`'s real call sites, tracing `help.js`'s `CATEGORY_DEFS` consumers, checking whether `DELIBERATELY_ABSENT` was read anywhere) are exactly the call-graph-shaped questions this tool exists for.
