@@ -1,0 +1,907 @@
+<meta charset="utf-8">
+<title>Pins 2 Board Three</title>
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Big+Shoulders+Display:wght@600;700&display=swap">
+<!-- Third pins-2 design board (plan docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md §5b Step 4), built 2026-09-15 15:19 EDT by build.py.
+     Every "Now" frame is markup captured from the signed-in dev portal on 2026-09-15 and rendered by the portal's own app.css; every proposal
+     is drawn on the same stylesheet with board-only classes prefixed b3-. Builds, announcements and history rows are the dev database. -->
+<link rel="stylesheet" href="../../../../portal/public/app.css">
+<style>
+html,body{height:auto}
+body{margin:0;font-size:var(--t-base);background:var(--desk);color:var(--ink);font-family:var(--ui)}
+.ic{width:16px;height:16px;flex:none}
+main.b3{max-width:1148px;margin:0 auto;padding:36px 32px 200px;display:grid;gap:104px;overflow:visible;box-sizing:content-box}
+.b3-s.app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:none;height:auto;gap:24px;scroll-margin-top:72px}
+
+/* ═══ index bar ═══ */
+.b3-top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--desk) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:inset 0 -1px 0 var(--rule)}
+.b3-topin{max-width:1148px;margin:0 auto;padding:10px 32px;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none}
+.b3-top b{font:700 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);margin-right:10px;white-space:nowrap}
+.b3-top a{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 10px;border-radius:var(--rad-pill);font:600 11px/1 var(--data);letter-spacing:.04em;color:var(--ink2);text-decoration:none;white-space:nowrap;box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-top a i{width:7px;height:7px;border-radius:2px;background:var(--c)}
+.b3-top a:hover{color:var(--ink);background:var(--hi)}
+.b3-top a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b3-top .b3-sep{flex:none;width:1px;height:18px;background:var(--rule2);margin:0 6px}
+
+/* ═══ masthead + section heads ═══ */
+.b3-mast{display:grid;gap:12px;max-width:720px}
+.b3-mast h1{margin:0;font:700 56px/.9 var(--display);letter-spacing:.01em;text-transform:uppercase}
+.b3-mast p{margin:0;font-size:var(--t-md);line-height:1.55;color:var(--ink2)}
+.b3-head{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:20px;align-items:end}
+.b3-gid{font:700 64px/.78 var(--display);color:var(--realm-c,var(--ink));min-width:64px}
+.b3-head h2{margin:0 0 8px;font:600 var(--t-h1)/1.1 var(--ui);letter-spacing:var(--tr-h1);color:var(--ink)}
+.b3-pins{display:flex;flex-wrap:wrap;gap:6px}
+.b3-pins code{font:500 11px/1 var(--data);color:var(--ink3);padding:5px 7px;border-radius:var(--rad-1);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule3)}
+
+/* ═══ frames ═══ */
+.b3-grid{display:grid;gap:24px;min-width:0}
+.b3-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.b3-f{display:grid;gap:12px;min-width:0;align-content:start}
+.b3-fl{display:flex;align-items:center;gap:10px;min-width:0;font:600 var(--t-md)/1.25 var(--ui);color:var(--ink)}
+.b3-fl::after{content:"";flex:1;min-width:24px;height:1px;background:var(--rule)}
+.b3-k{display:inline-grid;place-items:center;flex:none;min-width:28px;height:24px;padding:0 7px;border-radius:var(--rad-1);font:700 11px/1 var(--data);letter-spacing:.08em;color:var(--on-staged);background:var(--r-review)}
+.b3-k.now{color:var(--ink2);background:var(--hi);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-fl small{font:500 var(--t-sm)/1.3 var(--ui);color:var(--ink3)}
+.b3-st{position:relative;padding:24px;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);min-width:0;overflow:hidden}
+.b3-st.flush{padding:0}
+.b3-st.desk{background:var(--desk)}
+.b3-spec{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px}
+.b3-spec li{padding:9px 0;border-top:1px solid var(--rule3);font-size:var(--t-sm);line-height:1.5;color:var(--ink2)}
+.b3-spec b{color:var(--ink);font-weight:600}
+.b3-spec code{font:500 var(--t-xs)/1 var(--data);color:var(--ink);background:var(--sunk);padding:2px 5px;border-radius:var(--rad-1)}
+.b3-shot{margin:0;border-radius:var(--rad-3);overflow:hidden;box-shadow:inset 0 0 0 1px var(--rule2),0 0 0 1px var(--rule2)}
+.b3-shot img{display:block;width:100%;height:auto}
+.b3-note{display:flex;align-items:center;gap:8px;font:500 var(--t-sm)/1.3 var(--ui);color:var(--ink3)}
+.b3-cap{min-width:0}
+.b3-cap .selbar{position:relative;left:auto;right:auto;bottom:auto;transform:none;padding:0}
+.b3-cap .cmdbar{position:relative;margin:0 auto}
+.b3-cap .cb-drop{position:relative;top:auto;left:auto;right:auto}
+.b3-cap .panel{margin:0}
+.b3-cap #headsup .panel{margin-top:0!important}
+
+/* ═══ shared: the warning shape (P3 and P8) — hatched edge + warn wash + edge ═══ */
+.b3-hatch{background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-wchip{position:relative;display:inline-flex;align-items:center;gap:9px;height:34px;padding:0 12px 0 18px;border:0;border-radius:var(--rad-box);overflow:hidden;cursor:pointer;
+  font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink);white-space:nowrap;background:color-mix(in srgb,var(--warn) 9%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.b3-wchip::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-wchip .ic{width:15px;height:15px}
+.b3-wchip b{font-weight:700;color:var(--ink)}
+.b3-wchip i{width:1px;height:14px;background:color-mix(in srgb,var(--warn) 40%,transparent)}
+.b3-wchip:hover,.b3-wchip[aria-expanded=true]{background:color-mix(in srgb,var(--warn) 16%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 60%,transparent)}
+.b3-wchip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.b3-wchip.sm{height:28px;padding:0 10px 0 15px;gap:7px;font-size:var(--t-sm)}
+.b3-wchip.sm::before{width:5px}
+.b3-wchip.sm .ic{width:13px;height:13px}
+.b3-wbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:34px;padding:0 14px;border:0;border-radius:var(--rad-box);cursor:pointer;font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink);background:transparent;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 45%,transparent);white-space:nowrap}
+.b3-wbtn:hover{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--ink)}
+.b3-wbtn .ic{width:14px;height:14px}
+
+/* the problem card (P3 A) */
+.b3-popwrap{display:flex;justify-content:flex-end;padding:0}
+.b3-pop{position:relative;width:392px;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 34%,var(--rule2)),0 24px 48px -12px var(--scrim-70);overflow:visible}
+.b3-pop::after{content:"";position:absolute;right:var(--nx,48px);top:-6px;width:12px;height:12px;background:var(--raised);transform:rotate(45deg);box-shadow:-1px -1px 0 color-mix(in srgb,var(--warn) 34%,var(--rule2))}
+.b3-pop.up::after{top:auto;bottom:-6px;box-shadow:1px 1px 0 color-mix(in srgb,var(--warn) 34%,var(--rule2))}
+.b3-poph{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:14px 16px 12px 22px;border-bottom:1px solid var(--rule)}
+.b3-poph::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:var(--rad-3) 0 0 0;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-poph b{display:block;font:600 var(--t-md)/1.2 var(--ui);color:var(--ink)}
+.b3-poph small{display:block;margin-top:4px;font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--warn-ink)}
+.b3-popl{list-style:none;margin:0;padding:6px 8px}
+.b3-popl li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:44px;padding:0 8px;border-radius:var(--rad-box)}
+.b3-popl li + li{box-shadow:inset 0 1px 0 var(--rule3)}
+.b3-popl li > i{display:grid;place-items:center;width:30px;height:30px;border-radius:var(--rad-box);color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.b3-popl li > i .ic{width:15px;height:15px}
+.b3-popl li span{font:500 var(--t-base)/1.3 var(--ui);color:var(--ink)}
+.b3-popl li em{font:500 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-popf{display:flex;justify-content:flex-end;padding:8px 16px 14px}
+.b3-scroller{position:relative;height:340px;overflow:hidden;border-radius:var(--rad-3);box-shadow:inset 0 0 0 1px var(--rule2);background:var(--paper)}
+.b3-scroller .b3-vp{position:absolute;inset:auto 0 0 0}
+.b3-vpline{position:absolute;left:0;right:0;bottom:0;height:0;border-top:1px dashed color-mix(in srgb,var(--focus) 60%,transparent)}
+.b3-vpline span{position:absolute;right:10px;top:-22px;font:600 10px/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--focus)}
+.b3-mark{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px 0 14px;position:relative;overflow:hidden;border-radius:var(--rad-box);font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink)}
+.b3-mark::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-mark .ic{width:14px;height:14px}
+.b3-rowfaults{display:inline-flex;flex-wrap:wrap;gap:8px;margin-left:12px}
+
+/* ═══ P2 · attachment tags ═══ */
+.b3-pal{display:grid;gap:14px;padding:22px 24px 24px;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-palh{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:6px}
+.b3-palh b{font:600 var(--t-lg)/1.2 var(--ui);color:var(--ink)}
+.b3-palh span{font:500 var(--t-sm)/1.4 var(--ui);color:var(--ink3)}
+.b3-metrics{display:flex;flex-wrap:wrap;gap:8px}
+.b3-metric{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule);font:500 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.b3-metric em{font-style:normal;color:var(--ink2)}
+.b3-metric b{font:700 var(--t-sm)/1 var(--data);color:var(--ink)}
+.b3-metric.weak b{color:var(--warn-ink)}
+.b3-legend{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+.b3-sw{display:grid;gap:6px;font:600 var(--t-xs)/1.2 var(--ui);color:var(--ink2)}
+.b3-sw i{height:22px;border-radius:var(--rad-1);background:var(--sl)}
+.b3-sw code{font:500 10px/1 var(--data);color:var(--ink3)}
+.b3-cell{display:grid;gap:10px;min-width:0;padding:16px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule3)}
+.b3-cl{font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.b3-brow{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;align-items:start}
+.b3-bw{display:grid;gap:4px;padding-top:6px}
+.b3-bw b{font:600 var(--t-sm)/1 var(--ui);color:var(--ink)}
+.b3-bw small{font:500 var(--t-xs)/1 var(--data);color:var(--c)}
+.b3-rail{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.b3-rail .wg-at{flex:none}
+.b3-atb{display:inline-flex;align-items:center;height:28px;padding:0 11px 0 14px;border-radius:var(--rad-2);white-space:nowrap;font:500 var(--t-sm)/1 var(--ui);color:var(--ink);
+  background:color-mix(in srgb,var(--sl) 9%,var(--sunk));box-shadow:inset 3px 0 0 var(--sl),inset 0 0 0 1px color-mix(in srgb,var(--sl) 44%,transparent)}
+.b3-atb:hover{background:color-mix(in srgb,var(--sl) 16%,var(--sunk));box-shadow:inset 3px 0 0 var(--sl),inset 0 0 0 1px color-mix(in srgb,var(--sl) 70%,transparent)}
+
+/* ═══ P4 · checkbox ═══ */
+.b3-cbt{display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));border-radius:var(--rad-3);overflow:hidden;box-shadow:inset 0 0 0 1px var(--rule2);background:var(--paper)}
+.b3-cbt > div{display:grid;place-items:center;min-height:84px;border-top:1px solid var(--rule3);border-left:1px solid var(--rule3)}
+.b3-cbt > .h{min-height:40px;border-top:0;font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);background:var(--sunk)}
+.b3-cbt > .r{justify-items:start;padding-left:18px;border-left:0;font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink)}
+.b3-cbt > .r small{display:block;font:500 var(--t-xs)/1.3 var(--ui);color:var(--ink3)}
+.b3-zoom{display:grid;place-items:center;width:52px;height:52px;border-radius:var(--rad-box);background:var(--sunk)}
+.b3-zoom > *{transform:scale(2)}
+.b3-cbA{position:relative;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:var(--sunk);box-shadow:inset 0 0 0 1.5px var(--rule2);color:var(--on-accent);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)}
+.b3-cbA svg{width:12px;height:12px;opacity:0}
+.b3-cbA.hov{background:var(--hi);box-shadow:inset 0 0 0 1.5px var(--ink3)}
+.b3-cbA.on,.b3-cbA.mix{background:var(--patch);box-shadow:inset 0 0 0 1.5px var(--patch)}
+.b3-cbA.on svg{opacity:1}
+.b3-cbA.mix::after{content:"";width:9px;height:2px;border-radius:2px;background:var(--on-accent)}
+.b3-cbA.foc{box-shadow:inset 0 0 0 1.5px var(--rule2),0 0 0 2px var(--paper),0 0 0 4px var(--focus)}
+.b3-cbA.dis{opacity:.4}
+.b3-cbA.mix svg,.b3-cbB.mix svg{display:none}
+.b3-cbB{position:relative;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:6px;color:var(--on-accent);
+  background:linear-gradient(180deg,var(--sunk),color-mix(in srgb,var(--ink) 5%,var(--sunk)));box-shadow:inset 0 1px 2px var(--scrim-50),inset 0 0 0 1px var(--rule2)}
+.b3-cbB svg{width:12px;height:12px;opacity:0;stroke-dasharray:22;stroke-dashoffset:22}
+.b3-cbB.hov{box-shadow:inset 0 1px 2px var(--scrim-50),inset 0 0 0 1px color-mix(in srgb,var(--patch) 55%,transparent)}
+.b3-cbB.hov svg{opacity:.35;stroke-dashoffset:0;color:var(--patch)}
+.b3-cbB.on,.b3-cbB.mix{background:linear-gradient(180deg,color-mix(in srgb,#fff 18%,var(--patch)),var(--patch));box-shadow:0 0 0 3px color-mix(in srgb,var(--patch) 22%,transparent),inset 0 -1px 0 color-mix(in srgb,#000 22%,transparent)}
+.b3-cbB.on svg{opacity:1;stroke-dashoffset:0}
+.b3-cbB.mix::after{content:"";width:9px;height:2.5px;border-radius:2px;background:var(--on-accent)}
+.b3-cbB.foc{box-shadow:inset 0 1px 2px var(--scrim-50),inset 0 0 0 1px var(--rule2),0 0 0 2px var(--paper),0 0 0 4px var(--focus)}
+.b3-cbB.dis{opacity:.4}
+.b3-heads{margin-top:40px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;column-gap:12px;min-height:48px;padding:0 16px 0 8px;background:var(--sunk);border-radius:var(--rad-box);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-heads .cbhit{position:relative;display:grid;place-items:center;width:44px;height:44px}
+.b3-heads > span{display:flex;align-items:center;gap:8px;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.b3-tip{position:absolute;left:4px;bottom:calc(100% + 4px);display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:var(--rad-box);white-space:nowrap;
+  font:600 var(--t-sm)/1 var(--ui);color:var(--ink);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2),0 10px 24px -8px var(--scrim-70);z-index:2}
+.b3-tip em{font:500 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink3)}
+
+/* ═══ P5 · selection bar ═══ */
+.b3-selw{display:grid;gap:18px}
+.b3-sel{display:flex;align-items:center;gap:14px;min-height:64px;padding:10px 12px 10px 16px;border-radius:14px;background:color-mix(in srgb,var(--patch) 5%,var(--raised));box-shadow:inset 0 0 0 1px var(--rule2),0 18px 40px -16px var(--scrim-70)}
+.b3-seln{display:grid;place-items:center;flex:none;min-width:40px;height:40px;padding:0 8px;border-radius:var(--rad-box);font:700 var(--t-lg)/1 var(--data);color:var(--on-accent);background:var(--patch)}
+.b3-selc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;flex:1}
+.b3-sc{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 4px 0 10px;border-radius:var(--rad-pill);font:600 var(--t-sm)/1 var(--ui);color:var(--ink);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);white-space:nowrap}
+.b3-sc > i{width:8px;height:8px;border-radius:2px;background:var(--c)}
+.b3-sc em{font:500 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-sc button{display:grid;place-items:center;width:22px;height:22px;border:0;border-radius:50%;background:none;color:var(--ink3);cursor:pointer;padding:0}
+.b3-sc button:hover{background:var(--hi);color:var(--ink)}
+.b3-sc button .ic{width:12px;height:12px}
+.b3-sc.more{padding:0 12px;color:var(--ink2)}
+.b3-sela{display:flex;align-items:center;gap:8px;flex:none}
+.b3-sb{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:0;border-radius:var(--rad-pill);cursor:pointer;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);white-space:nowrap}
+.b3-sb:hover{color:var(--ink);background:var(--hi)}
+.b3-sb .ic{width:15px;height:15px}
+.b3-sb.dang{color:var(--danger-ink);box-shadow:inset 0 0 0 1px var(--danger-edge)}
+.b3-sb.dang:hover{background:color-mix(in srgb,var(--danger-ink) 12%,transparent)}
+.b3-sb .rev{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.b3-sb .rev .ic{width:12px;height:12px}
+.b3-sb.ghost{background:none;box-shadow:none;color:var(--ink3)}
+.b3-tray{border-radius:14px;background:color-mix(in srgb,var(--patch) 5%,var(--raised));box-shadow:inset 0 0 0 1px var(--rule2),0 18px 40px -16px var(--scrim-70);overflow:hidden}
+.b3-tray .b3-sel{box-shadow:none;border-radius:0;background:none;border-top:1px solid var(--rule)}
+.b3-trayl{display:grid;max-height:280px;overflow:auto;padding:6px 8px}
+.b3-tri{display:grid;grid-template-columns:10px 128px 88px minmax(0,1fr) 32px;align-items:center;gap:12px;min-height:44px;padding:0 8px;border-radius:var(--rad-box)}
+.b3-tri + .b3-tri{box-shadow:inset 0 1px 0 var(--rule3)}
+.b3-tri > i{width:8px;height:8px;border-radius:2px;background:var(--c)}
+.b3-tri b{font:600 var(--t-base)/1 var(--ui);color:var(--ink)}
+.b3-tri span{font:500 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.b3-tri code{font:500 var(--t-sm)/1 var(--data);color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b3-tri button{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:var(--rad-box);background:none;color:var(--ink3);cursor:pointer}
+.b3-tri button:hover{background:var(--hi);color:var(--ink)}
+.b3-trayh{display:flex;align-items:center;gap:10px;padding:10px 16px;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.b3-trayh button{margin-left:auto}
+
+/* ═══ P6 · repairs ═══ */
+.b3-needs{display:inline-flex;align-items:center;flex-wrap:wrap;gap:8px}
+.b3-mstat{position:relative;display:inline-grid;grid-template-columns:auto auto;align-items:center;column-gap:12px;padding:10px 16px 10px 22px;border-radius:var(--rad-box);overflow:hidden;cursor:pointer;
+  background:color-mix(in srgb,var(--warn) 8%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 36%,transparent)}
+.b3-mstat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-mstat b{grid-row:span 2;font:600 var(--t-figure)/1 var(--display);color:var(--warn-ink)}
+.b3-mstat span{font:600 var(--t-sm)/1.2 var(--ui);color:var(--ink)}
+.b3-mstat small{font:500 var(--t-xs)/1.2 var(--ui);color:var(--ink3)}
+.b3-work{border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-workh{display:grid;grid-template-columns:44px 150px minmax(0,1fr) 150px;align-items:center;column-gap:12px;min-height:40px;padding:0 16px;background:var(--sunk);font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.b3-wr{position:relative;display:grid;grid-template-columns:44px 150px minmax(0,1fr) 150px;align-items:center;column-gap:12px;min-height:60px;padding:8px 16px;border-top:1px solid var(--rule3)}
+.b3-wr::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-wr .n{font:700 var(--t-md)/1 var(--data);color:var(--warn-ink);text-align:center}
+.b3-wr .w{display:grid;gap:5px}
+.b3-wr .w b{font:600 var(--t-base)/1 var(--ui);color:var(--ink)}
+.b3-wr .w small{font:600 var(--t-micro)/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.b3-wr .f{display:flex;flex-wrap:wrap;gap:6px}
+.b3-wr .a{display:flex;justify-content:flex-end}
+.b3-clean{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:18px 20px;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-clean > b{display:inline-flex;align-items:center;gap:10px;margin-right:6px;font:600 var(--t-md)/1 var(--ui);color:var(--ink)}
+.b3-clean > b .ic{width:18px;height:18px;color:var(--ok)}
+.b3-check{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:var(--rad-pill);font:500 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-check .ic{width:13px;height:13px;color:var(--ok)}
+.b3-check.age .ic{color:var(--ink3)}
+.b3-check.age em{font:600 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink)}
+
+/* ═══ P7 · command search ═══ */
+.b3-cmd{width:560px;max-width:100%;margin:0 auto;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2),0 28px 60px -20px var(--scrim-80);overflow:hidden}
+.b3-cmdin{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-bottom:1px solid var(--rule);font:500 var(--t-md)/1 var(--ui);color:var(--ink)}
+.b3-cmdin .ic{color:var(--ink3)}
+.b3-cmdin .caret{width:1.5px;height:18px;background:var(--focus);margin-left:-8px}
+.b3-cmdin kbd{margin-left:auto;font:600 11px/1 var(--data);color:var(--ink3);padding:4px 6px;border-radius:var(--rad-1);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-cmdl{padding:6px 8px 8px}
+.b3-cmds{display:flex;align-items:center;gap:8px;padding:10px 10px 6px;font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.b3-cmdr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:12px;min-height:46px;padding:0 10px;border-radius:var(--rad-box)}
+.b3-cmdr.on{background:var(--hi);box-shadow:inset 2px 0 0 var(--c,var(--focus))}
+.b3-cmdr > i{display:grid;place-items:center;width:30px;height:30px;border-radius:var(--rad-box);color:var(--c,var(--ink2));background:color-mix(in srgb,var(--c,var(--ink2)) 13%,transparent)}
+.b3-cmdr > i .ic{width:15px;height:15px}
+.b3-cmdr div{display:grid;gap:4px;min-width:0}
+.b3-cmdr div b{font:600 var(--t-base)/1.2 var(--ui);color:var(--ink)}
+.b3-cmdr div b mark{background:none;color:var(--c,var(--focus));text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.b3-cmdr div small{font:500 var(--t-sm)/1.2 var(--ui);color:var(--ink3)}
+.b3-cmdr div small mark{background:none;color:var(--ink2)}
+.b3-cmdr > em{font:600 var(--t-micro)/1 var(--data);letter-spacing:.12em;text-transform:uppercase;font-style:normal;color:var(--c,var(--ink3));padding:5px 7px;border-radius:var(--rad-1);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--ink3)) 40%,transparent)}
+.b3-cmdf{display:flex;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--rule);font:500 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.b3-cmdf kbd{font:600 10.5px/1 var(--data);color:var(--ink2);padding:3px 5px;margin-right:5px;border-radius:var(--rad-1);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-compose{display:grid;gap:12px;margin:8px;padding:14px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r-review) 38%,transparent)}
+.b3-compose .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.b3-tok{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 10px;border-radius:var(--rad-box);font:600 var(--t-sm)/1 var(--ui);color:var(--ink);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2);white-space:nowrap}
+.b3-tok .ic{width:14px;height:14px;color:var(--ink3)}
+.b3-tok.verb{color:var(--on-staged);background:var(--r-review);box-shadow:none}
+.b3-tok.verb .ic{color:var(--on-staged)}
+.b3-tok.badge{color:var(--patch);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--patch) 45%,transparent);font-family:var(--data);letter-spacing:.08em}
+.b3-tok.weap i{width:8px;height:8px;border-radius:2px;background:var(--c)}
+.b3-tok.weap em{font:500 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-joiner{font:500 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.b3-compose .go{display:flex;align-items:center;justify-content:space-between;gap:10px;font:500 var(--t-sm)/1.3 var(--ui);color:var(--ink2)}
+.b3-compose .go kbd{font:600 10.5px/1 var(--data);color:var(--on-staged);background:var(--r-review);padding:4px 6px;border-radius:var(--rad-1)}
+.b3-map{width:100%;border-collapse:collapse;font-size:var(--t-sm)}
+.b3-map th{text-align:left;padding:10px 12px;font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);background:var(--sunk)}
+.b3-map td{padding:10px 12px;border-top:1px solid var(--rule3);vertical-align:top;color:var(--ink2);line-height:1.45}
+.b3-map td:first-child{font:600 var(--t-sm)/1.45 var(--data);color:var(--ink);white-space:nowrap}
+.b3-map td b{color:var(--ink);font-weight:600}
+
+/* ═══ P8 · heads up ═══ */
+.b3-warnbar{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:16px;padding:14px 14px 14px 26px;border-radius:var(--rad-3);overflow:hidden;
+  background:color-mix(in srgb,var(--warn) 7%,var(--paper));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 36%,transparent)}
+.b3-warnbar::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-warnbar > .ic{width:20px;height:20px;color:var(--warn)}
+.b3-warnbar .t{display:grid;gap:8px;min-width:0}
+.b3-warnbar .t b{font:600 var(--t-md)/1.2 var(--ui);color:var(--ink)}
+.b3-warnbar .t .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}
+.b3-quote{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:520px;height:28px;padding:0 10px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule);font:500 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.b3-quote > i{flex:none;width:3px;height:14px;border-radius:2px;background:var(--c)}
+.b3-quote span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.b3-age{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--rad-box);font:600 var(--t-sm)/1 var(--data);color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.b3-age .ic{width:13px;height:13px}
+.b3-stack{display:grid;gap:24px}
+.b3-cardwarn{position:relative;margin:0 0 -1px;display:flex;align-items:center;gap:10px;height:40px;padding:0 8px 0 24px;border-radius:var(--rad-3) var(--rad-3) 0 0;overflow:hidden;
+  background:color-mix(in srgb,var(--warn) 10%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 36%,transparent);font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink)}
+.b3-cardwarn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-cardwarn .ic{width:15px;height:15px}
+.b3-cardwarn b{color:var(--ink);font-weight:600}
+.b3-cardwarn .b3-wbtn{margin-left:auto;height:28px}
+.b3-attn{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 18px;position:relative;overflow:hidden;border-radius:var(--rad-pill);font:600 var(--t-sm)/1 var(--ui);color:var(--warn-ink);background:color-mix(in srgb,var(--warn) 9%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent)}
+.b3-attn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)}
+.b3-attn b{font:700 var(--t-sm)/1 var(--data);color:var(--ink)}
+.b3-attn .ic{width:14px;height:14px}
+
+/* ═══ P9 · history ═══ */
+.b3-hist{border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-htools{display:grid;gap:12px;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.b3-htools .r1{display:flex;align-items:center;gap:12px}
+.b3-htools .r1 > b{font:600 var(--t-md)/1 var(--ui);color:var(--ink);min-width:84px}
+.b3-hsearch{display:flex;align-items:center;gap:10px;width:320px;height:40px;padding:0 12px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);font:500 var(--t-base)/1 var(--ui);color:var(--ink3)}
+.b3-htools .r2{display:flex;flex-wrap:wrap;align-items:center;row-gap:10px}
+.b3-fg{display:inline-flex;align-items:center;gap:6px;padding-right:14px;margin-right:14px;box-shadow:inset -1px 0 0 var(--rule2)}
+.b3-fg:last-child{box-shadow:none;margin-right:0;padding-right:0}
+.b3-fg > span{font:600 var(--t-xs)/1 var(--ui);color:var(--ink3);margin-right:4px}
+.b3-fc{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:var(--rad-pill);cursor:pointer;font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);white-space:nowrap}
+.b3-fc[aria-pressed=true]{color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--ink3)}
+.b3-fc > i{width:7px;height:7px;border-radius:2px;background:var(--c)}
+.b3-fc em{font:500 var(--t-xs)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-fc .av{width:18px;height:18px;margin-left:-4px}
+.b3-hh,.b3-hr{display:grid;grid-template-columns:40px 118px 118px minmax(0,1fr) 150px 44px;align-items:center;column-gap:12px;padding:0 12px 0 16px}
+.b3-hh{min-height:40px;background:var(--sunk);font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.b3-hr{position:relative;min-height:56px;border-top:1px solid var(--rule3)}
+.b3-hr::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;background:var(--c)}
+.b3-hr:hover{background:color-mix(in srgb,var(--c) 5%,transparent)}
+.b3-hr .when{font:500 var(--t-sm)/1.2 var(--data);color:var(--ink2)}
+.b3-hr .when small{display:block;margin-top:3px;font-size:var(--t-xs);color:var(--ink3)}
+.b3-htab{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 11px;border-radius:4px;font:600 var(--t-sm)/1 var(--ui);color:var(--c);background:color-mix(in srgb,var(--c) 9%,transparent);box-shadow:inset 3px 0 0 var(--c)}
+.b3-htab .ic{width:13px;height:13px}
+.b3-hr .what{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;font:500 var(--t-base)/1.35 var(--ui);color:var(--ink)}
+.b3-ent{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:var(--rad-1);font:500 var(--t-sm)/1 var(--ui);color:var(--ink);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-ent .ic{width:12px;height:12px;color:var(--ink3)}
+.b3-src{font:500 var(--t-xs)/1 var(--data);color:var(--ink3)}
+.b3-meter{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.b3-meter i{width:3px;border-radius:1px;background:var(--rule2)}
+.b3-meter i:nth-child(1){height:5px}.b3-meter i:nth-child(2){height:7px}.b3-meter i:nth-child(3){height:10px}.b3-meter i:nth-child(4){height:12px}
+.b3-lvl{display:inline-flex;align-items:center;gap:6px;font:600 var(--t-xs)/1 var(--ui);color:var(--sv)}
+.b3-lvl .b3-meter i.on{background:var(--sv)}
+.b3-who{display:inline-flex;align-items:center;gap:8px;min-width:0;font:600 var(--t-sm)/1 var(--ui);color:var(--ink)}
+.b3-who .av{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;font:700 11px/1 var(--ui);color:var(--ink);background:linear-gradient(135deg,#4A6A85,#2C3E4E)}
+.b3-who.sys{color:var(--ink3)}
+.b3-who.sys .av{background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2);color:var(--ink3)}
+.b3-who.sys .av .ic{width:13px;height:13px}
+.b3-undo{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:var(--rad-box);background:none;color:var(--ink3);cursor:pointer}
+.b3-undo:hover{background:color-mix(in srgb,var(--info) 14%,transparent);color:var(--info)}
+.b3-undo .ic{width:15px;height:15px}
+.b3-day{position:relative;display:flex;align-items:center;gap:12px;min-height:40px;padding:0 16px;background:var(--desk);border-top:1px solid var(--rule);font:600 var(--t-sm)/1 var(--ui);color:var(--ink)}
+.b3-day em{font:500 var(--t-sm)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-day::after{content:"";flex:1;height:1px;background:var(--rule3)}
+.b3-hist.tl .b3-hh,.b3-hist.tl .b3-hr{grid-template-columns:40px 72px 118px minmax(0,1fr) 150px 44px}
+
+/* ═══ E1 · buttons ═══ */
+.b3-btt{display:grid;grid-template-columns:132px repeat(6,minmax(0,1fr));align-items:center;border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-btt > div{display:flex;align-items:center;justify-content:center;min-height:72px;padding:0 8px;border-top:1px solid var(--rule3)}
+.b3-btt > .h{min-height:40px;border-top:0;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.b3-btt > .r{justify-content:flex-start;padding-left:18px;font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink)}
+.b3-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:var(--rad-pill);cursor:pointer;white-space:nowrap;font:600 var(--t-base)/1 var(--ui);transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),transform var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
+.b3-btn .ic{width:16px;height:16px}
+.b3-btn.sm{height:34px;padding:0 13px;font-size:var(--t-sm);gap:7px}
+.b3-btn.sm .ic{width:14px;height:14px}
+.b3-btn.foc{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--focus)!important}
+.b3-btn.dis{opacity:.42;cursor:not-allowed}
+.b3-btn.prs{transform:translateY(1px)}
+.b3-btn.create{color:var(--on-staged);background:var(--r-review)}
+.b3-btn.create.hov{background:color-mix(in srgb,#fff 16%,var(--r-review))}
+.b3-btn.create.prs{background:color-mix(in srgb,#000 14%,var(--r-review))}
+.b3-btn.confirm{color:var(--on-ok);background:var(--ok)}
+.b3-btn.confirm.hov{background:color-mix(in srgb,#fff 16%,var(--ok))}
+.b3-btn.confirm.prs{background:color-mix(in srgb,#000 14%,var(--ok))}
+.b3-btn.second{color:var(--ink2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-btn.second.hov{color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--ink4)}
+.b3-btn.second.prs{background:var(--raised)}
+.b3-btn.ghost{color:var(--ink3);background:transparent}
+.b3-btn.ghost.hov{color:var(--ink);background:var(--hi)}
+.b3-btn.ghost.prs{background:var(--raised)}
+.b3-btn.danger{color:var(--danger-ink);background:transparent;box-shadow:inset 0 0 0 1px var(--danger-edge)}
+.b3-btn.danger.hov{color:var(--ink);background:color-mix(in srgb,var(--danger-ink) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger-ink) 50%,transparent)}
+.b3-btn.danger.prs{background:color-mix(in srgb,var(--danger-ink) 20%,transparent)}
+.b3-btn.b3-tile{padding:0 16px 0 5px;color:var(--ink);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-btn.b3-tile > i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;color:var(--on-staged);background:var(--r-review)}
+.b3-btn.b3-tile.sm{padding-left:4px}
+.b3-btn.b3-tile.sm > i{width:26px;height:26px}
+.b3-btn.b3-tile.hov{background:var(--hi);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r-review) 55%,transparent)}
+.b3-btn.b3-tile.prs{background:var(--raised)}
+.b3-inplace{display:grid;gap:14px}
+.b3-inrow{display:flex;align-items:center;gap:12px;min-height:64px;padding:0 16px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule3)}
+.b3-inrow > span{font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);min-width:150px}
+.b3-inrow > .push{margin-left:auto}
+
+/* ═══ E2 · icon buttons ═══ */
+.b3-ibrow{display:flex;align-items:center;gap:10px}
+.b3-ib{position:relative;display:inline-flex;align-items:center;justify-content:center;height:44px;min-width:44px;padding:0;border:0;background:none;cursor:pointer;color:var(--ink3)}
+.b3-ib > span{display:inline-flex;align-items:center;justify-content:center;gap:0;height:34px;min-width:34px;padding:0 9px;border-radius:var(--rad-box);box-shadow:inset 0 0 0 1px var(--rule2);background:var(--sunk);overflow:hidden;transition:background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease),gap var(--dur-2) var(--ease-soft)}
+.b3-ib > span .ic{width:16px;height:16px}
+.b3-ib > span em{max-width:0;opacity:0;overflow:hidden;white-space:nowrap;font:600 var(--t-sm)/1 var(--ui);font-style:normal;transition:max-width var(--dur-2) var(--ease-soft),opacity var(--dur-2) var(--ease-soft)}
+.b3-ib.hov > span,.b3-ib:hover > span{color:var(--ib);background:color-mix(in srgb,var(--ib) 13%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ib) 45%,transparent)}
+.b3-ib.prs > span{transform:scale(.96)}
+.b3-ib.foc > span{box-shadow:inset 0 0 0 1px var(--rule2),0 0 0 2px var(--paper),0 0 0 4px var(--focus)}
+.b3-ib.grow.hov > span,.b3-ib.grow:hover > span{gap:7px;padding-right:12px}
+.b3-ib.grow.hov > span em,.b3-ib.grow:hover > span em{max-width:120px;opacity:1}
+.b3-ib[data-i=share]{--ib:var(--info)} .b3-ib[data-i=copy]{--ib:var(--ok)} .b3-ib[data-i=edit]{--ib:var(--ink)} .b3-ib[data-i=del]{--ib:var(--danger-ink)} .b3-ib[data-i=fold]{--ib:var(--ink)}
+.b3-ib.lab > span{gap:7px;padding:0 12px 0 10px}
+.b3-ib.lab > span em{max-width:none;opacity:1}
+.b3-vr{width:1px;height:22px;background:var(--rule2);margin:0 4px}
+.b3-ibt{display:grid;grid-template-columns:132px repeat(4,minmax(0,1fr)) minmax(0,1.7fr);border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-ibt > div{display:flex;align-items:center;justify-content:center;min-height:72px;border-top:1px solid var(--rule3)}
+.b3-ibt > .h{min-height:40px;border-top:0;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.b3-ibt > .r{justify-content:flex-start;padding-left:18px;font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink)}
+
+/* ═══ E3 · radius ═══ */
+.b3-rad{--r-tag:3px;--r-ctl:6px;--r-card:6px;--r-panel:6px;--r-over:10px}
+.b3-rad.a{--r-tag:4px;--r-ctl:8px;--r-card:12px;--r-panel:16px;--r-over:20px}
+.b3-rad.b{--r-tag:6px;--r-ctl:10px;--r-card:14px;--r-panel:20px;--r-over:24px}
+.b3-rpanel{border-radius:var(--r-panel);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-rph{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--raised);border-bottom:1px solid var(--rule);font:700 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.b3-rbody{display:grid;gap:14px;padding:16px}
+.b3-rcard{display:grid;gap:12px;padding:14px;border-radius:var(--r-card);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-rfield{display:flex;align-items:center;height:40px;padding:0 12px;border-radius:var(--r-ctl);background:var(--desk);box-shadow:inset 0 0 0 1px var(--rule2);font:500 var(--t-base)/1 var(--data);color:var(--ink)}
+.b3-rrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.b3-rtag{display:inline-flex;align-items:center;height:22px;padding:0 7px;border-radius:var(--r-tag);font:700 var(--t-micro)/1 var(--data);letter-spacing:.1em;color:var(--patch);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--patch) 40%,transparent)}
+.b3-rbtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:var(--r-ctl);font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-rover{padding:12px 14px;border-radius:var(--r-over);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2),0 18px 36px -14px var(--scrim-70);font:500 var(--t-sm)/1.3 var(--ui);color:var(--ink2)}
+.b3-rscale{display:flex;flex-wrap:wrap;gap:8px}
+.b3-rscale span{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:var(--rad-box);background:var(--sunk);font:500 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.b3-rscale b{font:600 var(--t-sm)/1 var(--data);color:var(--ink)}
+.b3-rscale i{width:16px;height:16px;border:2px solid var(--ink3);border-right:0;border-bottom:0}
+.b3-census{display:flex;flex-wrap:wrap;gap:6px}
+.b3-census span{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px;border-radius:var(--rad-1);background:var(--sunk);font:500 var(--t-xs)/1 var(--data);color:var(--ink3)}
+.b3-census b{color:var(--ink)}
+
+/* ═══ E4 · type roles ═══ */
+.b3-type{border-radius:var(--rad-3);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule2);overflow:hidden}
+.b3-tph{display:flex;align-items:center;gap:14px;min-height:56px;padding:0 16px;background:var(--raised);border-bottom:2px solid var(--rule2)}
+.b3-tseg{display:inline-flex;padding:3px;border-radius:var(--rad-pill);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-tseg span{display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:var(--rad-pill);font:600 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.b3-tseg span.on{color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-ttools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.b3-tchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:var(--rad-pill);font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-tchip i{width:7px;height:7px;border-radius:2px;background:var(--c)}
+.b3-thead{justify-items:start;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) 64px 64px 52px 60px;align-items:center;column-gap:12px;min-height:44px;padding:0 16px;background:var(--sunk)}
+.b3-tsub{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;padding:18px 16px 20px}
+.b3-tsub > div{display:grid;gap:10px;align-content:start}
+.b3-tline{height:44px;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule3)}
+/* role A: sans-led */
+.b3-type.a .eyebrow{font:600 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.b3-type.a .glabel{font:600 var(--t-sm)/1 var(--ui);color:var(--ink2);margin-right:2px}
+.b3-type.a .colh{font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+.b3-type.a .subh{display:flex;align-items:center;gap:10px;font:600 var(--t-md)/1.2 var(--ui);color:var(--ink)}
+.b3-type.a .subh::after{content:"";flex:1;height:1px;background:var(--rule2)}
+.b3-type.a .subh em{font:600 var(--t-xs)/1 var(--data);font-style:normal;color:var(--ink2);padding:4px 6px;border-radius:var(--rad-1);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-type.a .ptitle{font:600 var(--t-md)/1 var(--ui);color:var(--ink)}
+/* role B: mono-led */
+.b3-type.b .eyebrow{font:700 var(--t-xs)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.b3-type.b .glabel{font:600 var(--t-xs)/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-right:2px}
+.b3-type.b .colh{font:600 var(--t-xs)/1 var(--data);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+.b3-type.b .subh{display:flex;align-items:center;gap:10px;font:600 var(--t-md)/1.2 var(--ui);color:var(--ink)}
+.b3-type.b .subh::before{content:"";width:3px;height:16px;border-radius:2px;background:var(--realm-c)}
+.b3-type.b .subh em{margin-left:auto;font:600 var(--t-xs)/1 var(--data);font-style:normal;color:var(--ink3)}
+.b3-type.b .ptitle{display:none}
+.b3-rolet{display:grid;grid-template-columns:170px repeat(2,minmax(0,1fr));border-radius:var(--rad-3);overflow:hidden;box-shadow:inset 0 0 0 1px var(--rule2);background:var(--paper)}
+.b3-rolet > div{display:flex;align-items:center;min-height:52px;padding:0 18px;border-top:1px solid var(--rule3)}
+.b3-rolet > .h{min-height:40px;border-top:0;background:var(--sunk);font:600 var(--t-micro)/1 var(--data);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.b3-rolet > .r{display:grid;align-content:center;gap:3px;font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink)}
+.b3-rolet > .r small{display:block;font:500 var(--t-xs)/1.3 var(--ui);color:var(--ink3)}
+
+/* ═══ E5 · pills ═══ */
+.b3-pillset{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.b3-pl{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;border-radius:var(--rad-box);white-space:nowrap;font:600 var(--t-sm)/1 var(--data);color:var(--pc,var(--ink2))}
+.b3-pl .ic{width:13px;height:13px}
+.b3-pl.a{background:color-mix(in srgb,var(--pc,var(--ink3)) 8%,var(--sunk));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pc,var(--ink3)) 34%,transparent)}
+.b3-pl.b{border-radius:4px;padding-left:11px;background:color-mix(in srgb,var(--pc,var(--ink3)) 9%,transparent);box-shadow:inset 3px 0 0 var(--pc,var(--ink3))}
+.b3-pl.stt{font-family:var(--ui);border-radius:4px;padding-left:11px;color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,transparent);box-shadow:inset 3px 0 0 var(--ok)}
+.b3-datel{display:grid;gap:4px;font:500 var(--t-sm)/1.2 var(--data);color:var(--ink)}
+.b3-datel small{font-size:var(--t-xs);color:var(--ink3)}
+.b3-pcard{display:grid;gap:14px;padding:18px;border-radius:var(--rad-3);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+
+/* ═══ E6 · small text ═══ */
+.b3-meta{display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 9px;border-radius:var(--rad-box);white-space:nowrap;font:500 var(--t-sm)/1 var(--data);color:var(--ink2);background:color-mix(in srgb,var(--ink) 4%,var(--sunk));box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-meta .ic{width:13px;height:13px;color:var(--ink3)}
+.b3-meta b{font-weight:600;color:var(--ink)}
+.b3-rail2{display:inline-flex;align-items:center;height:26px;padding:0 2px;border-radius:var(--rad-box);background:linear-gradient(90deg,color-mix(in srgb,var(--ink) 4%,transparent),transparent)}
+.b3-rail2 span{display:inline-flex;align-items:center;gap:6px;padding:0 10px;font:500 var(--t-sm)/1 var(--data);color:var(--ink3);white-space:nowrap}
+.b3-rail2 span + span{box-shadow:inset 1px 0 0 var(--rule2)}
+.b3-rail2 b{font-weight:600;color:var(--ink)}
+.b3-count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:var(--rad-pill);font:600 var(--t-xs)/1 var(--data);color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-count.a{border-radius:var(--rad-1)}
+.b3-info{display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:50%;background:none;color:var(--ink3);cursor:pointer}
+.b3-info:hover,.b3-info.hov{color:var(--ink);background:var(--hi)}
+.b3-info .ic{width:16px;height:16px}
+.b3-ipop{position:absolute;z-index:3;width:min(320px,100%);padding:14px 16px;border-radius:var(--rad-3);background:var(--raised);box-shadow:inset 0 0 0 1px var(--rule2),0 20px 44px -14px var(--scrim-80);font:500 var(--t-sm)/1.5 var(--ui);color:var(--ink2)}
+.b3-ipop b{display:block;margin-bottom:4px;font:600 var(--t-base)/1.3 var(--ui);color:var(--ink)}
+.b3-field{position:relative;display:grid;gap:0;border-radius:var(--rad-box);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule2)}
+.b3-field p{margin:0;padding:12px 14px 34px;font:500 var(--t-base)/1.5 var(--ui);color:var(--ink)}
+.b3-field .cnt{position:absolute;right:10px;bottom:8px}
+.b3-field .foot{display:flex;align-items:center;justify-content:space-between;min-height:38px;padding:0 6px 0 14px;border-top:1px dashed var(--rule2)}
+.b3-e6{display:grid;gap:14px}
+.b3-e6row{display:grid;grid-template-columns:200px minmax(0,1fr);align-items:center;gap:18px;min-height:56px;padding:10px 16px;border-radius:var(--rad-box);background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule3)}
+.b3-e6row > span{font:600 var(--t-sm)/1.3 var(--ui);color:var(--ink)}
+.b3-e6row > span small{display:block;font:500 var(--t-xs)/1.3 var(--ui);color:var(--ink3)}
+.b3-e6row.expl{min-height:172px;align-items:start;padding-top:16px}
+.b3-grid.two .b3-e6row{grid-template-columns:132px minmax(0,1fr)}
+.b3-e6row > div{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
+.b3-segx{display:inline-flex;padding:3px;border-radius:var(--rad-pill);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--rule)}
+.b3-segx span{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:var(--rad-pill);font:600 var(--t-sm)/1 var(--ui);color:var(--ink3)}
+.b3-segx span.on{color:var(--ink);background:var(--hi);box-shadow:inset 0 0 0 1px var(--rule2)}
+
+@media (max-width:900px){
+  main.b3{padding:24px 16px 160px;gap:72px}
+  .b3-topin{padding:10px 16px}
+  .b3-grid.two,.b3-spec{grid-template-columns:minmax(0,1fr)}
+  .b3-legend{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .b3-st{overflow-x:auto}
+  .b3-f > :not(.b3-fl),.b3-pal,.b3-spec{min-width:0;overflow-x:auto}
+  .b3-cap{overflow-x:auto}
+  .b3-gid{font-size:48px;min-width:48px}
+  .b3-mast h1{font-size:40px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<svg id="__icons" aria-hidden="true" style="position: absolute; width: 0px; height: 0px; overflow: hidden;"><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></symbol><symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></symbol><symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"></path><circle cx="12" cy="12" r="3"></circle></symbol><symbol id="i-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></symbol><symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></symbol><symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"></path><path d="M7 9l5-5 5 5"></path></symbol><symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol><symbol id="i-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></symbol><symbol id="i-skull" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.5 17-.5-1-.5 1h1z"></path><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"></path><circle cx="15" cy="12" r="1"></circle><circle cx="9" cy="12" r="1"></circle></symbol><symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></symbol><symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></symbol><symbol id="i-image-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2 22 22"></path><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"></path><path d="M13.5 13.5 6 21"></path><path d="M18 12l-1.5-1.5a2 2 0 0 0-2.83 0L12 12.67"></path><path d="M21 15V5a2 2 0 0 0-2-2H9"></path><path d="M3 7v12a2 2 0 0 0 2 2h12"></path></symbol><symbol id="i-search-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13.5 8.5-5 5"></path><path d="m8.5 8.5 5 5"></path><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></symbol><symbol id="i-trash-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></symbol><symbol id="i-square-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></symbol><symbol id="i-share-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></symbol><symbol id="i-radio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><circle cx="12" cy="12" r="2"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"></path></symbol><symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></symbol><symbol id="i-circle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></symbol><symbol id="i-infinity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"></path></symbol><symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></symbol><symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></symbol><symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 7.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"></path><path d="m6.08 10.5-3.5 1.6a1 1 0 0 0 0 1.81l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"></path><path d="m6.08 15.5-3.5 1.6a1 1 0 0 0 0 1.81l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"></path></symbol></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-rotate-cw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="i-undo-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+  <symbol id="i-chevrons-down-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6.1H3"/><path d="M21 12.1H3"/><path d="M15.1 18H3"/></symbol>
+  <symbol id="i-list-checks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></symbol>
+  <symbol id="i-box-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9.5 8 12l2 2.5"/><path d="m14 9.5 2 2.5-2 2.5"/><rect width="18" height="18" x="3" y="3" rx="2"/></symbol>
+  <symbol id="i-corner-down-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></symbol>
+</svg>
+
+<nav class="b3-top" aria-label="Board sections"><div class="b3-topin" id="nav"><b>Board 3</b></div></nav>
+
+<main class="b3">
+  <div class="b3-mast">
+    <h1>Design board 3</h1>
+    <p>Your review of the built portal, drawn on its own stylesheet. Every section opens on the portal as it stands, captured from the signed-in dev portal, then the proposals. Builds, announcements and history rows are the dev database.</p>
+  </div>
+  <div id="sections"></div>
+</main>
+
+<script>const CAP={"errors": [], "app": {"armory": {"cls": "app", "realm": "armory", "style": null}, "broadcast": {"cls": "app", "realm": "broadcast"}, "history": {"cls": "app", "realm": "history"}}, "armoryMast": "<div class=\"masthead\"><div class=\"mh-id\"><h1>Armory<\/h1><span class=\"job\">Every build the bot can show a player, ranked within its category, with whatever is wrong with it named.<\/span><\/div><div class=\"mh-stats\"><span class=\"stat lead\" style=\"--c: var(--r-armory);\"><span class=\"v\">125<\/span> <span class=\"k\">MP builds shown<\/span><\/span><span class=\"stat\"><span class=\"v\">68<\/span> <span class=\"k\">weapons<\/span><\/span><span class=\"stat\"><span class=\"v\">0<\/span> <span class=\"k\">staged<\/span><\/span><span class=\"stat warn\"><span class=\"v\">5<\/span> <span class=\"k\">need repair in MP<\/span><\/span><span class=\"stat\"><span class=\"v\">106<\/span> <span class=\"k\">stale<\/span><\/span><\/div><button type=\"button\" class=\"pill lead mh-new\" data-tip=\"New MP build\"><span class=\"mh-plus\" aria-hidden=\"true\">+<\/span> New build <kbd aria-label=\"Keyboard shortcut: N\">N<\/kbd><\/button><div class=\"mh-take\" role=\"group\" aria-label=\"Export data from Export\"><button class=\"pill sm\" aria-expanded=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"mh-i\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v12M8 11l4 4 4-4M4 19h16\"><\/path><\/svg>Export\u2026<\/button><span class=\"mh-take-n\">133 builds \u00b7 4 formats<\/span><\/div><div class=\"mh-mode-row\"><div class=\"mh-mode\" role=\"radiogroup\" aria-label=\"Which armory\"><button role=\"radio\" data-arm=\"MP\" aria-checked=\"true\">MP<\/button><button role=\"radio\" data-arm=\"DMZ\" aria-checked=\"false\">DMZ<\/button><\/div><\/div><\/div>", "armoryManifest": "<section class=\"panel\" id=\"manifest\"><div class=\"mtools\"><div class=\"mt-r1\"><span class=\"mlabel\"><span>Manifest<\/span><\/span><span class=\"srch\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\/circle><path d=\"M20 20l-3.5-3.5\"><\/path><\/svg><label class=\"sr\" for=\"manifest-search\">Search builds<\/label><input id=\"manifest-search\" class=\"\" placeholder=\"Search\u2026\"><\/span><button class=\"chip go madd\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-plus\"><\/use><\/svg>Add build<\/button><\/div><div class=\"mt-r2\"><span class=\"mt-grp\" role=\"group\" aria-label=\"Category\"><span class=\"mlabel\"><span>Category<\/span><\/span><button aria-pressed=\"true\" class=\"chip\" title=\"All category\">All<\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Assault\" style=\"--c: #ff3b5c;\"><i><\/i>Assault <em>35<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only SMG\" style=\"--c: #ffd23f;\"><i><\/i>SMG <em>26<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only LMG\" style=\"--c: #845ec2;\"><i><\/i>LMG <em>12<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Marksman\" style=\"--c: #3ddc97;\"><i><\/i>Marksman <em>14<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Sniper\" style=\"--c: #4361ee;\"><i><\/i>Sniper <em>19<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Shotgun\" style=\"--c: #f6a93b;\"><i><\/i>Shotgun <em>10<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Secondaries\" style=\"--c: #023047;\"><i><\/i>Secondaries <em>9<\/em><\/button><\/span><span class=\"mt-grp\" role=\"group\" aria-label=\"More filters\"><span class=\"mlabel\"><span>Attachments<\/span><\/span><span class=\"seg\" role=\"tablist\" aria-label=\"Attachments\"><button role=\"tab\" aria-selected=\"true\">List<\/button><button role=\"tab\" aria-selected=\"false\">By slot<\/button><\/span><\/span><\/div><\/div><div class=\"wg-wrap\"><div class=\"wg-heads\"><span><\/span><span><button type=\"button\" class=\"wg-sort\" aria-sort=\"ascending\">Weapon<svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-chevron-up\"><\/use><\/svg><\/button><\/span><button type=\"button\" class=\"wg-fold\"><svg class=\"ic ic-fold open\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 15 L12 9 L18 15\"><\/path><\/svg>Collapse all<\/button><\/div><div class=\"wg\" style=\"--c: #ffd23f;\"><div class=\"wg-h\" tabindex=\"0\" aria-expanded=\"true\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select every CX-9 build\"><span class=\"cb\"><\/span><\/span><div class=\"wg-line\"><b>CX-9<\/b><small>SMG<em class=\"wg-nb\">3 builds<\/em><\/small><span class=\"wg-tags\"><span class=\"wg-tag\" data-t=\"top3\">TOP 3<\/span><span class=\"wg-tag\" data-t=\"meta\">META<\/span><\/span><\/div><span><\/span><button type=\"button\" class=\"wg-ib wg-fbtn\" aria-expanded=\"true\" aria-label=\"Collapse CX-9\"><svg class=\"ic ic-fold open\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 15 L12 9 L18 15\"><\/path><\/svg><\/button><\/div><div class=\"wg-r\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select CX-9 build 1\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">1<\/span><div class=\"wg-main\"><div class=\"wg-rail\"><span class=\"wg-at\" title=\"Barrel\" style=\"--sl: var(--sl-barrel);\">CX-38S<\/span><span class=\"wg-at\" title=\"Stock\" style=\"--sl: var(--sl-stock);\">CX-FR<\/span><span class=\"wg-at\" title=\"Rear Grip\" style=\"--sl: var(--sl-rear-grip);\">CX-9 Ace Grip<\/span><span class=\"wg-at\" title=\"Ammunition\" style=\"--sl: var(--sl-ammunition);\">50 Round Drums<\/span><span class=\"wg-at\" title=\"Perk\" style=\"--sl: var(--sl-perk);\">Sleight of Hand<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><button type=\"button\" class=\"wg-code\" aria-label=\"Copy gunsmith code 2D4A5B8B9A\"><span class=\"wg-ig\"><span class=\"wg-igf\"><span class=\"wg-ct\" title=\"\">2D4A5B8B9A<\/span><\/span><span class=\"wg-igb\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-copy\"><\/use><\/svg><\/span><\/span><\/button><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of CX-9 build 1\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><div class=\"wg-r\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select CX-9 build 2\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">2<\/span><div class=\"wg-main\"><div class=\"wg-rail\"><span class=\"wg-at\" title=\"Barrel\" style=\"--sl: var(--sl-barrel);\">CX-23<\/span><span class=\"wg-at\" title=\"Stock\" style=\"--sl: var(--sl-stock);\">CX-FR<\/span><span class=\"wg-at\" title=\"Rear Grip\" style=\"--sl: var(--sl-rear-grip);\">CX-9 Ace Grip<\/span><span class=\"wg-at\" title=\"Ammunition\" style=\"--sl: var(--sl-ammunition);\">9mm Hollow Point 12-R Mags<\/span><span class=\"wg-at\" title=\"Perk\" style=\"--sl: var(--sl-perk);\">Sleight of Hand<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><button type=\"button\" class=\"wg-code\" aria-label=\"Copy gunsmith code 2E4A5B8C9A\"><span class=\"wg-ig\"><span class=\"wg-igf\"><span class=\"wg-ct\" title=\"\">2E4A5B8C9A<\/span><\/span><span class=\"wg-igb\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-copy\"><\/use><\/svg><\/span><\/span><\/button><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of CX-9 build 2\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><div class=\"wg-r\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select CX-9 build 3\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">3<\/span><div class=\"wg-main\"><div class=\"wg-rail\"><span class=\"wg-at\" title=\"Barrel\" style=\"--sl: var(--sl-barrel);\">CX-38S<\/span><span class=\"wg-at\" title=\"Stock\" style=\"--sl: var(--sl-stock);\">CX-FR<\/span><span class=\"wg-at\" title=\"Rear Grip\" style=\"--sl: var(--sl-rear-grip);\">CX-9 Ace Grip<\/span><span class=\"wg-at\" title=\"Ammunition\" style=\"--sl: var(--sl-ammunition);\">9mm Hollow Point 12-R Mags<\/span><span class=\"wg-at\" title=\"Perk\" style=\"--sl: var(--sl-perk);\">Sleight of Hand<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><button type=\"button\" class=\"wg-code\" aria-label=\"Copy gunsmith code 2D4A5B8C9A\"><span class=\"wg-ig\"><span class=\"wg-igf\"><span class=\"wg-ct\" title=\"\">2D4A5B8C9A<\/span><\/span><span class=\"wg-igb\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-copy\"><\/use><\/svg><\/span><\/span><\/button><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of CX-9 build 3\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><\/div><div class=\"wg\" style=\"--c: #4361ee;\"><div class=\"wg-h\" tabindex=\"0\" aria-expanded=\"true\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select every LOCUS build\"><span class=\"cb\"><\/span><\/span><div class=\"wg-line\"><b>LOCUS<\/b><small>Sniper<em class=\"wg-nb\">2 builds<\/em><\/small><span class=\"wg-tags\"><span class=\"wg-tag\" data-t=\"best\">BEST<\/span><span class=\"wg-tag\" data-t=\"meta\">META<\/span><\/span><\/div><span><\/span><button type=\"button\" class=\"wg-ib wg-fbtn\" aria-expanded=\"true\" aria-label=\"Collapse LOCUS\"><svg class=\"ic ic-fold open\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 15 L12 9 L18 15\"><\/path><\/svg><\/button><\/div><div class=\"wg-r\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select LOCUS build 1\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">1<\/span><div class=\"wg-main\"><div class=\"wg-rail\"><span class=\"wg-at\" title=\"Barrel\" style=\"--sl: var(--sl-barrel);\">YKM Lightweight Short<\/span><span class=\"wg-at\" title=\"Stock\" style=\"--sl: var(--sl-stock);\">OWC Skeleton Stock<\/span><span class=\"wg-at\" title=\"Rear Grip\" style=\"--sl: var(--sl-rear-grip);\">Strippled Grip Tape<\/span><span class=\"wg-at\" title=\"Ammunition\" style=\"--sl: var(--sl-ammunition);\">Stopping Power Reload<\/span><span class=\"wg-at\" title=\"Perk\" style=\"--sl: var(--sl-perk);\">FMJ<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><button type=\"button\" class=\"wg-code\" aria-label=\"Copy gunsmith code 2A4B5A8C9C\"><span class=\"wg-ig\"><span class=\"wg-igf\"><span class=\"wg-ct\" title=\"\">2A4B5A8C9C<\/span><\/span><span class=\"wg-igb\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-copy\"><\/use><\/svg><\/span><\/span><\/button><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of LOCUS build 1\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><div class=\"wg-r\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select LOCUS build 2\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">2<\/span><div class=\"wg-main\"><div class=\"wg-rail\"><span class=\"wg-at\" title=\"Muzzle\" style=\"--sl: var(--sl-muzzle);\">OWC Light Supressor<\/span><span class=\"wg-at\" title=\"Barrel\" style=\"--sl: var(--sl-barrel);\">YKM Lightweight Short<\/span><span class=\"wg-at\" title=\"Stock\" style=\"--sl: var(--sl-stock);\">OWC Skeleton Stock<\/span><span class=\"wg-at\" title=\"Rear Grip\" style=\"--sl: var(--sl-rear-grip);\">Strippled Grip Tape<\/span><span class=\"wg-at\" title=\"Ammunition\" style=\"--sl: var(--sl-ammunition);\">Stopping Power Reload<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><button type=\"button\" class=\"wg-code\" aria-label=\"Copy gunsmith code 1B2A4B8C9C\"><span class=\"wg-ig\"><span class=\"wg-igf\"><span class=\"wg-ct\" title=\"\">1B2A4B8C9C<\/span><\/span><span class=\"wg-igb\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-copy\"><\/use><\/svg><\/span><\/span><\/button><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of LOCUS build 2\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><\/div><div class=\"wg\" style=\"--c: #ffd23f;\"><div class=\"wg-h\" tabindex=\"0\" aria-expanded=\"true\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select every PHARO build\"><span class=\"cb\"><\/span><\/span><div class=\"wg-line\"><b>PHARO<\/b><small>SMG<em class=\"wg-nb\">1 build<\/em><\/small><span class=\"wg-tags\"><span class=\"wg-tag\" data-t=\"toxic\">TOXIC<\/span><\/span><\/div><span class=\"wg-fwrap\"><button type=\"button\" class=\"wg-fsum\" aria-expanded=\"false\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-triangle-alert\"><\/use><\/svg>Fix build<span class=\"wg-fnos\"><i>1<\/i><\/span><\/button><span class=\"wg-fpop\" role=\"tooltip\"><span class=\"wg-fpr\"><i>1<\/i><span><span>Only 1 of 5 attachments<\/span><span>No gunsmith code to copy<\/span><\/span><\/span><\/span><\/span><button type=\"button\" class=\"wg-ib wg-fbtn\" aria-expanded=\"true\" aria-label=\"Collapse PHARO\"><svg class=\"ic ic-fold open\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 15 L12 9 L18 15\"><\/path><\/svg><\/button><\/div><div class=\"wg-r bad\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select PHARO build 1\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">1<\/span><div class=\"wg-main named\"><span class=\"wg-plate\"><small>Build name<\/small><span>Coming Soon<\/span><\/span><div class=\"wg-rail\"><span class=\"wg-at\" title=\"\">Coming soon \u2014 check back later!<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><span class=\"wg-ig none\"><span class=\"wg-cnone\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-triangle-alert\"><\/use><\/svg>No code<\/span><\/span><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of PHARO build 1\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><\/div><\/div><\/section>", "armoryViewPanel": "<section class=\"panel\" aria-label=\"Armory view\"><div class=\"ph\"><span class=\"t\">Armory<\/span><div class=\"seg\" role=\"tablist\" aria-label=\"View\"><button role=\"tab\" aria-selected=\"true\">Tier board <em class=\"segn\">64/125<\/em><\/button><button role=\"tab\" aria-selected=\"false\">Repairs <em class=\"segn\">5<\/em><\/button><button role=\"tab\" aria-selected=\"false\">Compare<\/button><\/div><span class=\"key rkey\" aria-label=\"What a build's marks mean\"><span class=\"rk-clean\"><i><\/i>clean<\/span><span class=\"rk-bad\"><i><\/i>needs repair<\/span><span class=\"rk-age\"><i><\/i>stale<\/span><\/span><\/div><div id=\"rack\"><div class=\"racktools\"><button class=\"chip\">Expand all<\/button><button class=\"chip\" disabled=\"\">Collapse all<\/button><span class=\"rkt-n\">7 categories \u00b7 125 builds \u00b7 all closed \u2014 open the one you came for<\/span><\/div><div class=\"rack\"><div class=\"trow tcat tclosed\" data-cat=\"AR\" style=\"--c: #ff3b5c;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"Assault: 35 builds across 17 weapons. Best ranked: BAL-27 \u00b7 Build 2.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">Assault<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>BAL-27 \u00b7 Build 2<\/b><\/span> <span class=\"trow-n\">35<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"SMG\" style=\"--c: #ffd23f;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"SMG: 26 builds across 15 weapons. Best ranked: SWITCHBLADE X9 \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">SMG<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>SWITCHBLADE X9 \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">26<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"LMG\" style=\"--c: #845ec2;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"LMG: 12 builds across 8 weapons. Best ranked: PKM \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">LMG<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>PKM \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">12<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"MARKSMAN\" style=\"--c: #3ddc97;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"Marksman: 14 builds across 5 weapons. Best ranked: SO-14 \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">Marksman<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>SO-14 \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">14<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"SNIPER\" style=\"--c: #4361ee;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"Sniper: 19 builds across 10 weapons. Best ranked: LOCUS \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">Sniper<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>LOCUS \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">19<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"SHOTGUN\" style=\"--c: #f6a93b;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"Shotgun: 10 builds across 7 weapons. Best ranked: STRIKER \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">Shotgun<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>STRIKER \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">10<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><div class=\"trow tcat tclosed\" data-cat=\"SECONDARIES\" style=\"--c: #023047;\"><button type=\"button\" class=\"trow-h\" aria-expanded=\"false\" aria-label=\"Secondaries: 9 builds across 6 weapons. Best ranked: MACHINE PISTOL \u00b7 Build 1.\"><span class=\"trow-k\" aria-hidden=\"true\"><i class=\"catdot\"><\/i><\/span><span class=\"trow-t\">Secondaries<\/span> <span class=\"tcat-top\" aria-hidden=\"true\">Best in category \u00b7 <b>MACHINE PISTOL \u00b7 Build 1<\/b><\/span> <span class=\"trow-n\">9<\/span><svg class=\"ic ic-fold sm trow-i\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg><\/button><div class=\"trow-body\"><\/div><\/div><\/div><\/div><\/section>", "pharoOpen": "<div class=\"wg\" style=\"--c: #ffd23f;\"><div class=\"wg-h\" tabindex=\"0\" aria-expanded=\"true\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select every PHARO build\"><span class=\"cb\"><\/span><\/span><div class=\"wg-line\"><b>PHARO<\/b><small>SMG<em class=\"wg-nb\">1 build<\/em><\/small><span class=\"wg-tags\"><span class=\"wg-tag\" data-t=\"toxic\">TOXIC<\/span><\/span><\/div><span class=\"wg-fwrap\"><button type=\"button\" class=\"wg-fsum\" aria-expanded=\"true\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-triangle-alert\"><\/use><\/svg>Fix build<span class=\"wg-fnos\"><i>1<\/i><\/span><\/button><span class=\"wg-fpop\" role=\"tooltip\"><span class=\"wg-fpr\"><i>1<\/i><span><span>Only 1 of 5 attachments<\/span><span>No gunsmith code to copy<\/span><\/span><\/span><\/span><\/span><button type=\"button\" class=\"wg-ib wg-fbtn\" aria-expanded=\"true\" aria-label=\"Collapse PHARO\"><svg class=\"ic ic-fold open\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 15 L12 9 L18 15\"><\/path><\/svg><\/button><\/div><div class=\"wg-r bad\" tabindex=\"0\"><span class=\"wg-cb\" role=\"checkbox\" tabindex=\"0\" aria-checked=\"false\" aria-label=\"Select PHARO build 1\"><span class=\"cb\"><\/span><\/span><span class=\"wg-ix\" title=\"\">1<\/span><div class=\"wg-main named\"><span class=\"wg-plate\"><small>Build name<\/small><span>Coming Soon<\/span><\/span><div class=\"wg-rail\"><span class=\"wg-at\" title=\"\">Coming soon \u2014 check back later!<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><span class=\"wg-at gap\">Empty<\/span><\/div><\/div><span class=\"wg-im\" role=\"img\" aria-label=\"Image uploaded\" title=\"Image uploaded\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-image\"><\/use><\/svg><\/span><span class=\"wg-ig none\"><span class=\"wg-cnone\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-triangle-alert\"><\/use><\/svg>No code<\/span><\/span><div class=\"wg-acts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Copy share command\" data-tip=\"Copy share command\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-share-2\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Stage deletion of PHARO build 1\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/div><\/div><\/div>", "paletteBadge": "<div class=\"cmdbar on\"><span class=\"cb-mag\" aria-hidden=\"true\"><\/span><input class=\"cb-in\" data-bare=\"true\" autocomplete=\"off\" spellcheck=\"true\" role=\"combobox\" aria-expanded=\"true\" aria-controls=\"cbList\" aria-autocomplete=\"list\" placeholder=\"Search Armory, or run a command\" aria-label=\"Search Armory, or run a command\"><kbd>\u2318/<\/kbd><div class=\"cb-drop\"><div class=\"plist\" id=\"cbList\" role=\"listbox\" aria-label=\"Commands and pages\"><p class=\"pnone\">Nothing matches \u201cbadge\u201d. Try a realm name, a view, or an action such as \u201creview\u201d.<\/p><\/div><\/div><\/div>", "paletteReview": "<div class=\"cmdbar on\"><span class=\"cb-mag\" aria-hidden=\"true\"><\/span><input class=\"cb-in\" data-bare=\"true\" autocomplete=\"off\" spellcheck=\"true\" role=\"combobox\" aria-expanded=\"true\" aria-controls=\"cbList\" aria-autocomplete=\"list\" placeholder=\"Search Armory, or run a command\" aria-label=\"Search Armory, or run a command\" aria-activedescendant=\"cbopt-0\"><kbd>\u2318/<\/kbd><div class=\"cb-drop\"><div class=\"plist\" id=\"cbList\" role=\"listbox\" aria-label=\"Commands and pages\"><p class=\"psec\" role=\"presentation\">Do<\/p><button class=\"pitem\" role=\"option\" id=\"cbopt-0\" aria-selected=\"true\" style=\"--c: var(--r-review);\"><svg class=\"ic sm\" aria-hidden=\"true\"><use href=\"#i-check\"><\/use><\/svg>Review &amp; commit<span class=\"pk\">commit<\/span><\/button><\/div><\/div><\/div>", "repairs": "<section class=\"panel\" aria-label=\"Armory view\"><div class=\"ph\"><span class=\"t\">Armory<\/span><div class=\"seg\" role=\"tablist\" aria-label=\"View\"><button role=\"tab\" aria-selected=\"false\">Tier board <em class=\"segn\">64/125<\/em><\/button><button role=\"tab\" aria-selected=\"true\">Repairs <em class=\"segn\">5<\/em><\/button><button role=\"tab\" aria-selected=\"false\">Compare<\/button><\/div><span class=\"key rkey\" aria-label=\"What a build's marks mean\"><span class=\"rk-clean\"><i><\/i>clean<\/span><span class=\"rk-bad\"><i><\/i>needs repair<\/span><span class=\"rk-age\"><i><\/i>stale<\/span><\/span><\/div><div id=\"coverage\"><div class=\"repbar\"><b>5<\/b><span>builds have something actually wrong with them, and 106 more are merely old.<\/span><\/div><div class=\"callout\" style=\"margin-bottom: 14px;\"><b>Badges are per weapon, not per build.<\/b> A weapon with five builds contributes five rows to\n                these counts, and fixing one fixes all five \u2014 so a number here can fall by more than one.<\/div><div class=\"cov\"><div class=\"cols\"><button class=\"ccard clean\" aria-pressed=\"false\"><span class=\"cn ok\">0<\/span><span class=\"cname\">Missing image<\/span><span class=\"cmeter clean\"><i style=\"width: 0%;\"><\/i><\/span><span class=\"why\">The card renders with a dashed placeholder where the loadout image goes.<\/span><\/button><button class=\"ccard\" aria-pressed=\"false\"><span class=\"cn bad\">1<\/span><span class=\"cname\">2 or fewer attachments<\/span><span class=\"cmeter bad\"><i style=\"width: 1.5%;\"><\/i><\/span><span class=\"why\">Two slots filled or fewer usually means the build was started and never finished.<\/span><\/button><button class=\"ccard\" aria-pressed=\"false\"><span class=\"cn\">106<\/span><span class=\"cname\">Not updated in 90 days <i class=\"mechtag\">age, not a fault<\/i><\/span><span class=\"cmeter age\"><i style=\"width: 84.8%;\"><\/i><\/span><span class=\"why\">Still served, still correct as far as anything here knows \u2014 just not looked at in a while.<\/span><\/button><button class=\"ccard\" aria-pressed=\"false\"><span class=\"cn bad\">2<\/span><span class=\"cname\">Near-duplicate code<\/span><span class=\"cmeter bad\"><i style=\"width: 1.6%;\"><\/i><\/span><span class=\"why\">Two builds share a gunsmith code, so one of them is showing the other one\u2019s guns.<\/span><\/button><button class=\"ccard\" aria-pressed=\"false\"><span class=\"cn bad\">1<\/span><span class=\"cname\">No gunsmith code<\/span><span class=\"cmeter bad\"><i style=\"width: 1.5%;\"><\/i><\/span><span class=\"why\">No gunsmith code, so a player reading this build has nothing to paste into the game.<\/span><\/button><button class=\"ccard\" aria-pressed=\"false\"><span class=\"cn bad\">2<\/span><span class=\"cname\">Code length doesn\u2019t match attachments<\/span><span class=\"cmeter bad\"><i style=\"width: 1.6%;\"><\/i><\/span><span class=\"why\">A real code pairs two characters per attachment; this one\u2019s length disagrees with its own build.<\/span><\/button><\/div><\/div><div class=\"covfacts\"><h5>True of the collection, not of any one build<\/h5><div class=\"covfact\"><b>1 of 35<\/b><span>AR \u2014 have something wrong that is not age<\/span><\/div><div class=\"covfact\"><b>0 of 12<\/b><span>LMG \u2014 are clean<\/span><\/div><div class=\"covfact\"><b>0 of 14<\/b><span>MARKSMAN \u2014 are clean<\/span><\/div><div class=\"covfact\"><b>1 of 9<\/b><span>SECONDARIES \u2014 have something wrong that is not age<\/span><\/div><div class=\"covfact\"><b>1 of 10<\/b><span>SHOTGUN \u2014 have something wrong that is not age<\/span><\/div><div class=\"covfact\"><b>2 of 26<\/b><span>SMG \u2014 have something wrong that is not age<\/span><\/div><div class=\"covfact\"><b>0 of 19<\/b><span>SNIPER \u2014 are clean<\/span><\/div><\/div><\/div><\/section>", "selbar1": "<div class=\"selbar on\" role=\"region\" aria-label=\"Actions for the current selection\"><div class=\"selbar-in\"><span class=\"selbar-n\">1<\/span><div class=\"selbar-t\"><b>1 build<\/b><span>CX-9<\/span><\/div><span class=\"selbar-rev ok\">Reversible \u2014 a staged deletion is discarded, never undone<\/span><div class=\"selbar-a\"><button class=\"pill sm\">Set badges\u2026<\/button><button class=\"pill sm\">Export selection<\/button><button class=\"pill sm dang\">Stage deletion<\/button><\/div><button class=\"selbar-x\">Clear<\/button><\/div><\/div>", "selbar3": "<div class=\"selbar on\" role=\"region\" aria-label=\"Actions for the current selection\"><div class=\"selbar-in\"><span class=\"selbar-n\">2<\/span><div class=\"selbar-t\"><b>2 builds<\/b><span>LOCUS \u00b7 CX-9<\/span><\/div><span class=\"selbar-rev ok\">Reversible \u2014 a staged deletion is discarded, never undone<\/span><div class=\"selbar-a\"><button class=\"pill sm\">Set badges\u2026<\/button><button class=\"pill sm\">Export selection<\/button><button class=\"pill sm dang\">Stage deletion<\/button><\/div><button class=\"selbar-x\">Clear<\/button><\/div><\/div>", "bcMast": "<div class=\"masthead\"><div class=\"mh-id\"><h1>Broadcast<\/h1><span class=\"job\">One text field, delivered once per player, in the order it was written \u2014 and the two things Discord never shows you: what has not started yet, and what will never stop.<\/span><\/div><div class=\"mh-stats\"><span class=\"stat lead\" style=\"--c: var(--r-broadcast);\"><span class=\"v\">1<\/span> <span class=\"k\">live<\/span><\/span><span class=\"stat\"><span class=\"v\">0<\/span> <span class=\"k\">scheduled<\/span><\/span><span class=\"stat stg\"><span class=\"v stg-clear\">0<\/span> <span class=\"k\">staged<\/span><\/span><span class=\"stat warn\"><span class=\"v\">1<\/span> <span class=\"k\">never ends<\/span><\/span><\/div><button type=\"button\" class=\"pill lead mh-new\" data-tip=\"Write an announcement\"><span class=\"mh-plus\" aria-hidden=\"true\">+<\/span> Post announcement <kbd aria-label=\"Keyboard shortcut: N\">N<\/kbd><\/button><div class=\"mh-take\" role=\"group\" aria-label=\"Export data from Export\"><button class=\"pill sm\" aria-expanded=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"mh-i\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v12M8 11l4 4 4-4M4 19h16\"><\/path><\/svg>Export\u2026<\/button><span class=\"mh-take-n\">4 announcements \u00b7 2 formats<\/span><\/div><\/div>", "bcHeadsup": "<div id=\"headsup\"><div class=\"panel\" style=\"margin-top: var(--s4);\"><div class=\"callout hucall\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-triangle-alert\"><\/use><\/svg><span><b>Heads up:<\/b> \u201cSESSIONB-SEED Season 7 is live \u2014 Reckoning drops today: new dr\u2026\u201d has no end date and has been showing for <b>41 days<\/b>.<\/span><button type=\"button\" class=\"chip\">Set an end date<\/button><\/div><\/div><\/div>", "bcQueuePanel": "<section class=\"panel\" aria-label=\"Broadcast view\"><div class=\"ph\"><span class=\"t\">Broadcast<\/span><div class=\"seg\" role=\"tablist\" aria-label=\"View\"><button role=\"tab\" aria-selected=\"true\">Delivery queue<\/button><button role=\"tab\" aria-selected=\"false\">Airtime<\/button><\/div><span class=\"key\" aria-label=\"What the marks mean\"><span class=\"l\"><i><\/i>saved<\/span><span class=\"s\"><i><\/i>staged<\/span><\/span><span class=\"sp\"><span class=\"bqcount\"><span class=\"bqm\" aria-hidden=\"true\"><i style=\"width: 10%;\"><\/i><\/span><b>1<\/b> of 10 slots used<\/span><\/span><\/div><div class=\"bqueue\"><div class=\"bqcol\"><div class=\"bqhead\">Delivery order<\/div><div class=\"bqlist\" role=\"list\" aria-label=\"Announcements in delivery order\"><div class=\"qcard\" role=\"listitem\" aria-label=\"Delivery position 1\" style=\"--c: #f2c230;\"><span class=\"bnum\">1<\/span><div class=\"bbody\"><div class=\"benc\"><p>SESSIONB-SEED Season 7 is live \u2014 Reckoning drops today: new draws, a reworked ranked reset, and the battle pass runs to Sep 4.<\/p><div class=\"bencf\"><span>126 characters<\/span><button type=\"button\" class=\"bexp\" aria-expanded=\"false\"><svg class=\"ic ic-fold\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9 L12 15 L18 9\"><\/path><\/svg>Show all<\/button><\/div><\/div><div class=\"btl\"><span class=\"bend\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-calendar-days\"><\/use><\/svg>Aug 4<\/span><span class=\"qbar\" aria-hidden=\"true\"><span class=\"btrack\"><\/span><span class=\"bspan open\" style=\"left: 0%;\"><\/span><span class=\"bnow\" style=\"left: 85.718%;\"><\/span><\/span><span class=\"bend nev\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-infinity\"><\/use><\/svg>No end<\/span><\/div><div class=\"bmeta\"><span class=\"bpill\">up 41d<\/span><span class=\"bpill\">1 showing<\/span><span class=\"bacts\"><button type=\"button\" class=\"wg-ib\" aria-label=\"Edit announcement\" data-tip=\"Edit\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-square-pen\"><\/use><\/svg><\/button><button type=\"button\" class=\"wg-ib\" aria-label=\"Dates and repeats\" data-tip=\"Dates and repeats\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-calendar-days\"><\/use><\/svg><\/button><i class=\"wg-vr\" aria-hidden=\"true\"><\/i><button type=\"button\" class=\"wg-ib wg-del\" aria-label=\"Remove announcement\" data-tip=\"Remove\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-trash-2\"><\/use><\/svg><\/button><\/span><\/div><\/div><span><\/span><\/div><\/div><\/div><div class=\"bchg\" role=\"group\" aria-label=\"Changes ahead\"><h5>Changes ahead<\/h5><p class=\"bchg-none\">Nothing starts or stops on a date ahead.<\/p><\/div><\/div><\/section>", "bcManifest": "<section class=\"panel\" id=\"manifest\"><div class=\"mtools\"><div class=\"mt-r1\"><span class=\"mlabel\"><span>Manifest<\/span><\/span><span class=\"srch\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\/circle><path d=\"M20 20l-3.5-3.5\"><\/path><\/svg><label class=\"sr\" for=\"manifest-search\">Search announcements<\/label><input id=\"manifest-search\" class=\"\" placeholder=\"Search the text\u2026\"><\/span><button class=\"chip go madd\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-plus\"><\/use><\/svg>Post announcement<\/button><\/div><div class=\"mt-r2\"><span class=\"mt-grp\" role=\"group\" aria-label=\"State\"><span class=\"mlabel\"><span>State<\/span><\/span><button aria-pressed=\"true\" class=\"chip\" title=\"All state\">All<\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Live now\" style=\"--c: var(--ok);\"><i><\/i>Live now <em>1<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Upcoming\" style=\"--c: var(--sched);\"><i><\/i>Upcoming <em>0<\/em><\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only Ended\" style=\"--c: var(--ink3);\"><i><\/i>Ended <em>3<\/em><\/button><\/span><\/div><\/div><div class=\"mscroll\"><table class=\"mtable\"><colgroup><col class=\"c-bc-text\"><col class=\"c-bc-date\"><col class=\"c-bc-date\"><col class=\"c-bc-date\"><col class=\"c-bc-state\"><col class=\"c-ra\"><\/colgroup><thead><tr><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Announcement <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Posted <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Starts <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Ends <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">State <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"ra\"><span class=\"sr\">Remove<\/span><\/th><\/tr><\/thead><tbody><tr class=\"\" style=\"\"><td class=\"n\" style=\"cursor: text;\"><span class=\"ncell\"><span class=\"bcbar\" style=\"--c: #337ba6;\"><\/span><span><b title=\"SESSIONB-SEED S6 wrap-up \u2014 thanks for playing season 6.\">SESSIONB-SEED S6 wrap-up \u2014 thanks for playing season 6.<\/b><\/span><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Jul 14<small>62 days ago<\/small><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt dim\">On posting<\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 11<\/span><\/td><td class=\"\" style=\"\"><span class=\"btab\" style=\"--lc: var(--ink3);\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-circle-check\"><\/use><\/svg>Ended<\/span><\/td><td class=\"ra\"><button class=\"rmv\" data-tip=\"Remove\" aria-label=\"Remove SESSIONB-SEED S6 wrap-up \u2014 thanks for playing season 6.\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12\"><\/path><\/svg><\/button><\/td><\/tr><tr class=\"\" style=\"\"><td class=\"n\" style=\"cursor: text;\"><span class=\"ncell\"><span class=\"bcbar\" style=\"--c: #f2c230;\"><\/span><span><b title=\"SESSIONB-SEED Season 7 is live \u2014 Reckoning drops today: new draws, a reworked ranked reset, and the battle pass runs to Sep 4.\">SESSIONB-SEED Season 7 is live \u2014 Reckoning drops today: new draws, a reworked ranked reset, and the battle pass runs to Sep 4.<\/b><\/span><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 4<small>41 days ago<\/small><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt dim\">On posting<\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt never\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-infinity\"><\/use><\/svg>No end<\/span><\/td><td class=\"\" style=\"\"><span class=\"btab\" style=\"--lc: var(--ok);\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-radio\"><\/use><\/svg>Live now<\/span><\/td><td class=\"ra\"><button class=\"rmv\" data-tip=\"Remove\" aria-label=\"Remove SESSIONB-SEED Season 7 is live \u2014 Reckoning drops today: new draws, a reworked ranked reset, and the battle pass runs to Sep 4.\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12\"><\/path><\/svg><\/button><\/td><\/tr><tr class=\"\" style=\"\"><td class=\"n\" style=\"cursor: text;\"><span class=\"ncell\"><span class=\"bcbar\" style=\"--c: #1f8a5e;\"><\/span><span><b title=\"SESSIONB-SEED Double CP this weekend \u2014 2x CP on every purchase from Aug 11 to Aug 15. Use /draw calculator to price a pull first.\">SESSIONB-SEED Double CP this weekend \u2014 2x CP on every purchase from Aug 11 to Aug 15. Use /draw calculator to price a pull first.<\/b><\/span><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 14<small>31 days ago<\/small><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt dim\">On posting<\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 25<\/span><\/td><td class=\"\" style=\"\"><span class=\"btab\" style=\"--lc: var(--ink3);\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-circle-check\"><\/use><\/svg>Ended<\/span><\/td><td class=\"ra\"><button class=\"rmv\" data-tip=\"Remove\" aria-label=\"Remove SESSIONB-SEED Double CP this weekend \u2014 2x CP on every purchase from Aug 11 to Aug 15. Use /draw calculator to price a pull first.\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12\"><\/path><\/svg><\/button><\/td><\/tr><tr class=\"\" style=\"\"><td class=\"n\" style=\"cursor: text;\"><span class=\"ncell\"><span class=\"bcbar\" style=\"--c: #8a6bd1;\"><\/span><span><b title=\"SESSIONB-SEED Clan wars sign-ups open Aug 24 and close Aug 31.\">SESSIONB-SEED Clan wars sign-ups open Aug 24 and close Aug 31.<\/b><\/span><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 22<small>23 days ago<\/small><\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Aug 26<\/span><\/td><td class=\"nums\" style=\"\"><span class=\"bcdt\">Sep 2<\/span><\/td><td class=\"\" style=\"\"><span class=\"btab\" style=\"--lc: var(--ink3);\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-circle-check\"><\/use><\/svg>Ended<\/span><\/td><td class=\"ra\"><button class=\"rmv\" data-tip=\"Remove\" aria-label=\"Remove SESSIONB-SEED Clan wars sign-ups open Aug 24 and close Aug 31.\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12\"><\/path><\/svg><\/button><\/td><\/tr><\/tbody><\/table><\/div><\/section>", "histMast": "<div class=\"masthead\"><div class=\"mh-id\"><h1>History<\/h1><span class=\"job\">Every change, alert and restart on one timeline \u2014 and the way to put a change back.<\/span><\/div><div class=\"mh-stats\"><span class=\"stat lead\" style=\"--c: var(--r-history);\"><span class=\"v\">1,421<\/span> <span class=\"k\">events recorded<\/span><\/span><span class=\"stat\"><span class=\"v\">27<\/span> <span class=\"k\">changes shown<\/span><\/span><span class=\"stat\"><span class=\"v\">14<\/span> <span class=\"k\">reversible<\/span><\/span><\/div><div class=\"mh-take\" role=\"group\" aria-label=\"Export data from Export\"><button class=\"pill sm\" aria-expanded=\"false\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" class=\"mh-i\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v12M8 11l4 4 4-4M4 19h16\"><\/path><\/svg>Export\u2026<\/button><span class=\"mh-take-n\">100 events \u00b7 1 format<\/span><\/div><\/div>", "histManifest": "<section class=\"panel\" id=\"manifest\"><div class=\"ph\"><span class=\"t\">One history, both front doors<\/span><span class=\"rt\">Alerts, changes and boots are all events \u2014 filtering one stream beats switching between four lists.<\/span><\/div><div class=\"mtools\"><div class=\"mt-r1\"><span class=\"mlabel\"><span>Events<\/span><\/span><span class=\"srch\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\/circle><path d=\"M20 20l-3.5-3.5\"><\/path><\/svg><label class=\"sr\" for=\"manifest-search\">Search events<\/label><input id=\"manifest-search\" class=\"\" placeholder=\"Search\u2026\"><\/span><\/div><div class=\"mt-r2\"><span class=\"mt-grp\" role=\"group\" aria-label=\"Kind\"><span class=\"mlabel\"><span>Kind<\/span><\/span><button aria-pressed=\"true\" class=\"chip\" title=\"All kind\">All<\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only changes\" style=\"--c: var(--info);\"><i><\/i>changes<\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only alerts\" style=\"--c: var(--warn);\"><i><\/i>alerts<\/button><button aria-pressed=\"false\" class=\"chip topic\" title=\"Only restarts\" style=\"--c: var(--sched);\"><i><\/i>restarts<\/button><\/span><span class=\"mt-grp\" role=\"group\" aria-label=\"Level\"><span class=\"mlabel\"><span>Level<\/span><\/span><button aria-pressed=\"true\" class=\"chip\" title=\"All level\">All<\/button><button aria-pressed=\"false\" class=\"chip lvchip\" title=\"Only error\" style=\"--sv: var(--danger-ink);\"><span class=\"msev\" data-n=\"4\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><i><\/i><\/span>error <em>0<\/em><\/button><button aria-pressed=\"false\" class=\"chip lvchip\" title=\"Only warn\" style=\"--sv: var(--warn-ink);\"><span class=\"msev\" data-n=\"3\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><i><\/i><\/span>warn <em>0<\/em><\/button><button aria-pressed=\"false\" class=\"chip lvchip\" title=\"Only caution\" style=\"--sv: var(--warn);\"><span class=\"msev\" data-n=\"2\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><i><\/i><\/span>caution <em>8<\/em><\/button><button aria-pressed=\"false\" class=\"chip lvchip\" title=\"Only info\" style=\"--sv: var(--ink3);\"><span class=\"msev\" data-n=\"1\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><i><\/i><\/span>info <em>39<\/em><\/button><\/span><\/div><\/div><div class=\"mscroll\"><table class=\"mtable\"><colgroup><col class=\"c-cb\"><col class=\"c-win\"><col class=\"c-type\"><col class=\"c-narrow\"><col class=\"c-detail\"><col class=\"c-narrow\"><\/colgroup><thead><tr><th><span class=\"cb\" role=\"checkbox\" tabindex=\"0\" aria-label=\"Select every row shown\" aria-checked=\"false\"><\/span><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">When <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Kind <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Source <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">What <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><th class=\"sortable\" aria-sort=\"none\"><button type=\"button\" class=\"sortbtn\">Who <svg class=\"ic sortic\" aria-hidden=\"true\"><use href=\"#i-chevrons-up-down\"><\/use><\/svg><\/button><\/th><\/tr><\/thead><tbody><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-09-06T19:25:51.591Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--info);\"><\/span><span><span class=\"whent\">Sep 6, 3:25 PM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk change\">CHANGE<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Deleted draw \"Test Draw For Portal Write\" <\/td><td class=\"\" style=\"\">632283<\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-09-06T19:22:08.731Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--info);\"><\/span><span><span class=\"whent\">Sep 6, 3:22 PM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk change\">CHANGE<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Added new draw \"Test Draw For Portal Write\" <\/td><td class=\"\" style=\"\">632283<\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-09-06T13:36:52.253Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--info);\"><\/span><span><span class=\"whent\">Sep 6, 9:36 AM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk change\">CHANGE<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Deleted draw \"Realwalk Probe 2026-09-06T13-36-51-768Z\" <\/td><td class=\"\" style=\"\">632283<\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-09-06T13:36:52.048Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--info);\"><\/span><span><span class=\"whent\">Sep 6, 9:36 AM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk change\">CHANGE<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Added new draw \"Realwalk Probe 2026-09-06T13-36-51-768Z\" <\/td><td class=\"\" style=\"\">632283<\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-09-05T00:11:53.456Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--info);\"><\/span><span><span class=\"whent\">Sep 4, 8:11 PM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk change\">CHANGE<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Deleted draw \"Realwalk Probe 2026-09-05T00-11-52-542Z\" <\/td><td class=\"\" style=\"\">632283<\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-08-28T01:42:28.094Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--sched);\"><\/span><span><span class=\"whent\">Aug 27, 9:42 PM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk boot\">RESTART<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>restarted \u2014 automatic <\/td><td class=\"\" style=\"\"><span class=\"none\">system<\/span><\/td><\/tr><tr class=\"\" tabindex=\"0\" style=\"cursor: pointer;\"><td><span class=\"cb\" role=\"checkbox\" aria-checked=\"false\" tabindex=\"0\" aria-label=\"Select 2026-08-28T01:42:27.587Z\"><\/span><\/td><td class=\"n\" style=\"\"><span class=\"ncell\"><span class=\"dot\" style=\"--topic-accent: var(--warn);\"><\/span><span><span class=\"whent\">Aug 27, 9:42 PM<\/span><\/span><\/span><\/td><td class=\"\" style=\"\"><span class=\"rivk alert\">ALERT<\/span><\/td><td class=\"\" style=\"\">\u2014<\/td><td class=\"\" style=\"\"><span class=\"sev info\"><\/span>Bot online <span class=\"lvtag lv-info\">info<\/span><\/td><td class=\"\" style=\"\"><span class=\"none\">system<\/span><\/td><\/tr><\/tbody><\/table><\/div><div class=\"mmore\"><button type=\"button\" class=\"chip\"><svg class=\"ic\" aria-hidden=\"true\"><use href=\"#i-history\"><\/use><\/svg>Load older events <em>1,321 more<\/em><\/button><\/div><\/section>", "histActors": ["632283", "system"]};
+const PAL={"current": {"name": "Current", "why": "Even hue steps at one low chroma", "hex": {"Optic": "#89BDB9", "Muzzle": "#D2A4A0", "Barrel": "#CAAA8D", "Stock": "#B6B48B", "Laser": "#8CB9CC", "Underbarrel": "#99BB9F", "Rear Grip": "#9DB2D5", "Ammunition": "#CAA4BC", "Perk": "#B6AAD0"}, "oklch": {"Optic": [0.76, 0.055, 190], "Muzzle": [0.76, 0.055, 25], "Barrel": [0.76, 0.055, 65], "Stock": [0.76, 0.055, 105], "Laser": [0.76, 0.055, 225], "Underbarrel": [0.76, 0.055, 150], "Rear Grip": [0.76, 0.055, 260], "Ammunition": [0.76, 0.055, 340], "Perk": [0.76, 0.055, 300]}, "closest": [3.3, "Laser / Rear Grip"], "closestDeutan": [0.1, "Barrel / Stock"]}, "gun": {"name": "Front to back", "why": "Cool at the muzzle, warm at the stock, following where the part sits on the gun; the perk, which is not a part, stays near-neutral", "hex": {"Optic": "#F3A0CE", "Muzzle": "#6FE4FB", "Barrel": "#5AA5E3", "Stock": "#EFCD7F", "Laser": "#BB9ECD", "Underbarrel": "#AFB7FE", "Rear Grip": "#E6B08F", "Ammunition": "#BC9292", "Perk": "#CDD5DE"}, "oklch": {"Optic": [0.8, 0.113, 345.693], "Muzzle": [0.86, 0.11, 211.702], "Barrel": [0.7, 0.118, 245.2], "Stock": [0.86, 0.104, 86.187], "Laser": [0.74, 0.075, 312.196], "Underbarrel": [0.8, 0.101, 278.698], "Rear Grip": [0.8, 0.078, 52.689], "Ammunition": [0.7, 0.05, 19.191], "Perk": [0.87, 0.015, 250]}, "closest": [8.2, "Underbarrel / Laser"], "closestDeutan": [5.4, "Muzzle / Perk"]}, "wheel": {"name": "Open wheel", "why": "Nine hues pushed as far apart as they go, none in the red, amber or green that already mean danger, warning and done", "hex": {"Optic": "#F3BCED", "Muzzle": "#77EBBC", "Barrel": "#55AD81", "Stock": "#ECCE7C", "Laser": "#AFB161", "Underbarrel": "#DF9298", "Rear Grip": "#6CB6D9", "Ammunition": "#C7885B", "Perk": "#A585DB"}, "oklch": {"Optic": [0.86, 0.088, 330], "Muzzle": [0.86, 0.127, 165], "Barrel": [0.68, 0.107, 160], "Stock": [0.86, 0.108, 90], "Laser": [0.74, 0.103, 110], "Underbarrel": [0.74, 0.093, 15], "Rear Grip": [0.74, 0.089, 230], "Ammunition": [0.68, 0.099, 55], "Perk": [0.68, 0.128, 300]}, "closest": [8.9, "Underbarrel / Ammunition"], "closestDeutan": [5.7, "Barrel / Ammunition"]}, "mineral": {"name": "Mineral", "why": "Low colour, told apart by lightness as much as hue, so a dense row stays calm", "hex": {"Optic": "#B08E97", "Muzzle": "#878E76", "Barrel": "#80A4B6", "Stock": "#E1D4FC", "Laser": "#A4A58C", "Underbarrel": "#B6A1C6", "Rear Grip": "#EFD5CC", "Ammunition": "#97BDA7", "Perk": "#C7C3AA"}, "oklch": {"Optic": [0.68, 0.043, 0], "Muzzle": [0.633, 0.036, 120], "Barrel": [0.698, 0.047, 230], "Stock": [0.893, 0.056, 300], "Laser": [0.714, 0.035, 110], "Underbarrel": [0.739, 0.058, 310], "Rear Grip": [0.893, 0.032, 40], "Ammunition": [0.764, 0.051, 160], "Perk": [0.814, 0.034, 100]}, "closest": [6.4, "Laser / Ammunition"], "closestDeutan": [4.3, "Barrel / Underbarrel"]}};
+const FAULTS=[{"w": ".50 GS", "cat": "Secondaries", "c": "#023047", "n": 2, "rows": [{"n": "1", "f": ["Code lists 5 attachments, build has 4"]}]}, {"w": "JAK-12", "cat": "Shotgun", "c": "#f6a93b", "n": 1, "rows": [{"n": "1", "f": ["Code lists 4 attachments, build has 5"]}]}, {"w": "KILO 141", "cat": "Assault", "c": "#ff3b5c", "n": 2, "rows": [{"n": "2", "f": ["Almost the same as another build"]}]}, {"w": "PHARO", "cat": "SMG", "c": "#ffd23f", "n": 1, "rows": [{"n": "1", "f": ["Only 1 of 5 attachments", "No gunsmith code to copy"]}]}, {"w": "PP19 BIZON", "cat": "SMG", "c": "#ffd23f", "n": 3, "rows": [{"n": "3", "f": ["Almost the same as another build"]}]}];</script>
+<script>
+(function () {
+  const ic = (n, cls) => `<svg class="ic ${cls || ''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const frag = (html) => { const t = document.createElement('template'); t.innerHTML = html; return t.content; };
+  const edit = (html, fn) => { const f = frag(html); fn(f); const d = document.createElement('div'); d.appendChild(f); return d.innerHTML; };
+  const pick = (html, sel) => { const f = frag(html); const el = f.querySelector(sel); return el ? el.outerHTML : ''; };
+  const head = (gid, title, pins) => `<div class="b3-head"><span class="b3-gid">${gid}</span><div><h2>${title}</h2><div class="b3-pins">${pins.map((p) => `<code>${p}</code>`).join('')}</div></div></div>`;
+  const frame = (k, title, body, sub, cls) => `<div class="b3-f"><div class="b3-fl"><span class="b3-k${k === 'Now' ? ' now' : ''}">${k}</span>${title}${sub ? ` <small>${sub}</small>` : ''}</div>${body}</div>`;
+  const spec = (items) => `<ul class="b3-spec">${items.map(([b, t]) => `<li><b>${b}</b> ${t}</li>`).join('')}</ul>`;
+  const CATC = { AR: 'var(--ar)', SMG: 'var(--smg)', LMG: 'var(--lmg)', MARKSMAN: 'var(--mm)', SNIPER: 'var(--sn)', SHOTGUN: 'var(--sg)', SECONDARIES: 'var(--sec)' };
+  const SLOTS = ['Optic', 'Muzzle', 'Barrel', 'Stock', 'Laser', 'Underbarrel', 'Rear Grip', 'Ammunition', 'Perk'];
+  const sections = [];
+  const add = (id, realm, navLabel, html) => sections.push({ id, realm, navLabel, html });
+
+  // ───────────── P1 · badge labels ─────────────
+  add('p1', 'armory', 'P1 Badges', `
+    ${head('P1', 'Badge labels', ['pmu2u15b8'])}
+    ${frame('Now', 'On the portal: CX-9 (TOP 3, META) and LOCUS (BEST, META), the shipped tag above the pre-Session-2 badge', `<figure class="b3-shot"><img src="p1-portal.png" width="1148" height="284" alt="The CX-9 and LOCUS weapon headers on the dev portal, twice: first with today's tags, then with the outlined badge style used before Session 2"></figure>`)}
+    ${spec([['Shipped tag', '<code>.wg-tag</code> · 22px · 8% wash · 1px inset edge in the tier colour · 9.5px mono, tracked'], ['Earlier badge', '<code>.bdg</code> · 2px 5px padding · 14% wash · 1px border at 40% · 9.5px mono · every tier in the rank blue, META in patch yellow'], ['BEST', 'LOCUS carries it: 18 builds across 7 weapons in the dev data'], ['Taken', 'on the signed-in dev portal, both groups closed, one screenshot, nothing redrawn']])}`);
+
+  // ───────────── P2 · attachment tags ─────────────
+  const P2B = [
+    { w: 'CX-9', b: 'Build 1', c: 'SMG', items: [['Barrel', 'CX-38S'], ['Stock', 'CX-FR'], ['Ammunition', '50 Round Drums'], ['Rear Grip', 'CX-9 Ace Grip'], ['Perk', 'Sleight of Hand']] },
+    { w: 'ODEN', b: 'Build 2', c: 'AR', items: [['Muzzle', 'Monolithic Suppressor'], ['Stock', 'RTC Steady Stock'], ['Underbarrel', 'Operator Foregrip'], ['Rear Grip', 'Granulated Grip Tape'], ['Laser', 'OWC Laser - Tactical']] },
+    { w: 'XPR-50', b: 'Build 2', c: 'SNIPER', items: [['Muzzle', 'Monolithic Suppressor'], ['Barrel', 'RTC Long'], ['Optic', '4X Tactical Scope'], ['Stock', 'YKM Ghost Stock'], ['Ammunition', 'OWC Stopping Power Reload']] },
+  ];
+  const ordered = (items) => items.slice().sort((a, b) => SLOTS.indexOf(a[0]) - SLOTS.indexOf(b[0]));
+  const brow = (b, tagFn) => `<div class="b3-brow"><span class="b3-bw" style="--c:${CATC[b.c]}"><b>${b.w}</b><small>${b.b}</small></span><div class="b3-rail">${ordered(b.items).map(tagFn).join('')}</div></div>`;
+  const palBlock = (key) => {
+    const p = PAL[key];
+    const washTag = ([s, n]) => `<span class="wg-at" title="${s}" style="--sl:${p.hex[s]}">${esc(n)}</span>`;
+    const barTag = ([s, n]) => `<span class="b3-atb" title="${s}" style="--sl:${p.hex[s]}">${esc(n)}</span>`;
+    const weak = (v) => (v < 5 ? ' weak' : '');
+    return `<div class="b3-pal">
+      <div class="b3-palh"><b>${key === 'current' ? 'Now' : ''}${key === 'current' ? '' : p.name}</b><span>${key === 'current' ? 'the nine slot colours shipped in Session 2' : p.why}</span></div>
+      <div class="b3-metrics">
+        <span class="b3-metric${weak(p.closest[0])}">Closest pair <em>${p.closest[1]}</em> <b>${p.closest[0]}</b></span>
+        <span class="b3-metric${weak(p.closestDeutan[0])}">Closest for red–green colour blindness <em>${p.closestDeutan[1]}</em> <b>${p.closestDeutan[0]}</b></span>
+      </div>
+      <div class="b3-legend">${SLOTS.map((s) => `<span class="b3-sw" style="--sl:${p.hex[s]}"><i></i>${s}<code>${p.hex[s]}</code></span>`).join('')}</div>
+      <div class="b3-grid two">
+        <div class="b3-cell"><span class="b3-cl">The shipped tag</span>${P2B.map((b) => brow(b, washTag)).join('')}</div>
+        <div class="b3-cell"><span class="b3-cl">Your outlined tag</span>${P2B.map((b) => brow(b, barTag)).join('')}</div>
+      </div>
+    </div>`;
+  };
+  add('p2', 'armory', 'P2 Tags', `
+    ${head('P2', 'Attachment tags and slot colours', ['pmu2uu6ut'])}
+    ${palBlock('current')}${palBlock('gun')}${palBlock('wheel')}${palBlock('mineral')}
+    ${spec([['Slots', 'nine: the dev data has no build with a trigger action (0 of 133), so it gets no colour'], ['Distance', 'OKLab ×100 between the two nearest colours; under 5 two tags read as the same colour, shown in amber'], ['Your tag', 'white text, 3px bar in the slot colour, 1px edge at 44%, 9% wash, no icon · 28px · radius 6'], ['Builds', 'CX-9 Build 1, ODEN Build 2 and XPR-50 Build 2 together carry all nine slots']])}`);
+
+  // ───────────── P3 · build problems ─────────────
+  const pharo = FAULTS.find((g) => /PHARO/.test(g.w)) || FAULTS[0];
+  const faultIcon = (t) => (/code/i.test(t) && /no/i.test(t) ? 'box-code' : /code/i.test(t) ? 'triangle-alert' : /attach/i.test(t) ? 'layers' : /image/i.test(t) ? 'image-off' : /same|duplicate/i.test(t) ? 'copy' : 'triangle-alert');
+  const faultDetail = (t) => { const m = t.match(/(\d+) of (\d+)/); if (m) return `${m[1]} / ${m[2]}`; const k = t.match(/lists (\d+).*has (\d+)/); if (k) return `${k[1]} ≠ ${k[2]}`; return ''; };
+  const faultShort = (t) => (/no gunsmith code|no code/i.test(t) ? 'No code' : /only (\d+) of (\d+)/i.test(t) ? t.replace(/only (\d+) of (\d+) attachments/i, '$1 of $2 attachments') : /lists/i.test(t) ? 'Code and attachments disagree' : t);
+  const fRows = (pharo && pharo.rows) || [];
+  const buildWord = (rows) => (rows.length === 1 ? `Build ${rows[0].n}` : rows.length === 2 ? `Builds ${rows[0].n} and ${rows[1].n}` : `${rows.length} builds`);
+  const probWord = (rows) => { const n = rows.reduce((a, r) => a + r.f.length, 0); return `${n} problem${n === 1 ? '' : 's'}`; };
+  const popCard = (up) => `<div class="b3-pop${up ? ' up' : ''}" role="dialog" aria-label="Problems with ${esc(pharo.w)}">
+      ${fRows.map((r) => `<div class="b3-poph"><div><b>${esc(pharo.w)} · Build ${r.n}</b><small>${r.f.length} problem${r.f.length === 1 ? '' : 's'}</small></div></div>
+      <ul class="b3-popl">${r.f.map((t) => `<li><i>${ic(faultIcon(t))}</i><span>${esc(t)}</span><em>${faultDetail(t)}</em></li>`).join('')}</ul>`).join('')}
+      <div class="b3-popf"><button class="b3-wbtn" type="button">Open Build ${fRows[0] ? fRows[0].n : ''} ${ic('arrow-right')}</button></div></div>`;
+  const chipA = `<span class="wg-fwrap"><button type="button" class="b3-wchip" aria-expanded="true">${ic('triangle-alert')}<b>${buildWord(fRows)}</b><i></i>${probWord(fRows)}</button></span>`;
+  const groupA = edit(CAP.pharoOpen, (f) => { const w = f.querySelector('.wg-fwrap'); if (w) w.outerHTML = chipA; f.querySelectorAll('.wg-r').forEach((r) => r.remove()); });
+  const groupB = edit(CAP.pharoOpen, (f) => {
+    const w = f.querySelector('.wg-fwrap'); if (w) w.outerHTML = `<span class="wg-fwrap"><span class="b3-mark">${ic('triangle-alert')}${fRows.length} build${fRows.length === 1 ? '' : 's'} to fix</span></span>`;
+    f.querySelectorAll('.wg-fpop').forEach((p) => p.remove());
+    const row = f.querySelector('.wg-r.bad') || f.querySelector('.wg-r');
+    const main = row && (row.querySelector('.wg-rail') || row.querySelector('.wg-main'));
+    const faultsHere = (fRows[0] && fRows[0].f) || [];
+    if (main) main.insertAdjacentHTML('beforeend', `<span class="b3-rowfaults">${faultsHere.map((t) => `<button type="button" class="b3-wchip sm">${ic(faultIcon(t))}${esc(faultShort(t))}</button>`).join('')}</span>`);
+  });
+  add('p3', 'armory', 'P3 Problems', `
+    ${head('P3', 'Build problems', ['pmu2uhe9d', 'pmu2v3urw'])}
+    ${frame('Now', 'PHARO with its Fix build chip open', `<div class="b3-st flush b3-cap"><div class="wg-wrap">${CAP.pharoOpen}</div></div>`, 'the 1 reads as a count; the popover opens downward whatever the scroll')}
+    ${frame('A', 'The chip names the build; the card lists what is wrong', `<div class="b3-grid">
+        <div class="b3-st flush b3-cap"><div class="wg-wrap">${groupA}</div><div style="padding:0 0 22px">${`<div class="b3-popwrap">${popCard(false)}</div>`}</div></div>
+        <div class="b3-grid two">
+          <div class="b3-f"><div class="b3-fl"><small>Near the bottom of the window the card opens upward</small></div><div class="b3-scroller"><div class="b3-vp" style="bottom:20px"><div class="b3-popwrap" style="padding-bottom:10px">${popCard(true)}</div><div class="b3-cap"><div class="wg-wrap">${groupA}</div></div></div><div class="b3-vpline"><span>window edge</span></div></div></div>
+          ${(() => { const g = FAULTS.find((x) => x.w === '.50 GS') || FAULTS[0]; return `<div class="b3-f"><div class="b3-fl"><small>${esc(g.w)}: ${g.n} builds, one with a problem</small></div><div class="b3-st"><span class="wg-fwrap" style="margin:0"><button type="button" class="b3-wchip" aria-expanded="false">${ic('triangle-alert')}<b>${buildWord(g.rows)}</b><i></i>${probWord(g.rows)}</button></span></div></div>`; })()}
+        </div></div>`)}
+    ${frame('B', 'The row carries it: no popover, each problem a chip beside the build', `<div class="b3-st flush b3-cap"><div class="wg-wrap">${groupB}</div></div>`)}
+    ${spec([['Warning shape', 'shared with P8: a hatched 6px left edge, the warn colour at 9% on the sunk surface, a 1px warn edge at 38%, the triangle icon; nothing else in the portal is hatched'], ['A · chip', '34px, radius 8 · "Build 1" in ink, a divider, the problem count · several builds read "Builds 1 and 3", then "3 builds"'], ['A · card', '392px, radius 10 · a header per build · one 44px line per problem with its icon and the numbers that disagree · Open Build N · flips above the chip when it would cross the window edge'], ['B · row', 'the header says how many builds to fix; each problem is a 28px chip after the build’s tags and opens the build at that field']])}`);
+
+  // ───────────── P4 · checkbox ─────────────
+  const CHECK = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6.4 5 8.8 9.6 3.4"/></svg>`;
+  const cbA = (s) => `<span class="b3-cbA ${s}">${CHECK}</span>`;
+  const cbB = (s) => `<span class="b3-cbB ${s}">${CHECK}</span>`;
+  const z = (h) => `<span class="b3-zoom">${h}</span>`;
+  const cbTable = `<div class="b3-cbt">
+    <div class="h"></div><div class="h">Off</div><div class="h">Hover</div><div class="h">On</div><div class="h">Some</div><div class="h">Focus</div><div class="h">Disabled</div>
+    <div class="r">Now<small>16px · check drawn with a border</small></div><div>${z('<span class="cb"></span>')}</div><div>${z('<span class="cb"></span>')}</div><div>${z('<span class="cb on"></span>')}</div><div>${z('<span class="cb"></span>')}</div><div>${z('<span class="cb"></span>')}</div><div>${z('<span class="cb" style="opacity:.4"></span>')}</div>
+    <div class="r">A · Drawn check<small>18px · radius 5 · centred path</small></div><div>${z(cbA(''))}</div><div>${z(cbA('hov'))}</div><div>${z(cbA('on'))}</div><div>${z(cbA('mix'))}</div><div>${z(cbA('foc'))}</div><div>${z(cbA('dis'))}</div>
+    <div class="r">B · Soft well<small>18px · radius 6 · lit when on</small></div><div>${z(cbB(''))}</div><div>${z(cbB('hov'))}</div><div>${z(cbB('on'))}</div><div>${z(cbB('mix'))}</div><div>${z(cbB('foc'))}</div><div>${z(cbB('dis'))}</div>
+  </div>`;
+  const headsRow = (cb, tip) => `<div class="b3-heads"><span class="cbhit">${cb}${tip || ''}</span><span>Weapon ${ic('chevrons-up-down')}</span><span>${ic('chevrons-down-up')}Collapse all</span></div>`;
+  add('p4', 'armory', 'P4 Checkbox', `
+    ${head('P4', 'Checkbox and select all', ['pmu2va9ey', 'pmu2vgcd9'])}
+    ${frame('Now', 'Every state, twice size', cbTable, 'Some has no drawing today: a half-selected weapon shows an empty box')}
+    <div class="b3-grid two">
+      ${frame('A', 'Select all in the column head', `<div class="b3-grid">${headsRow(cbA('hov'), `<span class="b3-tip">Select all <em>133</em></span>`)}${headsRow(cbA('mix'), `<span class="b3-tip">3 of 133 selected</span>`)}</div>`)}
+      ${frame('B', 'Select all in the column head', `<div class="b3-grid">${headsRow(cbB('hov'), `<span class="b3-tip">Select all <em>133</em></span>`)}${headsRow(cbB('mix'), `<span class="b3-tip">3 of 133 selected</span>`)}</div>`)}
+    </div>
+    ${spec([['Hit area', '44px around an 18px box, as every row checkbox today'], ['On', 'patch yellow fill; the check is a 12px path centred in the box, never a rotated border'], ['Some', 'a 9px bar, for a weapon header or the column head when part of the list is selected'], ['Select all', 'the column head’s box selects every visible build; hovering it names the count, and while some are selected it says how many']])}`);
+
+  // ───────────── P5 · selection bar ─────────────
+  const cxg = frag(CAP.armoryManifest);
+  const codeOf = (w, i) => { const g = [...cxg.querySelectorAll('.wg')].find((x) => (x.querySelector('.wg-line b') || {}).textContent === w); const r = g && g.querySelectorAll('.wg-r')[i]; const c = r && r.querySelector('.wg-code, .wg-ct'); return c ? c.textContent.replace(/\s+/g, '').slice(0, 10) : '—'; };
+  const six = [['CX-9', 1, 'SMG'], ['CX-9', 2, 'SMG'], ['CX-9', 3, 'SMG'], ['LOCUS', 1, 'SNIPER'], ['LOCUS', 2, 'SNIPER'], ['PHARO', 1, 'SMG']];
+  const actions = `<div class="b3-sela"><button class="b3-sb">${ic('tag')}Set badges</button><button class="b3-sb">${ic('download')}Export</button><button class="b3-sb dang">${ic('trash-2')}Stage deletion<span class="rev" title="Discarded on Review, never undone">${ic('undo-2')}</span></button><button class="b3-sb ghost">${ic('x')}Clear</button></div>`;
+  const chip = (w, label, c, n) => `<span class="b3-sc" style="--c:${CATC[c]}"><i></i>${w}${label ? `<em>${label}</em>` : ''}<button aria-label="Deselect ${w}">${ic('x')}</button></span>`;
+  add('p5', 'armory', 'P5 Selection', `
+    ${head('P5', 'Selection bar', ['pmu2vqjau'])}
+    ${frame('Now', 'One build, then two', `<div class="b3-grid"><div class="b3-cap">${CAP.selbar1}</div><div class="b3-cap">${CAP.selbar3}</div></div>`, 'the weapon is small grey text under the count, the build is never named, and the policy sentence is the loudest thing on the bar')}
+    ${frame('A', 'The bar names what is selected', `<div class="b3-selw">
+      <div class="b3-sel"><span class="b3-seln">1</span><div class="b3-selc">${chip('CX-9', 'Build 1', 'SMG')}</div>${actions}</div>
+      <div class="b3-sel"><span class="b3-seln">6</span><div class="b3-selc">${chip('CX-9', 'Builds 1–3', 'SMG')}${chip('LOCUS', 'Builds 1, 2', 'SNIPER')}${chip('PHARO', 'Build 1', 'SMG')}</div>${actions}</div>
+      <div class="b3-sel"><span class="b3-seln">14</span><div class="b3-selc">${chip('CX-9', '×3', 'SMG')}${chip('LOCUS', '×2', 'SNIPER')}${chip('PHARO', '×1', 'SMG')}<span class="b3-sc more">+5 weapons</span></div>${actions}</div>
+    </div>`)}
+    ${frame('B', 'A tray that lists each build', `<div class="b3-tray"><div class="b3-trayh">${ic('list-checks')}6 selected<button class="b3-sb ghost">${ic('chevron-down')}Hide list</button></div><div class="b3-trayl">${six.map(([w, n, c]) => `<div class="b3-tri" style="--c:${CATC[c]}"><i></i><b>${w}</b><span>Build ${n}</span><code>${codeOf(w, n - 1)}</code><button aria-label="Deselect ${w} build ${n}">${ic('x')}</button></div>`).join('')}</div><div class="b3-sel"><span class="b3-seln">6</span><div class="b3-selc">${chip('CX-9', '×3', 'SMG')}${chip('LOCUS', '×2', 'SNIPER')}${chip('PHARO', '×1', 'SMG')}</div>${actions}</div></div>`)}
+    ${spec([['A', 'a chip per weapon with its category square and the builds; past four weapons the rest fold into "+N weapons" · × deselects that weapon'], ['B', 'the same bar with a list above it: category, weapon, build, gunsmith code, × per build · collapses to the bar'], ['Reversible', 'the sentence leaves the bar: the Stage deletion button carries a small undo mark that explains itself on hover'], ['Bar', '64px, radius 14, patch at 5% on the raised surface']])}`);
+
+  // ───────────── P6 · repairs ─────────────
+  const mtools = pick(CAP.armoryManifest, '.mtools');
+  const TOTAL = 133;
+  const allRows = FAULTS.flatMap((g) => g.rows.map((r) => ({ w: g.w, cat: g.cat, c: g.c, n: r.n, f: r.f }))).sort((a, b) => b.f.length - a.f.length || a.w.localeCompare(b.w));
+  const kinds = {}; allRows.forEach((r) => r.f.forEach((t) => { const k = faultShort(t); if (!kinds[k]) kinds[k] = { n: 0, t }; kinds[k].n++; }));
+  const needsGroup = `<span class="mt-grp b3-needs"><span class="mlabel">Needs work</span>${Object.entries(kinds).map(([k, v]) => `<button type="button" class="b3-wchip sm">${ic(faultIcon(v.t))}${esc(k)}<b>${v.n}</b></button>`).join('')}</span>`;
+  const toolsA = edit(mtools, (f) => { const rows = f.querySelectorAll('.mt-r2'); const last = rows[rows.length - 1] || f.firstElementChild; if (last) last.insertAdjacentHTML('beforeend', needsGroup); });
+  const COV = ['Missing image', '2 or fewer attachments', 'Near-duplicate code', 'No gunsmith code', 'Code length doesn’t match attachments'];
+  add('p6', 'armory', 'P6 Repairs', `
+    ${head('P6', 'Repairs', ['pmu2vze4t'])}
+    ${frame('Now', 'The Repairs view on the dev portal', `<div class="b3-st flush b3-cap">${CAP.repairs}</div>`, 'a count per check as cards, a paragraph about badges and a per-category list; the fix for each problem lives on its build’s row')}
+    ${frame('A', 'No view: problems become a filter, and the masthead says when there are any', `<div class="b3-grid">
+        <div class="b3-st"><span class="b3-mstat"><b>${allRows.length}</b><span>builds need work</span><small>Show them</small></span></div>
+        <div class="b3-st flush b3-cap">${toolsA}</div>
+        <div class="b3-note">${ic('circle-check')}On a day with no problems the masthead stat and the Needs work group are not drawn at all.</div>
+      </div>`)}
+    ${frame('B', 'A worklist: one line per build to fix', `<div class="b3-grid">
+        <div class="b3-work"><div class="b3-workh"><span></span><span>Build</span><span>Problems</span><span></span></div>
+          ${allRows.map((r) => `<div class="b3-wr" style="--c:${r.c}"><span class="n">${r.f.length}</span><span class="w"><b>${esc(r.w)} · Build ${r.n}</b><small>${esc(r.cat)}</small></span><span class="f">${r.f.map((t) => `<span class="b3-wchip sm">${ic(faultIcon(t))}${esc(faultShort(t))}</span>`).join('')}</span><span class="a"><button class="b3-wbtn">${ic('wrench')}Fix</button></span></div>`).join('')}
+        </div>
+        <div class="b3-clean"><b>${ic('circle-check')}The other ${TOTAL - allRows.length} builds pass</b>${COV.map((c) => `<span class="b3-check">${ic('check')}${c}</span>`).join('')}<span class="b3-check age">${ic('clock')}<em>${((CAP.repairs.match(/(\d+) more (?:is|are) merely old/) || [])[1]) || '—'}</em> not updated in 90 days</span></div>
+      </div>`)}
+    ${spec([['How often', 'after an import or a bulk paste; on most days there is nothing to repair'], ['A', 'Repairs leaves the view switch; the masthead stat and the Needs work chips exist only while a build has a problem, and each chip filters the manifest to it'], ['B', 'Repairs stays a view, as the list of builds to fix, worst first, with a Fix button that opens the build at its problem; a clean collection is one line with its checks ticked'], ['Both', 'one set of checks feeds both the rows and this surface; age stays apart from faults']])}`);
+
+  // ───────────── P7 · command search ─────────────
+  const cmdRow = (on, icon, c, title, sub, tag) => `<div class="b3-cmdr${on ? ' on' : ''}" style="--c:${c}"><i>${ic(icon)}</i><div><b>${title}</b>${sub ? `<small>${sub}</small>` : ''}</div>${tag ? `<em>${tag}</em>` : '<span></span>'}</div>`;
+  const cmdFoot = `<div class="b3-cmdf"><span><kbd>↑</kbd><kbd>↓</kbd>move</span><span><kbd>↵</kbd>open</span><span><kbd>esc</kbd>close</span></div>`;
+  add('p7', 'shell', 'P7 Search', `
+    ${head('P7', 'Command search', ['pmu2w98v8'])}
+    <div class="b3-grid two">
+      ${frame('Now', '“badge”', `<div class="b3-st b3-cap" style="min-height:180px">${CAP.paletteBadge}</div>`)}
+      ${frame('Now', '“review”', `<div class="b3-st b3-cap" style="min-height:180px">${CAP.paletteReview}</div>`)}
+    </div>
+    <div class="b3-grid two">
+      ${frame('A', 'A plain word finds real actions, grouped', `<div class="b3-st desk"><div class="b3-cmd"><div class="b3-cmdin">${ic('search')}badge<span class="caret"></span><kbd>⌘/</kbd></div><div class="b3-cmdl">
+        <div class="b3-cmds">Do</div>
+        ${cmdRow(true, 'tag', 'var(--r-armory)', 'Set <mark>badges</mark> on builds', 'META, TOXIC and the tier, on the builds you pick', 'Armory')}
+        ${cmdRow(false, 'plus', 'var(--r-armory)', 'Add build', 'its form has the <mark>badge</mark> toggles', 'Armory')}
+        <div class="b3-cmds">Find</div>
+        ${cmdRow(false, 'star', 'var(--patch)', 'META', '34 builds · 14 weapons', '')}
+        ${cmdRow(false, 'star', 'var(--patch)', 'BEST', '18 builds · 7 weapons', '')}
+        ${cmdRow(false, 'skull', 'var(--danger-ink)', 'TOXIC', '10 builds · 7 weapons', '')}
+        <div class="b3-cmds">Go</div>
+        ${cmdRow(false, 'layout-grid', 'var(--r-armory)', 'Tier board', '<mark>badges</mark> by tier', 'Armory')}
+      </div>${cmdFoot}</div></div>`)}
+      ${frame('B', 'Words that name an action and a weapon compose it', `<div class="b3-st desk"><div class="b3-cmd"><div class="b3-cmdin">${ic('search')}meta cx9<span class="caret"></span><kbd>⌘/</kbd></div>
+        <div class="b3-compose"><div class="row"><span class="b3-tok verb">${ic('tag')}Set badge</span><span class="b3-tok badge">META</span><span class="b3-joiner">on</span><span class="b3-tok weap" style="--c:var(--smg)"><i></i>CX-9<em>3 builds</em></span></div>
+          <div class="go"><span>Opens Set badges with these filled in; it stages, nothing is live until Review</span><kbd>↵</kbd></div></div>
+        <div class="b3-cmdl"><div class="b3-cmds">Find</div>
+          ${cmdRow(false, 'layers', 'var(--smg)', 'CX-9', '3 builds · SMG · already META', '')}
+          ${cmdRow(false, 'star', 'var(--patch)', 'META', '34 builds · 14 weapons', '')}
+        </div>${cmdFoot}</div></div>`)}
+    </div>
+    <div class="b3-st flush"><table class="b3-map"><thead><tr><th>Typed</th><th>Do</th><th>Find</th><th>Go</th></tr></thead><tbody>
+      <tr><td>badge</td><td><b>Set badges on builds</b> · Add build</td><td>META · BEST · TOP 3 · TOXIC, with counts</td><td>Tier board</td></tr>
+      <tr><td>meta cx9</td><td><b>Set badge META on CX-9</b> (composed)</td><td>CX-9 · META</td><td>—</td></tr>
+      <tr><td>end date</td><td><b>Set an end date</b> on the announcement that has none</td><td>1 announcement without an end</td><td>Broadcast · Delivery queue</td></tr>
+      <tr><td>new build</td><td><b>Add build</b> · Bulk create</td><td>—</td><td>Armory</td></tr>
+      <tr><td>admin</td><td><b>Grant access</b></td><td>people with access</td><td>Access · By admin</td></tr>
+    </tbody></table></div>
+    ${spec([['Index', 'every action, view and entity carries its words: an action lists the fields it touches (badge, meta, toxic, tier, best), so a word finds what it names, not what merely contains it'], ['Match', 'whole words and known shorthands (cx9 → CX-9) first, prefixes second, never loose substrings; a synonym match is underlined'], ['Keys', 'arrows move through every group, Enter runs, Escape closes; the list keeps its place while typing'], ['B', 'a verb plus a weapon, a badge or a date composes one action; Enter opens its drawer filled in, so nothing stages without the drawer']])}`);
+
+  // ───────────── P8 · heads up ─────────────
+  const qpanel = CAP.bcQueuePanel;
+  const accent = (frag(qpanel).querySelector('.qcard') || {}).getAttribute ? (frag(qpanel).querySelector('.qcard').getAttribute('style') || '').match(/--c:\s*([^;]+)/) : null;
+  const acc = accent ? accent[1] : 'var(--r-broadcast)';
+  const warnbar = `<div class="b3-warnbar">${ic('triangle-alert')}<div class="t"><b>An announcement has no end date</b><div class="row"><span class="b3-quote" style="--c:${acc}"><i></i><span>SESSIONB-SEED Season 7 is live — Reckoning drops today: new draws, a reworked ranked reset…</span></span><span class="b3-age">${ic('clock')}live 41 days</span></div></div><button class="b3-wbtn">${ic('calendar')}Set an end date</button></div>`;
+  const cardWarn = edit(qpanel, (f) => { const card = f.querySelector('.qcard'); if (card) card.insertAdjacentHTML('beforebegin', `<div class="b3-cardwarn">${ic('triangle-alert')}<b>No end date</b> · live 41 days<button class="b3-wbtn">${ic('calendar')}Set an end date</button></div>`); });
+  add('p8', 'broadcast', 'P8 Heads up', `
+    ${head('P8', 'Heads up, drawn as a warning', ['pmu2x2uv9'])}
+    ${frame('Now', 'Top of Broadcast', `<div class="b3-st desk b3-cap">${CAP.bcHeadsup}${qpanel}</div>`, 'a tinted callout like every other; 16px above it, none below')}
+    ${frame('A', 'A warning strip, spaced like the panels it sits between', `<div class="b3-st desk b3-cap"><div class="b3-stack">${warnbar}${qpanel}</div></div>`)}
+    ${frame('B', 'The warning sits on the card it is about', `<div class="b3-st desk b3-cap"><div class="b3-stack"><div style="display:flex;justify-content:flex-end"><span class="b3-attn">${ic('triangle-alert')}<b>1</b> needs attention</span></div>${cardWarn}</div></div>`)}
+    ${spec([['Shape', 'P3’s warning: hatched left edge, warn wash, warn edge, triangle; a plain callout keeps no bar at all, so only a problem is hatched'], ['A · spacing', '24px above and below, the gap between two panels, so the strip belongs to the page rhythm'], ['A · content', 'a title, the announcement as a quote in its own accent, its age, and the one action'], ['B', 'the strip rides on top of the delivery-queue card; the masthead carries a count that scrolls to it']])}`);
+
+  // ───────────── P9 · history ─────────────
+  const hf = frag(CAP.histManifest);
+  const hrows = [...hf.querySelectorAll('tbody tr')].map((tr) => { const td = tr.querySelectorAll('td'); const k = tr.querySelector('.rivk'); return { when: (tr.querySelector('.whent') || {}).textContent || '', kind: k ? k.className.replace('rivk', '').trim() : '', src: td[3] ? td[3].textContent.trim() : '', what: td[4] ? td[4].textContent.trim() : '', who: td[5] ? td[5].textContent.trim() : '', lv: (tr.querySelector('.lvtag') || {}).textContent || '' }; });
+  const KIND = { change: ['Change', 'square-pen', 'var(--info)'], alert: ['Alert', 'triangle-alert', 'var(--warn)'], boot: ['Restart', 'rotate-cw', 'var(--sched)'] };
+  const LV = { error: [4, 'var(--danger-ink)'], warn: [3, 'var(--warn-ink)'], caution: [2, 'var(--warn)'], info: [1, 'var(--ink3)'] };
+  const meter = (lv) => { const [n, c] = LV[lv] || [0, 'var(--ink3)']; return `<span class="b3-lvl" style="--sv:${c}"><span class="b3-meter">${[1, 2, 3, 4].map((i) => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>${lv}</span>`; };
+  const whatCell = (r) => { const m = r.what.replace(/\s*(info|warn|caution|error)\s*$/i, '').match(/^(.*?)"(.+)"\s*$/); return m ? `${esc(m[1].trim())} <span class="b3-ent">${ic('calendar-days')}${esc(m[2])}</span>` : esc(r.what.replace(/\s*(info|warn|caution|error)\s*$/i, '')); };
+  const whoCell = (w) => (/^\d+$/.test(w) ? `<span class="b3-who"><span class="av">D</span>dior</span>` : `<span class="b3-who sys"><span class="av">${ic('bot')}</span>system</span>`);
+  const hrow = (r, timeOnly) => { const [label, icon, c] = KIND[r.kind] || ['Event', 'history', 'var(--ink3)']; const [d, t] = r.when.split(', ').length > 2 ? [r.when.split(', ').slice(0, 2).join(', '), r.when.split(', ')[2]] : [r.when.split(', ')[0], r.when.split(', ')[1]]; return `<div class="b3-hr" style="--c:${c}"><span class="${'cbhit'}">${cbA('')}</span><span class="when">${timeOnly ? esc(t || r.when) : `${esc(d)}<small>${esc(t || '')}</small>`}</span><span><span class="b3-htab">${ic(icon)}${label}</span></span><span class="what">${whatCell(r)}${r.kind === 'alert' || r.lv ? ' ' + meter((r.lv || 'info').toLowerCase()) : ''}${r.src && r.src !== '—' ? ` <span class="b3-src">${esc(r.src)}</span>` : ''}</span>${whoCell(r.who)}<span>${r.kind === 'change' ? `<button class="b3-undo" aria-label="Reverse this change">${ic('undo-2')}</button>` : ''}</span></div>`; };
+  const htools = `<div class="b3-htools"><div class="r1"><b>Events</b><span class="b3-hsearch">${ic('search')}Search events</span></div><div class="r2">
+    <span class="b3-fg"><span>Kind</span><button class="b3-fc" aria-pressed="true">All</button><button class="b3-fc" style="--c:var(--info)"><i></i>Changes</button><button class="b3-fc" style="--c:var(--warn)"><i></i>Alerts</button><button class="b3-fc" style="--c:var(--sched)"><i></i>Restarts</button></span>
+    <span class="b3-fg"><span>Who</span><button class="b3-fc"><span class="b3-who"><span class="av" style="width:18px;height:18px;font-size:9px">D</span></span>dior</button><button class="b3-fc">system</button></span>
+    <span class="b3-fg"><span>Realm</span><button class="b3-fc" style="--c:var(--r-season)"><i></i>Season</button><button class="b3-fc" style="--c:var(--r-armory)"><i></i>Armory</button><button class="b3-fc" style="--c:var(--r-broadcast)"><i></i>Broadcast</button><button class="b3-fc" style="--c:var(--r-access)"><i></i>Access</button></span>
+    <span class="b3-fg"><span>When</span><button class="b3-fc">Today</button><button class="b3-fc">7 days</button><button class="b3-fc" aria-pressed="true">30 days</button></span>
+    <span class="b3-fg"><button class="b3-fc">${ic('undo-2')}Can be undone</button></span>
+  </div></div>`;
+  const hhead = (timeOnly) => `<div class="b3-hh"><span></span><span>${timeOnly ? 'Time' : 'When'}</span><span>Kind</span><span>What</span><span>Who</span><span></span></div>`;
+  const byDay = hrows.reduce((acc, r) => { const d = r.when.split(', ')[0]; (acc[d] = acc[d] || []).push(r); return acc; }, {});
+  add('p9', 'history', 'P9 History', `
+    ${head('P9', 'History’s manifest', ['pmu2zg5ym', 'pmu2zi05y', 'pmu2zl4m1', 'pmu2zntr1', 'pmu2zsqow', 'pmu2zuw1h'])}
+    ${frame('Now', 'History on the dev portal', `<div class="b3-st flush b3-cap">${CAP.histManifest}</div>`, 'a square chip and a dot repeat the kind; Who is six digits')}
+    ${frame('A', 'Ledger: who did what to which thing, and whether it can be undone', `<div class="b3-hist">${htools}${hhead(false)}${hrows.map((r) => hrow(r, false)).join('')}</div>`)}
+    ${frame('B', 'Timeline: the same rows under their day', `<div class="b3-hist tl">${htools}${hhead(true)}${Object.entries(byDay).map(([d, rs]) => `<div class="b3-day">${esc(d)} <em>${rs.length} event${rs.length === 1 ? '' : 's'}</em></div>${rs.map((r) => hrow(r, true)).join('')}`).join('')}</div>`)}
+    ${spec([['Kind', 'Broadcast’s state tab: icon, word, a 3px bar and a 9% wash · Change info, Alert warn, Restart the scheduled violet'], ['Row bar', 'a 3px kind bar on the row’s left replaces the square chip and the dot'], ['Level', 'an alert carries the four-bar meter the Level filter already uses, in the same colours'], ['Who', 'avatar and name; the name is already resolved by <code>actorLabel</code>, the column just never used it · system has its own mark'], ['What', 'the sentence, with the thing it touched as a chip'], ['Filters', 'Kind · Who · Realm · When · Can be undone, beside the Level filter already there']])}`);
+
+  // ───────────── E1 · buttons ─────────────
+  const B = (cls, label, icon, st) => `<button class="b3-btn ${cls} ${st || ''}">${icon ? ic(icon) : ''}${label}</button>`;
+  const T = (cls, label, icon, st) => `<button class="b3-btn b3-tile ${cls || ''} ${st || ''}"><i>${ic('plus')}</i>${label}</button>`;
+  const tierRows = (create) => [
+    ['Create', (st, sm) => create(sm ? 'sm' : '', 'New build', 'plus', st)],
+    ['Confirm', (st, sm) => B('confirm' + (sm ? ' sm' : ''), 'Stage this build', '', st)],
+    ['Secondary', (st, sm) => B('second' + (sm ? ' sm' : ''), 'Export', 'download', st)],
+    ['Ghost', (st, sm) => B('ghost' + (sm ? ' sm' : ''), 'Collapse all', 'chevrons-down-up', st)],
+    ['Danger', (st, sm) => B('danger' + (sm ? ' sm' : ''), 'Stage deletion', 'trash-2', st)],
+  ];
+  const btnTable = (create) => `<div class="b3-btt"><div class="h"></div><div class="h">Rest</div><div class="h">Hover</div><div class="h">Pressed</div><div class="h">Focus</div><div class="h">Disabled</div><div class="h">Compact 34</div>
+    ${tierRows(create).map(([name, f]) => `<div class="r">${name}</div><div>${f('')}</div><div>${f('hov')}</div><div>${f('prs')}</div><div>${f('foc')}</div><div>${f('dis')}</div><div>${f('', true)}</div>`).join('')}</div>`;
+  const createA = (sm, label, icon, st) => B('create ' + sm, label, icon, st);
+  const createB = (sm, label, icon, st) => T(sm, label, icon, st);
+  const inplace = (create) => `<div class="b3-inplace">
+    <div class="b3-inrow"><span>Armory masthead</span><span class="push">${create('', 'New build', 'plus', '')}</span></div>
+    <div class="b3-inrow"><span>Manifest tools row</span>${B('second sm', 'Search builds', '', '')}<span class="push">${create('sm', 'Add build', 'plus', '')}</span></div>
+    <div class="b3-inrow"><span>Tier board and manifest</span>${B('ghost sm', 'Expand all', 'chevrons-up-down', '')}${B('ghost sm', 'Collapse all', 'chevrons-down-up', '')}</div></div>`;
+  const nowButtons = `<div class="b3-inplace b3-cap">
+    <div class="b3-inrow"><span>Armory masthead</span><span class="push">${pick(CAP.armoryMast, '.mh-new') || pick(CAP.armoryMast, 'button')}</span></div>
+    <div class="b3-inrow"><span>Manifest tools row</span><span class="push">${pick(CAP.armoryManifest, '.madd')}</span></div>
+    <div class="b3-inrow"><span>Tier board</span>${pick(CAP.armoryViewPanel, '.racktools .chip')}</div>
+    <div class="b3-inrow"><span>Manifest head</span>${pick(CAP.armoryManifest, '.wg-fold') || pick(CAP.armoryManifest, '.wg-heads button')}</div>
+    <div class="b3-inrow"><span>Selection bar</span>${pick(CAP.selbar1, '.selbar-a')}${pick(CAP.selbar1, '.selbar-x')}</div></div>`;
+  add('e1', 'review', 'E1 Buttons', `
+    ${head('E1', 'Buttons', ['pmu2tdslb', 'pmu2tmqhu', 'pmu2wkuqb'])}
+    ${frame('Now', 'Five places, five different buttons for three jobs', nowButtons, '10 button looks measured across the realms')}
+    ${frame('A', 'Filled create', `<div class="b3-grid">${btnTable(createA)}${inplace(createA)}</div>`)}
+    ${frame('B', 'Quiet create with a lit plus', `<div class="b3-grid">${btnTable(createB)}${inplace(createB)}</div>`)}
+    ${spec([['Create', 'opens a form that stages, so it takes Review’s lime <code>--r-review</code> with <code>--on-staged</code> ink, your call in pin pmu2tdslb · one look for New build and Add build'], ['Confirm', 'the drawer’s last step keeps board 1’s green <code>--ok</code>'], ['Secondary · ghost · danger', 'sunk with a 1px edge · text only until hovered · a red edge that fills on hover'], ['Sizes', '40px in a masthead and a drawer footer, 34px in a toolbar or a row, pill radius, 16px or 14px icons'], ['Fold', 'Expand all and Collapse all are one ghost button with the chevrons-up-down and chevrons-down-up icons, wherever a list folds'], ['States', 'hover lightens 16%, pressed sinks 1px, focus is a 2px ring 2px off the edge, disabled 42% opacity']])}`);
+
+  // ───────────── E2 · icon buttons ─────────────
+  const IB = (i, icon, label, st, grow, lab) => `<button class="b3-ib ${st || ''}${grow ? ' grow' : ''}${lab ? ' lab' : ''}" data-i="${i}" aria-label="${label}"><span>${ic(icon)}<em>${label}</em></span></button>`;
+  const ibTable = (grow) => `<div class="b3-ibt"><div class="h"></div><div class="h">Rest</div><div class="h">Hover</div><div class="h">Pressed</div><div class="h">Focus</div><div class="h">In a row</div>
+    ${[['Share', 'share', 'share-2', 'Share'], ['Copy code', 'copy', 'copy', 'Copy code'], ['Delete', 'del', 'trash-2', 'Delete'], ['Fold', 'fold', 'chevrons-down-up', 'Collapse']].map(([n, i, icon, label]) => {
+      const g = grow === 'all' || i === 'fold';
+      return `<div class="r">${n}</div><div>${IB(i, icon, label, '', g)}</div><div>${IB(i, icon, label, 'hov', g)}</div><div>${IB(i, icon, label, 'hov prs', g)}</div><div>${IB(i, icon, label, 'foc', g)}</div><div>${i === 'fold' ? IB(i, icon, label, '', g) : `<span class="b3-ibrow">${IB('share', 'share-2', 'Share', i === 'share' ? 'hov' : '', grow === 'all')}${IB('copy', 'copy', 'Copy code', i === 'copy' ? 'hov' : '', grow === 'all')}<span class="b3-vr"></span>${IB('del', 'trash-2', 'Delete', i === 'del' ? 'hov' : '', grow === 'all')}</span>`}</div>`;
+    }).join('')}</div>`;
+  const cardActs = (grow) => `<div class="b3-inrow"><span>Announcement card</span><span class="push b3-ibrow">${IB('edit', 'square-pen', 'Edit', '', false, true)}<span class="b3-vr"></span>${IB('del', 'trash-2', 'Remove', grow === 'all' ? 'hov' : '', grow === 'all')}</span></div>`;
+  const nowIcons = `<div class="b3-inplace b3-cap">
+    <div class="b3-inrow"><span>Build row</span><span class="push">${pick(CAP.armoryManifest, '.wg-acts') || ''}</span></div>
+    <div class="b3-inrow"><span>Gunsmith code</span>${pick(CAP.armoryManifest, '.wg-code')}</div>
+    <div class="b3-inrow"><span>Announcement card</span><span class="push">${pick(CAP.bcQueuePanel, '.bacts')}</span></div>
+    <div class="b3-inrow"><span>Show all</span>${pick(CAP.bcQueuePanel, '.bexp')}</div></div>`;
+  add('e2', 'review', 'E2 Icon buttons', `
+    ${head('E2', 'Icon buttons and their states', ['pmu2ub19h', 'pmu2ucb5m', 'pmu2ueblq', 'pmu2xw2ik', 'pmu2ycaq2', 'pmu2yogvg'])}
+    ${frame('Now', 'As shipped', nowIcons, 'hover lights the surrounding box on some, nothing on others; the calendar and edit buttons open the same drawer')}
+    ${frame('A', 'Colour by intent; only the fold button widens to say what it does', `<div class="b3-grid">${ibTable('fold')}${cardActs('fold')}</div>`)}
+    ${frame('B', 'Every row icon widens to show its word on hover', `<div class="b3-grid">${ibTable('all')}${cardActs('all')}</div>`)}
+    ${spec([['Box', 'a 34px box inside a 44px target; hover and press change the box only, never the row or field around it'], ['Intent', 'Share takes info blue, Copy code the ok green, Edit ink, Delete the danger red: 13% wash, 45% edge, the icon in the colour'], ['Widening', 'the label slides out from the icon over 180ms; it overlays leftward, so nothing beside it moves'], ['Card', 'the calendar button goes; Edit carries its word, since it is the card’s main action'], ['Cursor', 'a pointer on every icon button, the gunsmith code field included'], ['Motion', 'reduced-motion users get the end state with no slide']])}`);
+
+  // ───────────── E3 · radius ─────────────
+  const cz = (() => { try { return Object.values(CAP).length; } catch (e) { return 0; } })();
+  const specimen = (cls, label) => `<div class="b3-rad ${cls}"><div class="b3-rpanel"><div class="b3-rph">${label}</div><div class="b3-rbody">
+      <div class="b3-rcard"><div class="b3-rrow"><span class="b3-rtag">META</span><span class="b3-rtag">TOP 3</span></div><div class="b3-rfield">2D4A5B8B9A</div><div class="b3-rrow"><span class="b3-rbtn">${ic('share-2')}Share</span><span class="b3-rbtn">${ic('copy')}Copy</span></div></div>
+      <div class="b3-rover">A popover or a drawer takes the largest corner</div></div></div></div>`;
+  add('e3', 'review', 'E3 Radius', `
+    ${head('E3', 'Corner radius', ['pmu2vkj78'])}
+    ${frame('Now', '13 radii in use', `<div class="b3-grid"><div class="b3-census"><span><b>6px</b> most panels, cards, fields</span><span><b>3px</b> tags</span><span><b>8px</b> boxed icons</span><span><b>10px</b> drawers, palette</span><span><b>14px</b> selection bar</span><span><b>999px</b> pills</span><span>and 7 one-offs</span></div>${specimen('', 'Now · 3 · 6 · 6 · 6 · 10')}</div>`)}
+    <div class="b3-grid two">
+      ${frame('A', '4 · 8 · 12 · 16 · 20', `<div class="b3-grid"><div class="b3-rscale"><span><i style="border-radius:4px 0 0 0"></i>Tag <b>4</b></span><span><i style="border-radius:8px 0 0 0"></i>Control <b>8</b></span><span><i style="border-radius:12px 0 0 0"></i>Card <b>12</b></span><span><i style="border-radius:16px 0 0 0"></i>Panel <b>16</b></span><span><i style="border-radius:20px 0 0 0"></i>Overlay <b>20</b></span></div>${specimen('a', 'A · 4 · 8 · 12 · 16 · 20')}</div>`)}
+      ${frame('B', '6 · 10 · 14 · 20 · 24', `<div class="b3-grid"><div class="b3-rscale"><span><i style="border-radius:6px 0 0 0"></i>Tag <b>6</b></span><span><i style="border-radius:10px 0 0 0"></i>Control <b>10</b></span><span><i style="border-radius:14px 0 0 0"></i>Card <b>14</b></span><span><i style="border-radius:20px 0 0 0"></i>Panel <b>20</b></span><span><i style="border-radius:24px 0 0 0"></i>Overlay <b>24</b></span></div>${specimen('b', 'B · 6 · 10 · 14 · 20 · 24')}</div>`)}
+    </div>
+    ${spec([['Rule', 'a corner grows with the thing it rounds: a nested surface is always rounder on the outside, so a card inside a panel never out-rounds it'], ['Pills', 'segmented controls, filter chips and pill buttons keep 999px in every option'], ['A', 'the selection bar’s 14px sits between card and panel, the rounder look you pointed at'], ['B', 'softer throughout; tags at 6px start to read as pills at 22px tall']])}`);
+
+  // ───────────── E4 · type roles ─────────────
+  const typeComposite = (cls) => `<div class="b3-type ${cls}" data-realm="broadcast">
+    <div class="b3-tph"><span class="eyebrow">Broadcast</span><span class="b3-tseg"><span class="on">Delivery queue</span><span>Airtime</span></span></div>
+    <div class="b3-ttools"><span class="glabel">State</span><span class="b3-tchip">All</span><span class="b3-tchip" style="--c:var(--ok)"><i></i>Live now</span><span class="b3-tchip" style="--c:var(--sched)"><i></i>Upcoming</span></div>
+    <div class="b3-thead"><span class="colh">Announcement</span><span class="colh">Posted</span><span class="colh">Starts</span><span class="colh">Ends</span><span class="colh">State</span></div>
+    <div class="b3-tsub"><div><span class="subh">Delivery order <em>1 of 10</em></span><div class="b3-tline"></div><div class="b3-tline"></div></div><div><span class="subh">Changes ahead <em>0</em></span><div class="b3-tline"></div></div></div></div>`;
+  const nowType = `<div class="b3-grid b3-cap"><div>${edit(qpanel, (f) => { f.querySelectorAll('.qcard').forEach((c) => c.remove()); })}</div><div>${edit(CAP.bcManifest, (f) => { f.querySelectorAll('tbody').forEach((t) => t.remove()); })}</div></div>`;
+  add('e4', 'broadcast', 'E4 Type', `
+    ${head('E4', 'Labels, column heads and headings', ['pmu2ukdy0', 'pmu2xd88t', 'pmu2xt57m', 'pmu2xuzh9'])}
+    ${frame('Now', 'Broadcast’s panel head, sub-sections, tools row and column heads', nowType, '91 text styles measured across the portal')}
+    <div class="b3-grid two">
+      ${frame('A', 'Sentence case; capitals only for the eyebrow', typeComposite('a'))}
+      ${frame('B', 'One mono capital role for every label', typeComposite('b'))}
+    </div>
+    <div class="b3-rolet"><div class="h">Role</div><div class="h">A</div><div class="h">B</div>
+      <div class="r">Eyebrow<small>BROADCAST, ARMORY</small></div><div>mono 9.5 · 600 · +.16em · caps · ink3</div><div>mono 10.5 · 700 · +.14em · caps · ink2</div>
+      <div class="r">Group label<small>State, Category, Kind</small></div><div>sans 12 · 600 · ink2</div><div>mono 10.5 · 600 · +.12em · caps · ink2</div>
+      <div class="r">Column head<small>Weapon, Posted</small></div><div>sans 12 · 600 · ink2 · 48px row</div><div>mono 10.5 · 600 · +.12em · caps · ink2 · 48px row</div>
+      <div class="r">Sub-section<small>Delivery order, Changes ahead</small></div><div>sans 14.5 · 600 · ink · a rule runs to the edge · count chip</div><div>sans 14.5 · 600 · ink · 3px realm tick · count at the end</div>
+    </div>
+    ${spec([['The test', 'two labels that do the same job look the same on every realm; a heading can never be mistaken for a hint because it is ink, larger, and marked'], ['Column heads', 'one step larger than today and never ink3, with the head row 48px so Collapse all is not cramped'], ['Sub-sections', 'a heading is a sentence-case title with a mark and its count, never tracked capitals in grey'], ['Panel eyebrow', 'stays a small capital because it names the realm, the only label that does']])}`);
+
+  // ───────────── E5 · pills ─────────────
+  const nowPills = `<div class="b3-pcard b3-cap"><div class="bbody">${pick(qpanel, '.btl')}${pick(qpanel, '.bmeta')}</div></div>`;
+  const pillsDemo = (cls) => `<div class="b3-pcard"><div class="b3-datel">Aug 4<small>40 days ago</small></div><div class="b3-pillset">
+      <span class="b3-pl ${cls}">${ic('clock')}up 41d</span><span class="b3-pl ${cls}">${ic('repeat')}1× a day</span><span class="b3-pl ${cls}" style="--pc:var(--warn-ink)">${ic('infinity')}no end</span><span class="b3-pl ${cls}">${ic('text')}126 / 6,000</span><span class="b3-pl stt">${ic('radio')}Live now</span></div></div>`;
+  add('e5', 'broadcast', 'E5 Pills', `
+    ${head('E5', 'Pills', ['pmu2xj1ls'])}
+    ${frame('Now', 'An announcement card’s pills', nowPills, 'the date is mono; the pills beside it are sans, with no icons')}
+    <div class="b3-grid two">
+      ${frame('A', 'Outlined, the date’s mono, an icon each', pillsDemo('a'))}
+      ${frame('B', 'The state tab’s shape, the date’s mono, an icon each', pillsDemo('b'))}
+    </div>
+    ${spec([['Font', 'every value pill is mono 12, the same face as the date and the gunsmith code, because each one carries a number'], ['Icon', '13px, one per meaning: clock for age, repeat for showings, infinity for no end, text for length'], ['A', 'a 1px edge at 34% and an 8% wash, radius 8; a state tab stays distinct'], ['B', 'the state tab’s left bar; closer to the tab, so state and fact read as one family']])}`);
+
+  // ───────────── E6 · small text ─────────────
+  const segn = pick(CAP.armoryViewPanel, '.seg');
+  const rkt = pick(CAP.armoryViewPanel, '.rkt-n');
+  const take = pick(CAP.armoryMast, '.mh-take');
+  const bqc = pick(qpanel, '.bqcount');
+  const bencf = pick(qpanel, '.bencf');
+  const histPh = pick(CAP.histManifest, '.ph');
+  const e6now = `<div class="b3-e6 b3-cap">
+    <div class="b3-e6row"><span>A count on a control</span><div>${segn}</div></div>
+    <div class="b3-e6row"><span>The state of a list</span><div>${rkt}</div></div>
+    <div class="b3-e6row"><span>A fact about the realm</span><div>${take}</div></div>
+    <div class="b3-e6row"><span>A limit</span><div>${bqc}</div></div>
+    <div class="b3-e6row"><span>A field’s own result</span><div>${bencf}</div></div>
+    <div class="b3-e6row"><span>An explanation</span><div>${histPh}</div></div></div>`;
+  const e6 = (mode) => `<div class="b3-e6">
+    <div class="b3-e6row"><span>A count on a control<small>the words stay Session 4’s</small></span><div><span class="b3-segx"><span class="on">Tier board <span class="b3-count${mode === 'a' ? ' a' : ''}">64/125</span></span><span>Repairs <span class="b3-count${mode === 'a' ? ' a' : ''}">5</span></span><span>Compare</span></span></div></div>
+    <div class="b3-e6row"><span>The state of a list</span><div>${mode === 'a' ? `<span class="b3-meta">${ic('layers')}<b>7</b> categories</span><span class="b3-meta"><b>125</b> builds</span><span class="b3-meta">${ic('chevrons-down-up')}all closed</span>` : `<span class="b3-rail2"><span><b>7</b> categories</span><span><b>125</b> builds</span><span>all closed</span></span>`}</div></div>
+    <div class="b3-e6row"><span>A fact about the realm</span><div>${mode === 'a' ? `<span class="b3-meta"><b>133</b> builds</span><span class="b3-meta">${ic('download')}<b>4</b> formats</span>` : `<span class="b3-rail2"><span><b>133</b> builds</span><span><b>4</b> formats</span></span>`}</div></div>
+    <div class="b3-e6row"><span>A limit</span><div>${mode === 'a' ? `<span class="b3-meta">${ic('layers')}<b>1</b> of 10 slots used</span>` : `<span class="b3-rail2"><span><b>1</b> of 10 slots used</span></span>`}</div></div>
+    <div class="b3-e6row"><span>A field’s own result</span><div style="flex:1"><div class="b3-field" style="flex:1"><p>SESSIONB-SEED Season 7 is live — Reckoning drops today: new draws, a reworked ranked reset…</p><div class="foot">${mode === 'a' ? `<span class="b3-meta">${ic('text')}<b>126</b> characters</span>` : `<span class="b3-rail2"><span><b>126</b> characters</span></span>`}<button class="b3-btn ghost sm">${ic('chevron-down')}Show all</button></div></div></div></div>
+    <div class="b3-e6row expl"><span>An explanation</span><div><span style="font:700 var(--t-micro)/1 var(--data);letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)">Events</span><button class="b3-info hov" aria-label="About this list">${ic('info')}</button><div class="b3-ipop" style="left:0;top:44px"><b>One history, both front doors</b>Alerts, changes and restarts are all events here; filter the one stream instead of switching views.</div></div></div>
+    </div>`;
+  add('e6', 'review', 'E6 Small text', `
+    ${head('E6', 'Small text: what each kind looks like', ['pmu2wfo7w', 'pmu2whbom', 'pmu2wtq39', 'pmu2x71th', 'pmu2zg5ym', 'pmu2xowwq'])}
+    ${frame('Now', 'Six kinds of small text, as shipped', e6now, '12 small-text looks measured; the words are Session 4’s to rewrite')}
+    <div class="b3-grid two">
+      ${frame('A', 'Meta chips: each fact in a soft container with an icon', e6('a'))}
+      ${frame('B', 'Data rail: facts as mono values on a faint rail', e6('b'))}
+    </div>
+    ${spec([['A count', 'always a small badge on the control it counts, never loose text after a label'], ['A fact', 'mono, with its number in ink so the eye lands on the value; A gives each a soft container, B lines them on one rail'], ['A field’s result', 'inside the field, on its footer, above a dashed divider'], ['An explanation', 'never on the page: an info button beside the panel title opens it, so a reader who knows the page is never slowed'], ['Words', 'these designs keep today’s strings on purpose; Session 4 rewrites or deletes them with the design you pick here']])}`);
+
+  // ───────────── render ─────────────
+  const REALM = { armory: 'var(--r-armory)', broadcast: 'var(--r-broadcast)', history: 'var(--r-history)', review: 'var(--r-review)', shell: 'var(--ink2)' };
+  document.getElementById('sections').outerHTML = sections.map((s) => `<section class="b3-s app" id="${s.id}" data-realm="${s.realm === 'shell' ? 'home' : s.realm}">${s.html}</section>`).join('');
+  const nav = document.getElementById('nav');
+  sections.forEach((s, i) => { if (i === 9) nav.insertAdjacentHTML('beforeend', '<span class="b3-sep"></span>'); nav.insertAdjacentHTML('beforeend', `<a href="#${s.id}" style="--c:${REALM[s.realm]}"><i></i>${s.navLabel}</a>`); });
+  const alignPops = () => document.querySelectorAll('.b3-popwrap').forEach((w) => {
+    const scope = w.closest('.b3-vp, .b3-st'); const chip = scope && scope.querySelector('.b3-wchip[aria-expanded="true"]'); const card = w.querySelector('.b3-pop');
+    if (!chip || !card) return;
+    w.style.paddingRight = '0px';
+    const cr = chip.getBoundingClientRect(), wr = w.getBoundingClientRect();
+    w.style.paddingRight = Math.max(0, Math.round(wr.right - cr.right)) + 'px';
+    card.style.setProperty('--nx', Math.round(cr.width / 2 - 6) + 'px');
+  });
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(alignPops); addEventListener('resize', alignPops);
+})();
+</script>

@@ -1,0 +1,282 @@
+{
+ "current": {
+  "name": "Current",
+  "why": "Even hue steps at one low chroma",
+  "hex": {
+   "Optic": "#89BDB9",
+   "Muzzle": "#D2A4A0",
+   "Barrel": "#CAAA8D",
+   "Stock": "#B6B48B",
+   "Laser": "#8CB9CC",
+   "Underbarrel": "#99BB9F",
+   "Rear Grip": "#9DB2D5",
+   "Ammunition": "#CAA4BC",
+   "Perk": "#B6AAD0"
+  },
+  "oklch": {
+   "Optic": [
+    0.76,
+    0.055,
+    190
+   ],
+   "Muzzle": [
+    0.76,
+    0.055,
+    25
+   ],
+   "Barrel": [
+    0.76,
+    0.055,
+    65
+   ],
+   "Stock": [
+    0.76,
+    0.055,
+    105
+   ],
+   "Laser": [
+    0.76,
+    0.055,
+    225
+   ],
+   "Underbarrel": [
+    0.76,
+    0.055,
+    150
+   ],
+   "Rear Grip": [
+    0.76,
+    0.055,
+    260
+   ],
+   "Ammunition": [
+    0.76,
+    0.055,
+    340
+   ],
+   "Perk": [
+    0.76,
+    0.055,
+    300
+   ]
+  },
+  "closest": [
+   3.3,
+   "Laser / Rear Grip"
+  ],
+  "closestDeutan": [
+   0.1,
+   "Barrel / Stock"
+  ]
+ },
+ "gun": {
+  "name": "Front to back",
+  "why": "Cool at the muzzle, warm at the stock, following where the part sits on the gun; the perk, which is not a part, stays near-neutral",
+  "hex": {
+   "Optic": "#F3A0CE",
+   "Muzzle": "#6FE4FB",
+   "Barrel": "#5AA5E3",
+   "Stock": "#EFCD7F",
+   "Laser": "#BB9ECD",
+   "Underbarrel": "#AFB7FE",
+   "Rear Grip": "#E6B08F",
+   "Ammunition": "#BC9292",
+   "Perk": "#CDD5DE"
+  },
+  "oklch": {
+   "Optic": [
+    0.8,
+    0.113,
+    345.693
+   ],
+   "Muzzle": [
+    0.86,
+    0.11,
+    211.702
+   ],
+   "Barrel": [
+    0.7,
+    0.118,
+    245.2
+   ],
+   "Stock": [
+    0.86,
+    0.104,
+    86.187
+   ],
+   "Laser": [
+    0.74,
+    0.075,
+    312.196
+   ],
+   "Underbarrel": [
+    0.8,
+    0.101,
+    278.698
+   ],
+   "Rear Grip": [
+    0.8,
+    0.078,
+    52.689
+   ],
+   "Ammunition": [
+    0.7,
+    0.05,
+    19.191
+   ],
+   "Perk": [
+    0.87,
+    0.015,
+    250
+   ]
+  },
+  "closest": [
+   8.2,
+   "Underbarrel / Laser"
+  ],
+  "closestDeutan": [
+   5.4,
+   "Muzzle / Perk"
+  ]
+ },
+ "wheel": {
+  "name": "Open wheel",
+  "why": "Nine hues pushed as far apart as they go, none in the red, amber or green that already mean danger, warning and done",
+  "hex": {
+   "Optic": "#F3BCED",
+   "Muzzle": "#77EBBC",
+   "Barrel": "#55AD81",
+   "Stock": "#ECCE7C",
+   "Laser": "#AFB161",
+   "Underbarrel": "#DF9298",
+   "Rear Grip": "#6CB6D9",
+   "Ammunition": "#C7885B",
+   "Perk": "#A585DB"
+  },
+  "oklch": {
+   "Optic": [
+    0.86,
+    0.088,
+    330
+   ],
+   "Muzzle": [
+    0.86,
+    0.127,
+    165
+   ],
+   "Barrel": [
+    0.68,
+    0.107,
+    160
+   ],
+   "Stock": [
+    0.86,
+    0.108,
+    90
+   ],
+   "Laser": [
+    0.74,
+    0.103,
+    110
+   ],
+   "Underbarrel": [
+    0.74,
+    0.093,
+    15
+   ],
+   "Rear Grip": [
+    0.74,
+    0.089,
+    230
+   ],
+   "Ammunition": [
+    0.68,
+    0.099,
+    55
+   ],
+   "Perk": [
+    0.68,
+    0.128,
+    300
+   ]
+  },
+  "closest": [
+   8.9,
+   "Underbarrel / Ammunition"
+  ],
+  "closestDeutan": [
+   5.7,
+   "Barrel / Ammunition"
+  ]
+ },
+ "mineral": {
+  "name": "Mineral",
+  "why": "Low colour, told apart by lightness as much as hue, so a dense row stays calm",
+  "hex": {
+   "Optic": "#B08E97",
+   "Muzzle": "#878E76",
+   "Barrel": "#80A4B6",
+   "Stock": "#E1D4FC",
+   "Laser": "#A4A58C",
+   "Underbarrel": "#B6A1C6",
+   "Rear Grip": "#EFD5CC",
+   "Ammunition": "#97BDA7",
+   "Perk": "#C7C3AA"
+  },
+  "oklch": {
+   "Optic": [
+    0.68,
+    0.043,
+    0
+   ],
+   "Muzzle": [
+    0.633,
+    0.036,
+    120
+   ],
+   "Barrel": [
+    0.698,
+    0.047,
+    230
+   ],
+   "Stock": [
+    0.893,
+    0.056,
+    300
+   ],
+   "Laser": [
+    0.714,
+    0.035,
+    110
+   ],
+   "Underbarrel": [
+    0.739,
+    0.058,
+    310
+   ],
+   "Rear Grip": [
+    0.893,
+    0.032,
+    40
+   ],
+   "Ammunition": [
+    0.764,
+    0.051,
+    160
+   ],
+   "Perk": [
+    0.814,
+    0.034,
+    100
+   ]
+  },
+  "closest": [
+   6.4,
+   "Laser / Ammunition"
+  ],
+  "closestDeutan": [
+   4.3,
+   "Barrel / Underbarrel"
+  ]
+ }
+}
