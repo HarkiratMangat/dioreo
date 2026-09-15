@@ -80,7 +80,7 @@ const SEASON_COLUMNS = [
                 ${tiers.length ? html`<span class="tiers">${tiers.map((t) => html`<b key=${t} class=${TIER_WORD_CLASS[String(t).toLowerCase()] || ''}>${t}</b>`)}</span>` : null}
                 ${row.detailText ? html`<span class="dsub">${row.detailText}</span>`
                     : detail ? html`<span class="dsub">${detail}</span>`
-                    : html`<span class="dsub"><span class="none">no detail</span></span>`}
+                    : html`<span class="dsub"><span class="none">—</span></span>`}
                 <!-- A draw's thumbnail is re-hosted on Cloudinary when it is saved; "not cached" is a fact
                      about THIS record, and the only place it was visible before was a Discord card. -->
 
@@ -600,8 +600,7 @@ export function SeasonIdentity({ season, editingDraft, draftStaged, today, onSav
                             <button aria-pressed=${editingDraft} onClick=${() => { setEdits({}); onScope('draft'); }}>
                                 <span class=${'pip ' + (draftStaged ? 'draft' : 'none')}></span>Next</button>
                         </div>` : null}
-                    <span class="sp">${dirty ? `${dirty} unsaved edit${dirty > 1 ? 's' : ''}` : 'no unsaved edits'}</span>
-                    <button class="idclose" onClick=${() => { if (dirty) onSave(edits); setEdits({}); toggle(); }}>Done</button>
+                    <button class="idclose" onClick=${() => { if (dirty) onSave(edits); setEdits({}); toggle(); }}>Done${dirty ? ` · ${dirty}` : ''}</button>
                 </div>
                 ${editingDraft ? html`
                     <div class="draftnote">
@@ -746,10 +745,8 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
     return html`
         <div class="draftbar">
             <span class="dt">Next season staged</span>
-            <span class="dsub">${draft.currentSeasonTitle || 'untitled'} · ${n} item${n === 1 ? '' : 's'} ·
-                not visible to players</span>
+            <span class="dchips"><span class="bpill">${draft.currentSeasonTitle || 'untitled'}</span><span class="bpill">${n} item${n === 1 ? '' : 's'}</span><span class="bpill">hidden from players</span></span>
             <span class="sp"></span>
-            <span class="dsub">Promote is in the one-way strip below.</span>
             <button class="chip" aria-pressed=${comparing ? 'true' : 'false'} onClick=${() => setComparing(!comparing)}>Compare</button>
             <button class="chip danger" onClick=${onDiscard}>Discard draft</button>
         </div>
@@ -767,23 +764,19 @@ function DraftZone({ draft, live, onStart, onDiscard }) {
 // ⚠️ IT SITS ABOVE THE ONE-WAY STRIP, which is deliberate: the strip's patch-notes purge destroys exactly what this panel lists, so the count you are about to lose is on screen directly above the control that loses it. 🔴 THE DESIGN OPENS A DRAWER WHERE THE PORTAL EXPANDS AN EDITOR IN PLACE, and that is an interaction difference rather than a style one — 18.8% on this overlay, the largest number left on Season. Measured on both pages rather than inferred: clicking the same li.rec-row.cur adds a `drawer open` element reading "PATCH NOTES · SAVED · LIVE NOW" on the design and adds nothing but inline text on the portal.
 //
 // Harkirat chose to build it, 2026-08-30 21:1x EDT, over citing the divergence: §0.6a's rule is that the portal always moves and closure stays mechanical. The inline editor is untouched and returns the moment the flag comes off — this is a stand-down that RENDERS THE DESIGN'S VERSION, which is the distinction the DraftZone hole was about.
-function RecordPreview({ note, onClose }) {
+function RecordPreview({ note, onClose, onEdit }) {
     const day = note.releaseDate ? fmtDay(note.releaseDate) : (note.releaseDateText || '—');
     return html`
         <${Drawer} eyebrow=${`Patch notes · saved · ${note.current ? 'live now' : 'ended'}`}
                    title=${note.title} onClose=${onClose}
                    ${''/* 🔴 THE PRIMARY BUTTON PROMISED TO STAGE AND CALLED onClose (found 2026-09-10 17:47 EDT). It read "Stage these dates" beside two date inputs that had no onInput and no state, in a component whose only props are note and onClose — there is no stage path threaded into it at all, so nothing could have been staged even if the fields had been bound. A control that lies about what it does is worse than a missing one, and this one lied on the realm whose entire subject is staging. The dates are edited in PatchEditor, which owns releaseDateText, binds it, and stages through onStage(ops). A preview previews. */}
-                   actions=${html`<button class="btn go" onClick=${onClose}>Close</button>`}>
-            <p class="dw-p">This is the card <b>as Discord renders it</b> — the same builder the
-               bot calls, so the preview cannot drift from what ships.</p>
+                   actions=${html`${onEdit ? html`<button class="btn" onClick=${onEdit}>Edit dates</button>` : null}<button class="btn go" onClick=${onClose}>Close</button>`}>
             <${DiscordCard} accent="var(--patch)" title=${note.title}
                             sub=${`Patch notes · ${longDay(note.releaseDate) || day}`}
                             rows=${[['Window', `${day} → ${day}`], ['Duration', '1 day'],
                                     ['Detail', note.images.length ? `${note.images.length} image${note.images.length === 1 ? '' : 's'}` : '—'],
                                     ['Thumbnail', note.thumb || '—']]} />
             ${''/* The two inert date inputs that stood here are gone with the button that promised to stage them. They carried no onInput and no state, so typing into either changed nothing; and the window they described is already stated above, in the card, as Discord will render it. */}
-            <p class="dw-p">The dates are edited in the record's own editor, where they are read by the
-               same parser the bot uses — this drawer shows what is already saved.</p>
         <//>`;
 }
 
@@ -814,14 +807,12 @@ function PatchEditor({ entry, onStage, onClose }) {
             <label class="dwfield"><span>Additional info <i>rendered under the images; b:, n: and f: become the buff, nerf and fix marks</i></span>
                 <textarea rows="4" value=${draft.description} onInput=${(e) => set({ description: e.target.value })}></textarea></label>
             <label class="dwfield">
-                <span>Images <i>one URL per line — the first five are slot 1, the next five slot 2</i></span>
+                <span>Images <i>one URL per line — the first five are slot 1, the next five slot 2</i><em class=${'fcount' + (over ? ' over' : '')}>${urlList.length} / ${MAX_PATCH_IMAGES}</em></span>
                 <textarea rows="5" spellcheck="false" value=${draft.urls} onInput=${(e) => set({ urls: e.target.value })}></textarea></label>
             <!-- Each URL is re-hosted through Cloudinary on commit, keyed by this entry's own id, which is
                  why an untouched slot is never restaged: resubmitting five unchanged URLs re-uploads five
                  images to say nothing at all. -->
-            <p class="attnote">${urlList.length} of ${MAX_PATCH_IMAGES} used.${' '}
-                ${over ? html`<b>Only the first ${MAX_PATCH_IMAGES} would be kept.</b>` : ''}${' '}
-                Every URL is re-hosted on Cloudinary when this commits, so a link that dies later does not take the patch note with it.</p>
+            ${over ? html`<p class="attnote" style="color:var(--warn)"><b>Only the first ${MAX_PATCH_IMAGES} would be kept.</b></p>` : null}
             <div class="attfoot">
                 <!-- ⚠️ A DISABLED BUTTON HAS TO SAY WHICH KIND OF NOTHING IT MEANS. Blanking the release date
                      read as "Nothing changed yet" — the same words as an untouched form — while the real
@@ -1327,7 +1318,7 @@ export function SeasonRealm({ session }) {
                                       onDiscardAll=${confirmDiscardAll} />
                       ${viewSlot}`}
                   overlaySlot=${html`${overlay.render()}${composerSlot}${recPreview ? html`
-                      <${RecordPreview} note=${recPreview} onClose=${() => setRecPreview(null)} />` : null}${dayOpen ? html`
+                      <${RecordPreview} note=${recPreview} onClose=${() => setRecPreview(null)} onEdit=${() => { const id = recPreview.id; setRecPreview(null); setOpenPatchId(id); }} />` : null}${dayOpen ? html`
                       <${DayDrawer} day=${dayOpen} live=${trackData} draft=${draftData}
                                     withDraft=${dayWithDraft} onWithDraft=${setDayWithDraft}
                                     onDay=${setDayOpen}

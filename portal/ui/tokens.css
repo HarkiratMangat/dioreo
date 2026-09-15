@@ -234,6 +234,8 @@
   --sl-rear-grip:oklch(76% .055 260); --sl-perk:oklch(76% .055 300); --sl-ammunition:oklch(76% .055 340);
   /* A boxed icon button draws its visible box this far inside its 44px target, so one at a container's edge hangs its target out by exactly this much and lands its VISIBLE edge on the padding line (contract C4). Was --pb-inset on the board. */
   --box-inset:5px;
+  /* The boxed icon button's own radius: 8px on the board, 2px from --rad-2 and 2px from --rad-3, so it is its own step rather than a rounding. */
+  --rad-box:8px;
   /* The Best tier's legendary gold (plan §10.1 row 18): the hex .t-legendary already uses. The same hex as --patch, but a different meaning, so it is its own name and a later retune of one never moves the other. */
   --tier-best:#F2C230;
   --tap:44px;                        /* minimum touch target */

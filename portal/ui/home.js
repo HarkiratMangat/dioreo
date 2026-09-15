@@ -241,7 +241,6 @@ function LiveNow({ season, broadcast, today }) {
         <div class="hlive">
             <div class="lp">
                 <h2>Running right now</h2>
-                <p class="lsub">What a player opening the bot this second would be shown.</p>
                 ${items.slice(0, SHOW).map((i) => html`
                     <div class="lrow" key=${i.title + i.start} style=${`--c:${i.accent || LANE_ACCENT[i.lane] || 'var(--ink4)'}`}>
                         <i class="ld"></i>
@@ -252,14 +251,13 @@ function LiveNow({ season, broadcast, today }) {
                         </span>
                     </div>`)}
                 ${items.length > SHOW ? html`
-                    <p class="lmore">${items.length - SHOW} more running · <a href="#/season">open the Track</a></p>` : null}
+                    <a class="chip lmorechip" href="#/season">+${items.length - SHOW} more</a>` : null}
                 ${!items.length ? html`
                     <p class="lmore">Nothing is scheduled for today. The season runs, but no draw, event or playlist
                         opens or closes. <a href="#/season">Open Season</a>.</p>` : null}
             </div>
             <div class="lp">
-                <h2>Showing to players</h2>
-                <p class="lsub">Announcements the bot is attaching to its replies.</p>
+                <h2><a class="hlink" href="#/broadcast">Showing to players</a></h2>
                 ${anns.length ? anns.map((a) => html`
                     <div class="lrow" key=${a._id || a.text} style="--c:var(--patch)">
                         <i class="ld"></i>
@@ -271,7 +269,6 @@ function LiveNow({ season, broadcast, today }) {
                         </span>
                     </div>`)
                 : html`<p class="lmore">No announcement is showing. Replies go out with nothing attached.</p>`}
-                <p class="lmore"><a href="#/broadcast">Open Broadcast</a></p>
             </div>
         </div>`;
 }

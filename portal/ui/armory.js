@@ -61,6 +61,124 @@ const ARMORY_COLUMNS = [
 // 🔴 THE MODE CHIP WAS A DEAD END, and --triggers is what surfaced it: the portal offered `MP ×2`, `DMZ ×2` and `All ×2` where the design offers one of each, because the Manifest carried a Mode filter ON TOP OF the masthead's mode switch. The rows handed to the Manifest are already `inMode`, so picking the OTHER mode in that chip could only ever produce an empty table — a control whose every non-default value is guaranteed to show nothing. The mode switch above owns this question; the chipset now carries only Category, which is what armory.html's chip row is.
 const ARMORY_FILTERS = [];
 
+// ─── The weapon groups — plan pins batch 2 §10.4 G4, design board 2 version 21, 2026-09-15 00:23 EDT ──────────────────
+// 🔴 ONE GROUP PER WEAPON, sorted by weapon name only (pin pmtylf7gz: "I'll never sort the armory's manifest by anything other than the Weapon Name"). Rendered through the shared Manifest's renderBody prop, so search, chips, selection, the bulk bar and the empty states stay the Manifest's own. Faults are colour and shape on the faulty cell, never prose in a row (C11); the details live in the header's Fix chip popover. Collapse state and List · By slot are Armory's, in memory, and reset on reload — the board never persisted them and Harkirat was not asked, so nothing is persisted.
+const SLOT_ORDER = ['Optic', 'Muzzle', 'Barrel', 'Stock', 'Laser', 'Underbarrel', 'Rear Grip', 'Ammunition', 'Perk'];
+const slotVar = (slot) => `var(--sl-${String(slot).toLowerCase().replace(/\s+/g, '-')})`;
+// Attachments in Harkirat's display order (utils/adminParser.js CANONICAL_SLOT_ORDER, 2026-07-21), never the code's digit order; a name with no recorded slot keeps its stored position after the known ones.
+function orderedAttachments(b) {
+    const slots = b.attachmentSlots || [];
+    return (b.attachments || []).map((name, i) => ({ name, i, slot: slots[i] || '', rank: SLOT_ORDER.indexOf(slots[i]) }))
+        .sort((x, y) => (x.rank < 0 ? 99 : x.rank) - (y.rank < 0 ? 99 : y.rank) || x.i - y.i);
+}
+// The popover's plain words, one per fault (11:41 EDT asked for helpful, short copy). stale-90d is age, not a fault, so it has no line.
+const FAULT_TEXT = {
+    'code-length-mismatch': (b) => `Code lists ${Math.floor(String(b.shareCode || '').length / 2)} attachments, build has ${(b.attachments || []).length}`,
+    'no-code': () => 'No gunsmith code to copy',
+    'few-attachments': (b) => `Only ${(b.attachments || []).length} of 5 attachments`,
+    'near-duplicate': () => 'Almost the same as another build',
+    'missing-image': () => 'No image uploaded',
+};
+const faultsOf = (b) => (b.coverage || []).filter((f) => FAULT_TEXT[f]);
+function weaponTags(b) {
+    const tags = [];
+    if (b.mode !== 'DMZ' && b.categoryRank) tags.push({ t: String(b.categoryRank), label: String(b.categoryRank).replace(/^top(\d)$/, 'TOP $1').toUpperCase() });
+    if (b.mode === 'DMZ' && b.dmzRangeRank) tags.push({ t: 'dmz', label: String(b.dmzRangeRank).replace(/-/g, ' ').toUpperCase() });
+    if (b.isMeta) tags.push({ t: 'meta', label: 'META' });
+    if (b.isToxic) tags.push({ t: 'toxic', label: 'TOXIC' });
+    return tags;
+}
+function copyToClipboard(text) {
+    try { if (navigator.clipboard) navigator.clipboard.writeText(text); } catch { /* a blocked clipboard leaves the flash unshown, never an error */ }
+}
+
+function ArmoryGroups({ api, builds, mode, attView, collapsed, onToggleGroup, onCollapseAll }) {
+    const { visible, selected, sort, setSort, onRowClick, selectedRowId, onRemove, stateOf, toggle, setMany } = api;
+    const [flash, setFlash] = useState(null);
+    const [openFix, setOpenFix] = useState(null);
+    const dir = sort.column === 'weaponName' && sort.direction === 'desc' ? 'desc' : 'asc';
+    const byName = new Map();
+    for (const b of visible) {
+        if (!byName.has(b.weaponName)) byName.set(b.weaponName, []);
+        byName.get(b.weaponName).push(b);
+    }
+    const groups = [...byName.entries()].map(([name, list]) => ({ name, builds: list.map((b) => ({ b, n: buildNumberOf(builds, b).n })).sort((x, y) => x.n - y.n) }))
+        .sort((x, y) => x.name.localeCompare(y.name, undefined, { sensitivity: 'base', numeric: true }) * (dir === 'desc' ? -1 : 1));
+    const allShut = groups.length > 0 && groups.every((g) => collapsed.has(g.name));
+    const copy = (key, text) => { copyToClipboard(text); setFlash(key); setTimeout(() => setFlash((k) => (k === key ? null : k)), 1200); };
+    const keyAct = (fn) => (e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } };
+    const cbKey = (fn) => (e) => { if (e.key !== ' ' && e.key !== 'Enter') return; e.preventDefault(); e.stopPropagation(); fn(); };
+    const dmz = mode === 'DMZ';
+
+    return html`
+        <div class="wg-wrap">
+            <div class="wg-heads">
+                <span></span>
+                <span><button type="button" class="wg-sort" aria-sort=${dir === 'asc' ? 'ascending' : 'descending'}
+                              onClick=${() => setSort({ column: 'weaponName', direction: dir === 'asc' ? 'desc' : 'asc' })}>Weapon<${Icon} name=${dir === 'asc' ? 'chevron-up' : 'chevron-down'} /></button></span>
+                <button type="button" class="wg-fold" onClick=${() => onCollapseAll(allShut ? [] : groups.map((g) => g.name))}><${Fold} open=${!allShut} />${allShut ? 'Expand all' : 'Collapse all'}</button>
+            </div>
+            ${groups.map((g) => {
+                const first = g.builds[0].b;
+                const ids = g.builds.map((x) => x.b.id);
+                const allSel = ids.every((id) => selected.has(id));
+                const someSel = !allSel && ids.some((id) => selected.has(id));
+                const shut = collapsed.has(g.name);
+                const faulty = g.builds.map((x) => ({ ...x, f: faultsOf(x.b) })).filter((x) => x.f.length);
+                const tags = weaponTags(first);
+                const slotsHere = SLOT_ORDER.filter((s) => g.builds.some((x) => (x.b.attachmentSlots || []).includes(s)));
+                return html`
+                <div class="wg" key=${g.name} style=${`--c:${first.accentHex || 'var(--ink3)'}`}>
+                    <div class="wg-h" tabIndex="0" aria-expanded=${shut ? 'false' : 'true'} onClick=${() => onToggleGroup(g.name)} onKeyDown=${keyAct(() => onToggleGroup(g.name))}>
+                        <span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${allSel ? 'true' : someSel ? 'mixed' : 'false'} aria-label=${`Select every ${g.name} build`}
+                              onClick=${(e) => { e.stopPropagation(); setMany(ids, !allSel); }} onKeyDown=${cbKey(() => setMany(ids, !allSel))}><span class=${'cb' + (allSel ? ' on' : '')}></span></span>
+                        <div class="wg-line"><b>${g.name}</b><small>${CATEGORY_CHIP_LABEL[first.category] || first.category}<em class="wg-nb">${g.builds.length} build${g.builds.length === 1 ? '' : 's'}</em></small>${tags.length ? html`<span class="wg-tags">${tags.map((t) => html`<span class="wg-tag" data-t=${t.t} key=${t.t}>${t.label}</span>`)}</span>` : null}</div>
+                        ${faulty.length ? html`<span class="wg-fwrap" onClick=${(e) => e.stopPropagation()}>
+                            <button type="button" class="wg-fsum" aria-expanded=${openFix === g.name ? 'true' : 'false'} onClick=${() => setOpenFix(openFix === g.name ? null : g.name)}><${Icon} name="triangle-alert" />${faulty.length === 1 ? 'Fix build' : 'Fix builds'}<span class="wg-fnos">${faulty.map((x) => html`<i key=${x.n}>${x.n}</i>`)}</span></button>
+                            <span class="wg-fpop" role="tooltip">${faulty.map((x) => html`<span class="wg-fpr" key=${x.n}><i>${x.n}</i><span>${x.f.map((f) => html`<span key=${f}>${FAULT_TEXT[f](x.b)}</span>`)}</span></span>`)}</span>
+                        </span>` : html`<span></span>`}
+                        <button type="button" class="wg-ib wg-fbtn" aria-expanded=${shut ? 'false' : 'true'} aria-label=${`${shut ? 'Expand' : 'Collapse'} ${g.name}`}
+                                onClick=${(e) => { e.stopPropagation(); onToggleGroup(g.name); }}><${Fold} open=${!shut} /></button>
+                    </div>
+                    ${!shut && attView === 'slot' && slotsHere.length ? html`<div class=${'wg-strip' + (dmz ? ' dmz' : '')}><span></span><span></span><div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => html`<span key=${s}>${s}</span>`)}</div><span></span>${dmz ? null : html`<span></span>`}<span></span></div>` : null}
+                    ${shut ? null : g.builds.map(({ b, n }) => {
+                        const f = faultsOf(b);
+                        const label = displayBuildLabel(b);
+                        const sel = selected.has(b.id);
+                        const open = selectedRowId != null && String(selectedRowId) === String(b.id);
+                        const atts = orderedAttachments(b);
+                        const empties = (b.attachments || []).length <= 2 ? Math.max(0, 5 - atts.length) : 0;
+                        const codeBad = (b.coverage || []).includes('code-length-mismatch');
+                        return html`
+                        <div key=${b.id} class=${'wg-r' + (f.length ? ' bad' : '') + (stateOf(b) === 'staged' ? ' staged' : '') + (sel ? ' sel' : '') + (open ? ' open' : '') + (dmz ? ' dmz' : '')}
+                             tabIndex="0" onClick=${() => onRowClick(b)} onKeyDown=${keyAct(() => onRowClick(b))}>
+                            <span class="wg-cb" role="checkbox" tabIndex="0" aria-checked=${sel ? 'true' : 'false'} aria-label=${`Select ${b.weaponName} build ${n}`}
+                                  onClick=${(e) => { e.stopPropagation(); toggle(b.id); }} onKeyDown=${cbKey(() => toggle(b.id))}><span class=${'cb' + (sel ? ' on' : '')}></span></span>
+                            <span class="wg-ix" title=${f.includes('near-duplicate') ? FAULT_TEXT['near-duplicate']() : null}>${n}</span>
+                            <div class=${'wg-main' + (label ? ' named' : '')}>
+                                ${label ? html`<span class="wg-plate"><small>Build name</small><span>${label}</span></span>` : null}
+                                ${attView === 'slot' && slotsHere.length
+                                    ? html`<div class="wg-slots" style=${`--n:${slotsHere.length}`}>${slotsHere.map((s) => { const at = (b.attachmentSlots || []).indexOf(s); return at >= 0
+                                        ? html`<span class="wg-sc" key=${s} style=${`--sl:${slotVar(s)}`}>${b.attachments[at]}</span>`
+                                        : html`<span class="wg-sc empty" key=${s}>—</span>`; })}</div>`
+                                    : html`<div class="wg-rail">${atts.map((x) => html`<span class="wg-at" key=${x.i} title=${x.slot || null} style=${SLOT_ORDER.includes(x.slot) ? `--sl:${slotVar(x.slot)}` : null}>${x.name}</span>`)}${Array.from({ length: empties }, (_, i) => html`<span class="wg-at gap" key=${'e' + i}>Empty</span>`)}</div>`}
+                            </div>
+                            <span class=${'wg-im' + (b.imageKey ? '' : ' no')} role="img" aria-label=${b.imageKey ? 'Image uploaded' : 'No image uploaded'} title=${b.imageKey ? 'Image uploaded' : 'No image uploaded'}><${Icon} name=${b.imageKey ? 'image' : 'image-off'} /></span>
+                            ${dmz ? null : b.shareCode
+                                ? html`<button type="button" class="wg-code" aria-label=${`Copy gunsmith code ${b.shareCode}`} onClick=${(e) => { e.stopPropagation(); copy(b.id + ':code', copyCodeText(b)); }}><span class="wg-ig"><span class="wg-igf"><span class=${'wg-ct' + (codeBad ? ' bad' : '')} title=${codeBad ? FAULT_TEXT['code-length-mismatch'](b) : null}>${b.shareCode}</span></span><span class="wg-igb"><${Icon} name=${flash === b.id + ':code' ? 'check' : 'copy'} /></span></span></button>`
+                                : html`<span class="wg-ig none"><span class="wg-cnone"><${Icon} name="triangle-alert" />No code</span></span>`}
+                            <div class="wg-acts" onClick=${(e) => e.stopPropagation()}>
+                                <button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command" onClick=${() => copy(b.id + ':share', shareCommandText(b, n))}><${Icon} name=${flash === b.id + ':share' ? 'check' : 'share-2'} /></button>
+                                <i class="wg-vr" aria-hidden="true"></i>
+                                <button type="button" class="wg-ib wg-del" aria-label=${`Stage deletion of ${b.weaponName} build ${n}`} onClick=${() => onRemove(b)}><${Icon} name="trash-2" /></button>
+                            </div>
+                        </div>`;
+                    })}
+                </div>`;
+            })}
+        </div>`;
+}
+
 // 🔴 'no-badges' and 'wrong-attachment-count' RETIRED 2026-09-13 17:36 EDT (pins batch 2, pin pmtylf7gz) -- see portal/api/armory.js's coverageFlags for why neither was a real defect. 'few-attachments' and 'code-length-mismatch' are their replacements, not renames: the flag KEYS changed, not just the label text.
 const COVERAGE_LABEL = {
     'missing-image': 'Missing image', 'few-attachments': '2 or fewer attachments',
@@ -219,7 +337,6 @@ function Rack({ builds, onPick, onAdd, onEdit }) {
                         </div>`;
                 })}
             </div>
-            <p class="racknote">A badge describes the <b>weapon</b>, not one build of it — the bot propagates it across every build sharing a <code>weaponKey</code> value and mode, so a weapon with five builds contributes five cards to its category. Rank is <b>per category</b>: “Best” means best AR, best SMG, and so on, rendered as <code>BEST ASSAULT</code> on the card. The words are the bot's own — <code>best</code> then <code>top3</code> then <code>top4</code> then <code>top5</code> — and anything else is refused when you save. <b>DMZ builds never use it</b> — they carry <code>dmzRangeRank</code> instead, which also encodes a combat range such as <code>best-close</code> or <code>best-midlong</code> as well.</p>
         </div>
     `;
 }
@@ -1236,6 +1353,9 @@ export function ArmoryRealm({ session }) {
     // What the Manifest's own filter chips are set to. Owned here only because the EXPORT strip scopes by them; the Manifest still owns the filtering itself.
     const [manifestFilters, setManifestFilters] = useState({});
     const [editingId, setEditingId] = useState(null);
+    // The weapon groups' own view state (plan §10.4 G4): which groups are shut and List or By slot. In memory only — see ArmoryGroups' header.
+    const [collapsedWeapons, setCollapsedWeapons] = useState(new Set());
+    const [attView, setAttView] = useState('list');
     // 🔴 BOTH FORMS ARE MODAL DRAWERS NOW, so the view slot no longer has to make room for one. `wrapBed` used to wrap the whole view in the editor's `.bed` grid whenever something was being edited — which meant the rack, the repairs cards and the bulk panel all inherited a layout that exists for a form none of them contain. The drawer carries its own `.bed` internally and the page behind it is `inert`, so the view is only ever the view. 🔴 THE MODE IS A PROPERTY OF THE REALM, NOT OF ONE PANEL. It began as BulkView's private state, so the Rack, Repairs and Compare all showed MP and DMZ mixed together while a fourth view quietly filtered to one of them. MP and DMZ are two armories with different rules -- DMZ has no share code and ranks by combat range -- and every figure on this page is a count of one population or the other, so a masthead that totals both answers a question nobody asked.
     const [armMode, setArmMode] = useState('MP');
     const overlay = useOverlay();
@@ -1366,12 +1486,12 @@ export function ArmoryRealm({ session }) {
     //     is present and lies is worse than one that arrives when it can do something.
     // armory.html's `#viewMeta`, which the design writes on every view. The rack line drops the design's trailing "· N MP builds live": that clause exists because the mockup ships a SAMPLE of the collection and has to say so, and here the figure beside it is already the live count — restating it would be the same number twice.
     const rankedNow = inMode.filter((b) => b.categoryRank || b.dmzRangeRank).length;
-    const viewMeta = view === VIEWS.rack ? `${rankedNow} of ${inMode.length} ranked`
-        : view === VIEWS.coverage ? `${Object.keys(COVERAGE_LABEL).filter((f) => inMode.some((b) => (b.coverage || []).includes(f))).length} of ${Object.keys(COVERAGE_LABEL).length} checks failing`
-        : view === VIEWS.compare ? (comparedWeapons.length
+    // G1 (§10.4, board row armory.js:1315): Tier board's and Repairs' counts moved onto their tabs (viewCounts below); Compare lost its "type a weapon name" instruction and names the weapons only once there are some.
+    const failingChecks = Object.keys(COVERAGE_LABEL).filter((f) => inMode.some((b) => (b.coverage || []).includes(f))).length;
+    const viewCounts = { [VIEWS.rack]: `${rankedNow}/${inMode.length}`, [VIEWS.coverage]: failingChecks };
+    const viewMeta = view === VIEWS.compare && comparedWeapons.length
             ? `${comparedWeapons.join(' · ')} — ${inMode.filter((b) => comparedWeapons.includes(b.weaponName)).length} builds`
-            : 'type a weapon name')
-        : `${inMode.length} ${armMode} builds · pipe format, lossless round trip`;
+        : view === VIEWS.bulk ? `${inMode.length} ${armMode} builds · pipe format, lossless round trip` : null;
 
     const tag = armMode.toLowerCase();
     const exportCategory = manifestFilters.category && manifestFilters.category !== 'all' ? manifestFilters.category : null;
@@ -1407,7 +1527,7 @@ export function ArmoryRealm({ session }) {
     // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
     return html`
         <${Shell} realm="armory" session=${session} busy=${load.hostClass} view=${view} viewOptions=${VIEW_ORDER} onSetView=${setView}
-                  meta=${viewMeta}
+                  meta=${viewMeta} viewCounts=${viewCounts}
                   ${''/* OPTION 1 for fork 02: the mode no longer goes to the view bar. It sat there as a role=tablist beside the VIEW tablist — the same kind of thing to a screen reader and to the eye — while switching it rewrites every figure in the masthead. It lives next to those figures now, and the bar is unambiguously views. */}
                   realmKey=${html`<${ArmoryKey} split=${split} />`}
                   badges=${{ review: load.data.stagedUnknown ? 0 : (load.data.stagedOps || []).length }}
@@ -1497,7 +1617,13 @@ export function ArmoryRealm({ session }) {
                                    buildEditOp=${buildArmoryEditOp}
                                    onEditError=${(msg) => setNotice(msg)}
                                    onFiltersChange=${setManifestFilters}
-                                   caption="Click a row to open it."
+                                   defaultSort="weaponName"
+                                   extraChips=${html`<span class="mlabel"><span>Attachments</span></span><span class="seg" role="tablist" aria-label="Attachments">
+                                       <button role="tab" aria-selected=${attView === 'list' ? 'true' : 'false'} onClick=${() => setAttView('list')}>List</button>
+                                       <button role="tab" aria-selected=${attView === 'slot' ? 'true' : 'false'} onClick=${() => setAttView('slot')}>By slot</button></span>`}
+                                   renderBody=${(api) => html`<${ArmoryGroups} api=${api} builds=${builds} mode=${armMode} attView=${attView} collapsed=${collapsedWeapons}
+                                       onToggleGroup=${(name) => setCollapsedWeapons((s) => { const n = new Set(s); if (n.has(name)) n.delete(name); else n.add(name); return n; })}
+                                       onCollapseAll=${(names) => setCollapsedWeapons(new Set(names))} />`}
                                    totalRows=${builds.length}
                                    onRowClick=${(row) => setEditingId(String(row.id))} selectedRowId=${editingId}
                                    bulkActions=${[

@@ -36,7 +36,14 @@ function toggleSelection(selectedIds, id) {
     return next;
 }
 
+// Sets a whole list of ids on or off in one step, returning a new Set. The Manifest's body prop hands this to a realm that renders its own rows (Armory's weapon groups, plan pins batch 2 §10.4 Architecture): a weapon header's checkbox selects or clears exactly that weapon's visible builds, and every other selection is left alone.
+function setSelection(selectedIds, ids, on) {
+    const next = new Set(selectedIds);
+    for (const id of ids || []) { if (on) next.add(id); else next.delete(id); }
+    return next;
+}
+
 // Guarded: a classic <script> in a real browser has no `module` global, and an unguarded assignment throws ReferenceError mid-parse -- silently true here only because every function above already executed before this line ran. Found by actually loading this file in a browser rather than assuming the classic-script plan would just work.
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { filterRows, sortRows, toggleSelection, matchesSearch, matchesFilters };
+    module.exports = { filterRows, sortRows, toggleSelection, setSelection, matchesSearch, matchesFilters };
 }

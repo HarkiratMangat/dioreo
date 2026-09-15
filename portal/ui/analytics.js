@@ -114,9 +114,6 @@ function DepBars({ byDep = [] }) {
     return html`
         <section class="hpanel">
             <h4>Where the milliseconds go</h4>
-            <p class="hp">Timings are aggregated <b>per dependency name</b>, never per call — that is what
-                keeps the array on each event bounded. Read a row as: what this subsystem costs across the
-                week, when it is used.</p>
             ${byDep.length ? html`
                 <div class="depbars">
                     ${byDep.map((d) => {
@@ -135,10 +132,7 @@ function DepBars({ byDep = [] }) {
                     <span class="hbi"><${Icon} name=${over ? 'triangle-alert' : 'check'} cls="sm" /></span>
                     <div>
                         <h4>${worst.name} is the slowest per call, at ${fmtMs(worst.per)}</h4>
-                        <p>${atlas
-                            ? html`Atlas costs ${' '}<b>${fmtMs(atlas.totalMs)}</b>${' '}
-                                across <b>${(atlas.calls || 0).toLocaleString()}</b> calls this week, so the database is not the cost. `
-                            : html`Atlas has not been called in this window, so the database is not in this picture at all. `}
+                        ${atlas ? html`<span class="atlas-tile"><b>Atlas</b> ${fmtMs(atlas.totalMs)} over ${(atlas.calls || 0).toLocaleString()} call${atlas.calls === 1 ? '' : 's'}</span>` : null}<p>
                             ${over
                                 ? html`At ${fmtMs(worst.per)} it exceeds Discord's ${ACK_LIMIT_MS / 1000}s acknowledgement deadline
                                     on its own, which is survivable only where it runs as a background job rather than inside an interaction.`
@@ -199,9 +193,6 @@ function Health({ health, timingStats, usageStats, onOpenTiming, onFilterLevel, 
                          window, the rule every key and legend here follows -- a week with no errors should not
                          draw an empty error bar, which reads as a measurement rather than as an absence. -->
                     ${(h.alertsByLevel || []).length ? html`
-                        <p class="hp">Three tiers, and they never collapse into one number:${' '}
-                            <b>info</b> is a record, <b>caution</b> is a look-when-convenient,${' '}
-                            <b>error</b> pings a human. Seven days.</p>
                         <div class="lvlbars">
                             ${h.alertsByLevel.map((a) => html`
                                 <button class=${LEVEL_ROW[a.level] || LEVEL_ROW.info} key=${a.level}
@@ -238,7 +229,7 @@ function Health({ health, timingStats, usageStats, onOpenTiming, onFilterLevel, 
                             <!-- A non-zero missing count is not cosmetic: it is the emoji-capture trap, and the card
                                  says what it means rather than only how many. -->
                             ${h.lastBoot.emojiMissing
-                                ? html`<p class="pnote">${h.lastBoot.emojiMissing} emoji did not resolve at boot — those render as raw ids in Discord until the next sync.</p>`
+                                ? html`<span class="wchip" data-tip="They render as raw ids in Discord until the next emoji sync."><${Icon} name="triangle-alert" />${h.lastBoot.emojiMissing} emoji missing</span>`
                                 : null}
                         </div>` : null}
                 </section>
@@ -248,7 +239,6 @@ function Health({ health, timingStats, usageStats, onOpenTiming, onFilterLevel, 
                     <h4>Restarts</h4>
                     <!-- ⚠️ THE COUNTS MOVED UP INTO A TILE AND ARE NOT REPEATED HERE. Restating them would
                          rebuild the duplication the tiles were just rewritten to remove, one panel lower. -->
-                    <p class="hp">A restart is normal after a deploy and is worth a look when it was not one.</p>
                     <!-- 🔴 IT PLOTTED ALERTS UNDER A HEADING READING "RESTARTS" — 2026-09-04 22:54 EDT. The heading, the
                          prose and the series disagreed three ways, and the two figures could not be reconciled: a
                          tile said 303 restarts in 7d while this chart totalled 6. spark.boots has existed in the
@@ -262,9 +252,6 @@ function Health({ health, timingStats, usageStats, onOpenTiming, onFilterLevel, 
                          paragraph printed four collection names to somebody who wants to know whether the numbers
                          above are trustworthy, which is a question about WHAT is counted, not about where it is
                          stored. The collections are still the answer; they are just not the reader's vocabulary. -->
-                    <p class="hp">Uptime and restarts come from what the bot writes each time it starts; errors and
-                        the memory figure from its alert log; command counts from what players actually ran, and the${' '}
-                        river below adds every admin change to those three.</p>
                     <${DailyBars} series=${h.spark?.commands || []} label="Commands per day" />
                 </section>
             </div>
@@ -272,8 +259,6 @@ function Health({ health, timingStats, usageStats, onOpenTiming, onFilterLevel, 
                 <span class="hbi"><${Icon} name="clock" cls="sm" /></span>
                 <div>
                     <h4>These are the bot's records, not a live reading.</h4>
-                    <p>The portal runs as its own process with no gateway connection, so gateway status and live memory
-                        are not readable from here. For a live reading, run the <code>/bot analytics</code> command in Discord.</p>
                 </div>
             </div>
         </div>
@@ -309,8 +294,6 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
                 <div class="estate">
                     <span class="eicon"><${Icon} name="clock" cls="xl" /></span>
                     <h4>No command usage in the last 7 days</h4>
-                    <p>Only public commands count here — your own ${'/'}manage and ${'/'}bot activity is deliberately
-                        excluded, so a quiet week of admin work shows as nothing at all.</p>
                 </div>
             </div>`;
     }
@@ -345,10 +328,6 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
             <div class="usplit">
                 <div class="uside">
                     <h5>How interactions start</h5>
-                    <p class="hp">Seven entry points exist and a command is only one of them. The shape of this list is
-                        the shape of the bot: how much of what it does begins with somebody typing, and how much
-                        happens on its own. A row above with <b>no slash</b> is one of the latter — a background job,
-                        which nobody can run.</p>
                     ${entryRows.map((e) => html`
                         <div class=${'erow' + (e.n ? '' : ' never')} key=${e.key}>
                             <span class="ek">${ENTRY_LABEL[e.key] || e.key}</span>
@@ -359,11 +338,7 @@ function Usage({ stats, outcomeKeys = [], entryKeys = [] }) {
                 <div class="uside">
                     <h5>Outcomes</h5>
                     <!-- The reading is COMPUTED, not typed. Naming the four that had never fired on the day this was written is a comment about a snapshot: the sentence goes stale the first time one of them does fire, and nothing would say so. -->
-                    <p class="hp">${outcomeKeys.length} outcomes are possible${neverSeen.length ? html`, and${' '}
-                        <b>${neverSeen.length}</b> of them have never once happened —${' '}
-                        ${neverSeen.map((k) => (OUTCOME_LABEL[k] || k).toLowerCase()).join(', ')}. That means those
-                        paths have not been exercised, not that they cannot fire.` : html`, and every one of them has
-                        occurred at least once in this window.`}</p>
+                    ${neverSeen.length ? html`<span class="wchip" data-tip=${neverSeen.map((k) => OUTCOME_LABEL[k] || k).join(', ')}><${Icon} name="triangle-alert" />${neverSeen.length} outcome${neverSeen.length === 1 ? '' : 's'} not seen yet</span>` : null}
                     ${outcomeKeys.map((k) => {
                         const hit = byOutcome.find((o) => o._id === k);
                         return html`
@@ -415,24 +390,14 @@ function Timing({ stats }) {
             <div class="tim2">
                 <section class="hpanel">
                     <h4>Answering — the clock Discord is holding</h4>
-                    <p class="hp">Every interaction has to be answered within <b>3 seconds</b> or Discord throws it
-                        away and the person sees a failure the bot never gets to explain. This scale is that
-                        deadline, not a target invented here.${ackP[0] != null ? html`${' '}
-                        ${USUALLY} <b>${fmtMs(ackP[0])}</b>, ${SLOWEST} <b>${fmtMs(ackP[1])}</b>.` : null}</p>
                     <!-- An empty slot is DRAWN rather than left out. Five of seven buckets empty, including the one past the deadline, is the reading of this panel, and a list that silently omits the empty ones cannot say it. -->
-                    <p class="gread">${measured
-                        ? html`<b>${buckets.find((x) => x._id === 0)?.n || 0} of ${measured}</b> answers land in the
-                               first band${emptyBuckets.length
-                                   ? html`, and <em>${emptyBuckets.length} of ${ACK_BUCKETS.length} bands are empty</em>${' '}
-                                          ${emptyBuckets.includes(ACK_LIMIT_MS) ? '— including the one past the deadline.' : '.'}`
-                                   : ' — spread across every band.'}`
-                        : 'Nothing has been answered inside this window yet.'}</p>
+                    <p class="gread">${measured ? html`<b>${buckets.find((x) => x._id === 0)?.n || 0} of ${measured}</b> in the first band${emptyBuckets.length ? html` · <em>${emptyBuckets.length} of ${ACK_BUCKETS.length} bands empty</em>` : null}` : 'Nothing answered in this window yet.'}</p>
                     <div class="ackscale">
                         ${ACK_BUCKETS.map((b) => {
                             const n = buckets.find((x) => x._id === b)?.n || 0;
                             return html`
                                 <div class=${'ackrow' + (b >= 2000 ? ' danger' : '') + (n ? '' : ' zero')} key=${b}>
-                                    <span class="al">${ACK_BUCKET_LABEL[b]}</span>
+                                    <span class="al">${ACK_BUCKET_LABEL[b]}${b === ACK_LIMIT_MS ? html`${' '}<em class="dlname">deadline</em>` : null}</span>
                                     <span class="at"><i style=${`width:${pct(n, measured || 1)}%`}></i></span>
                                     <span class="av">${n || '—'}</span>
                                 </div>`;
@@ -441,11 +406,10 @@ function Timing({ stats }) {
                 </section>
                 <section class="hpanel">
                     <h4>Finishing — the clock a person feels</h4>
-                    <p class="hp">How long the work itself takes, after the answer. Once an interaction has been
-                        answered the bot has <b>fifteen minutes</b> to finish, so nothing here is late — this is
-                        simply how long you wait. Each figure is that command's <b>${SLOWEST}</b> run.</p>
                     ${worst.length ? html`
                         <div class="durlist">
+                            ${''/* G1 (§10.4): the 3-second line is labelled on the chart itself rather than explained in a paragraph under it. */}
+                            <div class="durrow durhead" aria-hidden="true"><span class="dl"></span><span class="dt2"><b class="dlname" style=${`left:${Math.min(pct(ACK_LIMIT_MS, worstMs), 100)}%`}>3 s</b></span><span class="dv2"></span></div>
                             ${worst.map((c) => html`
                                 <div class=${'durrow' + ((c.p?.[0] ?? 0) >= LONG_WAIT_MS ? ' slow' : '')} key=${c._id || '?'}>
                                     <span class="dl">/${c._id || '?'}</span>
@@ -455,10 +419,7 @@ function Timing({ stats }) {
                                     </span>
                                     <span class="dv2">${fmtMs(c.p?.[0])}</span>
                                 </div>`)}
-                        </div>
-                        <p class="hp"><span class="dlkey"></span> marks the 3-second answering deadline. Every command
-                            here answers first and works afterwards, so a bar reaching past it is the work taking
-                            longer than the answer was owed — not a missed deadline.</p>`
+                        </div>`
                         : html`<p class="hp">No command has recorded a finish time in this window.</p>`}
                 </section>
             </div>
@@ -493,8 +454,6 @@ function Reach({ rows = [] }) {
                 <div class="estate">
                     <span class="eicon"><${Icon} name="user" cls="xl" /></span>
                     <h4>Nobody has used the bot in this window</h4>
-                    <p>Reach counts public interactions only. Your own admin work is excluded here for the same
-                        reason it is on Usage.</p>
                 </div>
             </div>`;
     }
@@ -519,16 +478,10 @@ function Reach({ rows = [] }) {
                     <!-- ⚠️ THE CAPTION NAMES WHAT THE CHART SHOWS BEFORE IT ARGUES FROM IT. The design leads on the measurement (analytics.html:428, "More than half of all use is in DMs") and this led on the principle, so a reader got the conclusion without the number standing directly above it. The closing line is the portal's own and is kept — the design has no equivalent. ⚠️ It reads the split rather than asserting one: the design's sentence assumes DMs lead, which is true of its fixtures and is not a fact about the data.
                          "privately" is dropped for the same reason — it is only true of one of the two answers this sentence can now give.
                          ⚠️ AND IT STATES THE PERCENTAGE RATHER THAN "MORE THAN HALF", which was the first attempt and which the fixtures immediately falsified: 51% against 49% is more than half and reads as a decisive majority. A phrase that renders 51% and 80% identically has stopped carrying information, which is the same objection this file already makes to a tile that is orange whatever the numbers are. -->
-                    <p class="hp">${haveSplit
-                        ? html`${Math.round(leadShare)}% of all use is in <b>${leadLabel}</b> — a`
-                        : html`Nothing has been recorded in this window, so there is no split to read yet. A`} bot answering one screenful at a time, which is not the place to audit
-                        a season or bulk-edit an armory. That split is the argument for this portal existing at all.</p>
+                    ${haveSplit ? html`<p class="rhead"><b>${Math.round(leadShare)}%</b> of all use is in ${leadLabel}</p>` : null}
                 </section>
                 <section class="hpanel">
                     <h4>How the app was installed</h4>
-                    <p class="hp">Whether each interaction came from a server that added the app or from a person who
-                        did. The v3 line made every public command guild-installable while the admin commands stayed
-                        user-only — this is the measurement that says whether that landed.</p>
                     ${byInstall.map((x) => html`
                         <div class=${'inrow' + (x.key ? '' : ' muted')} key=${x.label}>
                             <span class="ik">${x.label}</span>
@@ -606,13 +559,6 @@ function Search({ rows = [] }) {
                             <p>This fills only from autocomplete sessions. An empty table means nobody has typed into
                                 an autocomplete field in the last 30 days — <b>not</b> that nobody searched.</p>
                         </div>`}
-                <div class="bvnote">
-                    <b>What this view is for.</b> Every other number in Analytics describes what the bot${' '}
-                    <em>did</em>. A search that returned nothing is the only one that describes what somebody${' '}
-                    <em>wanted</em> and did not get. That is either a missing alias or a missing feature, and it is
-                    invisible everywhere else — including in Discord, where the person simply saw an empty list and
-                    moved on.
-                </div>
             </div>
         </div>`;
 }
@@ -670,12 +616,8 @@ export function AnalyticsRealm({ session }) {
     // 🔴 THE DESIGN PUTS A PER-VIEW SUMMARY IN THE ONE PANEL HEADER AND THIS REALM HAD NONE THERE. analytics.html:40 draws a `span.sp` and :601 fills it per view, and Shell has carried a `meta` slot for exactly this since Broadcast had to hand-roll one -- access, armory, season and broadcast all use it and Analytics was the only realm that did not, which is what converge reported as `ABSENT mk span.sp`. ⚠️ THE LINES ARE MOVED, NOT ADDED. Each view already drew this sentence inside its OWN panel header, a second `.ph` nested in the Shell's -- so writing a meta line without removing those would be the two-layers-saying-the-same-thing defect this file keeps finding, four inches apart on the same screen.
     const reachTotal = (data.reach || []).reduce((a, r) => a + (r.n || 0), 0);
     const usage = data.usageStats || {};
-    const viewMeta = view === 'Health'
-        ? `${data.health.commands24h ?? '—'} commands · ${data.health.rssSampleCount ?? 0} memory samples · ${data.health.restarts7d ?? '—'} boots in 7 days`
-        : view === 'Usage' ? `${(usage.current ?? 0).toLocaleString()} this week · ${(usage.previous ?? 0).toLocaleString()} the week before`
-        : view === 'Timing' ? 'your own admin commands are counted here, unlike Usage'
-        : view === 'Reach' ? `${reachTotal.toLocaleString()} public interactions`
-        : 'autocomplete sessions only';
+    // 🔴 ONE VIEW KEEPS A META LINE (plan pins batch 2 §10.4 G1, board 2 row for analytics.js:685, 2026-09-15 00:28 EDT): Usage's week-over-week change is a figure nothing else on the page states. Health's counts are its tiles, Timing's sentence became the Admin traffic chip (G2), and Reach's and Search's restated their own panels.
+    const viewMeta = view === 'Usage' ? `${(usage.current ?? 0).toLocaleString()} this week · ${(usage.previous ?? 0).toLocaleString()} the week before` : null;
     const viewSlot = (VIEWS[view] || VIEWS.Health)();
 
     // 🔴 THE RAIL'S STAGED COUNT REACHED TWO REALMS OF SEVEN. `badges` was passed by Home (home.js) and Season (season.js) only, so the one number the rail exists to carry — how much work is waiting — was absent on the five realms in between, including the two that stage on every edit. It is a property of the CHANGESET, so it is the TOTAL and not this realm's share; `Rail` omits it at zero, which is the "absent rather than zero" rule `shell.js:43` states. Unknown (a 403 on /api/review) reads as absent too, because a badge is not the surface that can say "you cannot see that". ⚠️ AS A `//` COMMENT ABOVE THE RETURN, NEVER AS `<!-- -->` INSIDE THE PROP LIST — the first version was the latter on all five realms and htm dropped every prop after it.
@@ -685,12 +627,7 @@ export function AnalyticsRealm({ session }) {
                   meta=${viewMeta}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
-                  tools=${html`
-                      <label class="adminsw">
-                          <input type="checkbox" checked=${includeAdmin}
-                                 onChange=${(e) => setIncludeAdmin(e.target.checked)} />
-                          include admin traffic
-                      </label>`}
+                  tools=${html`<span class="incg"><span>Include</span><button type="button" class="chip incchip" aria-pressed=${includeAdmin ? 'true' : 'false'} onClick=${() => setIncludeAdmin(!includeAdmin)}><${Icon} name="shield" />Admin traffic</button></span>`}
                   overlaySlot=${overlay.render()}
                   masthead=${html`<${Masthead} title="Analytics" sub="What the bot did, what it cost, and what somebody looked for and did not find."
                                                stats=${[
