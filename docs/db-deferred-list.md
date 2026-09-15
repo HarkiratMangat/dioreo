@@ -979,6 +979,9 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- 🤖 **`[P3 · L]` Natural-language staging from the portal's command bar** *(filed 2026-09-15 14:48 EDT from Harkirat's review pin `pmu2w98v8`)* He wants a system — an LLM or something like it — that takes a plain request and stages exactly that change: *"add the meta badge to locus"*, *"send an announcement saying 'hi world' starting tomorrow, for 10 days and showing it twice"*. Every change would still become staged ops through `core/` and reach players only through Review, so the model proposes and the operation algebra validates. Separate from board 3's P7, which only makes search answer plain words with real actions (plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2b). **Verify:** a typed request stages the intended op with its values shown before staging, and a request it cannot map stages nothing.
+
+
 ### `[P2 · M]` Event and draw reminders when a player runs a command — needs a design session, after v3-pre-release launches
 
 Filed 2026-09-14 12:21 EDT from Harkirat's comment on pins-2 design board 2 (2026-09-14 12:01 EDT). A short reminder that can pop up when someone uses a bot command: a calendar event is live, a lucky draw is out or releasing alongside it, how many days are left. Players can turn it on or off. **Not designed yet** — it needs a full discussion and design session first: what triggers it, how often it may appear, where the on/off switch lives, and how it sits beside the existing announcement follow-up. **Timing:** after v3-pre-release launches. **Verify:** a dated design spec for it exists under `docs/superpowers/specs/`.
