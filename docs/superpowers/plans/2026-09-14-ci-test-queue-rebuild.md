@@ -9,6 +9,8 @@ status: live
 
 > 🔴 **THIS PLAN IS FOR THE SESSION EXECUTING IT.** Harkirat, 2026-09-14 17:58 EDT, in the popup: *"you can do the plan then build but it's all happening this 1 session. and remember to write the plan as per this repo's mega-batching work style, don't use /writing-plans' one by one loop style. The plan is basically for yourself so you don't drift with working style, tool usage, sequential-thinking, think-pass, etc compliance."* **Re-read §1 at every phase boundary.**
 
+> ⚠️ **IF YOU WERE HANDED A SHORT OPENER, it is not a summary of this file.** Only this file carries §0's merge-order decision (this branch merges AFTER portal Session 2, and what it must do first), §1's working contract, and §6's table of what the build changed against the plan.
+
 ## §0 — Decisions already made (do not re-open)
 
 | Question | His answer (popup, 2026-09-14 17:58 EDT) | What it means here |
