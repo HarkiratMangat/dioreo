@@ -111,7 +111,7 @@
         }
       ],
       "known": [],
-      "expect": ".cmptab tr.diff"
+      "expect": ".cmpt .cv.d"
     }
   ]
 }
