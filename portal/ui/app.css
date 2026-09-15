@@ -6721,3 +6721,59 @@ button.bgrp-w:focus-visible{outline:2px solid var(--patch);outline-offset:2px;bo
 .bvsum .new b{color:var(--ok)}
 .bvsum .upd b{color:var(--patch)}
 .bvsum .bad b{color:var(--danger-ink)}
+
+/* ── Pins batch 2, Session 2 (agent D) — the Broadcast composer (§10.3 + G8) ──────────────────────
+   New block only; no existing rule above this line was touched. */
+
+.bcast-composer{display:grid;grid-template-columns:1fr 340px;gap:20px}
+@media (max-width:900px){ .bcast-composer{grid-template-columns:1fr} }
+
+/* Row 10 — the shared 6,000-char embed budget: other live posts dimmed, this post in full pink. */
+.cmeter.bcast{position:relative;background:var(--sunk)}
+.cmeter.bcast i{position:absolute;top:0;left:0;height:100%;background:var(--r-broadcast);border-radius:0}
+.cmeter.bcast.bad i{background:var(--danger-ink)}
+.meter-note{display:block;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3);margin-top:4px}
+.meter-note.bad{color:var(--danger-ink)}
+
+/* Row 2 — the Banner field: a link, a thumbnail, and a load/size echo. */
+.banner-row{display:flex;align-items:center;gap:10px}
+.banner-row input{flex:1 1 auto}
+.banner-thumb{width:72px;height:40px;flex:none;border-radius:var(--rad-2);overflow:hidden;
+  border:1px solid var(--rule2);background:var(--sunk)}
+.banner-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.banner-thumb.bad{border-color:var(--danger-edge)}
+.banner-thumb.bad img{opacity:.25}
+.banner-echo{display:block;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3);margin-top:4px}
+.banner-echo.bad{color:var(--danger-ink)}
+
+/* Row 1 — the Ends field's own Never-ends switch, and its pink-tinted replacement field. */
+.bcast-dates{align-items:start}
+.ends-field label span:first-child{display:inline-block;margin-right:8px}
+.seg-sw-inline{display:inline-flex;align-items:center;gap:6px;font:600 var(--t-xs)/1 var(--ui);
+  color:var(--ink3);cursor:pointer}
+.seg-sw-inline input{margin:0}
+.never-ends-field{min-height:var(--tap);display:flex;align-items:center;padding:0 12px;
+  background:color-mix(in srgb, var(--r-broadcast) 11%, var(--sunk));
+  border:1px solid color-mix(in srgb, var(--r-broadcast) 40%, var(--rule2));border-radius:var(--rad-2);
+  font:600 var(--t-sm)/1 var(--ui);color:var(--ink2)}
+
+/* Row 3 — Show each player: a stepper, one small card glyph per showing, and the fixed-interval tag. */
+.repeat-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--rule2);border-radius:var(--rad-2);
+  overflow:hidden;background:var(--sunk)}
+.step-btn{min-width:var(--tap);min-height:var(--tap);border:0;background:transparent;color:var(--ink2);
+  font:700 var(--t-md)/1 var(--ui);cursor:pointer}
+.step-btn:hover:not(:disabled){background:var(--raised);color:var(--ink)}
+.step-btn:disabled{color:var(--ink3);cursor:default}
+.step-val{min-width:28px;text-align:center;font:700 var(--t-sm)/1 var(--data)}
+.rp-glyphs{display:inline-flex;gap:3px}
+.rp-glyph{width:10px;height:14px;border-radius:2px;background:var(--r-broadcast);opacity:.7}
+.rp-more{font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+.clock-tag{display:inline-flex;align-items:center;gap:5px;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}
+
+/* Row 4 — the composer's own "In Discord" preview. */
+.post-prev{border:1px solid var(--rule2);border-radius:var(--rad-2);background:var(--sunk);overflow:hidden}
+.post-prev-banner{width:100%;max-height:120px;object-fit:cover;display:block}
+.post-prev-text{margin:0;padding:12px 14px 4px;font:400 var(--t-sm)/1.5 var(--ui);color:var(--ink);
+  white-space:pre-wrap;word-break:break-word}
+.post-prev-when{display:block;padding:0 14px 12px;font:600 var(--t-xs)/1 var(--ui);color:var(--ink3)}

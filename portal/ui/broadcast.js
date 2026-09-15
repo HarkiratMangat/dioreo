@@ -10,7 +10,7 @@ import { Manifest } from './manifest.js';
 import { Icon, Fold } from './icons.js';
 import { fetchJson } from './httpClient.js';
 import { downloadText } from './download.js';
-import { useAsync, RealmShell } from './async.js';
+import { useAsync, RealmShell, reportFailure } from './async.js';
 import { stageOps } from './composeClient.js';
 import { useOverlay, Drawer } from './overlay.js';
 import { SmartDate } from './composer.js';
@@ -278,60 +278,156 @@ function HeadsUp({ all, onSetEnd }) {
     `;
 }
 
-// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt (new field, this task -- core/ops/announcements.js's own header explains why it's a real admin date, unlike expiry which is a day-count). A blank expiry means the server's own 60-day default; a blank start means "shows immediately" -- both sent as null rather than guessed at client-side. ⚠️ A BLANK FIELD HERE IS A REAL VALUE, TWICE OVER, and neither said so on screen: a blank expiry takes the server's 60-day default rather than never expiring, and a blank start means the announcement is live the moment it commits. Both facts were in this file's own header comment, which nobody using the form can read.
-function PostForm({ onSubmit, onCancel }) {
-    const [text, setText] = useState('');
+// The shared 6,000-character embed budget every live post competes for (Discord's real limit on total
+// embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is
+// currently open in the composer, so editing one doesn't count its own old text against its new length.
+const EMBED_BUDGET = 6000;
+function otherLiveLength(all, excludeId) {
+    return (all || [])
+        .filter((a) => a.state === 'live' && String(a.id || a._id) !== String(excludeId || ''))
+        .reduce((sum, a) => sum + (a.text || '').length, 0);
+}
+
+// The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
+function RepeatGlyphs({ n }) {
+    const count = Math.max(1, Number(n) || 1);
+    return html`
+        <div class="rp-glyphs" aria-hidden="true">
+            ${Array.from({ length: Math.min(count, 8) }, (_, i) => html`<i class="rp-glyph" key=${i}></i>`)}
+            ${count > 8 ? html`<span class="rp-more">+${count - 8}</span>` : null}
+        </div>`;
+}
+
+// Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a
+// repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the
+// server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
+//
+// ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's
+// "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post
+// announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries
+// bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see
+// core/ops/announcements.js's apply()).
+function PostForm({ initial, allAnnouncements, onSubmit, onCancel }) {
+    const editing = Boolean(initial);
+    const [text, setText] = useState(initial?.text || '');
     const [startsAt, setStartsAt] = useState('');
+    const [startsIso, setStartsIso] = useState(initial?.startsAt ? String(initial.startsAt).slice(0, 10) : null);
     const [expiresAt, setExpiresAt] = useState('');
-    // 🔴 THE RESOLVED INSTANT IS STATE, NOT A CLIENT-SIDE PARSE AT SUBMIT TIME. This used to send
-    //    `new Date(startsAt).toISOString()`, which is the browser's parser reading a value the BOT will
-    //    later read with chrono-node — two implementations behind one promise, which is the exact
-    //    argument composer.js's own header makes for asking the server. The iso here is what
-    //    /api/parse-date returned, so what the preview says and what the record holds cannot differ.
-    const [startsIso, setStartsIso] = useState(null);
-    const [expiresIso, setExpiresIso] = useState(null);
-    // ⚠️ TEXT WITHOUT A RESOLUTION MUST BLOCK, NOT SILENTLY SEND NULL. A field reading "next tuseday"
-    //    resolves to nothing; submitting it would post an announcement that starts immediately and say
-    //    nothing about why. The `why` line below names which field, in the drawer footer's own voice.
-    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', expiresAt.trim() && !expiresIso ? 'the end' : ''].filter(Boolean);
-    const ready = text.trim() && !unresolved.length;
+    const [expiresIso, setExpiresIso] = useState(initial?.expiresAt ? String(initial.expiresAt).slice(0, 10) : null);
+    // "Never ends" is its own switch (row 1, G8) rather than inferred from a blank field, because blank
+    // and never are two different real values now (see broadcast.logic.js's buildBroadcastComposerOp).
+    const [neverEnds, setNeverEnds] = useState(Boolean(editing && initial && !initial.expiresAt));
+    const [bannerLink, setBannerLink] = useState(initial?.bannerImageUrl || '');
+    const [bannerBroken, setBannerBroken] = useState(false);
+    const [bannerDims, setBannerDims] = useState(null);
+    const [repeatCount, setRepeatCount] = useState(initial?.repeatCount || 1);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => { setBannerBroken(false); setBannerDims(null); }, [bannerLink]);
+
+    const unresolved = [startsAt.trim() && !startsIso ? 'the start' : '', (!neverEnds && expiresAt.trim() && !expiresIso) ? 'the end' : ''].filter(Boolean);
+    const ready = text.trim() && !unresolved.length && !busy;
+
+    const otherLen = otherLiveLength(allAnnouncements, initial?.id || initial?._id);
+    const thisLen = text.length;
+    const totalLen = otherLen + thisLen;
+    const overBudget = totalLen > EMBED_BUDGET;
 
     function submit() {
-        onSubmit(buildBroadcastAddOp({
+        setBusy(true);
+        const fields = {
             text,
             startsAt: startsIso || null,
-            expiresAt: expiresIso || null,
-        }));
+            bannerImageUrl: bannerLink.trim() || null,
+            repeatCount,
+            // undefined (blank, omit the key) | null (Never ends) | an ISO string (a resolved date).
+            expiresAt: neverEnds ? null : (expiresIso || undefined),
+        };
+        const op = buildBroadcastComposerOp(fields, initial);
+        Promise.resolve(onSubmit(op)).then((ok) => { if (ok === false) setBusy(false); });
     }
 
-    // 🔴 A DRAWER, NOT AN INLINE PANEL. `broadcast.html:415` opens this through `S.drawer` — scrim, `dw-h` header with the `announcement.post · tier 1` eyebrow, `dwbody`, and a `dw-f` footer — and the portal pushed the whole page down with a `div.panel` above the view instead. Measured 2026-09-01 with `portal:audit --open "+ Post announcement"`: every drawer element read ONLY IN MOCKUP and the view panel came out 291px taller. The machinery was already imported for the bulk-delete confirmation. ⚠️ THE COPY IS THE PORTAL'S AND STAYS. The design labels these `Text` / `Starts (blank = immediately)` / `Expires in` and carries its guidance in `p.dw-p`; this form's own note records why the two deciding facts — a blank start means live on commit, a blank expiry means SIXTY DAYS rather than never — have to be on screen. So: the design's container and its `dw-p` placement, this file's sentences inside them. ⚠️ `Expires in` is a TEXT field in the design ("blank, days, or never") and a date input here. That is a payload-shape question for `core/ops/announcements.js`, which §0.6b puts out of this pass — filed, not silently kept: a date input cannot express "never", which is the state this whole realm is about.
     return html`
-        <${Drawer} eyebrow="announcement.post · tier 1" title="Post an announcement" onClose=${onCancel}
+        <${Drawer} eyebrow=${editing ? 'announcement.edit · tier 1' : 'announcement.post · tier 1'}
+                   title=${editing ? 'Edit announcement' : 'Post an announcement'} wide onClose=${onCancel}
                    actions=${html`
-                       <span role="status" class=${'why' + (ready ? '' : ' blocked')}>${ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.' : 'Write the announcement first.'}</span>
+                       <span role="status" class=${'why' + (text.trim() ? '' : ' blocked')}>${!text.trim() ? 'Write the announcement first.'
+                           : ready ? 'Stages one operation. Nothing reaches a player until you commit it on Review.'
+                           : unresolved.length ? `${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet` : ''}</span>
                        <button class="btn" onClick=${onCancel}>Cancel</button>
-                       ${unresolved.length ? html`<span class="why blocked">${unresolved.join(' and ')} ${unresolved.length > 1 ? 'are' : 'is'} not a date yet</span>` : null}
-                       <button class="btn go" disabled=${!ready} onClick=${submit}>Stage post</button>`}>
-            <div class="dwbody">
-                <div class="dwfield"><label for="post-text">Text</label>
-                    <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
-                              value=${text} onInput=${(e) => setText(e.target.value)}></textarea></div>
-                <div class="dw-grid2">
-                        ${''/* 🔴 PIN pmtvp9ur7 ASKED FOR A DATE PICKER AND THE ANSWER WAS ALREADY BUILT. A native date input cannot take "in 3 days", cannot take a paste out of a patch note, and renders a different widget in every browser. SmartDate asks the bot's own chrono-node through /api/parse-date and echoes what it resolved, which is what /manage has understood since it was built. */}
-                    <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
-                                  placeholder="blank = the moment you commit, or “in 3 days”, or Sep 21"
-                                  value=${startsAt} iso=${startsIso}
-                                  onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
-                    <${SmartDate} chrome="drawer" id="post-expires" label="Ends"
-                                  placeholder="blank = the server’s 60-day default, not never"
-                                  value=${expiresAt} iso=${expiresIso}
-                                  onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />
+                       <button class="btn go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
+            <div class="dwbody bcast-composer">
+                <div class="bed-main">
+                    <div class="dwfield"><label for="post-text">Text</label>
+                        <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
+                                  value=${text} onInput=${(e) => setText(e.target.value)}></textarea>
+                        <div class=${'cmeter bcast' + (overBudget ? ' bad' : '')}>
+                            <i style=${`width:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%;opacity:.38`}></i>
+                            <i style=${`width:${Math.min(100 - Math.min(100, (otherLen / EMBED_BUDGET) * 100), (thisLen / EMBED_BUDGET) * 100)}%;margin-left:${Math.min(100, (otherLen / EMBED_BUDGET) * 100)}%`}></i>
+                        </div>
+                        <span class=${'meter-note' + (overBudget ? ' bad' : '')}>${Math.max(0, EMBED_BUDGET - totalLen)} of ${EMBED_BUDGET} left</span>
+                    </div>
+
+                    <div class="dwfield"><label for="post-banner">Banner</label>
+                        <div class="banner-row">
+                            <input id="post-banner" value=${bannerLink} placeholder="https://…" autocomplete="off" spellcheck="false"
+                                   onInput=${(e) => setBannerLink(e.target.value)} />
+                            ${bannerLink.trim() ? html`
+                                <div class=${'banner-thumb' + (bannerBroken ? ' bad' : '')}>
+                                    <img src=${bannerLink.trim()} alt=""
+                                         onLoad=${(e) => setBannerDims({ w: e.target.naturalWidth, h: e.target.naturalHeight })}
+                                         onError=${() => setBannerBroken(true)} />
+                                </div>` : null}
+                        </div>
+                        ${bannerLink.trim() ? html`
+                            <span class=${'banner-echo' + (bannerBroken ? ' bad' : '')}>${bannerBroken ? "didn't load" : (bannerDims ? `✓ ${bannerDims.w} × ${bannerDims.h}` : '')}</span>` : null}
+                    </div>
+
+                    <div class="dw-grid2 bcast-dates">
+                        <${SmartDate} chrome="drawer" id="post-starts" label="Starts"
+                                      placeholder="in 3 days, or Sep 21"
+                                      value=${startsAt} iso=${startsIso}
+                                      onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
+                        <div class="dwfield ends-field">
+                            <label for="post-expires"><span>Ends</span>
+                                <label class="seg-sw-inline">
+                                    <input type="checkbox" checked=${neverEnds} onChange=${(e) => setNeverEnds(e.target.checked)} />
+                                    <span>Never ends</span>
+                                </label>
+                            </label>
+                            ${neverEnds
+                                ? html`<div class="never-ends-field"><span>Stays up until you remove it</span></div>`
+                                : html`<${SmartDate} chrome="drawer" id="post-expires" label=""
+                                                     placeholder="Sep 21"
+                                                     value=${expiresAt} iso=${expiresIso}
+                                                     onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />`}
+                        </div>
+                    </div>
+
+                    <div class="dwfield"><label>Show each player</label>
+                        <div class="repeat-row">
+                            <div class="stepper">
+                                <button type="button" class="step-btn" disabled=${repeatCount <= 1}
+                                        onClick=${() => setRepeatCount(Math.max(1, repeatCount - 1))}>−</button>
+                                <span class="step-val">${repeatCount}</span>
+                                <button type="button" class="step-btn" onClick=${() => setRepeatCount(repeatCount + 1)}>+</button>
+                            </div>
+                            <${RepeatGlyphs} n=${repeatCount} />
+                            <span class="clock-tag"><${Icon} name="clock" cls="sm" />1 a day max</span>
+                        </div>
+                    </div>
                 </div>
-                <p class="dw-p">A blank start shows it the moment you commit. A blank end takes the server's
-                    60-day default, not never.</p>
-                <p class="dw-p">Every live announcement is attached to the bot's next reply to a player, in the
-                    order it was written — so this is not a broadcast to a channel, it is a note added to whatever
-                    they were already doing.</p>
+                <aside class="bed-side">
+                    <div class="bed-sec">
+                        <h5>In Discord</h5>
+                        ${text.trim() ? html`
+                            <div class="post-prev">
+                                ${bannerLink.trim() && !bannerBroken ? html`<img class="post-prev-banner" src=${bannerLink.trim()} alt="" />` : null}
+                                <p class="post-prev-text">${text.length > 240 ? `${text.slice(0, 240)}…` : text}</p>
+                                <span class="post-prev-when">${startsIso ? `Posts ${startsIso}` : 'Posts now'}</span>
+                            </div>` : html`<p class="empty">Type the announcement and the card builds itself here.</p>`}
+                    </div>
+                </aside>
             </div>
         <//>
     `;
@@ -388,11 +484,19 @@ export function BroadcastRealm({ session }) {
     const [editingAnn, setEditingAnn] = useState(null);
     const openEdit = (a) => { setEditingAnn(a); setShowAdd(true); };
 
+    // 🔴 `harden` (pins batch 2, §10.3 row 9) — a 403, a CSRF refusal or the op's own validation error
+    // (the banner's "needs a full https:// URL" refusal arrives only through this path) resolves to a
+    // failure OBJECT, never a throw. The old version never looked, so the drawer closed and said
+    // "staged" while nothing had staged and the draft was gone.
     async function handleAdd(op) {
-        await stageOps('broadcast', [op], session.csrfToken);
+        const res = await stageOps('broadcast', [op], session.csrfToken);
+        if (await reportFailure(overlay, res, 'The announcement could not be staged')) return false;
+        if (!res.changesetId) { overlay.say(res.error || 'The server refused this announcement.'); return false; }
         setShowAdd(false);
+        setEditingAnn(null);
         overlay.say('Announcement staged. Nothing reaches a player until you commit it.', 'Review', () => { location.hash = '#/review'; });
         refresh();
+        return true;
     }
 
     // No bulk-delete op exists for announcements (unlike loadouts' loadout.bulkDelete) -- one announcement.delete per selected id, in a single changeset, which is exactly what a multi-op changeset is for.
@@ -439,7 +543,7 @@ export function BroadcastRealm({ session }) {
                   exports=${exportScopes} exportLabel="Export" overlayFor=${overlay}
                   badges=${{ review: data.stagedUnknown ? 0 : (data.stagedOps || []).length }}
                   stagedOps=${data.stagedUnknown ? null : data.stagedOps}
-                  overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} initial=${editingAnn} onSubmit=${handleAdd} onCancel=${() => { setShowAdd(false); setEditingAnn(null); }} />` : null}`}
+                  overlaySlot=${html`${overlay.render()}${showAdd ? html`<${PostForm} initial=${editingAnn} allAnnouncements=${data.all} onSubmit=${handleAdd} onCancel=${() => { setShowAdd(false); setEditingAnn(null); }} />` : null}`}
                   commands=${[
                       { label: 'Post an announcement', group: 'broadcast', local: true, accent: 'var(--r-broadcast)',
                         keywords: ['new', 'write', 'say', 'announce'], run: () => setShowAdd(true) },
