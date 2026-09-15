@@ -112,8 +112,15 @@ read -r -d '' RULES <<'EOF'
 MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
   · linksee RECALL BY query, NEVER entity_name — entity attribution is path-derived and
     entity-scoped recall under-returns SILENTLY. On WRITE always pass entity_name explicitly.
-    Removed in v0.11.x: list_entities -> recall({}) · recall_file -> recall({path}) ·
+    Removed in v0.11.x: list_entities -> recall({overview:true}) · recall_file -> recall({path}) ·
     update_memory -> remember({memory_id}) · consolidate -> auto-runs at startup, never call it.
+    SIX TOOLS since 0.15: recall() with no args = the session brief · recall({query}) (mark_accessed:false
+    to preview) · recall({where}) = map position + blast radius · recall({dream:true}) = proposals to triage
+    + the distill queue (rewrite each with remember({memory_id, content:{...,"distilled":true}})) ·
+    remember({content, anchor:{violation_signal}}) records AND enforces a decision · drift_status ·
+    declare_anchor({kind:'proposal'}) parks an option never answered · resolve_drift (fix/supersede/
+    acknowledge/dismiss/harden/soften). A supersede or a closure written only in prose or a tracked doc is
+    NOT recorded in linksee: call resolve_drift, or the brief keeps listing it as open.
     Deliberate remember() writes have source=NULL so the Stop-hook sync never wipes them; only
     auto-captured session rows are wiped+reinserted.
   · [MEASURED 2026-09-08 13:30 EDT -- 10-symbol replay in local/2026-09-08-carrier-baseline.md]
@@ -129,6 +136,11 @@ MCP LAYER — the routing that was measured, not assumed (2026-08-02 14:43 EDT):
     chunk map that makes every later one ~50 tokens, so it costs the same and buys the 97%. Measured
     2026-09-06 18:37 EDT: a session read the deferred list, four rule files, 24 vendor doc pages and several dist
     bundles with zero read_smart calls, because each was a FIRST read and the rule only spoke about re-reads.
+  · 🔴 read_smart's cache is SHARED BY EVERY SESSION (keyed by path alone), so "unchanged" -- and the unchanged
+    chunks of "modified" -- NEVER mean the text is in your context. After a new session or a compact, take the
+    chunk ranges it returns and slice only those (ctx_execute_file, or Read offset/limit for an Edit); force:true
+    only for a small file needed whole; never a full Read or cat. A file past the tool-result limit spills to
+    disk on a full return, so on a big file read_smart is the MAP and the slice is the READ. (2026-09-14 21:41 EDT)
   · linksee publishes FIVE MCP PROMPTS (entity-handoff, summarize-session, extract-caveats, recall-and-write,
     weekly-consolidation) on a surface neither a skill search nor ToolSearch can see. /linksee:* does NOT
     route in Claude Code; fetch the body with prompts/get over stdio and follow it. It also publishes four
