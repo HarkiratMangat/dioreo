@@ -1171,7 +1171,7 @@ Harkirat, 2026-09-11 18:42 EDT: *"i dont even see a point in the 'by permission'
 
 **Full record:** `local/handoff/2026-09-10-portal-round2-continued.md` (gitignored) — the six corrections he had to make, the traps, and why each of the 16 is still open.
 
-**Filed 2026-09-10 12:49 EDT.** Harkirat's second review pass, pins **#24–59** in `local/portal-sync-notes.md` (his numbering is that file's own order — round 1 was #1–23). Crops for most of them are in `local/portal-pins/`. **The route, the method and the traps are `local/handoff/2026-09-10-portal-round2.md`**; that file is gitignored, which is why this entry exists.
+**Filed 2026-09-10 12:49 EDT.** Harkirat's second review pass, pins **#24–59** in `local/portal-sync-notes.md`, archived 2026-09-15 10:44 EDT to `local/portal-sync-notes.2026-09-09-to-12.md` in the same order (his numbering is that file's own order — round 1 was #1–23). Crops for most of them are in `local/portal-pins/`. **The route, the method and the traps are `local/handoff/2026-09-10-portal-round2.md`**; that file is gitignored, which is why this entry exists.
 
 🔴 **The first unit is a RE-VERIFY sweep, not a fix sweep** — see the build-staleness bug filed under Active Bugs. An unknown subset of these 36 is already closed.
 
