@@ -27,7 +27,7 @@ mkfixture() { # $1 = number of misfiled memories to plant
   done
 }
 
-run() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
+run() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_FRAG_WARN="${1:-25}" bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
 assert() { # name | needle | yes|no
   local name="$1" needle="$2" want="$3" out="$4"
@@ -43,7 +43,7 @@ echo "mcp-layer-check.sh — branch proofs"
 mkfixture 0; out="$(run 25)"
 assert "clean store: no warning"            "$WARN_MARKER"           no  "$out"
 assert "clean store: counts reported"       "misfiled elsewhere"     yes "$out"
-assert "clean store: routing rules present" "RECALL BY query"        yes "$out"
+assert "routing is not restated at session start (WP4 collapse)" "RECALL BY query" no "$out"
 
 # 2. 30 misfiled memories over a threshold of 25 -> warning MUST fire.
 mkfixture 30; out="$(run 25)"
@@ -61,9 +61,9 @@ out="$(run 0)"
 assert "sibling project 'dior' excluded"    "0 misfiled elsewhere"   yes "$out"
 
 # 5. Missing DB must degrade loudly, not crash or emit invalid JSON.
-out="$(MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
+out="$(MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext')"
 assert "missing db reported"                "db not found"           yes "$out"
-MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
+MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB=/nonexistent/x.db bash "$CHECK" | jq -e . >/dev/null 2>&1 \
   && { echo "  PASS  missing db still emits valid JSON"; pass=$((pass+1)); } \
   || { echo "  FAIL  missing db emitted invalid JSON"; fail=$((fail+1)); }
 
@@ -85,7 +85,8 @@ JSON
 cat > "$DESK"  <<'JSON'
 {"mcpServers":{"linksee":{},"perseus-vault":{},"sequential-thinking":{},"codebase-memory-mcp":{},"jina-reader":{},"desktop-only-thing":{}}}
 JSON
-prun() { MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
+# MCPCHECK_PROBE=0 on every call that is not about the probe (here, in run() above, and the two missing-db calls). Without it each call made a real, timeout-bounded round trip to whatever linksee server this machine runs: 3.2 s per call, 23.2 s for the suite at 0.10 CPU (measured 2026-09-14), and a result that depended on the machine. The probe keeps its own stubbed cases below.
+prun() { MCPCHECK_PROBE=0 MCPCHECK_LINKSEE_DB="$TMP/m.db" MCPCHECK_CC_CONFIG="$1" MCPCHECK_DESKTOP_CONFIG="$2" \
          bash "$CHECK" | jq -r '.hookSpecificOutput.additionalContext'; }
 
 # Healthy: every expected server present, desktop matches -> BOTH warnings absent. This is the discriminating half; without it the needles below could match a banner that always prints.

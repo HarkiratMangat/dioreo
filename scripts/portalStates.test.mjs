@@ -3,7 +3,9 @@
 // 🔴 THE HISTORICAL CASE IS THE FIRST TEST. The command bar's input measured 44px tall, with its own 1px border and its own background, inside a 34px wrapper painting both — for weeks, reported twice by a human, with every gate in the suite green. If PASS 1 fed those numbers stays silent, the harness is decoration. Everything else here is the same discipline: feed the shape, assert it is named, then feed the CORRECT version of the same shape and assert silence, because a pass that fires on everything gets suppressed rather than obeyed.
 import assert from 'assert';
 import { pass1Composite, pass3Space, pass4Keyboard, pass5Motion, pass6Names, diffAgainstKnown, stepSettle } from './lib/portalStatePasses.cjs';
-import { isStall, portalTouched, manifestChangedBeyondVersion, stepPause } from './portalStates.mjs';
+import { isStall, stepPause, TARGET_MS } from './portalStates.mjs';
+import { createRequire } from 'module';
+const { walkJobs } = createRequire(import.meta.url)('./lib/walkJobs.cjs');
 import fs from 'fs';
 
 let passed = 0;
@@ -139,35 +141,45 @@ check('isStall is SILENT on a navigation failure', () => assert.ok(!isStall('net
 check('isStall is SILENT on a pass finding, which must fail the run rather than be re-walked', () => assert.ok(!isStall('PASS 1  cmdbar-input-composite  a 44px input inside a 34px wrapper')));
 check('isStall tolerates a null message rather than throwing inside the catch', () => assert.ok(!isStall(null)));
 
-// ── the --ci skip, added 2026-09-02 18:07 EDT ──────────────────────────────────────── The dangerous direction here is skipping on UNCERTAINTY: that turns a real portal change into a silent pass. Three of these five cases exist to pin the fail-closed behaviour rather than the skip.
-check('a portal file means RUN', () => {
-    assert.strictEqual(portalTouched(['docs/CHANGELOG.md', 'portal/ui/season.js']), true);
+// ── the wait in front of every step, and the worker count — added 2026-09-14 18:30 EDT. The --ci diff skip these cases replaced is retired: CI runs everything (Harkirat, 2026-09-14), and the race that made it necessary is fixed where it started.
+check('every action waits for its target first — the silent no-op click is gone', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    for (const [kind, re] of [['click', /if \(step\.click\) await waitForTarget\(page, state, step\.click, patience\);\n\s*if \(step\.click\) await page\.evaluate/], ['clickText', /if \(step\.clickText\) await waitForTargetText\(page, state, step\.clickText, patience\);\n\s*if \(step\.clickText\) await page\.evaluate/], ['hover', /if \(step\.hover\) await waitForTarget\(page, state, step\.hover, patience\);\n(\s*\/\/[^\n]*\n)?\s*if \(step\.hover\) await page\.hover\(step\.hover\);/], ['type', /await waitForTarget\(page, state, t\.sel, patience\);\n\s*await page\.evaluate\(\(s\) => \{ const el = document\.querySelector\(s\.sel\)/]]) {
+        assert.ok(re.test(src), `a ${kind} step acts without first waiting for its target`);
+    }
 });
-check('a scripts/portal* or mockup change means RUN', () => {
-    assert.strictEqual(portalTouched(['scripts/portalDiff.mjs']), true);
-    assert.strictEqual(portalTouched(['docs/superpowers/mockups/2026-08-20-portal/season.html']), true);
+check('a hover is a real pointer, never synthetic events — the crosshair follows pointermove, which synthetic mouseover never fires', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    assert.ok(!/step\.hover\) await page\.evaluate/.test(src), 'a hover step dispatches synthetic events again');
+    assert.ok(/page\.mouse\.move\(-10, -10\)/.test(src), 'the pointer is no longer parked off the page after a hover state');
 });
-check('a dependency bump means RUN — it can move puppeteer under the walk', () => {
-    assert.strictEqual(portalTouched(['package-lock.json']), true);
+check('every step kind that acts on an element waits for it first — a kind added later included, and the check can fail', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    const unwaited = (text) => [...new Set([...text.matchAll(/if \(step\.(\w+)\) await page\.(?:evaluate|hover|click|type|focus|tap)/g)].map((m) => m[1]))]
+        .filter((k) => k !== 'key' && !new RegExp(`if \\(step\\.${k}\\) await waitForTarget(Text)?\\(page, state, step\\.${k}, patience\\)`).test(text));
+    assert.deepStrictEqual(unwaited(src), [], 'a step kind acts without waiting for its target');
+    const withoutClickWait = src.replace('if (step.click) await waitForTarget(page, state, step.click, patience);', '');
+    assert.deepStrictEqual(unwaited(withoutClickWait), ['click'], 'the check did not notice a removed wait — it is a vacuous pass');
 });
-check('THE SKIP CAN HAPPEN: a docs-and-hooks diff means SKIP', () => {
-    assert.strictEqual(portalTouched(['docs/CHANGELOG.md', '.claude/hooks/timestamp-check.sh', 'scripts/docs-audit.mjs', 'CLAUDE.md']), false);
+check('a target that never appears is a STALL, so the patience retry still gets its attempt', () => {
+    assert.ok(isStall(`state "x" stalled: nothing matched .no-such-target to act on within ${TARGET_MS}ms, so its step would have acted on nothing`));
 });
-check('a VERSION-only manifest bump is not a dependency change', () => {
-    // Every release touches these two files. Counting that as a dependency change made the filter match everything, which is the same as having no filter -- caught on the first PR it met.
-    assert.strictEqual(manifestChangedBeyondVersion('--- a/package.json\n+++ b/package.json\n-  "version": "3.73.0-pre",\n+  "version": "3.74.0-pre",'), false);
+check('every state starts from empty storage, so no state can lean on the one walked before it', () => {
+    const src = fs.readFileSync(new URL('./portalStates.mjs', import.meta.url), 'utf8');
+    const worker = src.slice(src.indexOf('const worker = async () => {'), src.indexOf('while (queue.length && !failure)'));
+    assert.ok(/evaluateOnNewDocument\(\(\) => \{ try \{ sessionStorage\.clear\(\); localStorage\.clear\(\);/.test(worker), 'the worker page no longer clears storage before each state');
 });
-check('a REAL dependency change still counts', () => {
-    assert.strictEqual(manifestChangedBeyondVersion('--- a/package.json\n+++ b/package.json\n-    "puppeteer-core": "^22.0.0",\n+    "puppeteer-core": "^23.0.0",'), true);
+check('walkJobs: an explicit count wins, and 1 reproduces the serial walk', () => {
+    assert.strictEqual(walkJobs('3', 16), 3);
+    assert.strictEqual(walkJobs('1', 16), 1);
 });
-check('manifestChangedBeyondVersion fails closed on an empty diff', () => {
-    assert.strictEqual(manifestChangedBeyondVersion(''), false);   // no manifest lines to keep => the files drop out, other files still decide
-});
-
-check('FAILS CLOSED: an empty or unknown file list means RUN, never skip', () => {
-    assert.strictEqual(portalTouched([]), true);
-    assert.strictEqual(portalTouched(null), true);
-    assert.strictEqual(portalTouched(undefined), true);
+check('walkJobs: the default is half the cores, never below 1, never above 4', () => {
+    assert.strictEqual(walkJobs(undefined, 8), 4);
+    assert.strictEqual(walkJobs(undefined, 4), 2);
+    assert.strictEqual(walkJobs(undefined, 1), 1);
+    assert.strictEqual(walkJobs(undefined, 64), 4);
+    assert.strictEqual(walkJobs('0', 8), 4, 'zero is not a count; it falls back to the default rather than hanging');
+    assert.strictEqual(walkJobs('abc', 8), 4);
 });
 
 console.log(`\n✅ ${passed} cases — every pass proven able to name its own defect, and proven silent on the correct version of the same shape.`);

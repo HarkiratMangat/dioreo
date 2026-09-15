@@ -19,9 +19,11 @@ import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 
 const require = createRequire(import.meta.url);
+const { walkJobs } = require('./lib/walkJobs.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'portal', 'public');
-const FIXTURES = path.join(ROOT, 'portal', 'fixtures', 'geometry');
+// PORTAL_GEOMETRY_FIXTURES points the fixture directory elsewhere. It exists for the self-test's empty-directory case, which used to spawn this script against the REAL fixtures and so ran the whole eight-realm browser walk a second time inside `npm test` — 46.9 s, measured 2026-09-14 17:45 EDT — to read one sentence of output.
+const FIXTURES = process.env.PORTAL_GEOMETRY_FIXTURES ? path.resolve(process.env.PORTAL_GEOMETRY_FIXTURES) : path.join(ROOT, 'portal', 'fixtures', 'geometry');
 const VIEWPORT = { w: 1282, h: 888 };                                                    // §0.3, the same numbers `__grid.viewport()` asserts against
 const REALMS = ['season', 'armory', 'broadcast', 'access', 'analytics', 'history', 'review', 'home'];
 
@@ -198,8 +200,20 @@ async function run() {
     const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
     let bad = false;
     try {
-        for (const realm of targets) {
-            const now = await capture(realm, browser, port);
+        // 🔴 REALMS IN PARALLEL, EACH WORKER IN ITS OWN BROWSER CONTEXT — added 2026-09-14 18:30 EDT. A capture reads a settled page (stableRead polls until two readings agree), so realms are independent; separate contexts because each capture clears storage on load. Results are compared and printed in target order, so the output is identical to the serial walk. PORTAL_GEOMETRY_JOBS=1 reproduces it exactly.
+        const results = new Array(targets.length);
+        let next = 0;
+        const jobs = Math.max(1, Math.min(walkJobs(process.env.PORTAL_GEOMETRY_JOBS), targets.length));
+        await Promise.all(Array.from({ length: jobs }, async () => {
+            const context = await browser.createBrowserContext();
+            try {
+                while (next < targets.length) { const i = next++; results[i] = await capture(targets[i], context, port); }
+            } finally {
+                await context.close();
+            }
+        }));
+        for (const [i, realm] of targets.entries()) {
+            const now = results[i];
             const file = path.join(FIXTURES, `${realm}.json`);
             const totals = Object.entries(now.views).map(([v, d]) => `${v} ${d.grid.examined}/${d.grid.nearMisses}/${d.grid.sizeIssues}`).join('  ·  ');
             console.log(`${realm.padEnd(10)} ${Object.keys(now.views).length} view(s)   examined/near/size — ${totals}`);

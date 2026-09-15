@@ -213,8 +213,8 @@ for (const [cmd, label] of [['npm run docs:audit', 'docs:audit'],
     } else if (code) fail(`${label} FAILS`, `run the command and fix it — it is a blocking gate in npm test, so the suite is RED right now.`);
     else ok(`${label} clean`);
 }
-console.log('     ⚠️  `npm test` itself is NOT run here (minutes long). It is an && chain, so an early');
-console.log('        failure means the LATER gates never ran at all — a red suite is not one failure.');
+console.log('     ⚠️  `npm test` itself is NOT run here. Run it and read its EXIT CODE: it reports every failing entry, and');
+console.log('        locally it skips entries whose inputs are unchanged — TEST_CACHE=0 when the answer must be a real run.');
 
 // ── 5. NOTHING UNCOMMITTED. Work in flight does not survive a compact.
 const dirty = sh('git status --porcelain').split('\n').filter(Boolean);

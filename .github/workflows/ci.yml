@@ -1,147 +1,207 @@
 name: CI
 
-# Deliberately minimal: this repo has no test framework (no Jest/Mocha, no ESLint config) as of
-# 2026-07-25, so inventing style/test infra here would be scope creep. What this DOES automate is
-# the one check that was already happening manually before every commit -- `node --check` across
-# every JS file -- plus basic install sanity and a non-blocking dependency audit. Expand this
-# workflow (real tests, linting) only once those tools actually exist in the project.
-# `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure
-# (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets
-# `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all -- and the
-# failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future
-# long-lived integration branch needs adding to BOTH lists for the same reason.
+# ── THE SHAPE, rebuilt 2026-09-14 19:03 EDT (docs/superpowers/plans/2026-09-14-ci-test-queue-rebuild.md) ─────────
+# Until then this was ONE job running `npm test` — a 132-command `&&` chain, one command at a time, stopping at the first failure — and then the records steps after it. Measured before the rebuild: 267 s for the job, 215 s of it `npm test`, and CI's average run had grown from about 118 s to about 320 s in four weeks with nothing reporting it.
+#
+#   tests         every manifest lane except the browser walks, in a pool (scripts/testRunner.mjs)
+#   browser       the three entries that start Chrome, on their own 4 vCPUs — browser walks sharing a runner with the rest of the suite is where their stalls came from
+#   records       the documentation audit and its self-test, emoji captures, the committed site, the dependency audits
+#   changes       whether this change touches the hooks
+#   hooks-macos   the hook suite on macOS, only when `changes` says so: the hooks run on Harkirat's Mac (bash 3.2, BSD find and date) and CI's Linux has already hidden two real bugs of exactly that kind
+#   syntax-check  the aggregate, and the ONLY required status check. Its name is the one branch protection knows, so it must never be renamed; it fails unless tests, browser, records and changes succeeded. hooks-macos is ADVISORY (a warning on the run, never a failure) until it has been green on real macOS runs — it had never run on a macOS image when it was added (2026-09-14 19:56 EDT), and a first-run environment mismatch must not block every hooks PR. Promoting it is filed in docs/db-deferred-list.md
+#
+# 🔴 CI RUNS EVERYTHING, EVERY TIME. Harkirat, 2026-09-14: "Local only, CI runs everything." The runner's input cache exists only on a developer machine and is never read here (CI=true).
+#
+# `v3-pre-release` is listed alongside `main` deliberately: under the v3 development structure (docs/superpowers/specs/2026-07-27-v3-development-structure-design.md) every v3 feature PR targets `v3-pre-release`, not `main`. With `main` alone here, none of that work would run CI at all — and the failure is silent, since a repo with no runs looks the same as a repo whose runs all pass. Any future long-lived integration branch needs adding to BOTH lists for the same reason.
 on:
   push:
     branches: [main, v3-pre-release]
   pull_request:
     branches: [main, v3-pre-release]
+  # Called by sync-v3-pre-release.yml with the merge commit it just pushed. That push is made with GITHUB_TOKEN, which never triggers a workflow, so until 2026-09-14 19:03 EDT the commit that brings `main` into `v3-pre-release` was the one commit on the branch CI never tested.
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to test. Empty means the event's own commit.
+        type: string
+        required: false
+        default: ''
 
-# No step here pushes, comments, or otherwise writes with GITHUB_TOKEN — checkout,
-# npm ci, and local checks only — so the default (broad, write-capable) token
-# permissions are strictly more than this workflow needs. Scoped down per
-# CodeQL's actions/missing-workflow-permissions finding.
+# No step here pushes, comments, or otherwise writes with GITHUB_TOKEN — checkout, npm ci, and local checks only — so the default (broad, write-capable) token permissions are strictly more than this workflow needs. Scoped down per CodeQL's actions/missing-workflow-permissions finding.
 permissions:
   contents: read
 
+# A newer push to the same pull request cancels the run it replaces. A push to `main` or `v3-pre-release` is never cancelled: each of those commits keeps its own result. A called run is grouped by the commit it tests, so it can never queue behind or cancel a push run.
+concurrency:
+  group: ci-${{ inputs.ref || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# CLAUDE_PROJECT_DIR is normally set by the Claude Code harness itself, so every hook script's fallback (`${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}`) exists purely for a bare `bash <hook>` on Harkirat's own Mac — it was never meant to be load-bearing here. CI has no harness, and without this every one of those fallbacks resolved to a path that does not exist on a runner: self-check.test.sh's marker test and its settings.json-registration check both failed outright the first time CI reached them. Set once, for every job.
+env:
+  CLAUDE_PROJECT_DIR: ${{ github.workspace }}
+
 jobs:
-  syntax-check:
+  tests:
+    name: tests (unit · docs · hooks)
     runs-on: ubuntu-latest
-    # CLAUDE_PROJECT_DIR is normally set by the Claude Code harness itself, so every hook script's
-    # fallback (`${CLAUDE_PROJECT_DIR:-/Applications/Claude Code/Diors-Builds}`) exists purely for a
-    # bare `bash <hook>` on Harkirat's own Mac -- it was never meant to be load-bearing here. CI has
-    # no harness and never set it, so every one of those fallbacks silently resolved to a path that
-    # does not exist on this runner. Found real: self-check.test.sh's marker test (`touch` on the
-    # fallback path) and its settings.json-registration check (`open()` on the fallback path) both
-    # failed outright the first time CI actually reached them -- earlier runs never got this far,
-    # since npm test's own `&&` chain stopped at an unrelated failure first. Setting this once, job-
-    # wide, makes every hardcoded fallback in the tree resolve correctly here instead of finding and
-    # patching each script's fallback path individually.
-    env:
-      CLAUDE_PROJECT_DIR: ${{ github.workspace }}
+    timeout-minutes: 20
     steps:
-      # fetch-depth: 0 is REQUIRED by scripts/docs-audit.mjs, not a preference. The default depth-1
-      # checkout has no tags and no history, which breaks the audit in both directions: `hash-chain`
-      # would report every changelog commit hash as unresolvable (CI fails on correct docs), and
-      # `tag-integrity` would iterate an empty tag list and pass silently (CI green on broken tags).
-      # A check that cannot see its own inputs is worse than no check.
+      # fetch-depth: 0 because scripts/testRunner.test.mjs reads the pre-rebuild package.json from history (`git show 8c5e8a90:package.json`) to prove no test was dropped, and several docs checks read tags.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
+          cache: npm
+      - run: npm ci
+      # ripgrep is a real dependency of `.claude/hooks/stale-reference-sweep.sh` — the whole sweep is one `rg` call. The runner does not ship it, and without it the hook found nothing and exited silently, so all five of its assertions passed as SILENT on the first CI run after the required status check was enabled. Installing it is what makes CI test the REAL path.
+      - run: sudo apt-get install -y ripgrep
+      # Everything except the browser lane (its own job) and the docs-audit self-test (the records job runs it BY NAME, which the `ci-wiring` audit check requires — see below). The runner reports every failure, not the first, and writes the slowest entries into the job summary.
+      - run: node scripts/testRunner.mjs --exclude-lane browser --exclude "npm run docs:audit:test"
+
+  browser:
+    name: browser walks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: node scripts/testRunner.mjs --lane browser
+
+  records:
+    name: records and site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # fetch-depth: 0 is REQUIRED by scripts/docs-audit.mjs, not a preference. The default depth-1 checkout has no tags and no history, which breaks the audit in both directions: `hash-chain` would report every changelog commit hash as unresolvable (CI fails on correct docs), and `tag-integrity` would iterate an empty tag list and pass silently (CI green on broken tags). A check that cannot see its own inputs is worse than no check.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
       - run: npm ci
 
-      # ripgrep is a real dependency of `.claude/hooks/stale-reference-sweep.sh` — the whole sweep is
-      # one `rg` call. The runner does not ship it, and without it the hook found nothing and exited
-      # silently, so all five of its assertions passed as SILENT on the first CI run after the
-      # required status check was enabled. The hook now reports its own absence, but installing rg is
-      # what makes CI test the REAL path instead of the degraded one.
-      - run: sudo apt-get install -y ripgrep
-
-      # `npm test` rather than `npm run check`, changed 2026-08-02 16:49 EDT. Two suites existed and
-      # NOTHING RAN THEM in CI: `scripts/calendarDedup.test.js` (reachable only via `npm test`, which
-      # CI never called) and the ten `.claude/hooks/*.test.sh` files, which were referenced by
-      # package.json, this workflow and settings.json a combined ZERO times — they ran only when
-      # someone hand-typed `bash <file>`. Harkirat, 2026-08-02: "i literally spent hours last session
-      # working on some of these gates and ... they dont even seem to hold despite their 'tests'."
-      # The tests were fine. Nothing was running them. A test nobody runs is worse than no test,
-      # because it produces a documented belief that the behaviour is covered.
+      # The documentation invariants (scripts/docs-audit.mjs). This step is the whole reason the audit is a program instead of another Claude Code hook: a hook only fires inside a Claude session on one Mac, so a PR opened by anyone else — or a session where the hook silently errored — was completely unchecked. Here it runs on every PR, forever.
       #
-      # This covers `npm run check` (node --check over every JS file) and `docs:audit:test`, so
-      # neither needs its own step any more.
-      - run: npm test
-
-      # The documentation invariants (scripts/docs-audit.mjs). This step is the whole reason the audit
-      # is a program instead of another Claude Code hook: a hook only fires inside a Claude session on
-      # one Mac, so a PR opened by anyone else -- or a session where the hook silently errored -- was
-      # completely unchecked. Here it runs on every PR, forever.
-      #
-      # Its own self-test runs FIRST and gates the audit: an audit whose checks have quietly stopped
-      # matching passes everything, which is indistinguishable from a clean tree. That is not
-      # hypothetical -- usage-guard.mjs shipped with every Bash rule dead from line 2 and looked fine.
-      # ⚠️ KEPT EXPLICIT even though `npm test` above already runs it. Removing this line tripped
-      # docs-audit's own `ci-wiring` check, which asserts CI runs the audit's self-test by NAME —
-      # and that check is right to be literal: if `npm test` is ever re-scoped, the self-test would
-      # vanish from CI silently, and an audit whose checks have quietly died passes everything.
-      # A couple of duplicated seconds is the correct price for that invariant staying checkable.
+      # Its own self-test runs FIRST and gates the audit: an audit whose checks have quietly stopped matching passes everything, which is indistinguishable from a clean tree. That is not hypothetical — usage-guard.mjs shipped with every Bash rule dead from line 2 and looked fine. ⚠️ It runs HERE, by name, and the tests job excludes it: docs-audit's `ci-wiring` check asserts CI runs the self-test BY NAME, and that check is right to be literal — if the manifest is ever re-scoped, the self-test must not vanish from CI silently. Until 2026-09-14 19:03 EDT it ran twice per CI run (inside `npm test` and here), 15.5 s + 15.3 s.
       - run: npm run docs:audit:test
       - run: npm run docs:audit
 
-      # ⚠️ public/ IS BUILD OUTPUT AND IT IS COMMITTED, so it can be committed STALE. Editing any of
-      # the nine sources (docs/legal/*.md, LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md, and the
-      # three records) and forgetting to rebuild leaves the deployed site showing the previous text —
-      # including, for the four legal instruments, the previous binding wording. Until 2026-08-02 the
-      # only thing preventing that was a prose instruction in CLAUDE.md to remember to run the build.
-      #
-      # The build is DETERMINISTIC — verified by running it twice and hashing the tree, byte-identical
-      # both times, with git reporting no change — so rebuilding and asking git whether anything moved
-      # is an exact test, not an approximation. If this step fails, the fix is to run the build and
-      # commit the result; never to edit public/ by hand.
-      # Emoji ids are captured at RENDER time, never at require time — a module-level const holding
-      # `${emojis.x}` freezes whatever id was loaded when the module was first required, which is the
-      # PROD id, and then the dev bot renders broken emoji. Memory project_emoji_require_time_capture
-      # says to run this after touching emoji rendering; that was a prose instruction and nothing ran
-      # it. Verified to exit 0 on a clean tree before wiring it here.
+      # Emoji ids are captured at RENDER time, never at require time — a module-level const holding `${emojis.x}` freezes whatever id was loaded when the module was first required, which is the PROD id, and then the dev bot renders broken emoji. Memory project_emoji_require_time_capture says to run this after touching emoji rendering; that was a prose instruction and nothing ran it.
       - run: node scripts/checkEmojiCaptures.js
 
+      # ⚠️ public/ IS BUILD OUTPUT AND IT IS COMMITTED, so it can be committed STALE. Editing any of the nine sources (docs/legal/*.md, LICENSE, NOTICE, CONTRIBUTING.md, CONTRIBUTORS.md, and the three records) and forgetting to rebuild leaves the deployed site showing the previous text — including, for the four legal instruments, the previous binding wording. The build is DETERMINISTIC (built twice, hashed, byte-identical), so rebuilding and asking git whether anything moved is an exact test. If this step fails, run the build and commit the result; never edit public/ by hand.
       - run: npm run site
       - name: public/ is up to date with its sources
         run: |
-          # ⚠️ public/changelog/ IS EXCLUDED ON PURPOSE (2026-08-02 02:45 EDT, Harkirat's call).
-          # Those three pages are withdrawn from the nav and reachable by nobody, and the deploy
-          # workflow already skips them — so ALSO forcing a rebuild+commit of their HTML on every
-          # changelog or devlog edit was pure churn for output that is never served to a reader.
-          # They are allowed to drift, deliberately, and get one bulk resync when those pages are
-          # revived. `chronicle-drift` (WARN) keeps that drift visible in the meantime.
+          # ⚠️ public/changelog/ IS EXCLUDED ON PURPOSE (2026-08-02 02:45 EDT, Harkirat's call). Those three pages are withdrawn from the nav and reachable by nobody, and the deploy workflow already skips them — so ALSO forcing a rebuild+commit of their HTML on every changelog or devlog edit was pure churn for output that is never served to a reader. `chronicle-drift` (WARN) keeps that drift visible.
           if ! git diff --quiet -- public/ ':(exclude)public/changelog/'; then
             echo "::error::public/ is stale — a source was edited without rebuilding the site."
             git diff --stat -- public/ ':(exclude)public/changelog/'
             exit 1
           fi
 
-      # ── Dependency audit, split by what actually SHIPS (restructured 2026-08-08 13:05 EDT) ────────
-      # It used to be one dev-inclusive `npm audit` marked continue-on-error. That was honest but it
-      # printed a red "Process completed with exit code 1" on EVERY run, for a finding that cannot
-      # reach production — and a permanent red line in a green build is how a real one gets read past.
-      #
-      # The split is not a suppression, it is the correct question asked twice:
-      #   · PRODUCTION tree — what the VM installs (`npm install --omit=dev`). Must be clean. BLOCKING.
-      #   · DEV tree — visible, never failing, because its one high finding is unfixable by us.
-      #
-      # The dev finding is `xlsx` (SheetJS prototype pollution + ReDoS). npm reports "No fix
-      # available" because SheetJS left the npm registry; the patched builds live on their own CDN.
-      # It is a devDependency (moved there 2026-07-26 19:19 EDT) whose ONLY consumer is
-      # scripts/migrateBuildsToMongo.js, a one-off local migration run against a file Harkirat
-      # authored. Verified 2026-08-08 13:05 EDT: `npm audit --omit=dev` reports 0 vulnerabilities, so
-      # nothing reachable from the running bot is affected. Tracked in memory
-      # `project_dependabot_vulnerabilities_deferred`.
+      # ── Dependency audit, split by what actually SHIPS (restructured 2026-08-08 13:05 EDT) ─────────
+      # It used to be one dev-inclusive `npm audit` marked continue-on-error, which printed a red "Process completed with exit code 1" on EVERY run for a finding that cannot reach production — and a permanent red line in a green build is how a real one gets read past. The split asks the correct question twice: the PRODUCTION tree (what the VM installs, `npm install --omit=dev`) must be clean and BLOCKS; the DEV tree stays visible and never fails, because its one high finding is unfixable by us. That finding is `xlsx` (SheetJS prototype pollution + ReDoS): npm reports "No fix available" because SheetJS left the npm registry. It is a devDependency whose ONLY consumer is scripts/migrateBuildsToMongo.js, a one-off local migration. Tracked in memory `project_dependabot_vulnerabilities_deferred`.
       - name: Dependency audit — production tree (blocking)
         run: npm audit --audit-level=high --omit=dev
-
       - name: Dependency audit — dev tree (advisory, never blocks)
         run: |
           npm audit --audit-level=high || \
             echo "::notice::Advisory only. Dev-tree findings are absent from the production install \
           (--omit=dev is clean, asserted by the blocking step above). Currently: xlsx/SheetJS, no fix \
           published on npm. See memory project_dependabot_vulnerabilities_deferred."
+
+  changes:
+    name: what changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      hooks: ${{ steps.diff.outputs.hooks }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+          CALLED_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          base=""
+          if [ -n "$CALLED_REF" ]; then base=""
+          elif [ "$EVENT" = pull_request ]; then base="origin/$BASE_REF"
+          elif [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then base="$BEFORE"
+          fi
+          # No comparable base (a called run, a new branch, a force-push): run the macOS job rather than guess.
+          if [ -z "$base" ]; then echo "hooks=true" >> "$GITHUB_OUTPUT"; echo "::notice::No comparable base for this event, so hooks-macos runs."; exit 0; fi
+          changed=$(git diff --name-only "$base"...HEAD)
+          # A here-string, never `git diff | grep -q`: under pipefail, grep -q exits at its first match and the writer's SIGPIPE turns a found needle into a failure — the same flake self-check.test.sh had.
+          # settings.json counts: the hook self-tests read it (self-check asserts every hook is registered there).
+          if grep -Eq '^(\.claude/hooks/|\.claude/settings\.json$|scripts/hookOutputCap)' <<< "$changed"; then echo "hooks=true" >> "$GITHUB_OUTPUT"; else echo "hooks=false" >> "$GITHUB_OUTPUT"; fi
+
+  hooks-macos:
+    name: hooks on macOS
+    needs: changes
+    if: needs.changes.outputs.hooks == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # The hooks call rg and jq, and mcp-layer-check's probe cases need gtimeout or timeout, which stock macOS does not have. Installed only when missing, so an image that already carries them costs nothing. ⚠️ Unverified on a real macOS runner when this job was written (it cannot run before a push); the first run is the test.
+      - name: Tools the hooks call
+        run: |
+          missing=()
+          command -v rg >/dev/null || missing+=(ripgrep)
+          command -v jq >/dev/null || missing+=(jq)
+          { command -v gtimeout || command -v timeout; } >/dev/null || missing+=(coreutils)
+          if [ "${#missing[@]}" -gt 0 ]; then brew install "${missing[@]}"; fi
+          bash --version | head -1
+      - run: npm run test:hooks
+
+  syntax-check:
+    needs: [tests, browser, records, changes, hooks-macos]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every required job succeeded
+        env:
+          TESTS: ${{ needs.tests.result }}
+          BROWSER: ${{ needs.browser.result }}
+          RECORDS: ${{ needs.records.result }}
+          CHANGES: ${{ needs.changes.result }}
+          HOOKS_MACOS: ${{ needs.hooks-macos.result }}
+        run: |
+          echo "tests=$TESTS browser=$BROWSER records=$RECORDS changes=$CHANGES hooks-macos=$HOOKS_MACOS"
+          for result in "$TESTS" "$BROWSER" "$RECORDS" "$CHANGES"; do
+            [ "$result" = success ] || { echo "::error::a required job ended as '$result'"; exit 1; }
+          done
+          # hooks-macos is ADVISORY until promoted (see the header): skipped when the change does not touch the hooks, and a failure is a warning on the run and a line in the summary, not a red check.
+          case "$HOOKS_MACOS" in
+            success|skipped) ;;
+            *) echo "::warning::hooks on macOS ended as '$HOOKS_MACOS' — advisory, not blocking. Open that job: a BSD-vs-GNU difference in a hook is exactly what it exists to catch."
+               echo "⚠️ hooks on macOS ended as **$HOOKS_MACOS** (advisory, not blocking)" >> "$GITHUB_STEP_SUMMARY";;
+          esac
