@@ -36,6 +36,36 @@
         ],
         "createdAt": "2026-09-15T19:21:46.582Z",
         "reason": "Claude, 2026-09-15: design board 3 deliberately proposes radius and colour values outside DESIGN.md for Harkirat to choose; the chosen ones go into DESIGN.md in Session 4 (plan 2026-09-13-portal-pins-batch-2 §5c)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "docs/superpowers/mockups/2026-09-15-pins2-board-3/**",
+          "local/pins2-board-3/**"
+        ],
+        "createdAt": "2026-09-15T21:51:48.608Z",
+        "reason": "Claude, 2026-09-15: board 3 proposals reuse the shipped portal's own vocabulary (left rails on .wg-h/.wg-r/.qcard, the hatch warning strip, width transitions, Instrument Serif from app.css) for Harkirat to choose; Session 4 standardizes (plan 2026-09-13-portal-pins-batch-2 §5c)"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "docs/superpowers/mockups/2026-09-15-pins2-board-3/**",
+          "local/pins2-board-3/**"
+        ],
+        "createdAt": "2026-09-15T21:51:48.656Z",
+        "reason": "Claude, 2026-09-15: board 3 proposals reuse the shipped portal's own vocabulary (left rails on .wg-h/.wg-r/.qcard, the hatch warning strip, width transitions, Instrument Serif from app.css) for Harkirat to choose; Session 4 standardizes (plan 2026-09-13-portal-pins-batch-2 §5c)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "instrument serif",
+        "files": [
+          "docs/superpowers/mockups/2026-09-15-pins2-board-3/**",
+          "local/pins2-board-3/**"
+        ],
+        "createdAt": "2026-09-15T21:51:48.703Z",
+        "reason": "Claude, 2026-09-15: board 3 proposals reuse the shipped portal's own vocabulary (left rails on .wg-h/.wg-r/.qcard, the hatch warning strip, width transitions, Instrument Serif from app.css) for Harkirat to choose; Session 4 standardizes (plan 2026-09-13-portal-pins-batch-2 §5c)"
       }
     ]
   }
