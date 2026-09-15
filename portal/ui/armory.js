@@ -1408,10 +1408,12 @@ export function ArmoryRealm({ session }) {
     ];
 
     // Manifest/editing/preview all key off row.id -- the raw /api/armory response only ever carried _id, so nothing selectable/editable/previewable actually worked before this mapping existed. Coverage is now a per-CATEGORY cell rather than a whole-column total, so the filter carries both halves; Rack's cards filter by weapon. Both narrow the same Manifest rather than opening a second surface -- one working table, per the two-layer contract.
+    // A build a staged op points at is drawn dashed (§10.4, the staged-for-deletion row). /api/armory returns live documents only, so the staged state comes from /api/review's targetIds for this realm.
+    const stagedTargets = new Set(((load.data && load.data.stagedOps) || []).filter((o) => o.realm === 'armory').flatMap((o) => o.targetIds || []));
     const rows = inMode
         .filter((b) => !coverageFilter || (b.coverage || []).includes(coverageFilter.flag))
         .filter((b) => !weaponFilter || b.weaponName === weaponFilter)
-        .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent }));
+        .map((b) => ({ ...b, id: b._id, topicVar: null, accentHex: b.accent, state: stagedTargets.has(String(b._id)) ? 'staged' : b.state }));
 
     // 🔴 A DRAWER OVER A ROW THAT NO LONGER EXISTS. The editor used to be handed `builds.find(...)` inline, so a staged bulk deletion followed by a refresh could hand it `undefined` and the first field read would throw inside a modal with the page behind it inert — a dead screen with no way out but Escape. Resolved once here, and the drawer is simply not rendered when the build it was opened for has gone.
     const editingBuild = editingId ? builds.find((b) => String(b._id) === editingId) || null : null;

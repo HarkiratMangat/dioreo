@@ -240,6 +240,7 @@ function reviewPayload() {
         staleChecked: true,
         blocked: null,
         confirmText: ('CS' + i).toUpperCase(),
+        targetIds: [o.target && o.target.id, ...((o.payload && Array.isArray(o.payload.ids)) ? o.payload.ids : [])].filter(Boolean).map(String),
     }));
     const changesets = ops.map((o) => ({
         id: o.changesetId, realm: o.realm, tier: o.tier, state: 'staged',
