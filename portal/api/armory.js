@@ -64,12 +64,16 @@ function register(route) {
         const grantedPages = await grantedPagesFor(session.discordId, ARMORY_PAGES);
         if (grantedPages.length === 0) return forbidden(res, 'forbidden');
         let body;
-        try { body = await readJsonBody(req); } catch { return sendJson(res, 400, { error: 'malformed body' }); }
+        // 🔴 CAPPED WHILE READING (pins batch 2 pre-push pass): the portal has no server-wide body cap, so the length check below only ran after the whole body was already in memory.
+        try { body = await readJsonBody(req, { maxBytes: 12 * 1024 * 1024 }); } catch (e) {
+            if (e && e.code === 'too-large') return sendJson(res, 413, { error: 'That image is too large.' });
+            return sendJson(res, 400, { error: 'malformed body' });
+        }
         const dataUrl = String(body.dataUrl || '');
         if (!/^data:image\/(png|jpe?g|webp|gif);base64,/.test(dataUrl)) {
             return sendJson(res, 400, { error: 'Drop an image file — that did not look like one.' });
         }
-        // A build card renders this at most a few hundred px wide; nothing here needs a screenshot large enough to approach the server's own general body cap.
+        // A build card renders this at most a few hundred px wide, so 8MB of base64 is generous; the read above stops at 12MB so a larger body never sits in memory whole.
         if (dataUrl.length > 8 * 1024 * 1024) return sendJson(res, 413, { error: 'That image is too large.' });
         const { uploadStagingScreenshot } = require('../../utils/loadoutImageCache');
         const result = await uploadStagingScreenshot(dataUrl);
