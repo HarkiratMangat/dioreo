@@ -9,6 +9,31 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3j · the one fix I reported unverified was wrong three times over — 2026-09-16 18:33 EDT
+
+I told him *"can't repro to confirm"* on the list's problem popover. **That sentence was itself the bug in my check.** The manifest's fault chips sit on the weapon **header**, not on build rows, so selecting rows at random never renders one in the list. Selecting the builds under a weapon that owns a chip reproduces it in one run.
+
+Reproduced, the card was at **`top: -5472`** — 5,472px above the viewport.
+
+Three wrong fixes, each refining something that was not the problem:
+
+| Attempt | What I thought | What was true |
+|---|---|---|
+| 1 | The card was clipped by the `overflow:auto` scroller | Right, and `position: fixed` did solve that half |
+| 2 | `left` was set to the chip's **centre** on a 368px card, so it hung off the right | Also right, also not the reason it was off screen |
+| 3 | The clamp was horizontal only | Fixed — and the card still read `top: -2790` |
+
+**The inline style said `top: 12px`. The computed style said `12px`. The rect said `-2790`.** That three-way disagreement is the whole finding: **a `position: fixed` element is positioned against the nearest ancestor carrying a transform, not against the viewport.** I had named this possibility in the thinking pass — *"a list panel with an entrance animation almost certainly has a transform"* — and then never checked it.
+
+Walking the ancestor chain found two:
+
+1. **`.b3-sd-list`** — `animation: b3rise … both`. `b3rise` ends at `transform: none`, but `fill-mode: both` keeps the final keyframe applied and it computes as **`matrix(1, 0, 0, 1, 0, 0)`** — the identity matrix, which is *not* `none` and still makes a containing block. `backwards` fills only before the run, so the element's own `transform: none` returns when it finishes.
+2. **`.g-stage`** — `transform: translateZ(0)`, an outright compositing hint. It bought a paint layer the stage's own `overflow:hidden` and radius already earn, and it cost the one thing `position: fixed` exists for. ⚠️ I blamed an animation fill here first; the transform was declared in plain sight two lines up.
+
+**After:** `culprits: []` · rect `828–941` · `insideViewport: true` · `escapedScroller: true` · the hazard plume lands on its chip.
+
+🔴 **The lesson is not "check for transforms".** It is that I refined a placement three times while the inline style, the computed style and the rect were disagreeing with each other in the same object — and I never put those three numbers side by side until the fourth attempt. **When a value is written, computed and rendered, read all three before changing the one you wrote.**
+
 ## Round 3i · the small-text fork this session actually owed him — 2026-09-16 18:22 EDT
 
 He wrote: *"I've already mentioned this like 3 times and we literally have a key point in the plan was literally about fixing these useless, skipable hint texts."*
