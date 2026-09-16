@@ -9,6 +9,22 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3k · that one transform had broken three things, not one — 2026-09-16 18:35 EDT
+
+Added the check to `class-sweep.cjs` — any `position: fixed` element with a transformed ancestor — and then proved it can fail by putting `translateZ(0)` back on `.g-stage`.
+
+**It reported three, and one of them is the selection bar.**
+
+```
+.selbar.b3-selbar   cssTop: 610px   rectTop: -2891   captured by .pb-stage.g-stage
+```
+
+The bar he has been commenting on all round was `position: fixed` and being positioned against the stage rather than the viewport — a correct `top: 610px` landing at −2891. That one compositing hint was breaking the popover, the bar, and a third element, and every one of them looked like its own separate bug.
+
+⚠️ **This is why "fix the class" is his most repeated instruction.** I fixed the popover's placement three times as a placement problem. The cause was one declaration, one file away, that nothing in the popover's own code could have pointed at — and it had two other victims I was not even looking at.
+
+The check is render-only by construction (the source cannot say which ancestor ends up transformed), so it belongs in the sweep rather than in the index — the division recorded in round 3d. Exit 1 with the hint restored, exit 0 without; **it can fail.**
+
 ## Round 3j · the one fix I reported unverified was wrong three times over — 2026-09-16 18:33 EDT
 
 I told him *"can't repro to confirm"* on the list's problem popover. **That sentence was itself the bug in my check.** The manifest's fault chips sit on the weapon **header**, not on build rows, so selecting rows at random never renders one in the list. Selecting the builds under a weapon that owns a chip reproduces it in one run.
