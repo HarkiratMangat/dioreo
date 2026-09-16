@@ -9,6 +9,42 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3c · Export, Repairs, and the class sweep he had to ask for — 2026-09-16 17:45 EDT
+
+His instruction: *"FIX THE CLASS; DON'T JUST PATCH THE INSTANCE!"* He had pointed at a square mark inside a fully-rounded control **four times this round**, in four different components, and each time I fixed it where he pointed. That is how there came to be four.
+
+`local/pins2-board-3/redo/class-sweep.cjs` now walks the whole rendered board — every surface, with the list open, the picker open and a repairs row expanded — and reports four defect shapes he has had to name:
+
+| Shape | First run | After |
+|---|---|---|
+| A square mark inside a fully-rounded control | 45 | **0** |
+| One accent drawn more than once in a row | 125 | **0** |
+| The only control in its group without an edge | 33 | **0** |
+| A field painting its own box inside a styled wrapper | 0 | **0** |
+
+**Most of the first run was the instrument's fault, and that matters more than the count.** 125 "double accents" were checkbox marks, ladder bars and meter pips; 31 "square in a pill" were children of an `overflow:hidden` pill that already clips them round, plus segmented halves that are square on the inner edge on purpose; one "ringless" control was a neighbour declaring `inset 0 0 0 1px transparent` so its hover can transition. **An instrument with a 98% false-positive rate is one nobody reads**, so each was fixed in the detector before the finding was trusted. Proved it can still fail: re-introducing one known defect takes it to exit 1 with 7 instances, and restoring takes it back to 0.
+
+What the sweep found that his four comments did not cover: `.chip.topic i` and `.pill .dot` — **the portal's own rules**, so the board overrides them and Session 5 carries the change into `app.css` (anchor #13: this session writes no portal code). And `.dk-see`, the only control in the Decide row with no edge, which is the same shape as the popover close button he called *"cheaply stuck in there"*.
+
+⚠️ **One of my own fixes landed in a file that could never win.** I wrote the `.dk-*` overrides into `b3/board.css`, which loads **before** `gates.css`; at equal specificity the later file wins, so the sweep still reported all 31 afterwards. Found by re-running it rather than by reading the rule back.
+
+### Export — two real bugs under the "looks basic"
+
+| | Measured |
+|---|---|
+| **Every group 0px tall** | `.g-pick-l` was a grid whose content is taller than its 360px box. Negative free space plus the default `align-content: stretch` crushed all 68 auto rows to nothing, and each group's own `overflow:hidden` then clipped its 40px header and 38px rows. That is the stack of ~35 coloured hairlines in his shot. A column flex box cannot do it: **0 → 116px** |
+| **"search bar inside of a search bar"** | The 38px pill held an input computing **44px** with its own `rgb(11,15,18)` ground and a `1px solid rgb(58,71,82)` border |
+
+The second one is the sharper lesson. `app.css` documents this exact bug three lines above the rule that causes it — *"the previous attempt wrote `.cmdbar input.cb-in` at 0,2,1 and LOST, silently… an opt-out cannot lose an argument it is not having"* — and supplies `[data-bare]`. **My first fix was to raise specificity**, which is the documented wrong answer, in a comment I had not read. The fields carry `data-bare` now. Swept every input on the board: 12 fields, **0 nested boxes**, and the broadcast search pill had the same defect unreported.
+
+Also: the picker list is a sunken well with sticky group headers and one accent per group on its edge; the `Pick` button was `.pill.sm`, which carries `min-height: var(--tap)` — the 44px touch floor — so a 44px control towered over a 13px-type row. It is 36px in a 56px row, and the row keeps the 44px minimum so the target never drops below the floor.
+
+### Repairs
+
+The count pill had a 7px badge inside a 999px pill, and stayed neutral chrome when there was work to do. His ask was specific: *"when there's a problem, i want the pill to be filled in like how the problem label is filled in"* — so it takes `.b3-fchip`'s four properties, hatched edge included, and reads as the same kind of object as a build problem.
+
+The expanded detail panel was *"wtf is this container shape and placement?"* — a floating rounded box inset 76px left and 16px right, aligned to nothing: not the hatched edge, not the numeral, not the columns above it. A detail panel is the row **continuing**, not a card parked under it. It runs the full width inside the hatch now, square where it meets the row and rounded only at its outer bottom corners, with its columns on the row's own grid.
+
 ## Round 3b · the selection list had never had a relation sweep — 2026-09-16 17:29 EDT
 
 Seven threads landed at once and every one of them is on the same surface. That is the finding: not seven defects, one surface that was never swept. His words were *"just look at this screenshot... go nitpick and refine this thing"* and, twice, *"why do i have to point shit like this out!?"* — he was running my refinement pass for me.
