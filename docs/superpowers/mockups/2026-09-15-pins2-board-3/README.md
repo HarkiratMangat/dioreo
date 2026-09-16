@@ -5,9 +5,23 @@ status: live
 
 # Design board 3 — the surfaces, the pins each one answers, and the picks
 
-*Rewritten 2026-09-16 00:48 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 16). Its kit is `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.*
+*Rewritten 2026-09-16 00:48 EDT; the board moved to a fresh URL 2026-09-16 16:45 EDT. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL> (version 1, the same bytes that were version 27 at the old address). Its kit is `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.*
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
+
+## The board moved to a fresh URL — 2026-09-16 16:45 EDT
+
+Harkirat asked for a clean surface: *"can you delete all my comments on the artifact so we have a fresh surface to work on? right now they're kind of in the way"*. **Nothing can delete a comment thread** — the tool reads, replies and resolves, and resolve reaches only the threads sent to Claude, which was 15 of the 45 still open. So the board was republished at a new address instead, and he chose that by popup.
+
+| | |
+|---|---|
+| Live board | <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL> — version 1, zero threads |
+| Retired | <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> — version 28, and it keeps all **76** comment threads from rounds 1 and 2 as the archive of that review |
+| Published from | `local/pins2-board-3/redo/board3.html` — a byte-identical copy of `index.html`, because republishing `index.html` in this conversation returns to the OLD url. **Publish `board3.html`; never `index.html`.** |
+
+Verified before the move, by `verify.cjs`: 5 surfaces, 13 forks, 31 options, no duplicate ids, no coverage banner, no page errors, 0 overflow at 1282 and at 390, all five badge kinds on the stage. The only console entry is the favicon 404.
+
+⚠️ The old address was bumped to version 28 in the same run, with identical content, before it was clear that a same-path republish cannot make a new artifact. It changed nothing he was looking at.
 
 ## 🔴 The shared-vocabulary surface is WITHDRAWN — 2026-09-15 22:10 EDT
 
