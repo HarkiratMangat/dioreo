@@ -37,7 +37,12 @@ const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const { mintSession: mintDevSession, assertPastDoor } = require('./lib/portalSession.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const MOCKUP = 'http://localhost:8900/docs/superpowers/mockups/2026-08-23-portal-interactive';
+// 🔴 THE PACKAGE IS A FLAG — added 2026-09-15 23:22 EDT, same reasoning as portalProbe. This and twelve sibling
+// scripts hardcoded the 2026-08-23 conformance package while the LIVE approved designs moved to the pins-2 boards, so
+// nothing compared the portal to the board that decides it and each divergence surfaced weeks later as one of
+// Harkirat's pins. `--mk-page` exists because a board is ONE page of gates, not one page per realm.
+const MOCKUP_PKG = flag('--mockup', 'docs/superpowers/mockups/2026-08-23-portal-interactive');
+const MOCKUP = `http://localhost:8900/${MOCKUP_PKG}`;
 const PORTAL_REAL = 'http://localhost:8787';
 const PORTAL_HARNESS = 'http://localhost:8901/harness.html';
 
@@ -77,6 +82,7 @@ const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args
 
 // 🔴 `--help` RAN A 2.5-MINUTE REAL-SERVER SEASON DIFF AND OVERWROTE `local/diff-season/*.png`. Every flag here is read by `indexOf`, so an unrecognised one is simply not seen and the tool falls through to its defaults — which means the ONE command a reader tries first was the most expensive one available, and it destroyed the captures of whatever was last diffed. A typo in `--realm` did the same thing more quietly: `--realm brodcast` diffed Season and said nothing.
 const KNOWN_FLAGS = new Set(['--realm', '--scroll', '--view', '--viewport', '--json', '--portal', '--fold',
+                             '--mockup', '--mk-page',
                              '--live-clock', '--selftest', '--open', '--open-sel', '--hover', '--focus',
                              '--mk-query', '--no-seed', '--at', '--help', '-h']);
 const REALM_NAMES = ['season', 'armory', 'broadcast', 'access', 'analytics', 'review', 'home'];
@@ -167,7 +173,7 @@ const VIEW_SIG = () => {
 const OUT = path.join(ROOT, 'local', `diff-${realm}`);
 
 // ── the two URLs, and the one difference in how each is reached ────────────────────────────────────── The mockup is one HTML file per realm. The portal is an SPA addressed by hash. A realm the mockup does not have (there is no `home.html`; index.html is Home) is named here rather than guessed at.
-const MOCKUP_PAGE = { home: 'index.html' }[realm] || `${realm}.html`;
+const MOCKUP_PAGE = flag('--mk-page', null) || { home: 'index.html' }[realm] || `${realm}.html`;
 // 🔴 A QUERY THE MOCKUP SIDE CARRIES, because one realm cannot be compared without it. Review's staged-ops store is sessionStorage and every load here clears it, so its mockup renders EMPTY against a populated portal and every number is a comparison of two different datasets. `--mk-query demo=1` asks review.html to seed itself from its own fixtures — seeded on request, never automatically (COMPANION §15).
 const MK_QUERY = process.argv.includes('--mk-query') ? String(process.argv[process.argv.indexOf('--mk-query') + 1] || '') : '';
 const withQuery = (u) => (MK_QUERY ? u + (u.includes('?') ? '&' : '?') + MK_QUERY : u);
