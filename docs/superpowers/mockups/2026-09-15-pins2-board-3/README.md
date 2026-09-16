@@ -9,6 +9,25 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Correction · two of the four things I called "waiting on him" were mine — 2026-09-16 18:56 EDT
+
+He asked, plainly: *"waiting on me for what?"* Going through my own list one at a time, **half of it was me punting design decisions that are mine to make.**
+
+| I said it was his | Actually |
+|---|---|
+| The publish | **His** — anchor #19 is his own rule, and one word lifts it |
+| §5b Step 8's approvals | **His** — a push, a PR, a merge and a prod write |
+| The rail's density | **MINE.** The working agreement says ask SCOPE, never TASTE — *"if you can defend an answer, that is the job"* |
+| Whether the Repairs left column earns its width | **MINE**, same rule |
+
+The answers I would defend, recorded here so the next session builds them rather than asking again:
+
+**The rail.** Board 2 uses the left accent on ONE thing, a weapon group header. Board 3 uses it on the problem chip, the selection group header, the table row, the repairs row, the history row, the fault mini and the picker group. **A signal carried by everything is not a signal.** It should stay on the two places where it distinguishes one row from its neighbours by weapon or kind — the manifest group header and the history row — and come off the rest, where it is decoration that happens to be coloured.
+
+**The Repairs left column.** It restates the two chips above it in longer words. Its rows should complete the sentence the chip starts rather than re-label it: *Attachments missing* should name WHICH slots are empty, and *No gunsmith code* already says what its absence costs. If a row cannot add anything the chip has not said, that row should not be there.
+
+🔴 **The pattern worth naming: "that's a design fork, it's his" is the comfortable answer, and it was wrong twice in one list.** A fork is his when the options are genuinely equal and the choice is taste. When one answer is defensible and the other is not, calling it a fork is asking him to do my job.
+
 ## Round 3m · one of his five points I had reasoned about and never built — 2026-09-16 18:47 EDT
 
 Re-read his actions-cell thread rather than trusting my own summary of it, and checked his five points one at a time against the code. Four were built. **The image/problem badge mismatch was not.**
