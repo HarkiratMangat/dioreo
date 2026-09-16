@@ -9,6 +9,27 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3l · my own fix had a regression, and falsifying it caught it — 2026-09-16 18:39 EDT
+
+I had just written that removing `.g-stage`'s `translateZ(0)` fixed three things. Before moving on I asked the one question that matters after a fix: **what did this break?**
+
+Scrolled the board 3,000px so the Armory stage left the screen, then read the selection bar:
+
+| | Before the check | After the fix |
+|---|---|---|
+| Bar rect | `936 – 1000` | `-1644 – -1580` |
+| Its stage | `-2400 – -1580` | `-2400 – -1580` |
+| Inside its stage | **false** | **true** |
+| Width | 1282 — the whole viewport | 1148 — the stage |
+
+**The bar was following the reader through every surface on the board.** The portal's selection bar is `position: fixed; bottom: 0` because on the real portal it is a GLOBAL action bar — correct there. On a board, where each stage shows ONE surface, a viewport-pinned bar from the Armory manifest floats over Repairs, Export, the queue and History.
+
+⚠️ **The transform I removed had been doing two jobs, and only one of them was a bug.** It was capturing three fixed descendants — and it was also fencing the bar inside its own stage. Removing it fixed the first and broke the second, and the fix reads as a clean win right up until you scroll.
+
+The bar is `position: absolute` inside `.g-stage` now: contained, still pinned to the bottom of the surface it acts on. Re-checked the popover afterwards — inside the viewport, out of the clipping scroller, plume on its chip, no transformed ancestor — because a fix that repairs one thing and breaks another is exactly what this round is about.
+
+🔴 **The habit worth keeping: after a fix lands, scroll it, resize it, or switch the option — the state you did not test is where the regression is.** This one was invisible at rest and obvious 3,000px down.
+
 ## Round 3k · that one transform had broken three things, not one — 2026-09-16 18:35 EDT
 
 Added the check to `class-sweep.cjs` — any `position: fixed` element with a transformed ancestor — and then proved it can fail by putting `translateZ(0)` back on `.g-stage`.
