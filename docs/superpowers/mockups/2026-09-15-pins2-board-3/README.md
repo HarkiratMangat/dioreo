@@ -9,6 +9,33 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3f · history rows and B1 — 2026-09-16 18:08 EDT
+
+### History: the row was shouting what you already knew
+
+Counting what actually varied in the rendered view: **KIND said "Change" on all 11 rows. WHO said "owner" on all 11. The left accent bar was the same blue on all 11.** Three of five slots carrying no information — and they were drawn LOUDEST: the kind tab is a bordered, iconed, coloured pill with a 3px rail; "owner" gets an avatar plus a word. The one thing that varied, the event itself, sat between them in plain 500-weight grey and truncated.
+
+The hierarchy was exactly inverted.
+
+⚠️ **They are constant only because the filters are at defaults.** Unfiltered the log holds Changes 27 / Alerts 47 / Restarts 26 and owner 27 / system 73 — genuinely mixed. So deleting the columns would be wrong. They **demote**: uniform kind renders as a coloured mark, uniform who as the avatar alone, measured off the shown rows rather than the whole log. Same rule the selection list's mode column got.
+
+| Also | Now |
+|---|---|
+| The entity was a filled chip — the widest object on the row, amplifying `Realwalk Probe 2026-09-06T13-36-51-768Z` while truncating it | Text with its realm icon; a chip is for something you act on, a name is a name |
+| `undone` sat inline after the name while the undo BUTTON sat in the far-right column — one relationship, two places | Both in the action column |
+| "Deleted **draw**" beside a **calendar** icon said draw twice | The verb drops a trailing type noun when the entity renders beside it |
+| Five columns, four header labels | The fifth is named |
+
+**Not built, and it is the observation I would not have reached by listing defects:** the rows come in pairs that are one story — 3:25 "Deleted X" and 3:22 "Added X, UNDONE", same minute, same name, all the way down. Merging them would be wrong (an audit log's value is that it is complete), but the UNDONE tag should point at its partner rather than floating. That is a build, not a board fork.
+
+### B1 — the Edit button's label was outside its button
+
+`.pb-ib` is a fixed **44×44** `display:grid; place-items:center` icon button. Pin 43/47/49 ("Edit carrying its word") had been implemented by adding the word to the markup without giving the class a worded variant — so icon and label stacked into two rows of a 44px box and the word printed **under the button's own edge**.
+
+⚠️ **My first fix could not have worked, and only the screenshot said so.** I wrote `.pb-ib:has(> :not(svg))` to catch any icon button that also holds a label — automatically, no markup change. `:has(> …)` tests **element** children, and the label is a bare text node. The selector was blind to the exact case it was written for. The class is declared on the markup now.
+
+And the note rows underneath: `.pb-new li` is `display:flex`, which makes **every text node its own flex item** — so "The panel head / sits / on / `#161E24` / with a 2px divider…" laid out as separate boxes and the two-word ones wrapped vertically into a ragged stack. It is a sentence with a bold lead, so it is a block that wraps as prose.
+
 ## Round 3e · the critique pass, and impeccable catching my own bounce — 2026-09-16 17:58 EDT
 
 ### It caught the thing I had just "fixed"
