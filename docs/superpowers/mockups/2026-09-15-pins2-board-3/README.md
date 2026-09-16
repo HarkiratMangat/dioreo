@@ -282,6 +282,8 @@ Also: the picker list is a sunken well with sticky group headers and one accent 
 
 The count pill had a 7px badge inside a 999px pill, and stayed neutral chrome when there was work to do. His ask was specific: *"when there's a problem, i want the pill to be filled in like how the problem label is filled in"* — so it takes `.b3-fchip`'s four properties, hatched edge included, and reads as the same kind of object as a build problem.
 
+**Measured against the label itself rather than against the rule I wrote:** ink `rgb(255,158,114)` on both, and the same `repeating-linear-gradient(-45deg, …)` hatch on both. The ring and ground read higher on the pill (warn 0.62 / srgb 0.187) than on the label (0.38 / 0.129) because the pill was sampled in its **active** state while the label sits at rest — at rest the pill is the label's own warn 9% / 38%. Checked because *"I set the properties"* and *"they render"* are different claims, and this round has several examples of the first passing for the second.
+
 The expanded detail panel was *"wtf is this container shape and placement?"* — a floating rounded box inset 76px left and 16px right, aligned to nothing: not the hatched edge, not the numeral, not the columns above it. A detail panel is the row **continuing**, not a card parked under it. It runs the full width inside the hatch now, square where it meets the row and rounded only at its outer bottom corners, with its columns on the row's own grid.
 
 ## Round 3b · the selection list had never had a relation sweep — 2026-09-16 17:29 EDT
