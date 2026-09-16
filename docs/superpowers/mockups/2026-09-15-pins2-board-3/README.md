@@ -140,6 +140,14 @@ What it was: the weapon header's ground is `color-mix(var(--c) 8%)`, the WEAPON'
 
 ⚠️ **And I nearly recorded the row fix as failed.** Reading the height off the screenshot gave ~79px and the DOM said 46px; the screenshots are taken at `deviceScaleFactor: 2` and I had compared device pixels to CSS pixels. **A pixel measured off an image is not a CSS pixel** — the DOM reading was right and the image reading was mine.
 
+## 🔴 PUBLISHING WAITS FOR HIM — standing, from 2026-09-16 16:33 EDT
+
+Harkirat: *"yeah i'd rather you wait for my round of comments and for me to come back into the chat and actually tell you that I'm done the round."*
+
+**Every publish reloads the page he is reading.** Board 3 went from version 16 to version 27 in one afternoon, most of them a single fix, so he was being interrupted mid-review by the work he had asked for. Comment threads survive a republish — the threads were never the problem, the reload was.
+
+**So: keep editing and verifying locally at full speed, and hold the publish.** He returns to the chat and says the round is done; then one publish carries everything. Nothing else about the work changes — not the measuring, not the full-screen sweep, not the records.
+
 ## How the board works
 
 - One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
