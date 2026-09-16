@@ -110,6 +110,26 @@ He asked it directly: *"STOP WITH YOUR SCRIPTED TESTS! DO THE WORK YOURSELF! Fig
 
 🔴 **The rule this leaves: a clipped shot confirms, a full screen discovers.** Point the clip at a thing only after a full-screen pass has told you which thing.
 
+## 🔴 "Blends in" was a HUE problem and I kept measuring LUMINANCE — 2026-09-16 16:25 EDT
+
+He asked three times, the third in capitals. Two of my answers were contrast floors, and both changed nothing, because I adjusted instead of measuring. When I finally measured:
+
+| Category label | Contrast before | After |
+|---|---|---|
+| Secondaries | **4.29** — the actual worst | 5.52 |
+| Sniper | 4.39 | 5.69 |
+| LMG | 4.59 | 6.00 |
+| Assault | 5.12 | 6.84 |
+| **Shotgun** | **7.71 — the HIGHEST of them all** | 11.33 |
+
+**Shotgun had the best contrast in the list.** It was never a luminance problem, which is why a floor could not fix it.
+
+What it was: the weapon header's ground is `color-mix(var(--c) 8%)`, the WEAPON's own accent, and the category word is that same accent — JAK-12 is amber, so an amber word sat on an amber field. **Same hue, and hue is what separates a small uppercase mono label from its field. A contrast ratio cannot see that**, so the instrument said fine while he was looking straight at it. The ground stopped carrying the hue; the accent moved to a 3px left bar and the dot, which fixes every category rather than Shotgun in particular.
+
+⚠️ **And the instrument itself was broken on its first run.** Chrome returns `color(srgb 0.97 0.42 0.52)` with 0–1 floats for a `color-mix` result and `rgb(248, 109, 133)` with 0–255 for a plain colour; dividing both by 255 made **every ratio exactly 1.00** — a confident number from a check that was not working, which is the failure this audit exists to catch, committed inside the audit. It reads both forms now.
+
+**The rule: when a complaint survives two fixes, the diagnosis is wrong, not the value.** Measure the property the complaint is actually about before changing anything a third time.
+
 ## How the board works
 
 - One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
