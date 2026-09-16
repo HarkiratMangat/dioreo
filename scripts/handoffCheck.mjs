@@ -189,8 +189,7 @@ for (const hp of handoffPaths) {
     const fresh = localDocs.filter((f) => { try { return fs.statSync(path.join(ROOT, f)).mtimeMs > cutoff; } catch { return false; } });
     if (!fresh.length) ok('no local/ documents written in this window');
     else {
-        // A tracked doc citing an untracked path is the one case with a REAL defect: a fresh clone cannot
-        // resolve it. Even then the fix is two-way, which is the whole of his correction.
+        // A tracked doc citing an untracked path is the one case with a REAL defect: a fresh clone cannot resolve it. Even then the fix is two-way, which is the whole of his correction.
         const cited = fresh.filter((f) => sh(`git grep -l -F -- "${f}" -- docs CLAUDE.md scripts 2>/dev/null`).length > 0);
         console.log(`\n  ℹ️  ${fresh.length} local/ document(s) written this window — promote to docs/claude/ or docs/portal/, or leave:`);
         for (const f of fresh.slice(0, 12)) console.log(`        ${cited.includes(f) ? '📌 cited' : '·       '} ${f}`);

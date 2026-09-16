@@ -1026,9 +1026,7 @@ check(
 const FM_KINDS = {
   rule: ["live"],
   guide: ["live"],
-  // 🔴 `record` GAINED `frozen` ON 2026-09-15 23:57 EDT, for the same reason `plan` gained `live`: the field has to be able to
-  // say what the file IS. `docs/claude/` holds dated write-ups — a lesson, an audit, a post-mortem — which are records
-  // frozen at their date, not live documents. Without this a dated lesson has to lie and call itself `live`.
+  // 🔴 `record` GAINED `frozen` ON 2026-09-15 23:57 EDT, for the same reason `plan` gained `live`: the field has to be able to say what the file IS. `docs/claude/` holds dated write-ups — a lesson, an audit, a post-mortem — which are records frozen at their date, not live documents. Without this a dated lesson has to lie and call itself `live`.
   record: ["live", "frozen"],
   reference: ["live"],
   idea: ["live"],
@@ -1042,8 +1040,7 @@ const FM_KINDS = {
 const FM_RULE = [
   [".claude/rules/", "rule"],
   ["docs/archive/", "archive"],
-  // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder
-  // freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins.
+  // Claude's tracked scratchpad and the portal's working records, added 2026-09-15 23:57 EDT. Both are "dump freely, sub-folder freely" by design, so their ARCHIVE prefixes must be listed FIRST — these are ordered and the first match wins.
   ["docs/claude/archive/", "archive"],
   ["docs/claude/", "record"],
   ["docs/portal/archive/", "archive"],

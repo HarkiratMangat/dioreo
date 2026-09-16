@@ -32,13 +32,7 @@ const PROPS = String(flag('--props', 'width,height,fontSize,lineHeight,display,p
     .split(',').map((s) => s.trim()).filter(Boolean);
 if (!sel) { console.error('portal:probe needs --sel "<css selector>"'); process.exit(2); }
 
-// 🔴 THE PACKAGE IS A FLAG NOW, NOT A CONSTANT — added 2026-09-15 22:42 EDT.
-// Every instrument in this family hardcoded `2026-08-23-portal-interactive` while the LIVE APPROVED designs moved to
-// the pins-2 boards (board 1 and 2, 2026-09-14; board 3, 2026-09-15). So nothing compared the portal to the board that
-// actually decides it, and each divergence surfaced weeks later as a pin: 13 of Harkirat's 57 review pins of
-// 2026-09-15 are port failures against boards 1 and 2 — "this looks NOTHING like the Design Board render" (pin 2),
-// "WTF IS THIS HALF-ASSED PORT OVER FROM THE DESIGN BOARD??" (pin 32). The tool was never re-pointed when the design moved.
-// Two more overrides are needed for a board, because a board is not shaped like the conformance package:
+// 🔴 THE PACKAGE IS A FLAG NOW, NOT A CONSTANT — added 2026-09-15 22:42 EDT. Every instrument in this family hardcoded `2026-08-23-portal-interactive` while the LIVE APPROVED designs moved to the pins-2 boards (board 1 and 2, 2026-09-14; board 3, 2026-09-15). So nothing compared the portal to the board that actually decides it, and each divergence surfaced weeks later as a pin: 13 of Harkirat's 57 review pins of 2026-09-15 are port failures against boards 1 and 2 — "this looks NOTHING like the Design Board render" (pin 2), "WTF IS THIS HALF-ASSED PORT OVER FROM THE DESIGN BOARD??" (pin 32). The tool was never re-pointed when the design moved. Two more overrides are needed for a board, because a board is not shaped like the conformance package:
 //   --mk-page   a board is ONE page of gates, not one page per realm (`#g4man …` scopes to the gate instead)
 //   --mk-sel    a board's classes are `pb-*` where the portal's are `wg-*`, so one selector cannot address both sides
 const PKG = flag('--mockup', 'docs/superpowers/mockups/2026-08-23-portal-interactive');

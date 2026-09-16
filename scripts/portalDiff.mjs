@@ -37,10 +37,7 @@ const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const { mintSession: mintDevSession, assertPastDoor } = require('./lib/portalSession.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-// 🔴 THE PACKAGE IS A FLAG — added 2026-09-15 23:22 EDT, same reasoning as portalProbe. This and twelve sibling
-// scripts hardcoded the 2026-08-23 conformance package while the LIVE approved designs moved to the pins-2 boards, so
-// nothing compared the portal to the board that decides it and each divergence surfaced weeks later as one of
-// Harkirat's pins. `--mk-page` exists because a board is ONE page of gates, not one page per realm.
+// 🔴 THE PACKAGE IS A FLAG — added 2026-09-15 23:22 EDT, same reasoning as portalProbe. This and twelve sibling scripts hardcoded the 2026-08-23 conformance package while the LIVE approved designs moved to the pins-2 boards, so nothing compared the portal to the board that decides it and each divergence surfaced weeks later as one of Harkirat's pins. `--mk-page` exists because a board is ONE page of gates, not one page per realm.
 const MOCKUP_PKG = flag('--mockup', 'docs/superpowers/mockups/2026-08-23-portal-interactive');
 const MOCKUP = `http://localhost:8900/${MOCKUP_PKG}`;
 const PORTAL_REAL = 'http://localhost:8787';
