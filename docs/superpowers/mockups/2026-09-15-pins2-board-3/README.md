@@ -5,15 +5,33 @@ status: live
 
 # Design board 3 — the surfaces, the pins each one answers, and the picks
 
-*Rewritten 2026-09-15 22:15 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 15). Its kit is `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.*
+*Rewritten 2026-09-16 00:48 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 16). Its kit is `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.*
 
-> **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface.
+> **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
 ## 🔴 The shared-vocabulary surface is WITHDRAWN — 2026-09-15 22:10 EDT
 
 Harkirat: *"your section E is way too narrow scoped. The portal has SOOO many more designs and surfaces that you didn't even consider. Just defer that to the next session's work… For now, in the artifact, just use the buttons and stuff that the current portal uses, with the caveat of the changes i requested specifically in the pins (such as the 'add build' or 'add announcement' button in the manifest header being the same style as the button used in the masthead, etc). But the overall standardization, and their design, that'll all be part of next session's work."*
 
 So the board now shows **the portal's own elements exactly as they ship**, with only the individually pinned changes applied. Forks `e1`–`e6` are gone; `data-b3-e1` … `data-b3-e6` default to `now`, which matches no rule in `b3/board.css`. Pins **21, 27, 28, 31, 34, 35, 38, 41, 42** move to the settled log as **Session 4's**, and §5c is where the element system is decided.
+
+## 🔴 Three surfaces became documents — 2026-09-16 00:48 EDT
+
+Harkirat, 2026-09-15 22:22 EDT: *"wipe the entire design board 3 and build up correctly this time, using the correct core and references, and structure. You decide honestly."* And, naming the fault exactly: *"why are some of these even gates on the artifact? for example, B3, it shows the portal today vs the Board 1 · G8 design. Like okay...? What's even the point of that? … That has nothing to do with me and nothing i need to look at or decide."*
+
+**A surface earns a place on this board only by asking him something.** Three did not — each showed the portal beside a design an earlier board had already settled, which is a comparison he has already judged:
+
+| Removed | Pins | Where it went |
+|---|---|---|
+| M2 · The build drawer | 2 | `../2026-09-14-pins2-board/handoff-g9-g8.md` — board 1 · G9, 14 element rows |
+| B2 · The broadcast manifest | 44 · 45 · 50 | `../2026-09-14-pins2-board-2/port-g4-g3-g11.md` — board 2 · G11 |
+| B3 · The announcement drawer | 48 | `../2026-09-14-pins2-board/handoff-g9-g8.md` — board 1 · G8, 9 element rows |
+
+The board now lists them in an **Already drawn** table naming the document for each, so the pins stay visibly accounted for; the page's own coverage check counts them, so removing a surface without rehoming its pins would raise the red banner rather than pass quietly.
+
+**What was NOT done, deliberately.** The stylesheet cascade was left alone. "The correct core" could be read as re-seating the stage on board 2's G4 instead of the portal's `app.css`, and that was considered and rejected: every reading this board carries — the five defect numbers, 30 options, both overflow checks — was taken against the present cascade, re-seating invalidates all of them, and **no open fork renders differently either way** (a badge, a checkbox and a selection bar do not change because `app.css:442` exists). The portal's own defects belong in the port sheet, where Session 5 applies them, not patched onto the board. If he meant the cascade literally, it is one call to say so.
+
+**M3 · Command search stays although it carries no fork**, and it is the only such surface. He settled it — *"build it properly, and exactly as shown"* — and "as shown" makes this board the specification: it is the only place that design exists. Deleting it would delete the design.
 
 ## How the board works
 
@@ -29,13 +47,10 @@ So the board now shows **the portal's own elements exactly as they ship**, with 
 | # | Surface | Pins | Decisions |
 |---|---|---|---|
 | M1 | The Armory manifest — fixes, badges, tags, problems, selecting | 1 · 3 · 4 · 5 · 6 · 7 · 8 · 9 · 10 · 11 · 12 · 13 · 14 · 15 · 16 · 17 · 18 · 19 · 20 · 22 · 29 | `p1` `p2pal` `p2sty` `p3` `p4` `p5list` `p5bg` `p5hint` `e2spd` |
-| M2 | The build drawer — **board 1's own G9 framed**, the portal's drawer, and the port so far | 2 | — (the target is board 1) |
-| M3 | Repairs | 23 | `p6` |
-| M4 | Command search | 25 | — (as shown) |
-| M5 | Export | 26 | `exp` |
+| M2 | Repairs | 23 | `p6` |
+| M3 | Command search — settled, kept because this board is its only specification | 25 | — (as shown) |
+| M4 | Export | 26 | `exp` |
 | B1 | The delivery queue | 32 · 33 · 36 · 37 · 39 · 40 · 43 · 46 · 47 · 49 | `p8` |
-| B2 | The broadcast manifest | 44 · 45 · 50 | — (board 2 G11) |
-| B3 | The announcement drawer | 48 | — (board 1 G8) |
 | H1 | The history manifest | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
 
 Pins **24** (account-menu tint — Session 5 reproduces it first), **30** (the standardization session itself) and the nine standardization pins above are answered in the settled log. The page asserts this coverage itself: any pin from 1 to 57 with no surface and no log row renders a red banner at the top.
@@ -104,6 +119,6 @@ He listed five, the sweep found the same class in six places, and one of the fiv
 
 ## How it is checked
 
-`redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: surfaces, picks and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its switch on **and** off; a pick actually written and painted; board 1's frame loaded; no horizontal overflow at 1282px or 390px; the tools row's centre line, air and overflow; the checkbox column's left edge; and **the five defects above as readings that can fail** — `d1_foldIconOffCentre`, `d2_collapseAllBoxAtRest`, `d3_tintIsScopedToSegment`, `d4_chipVsShareRightEdge`, `d5_reveal.intermediateFrames`. `redo/sweep.cjs` is the class check behind defects 2 and 3; `redo/shots.cjs` takes the close-up frames.
+`redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: surfaces, picks and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its switch on **and** off; a pick actually written and painted; board 1's frame loaded; no horizontal overflow at 1282px or 390px; the tools row's centre line, air and overflow; the checkbox column's left edge; the **structure** check that replaced the board-1 frame one — which surfaces render, which of them carry no decision, the Already-drawn rows, and that the three removed ids are absent — and **the five defects above as readings that can fail** — `d1_foldIconOffCentre`, `d2_collapseAllBoxAtRest`, `d3_tintIsScopedToSegment`, `d4_chipVsShareRightEdge`, `d5_reveal.intermediateFrames`. `redo/sweep.cjs` is the class check behind defects 2 and 3; `redo/shots.cjs` takes the close-up frames.
 
-Last run 2026-09-15 22:15 EDT: **9 surfaces, 13 decision rows, 30 options, every pin 1–57 covered, 0 page errors, 0 overflow at 1282px and 390px**, and d1 = 0 · d2 lit with a ring · d3 true · d4 1079/1079 · d5 6 frames.
+Last run 2026-09-16 00:48 EDT: **6 surfaces, 13 decision rows, 30 options, every pin 1–57 covered, 0 page errors, 0 overflow at 1282px and 390px**, and d1 = 0 · d2 lit with a ring · d3 true · d4 1079/1079 · d5 6 frames.
