@@ -9,6 +9,23 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3h · the full-screen sweep found what nobody pointed at — 2026-09-16 18:14 EDT
+
+Ran board 2's method over the whole board — 12 screens, 10,411px, read top to bottom — and the first screen carried a defect no comment had named.
+
+**Every pin cell in the two document tables was wearing the portal's COLUMN-header rule.** `app.css` styles `th` at the element level for a header in a `thead`:
+
+```css
+th{ … background:var(--sunk); border-bottom:1px solid var(--rule); text-transform:uppercase;
+    position:sticky; top:0 }
+```
+
+These tables use `th` as a **row** header inside `tbody`. So each pin cell painted a pale box the row striping knew nothing about — and, worse, **every one of them was `position: sticky`**, so they would pile up at the top of the viewport on scroll. The board's own `.g-settled th` had overridden padding, font and colour, and left the three that actually mattered.
+
+A rule written for one role, silently inherited by another. Fixed at the class: the row headers declare `position: static; background: none; border-bottom: 0; text-transform: none`.
+
+⚠️ **This is the case for the sweep.** A clipped shot can only confirm something already suspected; twelve full screens is what surfaces a defect nobody was looking for. It is also the case for running it BEFORE he reads the board, not after.
+
 ## Round 3g · the pill, and fixing the instance again — 2026-09-16 18:11 EDT
 
 I had asked him what size the pill "should read as" instead of measuring it. That was the wrong move — he has said twice this round that he should not have to point things out. Measured against its own bar:
