@@ -73,4 +73,36 @@ Export is the one pin in this file that no table can hold. The old panel could *
 
 - Board 2's `resolved-spec.md` covers **G4** (resting `:67`, hover `:1544`, by-slot `:1739`), **G11** (`:1824`, staged `:2399`), **G3** (`:2436`) and G2 (`:3185`) — 3,316 lines. Every board value above is a citation into it, never a retyped number.
 - **I predicted G3 would be structurally divergent and it is not.** The reasoning was his own words — "WTF IS THIS HALF-ASSED PORT" reads as a structural complaint — and the class map plus the geometry check says otherwise. Recording it because the wrong half of a tidy theory is worth more to the next session than the right half.
-- **Pins 32 and 46 are not closed here.** 32 needs a composition diff of the card's contents; 46 needs one rendered reading of the panel head. Both are named rather than quietly rounded off.
+- **Pins 32 and 46 were not closed here when this was written.** They are now — below, from the readings this file said each one needed.
+
+## Pins 32 and 46, closed — 2026-09-16 18:25 EDT
+
+Both were read off the rendered board, switching B1's card between *Portal today* and *Board 2 · G3* so the two sides render in the same page under the same stylesheet.
+
+### 46 · the panel head
+
+| | Reading |
+|---|---|
+| Ground | `rgb(23, 30, 36)` on `.panel.g-bpanel` — his pin asks for `#161E24`, which is `rgb(22, 30, 36)`. **One step on red, and it is `--paper` against a literal.** Not a defect; record the literal only if he wants the panel to stop tracking the token |
+| Divider | **`1px solid rgb(58, 71, 82)`** — the pin asks for **2px**. This is the real half of the pin |
+| Head type | `600 9.5px/9.5px` JetBrains Mono, `rgb(133, 147, 159)` — `.bqhead` sets type only, exactly as this file said |
+
+**So pin 46 is one number: the divider under the panel head is half the thickness he asked for.**
+
+### 32 · the composition diff
+
+Portal today renders **35 parts / 21 distinct classes**; board 2's card renders **49 / 32**. The card's geometry already matched, which is why a value table reported "all matching" — the port is thin in **what it draws**, not in how wide it is. Board 2 renders eleven things the portal's card does not:
+
+| Missing on the portal side | What it is |
+|---|---|
+| `g-warn` · `g-warn-k` · `g-warn-t` | The never-ends warning block, its kind mark and its text — the subject of pin 33 |
+| `b3-endwrap` · `b3-endbtn` | The **Set end date** control inside that warning |
+| `g-tail` | The open bar's fading tail — pins 36/37, *"the open bar fades to nothing rather than to black"* |
+| `g-fact` | The fact chip in the quote-box footer |
+| `pb-life3` · `pb-dates` | The third life element and the dates row |
+| `g-never` | A card-level state class, so the whole card can respond to "never ends" |
+| `pb-cacts` vs `bacts` | The actions row is a different component, not a restyle |
+
+🔴 **And it answers pin 40, which this file had recorded as unanswerable.** The note above says border **style** is not among the fifty properties `extract-spec.cjs` collects, *"so the spec is silent exactly where pin 40 asks a question."* Read off the render instead: board 2's `.pb-encf` computes **`dashed`** on its top border and the portal's `.bencf` computes **no dashed border anywhere in the card** — `dashed: ['pb-encf']` against `dashed: []`. The dashed footer divider is real and it is missing.
+
+**So "half-assed port" was accurate and specific:** the portal's card is the board's card with its warning block, its end-date control, its fading tail and its dashed footer rule removed. Session 5 builds those five; nothing here needs a new decision.
