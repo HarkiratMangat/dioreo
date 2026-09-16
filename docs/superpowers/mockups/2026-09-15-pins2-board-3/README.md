@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 10). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 11). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -78,6 +78,7 @@ These are the pins whose value is already decided; the board shows them applied,
 |---|---|
 | 3 | **The tools row is a layout, not a nudge.** Row two is a grid of two content-sized groups on one centre line: the category chips, then a 1px 26px divider with 16px of air each side, then Attachments. The chips carry 8px padding and 5px gaps because eight of them needed 802px of a 772px column — without that, Secondaries orphans onto a second line. `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ Three earlier versions were wrong: row one (19:20 EDT), nowrap without closing the deficit (19:32 EDT), and top-aligned with uneven air around the divider (20:34 EDT) |
 | 5 | Board 2's fold / unfold marks on every fold control (`Fold` renders `i-b2-fold` / `i-b2-unfold`) |
+| 12 | **One fold control.** Collapse all and the per-weapon button are the same inline-flex button — icon, 8px gap, word, 12px padding, 44px tall — and the word is laid out rather than an absolutely-positioned `::after` pinned left of the icon by a fixed -70px slide. The per-weapon one grows from its right edge, so the row's right margin never moves; the same rule governs every row icon button that widens (his comment 2026-09-15 20:38 EDT) |
 | 6 | `--sec` becomes `#3F6E8E` in the portal **and the accent is rewritten in the data** — chips, weapon bars and row accents all read `b.accent`, which the API still answers with `#023047`, so the token alone changes nothing visible; `utils/loadoutRender.js`'s `SECONDARIES` moves with it |
 | 8 | `.wg-ig` draws one ring in an `::after` above its children; `.wg-igf` keeps `inset 0 3px 4px -2px rgba(0,0,0,.45)`; `.wg-igb` loses its own ring for a left border |
 | 9 | `.wg-code:hover` lights only `.wg-igb`, never the field |
