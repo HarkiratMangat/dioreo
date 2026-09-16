@@ -105,6 +105,8 @@ Harkirat, 2026-08-06 18:52 EDT: *"The main takeaway from the crossbow screenshot
 | Underbarrel | **Foregrip** · **Trigger Action** (revolvers: J358, MP Dobvra) |
 | Ammunition | **Mag** · **Bolt** (Crossbow) |
 
+🔴 **AMENDED 2026-09-16 11:22 EDT — `Bolt` is NOT crossbow-only, and the alias table is still seeded from too few weapons.** Harkirat, confirming twelve slots for the attachment backfill: the SP-R 208's `Light Bolt` sits in a `Bolt` slot, so `Bolt` appears on bolt-action snipers as well as the Crossbow; `Trigger Action` appears on the ARGUS and the Dobvra among others, not only revolvers. ⚠️ **And the failure this section warns about happened a third time:** `SLOT_TO_FIELD` in `utils/loadoutImageCache.js` is exactly the fixed nine-name allow-list, so `smoothbore`, `bolt`, `trigger action`, `bowstring`, `limb` and `guard` are skipped SILENTLY on every metadata sync and never reach Cloudinary — which is why the 2026-09-15 slot backfill left 12 attachments blank and why no amount of better name-matching could have filled them. Filed in `docs/db-deferred-list.md` under the attachment-slots backfill.
+
 **Plus genuinely UNIQUE slots with no canonical equivalent** — these are EXTRA, not renames (both weapons still show their own `Underbarrel` alongside): **`Guard`** on the Shorty (`IMG_5637`), and **`Smoothbore`** on the R9-0 (`IMG_5640`). Treat an unknown label as a **new alias or a new unique slot to ask Harkirat about** — never a parse failure, and never a reason to drop the slot.
 
 🔴 **AND THE GRID POSITION MOVES — even for canonically-named slots.** This is the subtlest trap of the lot, and both examples come from Harkirat directly:
