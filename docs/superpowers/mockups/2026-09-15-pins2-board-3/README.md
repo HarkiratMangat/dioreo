@@ -9,6 +9,35 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3 · the attachment chip, and two options that were one option — 2026-09-16 16:59 EDT
+
+He pointed at `local/pins2-board-2/r6-one-shut.png` and said the Neutral ground style "is literally filling in a background color, whereas ... it was much different". He was right, and the shot showed something worse than the note claimed.
+
+**What board 2 actually does** (`local/pins2-board-2/board.html`, the round-11 rule, commented there as *"the round-5 pill's calm, the round-6 block's shape"*): the chip is cut INTO the row, not laid on top of it.
+
+```css
+background: linear-gradient(180deg, color-mix(in srgb, var(--ink) 4%, var(--sunk)), var(--sunk));
+box-shadow: inset 0 0 0 1px var(--rule2), inset 0 1px 0 color-mix(in srgb, var(--ink) 6%, transparent);
+/* and on ROW hover the ring lifts: ink 16%, top highlight ink 8% */
+```
+
+**What board 3 had.** A flat `color-mix(var(--ink) 9%, var(--raised))` plate with a hairline — no gradient, no top highlight, and built UP from `--raised` where board 2 goes DOWN into `--sunk`, so the depth ran the wrong way. And the defect the screenshots exposed that the comment did not: **`neutral` and `neutralbg` rendered as the same design.** Both kept the slot hue in the chip's word, so both read as a grey plate with a rainbow of coloured labels. Four options, three ideas.
+
+**What it is now.** All four styles are declared as variables on one shell, so a change is to the class and not to an instance:
+
+| Style | Ground | Ring at rest → row hover | Chip word |
+|---|---|---|---|
+| Wash | slot 17% over `--sunk` | slot 44% → 66% | `--ink` |
+| Wash + text | slot 13% over `--sunk` | slot 38% → 60% | slot 82% + white, 600 |
+| Neutral + text | board 2's recessed gradient | `--rule2` → ink 16% | **the slot hue**, 600 |
+| Neutral ground | board 2's recessed gradient | `--rule2` → ink 16% | **`--ink`** — no slot colour anywhere on the chip; the slot caption above carries it |
+
+That makes the two neutrals a real fork — does the slot live in the word, or only in the caption — instead of one design shown twice.
+
+**Measured after, from computed values rather than from the rules** (`scratchpad/chip-probe.cjs`): both neutrals compute `linear-gradient(color(srgb 0.0778 0.0936 0.1056), rgb(11,15,18))` with the `0 1px 0 ink/0.06` top highlight; `neutral`'s word is `rgb(63,208,230)` against `neutralbg`'s `rgb(232,237,241)`; and the ring moves on row hover in all four — 0.44→0.66, 0.38→0.60, and rule2→ink/0.16 twice. Board 3's chips had been inert under a row that was visibly responding around them; board 2's were not.
+
+⚠️ **Carried forward, not built:** board 2 also draws a MISSING attachment as a gap chip — no ground, no ring, a 1px dashed warn outline inset, warn ink (`.pb-atgap`). The portal renders no such thing and board 3 does not either. It is a real idea and it belongs to Session 5, not to this fork.
+
 ## The board moved to a fresh URL — 2026-09-16 16:45 EDT
 
 Harkirat asked for a clean surface: *"can you delete all my comments on the artifact so we have a fresh surface to work on? right now they're kind of in the way"*. **Nothing can delete a comment thread** — the tool reads, replies and resolves, and resolve reaches only the threads sent to Claude, which was 15 of the 45 still open. So the board was republished at a new address instead, and he chose that by popup.
