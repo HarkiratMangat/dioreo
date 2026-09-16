@@ -130,6 +130,16 @@ What it was: the weapon header's ground is `color-mix(var(--c) 8%)`, the WEAPON'
 
 **The rule: when a complaint survives two fixes, the diagnosis is wrong, not the value.** Measure the property the complaint is actually about before changing anything a third time.
 
+## The last of round 2's open threads — 2026-09-16 16:31 EDT, board version 27
+
+| Thread | What it was, and what changed |
+|---|---|
+| *"too much prose to get to the main issue"* · *"'live 41 days' and 'set an end date' need better implementation"* · *"orange on top of orange … is just a bad idea"* | Three notes, one block, and they are the same fault. The never-ends card was a SENTENCE on a warn ground with a warn button on it, so nothing on it could stand out — **a warn control needs a neutral field to read as one**. The issue is now drawn rather than written: `42 · days live · ━━━━→ · NO END`, a run with a start, a length and an open end, which says "this never stops" faster than any sentence. The ground is neutral, the warn lives in one place (the hazard edge down the left), and Set end date is the only orange thing on the card |
+| *"i don't like how the '1 needs attention' chip looks at all! And why does it sit outside of the panel while the '1 of 10 slots used' alert sits within it?"* | Both are in the panel head; the chip simply looked like a different, louder idea — a pill with a warn ring and a hatched edge, next to a plain readout. It reads as the same kind of readout now, with the warn carried by the FIGURE rather than by a ring around everything |
+| *"i notice you removed the Severity level toggles? the spacing needs drastic improvement as well"* | The Level filter is present and working (error · warn · caution · info, each with its meter). The spacing was real: **a row was ~114px tall for one line of content**, because the `.what` cell added 12px of padding on top of a 62px floor and set `--t-base` where every other manifest row uses `--t-sm`. A log of 1,421 events cannot spend a screen on four of them. Measured after: **46px**, and eleven rows fit where seven did |
+
+⚠️ **And I nearly recorded the row fix as failed.** Reading the height off the screenshot gave ~79px and the DOM said 46px; the screenshots are taken at `deviceScaleFactor: 2` and I had compared device pixels to CSS pixels. **A pixel measured off an image is not a CSS pixel** — the DOM reading was right and the image reading was mine.
+
 ## How the board works
 
 - One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
