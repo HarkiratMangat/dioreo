@@ -21,6 +21,21 @@ function safeErrorMessage(err) {
     return (err && err.error && err.error.message) || (err && err.message) || 'unknown Cloudinary error';
 }
 
+// Twelve attachments Cloudinary's metadata cannot answer for, supplied by Harkirat 2026-09-16 11:28 EDT, and the reason each one is missing. EIGHT carry a slot label Cloudinary has no field for at all (SLOT_TO_FIELD in utils/loadoutImageCache.js holds nine names; see its header): Smoothbore, Bolt, Trigger Action, Bowstring, Guard, Limb. FOUR name a perfectly canonical slot whose field exists and is simply EMPTY, because the 2026-07-21 vision pass never captured that attachment -- both 3-LINE RIFLE images hold identical 4-of-9 metadata and differ in life only by the barrel that got dropped. So no amount of better name-matching could have filled any of these; they are a correction, and they are consulted only where the metadata has nothing to say.
+const KNOWN_SLOTS = {
+    '270mm VOZ Carbine': 'Barrel',
+    'Empress 514mm F01': 'Barrel',
+    'Hi-Accuracy Sniper Ammo': 'Ammunition',
+    'Fast Reload Reload Case': 'Ammunition',
+    'MFT Heavy Smoothbore': 'Smoothbore',
+    'Light Bolt': 'Bolt',
+    'Classical Lever': 'Trigger Action',
+    'Lightweight Single-Action': 'Trigger Action',
+    'Rapid Action': 'Trigger Action',
+    '2B Bowstring': 'Bowstring',
+    'Heavy Limb': 'Limb',
+    'OWC Stable': 'Guard',
+};
 const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function levenshtein(a, b) {
     const m = a.length, n = b.length;
@@ -34,7 +49,7 @@ function levenshtein(a, b) {
     }
     return prev[n];
 }
-function alignSlots(stored, names, slots) {
+function alignSlots(stored, names, slots, corpus) {
     const aligned = new Array(stored.length).fill('');
     const used = new Set();
     const match = (predicate) => {
@@ -51,6 +66,11 @@ function alignSlots(stored, names, slots) {
     match((sn, vn) => vn === sn);
     match((sn, vn) => vn && (vn.includes(sn) || sn.includes(vn)));
     match((sn, vn) => { if (!vn) return false; const d = levenshtein(sn, vn); return d <= 2 && d / Math.max(sn.length, vn.length) <= 0.2; });
+    // THE CORPUS PASS, and it is the one that needed writing. The three passes above only ever compare a build's attachments against ITS OWN image's metadata, so an attachment the vision run missed on this image stays blank even when the very same attachment was identified on another weapon's image. Measured 2026-09-16 11:29 EDT: eight of the twelve unplaceable names are identified elsewhere in the same 134-image corpus, exactly, with no judgement involved -- Bandit Steady Stock, Tactical Suppressor, Agile Stock, FMJ, Steady Stock, Long Shot, Fast Reload Mag and BO Foregrip. It is evidence from the same source, not a guess, so it outranks the hand-supplied table below.
+    if (corpus) for (let i = 0; i < stored.length; i++) { if (aligned[i]) continue; const hit = corpus.get(norm(stored[i])); if (hit) aligned[i] = hit; }
+    // Last, and only into a blank: a correction never overrides what the image itself, or the corpus, recorded.
+    const known = new Map(Object.entries(KNOWN_SLOTS).map(([k, v]) => [norm(k), v]));
+    for (let i = 0; i < stored.length; i++) if (!aligned[i] && known.has(norm(stored[i]))) aligned[i] = known.get(norm(stored[i]));
     return aligned;
 }
 
@@ -78,10 +98,14 @@ async function run() {
     let byId;
     try { byId = await fetchMetadata(); } catch (err) { console.error(`Cloudinary search failed: ${safeErrorMessage(err)}`); process.exit(1); }
     const withSlotMd = [...byId.values()].filter(md => SLOT_FIELDS.some(([f]) => md[f])).length;
+    // name -> the slot it was identified in, across EVERY image; the commonest wins when two images disagree.
+    const tally = new Map();
+    for (const md of byId.values()) for (const [f, slot] of SLOT_FIELDS) { const n = norm(md[f]); if (!n) continue; if (!tally.has(n)) tally.set(n, new Map()); const m = tally.get(n); m.set(slot, (m.get(slot) || 0) + 1); }
+    const corpus = new Map([...tally].map(([n, m]) => [n, [...m].sort((a, b) => b[1] - a[1])[0][0]]));
     await mongoose.connect(uri);
     const builds = await Loadout.find({}, { weaponName: 1, buildName: 1, mode: 1, imageKey: 1, attachments: 1, attachmentSlots: 1 }).lean();
 
-    const report = { builds: builds.length, images: byId.size, imagesWithSlotMetadata: withSlotMd, urlKey: [], noImage: [], noSlotMetadata: [], matchedWithSlots: 0, fullyPlaced: 0, unplaced: [], toWrite: 0 };
+    const report = { builds: builds.length, images: byId.size, imagesWithSlotMetadata: withSlotMd, urlKey: [], noImage: [], noSlotMetadata: [], matchedWithSlots: 0, fullyPlaced: 0, unplaced: [], unplacedCount: 0, toWrite: 0 };
     const writes = [];
     for (const b of builds) {
         const label = `${b.weaponName} · ${b.mode} · ${b.buildName} (${b.imageKey})`;
@@ -91,9 +115,9 @@ async function run() {
         const present = SLOT_FIELDS.filter(([f]) => md[f]);
         if (!present.length) { report.noSlotMetadata.push(label); continue; }
         report.matchedWithSlots++;
-        const aligned = alignSlots(b.attachments || [], present.map(([f]) => md[f]), present.map(([, l]) => l));
+        const aligned = alignSlots(b.attachments || [], present.map(([f]) => md[f]), present.map(([, l]) => l), corpus);
         const missing = (b.attachments || []).filter((_, i) => !aligned[i]);
-        if (missing.length) report.unplaced.push(`${label}: ${missing.join(', ')}`); else report.fullyPlaced++;
+        if (missing.length) { report.unplaced.push(`${label}: ${missing.join(', ')}`); report.unplacedCount += missing.length; } else report.fullyPlaced++;
         if (JSON.stringify(aligned) !== JSON.stringify(b.attachmentSlots || [])) writes.push({ _id: b._id, aligned });
     }
     report.toWrite = writes.length;
@@ -106,6 +130,8 @@ async function run() {
         console.log(`Wrote attachmentSlots on ${writes.length} build(s).`);
     } else {
         console.log(`Dry run: ${writes.length} build(s) would change. Re-run with --write to apply.`);
+        // The number that says whether the corpus pass and the corrections did their job. It counts EVERY build examined, not only the ones that would change -- counting the write list under-reports, because a build already carrying the right slots never enters it.
+        console.log(`Attachments still unplaced across all ${report.matchedWithSlots} matched build(s): ${report.unplacedCount}.`);
     }
     await mongoose.disconnect();
 }

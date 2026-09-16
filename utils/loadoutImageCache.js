@@ -40,7 +40,7 @@ const METADATA_FIELDS = [
     { external_id: 'Last_Updated', label: 'Last Updated', type: 'date' }
 ];
 
-// Maps a vision-extracted slot LABEL (attachmentSlots[i], e.g. "Rear Grip") to its metadata field external_id. Tolerant of common label variants; an unrecognized slot is skipped (its attachment name still lives in the Loadout doc's `attachments` array), never an error.
+// Maps a vision-extracted slot LABEL (attachmentSlots[i], e.g. "Rear Grip") to its metadata field external_id. Tolerant of common label variants; an unrecognized slot is skipped (its attachment name still lives in the Loadout doc's `attachments` array), never an error. 🔴 THE SKIP IS A DATA LOSS AND IT HAS NOW COST THREE BACKFILLS (2026-09-16 11:27 EDT). CODM slot labels are NOT limited to these nine: `Bowstring` and `Limb` (Crossbow), `Bolt` (Crossbow AND bolt-action snipers - the SP-R 208 has one), `Trigger Action` (ARGUS, Dobvra, Machine Pistol, J358), and two with NO canonical equivalent at all - `Smoothbore` (R9-0) and `Guard` (Shorty). `.claude/rules/autobuild.md` has carried that list since 2026-08-06 and warned in writing that a fixed nine-name allow-list would drop them; it dropped them in the 2026-07-26 J358 backfill, again in the vision run, and again in the 2026-09-15 slot backfill, which left 8 attachments unplaceable for exactly this reason. ⚠️ DO NOT "fix" THIS BY ALIASING THEM ONTO THE NINE. Writing `2B Bowstring` into the Muzzle field makes the next read say "Muzzle", which loses the label a second time and corrupts a canonical field on the way. Cloudinary's schema has nine fields and two of these labels have no home in it, so MONGO's `attachmentSlots` is the source of truth for a slot label and this metadata is a lossy derived copy. The skip below therefore stays - but it NAMES what it dropped, so the next person meets the gap instead of inheriting it silently.
 const SLOT_TO_FIELD = {
     muzzle: 'Muzzle',
     barrel: 'Barrel',
@@ -84,7 +84,10 @@ function buildLoadoutMetadata(doc, attachmentSlots) {
 
     if (Array.isArray(attachmentSlots) && Array.isArray(doc.attachments)) {
         for (let i = 0; i < doc.attachments.length; i++) {
-            const field = SLOT_TO_FIELD[(attachmentSlots[i] || '').toLowerCase().trim()];
+            const label = (attachmentSlots[i] || '').toLowerCase().trim();
+            const field = SLOT_TO_FIELD[label];
+            // Named, not silent: the label survives in Mongo, so this is a gap in the metadata copy rather than lost data - but it must be visible.
+            if (label && !field) console.warn(`[loadout-metadata] no Cloudinary field for slot label "${attachmentSlots[i]}" - kept in Mongo, omitted from metadata`);
             const name = (doc.attachments[i] || '').trim();
             if (field && name) md[field] = name;
         }
