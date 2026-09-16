@@ -9,6 +9,40 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3d · the table, and codebase-memory doing the sweep's job — 2026-09-16 17:50 EDT
+
+His correction: *"stop building tests for things you should be catching yourself in the first place. also pretty sure codebase-memory can do a large part of this test's job on its own. index the artifact's code within it and try."*
+
+I indexed the kit and tried rather than agreeing. **He is right, and it found three the browser sweep had missed.**
+
+```
+codebase-memory-mcp cli index_repository --repo_path local/pins2-board-3/redo
+```
+1,291 nodes, 3,910 edges. One `search_code` for `border-radius: ?[2-8]px` returned every candidate across four stylesheets in **16ms, with no browser**:
+
+| Found | Why the rendered sweep could not see it |
+|---|---|
+| `.g-lg i` — a 10px square inside a `--rad-pill` legend chip | Below the sweep's size floor at the width it ran |
+| `.b3-sd-w i` — the table's square accent chip | **I had already deleted the element**, so nothing rendered; the rule sat on in `gates.css`, which loads after `b3/board.css` and would have beaten any override written there |
+| `html[data-b3-p9=b] .b3-hi-day::before` — a rounded-square timeline node | Behind an option the sweep does not switch on |
+
+It also lists `.dk-take` defined at both line 98 and line 106 — the duplicate-selector, load-order defect I had walked into an hour earlier and only found by re-running the browser.
+
+**So the division of labour is now explicit, and the sweep says so in its own header.** Anything the SOURCE can answer — every instance of a value, a selector defined twice, which file a rule lives in — goes to the index. What stays in `class-sweep.cjs` is only what needs the cascade resolved and the page laid out: whether a mark's parent is actually round at render, whether a parent clips it anyway, whether a field ends up taller than its wrapper.
+
+### The table view
+
+Carried the card view's two corrections across so the two read as one system: the square accent chip is gone (the row's own left edge carries the weapon colour) and the Build column collapses when no selected build has a name.
+
+Then the measurement found something neither of us had named:
+
+```
+header  26px 150px 738.7px  28.1px  35.2px 26px
+rows    26px 150px 663.8px 116.2px  22px   26px
+```
+
+**The header and the body were resolving different columns.** Two `auto` tracks size to each grid's own content, and a header cell reading "CODE" is narrower than a row cell holding `1M2C4A8A9D` plus a copy button — so CODE sat **74.9px** off its own column. A table's header and its body are one grid or it is not a table. Both tracks are fixed; after: identical, `0` misaligned.
+
 ## Round 3c · Export, Repairs, and the class sweep he had to ask for — 2026-09-16 17:45 EDT
 
 His instruction: *"FIX THE CLASS; DON'T JUST PATCH THE INSTANCE!"* He had pointed at a square mark inside a fully-rounded control **four times this round**, in four different components, and each time I fixed it where he pointed. That is how there came to be four.
