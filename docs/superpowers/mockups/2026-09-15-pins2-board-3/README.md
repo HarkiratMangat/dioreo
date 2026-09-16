@@ -93,6 +93,23 @@ He is right, and it is one failure repeated, not four: **I wrote a CSS rule, rea
 
 **The problem card's connector took four attempts and the fourth was to delete it.** A stacked triangle, a rounded wedge and a bridge were each *"not any better, in some ways worse"* — and what kept failing was the CATEGORY, not the execution: a card floating away from its chip with something spanning the gap. The gap was the problem. The card butts the chip now, sharing an edge the way a menu hangs off its control, so there is no tip, no seam and nothing left to get wrong. It opens on hover, pins on click, and carries a close button.
 
+## 🔴 How board 2 verified, and why this session did not — 2026-09-16 16:22 EDT
+
+He asked it directly: *"STOP WITH YOUR SCRIPTED TESTS! DO THE WORK YOURSELF! Figure out how the board 2 session verified it's changes because i did not have even remotely this close of an issue when working in that session."*
+
+**Board 2 shot the WHOLE BOARD in full 888px screens, top to bottom, and read every one.** `local/pins2-board-2/at1282.cjs` scrolls the page in viewport-height steps and writes a frame per screen; **142 PNGs** sit in that folder. It also ran `measure.cjs`, whose rules are all RELATIONS — a label's distance to its controls, the gap in a run of buttons, the edge a column's controls share — the kind no single-element check can see.
+
+**This session clipped one selector at a time.** `redo/shots.cjs` takes `--sel` and photographs the element I already suspect, so it can only ever confirm what I was already thinking about. That is why the popover's close button rendered under its own header for a whole round: it was a sibling of `.b3-pc-h`, which is `position:relative` and comes after it in the DOM, so the header painted over it — and no check I ran was ever pointed at it.
+
+`redo/sweep-screens.cjs` is board 2's method for board 3: twelve full screens, read one by one. In its first run it found two things instantly that every clipped shot had missed:
+
+| Found by looking at the whole screen | Why no clip could see it |
+|---|---|
+| Board 2's sheet sets `gap: 96px` between blocks — right for nineteen small gates, roughly a screen of dead air per heading for five tall surfaces. Now 52px; the board is 450px shorter | A clip of a control strip cannot show the emptiness ABOVE it |
+| The attachment legend was a narrow column centred against the tall specimen beside it, sitting in a band of dead space. Legend and specimen are one block now | Each element measured fine on its own; the RELATION was the defect |
+
+🔴 **The rule this leaves: a clipped shot confirms, a full screen discovers.** Point the clip at a thing only after a full-screen pass has told you which thing.
+
 ## How the board works
 
 - One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
