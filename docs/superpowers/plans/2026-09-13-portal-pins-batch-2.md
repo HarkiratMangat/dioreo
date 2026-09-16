@@ -88,7 +88,7 @@ status: live
 
 | # | Pin | Realm | Item | Session · stream |
 |---|---|---|---|---|
-| 1 | `pmu2tdslb` | armory | New build takes `--r-review` | B3 E1 → S4 applies → S5 |
+| 1 | `pmu2tdslb` | armory | New build takes `--r-review` | S4 — the element system |
 | 2 | `pmu2tg0ye` | armory | New Build drawer is not board 1 G9 | S3 port table → S5 |
 | 3 | `pmu2tl2cp` | armory | Attachments chips wrap; tools row 20px further left | S5 · fix |
 | 4 | `pmu2tmqhu` | armory | Manifest Add build matches the masthead New build | B3 E1 → S4 applies → S5 |
@@ -108,28 +108,28 @@ status: live
 | 18 | `pmu2va9ey` | armory | P4 checkbox | B3 P4 → S5 |
 | 19 | `pmu2vf2ey` | armory | Left accent as board 2's announcement bar: full on the weapon row, narrower on the build row | S5 · fix |
 | 20 | `pmu2vgcd9` | armory | P4 select-all in the column head | B3 P4 → S5 |
-| 21 | `pmu2vkj78` | armory | Rounder panel corners | B3 E3 → S4 applies → S5 |
+| 21 | `pmu2vkj78` | armory | Rounder panel corners | S4 — the element system |
 | 22 | `pmu2vqjau` | armory | P5 selection bar names what is selected | B3 P5 → S5 |
 | 23 | `pmu2vze4t` | armory | P6 Repairs: purpose, placement, design | B3 P6 → S5 |
 | 24 | `pmu2w1o6r` | armory | Account menu tint invisible on his session | S5 · reproduce first |
 | 25 | `pmu2w98v8` | armory | P7 command search; a real keyboard walk; LLM staging filed | B3 P7 → S5 · S5 reproduces the keys · LLM staging filed |
 | 26 | `pmu2wb0fy` | armory | Export lost search and pick-your-own selection | S3 port table → S5 |
-| 27 | `pmu2wfo7w` | armory | "Tier board 5/8" | B3 E6 → S4 rewrites → S5 |
-| 28 | `pmu2whbom` | armory | "5 categories · 8 builds · all closed — open the one you came for" | B3 E6 → S4 rewrites → S5 |
+| 27 | `pmu2wfo7w` | armory | "Tier board 5/8" | S4 — the element system |
+| 28 | `pmu2whbom` | armory | "5 categories · 8 builds · all closed — open the one you came for" | S4 — the element system |
 | 29 | `pmu2wkuqb` | armory | Rack's Expand all reuses the manifest fold control | B3 E1 → S4 applies → S5 |
 | 30 | `pmu2wr697` | armory | The standardization session itself | S4 — this pin is the session |
-| 31 | `pmu2wtq39` | armory | "133 builds · 4 formats" | B3 E6 → S4 rewrites → S5 |
+| 31 | `pmu2wtq39` | armory | "133 builds · 4 formats" | S4 — the element system |
 | 32 | `pmu2wvtb5` | broadcast | Delivery-queue card is not board 2 G3 | S3 port table → S5 |
 | 33 | `pmu2x2uv9` | broadcast | P8 Heads up as a warning, and its spacing | B3 P8 → S5 |
-| 34 | `pmu2x71th` | broadcast | Small text sits in a soft container | B3 E6 → S4 rewrites → S5 |
-| 35 | `pmu2xd88t` | broadcast | "Delivery order" and "Changes ahead" read as hint text | B3 E4 → S4 applies → S5 |
+| 34 | `pmu2x71th` | broadcast | Small text sits in a soft container | S4 — the element system |
+| 35 | `pmu2xd88t` | broadcast | "Delivery order" and "Changes ahead" read as hint text | S4 — the element system |
 | 36 | `pmu2xfhq1` | broadcast | Position number takes the card accent; each announcement mints its own accent | S5 · fix |
 | 37 | `pmu2xgu30` | broadcast | Airtime bar fades to transparent, not black | S5 · fix |
-| 38 | `pmu2xj1ls` | broadcast | Pill font differs from the date label; pills lack icons | B3 E5 → S4 applies → S5 |
+| 38 | `pmu2xj1ls` | broadcast | Pill font differs from the date label; pills lack icons | S4 — the element system |
 | 39 | `pmu2xk8uw` | broadcast | Spacing inside the quote box | S3 port table → S5 |
 | 40 | `pmu2xowwq` | broadcast | Show all icon · text centred · dashed divider · "126 characters" | S3 port table → S5 · B3 E6 → S4 rewrites → S5 |
-| 41 | `pmu2xt57m` | broadcast | Panel eyebrow differs from Armory's filter labels | B3 E4 → S4 applies → S5 |
-| 42 | `pmu2xuzh9` | broadcast | "Manifest" and "State" labels differ inside one realm | B3 E4 → S4 applies → S5 |
+| 41 | `pmu2xt57m` | broadcast | Panel eyebrow differs from Armory's filter labels | S4 — the element system |
+| 42 | `pmu2xuzh9` | broadcast | "Manifest" and "State" labels differ inside one realm | S4 — the element system |
 | 43 | `pmu2xw2ik` | broadcast | Show all hover highlight | B3 E2 → S4 applies → S5 |
 | 44 | `pmu2xxevn` | broadcast | Broadcast's tools row inherits Armory's tools-row fixes | S5 · fix |
 | 45 | `pmu2y32cv` | broadcast | Broadcast rows: hover tint, board text, header alignment | S3 port table → S5 |
@@ -526,7 +526,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 7 — pin marks.
 
-- [ ] **Step 7:** mark every review pin in `docs/portal/portal-sync-notes.md` in batch 2's form, `> 📌 Planned <stamp> — §2b row N · <stream>`, in one heredoc. New pins restart at Step 2.
+- [x] *(2026-09-16 09:49 EDT — 57 marks, one per pin, at the foot of its block; 0 of the 57 left unmarked and 0 of the 18 Access pins of 2026-09-11 touched, which anchor #16 requires. ⚠️ §2b's stream column was STALE for the ten pins the section-E withdrawal moved — 1, 21, 27, 28, 31, 34, 35, 38, 41, 42 still read `B3 E… → S4 applies → S5`; they were re-pointed at `S4 — the element system` BEFORE the marks were written from them, or every mark would have carried the name of a surface that no longer exists)* **Step 7:** mark every review pin in `docs/portal/portal-sync-notes.md` in batch 2's form, `> 📌 Planned <stamp> — §2b row N · <stream>`, in one heredoc. New pins restart at Step 2.
 
 ### 5b.3 · Close
 
