@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 11). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 12). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -31,26 +31,28 @@ record — every gate, the pins it answers, and every fork with its options — 
 
 ## The surfaces
 
-One section per surface, because a surface is what you look at: the manifest's spacing, its badges, its tags, its problems
-and selecting are the same screen, so they read under one stage rather than as five gates (his correction, 2026-09-15
-19:27 EDT). The stage is sticky, so it stays with you while you work down the topics beneath it.
+One block per surface, in the order the decisions depend on each other. **The shared vocabulary is answered first** —
+buttons, icon buttons, radius, labels, pills and small text are what every surface is built from, so everything below is
+drawn with whatever was picked there (his note, 2026-09-15 20:51 EDT). Inside a block there are no sub-sections: every
+switch sits in one strip above the stage, the notes read under it, and one Decide panel at the foot carries that
+surface's decisions as rows — look at an option, tick it to record it (his note, 2026-09-15 20:45 EDT).
 
-| Surface | Topics inside it | Pins | Picks |
+| # | Surface | Pins | Decisions |
 |---|---|---|---|
-| M1 · The Armory manifest | Rows and tools · Badges · Attachment tags · Build problems · Selecting builds | 3 · 5 · 6 · 7 · 8 · 9 · 10 · 13 · 14 · 15 · 16 · 17 · 18 · 19 · 20 · 22 | `p1` `p2pal` `p2sty` `p3` `p4` `p5list` `p5bg` `p5hint` |
-| M2 · The build drawer | — | 2 | — (board 1 G9) |
-| M3 · Repairs | — | 23 | `p6` |
-| M4 · Command search | — | 25 | — (as shown) |
-| M5 · Export | — | 26 | `exp` |
-| B1 · The delivery queue | — | 32 · 33 · 36 · 37 · 39 · 40 · 43 · 46 · 47 · 49 | `p8` |
-| B2 · The broadcast manifest | — | 44 · 45 · 50 | — (board 2 G11) |
-| B3 · The announcement drawer | — | 48 | — (board 1 G8) |
-| H1 · The history manifest | — | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
-| E · The shared vocabulary | Buttons · Icon buttons · Radius · Labels · Pills · Small text | 1 · 4 · 10 · 11 · 12 · 14 · 21 · 27 · 28 · 29 · 31 · 34 · 35 · 38 · 40 · 41 · 42 · 43 · 47 · 52 | `e1`–`e6` |
+| E | The shared vocabulary — buttons, icon buttons, radius, labels, pills, small text, on one stage | 1 · 4 · 10 · 11 · 12 · 14 · 21 · 27 · 28 · 29 · 31 · 34 · 35 · 38 · 40 · 41 · 42 · 43 · 47 · 52 | `e1`–`e6` |
+| M1 | The Armory manifest — fixes, badges, tags, problems, selecting | 3 · 5 · 6 · 7 · 8 · 9 · 10 · 12 · 13 · 14 · 15 · 16 · 17 · 18 · 19 · 20 · 22 | `p1` `p2pal` `p2sty` `p3` `p4` `p5list` `p5bg` `p5hint` |
+| M2 | The build drawer | 2 | — (board 1 G9) |
+| M3 | Repairs | 23 | `p6` |
+| M4 | Command search | 25 | — (as shown) |
+| M5 | Export | 26 | `exp` |
+| B1 | The delivery queue | 32 · 33 · 36 · 37 · 39 · 40 · 43 · 46 · 47 · 49 | `p8` |
+| B2 | The broadcast manifest | 44 · 45 · 50 | — (board 2 G11) |
+| B3 | The announcement drawer | 48 | — (board 1 G8) |
+| H1 | The history manifest | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
 
 Pins **24** (account-menu tint — Session 5 reproduces it first) and **30** (the standardization session itself) are answered
-in the board's settled log. The page asserts this coverage itself: any pin from 1 to 57 with no surface and no log row
-renders a red banner at the top.
+in the settled log. The page asserts this coverage itself: any pin from 1 to 57 with no surface and no log row renders a
+red banner at the top.
 
 ## The forks
 
@@ -107,4 +109,4 @@ These are the pins whose value is already decided; the board shows them applied,
 `local/pins2-board-3/redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: gates, picks
 and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its
 switch on **and** off; a pick actually written and painted; board 1's G8 frame loaded; and no horizontal overflow at 1282px
-or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:43 EDT: 10 surfaces, 18 picks, 39 options, 0 page errors, the chip group one line at 32px on the same centre line as Attachments, 16px of air each side of the divider, no overflow at 1282px or 390px.
+or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 20:51 EDT: 10 surfaces, 22 switches, 18 decision rows, 39 options, 0 page errors, the chip group one line at 32px on the same centre line as Attachments, 16px of air each side of the divider, no overflow at 1282px or 390px.
