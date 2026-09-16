@@ -9,6 +9,41 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3 · six threads, and the one wrong decision underneath them — 2026-09-16 17:17 EDT
+
+| Thread | What was wrong, measured | What it is now |
+|---|---|---|
+| Checkbox | Option a's unselected hover computed `rgba(0,0,0,0)` for the mark — no preview. Option b had one, which is why one felt broken and the other fine | Hover previews the mark at `patch/0.38`; measured rest → hover, it appears |
+| Dead rules | Two rules I had reported as a checked-hover fix were `.wg-cb input:checked + .cb`. **There is no `<input>`** — the control is `<span role="checkbox">`, so they matched nothing | Deleted |
+| Popover ring | The top ring is continuous, corner to corner — pixel-read at dpr 2, warm from x=19 to 716 of 736. The gap was the chip↔card join, not the ring | Plume redrawn across the join |
+| Pointer | **My record said this was settled as "no connector at all".** It never was | A plume, below |
+| Close button | 30px tall like Open build and centred on it (offset 0.00), but the header reserved `padding-right: 44px` for the absolutely-positioned version it used to be, holding it 32px off every other right edge on the card | Header padding 44 → 12px; close right edge 1067 = the header's content edge |
+| Reveal | `.16s` over a 4px slide — short enough to read as a cut | `.3s` on `cubic-bezier(.16,.84,.34,1)`, opacity landing at 55% so the card is legible while it settles |
+
+### The pointer, fifth attempt — and the decision that was wrong
+
+He wrote: *"while all of your previous pointers were shit, that still doesn't change the fact that i want some sort of pointer system."* The tracked note said the opposite — that after four failures the CATEGORY was wrong and the card should simply butt the chip. **That was me closing a problem I had failed at four times, and it would have carried into Session 5 as a settled decision.** Corrected here.
+
+Every rejected version was a TRIANGLE: a second element that has to reproduce the card's ring, radius, ground and shadow, and dies at the seam. This one adds no element. The card's hazard band and the chip's hatched edge are already the same material at the same −45°; the band was masked to fade symmetrically at both ends, which made it decoration that stopped dead. It is now densest directly under the anchor and thins away from it, driven by `--tx` — the anchor offset the card already sets for its `transform-origin` — so it tracks the chip when the card shifts or flips, with nothing to keep in sync.
+
+⚠️ **Found only by looking at the render:** with the card flipped above the chip, re-aiming the gradient was not enough — the tape is the first child, so the plume was on the TOP edge while the chip sat below. It moves to the bottom edge on `[data-up=true]`. The rule read correctly and pointed at the wrong edge.
+
+### Badge motion: the model was wrong, not the curve
+
+All three badge animations were `infinite` — `b3tick` was `scale(1) → 1.18 → .96` fired at 91% of a 3.6s loop, which is the bolt bounce he called lazy. On a real 130-build manifest that is dozens of forever-loops jittering against the numbers the table exists to show, and no easing fixes it. TOP 3/TOP 4/TOP 5 had no animation at all.
+
+Motion in a table earns its place as an **event**. Each badge now fires once and stops, built from something the board already says rather than from stock badge effects — the test the bolt bounce, the specular sweep and the sliding blob all failed:
+
+- **META** resolves from hatch into solid — the board's own state language, and the same material as the problem chip's edge. The meta was contested; now it is called.
+- **Rank** is struck, die-on-metal: the badge takes the blow (`b3strike`), the digit lands from above (`b3land`).
+- **TOXIC** seeps once and settles instead of sliding back and forth.
+
+It re-fires whenever the badge option changes, which is the moment he is looking, because comparing options is what the switch is for. **An animation that only plays on mount plays before he ever scrolls there** — which is how motion gets reported missing three times while the rule sits in the file.
+
+The rank plate is gone: *"i hated the [5] and [3] number icon"* — the laziness is the box, not the digit. A medal carries its rank struck into its own face, so the numeral sits directly on the badge at 800/12px mono with a hairline notch under it. The digit stays because TOP 3, TOP 4 and TOP 5 all exist and no shape reads 4-versus-5 at 22px — which is also why signal bars were the wrong answer, and he said so.
+
+**Measured after:** ghost check appears on hover · `b3strike` iterations 1, 10 of 10 sampled frames carrying a transform, settling to identity · rank `b3land`, iterations 1, 10 of 10 frames moving, background `rgba(0,0,0,0)` with a `0 1px 0` notch · close right edge 1067 = header content edge · no infinite animation left in the file.
+
 ## Round 3 · the attachment chip, and two options that were one option — 2026-09-16 16:59 EDT
 
 He pointed at `local/pins2-board-2/r6-one-shut.png` and said the Neutral ground style "is literally filling in a background color, whereas ... it was much different". He was right, and the shot showed something worse than the note claimed.
