@@ -51,9 +51,21 @@ The board now lists them in an **Already drawn** table naming the document for e
 | Repairs | **"Worst first" and "by problem" are the wrong labels** — it should be **"by weapon"**, which is where the worst-first design was already heading |
 | Command search | **Deferred to a session of its own.** *"i typed 'badge cx9' and got the same list as if i had just typed 'badge'… the algorithm needs a significant improvement session of its own."* Its current design is approved and stays as the specification |
 
-### What he asked to be redrawn
+### What he asked to be redrawn — progress at 2026-09-16 12:48 EDT (board version 19)
 
-Repairs' whole panel · the selection bar's mesh ground · the selection list in both views (column spacing, the Mark column, the scrollable attachment fade, the table header, the count line) · the weapon chips in the bar (smaller, wrapping to a second line, horizontally scrollable with a right-hand fade) · the problem popover's pointer and its prose · the Stage-deletion hint · the slot palette's hues, with a clickable legend and a faux nine-attachment build to read them on · the manifest's weapon set, reselected to carry one of every category and every badge and problem kind.
+| Redraw | State |
+|---|---|
+| **Repairs' whole panel** | ✅ the worklist groups **by weapon**, worst weapon first and worst build first inside it; the row stopped repeating the weapon and category its own group header carries, which is what made the first pass read as two lists stacked. Repairs also left the view toggles for a button at the right of the panel head, and its status is a **count plate that only exists when work is pending** — the button changes shape rather than only colour |
+| **The selection bar's mesh ground** | ✅ redrawn. Three faults, each worth keeping as a rule: four hues at 26/22/16/16% read as four stains (now one analogous span, nothing over 15%); every blob centre sat on the canvas so you could see where each began (every centre is outside the box now, only the falloff lands inside); and they stacked like paint (`screen` blending makes them mix like light, which is what a mesh is) |
+| **The weapon chips** | ✅ two rows flowing rightward under a mask fade, swipeable, chips at 26px. The **"+8 weapons" button is gone** — it hid exactly the weapons he asked to be able to reach |
+| **The Export surface's bugged state** | ✅ measured rather than guessed: the picker was fine (68 groups, 125 rows in the DOM). The drawer is 815px and its stage was 720, and the drawer centres on the stage, so it hung 47px past each end and clipped its own title and footer. Stage is 900; the drawer is contained |
+| The selection list, both views | ⏳ open — a view toggle at the list's top right, the code copying on click with no separate button, column spacing, a scrollable attachment fade, the Mark column showing the problem card on hover, the table header, the count line |
+| The problem popover | ⏳ open — the pointer, the container, concise prose, the `1 / 5` integrated, the hazard strip refined; and the orange border extended to the upper block with its top corners rounded |
+| The slot palette | ⏳ open — hues that are distinguishable without being eye sores, a **clickable** legend so he can change one, and a faux build carrying all nine attachments to read them on |
+| The manifest's weapon set | ⏳ open — keep PP19 BIZON, LOCUS, MACHINE PISTOL and JAK-12, shuffle the rest so every category appears, with META, BEST, TOP 3, TOP 5 and TOXIC all present and several kinds of problem |
+| The Stage-deletion hint | ⏳ open — the popover prose is the "hint text that gets skipped" wearing a new face |
+
+*This table is the tracker for round 2. It is not in `docs/db-deferred-list.md` on purpose: these are in-flight items of an open plan step (§5b Step 5), not deferred work, and duplicating them would make two records of one thing.*
 
 ### What he reported as broken
 
