@@ -979,6 +979,16 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Point the conformance instruments at the board that holds the live design `[P1 · S]`
+
+**14 `portal:*` scripts hardcode `docs/superpowers/mockups/2026-08-23-portal-interactive`** — `portalDiff`, `portalProbe`, `portalConverge`, `portalCoverage`, `portalInventory`, `portalAudit`, `portalShot`, `portalSync`, `portalOpenKind`, `portalStatus`, `portalPreflight` — and none accepts a `--mockup` override. `rg -l 'pins2-board' scripts/` returns nothing.
+
+The live approved designs moved to the pins-2 boards (board 1 and 2, 2026-09-14; board 3, 2026-09-15). **No instrument points at them, so every design approved on a board ships unchecked**, and the divergence is caught weeks later by Harkirat filing pins — 13 of his 57 review pins of 2026-09-15 are port failures against boards 1 and 2 ("this looks NOTHING like the Design Board render"; "WTF IS THIS HALF-ASSED PORT OVER FROM THE DESIGN BOARD??").
+
+This is the root of the three-board loop: design → build → port diverges → pin round → new board. A resolved spec alone does not close it; board 2 shipped a 3,316-line one on 2026-09-14 and the port diverged anyway.
+
+**Do:** add `--mockup <dir>` to `portalDiff` and `portalProbe` first (they carry the most weight), with a per-board realm→page map, then the rest. **Verify:** `node scripts/portalDiff.mjs --realm armory --mockup docs/superpowers/mockups/2026-09-14-pins2-board-2` produces a region list, and `--selftest` still reports ~zero. Found 2026-09-15 22:39 EDT while auditing why Session 3 drifted.
+
 - 🤖 **`[P3 · L]` Natural-language staging from the portal's command bar** *(filed 2026-09-15 14:48 EDT from Harkirat's review pin `pmu2w98v8`)* He wants a system — an LLM or something like it — that takes a plain request and stages exactly that change: *"add the meta badge to locus"*, *"send an announcement saying 'hi world' starting tomorrow, for 10 days and showing it twice"*. Every change would still become staged ops through `core/` and reach players only through Review, so the model proposes and the operation algebra validates. Separate from board 3's P7, which only makes search answer plain words with real actions (plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §2b). **Verify:** a typed request stages the intended op with its values shown before staging, and a request it cannot map stages nothing.
 
 
