@@ -5,44 +5,24 @@ status: live
 
 # Design board 3 — the surfaces, the pins each one answers, and the picks
 
-*Rewritten 2026-09-15 22:15 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 15). Its kit is
-`local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
-dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
-record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can
-extract from git alone.*
+*Rewritten 2026-09-15 22:15 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 15). Its kit is `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.*
 
-> **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the
-> same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's
-> gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and
-> withdraws the shared-vocabulary surface.
+> **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface.
 
 ## 🔴 The shared-vocabulary surface is WITHDRAWN — 2026-09-15 22:10 EDT
 
-Harkirat: *"your section E is way too narrow scoped. The portal has SOOO many more designs and surfaces that you didn't even
-consider. Just defer that to the next session's work… For now, in the artifact, just use the buttons and stuff that the
-current portal uses, with the caveat of the changes i requested specifically in the pins (such as the 'add build' or 'add
-announcement' button in the manifest header being the same style as the button used in the masthead, etc). But the overall
-standardization, and their design, that'll all be part of next session's work."*
+Harkirat: *"your section E is way too narrow scoped. The portal has SOOO many more designs and surfaces that you didn't even consider. Just defer that to the next session's work… For now, in the artifact, just use the buttons and stuff that the current portal uses, with the caveat of the changes i requested specifically in the pins (such as the 'add build' or 'add announcement' button in the manifest header being the same style as the button used in the masthead, etc). But the overall standardization, and their design, that'll all be part of next session's work."*
 
-So the board now shows **the portal's own elements exactly as they ship**, with only the individually pinned changes applied.
-Forks `e1`–`e6` are gone; `data-b3-e1` … `data-b3-e6` default to `now`, which matches no rule in `b3/board.css`. Pins **21,
-27, 28, 31, 34, 35, 38, 41, 42** move to the settled log as **Session 4's**, and §5c is where the element system is decided.
+So the board now shows **the portal's own elements exactly as they ship**, with only the individually pinned changes applied. Forks `e1`–`e6` are gone; `data-b3-e1` … `data-b3-e6` default to `now`, which matches no rule in `b3/board.css`. Pins **21, 27, 28, 31, 34, 35, 38, 41, 42** move to the settled log as **Session 4's**, and §5c is where the element system is decided.
 
 ## How the board works
 
-- One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel
-  at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
-- The manifest stage carries one weapon from **every** category, so the tools row's real spacing and wrap behaviour are on
-  screen rather than implied.
-- **Where a board already answered it, that board is shown**: `ref/board1-g9.html` and `ref/board1-g8.html` are board 1's page
-  trimmed to one gate and framed in the stage, so the target is board 1 rather than my redrawing of it (his note, 20:46 EDT).
-  The port sits beside it so the gap is visible.
-- A stage is the portal's own component running on the dev database. Drawers, the selection bar and popovers are
-  `position:fixed` in the portal, so each stage carries a transform and becomes their window.
-- A **pick** writes to the artifact's db at `decisions/<fork>`; a note box writes to `notes/<surface>`. Both read back with
-  `read_db`, so a choice needs no message.
-- **Dynamic picks** (18:26 EDT): a refinement ask gets two or more options and keeps its pick; the pick only disappears when
-  nothing is left to decide.
+- One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
+- The manifest stage carries one weapon from **every** category, so the tools row's real spacing and wrap behaviour are on screen rather than implied.
+- **Where a board already answered it, that board is shown**: `ref/board1-g9.html` and `ref/board1-g8.html` are board 1's page trimmed to one gate and framed in the stage, so the target is board 1 rather than my redrawing of it (his note, 20:46 EDT). The port sits beside it so the gap is visible.
+- A stage is the portal's own component running on the dev database. Drawers, the selection bar and popovers are `position:fixed` in the portal, so each stage carries a transform and becomes their window.
+- A **pick** writes to the artifact's db at `decisions/<fork>`; a note box writes to `notes/<surface>`. Both read back with `read_db`, so a choice needs no message.
+- **Dynamic picks** (18:26 EDT): a refinement ask gets two or more options and keeps its pick; the pick only disappears when nothing is left to decide.
 
 ## The surfaces
 
@@ -58,9 +38,7 @@ Forks `e1`–`e6` are gone; `data-b3-e1` … `data-b3-e6` default to `now`, whic
 | B3 | The announcement drawer | 48 | — (board 1 G8) |
 | H1 | The history manifest | 51 · 52 · 53 · 54 · 55 · 56 · 57 | `p9` |
 
-Pins **24** (account-menu tint — Session 5 reproduces it first), **30** (the standardization session itself) and the nine
-standardization pins above are answered in the settled log. The page asserts this coverage itself: any pin from 1 to 57 with
-no surface and no log row renders a red banner at the top.
+Pins **24** (account-menu tint — Session 5 reproduces it first), **30** (the standardization session itself) and the nine standardization pins above are answered in the settled log. The page asserts this coverage itself: any pin from 1 to 57 with no surface and no log row renders a red banner at the top.
 
 ## The forks — 13
 
@@ -92,29 +70,15 @@ He listed five, the sweep found the same class in six places, and one of the fiv
 | 4 | The warn chip is not aligned with Share | chip right **1077**, Share's box right **1079** | **1079 / 1079**, with no rule added — see below |
 | 5 | The reveal is neither smooth nor the speed asked for | 8 samples at 45ms: **zero** intermediate widths, 46px → 95.2px in one frame | **6** intermediate frames, 44px → 95.2px across 260ms |
 
-**Defect 4 was defect 1 seen from the other side.** The fold button was 46px instead of 44 — the 8px gap sitting between its
-icon and a zero-width word — and those 2px of overhang pushed the chip 2px left of the Share button's edge below it. Centring
-the icon put the chip on the line by itself, so `gates.css` adds no margin rule at all; `app.css`'s own 18px is correct once
-the button is the width it claims. A tuned margin would have hidden the cause and drifted the next time the button changed.
+**Defect 4 was defect 1 seen from the other side.** The fold button was 46px instead of 44 — the 8px gap sitting between its icon and a zero-width word — and those 2px of overhang pushed the chip 2px left of the Share button's edge below it. Centring the icon put the chip on the line by itself, so `gates.css` adds no margin rule at all; `app.css`'s own 18px is correct once the button is the width it claims. A tuned margin would have hidden the cause and drifted the next time the button changed.
 
-**THE CLASS BEHIND DEFECTS 2 AND 3, and it is a portal defect, not a board one.** `app.css:442` is a bare, unscoped
-`button:hover:not(:disabled) { background: var(--rule) }`. An element selector carrying two pseudo-classes sits at (0,2,1),
-which outranks every `.class { background: none }` in the portal — so any control that draws its own box with a `::before`
-gets a second, larger, borderless slab behind it on hover. The previous round killed it for `.wg-r .wg-ib` **alone**, which is
-exactly why Collapse all, the sort head, the code field and the fold button all still did it.
+**THE CLASS BEHIND DEFECTS 2 AND 3, and it is a portal defect, not a board one.** `app.css:442` is a bare, unscoped `button:hover:not(:disabled) { background: var(--rule) }`. An element selector carrying two pseudo-classes sits at (0,2,1), which outranks every `.class { background: none }` in the portal — so any control that draws its own box with a `::before` gets a second, larger, borderless slab behind it on hover. The previous round killed it for `.wg-r .wg-ib` **alone**, which is exactly why Collapse all, the sort head, the code field and the fold button all still did it.
 
-`redo/sweep.cjs` hovers every control on the manifest surface and reports each one whose hover paints a layer that was
-transparent at rest. It found **nine**, of which six were real: `.wg-fold`, `.wg-sort`, `.wg-code`, `.wg-ib.wg-fbtn`,
-`.dk-see` (the board's own Decide button) and one `role=tab` in a segmented switch, which is the one case where the ground is
-the affordance and is correctly left alone. After the fix: **zero**, with the three remaining rows being the weapon row
-lighting under its own buttons, which is intended.
+`redo/sweep.cjs` hovers every control on the manifest surface and reports each one whose hover paints a layer that was transparent at rest. It found **nine**, of which six were real: `.wg-fold`, `.wg-sort`, `.wg-code`, `.wg-ib.wg-fbtn`, `.dk-see` (the board's own Decide button) and one `role=tab` in a segmented switch, which is the one case where the ground is the affordance and is correctly left alone. After the fix: **zero**, with the three remaining rows being the weapon row lighting under its own buttons, which is intended.
 
-> **THE RULE, for Session 4 and Session 5:** a hover highlight paints only the shape the pointer is on, and that shape is
-> already visible at rest.
+> **THE RULE, for Session 4 and Session 5:** a hover highlight paints only the shape the pointer is on, and that shape is already visible at rest.
 
-**Three of the five are PORTAL defects and must land in the port table**, or Session 5 rebuilds the board's look on top of
-the broken rules: `app.css:442` (the bare button hover), `app.css:1181` (`.wg-code:hover .wg-igb` — the tint keyed on the
-wrapper), and `.wg-fwrap`'s 18px margin, which is correct only once the fold button is 44px. Defects 1 and 5 were mine.
+**Three of the five are PORTAL defects and must land in the port table**, or Session 5 rebuilds the board's look on top of the broken rules: `app.css:442` (the bare button hover), `app.css:1181` (`.wg-code:hover .wg-igb` — the tint keyed on the wrapper), and `.wg-fwrap`'s 18px margin, which is correct only once the fold button is 44px. Defects 1 and 5 were mine.
 
 ## The fix values the manifest surface carries
 
@@ -135,21 +99,11 @@ wrapper), and `.wg-fwrap`'s 18px margin, which is correct only once the fold but
 
 ## Two traps this board paid for
 
-- **`.dk-h span`** — a selector written for one sentence — caught the DECIDE chip beside it, because class-plus-element
-  outranks a plain class. The chip rendered 508px wide instead of 60px. **Style by class, never by element type.**
-- **`page.screenshot({clip})` takes PAGE coordinates; `getBoundingClientRect` gives VIEWPORT ones.** Mixing them shot a
-  region hundreds of pixels away — four frames of the wrong element that looked exactly like real evidence, and were read as
-  such for one round. Every clip now adds `scrollX`/`scrollY`.
+- **`.dk-h span`** — a selector written for one sentence — caught the DECIDE chip beside it, because class-plus-element outranks a plain class. The chip rendered 508px wide instead of 60px. **Style by class, never by element type.**
+- **`page.screenshot({clip})` takes PAGE coordinates; `getBoundingClientRect` gives VIEWPORT ones.** Mixing them shot a region hundreds of pixels away — four frames of the wrong element that looked exactly like real evidence, and were read as such for one round. Every clip now adds `scrollX`/`scrollY`.
 
 ## How it is checked
 
-`redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: surfaces, picks and options
-rendered; every option of every fork clicked without a page error; each fix measured in computed style with its switch on
-**and** off; a pick actually written and painted; board 1's frame loaded; no horizontal overflow at 1282px or 390px; the
-tools row's centre line, air and overflow; the checkbox column's left edge; and **the five defects above as readings that can
-fail** — `d1_foldIconOffCentre`, `d2_collapseAllBoxAtRest`, `d3_tintIsScopedToSegment`, `d4_chipVsShareRightEdge`,
-`d5_reveal.intermediateFrames`. `redo/sweep.cjs` is the class check behind defects 2 and 3; `redo/shots.cjs` takes the
-close-up frames.
+`redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: surfaces, picks and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its switch on **and** off; a pick actually written and painted; board 1's frame loaded; no horizontal overflow at 1282px or 390px; the tools row's centre line, air and overflow; the checkbox column's left edge; and **the five defects above as readings that can fail** — `d1_foldIconOffCentre`, `d2_collapseAllBoxAtRest`, `d3_tintIsScopedToSegment`, `d4_chipVsShareRightEdge`, `d5_reveal.intermediateFrames`. `redo/sweep.cjs` is the class check behind defects 2 and 3; `redo/shots.cjs` takes the close-up frames.
 
-Last run 2026-09-15 22:15 EDT: **9 surfaces, 13 decision rows, 30 options, every pin 1–57 covered, 0 page errors, 0 overflow at
-1282px and 390px**, and d1 = 0 · d2 lit with a ring · d3 true · d4 1079/1079 · d5 6 frames.
+Last run 2026-09-15 22:15 EDT: **9 surfaces, 13 decision rows, 30 options, every pin 1–57 covered, 0 page errors, 0 overflow at 1282px and 390px**, and d1 = 0 · d2 lit with a ring · d3 true · d4 1079/1079 · d5 6 frames.
