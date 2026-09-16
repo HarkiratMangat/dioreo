@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 9). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 10). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -95,7 +95,8 @@ These are the pins whose value is already decided; the board shows them applied,
 | 49 | The calendar button goes; Edit carries its word |
 | 50 | Broadcast columns `minmax(0,1fr) 104px 104px 104px 124px 44px`, column-gap 16px, padding `0 16px 0 22px` |
 | 51 | Chip counts upright, never italic |
-| — | **Row icon buttons** carry no box at rest and light on hover in their own intent — copy green, delete red, and the share button beside the code in the weapon's own accent (his comment 2026-09-15 19:23 EDT) |
+| — | **Row icon buttons keep their own box** (#1F272E, 1px `--rule2`, 8px radius, inset 5px). The defect is the 44×44 square of `--hi` the button ELEMENT paints on hover behind that box — transparent now on hover, focus and press, so only the box lights, tinted by intent (delete red). ⚠️ My first pass removed the box instead, which was a misreading (corrected 2026-09-15 20:40 EDT) |
+| — | **The gunsmith copy segment takes the weapon's accent** — `.wg-igb` hover mixes 16% of the row's `--c` with a 50% ring; **Share keeps its own tint**, which he said was fine (corrected 2026-09-15 20:41 EDT) |
 | — | **The weapon line on one axis**: `.wg-nb::before` drops its 2px bottom margin and the small line centres as an inline-flex, so the category and the build count share a baseline (19:24 EDT) |
 | — | **The build row's accent** is 2.5px, the weapon row's stays 4px (19:25 EDT) |
 | — | **Select-all alignment** (his comment 2026-09-15 19:20 EDT, not one of the 57): `.wg-heads` padding `0 var(--s4)` → `0 var(--s4) 0 20px`, so the column head, the weapon header and every build row share one left edge. Measured: all three checkboxes at x=139 with the fix, 135 vs 139 without it |
