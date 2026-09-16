@@ -33,6 +33,32 @@ The board now lists them in an **Already drawn** table naming the document for e
 
 **M3 · Command search stays although it carries no fork**, and it is the only such surface. He settled it — *"build it properly, and exactly as shown"* — and "as shown" makes this board the specification: it is the only place that design exists. Deleting it would delete the design.
 
+## Round 2 — Harkirat's review of 2026-09-16, captured 2026-09-16 11:34 EDT
+
+*22 comment threads, none of them sent to Claude, so none can be replied to or resolved from a session. Captured here because a decision that lives only in a comment thread is a decision nobody can search for. **Version 17** carries the one fix he asked for before continuing.*
+
+### 🔴 The blocker he named, and it is fixed
+
+*"Something about the comments on the History manifest item is bugged and it keeps moving the comments to the top of the page. Please correct that, then I'll continue."* — **Two elements carried `id="manifest"`**: the shared portal `Manifest` at the top of the board (`ui/manifest.js:164`) and History's own panel (`b3/history.js:59`), which borrowed the id to pick up `app.css:2841`'s top margin. A duplicate id resolves to the FIRST match, so every comment placed on History re-anchored to the Armory manifest and jumped to the top. History's panel is `#history-manifest` now with the margin restored in the board's own sheet. **Checked as a class, not as that one id:** `verify.cjs` reports every duplicate id on the page, so the next collision fails rather than waiting to be noticed — it reads `[]` at version 17.
+
+### Decisions he made
+
+| Surface | Decision |
+|---|---|
+| Badges | **Medals is the right direction** — but add subtle life inside a badge (a poison effect on TOXIC, a shine on BEST; his examples, not literal). He dislikes the TOP 5 dot, and has never seen TOP 3 because no weapon on the board carries it |
+| Problems | **A · Tape reads better than B · Spine** |
+| Attachment tags | **Drop `bar`.** Still undecided between `wash`, `wash + text` and `neutral + text`; wants a fourth neutral-ground variant drawn from his reference |
+| Repairs | **"Worst first" and "by problem" are the wrong labels** — it should be **"by weapon"**, which is where the worst-first design was already heading |
+| Command search | **Deferred to a session of its own.** *"i typed 'badge cx9' and got the same list as if i had just typed 'badge'… the algorithm needs a significant improvement session of its own."* Its current design is approved and stays as the specification |
+
+### What he asked to be redrawn
+
+Repairs' whole panel · the selection bar's mesh ground · the selection list in both views (column spacing, the Mark column, the scrollable attachment fade, the table header, the count line) · the weapon chips in the bar (smaller, wrapping to a second line, horizontally scrollable with a right-hand fade) · the problem popover's pointer and its prose · the Stage-deletion hint · the slot palette's hues, with a clickable legend and a faux nine-attachment build to read them on · the manifest's weapon set, reselected to carry one of every category and every badge and problem kind.
+
+### What he reported as broken
+
+The Export surface renders in a bugged state (screenshot in his Downloads, not in the repo) · the manifest stage clips the Edit-builds drawer and needs to be taller · the selection bar is not centred on the manifest · the List button uses a chevron where the fold mark belongs and wants `Clear`'s border · a `Nearly the same as another build` problem shows no indicator on the row itself.
+
 ## How the board works
 
 - One **block** per surface: every switch for it in a strip above a single stage, the notes under the stage, one Decide panel at the foot carrying that surface's forks as rows — look at an option, tick it to record it.
