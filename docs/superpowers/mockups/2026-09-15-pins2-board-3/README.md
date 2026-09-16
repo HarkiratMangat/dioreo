@@ -9,6 +9,33 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3b · the selection list had never had a relation sweep — 2026-09-16 17:29 EDT
+
+Seven threads landed at once and every one of them is on the same surface. That is the finding: not seven defects, one surface that was never swept. His words were *"just look at this screenshot... go nitpick and refine this thing"* and, twice, *"why do i have to point shit like this out!?"* — he was running my refinement pass for me.
+
+| What he pinned | What it actually was | Now |
+|---|---|---|
+| Hint line not centred on the toggles | `.b3-sd-lh` was `align-items: baseline`, so the toggle group lined up on the text's baseline, not their common centre | `center`; count, words, label and toggle all read centre y −2709.34 |
+| "One table" has no icon | The markup asks for a `table` icon and **the icon set has no such key**, so it drew nothing. Not a design inconsistency — a missing asset | Added; the button's SVG now carries 27 chars of path |
+| No "View" label | The control was unlabelled; you inferred its job from the option names | Labelled, 8px from the toggle it belongs to |
+| "Build 1 / MP" is 100+px of waste | Both true: the numeral is already in the gutter four columns left, and every row in a single-mode selection repeats one mode. **A column with the same value on every row is not a column** | Renders only when the build has its own name or the selection mixes modes; attachments went 662 → **794px** |
+| Square chip beside the weapon name | The weapon's colour was drawn **three times** in one row — left edge, chip, gutter numeral | Chip gone; the header's left edge carries it |
+| Attachment cell fades right, cuts hard left | A left fade at rest would be a lie — nothing is hidden there until you scroll | Mask bound to scroll state via `animation-timeline: scroll(self inline)`, so the left fade appears only once there is something behind it |
+| Pill: "square shape inside of a rounded pill" | A 2px radius on the 7px dot inside a `999px` pill | `50%` |
+| Weapon names bare and not centred | Body type at caption grey, and a single item sitting in row 1 of a **two-row** grid | Data face, 600, tracked; centre delta 2.5px → **0.00** |
+
+### The hint line was skippable because it was skippable
+
+It counted builds and weapons — both visible in the list directly underneath it. A caption that restates what is on screen is one you learn to skip, and no amount of typography fixes that. It states the **scope of the action bar** instead: what Export, Edit builds and Stage deletion are about to act on, which is the one thing at that spot the reader cannot see. Treatment plus this one line's copy; the board's other hint copy is Session 4's rewrite (anchor #15), not this session's.
+
+### The popover in the list — the earlier fix was half a fix
+
+The card had already been moved out of `.b3-sd-rows` (an `overflow:auto` scroller that was clipping it) onto `position: fixed`. That half was right. But it then set `left` to the **chip's centre**, and the card is 368px wide with `right: 0` in its base rule — over-constrained, so `right` is dropped and the card hung 368px to the right of the chip and off the screen. From the outside the bug looked untouched, which is why he reported it again.
+
+The card's **right** edge tracks the chip now, clamped into the viewport, and `--tx` is re-measured from that right edge so the hazard plume still lands on the chip after the clamp has moved the card.
+
+⚠️ **Not verified in the real case.** No build in the dev manifest's one-weapon-per-category selection carries a fault, so `.b3-sd-rows .b3-fchip` is absent with all 21 builds selected and the probe could not open it there. The change is sound by construction and unproven by measurement; it needs his eye or a fixture with a faulty build in the list.
+
 ## Round 3 · six threads, and the one wrong decision underneath them — 2026-09-16 17:17 EDT
 
 | Thread | What was wrong, measured | What it is now |
