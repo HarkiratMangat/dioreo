@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 8). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 9). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -76,7 +76,7 @@ These are the pins whose value is already decided; the board shows them applied,
 
 | Pin | Value |
 |---|---|
-| 3 | **The tools row is a layout, not a nudge.** Row two is a grid: the category chips take the free column, the Attachments group holds its own column with the divider running its full height. The chips carry 8px padding and 5px gaps because eight of them needed 802px of a 772px column — without that, Secondaries orphans onto a second line. `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ Two earlier versions of this were wrong: row one (2026-09-15 19:20 EDT) and nowrap without closing the deficit (19:32 EDT) |
+| 3 | **The tools row is a layout, not a nudge.** Row two is a grid of two content-sized groups on one centre line: the category chips, then a 1px 26px divider with 16px of air each side, then Attachments. The chips carry 8px padding and 5px gaps because eight of them needed 802px of a 772px column — without that, Secondaries orphans onto a second line. `.mtools .mlabel` min-width 84px → 64px walks the search and chips 20px left. ⚠️ Three earlier versions were wrong: row one (19:20 EDT), nowrap without closing the deficit (19:32 EDT), and top-aligned with uneven air around the divider (20:34 EDT) |
 | 5 | Board 2's fold / unfold marks on every fold control (`Fold` renders `i-b2-fold` / `i-b2-unfold`) |
 | 6 | `--sec` becomes `#3F6E8E` in the portal **and the accent is rewritten in the data** — chips, weapon bars and row accents all read `b.accent`, which the API still answers with `#023047`, so the token alone changes nothing visible; `utils/loadoutRender.js`'s `SECONDARIES` moves with it |
 | 8 | `.wg-ig` draws one ring in an `::after` above its children; `.wg-igf` keeps `inset 0 3px 4px -2px rgba(0,0,0,.45)`; `.wg-igb` loses its own ring for a left border |
@@ -105,4 +105,4 @@ These are the pins whose value is already decided; the board shows them applied,
 `local/pins2-board-3/redo/verify.cjs` serves the kit, opens it in Chrome with a mock db capability and reports: gates, picks
 and options rendered; every option of every fork clicked without a page error; each fix measured in computed style with its
 switch on **and** off; a pick actually written and painted; board 1's G8 frame loaded; and no horizontal overflow at 1282px
-or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:43 EDT: 10 surfaces, 18 picks, 39 options, 0 page errors, the chip group one line at 32px, no overflow at 1282px or 390px.
+or 390px. It also measures the tools row: the second group starts past the first and overlaps it vertically, the divider is an inset rule, the row does not overflow, and the Secondaries chip's computed `--c` reads `#3F6E8E`, and the three checkbox columns share one left edge with the fix and do not without it. Last run 2026-09-15 19:43 EDT: 10 surfaces, 18 picks, 39 options, 0 page errors, the chip group one line at 32px on the same centre line as Attachments, 16px of air each side of the divider, no overflow at 1282px or 390px.
