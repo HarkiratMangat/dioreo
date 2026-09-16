@@ -16,7 +16,7 @@ import { fileURLToPath } from 'url';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MK = path.join(ROOT, 'docs/superpowers/mockups/2026-08-23-portal-interactive');
 const PT = path.join(ROOT, 'portal', 'public');
-const NOTES = path.join(ROOT, 'local', 'portal-sync-notes.md');
+const NOTES = path.join(ROOT, 'docs', 'portal', 'portal-sync-notes.md');
 
 const argv = process.argv.slice(2);
 const has = (f) => argv.includes(f);
@@ -88,7 +88,7 @@ const SHELL = (realm) => `<!doctype html><html><head><meta charset="utf-8"><titl
   <div class="col"><h2>Portal${REAL ? ' — LIVE dev server' : ''}</h2><div class="vp" id="vpb"><iframe id="b" src="${REAL ? 'http://127.0.0.1:8787/#/' + realm : '/harness.html?demo=1#/' + realm}"></iframe><div class="pins" id="pb"></div></div></div>
 </div>
 <button id="open">Pins &amp; log</button>
-<div id="tray"><h2>Pins → local/portal-sync-notes.md <button id="close" style="padding:1px 7px">×</button></h2><div id="list"></div></div>
+<div id="tray"><h2>Pins → docs/portal/portal-sync-notes.md <button id="close" style="padding:1px 7px">×</button></h2><div id="list"></div></div>
 <div id="pop"><div class="who" id="popwho"></div><textarea id="poptext" placeholder="What is wrong here?"></textarea><div class="row"><button id="popsave" style="flex:1">Save pin</button><button id="popdel" style="color:#FF5D3B">Delete</button><button id="popcancel">Cancel</button></div></div>
 <script>
 const A=document.getElementById('a'),B=document.getElementById('b');
@@ -268,7 +268,7 @@ server.listen(PORT, '127.0.0.1', () => {
     console.log(`\nportal:sync — http://127.0.0.1:${PORT}\n`);
     console.log(`  left  : the mockup, the approved design`);
     console.log(`  right : ${REAL ? 'the LIVE dev server on :8787 (real data — data differences are EXPECTED)' : 'the harness, on the mockup\'s own fixtures (a difference is a DESIGN difference)'}`);
-    console.log(`  notes : local/portal-sync-notes.md\n`);
+    console.log(`  notes : docs/portal/portal-sync-notes.md\n`);
     console.log(`  ⚠️ Click-sync matches on the VISIBLE LABEL, so a control the two sides spell`);
     console.log(`     differently reports NO MATCH rather than clicking the wrong thing — that`);
     console.log(`     refusal is itself a finding worth noting.\n`);

@@ -281,7 +281,7 @@ I added four steps here on 2026-09-10 and removed them the same hour: **every on
 **The one genuinely new thing is mechanical** — §3b #5 is arithmetic now. Declare what a handoff summarises and `npm run handoff` names anything dropped, and it also requires an `## Audit log`:
 
 ```
-<!-- coverage: local/portal-sync-notes.md · · (pmt\w+) · -->
+<!-- coverage: docs/portal/portal-sync-notes.md · · (pmt\w+) · -->
 ```
 
 ---

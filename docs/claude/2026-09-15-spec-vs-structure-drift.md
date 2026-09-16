@@ -1,5 +1,5 @@
 ---
-kind: spec
+kind: record
 status: frozen
 ---
 
