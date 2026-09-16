@@ -9,6 +9,27 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3m · one of his five points I had reasoned about and never built — 2026-09-16 18:47 EDT
+
+Re-read his actions-cell thread rather than trusting my own summary of it, and checked his five points one at a time against the code. Four were built. **The image/problem badge mismatch was not.**
+
+I had thought it through properly in the pass — *"one is an ACTION you can open, the other is STATE; putting a state glyph in the action run is the actual error"* — written the reasoning into the round-3b record, and then moved on to the next item without writing a line of CSS. The reasoning being right is what made it feel finished.
+
+Measured: the problem chip is a **26px** bordered button with a hatched edge; the image glyph beside it was a bare **22px** icon with **no box at all**. They share a cell, so the eye reads them as a set, and they were drawn as two different kinds of object.
+
+They *are* two different kinds of object, so the fix is not to make them identical — it is to give them the same box so the set reads, and let colour and the hatch say which one is pressable.
+
+| | Chip | Glyph |
+|---|---|---|
+| Height | 26 | 26 |
+| Centre y | 3096.7 | 3096.7 |
+| Radius | 8px | 8px |
+| Ringed | yes | yes |
+
+**And his first point, "the build 1,3 text", needed nothing.** `buildsWord` already renders `Builds 1, 3` with the comma-space and uses an en dash for contiguous runs of three or more. The auto-responder had promised to "add comma-space and en dash handling"; the code had it. Checked rather than built — and recorded, because a point closed by reading is still a point closed.
+
+🔴 **The pattern this round keeps returning to: reasoning about a fix reads, to me, exactly like having made it.** The three defences that actually work are the ones this session used — measure the computed value, re-read his own words instead of my summary of them, and open the thing and look.
+
 ## Round 3l · my own fix had a regression, and falsifying it caught it — 2026-09-16 18:39 EDT
 
 I had just written that removing `.g-stage`'s `translateZ(0)` fixed three things. Before moving on I asked the one question that matters after a fix: **what did this break?**
