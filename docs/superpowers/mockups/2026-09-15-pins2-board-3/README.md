@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 13). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 14). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -20,6 +20,7 @@ record — every gate, the pins it answers, and every fork with its options — 
 - One **gate** per topic, in board 1 and 2's frame: a gate id, a title, a one-line sub, the pins it answers, a stage
   holding only the element, the notes, and then the picks.
 - A1's stage carries one weapon from **every** category, so the tools row's real spacing and wrap behaviour are on screen rather than implied.
+- **Where a board already answered it, the board itself is shown**: `ref/board1-g9.html` and `ref/board1-g8.html` are board 1's page trimmed to one gate and framed in the stage, so the target is board 1 rather than my redrawing of it (his note, 2026-09-15 20:46 EDT). The port sits beside it so the gap is visible.
 - A stage is the portal's own component — `Manifest`, `ArmoryGroups`, `RepairsPanel`, `NowShowing`, `B3History`,
   `B3BuildDrawer`, the command bar, the export drawer — running on the dev database with the mocked API. Drawers, the
   selection bar and popovers are `position:fixed` in the portal, so each stage carries a transform and becomes their window.
@@ -41,7 +42,7 @@ surface's decisions as rows — look at an option, tick it to record it (his not
 |---|---|---|---|
 | E | The shared vocabulary — buttons, icon buttons, radius, labels, pills, small text, on one stage | 1 · 4 · 10 · 11 · 12 · 14 · 21 · 27 · 28 · 29 · 31 · 34 · 35 · 38 · 40 · 41 · 42 · 43 · 47 · 52 | `e1`–`e6` |
 | M1 | The Armory manifest — fixes, badges, tags, problems, selecting | 3 · 5 · 6 · 7 · 8 · 9 · 10 · 12 · 13 · 14 · 15 · 16 · 17 · 18 · 19 · 20 · 22 | `p1` `p2pal` `p2sty` `p3` `p4` `p5list` `p5bg` `p5hint` |
-| M2 | The build drawer | 2 | — (board 1 G9) |
+| M2 | The build drawer — **board 1's own G9 in a frame**, the portal's current drawer, and the port so far | 2 | — (the target is board 1) |
 | M3 | Repairs | 23 | `p6` |
 | M4 | Command search | 25 | — (as shown) |
 | M5 | Export | 26 | `exp` |
