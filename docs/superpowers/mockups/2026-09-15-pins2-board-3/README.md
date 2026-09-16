@@ -9,6 +9,25 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3g · the pill, and fixing the instance again — 2026-09-16 18:11 EDT
+
+I had asked him what size the pill "should read as" instead of measuring it. That was the wrong move — he has said twice this round that he should not have to point things out. Measured against its own bar:
+
+| | Height | Centre y |
+|---|---|---|
+| The bar | 64 | **−2551.3** |
+| Count badge | 40 | −2551.3 |
+| All four action buttons | 40 | −2551.3 |
+| **The chip** | **26** | **−2553.8** |
+
+Two defects, both now answerable without asking him.
+
+**It was the only object in the bar off the shared rhythm** — 26px among 40s — and its padding was `0 2px 0 9px`, so the close button was jammed 2px from the edge while the dot had 9. A chip is a token, not a control, so matching 40 would make it read as a fifth button; **32** is the deliberate step below, with even padding and the × at 24.
+
+**And it sat 2.5px high — which I had already fixed, for a different element.** `.b3-sd-chips` is `grid-template-rows: repeat(2,auto)`, so one row of chips computes tracks of `26px 0px`, and `align-content: center` centres a 31px block (26 + a 5px gap + a phantom 0px row) rather than the 26px chip. An hour earlier I hit exactly this with the weapon-name line and fixed it as `:has(.b3-sd-sum)` — **the instance**. The chips were left broken and he had to point at them separately. The second row now exists only when there are enough chips to use it.
+
+`26px 0px` → `32px`. Off-centre **2.5px → 0.00**.
+
 ## Round 3f · history rows and B1 — 2026-09-16 18:08 EDT
 
 ### History: the row was shouting what you already knew
