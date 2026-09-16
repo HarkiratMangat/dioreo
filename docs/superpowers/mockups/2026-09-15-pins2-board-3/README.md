@@ -9,6 +9,43 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3e · the critique pass, and impeccable catching my own bounce — 2026-09-16 17:58 EDT
+
+### It caught the thing I had just "fixed"
+
+`impeccable`'s detector flagged `cubic-bezier(.2, 1.5, .4, 1)` as **bounce easing** — *"bounce and elastic easing feel dated and tacky. Real objects decelerate smoothly."*
+
+**That curve was mine, written forty minutes earlier, as the replacement for the bolt bounce he called lazy.** A 1.5 control point is an overshoot. I removed a bounce and wrote a bounce, and I had looked at the render.
+
+The lesson is narrower than "run the detector": when replacing something he rejected, **name the PROPERTY that made it wrong and check the replacement against that property**, not against my impression of it. The property was *springs back after arriving*. A struck digit lands and stops — `cubic-bezier(.16,1,.3,1)`.
+
+⚠️ The detector reads easing functions, not keyframe shapes, so its silence on `b3strike` (which overshoots on the squash axis) proves nothing about `b3strike`. A clean scan is not a pass.
+
+⚠️ **Run it from the repo root.** From inside the kit it cannot find the design system and reports **101** findings where the root reports **14** — 87 phantoms.
+
+| Detector finding | Outcome |
+|---|---|
+| `bounce-easing` × 1 | Fixed — exponential ease-out |
+| `layout-transition` × 1 | Fixed — `transition: width` relayouts every frame; the thumb scales on X with `transform-origin: 0 50%` |
+| `side-tab` × 14 | **Refused, with reasons** — below |
+
+### Refusing the side-tab finding
+
+The detector calls a left-edge accent *"the most recognizable tell of AI-generated UIs"*. It collides with an explicit decision: he wrote *"what purpose does the square chip beside the weapon name serve when the accent is already present as the left side border element?"* and had me delete the chip **in the rail's favour**. Board 2 carries the same device through 21 approved rounds. A policy is advisory, never a veto — and a finding dropped without a reason is how a tool gets retired, so it is named here rather than ignored.
+
+🔀 **But the count is its own question, and it is his to answer.** Board 2 uses the rail on ONE thing, a weapon group header. Board 3 has it on the problem chip, the selection group header, the table row, the repairs row, the history row, the fault mini and the picker group. **If everything has a rail, the rail says nothing.** That is not the detector's objection — the detector objects to the device; the objection worth having is about its density.
+
+### The critique pass on the expanded Repairs row
+
+| Finding | Measured | Fix |
+|---|---|---|
+| The same meter drawn twice | `.b3-pips` at (485,546) 64×12 and (530,605) 74×16 — one fact, 59px apart, two sizes | The chip is the collapsed reading; it drops its meter when the panel is open |
+| Two actions under the touch floor | Fix 60×32, Show in the manifest 165×32, against this product's own `--tap: 44px` | The box stays 32 for a dense row; the hit area is extended to 44 by an inset pseudo-element |
+| An arbitrary split | Both columns measured exactly **120px** while the left held two rows and the right three — so the left ended in dead space | Each column packs from the top (left is 66px now), and the gutter carries a hairline so the split is stated |
+| A value slot with no value | `— — — — —`, five em dashes mimicking the meter beside it — **decoration shaped like data**, which reads as a reading at a glance | It states what the absence costs: *can't be shared or imported* |
+
+⚠️ **The class I have now hit three times today: an expanded view that RESTATES its summary instead of extending it.** "Build 1 / MP" in the selection list, the count line above it, and now the Repairs panel's left column — which is a glossary of the two chips above it. I fixed the meter and the dashes; whether that column earns its 392px at all is a design question left open rather than decided alone.
+
 ## Round 3d · the table, and codebase-memory doing the sweep's job — 2026-09-16 17:50 EDT
 
 His correction: *"stop building tests for things you should be catching yourself in the first place. also pretty sure codebase-memory can do a large part of this test's job on its own. index the artifact's code within it and try."*
