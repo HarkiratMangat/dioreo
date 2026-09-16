@@ -9,6 +9,28 @@ status: live
 
 > **Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3i · the small-text fork this session actually owed him — 2026-09-16 18:22 EDT
+
+He wrote: *"I've already mentioned this like 3 times and we literally have a key point in the plan was literally about fixing these useless, skipable hint texts."*
+
+I read the plan rather than my memory of it. §5b carries his own words: *"let's do all designing stuff, including the design proposal for the hint texts (not the actual rewrite)… This relieves pressure off of session 4 from any actual drawing designs. It allows it to keep its focus and judgement on the actual rewrites, the standardization, where to actually apply it."*
+
+**So the DESIGN of small text is this session's deliverable, and board 3 did not have it.** It had `p5hint`, a fork between a hover card and an inline line — but that is a *tooltip*, and his complaint is about *static caption prose*: `.sp`, `.chint`, `.pnote`, `.hint`, `.nw-hint`, `.bvnote`, `.racknote`, which board 2 catalogued as **24 small-text sites and 5 Masthead meta strings**. A class with a corpus, and no fork.
+
+I had fixed one line's treatment inline and called it done — the instance again, and the reason he has had to say it three times.
+
+**P10 · Small text**, drawn on the manifest's count line as the specimen, three treatments he can switch between:
+
+| | What it proposes |
+|---|---|
+| **Now · caption** | Grey, light, under its control, describing the control. The one he keeps skipping |
+| **What it does to your data** | Reading weight, subject in ink, consequence after a hairline — it states what the control is about to DO, which is the one thing at that spot he cannot already see |
+| **Inside the control** | No separate line at all; it rides in the control's own row behind a divider, so there is nothing to scan past |
+
+Board: 13 forks → **14**, 31 options → **34**.
+
+⚠️ **The third option failed to render twice, and only looking caught it.** First the `::after` sat on `.b3-sd-lh`, where it is the last flex child — so "inside the control" rendered past the view toggle at the far right, the opposite of its own proposition. Moving it to the count's span rendered **nothing**, because `attr()` reads the element's **own** attribute and `data-says` was still on the parent. Both were correct-looking CSS that drew the wrong thing or no thing.
+
 ## Round 3h · the full-screen sweep found what nobody pointed at — 2026-09-16 18:14 EDT
 
 Ran board 2's method over the whole board — 12 screens, 10,411px, read top to bottom — and the first screen carried a defect no comment had named.
