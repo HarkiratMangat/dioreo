@@ -5,7 +5,7 @@ status: live
 
 # Design board 3 — the gates, the pins each one answers, and the picks
 
-*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 12). Its kit is
+*Written 2026-09-15 19:03 EDT. The board is <https://claude.ai/artifact/2yJmND6URRPwLbNJbzySFc> (version 13). Its kit is
 `local/pins2-board-3/redo/`, which is gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured
 dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked
 record — every gate, the pins it answers, and every fork with its options — so Sessions 4 and 5 can extract from git alone.*
@@ -103,6 +103,13 @@ These are the pins whose value is already decided; the board shows them applied,
 | — | **The weapon line on one axis**: `.wg-nb::before` drops its 2px bottom margin and the small line centres as an inline-flex, so the category and the build count share a baseline (19:24 EDT) |
 | — | **The build row's accent** is 2.5px, the weapon row's stays 4px (19:25 EDT) |
 | — | **Select-all alignment** (his comment 2026-09-15 19:20 EDT, not one of the 57): `.wg-heads` padding `0 var(--s4)` → `0 var(--s4) 0 20px`, so the column head, the weapon header and every build row share one left edge. Measured: all three checkboxes at x=139 with the fix, 135 vs 139 without it |
+
+## One trap this board paid for
+
+`.dk-h span` — a selector written for one sentence — caught the DECIDE chip beside it, because class-plus-element
+outranks a plain class. The chip rendered 508px wide instead of 60px. **Style by class, never by element type**, and when
+a box is the wrong size, read its computed `flex` and `min-width` before adding another rule: both were inherited, and no
+amount of `flex: none` on the weaker selector would have won.
 
 ## How it is checked
 
