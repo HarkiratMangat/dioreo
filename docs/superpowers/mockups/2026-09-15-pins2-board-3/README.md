@@ -851,3 +851,41 @@ touching anything. Thirty-four threads collapse to nine root causes, and three o
 
 **The Repairs critique** (the anthropic `/design-critique`, which he asked for by name). The hazard hatch ran down the gutter of **100% of the rows**, so it distinguished nothing and made five builds needing a tidy-up the loudest thing on the page. The leading numeral read `2` in a row that says "Build 1" under an empty column head — misleading, not merely uninformative — and the two chips beside it already counted themselves. And the panel had one voice for five very different problems, so it refused to rank and the reader had to, on every row. Now: no hatch, no numeral, two severities (`blocks` / `thin`), "worst first" means unshareable first, and the header states the scale in its first clause.
 
+## Round 3w — the 3-A and 3-B tail, read at last (2026-09-17 10:22 EDT)
+
+He held the publish and sent me here first. **All 98 threads across both frozen boards read: 3-A has 76 (45 open), 3-B
+has 22 (21 open).** The headline is not a new backlog.
+
+**The open tail is the same nine classes as 3-C, and today's class fixes close it.** Thread by thread, 3-B's twenty-one
+open threads are ones I had already answered with a "Done" — they are open because he never resolved them, and several
+are the exact asks that came back on 3-C, which is why he said to take a resolved thread there with a grain of salt:
+
+| 3-B thread | My old reply | What actually happened |
+|---|---|---|
+| the pointer arrow | "no triangle; the hazard band plumes out of the chip" | rejected on 3-C. Attempt six is the hover card's own two-layer pointer, which was already in the file |
+| the gap in the border | "ring was intact, the gap was the chip/card join" | right diagnosis, wrong fix — I kept repairing the join. There is no join now |
+| the skippable hint | "it states what the buttons act on now" | he said it still looked skippable. The three treatments are drawn side by side under the switch now |
+| the checkbox hover | "ghost check back on unselected hover" | true for option A only; B never got the `:not(.on)` |
+| the View label | "View label added" | added, but at its own size rather than the Attachments label's. It is that declaration now |
+| the hint line alignment | "it was align-items:baseline. One word" | the same defect then reappeared on the export picker's rows — one word, at the wrong scope, twice |
+
+Two replies posted on 3-B correcting my own Done claims on the pointer and the border gap. The rest stand.
+
+**Three of his screenshots opened for the first time, and each one settled something prose had not.** `Claude 04.12.01`
+shows the border gap is not a break in either ring — both rings are whole, and the notch is where the chip's
+bottom-left corner and the card's top-right corner fail to meet. Every fix I made was to the join, which is why it
+came back three times. `Arc 05.27.31` shows the repairs row with the hatch on the gutter, the numeral `2` beside
+"Build 1", and `No gunsmith code — — — — —`; all three are gone. `Arc 05.01.30` shows the selection chips already
+content-width, so that half of his 11:44 complaint was fixed before he wrote it and the equal-width grid he
+screenshotted was the older state.
+
+**The palette, both ways, because he asked to see all three options.** `mine` keeps his hexes exactly. `mineflat`
+keeps his nine hues and holds lightness at .735 with chroma as high as each hue carries up to .20 — his own median is
+.762, and .78/.14 was tried first and washed his `#ff2a55` optic to a pale `#FE9499`. Both are drawn as swatch rows
+under the palette switch, each row declaring its own values so the comparison is two different strips rather than two
+copies of whichever is live.
+
+⚠️ **And the board was broken for four minutes and the gate is what caught it.** The palette specimen went in after a
+closing backtick, so everything below it parsed as JS and the page threw `SyntaxError: Unexpected identifier '$'`.
+`verify.cjs` died on `window.__b3` being undefined, which is what a dead board looks like from the outside. Reading a
+crash as a crash rather than as a flaky harness is the whole value of chaining the gate onto the edit.
