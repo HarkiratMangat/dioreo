@@ -7,6 +7,27 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3p · he drew a line through a chip, and it was a whole class — 2026-09-16 21:38 EDT
+
+He put a horizontal rule across `look-selbar.png` and asked whether I noticed. The smaller **Builds 1–5** sat off the line the weapon name sits on.
+
+**The cause is one line of markup.** The weapon name is a BARE TEXT NODE inside the chip, so it lays out as an anonymous flex item and takes the container's `align-items: center` — box-centred against a count set 1.5px smaller, which is a different baseline. Six rows away, `.b3-sd-w` in the list was already `baseline`. **The same name-and-label pair was aligned two different ways in two places**, which is the defect; the pixel is just where it showed.
+
+The rule now written into the stylesheet: **words beside words share a BASELINE; a box beside words shares a CENTRE line.** `.b3-nw` is that pair wherever it occurs, and the dot, the ×, the badges and the checkbox around it stay centred, which is what a box wants.
+
+**It is a check now, not a habit.** `class-sweep.cjs` gained `splitBaseline`: every single-line flex row holding two text children of different sizes, reporting any pair whose baselines disagree. It went 258 → 10 → 2 as the false-positive classes were found and excluded — a wrapped row has two baselines by definition, and a multi-line child has no single baseline to share.
+
+| Row | Was | Now |
+|---|---|---|
+| `.b3-sc` selection chip | centred, 0.75px split | `.b3-nw`, one baseline |
+| `.b3-sd-gh` · `.b3-wg-h` group heads | centred | `.b3-nw`, badges `align-self:center` |
+| `.b3-sd-lh` list header, `.b3-hi-day`, `.b3-rv` | centred | `.b3-nw` |
+| `.g-pick-gh` · `.g-pick-r` | centred | baseline; height from padding, since a baseline group inside a taller box hugs its top |
+| `.wg-line` — the portal's own weapon line | centred | baseline |
+| `.pidx-l li` | centred | **left centred on purpose** — baseline measured WORSE (3.94 → 4.44) because its right-hand item is a status chip, not a word |
+
+Also this round: the Repairs status pill wore its hazard as a 5px sliver against a 34px pill — *"a TERRIBLE integration of the warning system into the button"*. The hazard is the pill's whole left cap now, fading out under the count, so the control is dipped in the warning rather than wearing a sticker of one.
+
 ## Round 3o · the badge fork had no legal answer in it — 2026-09-16 21:26 EDT
 
 He opened version 5 and found two things in two seconds: the badges are not animated, and the TOP 3 / TOP 5 badge still carries a number icon — the third time he has asked for that.
