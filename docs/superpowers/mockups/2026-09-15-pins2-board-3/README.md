@@ -7,6 +7,43 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3t · his round on 3-C, and the screenshots I had been telling him I could not open — 2026-09-17 00:25 EDT
+
+24 threads on the fresh board. **None of them is activated for Claude, so there is nothing to reply to — the only answer is the fix.**
+
+🔴 **First, a thing that has been wrong all session and cost him work.** Every time he pasted a screenshot path, the reply was some version of *"the file path won't come through on its own"* — and he corrected it twice: *"all you need is the path, you have access to my local disk via the claude code desktop app."* **He was right.** They are `.webp` files in `~/Downloads`, they convert with one `magick` call, and they read. Seven of them were opened this round and four of his threads were answerable only from the picture: the chips forced to equal width, the View label against ATTACHMENTS, the words sitting above their own BEST badge, and the tag style he wants next.
+
+### The regressions I shipped last round, which is why he opened annoyed
+
+| His words | What I had done |
+|---|---|
+| "There was nothing wrong with them, why were they changed?" | Swapped `min-height` for padding on the manifest's category pills chasing a sub-pixel baseline, taking 2px off every one |
+| "misligned text" | Made the selection group header `align-items:baseline`, so the words sat above the BEST badge beside them |
+| "your overdrive hazard tweak didn't really work. I'd rather you revert it." | The viewport-anchored hazard field |
+| "wtf is this Repairs button design? Remove the hazard lines" | A hazard cap he never asked for, twice |
+
+**The rule I had right and then over-applied: a row of BOXES keeps the centre line; the words share a baseline INSIDE `.b3-nw`.** Applying the wrapper's rule to the row the wrapper lives in is what broke three controls.
+
+### His four badge instructions, taken literally
+
+The loop runs while a badge is visible and stops when it leaves — the movement is the first tenth of a 5.2s cycle, so a loop inside a data table is mostly absent. BEST is flat, the way Weight drew it. Ladder and Weight are gone, so **P1 is no longer a fork**. And TOXIC is back to the seep it had: *"I didn't even ask for it to be reanimated."* I rebuilt five badges when he had named two.
+
+### "It still looks skipable" — the third time, so I stopped rewording it
+
+Read his three together and they are one complaint. **Grey, small and trailing something louder IS this board's grammar for "skip me"**, applied eleven times; rewording a line set in that grammar cannot rescue it. The test that sorts them is whether the line carries a fact the reader cannot already see:
+
+- "4 builds · 3 weapons" — arithmetic on rows in view. **Deleted.**
+- "every action below applies to these" — a description of what a toolbar does. **Deleted.**
+- "Builds 1–5" — *which* builds are selected, which is half the chip's identity. **Set as data** at the name's weight in the weapon's accent, so the chip reads as one identifier.
+
+And the same thought closed a second thread: *"are you seriously telling me that after i select a build, I have to scroll thru the entire list to see what i have selected???"* A control that acts on a selection must **show** the selection, not count it. The Export picker grows the same chip strip the selection bar already has.
+
+### Also landed
+
+The View label at 9.5px like every other toggle label · the image mark loses its box and the close button gains one · the build numeral clears the accent rail · the repairs chevron is the manifest's ringed box and the row hover covers the row · the mesh keeps its group head black and lifted · B · Soft Well's checked-hover matches A's · Add build takes the masthead's shape · and his six slot colours are in as a palette option with **cyan, blue and lime** for the three he could not place — his six leave one wide hole from yellow round to lavender, and those three close it.
+
+**Still open, and named rather than quietly carried:** the `/design-critique` pass he asked for on the Repairs panel · the "1 never ends" alignment · the problem popup's border and pointer, his third ask · the selection-list fork he has already answered "both" to · the Small text options that change nothing visible · one image icon out of line in the list · the neutral+text refinement and the named-slot tag style from his screenshot.
+
 ## Round 3s · the impeccable pass, and one verb aimed at scaffolding — 2026-09-16 22:32 EDT
 
 Six verbs, on his instruction. What each one actually changed:
