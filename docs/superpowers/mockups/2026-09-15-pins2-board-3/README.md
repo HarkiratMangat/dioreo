@@ -1183,72 +1183,35 @@ A clipped screenshot is in DOCUMENT coordinates while `getBoundingClientRect` is
 
 ### META is now his artwork on the board, with his numbers
 
-He tuned it in the playground and sent the values: *"keep the lightning as my Lightning VFX.svg clipped inside the
-frame, and scale the artwork to 2.00×, position it at 50% 60%, rotate it -16°… a much heavier bloom (1.70×),
-ambiance at 1.60×, resting light 0.06… a 8.2s loop, strikes 45% of the loop apart, rows staggered 1.30×."* Applied
-verbatim. `b3/volt.js` fetches the untouched cel, retimes it per loop length, recolours it to a blob URL and starts
-the badge's ambiance inside `img.onload` so the two clocks share an origin; `b3/board.css` clips it into `.b3-volt`
-and lights the ring at the strike's own position.
+He tuned it in the playground and sent the values: *"keep the lightning as my Lightning VFX.svg clipped inside the frame, and scale the artwork to 2.00×, position it at 50% 60%, rotate it -16°… a much heavier bloom (1.70×), ambiance at 1.60×, resting light 0.06… a 8.2s loop, strikes 45% of the loop apart, rows staggered 1.30×."* Applied verbatim. `b3/volt.js` fetches the untouched cel, retimes it per loop length, recolours it to a blob URL and starts the badge's ambiance inside `img.onload` so the two clocks share an origin; `b3/board.css` clips it into `.b3-volt` and lights the ring at the strike's own position.
 
-⚠️ **A CLAIM I MADE HERE AN HOUR AGO WAS WRONG AND IS CORRECTED IN THE SAME ROUND (2026-09-17 18:33 EDT).** I wrote
-that the rejected version was also BROKEN — that it masked on `url(volt.svg)` with no such file in the kit, so his
-"just a vertical line" was reading a 404. **`volt.svg` is missing from the local kit but IS a published file on the
-artifact, 26,005 bytes.** The mask resolved on the board he was actually looking at; only a local render 404s. I
-asserted a 404 from a directory listing without checking the surface the complaint was made against, which is the
-same error as the severity finding two sections down, in the same hour. Found by listing the artifact's own files
-rather than assuming they mirror the disk.
+⚠️ **A CLAIM I MADE HERE AN HOUR AGO WAS WRONG AND IS CORRECTED IN THE SAME ROUND (2026-09-17 18:33 EDT).** I wrote that the rejected version was also BROKEN — that it masked on `url(volt.svg)` with no such file in the kit, so his "just a vertical line" was reading a 404. **`volt.svg` is missing from the local kit but IS a published file on the artifact, 26,005 bytes.** The mask resolved on the board he was actually looking at; only a local render 404s. I asserted a 404 from a directory listing without checking the surface the complaint was made against, which is the same error as the severity finding two sections down, in the same hour. Found by listing the artifact's own files rather than assuming they mirror the disk.
 
-⚠️ **THREE loop variants, not four.** His stagger was set against the playground's TWO badges; continuing the same
-formula to a fourth step lands at 13.31s, inside the band measured dark 87% of the time. Extrapolating a dial past
-what he tested is how a tuned value arrives looking wrong.
+⚠️ **THREE loop variants, not four.** His stagger was set against the playground's TWO badges; continuing the same formula to a fourth step lands at 13.31s, inside the band measured dark 87% of the time. Extrapolating a dial past what he tested is how a tuned value arrives looking wrong.
 
-✅ **And his composition is better than the one I would have defended.** At 2× pushed to 60% Y the badge shows a
-middle SLICE of a 386×362 cel, tilted off horizontal — lightning passing THROUGH the badge, seen through a slot,
-rather than a whole bolt fitted inside a box. The whole-bolt reading is the icon reading, and the icon reading is
-what he called a cheap imitation. He says he was "playing around blindly"; the result is the thing my own analysis
-had ruled out unrendered.
+✅ **And his composition is better than the one I would have defended.** At 2× pushed to 60% Y the badge shows a middle SLICE of a 386×362 cel, tilted off horizontal — lightning passing THROUGH the badge, seen through a slot, rather than a whole bolt fitted inside a box. The whole-bolt reading is the icon reading, and the icon reading is what he called a cheap imitation. He says he was "playing around blindly"; the result is the thing my own analysis had ruled out unrendered.
 
 ### A DECIDED FORK IS NOW A RECORD, NOT A QUESTION — the model fix under root 3
 
-`4733ffc0` and `158cd01e` are both one defect: he answers a fork, and the board keeps asking. The old remedy was to
-delete the fork (`p5list`), which stops the question and loses the answer. A fork now carries `decided: {choice,
-why, at}`; a ruled fork renders as the record of his call, switches the surface to it on mount, and cannot offer the
-alternative again. `exp` is ruled to **B · Its own step** and `p3` to **A · Tape and tail**.
+`4733ffc0` and `158cd01e` are both one defect: he answers a fork, and the board keeps asking. The old remedy was to delete the fork (`p5list`), which stops the question and loses the answer. A fork now carries `decided: {choice, why, at}`; a ruled fork renders as the record of his call, switches the surface to it on mount, and cannot offer the alternative again. `exp` is ruled to **B · Its own step** and `p3` to **A · Tape and tail**.
 
-⛔ **And the Export drawer restyle he rejected is gone** — *"i outright reject your design improvement. This shit is
-ugly."* It repainted `.exs-i` under BOTH option values, so picking either branch of the picker question also served
-him a redesign he had refused. The picker is what the fork is about and it stays; the list around it is the portal's
-own again.
+⛔ **And the Export drawer restyle he rejected is gone** — *"i outright reject your design improvement. This shit is ugly."* It repainted `.exs-i` under BOTH option values, so picking either branch of the picker question also served him a redesign he had refused. The picker is what the fork is about and it stays; the list around it is the portal's own again.
 
 ### The filter chip: one mark box, and the mark is its own vocabulary
 
-`b3-fc` was already one class and one function, so the JS was never the defect — the MARKS were. A dot is 8px, an
-avatar 20px with a −6px pull, a meter 18px, an icon 13px, so every group's word began at a different x and the five
-rows read as five components. They sit in one 16px box now and every chip's text starts at 26px, measured.
+`b3-fc` was already one class and one function, so the JS was never the defect — the MARKS were. A dot is 8px, an avatar 20px with a −6px pull, a meter 18px, an icon 13px, so every group's word began at a different x and the five rows read as five components. They sit in one 16px box now and every chip's text starts at 26px, measured.
 
-⚠️ **But the marks must NOT be flattened to "icon: yes/no".** A dot is a TOPIC, an avatar an IDENTITY, a meter a
-MAGNITUDE, an icon an ACTION — they are different shapes because they say different kinds of thing, and that part
-was right. The box is shared; the mark stays free.
+⚠️ **But the marks must NOT be flattened to "icon: yes/no".** A dot is a TOPIC, an avatar an IDENTITY, a meter a MAGNITUDE, an icon an ACTION — they are different shapes because they say different kinds of thing, and that part was right. The box is shared; the mark stays free.
 
 ### The severity hues, and a retracted finding I re-derived off his own screenshot
 
-`658f7fef` is real and narrow: `--danger-ink` #FF8A85 is a tint meant for text, `--warn` #FF7A45 is a full-strength
-signal colour, so the second-quietest level was the loudest thing in the row. The four now descend in chroma:
-`#FF5A4F` → `#FF8A3D` → `#F0B447` → `#85939F`.
+`658f7fef` is real and narrow: `--danger-ink` #FF8A85 is a tint meant for text, `--warn` #FF7A45 is a full-strength signal colour, so the second-quietest level was the loudest thing in the row. The four now descend in chroma: `#FF5A4F` → `#FF8A3D` → `#F0B447` → `#85939F`.
 
-🔴 **I talked myself into rebuilding the meter as well, on the argument that severity carried no order at all — and
-that is the finding round 4c already RETRACTED**, having been read off a 62%-scaled crop where a 4px pip cluster is
-sub-pixel. I re-derived it from his low-res screenshot, and he caught it. **The cause is that I read round 4f and
-never read round 4c**, though the post-compact prompt said to read the retractions. The meter is correct at 4/3/2/1
-and is untouched.
+🔴 **I talked myself into rebuilding the meter as well, on the argument that severity carried no order at all — and that is the finding round 4c already RETRACTED**, having been read off a 62%-scaled crop where a 4px pip cluster is sub-pixel. I re-derived it from his low-res screenshot, and he caught it. **The cause is that I read round 4f and never read round 4c**, though the post-compact prompt said to read the retractions. The meter is correct at 4/3/2/1 and is untouched.
 
 ### The tag stops being a pill, because a pill is the wrong KIND of shape
 
-`32fb5a9e`: *"no pill, no bar/side-tab — a soft-cornered rectangle."* The radius is not a taste note. A PILL is the
-shape of a TOKEN — atomic, removable, interchangeable. An attachment tag is a FIELD: a named key with a value, one
-of nine slots a weapon always has. Nine fields drawn as pills read as nine loose objects dropped in a row, which is
-also why the run "clips downward instead of holding two rows" — loose tokens have no structure to hold. 5px radius,
-`cap` (the side-tab) withdrawn, and `5c743f2f`'s **text-only** shell added.
+`32fb5a9e`: *"no pill, no bar/side-tab — a soft-cornered rectangle."* The radius is not a taste note. A PILL is the shape of a TOKEN — atomic, removable, interchangeable. An attachment tag is a FIELD: a named key with a value, one of nine slots a weapon always has. Nine fields drawn as pills read as nine loose objects dropped in a row, which is also why the run "clips downward instead of holding two rows" — loose tokens have no structure to hold. 5px radius, `cap` (the side-tab) withdrawn, and `5c743f2f`'s **text-only** shell added.
 
 ### Closed this round
 
@@ -1267,71 +1230,37 @@ also why the run "clips downward instead of holding two rows" — loose tokens h
 
 ### What this round is evidence of
 
-🔴 **AND THE ROOT I "FOUND" WAS ALREADY WRITTEN, ONE HEADING ABOVE THE RETRACTION I MISSED.** A fifteen-thought
-pass arrived at "there is no element layer, so every surface is its own canvas"; round 4c says it better and says it
-first — *"I am never wrong at the level I fix — I am fixing one level below where the defect lives."* Two things I
-spent this session deriving were both in the section the post-compact prompt told me to open.
+🔴 **AND THE ROOT I "FOUND" WAS ALREADY WRITTEN, ONE HEADING ABOVE THE RETRACTION I MISSED.** A fifteen-thought pass arrived at "there is no element layer, so every surface is its own canvas"; round 4c says it better and says it first — *"I am never wrong at the level I fix — I am fixing one level below where the defect lives."* Two things I spent this session deriving were both in the section the post-compact prompt told me to open.
 
-**Two of my three biggest moves this session were corrected by him inside ten minutes of being made.** The thinking
-pass that skipped every design question and asked only about my own process, and a "deeper" severity finding that
-was a retracted claim re-derived from a downscaled crop. Both have the same shape: **reasoning about the work
-instead of looking at it**, which is anchor #23 wearing a different coat. The screenshots and the README were both
-sitting there unread while I theorised.
+**Two of my three biggest moves this session were corrected by him inside ten minutes of being made.** The thinking pass that skipped every design question and asked only about my own process, and a "deeper" severity finding that was a retracted claim re-derived from a downscaled crop. Both have the same shape: **reasoning about the work instead of looking at it**, which is anchor #23 wearing a different coat. The screenshots and the README were both sitting there unread while I theorised.
 
 ## Round 4h — the 24 regrouped by what they are instances OF, and 22 of the 32 closed (2026-09-17 19:00 EDT)
 
-**The five root causes in round 4f were a TRIAGE grouping, and triage groupings are the wrong shape to fix from.**
-"Alignment" is a symptom; five alignment threads had four different causes. Regrouped by the class each is an
-instance of, twenty of the twenty-four collapsed into four fixes.
+**The five root causes in round 4f were a TRIAGE grouping, and triage groupings are the wrong shape to fix from.** "Alignment" is a symptom; five alignment threads had four different causes. Regrouped by the class each is an instance of, twenty of the twenty-four collapsed into four fixes.
 
 ### A · A run that overflows is CONTAINED, not cut — four threads, one behaviour
 
-`42d1faa3` `dbd735b5` `d8e69f24` `1d832319`. His words across them: *"it is a hard cut today"* · *"tags clip
-downward instead of holding two rows"* · *"contained to two lines, the cell faded and scrollable."* A hard edge is a
-statement that there is nothing more, and it is false. One utility, five containers.
+`42d1faa3` `dbd735b5` `d8e69f24` `1d832319`. His words across them: *"it is a hard cut today"* · *"tags clip downward instead of holding two rows"* · *"contained to two lines, the cell faded and scrollable."* A hard edge is a statement that there is nothing more, and it is false. One utility, five containers.
 
-⚠️ **A fade that is always on is the opposite lie** — it dims the first and last item of a run that fits. So the
-depth is read from the container's own scroll: no overflow → no fade, at the top → no top fade, at the end → no
-bottom fade. Measured in the page: `0/0` when it fits, `0/15` at the top, `15/15` mid-run, `15/0` at the end.
+⚠️ **A fade that is always on is the opposite lie** — it dims the first and last item of a run that fits. So the depth is read from the container's own scroll: no overflow → no fade, at the top → no top fade, at the end → no bottom fade. Measured in the page: `0/0` when it fits, `0/15` at the top, `15/15` mid-run, `15/0` at the end.
 
-🔴 **I BUILT IT WITH `animation-timeline: scroll(self)` FIRST AND COULD NOT VERIFY IT — AND THE REASON WAS NOT THE
-CSS.** Every reading came back `--ft: 0px` with the animation's `currentTime` null. The browser pane was
-`document.hidden`, so **no animation of any kind advances in it** — proved by a plain 200ms opacity animation that
-also never moved. That is a ninth instrument failure and the first that was the INSTRUMENT'S ENVIRONMENT rather than
-its logic. `b3/fady.js` sets the two properties from `scrollTop`, which needs no animation frame and can therefore
-be checked. ⚠️ Do not "restore" the elegant version without a visible render to check it in.
+🔴 **I BUILT IT WITH `animation-timeline: scroll(self)` FIRST AND COULD NOT VERIFY IT — AND THE REASON WAS NOT THE CSS.** Every reading came back `--ft: 0px` with the animation's `currentTime` null. The browser pane was `document.hidden`, so **no animation of any kind advances in it** — proved by a plain 200ms opacity animation that also never moved. That is a ninth instrument failure and the first that was the INSTRUMENT'S ENVIRONMENT rather than its logic. `b3/fady.js` sets the two properties from `scrollTop`, which needs no animation frame and can therefore be checked. ⚠️ Do not "restore" the elegant version without a visible render to check it in.
 
 ### B · A control re-declared instead of reused — three threads
 
-`8184da23` `653f8eeb` `45bbb9ee`. The View label already had the right SIZE and was still wrong: it hard-typed
-`letter-spacing:.16em` where every other label reads `var(--b3-tr-wide)`, and its two declarations disagreed about
-the colour. Add build set its own height and padding beside a note that already said it should be *"the same button
-smaller"*. And the queue's Edit button was given `height:36px` when it gained its word, so it sat 8px shorter than
-the delete button beside it — **giving a control a label is not a reason to change its height.**
+`8184da23` `653f8eeb` `45bbb9ee`. The View label already had the right SIZE and was still wrong: it hard-typed `letter-spacing:.16em` where every other label reads `var(--b3-tr-wide)`, and its two declarations disagreed about the colour. Add build set its own height and padding beside a note that already said it should be *"the same button smaller"*. And the queue's Edit button was given `height:36px` when it gained its word, so it sat 8px shorter than the delete button beside it — **giving a control a label is not a reason to change its height.**
 
 ### D · A mark drawn on the wrong box — four threads
 
-`cd53517e` `07c3b35a` `442a918e` `1f8d6efa`. The left accent sat at the row's `left:0`, outdenting past the header's
-own content edge and showing through a 92%-opaque sticky header, which reads as a clip. The marks column was
-`auto auto 26px` — collapsing on a row with no problem and growing on one that has it — under a comment saying its
-whole purpose is that every mark lands at the same x. **Measured after: one x, 1064px, on every row.** The Repairs
-highlight was a flat 4% band, and a band stops where its element stops; it is the manifest's mesh now, on the row,
-so it reaches the actions column too.
+`cd53517e` `07c3b35a` `442a918e` `1f8d6efa`. The left accent sat at the row's `left:0`, outdenting past the header's own content edge and showing through a 92%-opaque sticky header, which reads as a clip. The marks column was `auto auto 26px` — collapsing on a row with no problem and growing on one that has it — under a comment saying its whole purpose is that every mark lands at the same x. **Measured after: one x, 1064px, on every row.** The Repairs highlight was a flat 4% band, and a band stops where its element stops; it is the manifest's mesh now, on the row, so it reaches the actions column too.
 
-**And the queue's two readouts were 4.5px apart — measured, 337.6 against 342.1.** My first fix was `align-self`,
-which governs a FLEX ITEM, and these are inline-flex boxes in a BLOCK, so their height is set by their own content:
-one carries a 13px glyph, the other a 4px meter. Still 4.5px after. The row is a flex line now, which is the board's
-own stated rule — words beside words share a baseline, a box beside words shares a centre line.
+**And the queue's two readouts were 4.5px apart — measured, 337.6 against 342.1.** My first fix was `align-self`, which governs a FLEX ITEM, and these are inline-flex boxes in a BLOCK, so their height is set by their own content: one carries a 13px glyph, the other a 4px meter. Still 4.5px after. The row is a flex line now, which is the board's own stated rule — words beside words share a baseline, a box beside words shares a centre line.
 
-⛔ **`1f8d6efa` was only ever about the MARK.** Round 4c retracted the "three statements of never ends" finding, so
-the head's count, the timeline's label and the advisory stay. What changed is that a 45° hatch MEANS DANGER on this
-board — he made me take it off META for exactly that reason — and an announcement with no end date is not a hazard.
-It is a thing that continues, so the open end fades.
+⛔ **`1f8d6efa` was only ever about the MARK.** Round 4c retracted the "three statements of never ends" finding, so the head's count, the timeline's label and the advisory stay. What changed is that a 45° hatch MEANS DANGER on this board — he made me take it off META for exactly that reason — and an announcement with no end date is not a hazard. It is a thing that continues, so the open end fades.
 
 ### The problem label is a fact about the WEAPON
 
-`1615b327`. Drawn on every build row, the same chip said the same thing four times down one group. The chip moves to
-the weapon row; each build keeps a bare triangle that says only *which* build is affected.
+`1615b327`. Drawn on every build row, the same chip said the same thing four times down one group. The chip moves to the weapon row; each build keeps a bare triangle that says only *which* build is affected.
 
 ### Closed, and what is left
 
@@ -1348,82 +1277,43 @@ the weapon row; each build keeps a bare triangle that says only *which* build is
 
 ### What this round is evidence of
 
-**Three of my moves today were corrected by him within minutes, and all three have the same shape.** A thinking pass
-that asked fifteen questions about my own process and none about the design. A "deeper" severity finding that was a
-retracted claim re-derived from a downscaled screenshot. A `volt.svg` 404 asserted from a directory listing without
-checking the artifact it was published to. **Each is reasoning about the work instead of looking at it** — and the
-fourth, calling `list_projects` and then immediately grepping for code, is the same failure aimed at a tool: using
-the instrument as a gesture rather than routing the question through it.
+**Three of my moves today were corrected by him within minutes, and all three have the same shape.** A thinking pass that asked fifteen questions about my own process and none about the design. A "deeper" severity finding that was a retracted claim re-derived from a downscaled screenshot. A `volt.svg` 404 asserted from a directory listing without checking the artifact it was published to. **Each is reasoning about the work instead of looking at it** — and the fourth, calling `list_projects` and then immediately grepping for code, is the same failure aimed at a tool: using the instrument as a gesture rather than routing the question through it.
 
 ## Round 4i — the last six, and the compliance failure underneath the whole evening (2026-09-17 19:15 EDT)
 
-**28 of the 32 are closed, one is half his own split, one is his own deferral, two were already superseded.**
-Board 3-D is at version 8.
+**28 of the 32 are closed, one is half his own split, one is his own deferral, two were already superseded.** Board 3-D is at version 8.
 
 ### The problem card is Gemini's technique, applied to a card whose height is not fixed
 
-`30b7b494` and `c9604d47` are one fix. Five rejected pointers were all a SECOND ELEMENT — a triangle that has to
-reproduce the card's ring, radius, ground and shadow and then meet it along a seam, which is where each died. The
-file he pointed at has no second element: the outline is one SVG path and the pointer is two bezier handles ON it,
-lying flat in the top edge at rest. There is no join to get wrong because there is no join. `pcPath()` generates it
-from the card's measured box, because his reference is a fixed 344×172 and this card's height follows its content.
+`30b7b494` and `c9604d47` are one fix. Five rejected pointers were all a SECOND ELEMENT — a triangle that has to reproduce the card's ring, radius, ground and shadow and then meet it along a seam, which is where each died. The file he pointed at has no second element: the outline is one SVG path and the pointer is two bezier handles ON it, lying flat in the top edge at rest. There is no join to get wrong because there is no join. `pcPath()` generates it from the card's measured box, because his reference is a fixed 344×172 and this card's height follows its content.
 
-**And it closes the hide for free.** "The reveal animates; the hide is still an abrupt disappear" was never a missing
-exit animation — it is that a `@keyframes` bound to the open state has nothing to say on the way out, AND that the
-card left the DOM in the same frame it closed. A transition belongs to the element and runs both ways; a `shown`
-flag keeps the card mounted for one transition after `open` drops. Verified in the page: `class="b3-pc in"`, the
-path generated with the bulge at `C 275.08 10 278.2 0 286 0`, no console errors.
+**And it closes the hide for free.** "The reveal animates; the hide is still an abrupt disappear" was never a missing exit animation — it is that a `@keyframes` bound to the open state has nothing to say on the way out, AND that the card left the DOM in the same frame it closed. A transition belongs to the element and runs both ways; a `shown` flag keeps the card mounted for one transition after `open` drops. Verified in the page: `class="b3-pc in"`, the path generated with the bulge at `C 275.08 10 278.2 0 286 0`, no console errors.
 
-🔴 **AND MY OWN NOTE IN `board.css` SAID NOT TO PUT THE HAZARD STRIP BACK** — *"the hatch is this board's mark for
-DANGER and the card is the thing that EXPLAINS the danger"*. He asked for it anyway. He decides; it is back, and the
-note is corrected rather than quietly overwritten. **The same note also claimed the tape's RULES were deleted and
-four of them were still live at the foot of the file** — a claim that something is gone, checkable in one search,
-wrong for a day.
+🔴 **AND MY OWN NOTE IN `board.css` SAID NOT TO PUT THE HAZARD STRIP BACK** — *"the hatch is this board's mark for DANGER and the card is the thing that EXPLAINS the danger"*. He asked for it anyway. He decides; it is back, and the note is corrected rather than quietly overwritten. **The same note also claimed the tape's RULES were deleted and four of them were still live at the foot of the file** — a claim that something is gone, checkable in one search, wrong for a day.
 
 ### `1b27b6cf` is the opposite of a fix he already asked for, and checking is what caught it
 
-*"The collapse icon's word-reveal should fire only on explicit hover of the button."* Two rules widened the MANIFEST
-fold's trigger to the whole weapon header; they are gone. ⛔ **The repairs row's row-wide trigger stays** — that one
-is his: *"Make it reveal that hover event when hovering over any part of the row."* Same control, two surfaces, two
-opposite instructions.
+*"The collapse icon's word-reveal should fire only on explicit hover of the button."* Two rules widened the MANIFEST fold's trigger to the whole weapon header; they are gone. ⛔ **The repairs row's row-wide trigger stays** — that one is his: *"Make it reveal that hover event when hovering over any part of the row."* Same control, two surfaces, two opposite instructions.
 
 ### The pass block was reprinting the filter row
 
-`16767834` had no spec, so the answer came from the render rather than from taste: the panel's filter row prints the
-four fault counts at the top, and this block reprinted the same four nine hundred pixels lower — four orange chips
-and one grey tick, so the one thing it exists to say was the quietest thing in it. It lists the checks with ZERO
-hits now: the information no other part of the page carries, and the literal meaning of "pass every check".
+`16767834` had no spec, so the answer came from the render rather than from taste: the panel's filter row prints the four fault counts at the top, and this block reprinted the same four nine hundred pixels lower — four orange chips and one grey tick, so the one thing it exists to say was the quietest thing in it. It lists the checks with ZERO hits now: the information no other part of the page carries, and the literal meaning of "pass every check".
 
 ### The deselect column, measured
 
-`4cec9165`: his CleanShot draws a guide down the column and the group header's × misses it. Two right insets in one
-container — the header at 8px, the rows at 12px. **After: one x, 1138px, header and rows identical.**
+`4cec9165`: his CleanShot draws a guide down the column and the group header's × misses it. Two right insets in one container — the header at 8px, the rows at 12px. **After: one x, 1138px, header and rows identical.**
 
 ### THE COMPLIANCE FAILURE, named properly because he had to raise it six times in one hour
 
-18:11 no thinking pass · 18:24 a retraction I never read · 18:31 `batch_execute` where `ctx_search` belonged · 18:32
-`ctx_execute` used as a raw read · 18:57 `list_projects` then `rg` in the same message · 19:07 drifting again. Each
-acknowledged, each followed by drift inside ten turns — so "remember the routing table" is disproven; it was loaded
-in context every time.
+18:11 no thinking pass · 18:24 a retraction I never read · 18:31 `batch_execute` where `ctx_search` belonged · 18:32 `ctx_execute` used as a raw read · 18:57 `list_projects` then `rg` in the same message · 19:07 drifting again. Each acknowledged, each followed by drift inside ten turns — so "remember the routing table" is disproven; it was loaded in context every time.
 
-**The mechanism: every correct tool has a PRECONDITION and the wrong ones have none.** `read_smart` needs a path,
-`ctx_search` a source name, `codebase-memory` a project and a symbol, `ctx_execute_file` the knowledge that it
-injects `FILE_CONTENT` and not `FILE_PATH`. `rg` and `python3 open()` run off a guess. Under pressure the
-lowest-precondition tool wins — anchor #25 aimed at tools rather than at rules.
+**The mechanism: every correct tool has a PRECONDITION and the wrong ones have none.** `read_smart` needs a path, `ctx_search` a source name, `codebase-memory` a project and a symbol, `ctx_execute_file` the knowledge that it injects `FILE_CONTENT` and not `FILE_PATH`. `rg` and `python3 open()` run off a guess. Under pressure the lowest-precondition tool wins — anchor #25 aimed at tools rather than at rules.
 
-⚠️ **A SECOND CAUSE, which the first does not cover:** at 18:57 I had the project name in hand and still ran `rg`,
-because I had framed a structural question as a text one — "find the string `.madd`" rather than "where is this
-control declared". Both have to be named or the fix half-works.
+⚠️ **A SECOND CAUSE, which the first does not cover:** at 18:57 I had the project name in hand and still ran `rg`, because I had framed a structural question as a text one — "find the string `.madd`" rather than "where is this control declared". Both have to be named or the fix half-works.
 
-**The correction is mechanical, not a resolution.** The three preconditions are filed as a pinned caveat — the
-graph project for this kit is `…-local-pins2-board-3-redo`, a SECOND project beside the repo one that I did not know
-existed until 18:55; the ctx sources are `board3-readme` and `pins2-plan`; `ctx_execute_file` injects
-`FILE_CONTENT`/`file_path`. With those in hand the right tool costs exactly what `rg` costs.
+**The correction is mechanical, not a resolution.** The three preconditions are filed as a pinned caveat — the graph project for this kit is `…-local-pins2-board-3-redo`, a SECOND project beside the repo one that I did not know existed until 18:55; the ctx sources are `board3-readme` and `pins2-plan`; `ctx_execute_file` injects `FILE_CONTENT`/`file_path`. With those in hand the right tool costs exactly what `rg` costs.
 
-**The measured price of the drift:** one `search_graph` call returned `ProblemChip` at `armory-parts.js:92-194` with
-its six callees and full source, after four `rg` calls had circled the same component. And an assert that prints
-`{found, wanted}` named a double-count on the first attempt, after four blind ones — the batching contract's own
-print-per-edit rule, which I had been applying to the writes and not to the checks.
+**The measured price of the drift:** one `search_graph` call returned `ProblemChip` at `armory-parts.js:92-194` with its six callees and full source, after four `rg` calls had circled the same component. And an assert that prints `{found, wanted}` named a double-count on the first attempt, after four blind ones — the batching contract's own print-per-edit rule, which I had been applying to the writes and not to the checks.
 
 ### What is left
 
@@ -1432,5 +1322,4 @@ print-per-edit rule, which I had been applying to the writes and not to the chec
 | `80880e0e` | **Half.** `10builds` measures an 8px gap and is closed; the WORDING is P10's rewrite — Session 4's by his own split |
 | `35e1f097` | His deferral — the History timeline waits for the rest |
 
-⚠️ **What a build gate cannot tell him:** `verify.cjs` checks page errors and 390px overflow. The card's motion, the
-scroll fade's feel and the new weapon cards have been verified structurally and in static renders, not watched.
+⚠️ **What a build gate cannot tell him:** `verify.cjs` checks page errors and 390px overflow. The card's motion, the scroll fade's feel and the new weapon cards have been verified structurally and in static renders, not watched.

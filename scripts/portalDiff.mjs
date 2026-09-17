@@ -37,6 +37,11 @@ const { record: recordRun } = require('./lib/portalReceipt.cjs');
 const { mintSession: mintDevSession, assertPastDoor } = require('./lib/portalSession.cjs');
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+// ⚠️ `args` AND `flag` LIVE HERE, ABOVE EVERY READER, AND THEY MOVED UP ON 2026-09-17 19:44 EDT. They sat at line 77 while `MOCKUP_PKG` called `flag()` at line 41 — a temporal dead zone, so this module THREW the moment it was evaluated. `node --check` cannot see it, because it is not a syntax error; the tdz ratchet is the only gate in the suite that can, which is why a red suite pointed here rather than at anything that runs this tool. A declaration goes above its first reader, not near its friends.
+const args = process.argv.slice(2);
+const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
+
+
 // 🔴 THE PACKAGE IS A FLAG — added 2026-09-15 23:22 EDT, same reasoning as portalProbe. This and twelve sibling scripts hardcoded the 2026-08-23 conformance package while the LIVE approved designs moved to the pins-2 boards, so nothing compared the portal to the board that decides it and each divergence surfaced weeks later as one of Harkirat's pins. `--mk-page` exists because a board is ONE page of gates, not one page per realm.
 const MOCKUP_PKG = flag('--mockup', 'docs/superpowers/mockups/2026-08-23-portal-interactive');
 const MOCKUP = `http://localhost:8900/${MOCKUP_PKG}`;
@@ -73,9 +78,6 @@ const COVERAGE_NOTE = [
     'transitions are zeroed, so only the settled frame is compared',
     'light mode is out of scope by decision (the console is dark-only)',
 ];
-
-const args = process.argv.slice(2);
-const flag = (n, d = null) => { const i = args.indexOf(n); return i >= 0 ? (args[i + 1] ?? true) : d; };
 
 // 🔴 `--help` RAN A 2.5-MINUTE REAL-SERVER SEASON DIFF AND OVERWROTE `local/diff-season/*.png`. Every flag here is read by `indexOf`, so an unrecognised one is simply not seen and the tool falls through to its defaults — which means the ONE command a reader tries first was the most expensive one available, and it destroyed the captures of whatever was last diffed. A typo in `--realm` did the same thing more quietly: `--realm brodcast` diffed Season and said nothing.
 const KNOWN_FLAGS = new Set(['--realm', '--scroll', '--view', '--viewport', '--json', '--portal', '--fold',
