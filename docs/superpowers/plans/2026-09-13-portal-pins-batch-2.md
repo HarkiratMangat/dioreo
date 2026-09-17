@@ -463,8 +463,8 @@ status: live
 |---|---|---|
 | Harkirat's review | Done 2026-09-15 11:16–14:17 EDT: 57 pins, 38 with crops | Triage (Step 2), then board 3 |
 | Push, PR, pre-merge checkpoint, merge | Not done | §13 Steps 0–4 at the close, each approval restated |
-| Prod slot backfill (§5.2 Step 9b) | Dry run only: 130 builds change; 16 get blank slots for 34 names (table below). Harkirat asked to see the 16 first | Show the table in a popup's context; write only on approval restated (`node --env-file=.env scripts/backfillSlotsFromMetadata.js --prod --write`) |
-| FSS Hurricane (G6) | Prod and dev written 2026-09-15 09:40 EDT: `buildName` `Build 1`, `shareCode` `1C2B5B6D7O` | Its Cloudinary metadata (`FSS-HURRICANE-1`: `Build_Number`, `Gunsmith_Code`) was not re-synced; a prod Cloudinary write, asked with the backfill |
+| Prod slot backfill (§5.2 Step 9b) | ✅ **WRITTEN ON PROD 2026-09-17 12:59 EDT** — 130 of 133 builds carry `attachmentSlots`, **0 blank entries**. ⚠️ The *16 builds / 34 blank names* figure was already stale when it was written: his twelve corrections (`KNOWN_SLOTS`) plus the corpus pass close every one, so a fresh dry run reports **0 unplaced** | Done — approval restated by popup, Harkirat 2026-09-17 12:59 EDT: *"Run it on prod now"* |
+| FSS Hurricane (G6) | ✅ **RE-SYNCED ON PROD 2026-09-17 12:59 EDT** — `FSS-HURRICANE-1` now reads `Build_Number` 1 and `Gunsmith_Code` `1C2B5B6D7O`, matching Mongo. Read back from Cloudinary, not assumed | Done — approval restated by popup, Harkirat 2026-09-17 12:59 EDT: *"Re-sync it on prod now"*. ⚠️ Its public id is the bare `FSS-HURRICANE-1`, **not** `gun-builds/FSS-HURRICANE-1`: the folder is an `asset_folder`, which is display-only, so a prefixed read returns *Resource not found* while the write succeeds |
 | Loadout image upload inside the changeset transaction | Fixed (`afterCommit`, `core/changeset.js`), proven on dev against the old code | None; the other in-transaction Cloudinary calls are filed `[P2]` in `docs/db-deferred-list.md` |
 | Dev portal | Restarted from this checkout with `nohup`; nothing restarts it after a reboot or a killed shell | Step 0 proves it serves the branch's API (`/api/analytics?river=300` returns 300 rows) |
 | Dev and prod data differ | Dev has slots backfilled; prod does not | Judge slot surfaces on dev only until the prod write |
@@ -532,7 +532,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 8 — records, then §13.
 
-- [ ] **Step 8:** the prod slot backfill and the FSS metadata re-sync asked in one popup (each its own option, approval restated) · the CHANGELOG entry for the merge names Session 2's build and Session 3's intake, board and plan · `local/pins2/s2-devlog-draft.md` gains a paragraph for the review · close by §13: Step 0 before any push is asked, the version the next moderate step from `origin/v3-pre-release`.
+- [ ] **Step 8:** ✅ *(2026-09-17 12:59 EDT — both prod actions asked in ONE popup and both approved; `local/pins2/s2-devlog-draft.md` has its review paragraph. OPEN: the CHANGELOG entry, which cannot be written until the PR exists because `docs-audit`'s `changelog-pr-citation` rejects an unfilled `(#PR)`, and §13 itself)* the prod slot backfill and the FSS metadata re-sync asked in one popup
 
 ## 5c · SESSION 4 — standardization: the rewrites, where each design applies, the exemptions
 

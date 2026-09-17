@@ -1150,3 +1150,59 @@ three parents, then the class. One of the three strings a fault returns. **I am 
 fixing one level below where the defect lives**, which is exactly why each round produces another round. The first
 question on any complaint is not *what is broken* but **what RULE is this an instance of, and where else does that
 rule reach.**
+
+
+## Round 4d — META's discharge, authored rather than ported (2026-09-17 12:52 EDT)
+
+He was blocked on this one badge and would not look at the board until it was right. Four attempts had been
+rejected — an icon bounce, a light sweep, a dash chasing the bolt's outline, a band sweeping the word — and the
+instruction was *"Try an actual lightning animation by morphing its actual content into lightning."*
+
+**The level I had been fixing at, and the one the defect lives at.** All four attempts are the same object: a
+LAYER CROSSING THE BADGE. That register is correct for the other three — a plaque, a medal and a leak are all
+surfaces something passes over — and it is wrong for META, which is not a surface but a conductor. What a
+conductor does is discharge. So the animation is not applied to the content; it **is** the content, in three
+states: glyph to lightning to glyph. That is his sentence read literally, and it is a level above "which effect".
+
+**The asset is a reference, not a dependency** — his correction at 12:38 EDT: *"the asset is a reference. Use it
+freely but don't confine yourself to it explicitly. You could very well create something similar entirely on your
+own which is more optimized for our situation."* Taking that literally is what made this work, because a 386x362
+full-frame cel knows nothing about this badge. The best it could ever have been is a real lightning animation
+playing OVER the mark — attempt five of the same mistake.
+
+| Kept from his `Lightning VFX.svg` | Discarded |
+|---|---|
+| The cadence: three bursts in one 3.333s loop, ~40% of it dark | Every path of its geometry |
+| One frame held per 30fps slot | Its 386x362 square framing |
+| The decay shape — full in three frames, out over nine | Its 117KB and its SMIL timeline |
+
+`b3/build-volt.cjs` authors the cel instead. **The spine of every bolt is lucide `zap`'s own centre-line**, mapped
+to where the 11px icon actually sits, so each burst opens on the glyph itself — filled, white-hot, at the icon's
+exact size and place — and tears open from there. It retracts back into it. 30 frames, 26KB, one 100-cell strip
+shared by every META badge on screen and stepped with `steps(100)`, while each badge keeps its own `--ph` phase
+through `animation-delay`. A single shared SMIL instance would have put every badge on one timeline, which is his
+complaint #1 from this morning wearing new clothes.
+
+### What looking at it found, and no probe would have
+
+| Seen | Fixed |
+|---|---|
+| Lateral jitter of +-7 units drew a thin vertical thread — a crack in glass, not a bolt | Segments that deliberately alternate side 78% of the time and jump 7-20 units |
+| The channel drifted off the mark, so the strike read as something standing NEXT TO the badge | A restoring term pulls each step 26% back toward the mark |
+| Forks were single hairlines nobody would notice | Each fork gets its own halo pass |
+
+### Three instrument failures in one afternoon, all in the same photographer
+
+Worth recording because each produced output that looked exactly like a real finding.
+
+1. **A clipped screenshot is in DOCUMENT coordinates; `getBoundingClientRect` is VIEWPORT-relative.** Sixteen
+   crops landed on empty table rows, byte-identical, and read as *the animation never renders*.
+2. **The rect was measured once and reused for all sixteen frames.** The list re-renders underneath it.
+3. **Pausing the `Animation` object and setting `currentTime` does not survive a Preact re-render** — the paused
+   animation is discarded and a fresh running one replaces it, so three different slots came back identical. The
+   freeze has to live in a stylesheet: `animation-delay:-Xms` plus `animation-play-state:paused`, which is a
+   property of the RULE rather than of the node.
+
+- **Deleted, not left behind:** `.b3-zap-run` and its second `<use>`, `.b3-zap-w` and its `<b>` wrapper,
+`@keyframes b3current`, `@keyframes b3charge`. Three rejected attempts had left their markup in place. A badge
+carrying dead layers nobody dares remove is how the next round starts one level too low again.
