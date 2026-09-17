@@ -7,6 +7,26 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3n · he asked whether I was sure, and the answer was no — 2026-09-16 21:03 EDT
+
+He asked one question before going back to the board: *"are you sure you fixed everything from my last round of comments?"* Every one of the 22 threads did carry a fix, and I re-checked the quiet sub-asks against the source rather than against my own replies — the build-list text renders `Builds 1–3` / `Builds 1, 3` through `buildsWord`, wired at three call sites; the attachment mask's resting values are `--atts-l:0px` and `--atts-r:34px`, so the fallback is the right-hand fade he liked and never the hard left cut. Both harnesses re-run clean.
+
+**The board itself was not fine, and nothing in any thread pointed at it.** The published board opened with the Export drawer laid over the hero, and it followed the reader down all 10,534px. Cause: commit `42cb224c` removed `.g-stage`'s `translateZ(0)`, and my own note that day said the transform had been capturing **three** `position:fixed` elements. I fixed one — the selection bar — and never looked for the other two. They are `app.css`'s `.scrim` and `.drawer`, the portal's own modal chrome, which a board stage draws as a specimen. Scoped inside the stage they are `absolute` now; everywhere else they stay `fixed`, which is what a real modal needs.
+
+`class-sweep.cjs` could not see it. `fixedCaptured` looks for a fixed element that IS captured, so an element that ESCAPED is invisible to it — the check's own shape is its blind spot. The twelve-screen sweep found it, on the first screen, and only after its reset was widened: it cleared one `localStorage` key while the board writes three, and with a persistent profile it had been shooting twelve screens of a drawer over everything.
+
+Three more, none of them in a thread:
+
+| What | State before | Now |
+|---|---|---|
+| The Repairs detail column | `No image` over `No image`; `Attachments missing` over `4 missing`; the pip meter drawn twice on one screen | Each row states what the fault COSTS — the rule `faultLine`'s own no-code comment already stated and only no-code obeyed |
+| Six shadowed CSS rules | `.b3-sd-tr::before`, `.b3-sd-gh::before`, `.b3-sd-w` ×3 and `.b3-sd-w > i` styling a deleted element | Removed; the surviving rule asserted in the same edit |
+| The hero's surface count | Hard-typed "Six surfaces" against a computed `SECTIONS.length` of 5, and Command search named as the sixth while the Settled table below listed it as settled | Computed, and the sentence now says what the table says |
+
+**And my own recorded decision was wrong twice.** I had written that the rail is over-used on seven things. It is on four — the other seven are `--b3-hatch` bars, which mean HAZARD, not identity, and one of the four is under `html[data-b3-e4=b]`, a declared option I would have silently answered by touching it. The table row's rail is also load-bearing: it is what makes "the accent is already present as the left side border element" true, which is why he asked for the square chip to go. So the rail stands, and the decision that said otherwise was written from a remembered count.
+
+The Repairs half of that note was right about the column and wrong about the fix: "should name WHICH slots" is not answerable, because a build takes any five of nine slots, which is exactly why the rail draws generic `Empty` chips.
+
 ## Correction · two of the four things I called "waiting on him" were mine — 2026-09-16 18:56 EDT
 
 He asked, plainly: *"waiting on me for what?"* Going through my own list one at a time, **half of it was me punting design decisions that are mine to make.**
