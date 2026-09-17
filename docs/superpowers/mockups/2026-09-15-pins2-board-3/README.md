@@ -7,6 +7,30 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3r · the tests were the symptom — 2026-09-16 22:00 EDT
+
+Harkirat: *"a check/test is a failure in your ability to create the element correct in the first place. This is a damn artifact, not the actual portal. A defined, small set of elements, yet you've failed to display effort and ability in creating them to the point where you'd instead had to create MULTIPLE tests to catch your mistakes."*
+
+He is right, and the measurement says so more sharply than the sentence does.
+
+| | |
+|---|---|
+| Test scaffold beside the board | **74,642 bytes across 7 scripts** |
+| Classes the board's stylesheet defines | 180 |
+| `align-items` declarations across the two stylesheets | **113** — 98 `center`, 15 `baseline` |
+
+One hundred and thirteen separate answers to a question that has two correct answers and a one-line rule for choosing between them. **Every row on this board is hand-made, so every row is a fresh chance to decide wrongly** — and once there are 113 chances, a detector starts to feel reasonable. It is not reasonable. It is the symptom.
+
+And the order gives it away: **not one detector in `class-sweep.cjs` predates the complaint it detects.** square-in-pill after *"square shape inside of a pill button??"*; input-in-input after *"search bar inside of a search bar"*; `fixedCaptured` after a popover flew off screen; `splitBaseline` after he drew a line through a chip. So the suite has never once prevented something he cared about. It is a ledger of defects already paid for, wearing a green exit code.
+
+### What changed, rather than what was concluded
+
+- **Deleted 34,857 bytes of scaffold** — `audit.cjs`, `probe.cjs`, `sweep.cjs`, `shots.cjs`. `shots.cjs`'s own header already recorded that it can only ever confirm what I was already thinking about.
+- **Three files left, and only one of them is a test.** `verify.cjs` is a build gate — no page errors, nothing overflowing at 390px — which is not a judgement. `sweep-screens.cjs` renders twelve full screens so the board gets **looked at**, which is the thing the tests were substituting for. `class-sweep.cjs` is **closed to new detectors** and its header says why.
+- **The rule moved to where a rule belongs.** A ROW TYPES block now opens `b3/board.css`: words beside words share a baseline (`.b3-nw`), a box beside words shares a centre line, and a fixed height and `align-items:baseline` do not co-operate. **A new row picks one of those. It does not declare `align-items` again, and it does not get a new check.**
+
+The one-definition version already exists for the pair that started this: `.b3-nw` is used in eight places and replaced nine hand-made rows. That is the shape of the fix — not another instrument.
+
 ## Round 3q · "open" meant I had not looked, and the new check could not fail — 2026-09-16 21:55 EDT
 
 He asked what "open" meant on the twelve items I had listed: *"like their requested change is still pending inside the design board?"* **No.** I had written that list from reading the comment threads and not finding obvious evidence in a grep, which is an absence of looking rather than a status. Checked against the source and the render, **eleven of the twelve were already built** — several of them with a comment in the file quoting the very words I was calling unanswered. The corrected table with a verdict and a file reference per row is `local/pins2-board-3/open-from-his-comments.md`.
