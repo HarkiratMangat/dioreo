@@ -1206,3 +1206,73 @@ Worth recording because each produced output that looked exactly like a real fin
 - **Deleted, not left behind:** `.b3-zap-run` and its second `<use>`, `.b3-zap-w` and its `<b>` wrapper,
 `@keyframes b3current`, `@keyframes b3charge`. Three rejected attempts had left their markup in place. A badge
 carrying dead layers nobody dares remove is how the next round starts one level too low again.
+
+
+## Round 4e — two comments, and both were about a level above the thing named (2026-09-17 13:15 EDT)
+
+### The slot label is an AXIS, not a sixth tag style
+
+*"named slot is the overall correct direction i think. But the actual design of the label needs to be improved now.
+Apply the {Slot}: {Attachment} method to all the other tag styles, as well as propose a few more options to try and
+refine and polish the overall label's design."*
+
+The middle clause is a structural correction wearing the clothes of a feature request. `named` was the fifth member
+of `p2sty`, which made NAMING a sibling of WASH and NEUTRAL — and those are not the same kind of thing. A shell is
+what the chip is MADE OF; a label is what the chip SAYS. Held as one list they multiply: five shells each needing a
+named twin is ten values, and the next idea makes it twenty. Held as two axes they compose, and "apply it to the
+other styles" stops being a request and becomes a property of the model. **The instance fix here was `named-wash`,
+`named-neutral`, `named-bar` — and it would have passed review.**
+
+| Label | What it is | Rows the nine-slot specimen takes |
+|---|---|---|
+| `off` | no slot name, as it ships | 2 |
+| `colon` | his screenshot verbatim — dot, slot in its hue, colon | **3** |
+| `key` | the slot as a field key: micro, uppercase, tracked, data face, air alone | 2 |
+| `cap` | the slot cut into the chip as a filled tab, key and value as two objects | 2 |
+
+Every mode is variables; **one declaration reads them**, so the specimen and the live rows cannot drift apart —
+which has already happened twice on this board.
+
+**Three things only rendering could have found.** The specimen carried no `data-slot`, so every label mode would
+have drawn nothing on the one element that exists to show the fork. The `key` mode's hairline divider **never drew
+at all** — `border-right` fed from a custom property produced no pixels at 3x — and rather than chase it the rule
+now separates with air, because case, size, family and hue already separate the two halves four ways; the claim was
+removed from the CSS, the comment and the fork text so nothing asserts a line that is not there. And `cap`'s tab,
+at 26% of the slot hue over a shell already washed 17% in that same hue, **vanished on the real manifest rows while
+still reading on the specimen** — the specimen is not the test, the rows are. Mixing toward the page's own black
+instead of toward transparent makes it a solid object on every shell.
+
+### The small text was never a typography question
+
+*"these are all the same thing wearing makeup. Go search and look at what the core issue was with the hint texts…
+use ctx-search."*
+
+I did, and he is right. His own pin, 2026-09-12 11:21 EDT: *"these small texts just look and feel like noise to me.
+**Never once have i glaced over it and assumed it was actually informative.**"* Read literally, the old fork could
+not have worked: NOW · SAYS · INLINE were three PLACEMENTS of one kind of string — a sentence describing its control
+— so all three kept the thing he skips and moved it.
+
+🔑 **The only thing that earns the glance back is a line that is true ONLY RIGHT NOW.** A caption reads the same on
+every visit, so by the second visit it carries literally zero information and the eye is correct to skip it; a
+readout is never zero. Session 2 proved it by accident — `1 in one message, oldest first · cap 10` became `2 of 10
+slots used` and that pin closed. The difference is not weight. It is that the second one CHANGES.
+
+So the fork is a classification with a default of nothing, and its four roles are deliberately the same four
+verdicts §5c Step 3's rewrite table needs — **readout · consequence · delete · keep** — which is what makes this a
+design Session 4 can use rather than a decoration.
+
+⚠️ **A classification that never rejects anything is not a classification**, and that is the test the first version
+failed: every string survived all three treatments, so it could only ever have been about looks. The specimen is
+therefore a CORPUS of his own pinned strings with the verdict the rule gives each — including one it **deletes** —
+so what he judges is the rule's output across cases, not a font on one line.
+
+| His string | Verdict | What it becomes |
+|---|---|---|
+| broadcast · `1 in one message, oldest first · cap 10` | Readout | `2 of 10 slots used` |
+| broadcast · `Delivered as an ephemeral follow-up after any top-level slash command…` | **Delete** | nothing — the control is called Follow-up |
+| armory · `These builds are removed when you commit` | Consequence | `Removes 3 builds at commit · reversible until then` |
+| armory · `Showing all builds, grouped by weapon` | Readout | `133 builds · 8 selected` |
+
+⛔ Deleted with the fork they served: `.b3-spec-now`, `.b3-spec-says`, `.b3-spec-in` and their shared row rules. The
+corpus block reuses the specimen container rather than restating it — the duplicate-component defect this README
+already records once.
