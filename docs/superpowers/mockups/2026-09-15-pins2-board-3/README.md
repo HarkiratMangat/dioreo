@@ -931,3 +931,37 @@ The lesson worth keeping: **both defects were invisible to every gate.** `verify
 thirteen screens with no errors, and the page threw nothing — because neither defect is an error. One was a rule
 reaching a state nobody had opened; the other was a rule losing a specificity argument it never announced. The only
 thing that finds those is asking *which of my rules is unscoped* and *which state did I never open*.
+
+## Round 3y — the pass run properly, and it found nine more (2026-09-17 10:54 EDT)
+
+Round 3x was ONE sequential-thinking call. He said so: one thought is not a pass, and the one thought had found two
+defects, which is evidence the space was productive when I stopped searching it. Run properly, the same space gave
+nine more. The inventory that opened it is the reason: **I shipped nine things today and had rendered four of them.**
+
+| # | What it was | How it was found |
+|---|---|---|
+| 1 | The named tag's DOT never drew — `Muzzle:` with 25px of empty indent where his screenshot has a filled dot | The shared style block sets `background:` — the SHORTHAND — from one class more specific, which resets `background-image`. **The same trap as `mask` resetting `mask-image`, which is in my own notes for this board.** Fixed by putting the dot inside `--atbg`, the token the shorthand already carries |
+| 2 | The manifest weapon row revealed its word TWICE | `.wg-fbtn::after` has carried Collapse/Expand since pin 12, on a `0fr → 1fr` track that animates the word's real width. He wrote "USE the version from the manifest weapon rows" and I built a parallel one beside it. Measured: on ROW hover mine did not open at all, so the duplicate failed at the one thing it was added for |
+| 3 | **Three** copies of the two-layer pointer | `.b3-hint-card`, `.b3-infocard`, and the one I wrote this morning while justifying it as "reusing the technique". Reusing a technique by typing it again is how you get three. Extracted to one declaration with four tokens |
+| 4 | **Two** identical specimen blocks | `.b3-pal` and `.b3-spec`, written twenty minutes apart, by me, differing only in label-column width — on the day I was writing comments about not typing things twice |
+| 5 | A third copy of `slotKey` | It was already at `gates/armory.js:113`. I inlined it again at line 369 |
+| 6 | The nine swatches collapsed to ZERO width | My own fix from six minutes earlier: `minmax(0,1fr)` has no intrinsic width, so inside a `minmax(0,1fr)` parent the strip resolved to nothing and the specimen drew labels with no colours. A fix that removed the thing it fixed |
+| 7 | At 22 picks the export strip hid **202px** of chips | It exists because of "do I have to scroll thru the entire list to see what i have selected???" — and it was reproducing that at a smaller scale, in a nested scroll inside a sticky element. It shows eight and says `+14 more`; `.b3-sc.more` already existed for exactly this |
+| 8 | The specimen said "lightness .78 throughout" | I recomputed to .735 and left the label. A wrong number inside the thing built to help him decide |
+| 9 | The contrast probe reported **2.01** for the new severity chip | Implausible for light grey on near-black, and it was: the probe read a 5%-alpha near-white wash as an opaque ground. Composited properly it is **6.25**, against `blocks` at **8.57** |
+
+**Measured contrast on everything new** (AA needs 4.5). Named-tag slot words in his palette: 5.32 (Stock) to 14.01
+(Ammunition) — all pass. In the regularised palette: **6.51 to 7.74**. That tightening is the honest argument for
+regularising, and it is better than "it looks more even": his set's slot words span a **2.6×** range of perceived
+weight, the regularised set **1.2×**. Attachment names 14.28 throughout.
+
+**One thing I changed that is a trade, not a win, and should be said as one.** I removed the leading problem numeral
+from the Repairs row because a `2` under an empty column head beside "Build 1" is read as a build number. True — but
+it was also the only constant-position element carrying magnitude, and on a three-fault row the chips wrap and nothing
+says "this is the worst". The defence is that the sort is per weapon and the group header now reads `1 unshareable ·
+2 problems`, so the magnitude is where the sort is. I think the removal holds. It is still a trade.
+
+**And the root, which is one sentence rather than nine.** Every defect above is the same act: **writing something
+without asking what already claims that property, that job, or that name.** Not "I did not look" — that is the
+symptom. The three duplications were all built while I was actively writing comments about not duplicating, which is
+what makes it worth recording rather than merely fixing.
