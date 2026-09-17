@@ -7,6 +7,18 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3u · the board's slot vocabulary is missing six slots, and nobody knew — 2026-09-17 09:21 EDT
+
+Not a round of fixes. A compact prep that found a design gap by reading the session transcript instead of the handoff.
+
+**P2 asks him to choose NINE colours for nine attachment slots, and there are more than nine slots.** On 2026-09-16 15:20 EDT he listed six that the portal's vocabulary does not carry — **Smoothbore** (R9-0), **Bolt** (crossbow and others), **Trigger Action** (Classical Lever, Dobvra and others), **Bowstring** and **Limb** (crossbow), **Guard** (the shorty) — and said they had already been given in an earlier session. He said *"sure fix it"* at 15:25. Nothing was written down, and the board kit contains none of them: `SLOT_ORDER` mirrors `DISPLAY_SLOT_ORDER`, which is `CANONICAL_SLOT_ORDER` minus one.
+
+On 2026-09-17 he supplied six hex values for that fork and asked what to use for the three he could not place. **He was being asked to approve a palette that cannot cover the weapons carrying a unique slot.** Filed in `docs/db-deferred-list.md` under Active Bugs with a verify condition: a build on the R9-0 renders its attachment under a Smoothbore label with its own colour, and the fork offers one colour per real slot rather than per display slot.
+
+**And a principle the board had lost.** 2026-09-16 02:22 EDT: *"That entire pin is something for you to investigate, figure out the differences, the issue, or whatever and correctly document it with exact values and specs so the session 5 build session can correctly build it this time. That has nothing to do with me."* That is why three comparison surfaces were removed and became spec sheets — a portal-vs-design discrepancy is work to be documented, never a question to put in front of him. It was never recorded, so nothing stopped a future session putting a comparison gate back.
+
+Both were found the same way: extracting all **106 user turns** from the session transcript. The handoff, the README and three memory stores between them held neither.
+
 ## Round 3t · his round on 3-C, and the screenshots I had been telling him I could not open — 2026-09-17 00:25 EDT
 
 24 threads on the fresh board. **None of them is activated for Claude, so there is nothing to reply to — the only answer is the fix.**
