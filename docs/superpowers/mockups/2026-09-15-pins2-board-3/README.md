@@ -1071,3 +1071,43 @@ duration/3, which is the dead window for a front-loaded animation and called BES
 that the new negative phase delay shifts `currentTime`, so it sampled the dead window on three badges at once and
 nearly had me redesign animations that worked; and it hardcoded durations I then changed in the CSS, reporting a SEAM
 that was its own stale constant. It reads duration off the animation now.
+
+## Round 4b — TOXIC slowed, META moved to its word, and the icon class finally applied (2026-09-17 12:16 EDT)
+
+**META, attempts three and four, and the lesson is a SIZE one.** "meta literally doesn't even have its animation
+applied" — it was applied, twice, and both were imperceptible. A 4.5-unit dash chasing a 40-unit path, then a band
+sweeping that same path. **The icon is an eleven-pixel outline: there is almost no ink in it to modulate**, so any
+treatment confined to the mark is worth about two pixels however bright it is made. The probe reported 45px of change
+both times because it counts pixels that differ at 3x, not pixels a person can see — the number was real and meant
+nothing. So the register changed: the other three badges animate their FACE, their RIM and their FILL, and the fourth
+nothing else uses is the WORD. ⛔ The rule that generalises: **at eleven pixels, detail motion does not exist.**
+⚠️ And the first cut of THAT deleted the word — `background-clip:text` needs `color:transparent`, which makes
+`currentColor` transparent too, so the gradient's base stops resolved to nothing.
+
+**TOXIC: 9s to 17s, four waypoints to eight.** Four is what made it feel cornered rather than morphing — between two
+keyframes each blob travels in a straight line, so every 25% the mesh visibly changed direction.
+
+**The icon class, applied at last.** His preference has been in `ui/icons.js` since the fold was built: *"use icons
+with animation so things dont feel boring. icons that genuinely animate into different states."* Counted: **63 icons,
+one morphs.** The fold, whose chevron travels through a FLAT LINE between down and up so the mark folds through the
+horizon while the panel under it folds. Generalised as one mechanism rather than three gimmicks — **a mark that
+confirms something DRAWS itself; a mark that changes state MORPHS its path** — and applied to the three he named: the
+success check draws in the direction a hand draws it, the checkbox tick wipes along its own stroke, the close X
+re-strikes from the crossing outward. `stroke-dasharray` is inherited, so it reaches the cloned path inside a `<use>`
+shadow tree, which is what lets a sprite icon draw itself without giving each one its own component.
+⚠️ He also said I should not have asked: *"why even ask? it's already a stated preference and it clearly was never
+applied."* Correct — a gap in a stated preference is work, not a question.
+
+**Six instrument errors in one day, and this is the pattern worth carrying past this board.** A baseline formula that
+assumed centring on an element set to baseline · a contrast probe that read a 5%-alpha wash as an opaque ground and
+reported 2.01 where the truth was 6.25 · a scale probe that tested a phrasing rather than a property · a frame sampler
+that used the wall clock and produced three identical frames of a 5.2s cycle whose motion is in the first tenth · the
+same sampler taking one sample at duration/3, the dead window for a front-loaded animation, and calling a working
+sweep static · and hardcoded durations that went stale the moment the CSS changed, reporting a SEAM that was its own
+constant. **Two of the six were caught only because the number was implausible.** A probe written in the same minute
+as the claim it supports is not evidence.
+
+**The one genuinely new check: the SEAM TEST.** A seam is a discontinuity between the LAST frame and the FIRST, so
+only `t=0` against `t=duration` can see one — which is exactly the "start → pause → static → start" he had to report
+twice. Stepping the clock to fixed marks proves motion EXISTS and can never prove a loop closes. All four badges now
+close at 0.00–0.04%.
