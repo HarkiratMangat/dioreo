@@ -889,3 +889,45 @@ copies of whichever is live.
 closing backtick, so everything below it parsed as JS and the page threw `SyntaxError: Unexpected identifier '$'`.
 `verify.cjs` died on `window.__b3` being undefined, which is what a dead board looks like from the outside. Reading a
 crash as a crash rather than as a flaky harness is the whole value of chaining the gate onto the edit.
+
+## Round 3x — the pass I should have run before saying it was done (2026-09-17 10:33 EDT)
+
+He asked whether a think-pass had actually been run on the WORK. It had not: three passes on what to DO — triage, the
+palette, the Repairs critique — and none on whether what I built was right. Two questions found two shipped defects,
+and both are the failure he has named most often: **a correct rule at the wrong SCOPE.**
+
+**1 · The export redesign was repainting the control it exists to be compared against.** The Export surface's first
+option is "Portal today", whose whole job is to show the portal exactly as it ships — and it renders `exportPanel.js`'s
+own drawer, which mounts the same `.exs` list I had restyled with a bare selector. So "Portal today" was showing my
+proposal. The board would have told him the portal already agreed with a design it has never seen. Measured after
+scoping it to `html[data-b3-exp=a|b]`:
+
+| | Portal today | The proposal |
+|---|---|---|
+| row border | `1px solid rgb(42,52,61)` | `0px none` |
+| row ground | `rgb(11,15,18)` | transparent |
+| Download | filled `rgb(242,194,48)` | outline only |
+
+**2 · The pointer did not exist under the option he starred.** `gates.css` carries
+`html[data-b3-p3=b] .b3-pc::before` — a 6px hazard spine — and hides `::after` outright. Both are later and more
+specific than the pointer I had just built on those same two pseudo-elements. So under **B · Spine, joined**, the one
+with the star on it, the back layer rendered as a stripe and the front layer never drew. I had shot it under option A
+and called it done. The pointer is its own element now (`.b3-pc-tip`) and cannot lose that argument. Option B also
+stopped butting the chip — that join is the one I measured this morning as pixel-perfect and visually two objects —
+and its spine gained a radius, because the card's `overflow:hidden` had to go so the tip is not clipped.
+
+Measured on both options: tip 16x9, apex touching the chip's bottom edge exactly, centred on the chip to **0.3px**,
+9px of air, front layer in each option's own ground.
+
+**Three things I had declared fixed by reading rather than looking, checked properly — all three held.** The mesh
+weapon-name row is `rgb(11,15,18)` against the bar's own ground with its shadow; the expanded Repairs row survived the
+six-to-five column change with 0 overflowing children; the `Builds 1-3` label renders as data in the weapon's accent.
+The check was still the right call, because the two that did NOT hold were found the same way.
+
+**The Repairs column heads were verified against their columns rather than assumed:** identical grid templates
+(`156px 298px 96px 150px 98px`), all four labelled heads at delta 0, header right edge 1146 against the row's 1146.
+
+The lesson worth keeping: **both defects were invisible to every gate.** `verify.cjs` was green, the sweep rendered
+thirteen screens with no errors, and the page threw nothing — because neither defect is an error. One was a rule
+reaching a state nobody had opened; the other was a rule losing a specificity argument it never announced. The only
+thing that finds those is asking *which of my rules is unscoped* and *which state did I never open*.
