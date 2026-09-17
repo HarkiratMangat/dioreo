@@ -1007,3 +1007,21 @@ present in the SELECTION drawer too, not only the manifest rail; both `.g-status
 **What it did NOT clear, said plainly:** the three badge keyframes I wrote this morning are still unrendered — the
 IntersectionObserver never fired in the probe, so `.b3-bdgs.in` was empty and I measured nothing. Findings 2, 3 and 5
 of the critique remain untested on the other four surfaces.
+
+## Round 4 — 3-D published (2026-09-17 11:31 EDT)
+
+**https://claude.ai/artifact/HJUZxNeV3vzm1UxhGiVa9H** · version 1 · 79 files · 2.68 MB · page `board3d.html`.
+
+His call, at 11:29 EDT: *"now go publish the board. new link. Design Board 3-D."* The hold from 00:28 is discharged
+on his say-so, not because the list emptied on its own.
+
+**3-D gets its own page file rather than reusing `board3c.html`.** Publishing 3-D from the file the decoy table maps
+to 3-C would have made that table false, and that table is the only thing standing between a routine publish and
+overwriting a board that holds his comments. Four artifacts now, three of them decoys.
+
+**The last thing to land before it went out was the badge rule**, and it is the one worth carrying forward: *a badge
+is a stamped mark, its parts do not move, and what moves is a material crossing it.* Light across metal is a gleam,
+fluid across a surface is a stain — and both of those worked while every attempt at META and TOP N failed, because
+those animated the icon. Four earlier fixes were all at the level of curve and duration, which is why each came back
+wearing new clothes. `b3strike`, `b3land`, `b3climb` and `b3place` are deleted; every badge and icon measures
+`animation: none`, and the only thing moving is each badge's `::after`.
