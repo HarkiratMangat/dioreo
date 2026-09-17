@@ -249,6 +249,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-13 22:17 EDT — Portal pins batch 2, the critique: plan §10 for the New Build drawer, Compare and the composer (v3.82.0-pre)
 - 2026-09-14 02:45 EDT — The pins-2 design board: G8–G10 answered on the page, and a second board session planned (v3.83.0-pre)
 - 2026-09-14 16:42 EDT — Pins-2 design board 2 — twenty-one versions to refined, and the relation sweep that should have run first (v3.84.0-pre)
+- 2026-09-17 09:14 EDT — the session that kept acting on the model instead of the thing (v3.84.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4389,6 +4390,31 @@ Harkirat asked for a second design board after the first one showed him the New 
 - Hand a builder resolved values, never a stylesheet built in rounds.
 - An instrument's first FAIL is a claim about the page, and it can be wrong.
 - The records pass drifted off this repo's tool routing within two calls of being asked to follow it. The routing has to be applied by habit from the first call, not remembered once someone objects.
+
+## 2026-09-17 09:14 EDT — the session that kept acting on the model instead of the thing (v3.84.0-pre)
+
+He asked, on 2026-09-16 at 03:20 EDT, whether this session's failures had been dissected and written somewhere that would stop a fresh session repeating them. They had not. This is that entry, written 2026-09-17 09:14 EDT after extracting all 106 user turns from the session transcript — which itself surfaced three instructions the handoff had no idea about.
+
+**Eight distinct failures, one root.** Each is the same act: reasoning from a REPRESENTATION of the thing rather than opening the thing.
+
+| What was asserted | What was substituted | What one call would have shown |
+|---|---|---|
+| "The screenshot path won't come through" — said for a full day, corrected by him twice | An assumption about the tool surface | `magick` plus `Read`. All 70 of his screenshots converted in under a minute once tried |
+| A new defect detector was working | Reasoning that it would catch the defect | Injecting the defect returned **zero**. It could not see the very row he had drawn a line through |
+| "11 of 12 of his older requests are still open" | Reading the comment threads | Reading the board: 11 of 12 were already built, several carrying a code comment that quoted the words being called unanswered |
+| "The accent rail is over-used on seven elements" | A remembered count | Four. The rest were a different signal, and one was a declared fork option a fix would have silently answered |
+| An ambitious design pass was worth doing | An assumption about what ships | The class prefix. `b3-*` ports to the portal; `g-*`, `dk-*`, `pidx-*` are deleted with the board |
+| A correct typographic rule could be applied to the row as well as the pair | The rule | The render. It broke three working controls — "there was nothing wrong with them, why were they changed?" |
+| The handoff was current | The section just written | The whole file: it asserted two different live artifacts forty lines apart, and the stale one carried a green tick |
+| The compact prep was complete | A model of the session | The transcript on disk |
+
+**The corollary, in his words, and it is the one that reframes the rest:** *"a check/test is a failure in your ability to create the element correct in the first place. This is a damn artifact, not the actual portal. A defined, small set of elements."* Measured: **74,642 bytes of test harness beside a stylesheet defining 180 classes**, and `align-items` answered **113 times** — 98 centre, 15 baseline — for a question with two correct answers. Not one detector predated the complaint it detects, so the suite had never prevented anything he cared about; it was a ledger of defects already paid for, wearing a green exit code.
+
+**What changed, rather than what was concluded.** Four scratch harnesses deleted (34,857 bytes). `class-sweep.cjs` closed to new detectors with the reason in its header. A ROW TYPES block now opens `b3/board.css` so the decision is made once instead of 113 times. Nine tokens replaced 125 hand-written values. And the handoff file was rewritten from scratch rather than appended to — a state file that contains its own history is a state file with a trap in it.
+
+**The operational test, stated so it can be checked:** before asserting anything about an artifact, name which artifact was opened. If the answer is a memory, a rule, a list, a summary, or an assumption about a tool — open the thing. It is almost always one call.
+
+Carried into `linksee` (anchor #20, plus caveat and learning layers) and `perseus-vault` (`acting-on-the-model-not-the-thing-2026-09-17`).
 
 # Part B — Lessons Ledger (thematic)
 

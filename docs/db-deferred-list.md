@@ -86,6 +86,15 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+### Six unique attachment slots are missing from the slot vocabulary `[P1 · S]`
+
+He listed them on 2026-09-16 15:20 EDT and said they had already been given in an earlier session: **Smoothbore** (R9-0), **Bolt** (crossbow and others), **Trigger Action** (Classical Lever, Dobvra and others), **Bowstring** and **Limb** (crossbow), **Guard** (the shorty). He said "sure fix it" at 15:25 EDT. Found still missing 2026-09-17 09:14 EDT by reading the transcript rather than the handoff — no prior record carried it.
+
+**Why it is a bug and not a nicety:** `CANONICAL_SLOT_ORDER` in `portal/ui/armory.logic.js` holds ten slots and `DISPLAY_SLOT_ORDER` drops one, so nine reach the UI. Board 3's `SLOT_ORDER` mirrors those nine, and **the P2 slot-palette fork asks him to choose NINE colours**. He supplied six hex values for it on 2026-09-17. If the real vocabulary is fifteen, the fork's premise is wrong and the palette he is being asked to approve cannot cover the weapons that carry a unique slot.
+
+**Verify condition:** a build on the R9-0 renders its Smoothbore attachment under a Smoothbore label with its own colour, and the board's palette fork offers one colour per real slot rather than per display slot.
+
+
 - `[P1 · S · Sonnet5-Medium]` **Seven portal writes report "Staged" when nothing was staged.** *Found 2026-09-13 21:15 EDT by the pins-batch-2 `harden` pass.* `stageOps` (`portal/ui/composeClient.js`) never throws — a refusal resolves to a failure object — and these call sites ignore it, then close their form and toast success: `broadcast.js:367` (post) and `:376` (bulk delete); `armory.js:1212` (add), `:1219` (bulk delete), `:1248` (bulk badges), `:1326` (edit); `season.js:993` (paste). The three that check — `armory.js:1020`, `season.js:979`, `season.js:1005` — are the pattern (`reportFailure` or `refusalOf`). Plan §10.1 row 11 and §10.3 row 9 cover the two drawers Session 2 builds; the other five are not in any session. **Verify by:** force each call to a 403 on the harness and read a visible refusal with the form still open.
 
 - `[P1 · S · Sonnet5-Medium]` **One long announcement stops every announcement reaching every player.** *Found 2026-09-13 21:15 EDT by the pins-batch-2 `harden` pass.* `maybeSendAnnouncement` (`utils/announcement.js:117-127`) sends all due announcements as up to 10 embeds in one follow-up; Discord refuses more than 6,000 embed characters per message (docs read 2026-09-13), and the catch logs "interaction likely expired" and marks nothing seen, so the same oversized batch is retried and refused on every command. No length guard exists in the op, `/manage` or the portal. **Do:** trim the batch to fit the budget before sending, and log the real Discord error. **Verify by:** two live announcements totalling over 6,000 characters on the dev bot — both still deliver, the first alone if necessary.
