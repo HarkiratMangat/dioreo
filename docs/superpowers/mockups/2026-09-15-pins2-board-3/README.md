@@ -1025,3 +1025,49 @@ fluid across a surface is a stain — and both of those worked while every attem
 those animated the icon. Four earlier fixes were all at the level of curve and duration, which is why each came back
 wearing new clothes. `b3strike`, `b3land`, `b3climb` and `b3place` are deleted; every badge and icon measures
 `animation: none`, and the only thing moving is each badge's `::after`.
+
+## Round 4a — the badges, rebuilt from what each badge IS (2026-09-17 11:58 EDT)
+
+Six asks, and his sixth was the principle the rest hang off: the motion has to carry the badge's NAME as a feeling.
+The root, though, is that this was the THIRD round of the same correction and each time I fixed the level he pointed
+at — first the easing, then what was animated, now what the animation MEANS. The level above all three is that these
+are not four slots needing four effects. They are four kinds of CLAIM, and the motion follows from the kind:
+
+| Badge | The claim it makes | So the motion |
+|---|---|---|
+| BEST | a ranking the system awarded — an object, a plaque | light rakes across its FACE |
+| TOP 3/5 | the same claim, lower in degree — a medal | light travels its RIM |
+| META | not about this build at all: the GAME's current state, volatile | current runs through it |
+| TOXIC | how it feels to play against — a property that LEAKS | it creeps, continuously |
+
+The test that this is a rule rather than a tidy story: **it predicts the one case he never complained about.** TOXIC
+is "a property that leaks" → continuous creeping motion → which is exactly what it originally was and exactly what he
+asked me to restore. And it rules out my actual mistakes: META may not have a smooth sweep, because a sweep is what
+light does and META's claim is volatile; TOP N may not have a face sweep, because that is BEST's and TOP N differs
+from BEST in DEGREE, so it moves to the rim rather than to a new kind.
+
+**His complaint #1 was the deepest and I nearly filed it as the scheduling nit.** Four badges beating in lockstep
+tell the eye they are ONE system with one heartbeat, which contradicts the rule above — a shared pulse makes them
+four skins on one animation however different the gradients are. Phase is now a stable fraction of the build's own
+id, and the four periods are deliberately unequal: 1.9 / 5.4 / 6.4 / 9s.
+
+**META took three attempts and the third was the only one derived from the badge.** An opacity flicker is a light
+switch — his words: "what about that is awwwards worthy?" The answer was not another effect: `zap` is a single closed
+path, the outline of a bolt, so the charge runs along THAT. No other badge can have this animation, because no other
+badge is a conductor, which is the test any of these should have had to pass.
+⚠️ And the first cut of it DESTROYED the mark: this icon set draws with `fill:none`, so the stroke IS the bolt, and a
+dasharray on it broke the bolt into scattered fragments. The probe cheerfully reported "45px of change" on an icon
+that had ceased to be a lightning bolt. Caught by looking. The bolt is drawn whole now and a second copy of the same
+path rides on top carrying the dash.
+
+### The seam test, which is new and is the check that was missing
+
+A seam is a discontinuity between the LAST frame and the FIRST. Stepping the clock to fixed marks proves motion
+EXISTS; only **t=0 against t=duration** can prove the loop closes — which is exactly the "start → pause → static →
+start" he had to report. All four now close at 0.00–0.04%.
+
+⚠️ **The probe was wrong three times while building it**, each time returning a confident number: it sampled at
+duration/3, which is the dead window for a front-loaded animation and called BEST's working sweep static; it ignored
+that the new negative phase delay shifts `currentTime`, so it sampled the dead window on three badges at once and
+nearly had me redesign animations that worked; and it hardcoded durations I then changed in the CSS, reporting a SEAM
+that was its own stale constant. It reads duration off the animation now.
