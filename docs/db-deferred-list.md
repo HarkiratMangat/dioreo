@@ -993,6 +993,8 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+- **Portal setting: the selection bar's ground — mesh or solid** `[P3 · S]` — board 3 thread `bd09c832`, 2026-09-17 18:59 EDT. Harkirat: *"Mesh ground is the default; KEEP the solid styling in the files and document it as a future portal setting."* The board now defaults `p5bg` to `mesh` and keeps `html[data-b3-p5bg=solid]` in `b3/board.css` deliberately — it is a preference to expose later, not a losing fork to delete. **Verify:** a portal user can switch the selection bar between the mesh and the flat ground, and the flat one renders as `.b3-sd` without the four radial layers.
+
 ### Point the conformance instruments at the board that holds the live design `[P1 · S]`
 
 **14 `portal:*` scripts hardcode `docs/superpowers/mockups/2026-08-23-portal-interactive`** — `portalDiff`, `portalProbe`, `portalConverge`, `portalCoverage`, `portalInventory`, `portalAudit`, `portalShot`, `portalSync`, `portalOpenKind`, `portalStatus`, `portalPreflight` — and none accepts a `--mockup` override. `rg -l 'pins2-board' scripts/` returns nothing.

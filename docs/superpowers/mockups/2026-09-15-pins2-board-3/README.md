@@ -1277,3 +1277,80 @@ pass that skipped every design question and asked only about my own process, and
 was a retracted claim re-derived from a downscaled crop. Both have the same shape: **reasoning about the work
 instead of looking at it**, which is anchor #23 wearing a different coat. The screenshots and the README were both
 sitting there unread while I theorised.
+
+## Round 4h — the 24 regrouped by what they are instances OF, and 22 of the 32 closed (2026-09-17 19:00 EDT)
+
+**The five root causes in round 4f were a TRIAGE grouping, and triage groupings are the wrong shape to fix from.**
+"Alignment" is a symptom; five alignment threads had four different causes. Regrouped by the class each is an
+instance of, twenty of the twenty-four collapsed into four fixes.
+
+### A · A run that overflows is CONTAINED, not cut — four threads, one behaviour
+
+`42d1faa3` `dbd735b5` `d8e69f24` `1d832319`. His words across them: *"it is a hard cut today"* · *"tags clip
+downward instead of holding two rows"* · *"contained to two lines, the cell faded and scrollable."* A hard edge is a
+statement that there is nothing more, and it is false. One utility, five containers.
+
+⚠️ **A fade that is always on is the opposite lie** — it dims the first and last item of a run that fits. So the
+depth is read from the container's own scroll: no overflow → no fade, at the top → no top fade, at the end → no
+bottom fade. Measured in the page: `0/0` when it fits, `0/15` at the top, `15/15` mid-run, `15/0` at the end.
+
+🔴 **I BUILT IT WITH `animation-timeline: scroll(self)` FIRST AND COULD NOT VERIFY IT — AND THE REASON WAS NOT THE
+CSS.** Every reading came back `--ft: 0px` with the animation's `currentTime` null. The browser pane was
+`document.hidden`, so **no animation of any kind advances in it** — proved by a plain 200ms opacity animation that
+also never moved. That is a ninth instrument failure and the first that was the INSTRUMENT'S ENVIRONMENT rather than
+its logic. `b3/fady.js` sets the two properties from `scrollTop`, which needs no animation frame and can therefore
+be checked. ⚠️ Do not "restore" the elegant version without a visible render to check it in.
+
+### B · A control re-declared instead of reused — three threads
+
+`8184da23` `653f8eeb` `45bbb9ee`. The View label already had the right SIZE and was still wrong: it hard-typed
+`letter-spacing:.16em` where every other label reads `var(--b3-tr-wide)`, and its two declarations disagreed about
+the colour. Add build set its own height and padding beside a note that already said it should be *"the same button
+smaller"*. And the queue's Edit button was given `height:36px` when it gained its word, so it sat 8px shorter than
+the delete button beside it — **giving a control a label is not a reason to change its height.**
+
+### D · A mark drawn on the wrong box — four threads
+
+`cd53517e` `07c3b35a` `442a918e` `1f8d6efa`. The left accent sat at the row's `left:0`, outdenting past the header's
+own content edge and showing through a 92%-opaque sticky header, which reads as a clip. The marks column was
+`auto auto 26px` — collapsing on a row with no problem and growing on one that has it — under a comment saying its
+whole purpose is that every mark lands at the same x. **Measured after: one x, 1064px, on every row.** The Repairs
+highlight was a flat 4% band, and a band stops where its element stops; it is the manifest's mesh now, on the row,
+so it reaches the actions column too.
+
+**And the queue's two readouts were 4.5px apart — measured, 337.6 against 342.1.** My first fix was `align-self`,
+which governs a FLEX ITEM, and these are inline-flex boxes in a BLOCK, so their height is set by their own content:
+one carries a 13px glyph, the other a 4px meter. Still 4.5px after. The row is a flex line now, which is the board's
+own stated rule — words beside words share a baseline, a box beside words shares a centre line.
+
+⛔ **`1f8d6efa` was only ever about the MARK.** Round 4c retracted the "three statements of never ends" finding, so
+the head's count, the timeline's label and the advisory stay. What changed is that a 45° hatch MEANS DANGER on this
+board — he made me take it off META for exactly that reason — and an announcement with no end date is not a hazard.
+It is a thing that continues, so the open end fades.
+
+### The problem label is a fact about the WEAPON
+
+`1615b327`. Drawn on every build row, the same chip said the same thing four times down one group. The chip moves to
+the weapon row; each build keeps a bare triangle that says only *which* build is affected.
+
+### Closed, and what is left
+
+**22 of the 32 are closed**, plus `d4303c12` and `be83d91e`, which round 4f already recorded as superseded.
+
+| Still open | Why it is still open |
+|---|---|
+| `4cec9165` | Deselect X alignment — his shot is a CleanShot I have not opened |
+| `16767834` | "Other 120 builds pass" — a piece of writing, not an instance of anything; deliberately not systematised |
+| `a27feffa` | Repairs fault card, each weapon its own card |
+| `30b7b494` | The problem card's border gap, its hazard strip, and Gemini's fluid pointer |
+| `80880e0e` | **Half.** The `10builds` spacing measures 8px and is closed; the WORDING is the p10 rewrite, which is Session 4's by his own split |
+| `35e1f097` | His own deferral — the History timeline waits for the rest |
+
+### What this round is evidence of
+
+**Three of my moves today were corrected by him within minutes, and all three have the same shape.** A thinking pass
+that asked fifteen questions about my own process and none about the design. A "deeper" severity finding that was a
+retracted claim re-derived from a downscaled screenshot. A `volt.svg` 404 asserted from a directory listing without
+checking the artifact it was published to. **Each is reasoning about the work instead of looking at it** — and the
+fourth, calling `list_projects` and then immediately grepping for code, is the same failure aimed at a tool: using
+the instrument as a gesture rather than routing the question through it.
