@@ -1111,3 +1111,42 @@ as the claim it supports is not evidence.
 only `t=0` against `t=duration` can see one — which is exactly the "start → pause → static → start" he had to report
 twice. Stepping the clock to fixed marks proves motion EXISTS and can never prove a loop closes. All four badges now
 close at 0.00–0.04%.
+
+## Round 4c — the compact prep, and two findings I reported that were not true (2026-09-17 12:25 EDT)
+
+**I told him History repeats the Repairs critique's finding 3 — four ordered severities in one identical treatment.
+It does not.** Opened at 3x: `error` 4/4 pips at `#FF8A85`, `warn` 3/4 at `#FF9E72`, `caution` 2/4 at `#FF7A45`,
+`info` 1/4 at `#85939F`. Severity is encoded twice over, by count AND by hue. I read the defect off a **62%-scaled
+crop** where a 4px pip cluster is sub-pixel.
+
+**The second, the delivery queue's "three statements of never ends", is also weaker than I said.** The panel head's
+`1 never ends` counts every announcement; the timeline's `∞ No end` LABELS THE POSITION at the bar's open end; the
+warn block is the advisory that carries the verb and the fix. Three registers of one fact, not three copies — and a
+defensible arrangement rather than a defect.
+
+**So the generalisation sweep produced two findings and full size retired both.** The Repairs critique held because
+it was made from a full-size render; these two were not. ⚠️ **That is the seventh and eighth instrument failure of
+the day and the first I handed him as findings** — the previous six returned wrong numbers, these two returned wrong
+JUDGEMENTS from a correct picture at the wrong size.
+
+### The count I was not carrying
+
+**Forty-nine throwaway probe scripts in `/tmp` this session.** I guessed twenty when I went to count. The deleted
+harnesses were the COMMITTED form of this and I removed them believing the lesson landed; this is the uncommitted
+form, and there are forty-nine. His sentence covers both: *a check is a failure in the ability to make the element
+correctly in the first place.*
+
+And the ratio is the damning part. **Every defect that mattered today was found by rendering a crop and looking at
+it** — the shattered bolt, the missing dot, the collapsed swatches, the orphaned swatch, the vanished META word, the
+hazard band, the alien export container, the two findings above. **Not one came from a probe**, and two were found
+DESPITE a probe reporting clean. A crop plus a read is one call; a probe is a script, a run, a debug and a re-run.
+⛔ **Render and look is the default. A probe is only for a question the eye cannot answer** — a 0.25px baseline, a
+contrast ratio, whether a loop closes.
+
+### The root under every round of this session
+
+I fix the level he points at. Easing, then what is animated, then what it means. One instance of an icon ring, then
+three parents, then the class. One of the three strings a fault returns. **I am never wrong at the level I fix — I am
+fixing one level below where the defect lives**, which is exactly why each round produces another round. The first
+question on any complaint is not *what is broken* but **what RULE is this an instance of, and where else does that
+rule reach.**
