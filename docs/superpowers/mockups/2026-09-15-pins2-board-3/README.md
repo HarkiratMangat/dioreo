@@ -965,3 +965,45 @@ says "this is the worst". The defence is that the sort is per weapon and the gro
 without asking what already claims that property, that job, or that name.** Not "I did not look" — that is the
 symptom. The three duplications were all built while I was actively writing comments about not duplicating, which is
 what makes it worth recording rather than merely fixing.
+
+## Round 3z — the pass resumed, because four calls was not it either (2026-09-17 11:10 EDT)
+
+He counted them. Nine sequential-thinking calls all session, four of them the pass — and every one of those four found
+something, which is the evidence it was still producing when I called it done. Same error as round 3x at a bigger
+number. Three more thoughts and three probes:
+
+**1 · `faultLine` returns THREE strings per fault and I rewrote ONE.** The line he actually quoted — *"'same as build
+1'... WHAT'S SAME AS BUILD 1???"* — survived verbatim in `text`, which is what the By-problem worklist prints on its
+cards and what an opened row prints as its heading. I found it by rendering `p6=b`, a shape I had never once opened.
+I fixed the string his screenshot showed. Fixing the instance of a STRING, in the same file where I had just written
+a comment about fixing the class.
+
+**2 · Do the Repairs critique's five findings generalise? I asked, and my test could not answer.** Finding 1 — a
+decorative mark that varies by nothing — does NOT recur: marks vary on every surface that has one (manifest 7/21,
+history 47/109, export 0/125). Finding 4 came back `false` on four of five surfaces, and that is my instrument, not
+the board: it tested for the phrasing `N of M` rather than for the property, and the manifest states scale as eight
+category chips while the export drawer states it as `125 BUILDS`. Findings 2, 3 and 5 are untested. **Reporting "the
+findings do not generalise" would have been a clean result from a check that could not have found the dirt.**
+
+**3 · Three instrument errors today, and they are a different pattern from the writing one.**
+
+| Probe | What it returned | What was wrong |
+|---|---|---|
+| the baseline check | 0.25px of disagreement | it computed an ascent assuming centring, on an element I had just set to baseline |
+| the contrast check | **2.01** for light grey on near-black | it read a 5%-alpha near-white wash as an opaque ground. Real figure **6.25** |
+| the scale check | four of five surfaces omit scale | it tested a phrasing, not a property |
+
+Every one returned a well-formed, confident number while measuring the wrong thing, and **two of the three I caught
+only because the number was implausible.** If either had come back plausible I would have acted on it. So: a probe
+written in the same minute as the claim it supports is not evidence — the only thing that caught these was a prior
+about roughly what the answer should be. A fourth: `verify.cjs`'s phone gate reports 0 while two elements added today
+were 540px and 494px wide at 390px, because its sweep predates their existence.
+
+**What the pass cleared, measured rather than assumed:** the fold control's `:focus-visible` reveal works by keyboard
+(63px, opacity 1) — a path I wrote and had never triggered; badge motion is `none` under `prefers-reduced-motion`;
+the export drawer's option B renders its three scope rows with the picker as a separate step; the named tag's dot is
+present in the SELECTION drawer too, not only the manifest rail; both `.g-status` readouts carry `.b3-nw` at 26px.
+
+**What it did NOT clear, said plainly:** the three badge keyframes I wrote this morning are still unrendered — the
+IntersectionObserver never fired in the probe, so `.b3-bdgs.in` was empty and I measured nothing. Findings 2, 3 and 5
+of the critique remain untested on the other four surfaces.
