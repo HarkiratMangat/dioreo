@@ -250,6 +250,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-14 02:45 EDT — The pins-2 design board: G8–G10 answered on the page, and a second board session planned (v3.83.0-pre)
 - 2026-09-14 16:42 EDT — Pins-2 design board 2 — twenty-one versions to refined, and the relation sweep that should have run first (v3.84.0-pre)
 - 2026-09-17 09:14 EDT — the session that kept acting on the model instead of the thing (v3.84.0-pre)
+- 2026-09-17 17:14 EDT — portal pins batch 2 — one badge, thirteen attempts, and the 32 threads it displaced (v3.85.0-pre)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4415,6 +4416,20 @@ He asked, on 2026-09-16 at 03:20 EDT, whether this session's failures had been d
 **The operational test, stated so it can be checked:** before asserting anything about an artifact, name which artifact was opened. If the answer is a memory, a rule, a list, a summary, or an assumption about a tool — open the thing. It is almost always one call.
 
 Carried into `linksee` (anchor #20, plus caveat and learning layers) and `perseus-vault` (`acting-on-the-model-not-the-thing-2026-09-17`).
+
+## 2026-09-17 17:14 EDT — portal pins batch 2 — one badge, thirteen attempts, and the 32 threads it displaced (v3.85.0-pre)
+
+A five-hour session whose honest accounting is two records commits, two approved prod writes, and **zero of his 32 open board threads closed**.
+
+The board work that did happen was good and was class-shaped: the attachment tag's slot label came out of `p2sty` and became its own axis, so naming composes with every shell instead of being a fifth style that needs a twin per shell; and the small-text fork stopped being three typographic treatments of one sentence and became four ROLES — readout, consequence, delete, keep — with a corpus of his own pinned strings, one of which the rule deletes. His complaint about the first version was exact: "these are all the same thing wearing makeup." A classification that never rejects anything is not a classification. On prod, the slot backfill wrote `attachmentSlots` on 130 of 133 builds with zero blank entries, and all six of the unique labels he supplied landed on real weapons.
+
+What consumed the day was one badge. Thirteen attempts, and two separate causes that I first wrote up as one because one cause makes a tidier story. Attempts 1–4 predate the asset entirely: they applied the badge rule at the wrong level, an effect laid on a surface rather than the kind of claim the badge makes, and those four are the ones that generalise. Attempts 5–12 were all predetermined by a single sentence I wrote in my first message on it — that his 386×362 cel would look wrong against a 140×22 badge — which I never once tested before letting it govern four hours of hand-drawn substitutes. When he finally said "try literally masking the asset into the badge frame", his verdict on the first render was "the lightning itself looks great." An objection about how something will look in context has to be tested in that context; reasoning from its dimensions is not evidence.
+
+The instrument failures are the other half. The screenshot harness produced five false readings in one afternoon, each indistinguishable from a real finding: a clipped screenshot is in document coordinates while `getBoundingClientRect` is viewport-relative; a rect measured once and reused while the list re-rendered; a paused `Animation` that does not survive a Preact re-render; `animation-play-state:paused` freezing at the current wall-clock offset so the delay shifts from there; and a local server with no `cache-control: no-store`, so two rounds of edits were judged against a cached page. Anchor #23 — render and look, a probe only for what the eye cannot answer — had been declared five hours earlier in this same session, and I then wrote eleven more programs. The word "render" did not exclude building a renderer.
+
+Two scripted edits corrupted files and exited 0. `str.replace('', x)` inserts at position 0, and the empty string came from a slice whose closing anchor was searched from the start of the file and matched a CSS comment instead of the JS one, so the slice ran backwards; the replacement landed above the doctype and the browser rendered JavaScript as page text. The second silently deleted two CSS rules because the assert checked what the slice contained rather than what replacing it would destroy.
+
+Five of the six rules in my own previous compact prep were broken with that document in context. Every violation happened inside a live feedback loop, and the rules that broke are exactly the ones whose cost is paid before the next artifact exists — thinking first, routing a search properly, opening the page rather than scripting a crop. That is the mechanism worth carrying: under live review pressure the objective quietly becomes *have something to show next turn*, and the expensive-first rules are what get dropped.
 
 # Part B — Lessons Ledger (thematic)
 

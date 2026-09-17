@@ -826,8 +826,7 @@ Last run 2026-09-16 00:48 EDT: **6 surfaces, 13 decision rows, 30 options, every
 
 ## Round 3v — his 34 open threads on 3-C, worked as nine classes rather than thirty-four items (2026-09-17 10:12 EDT)
 
-Read every thread on 3-C first, including the ten he left overnight, and opened the eight screenshots they cite before
-touching anything. Thirty-four threads collapse to nine root causes, and three of them are one sentence each.
+Read every thread on 3-C first, including the ten he left overnight, and opened the eight screenshots they cite before touching anything. Thirty-four threads collapse to nine root causes, and three of them are one sentence each.
 
 | # | What he said | The class fix |
 |---|---|---|
@@ -853,12 +852,9 @@ touching anything. Thirty-four threads collapse to nine root causes, and three o
 
 ## Round 3w — the 3-A and 3-B tail, read at last (2026-09-17 10:22 EDT)
 
-He held the publish and sent me here first. **All 98 threads across both frozen boards read: 3-A has 76 (45 open), 3-B
-has 22 (21 open).** The headline is not a new backlog.
+He held the publish and sent me here first. **All 98 threads across both frozen boards read: 3-A has 76 (45 open), 3-B has 22 (21 open).** The headline is not a new backlog.
 
-**The open tail is the same nine classes as 3-C, and today's class fixes close it.** Thread by thread, 3-B's twenty-one
-open threads are ones I had already answered with a "Done" — they are open because he never resolved them, and several
-are the exact asks that came back on 3-C, which is why he said to take a resolved thread there with a grain of salt:
+**The open tail is the same nine classes as 3-C, and today's class fixes close it.** Thread by thread, 3-B's twenty-one open threads are ones I had already answered with a "Done" — they are open because he never resolved them, and several are the exact asks that came back on 3-C, which is why he said to take a resolved thread there with a grain of salt:
 
 | 3-B thread | My old reply | What actually happened |
 |---|---|---|
@@ -871,36 +867,17 @@ are the exact asks that came back on 3-C, which is why he said to take a resolve
 
 Two replies posted on 3-B correcting my own Done claims on the pointer and the border gap. The rest stand.
 
-**Three of his screenshots opened for the first time, and each one settled something prose had not.** `Claude 04.12.01`
-shows the border gap is not a break in either ring — both rings are whole, and the notch is where the chip's
-bottom-left corner and the card's top-right corner fail to meet. Every fix I made was to the join, which is why it
-came back three times. `Arc 05.27.31` shows the repairs row with the hatch on the gutter, the numeral `2` beside
-"Build 1", and `No gunsmith code — — — — —`; all three are gone. `Arc 05.01.30` shows the selection chips already
-content-width, so that half of his 11:44 complaint was fixed before he wrote it and the equal-width grid he
-screenshotted was the older state.
+**Three of his screenshots opened for the first time, and each one settled something prose had not.** `Claude 04.12.01` shows the border gap is not a break in either ring — both rings are whole, and the notch is where the chip's bottom-left corner and the card's top-right corner fail to meet. Every fix I made was to the join, which is why it came back three times. `Arc 05.27.31` shows the repairs row with the hatch on the gutter, the numeral `2` beside "Build 1", and `No gunsmith code — — — — —`; all three are gone. `Arc 05.01.30` shows the selection chips already content-width, so that half of his 11:44 complaint was fixed before he wrote it and the equal-width grid he screenshotted was the older state.
 
-**The palette, both ways, because he asked to see all three options.** `mine` keeps his hexes exactly. `mineflat`
-keeps his nine hues and holds lightness at .735 with chroma as high as each hue carries up to .20 — his own median is
-.762, and .78/.14 was tried first and washed his `#ff2a55` optic to a pale `#FE9499`. Both are drawn as swatch rows
-under the palette switch, each row declaring its own values so the comparison is two different strips rather than two
-copies of whichever is live.
+**The palette, both ways, because he asked to see all three options.** `mine` keeps his hexes exactly. `mineflat` keeps his nine hues and holds lightness at .735 with chroma as high as each hue carries up to .20 — his own median is .762, and .78/.14 was tried first and washed his `#ff2a55` optic to a pale `#FE9499`. Both are drawn as swatch rows under the palette switch, each row declaring its own values so the comparison is two different strips rather than two copies of whichever is live.
 
-⚠️ **And the board was broken for four minutes and the gate is what caught it.** The palette specimen went in after a
-closing backtick, so everything below it parsed as JS and the page threw `SyntaxError: Unexpected identifier '$'`.
-`verify.cjs` died on `window.__b3` being undefined, which is what a dead board looks like from the outside. Reading a
-crash as a crash rather than as a flaky harness is the whole value of chaining the gate onto the edit.
+⚠️ **And the board was broken for four minutes and the gate is what caught it.** The palette specimen went in after a closing backtick, so everything below it parsed as JS and the page threw `SyntaxError: Unexpected identifier '$'`. `verify.cjs` died on `window.__b3` being undefined, which is what a dead board looks like from the outside. Reading a crash as a crash rather than as a flaky harness is the whole value of chaining the gate onto the edit.
 
 ## Round 3x — the pass I should have run before saying it was done (2026-09-17 10:33 EDT)
 
-He asked whether a think-pass had actually been run on the WORK. It had not: three passes on what to DO — triage, the
-palette, the Repairs critique — and none on whether what I built was right. Two questions found two shipped defects,
-and both are the failure he has named most often: **a correct rule at the wrong SCOPE.**
+He asked whether a think-pass had actually been run on the WORK. It had not: three passes on what to DO — triage, the palette, the Repairs critique — and none on whether what I built was right. Two questions found two shipped defects, and both are the failure he has named most often: **a correct rule at the wrong SCOPE.**
 
-**1 · The export redesign was repainting the control it exists to be compared against.** The Export surface's first
-option is "Portal today", whose whole job is to show the portal exactly as it ships — and it renders `exportPanel.js`'s
-own drawer, which mounts the same `.exs` list I had restyled with a bare selector. So "Portal today" was showing my
-proposal. The board would have told him the portal already agreed with a design it has never seen. Measured after
-scoping it to `html[data-b3-exp=a|b]`:
+**1 · The export redesign was repainting the control it exists to be compared against.** The Export surface's first option is "Portal today", whose whole job is to show the portal exactly as it ships — and it renders `exportPanel.js`'s own drawer, which mounts the same `.exs` list I had restyled with a bare selector. So "Portal today" was showing my proposal. The board would have told him the portal already agreed with a design it has never seen. Measured after scoping it to `html[data-b3-exp=a|b]`:
 
 | | Portal today | The proposal |
 |---|---|---|
@@ -908,35 +885,19 @@ scoping it to `html[data-b3-exp=a|b]`:
 | row ground | `rgb(11,15,18)` | transparent |
 | Download | filled `rgb(242,194,48)` | outline only |
 
-**2 · The pointer did not exist under the option he starred.** `gates.css` carries
-`html[data-b3-p3=b] .b3-pc::before` — a 6px hazard spine — and hides `::after` outright. Both are later and more
-specific than the pointer I had just built on those same two pseudo-elements. So under **B · Spine, joined**, the one
-with the star on it, the back layer rendered as a stripe and the front layer never drew. I had shot it under option A
-and called it done. The pointer is its own element now (`.b3-pc-tip`) and cannot lose that argument. Option B also
-stopped butting the chip — that join is the one I measured this morning as pixel-perfect and visually two objects —
-and its spine gained a radius, because the card's `overflow:hidden` had to go so the tip is not clipped.
+**2 · The pointer did not exist under the option he starred.** `gates.css` carries `html[data-b3-p3=b] .b3-pc::before` — a 6px hazard spine — and hides `::after` outright. Both are later and more specific than the pointer I had just built on those same two pseudo-elements. So under **B · Spine, joined**, the one with the star on it, the back layer rendered as a stripe and the front layer never drew. I had shot it under option A and called it done. The pointer is its own element now (`.b3-pc-tip`) and cannot lose that argument. Option B also stopped butting the chip — that join is the one I measured this morning as pixel-perfect and visually two objects — and its spine gained a radius, because the card's `overflow:hidden` had to go so the tip is not clipped.
 
-Measured on both options: tip 16x9, apex touching the chip's bottom edge exactly, centred on the chip to **0.3px**,
-9px of air, front layer in each option's own ground.
+Measured on both options: tip 16x9, apex touching the chip's bottom edge exactly, centred on the chip to **0.3px**, 9px of air, front layer in each option's own ground.
 
-**Three things I had declared fixed by reading rather than looking, checked properly — all three held.** The mesh
-weapon-name row is `rgb(11,15,18)` against the bar's own ground with its shadow; the expanded Repairs row survived the
-six-to-five column change with 0 overflowing children; the `Builds 1-3` label renders as data in the weapon's accent.
-The check was still the right call, because the two that did NOT hold were found the same way.
+**Three things I had declared fixed by reading rather than looking, checked properly — all three held.** The mesh weapon-name row is `rgb(11,15,18)` against the bar's own ground with its shadow; the expanded Repairs row survived the six-to-five column change with 0 overflowing children; the `Builds 1-3` label renders as data in the weapon's accent. The check was still the right call, because the two that did NOT hold were found the same way.
 
-**The Repairs column heads were verified against their columns rather than assumed:** identical grid templates
-(`156px 298px 96px 150px 98px`), all four labelled heads at delta 0, header right edge 1146 against the row's 1146.
+**The Repairs column heads were verified against their columns rather than assumed:** identical grid templates (`156px 298px 96px 150px 98px`), all four labelled heads at delta 0, header right edge 1146 against the row's 1146.
 
-The lesson worth keeping: **both defects were invisible to every gate.** `verify.cjs` was green, the sweep rendered
-thirteen screens with no errors, and the page threw nothing — because neither defect is an error. One was a rule
-reaching a state nobody had opened; the other was a rule losing a specificity argument it never announced. The only
-thing that finds those is asking *which of my rules is unscoped* and *which state did I never open*.
+The lesson worth keeping: **both defects were invisible to every gate.** `verify.cjs` was green, the sweep rendered thirteen screens with no errors, and the page threw nothing — because neither defect is an error. One was a rule reaching a state nobody had opened; the other was a rule losing a specificity argument it never announced. The only thing that finds those is asking *which of my rules is unscoped* and *which state did I never open*.
 
 ## Round 3y — the pass run properly, and it found nine more (2026-09-17 10:54 EDT)
 
-Round 3x was ONE sequential-thinking call. He said so: one thought is not a pass, and the one thought had found two
-defects, which is evidence the space was productive when I stopped searching it. Run properly, the same space gave
-nine more. The inventory that opened it is the reason: **I shipped nine things today and had rendered four of them.**
+Round 3x was ONE sequential-thinking call. He said so: one thought is not a pass, and the one thought had found two defects, which is evidence the space was productive when I stopped searching it. Run properly, the same space gave nine more. The inventory that opened it is the reason: **I shipped nine things today and had rendered four of them.**
 
 | # | What it was | How it was found |
 |---|---|---|
@@ -950,40 +911,19 @@ nine more. The inventory that opened it is the reason: **I shipped nine things t
 | 8 | The specimen said "lightness .78 throughout" | I recomputed to .735 and left the label. A wrong number inside the thing built to help him decide |
 | 9 | The contrast probe reported **2.01** for the new severity chip | Implausible for light grey on near-black, and it was: the probe read a 5%-alpha near-white wash as an opaque ground. Composited properly it is **6.25**, against `blocks` at **8.57** |
 
-**Measured contrast on everything new** (AA needs 4.5). Named-tag slot words in his palette: 5.32 (Stock) to 14.01
-(Ammunition) — all pass. In the regularised palette: **6.51 to 7.74**. That tightening is the honest argument for
-regularising, and it is better than "it looks more even": his set's slot words span a **2.6×** range of perceived
-weight, the regularised set **1.2×**. Attachment names 14.28 throughout.
+**Measured contrast on everything new** (AA needs 4.5). Named-tag slot words in his palette: 5.32 (Stock) to 14.01 (Ammunition) — all pass. In the regularised palette: **6.51 to 7.74**. That tightening is the honest argument for regularising, and it is better than "it looks more even": his set's slot words span a **2.6×** range of perceived weight, the regularised set **1.2×**. Attachment names 14.28 throughout.
 
-**One thing I changed that is a trade, not a win, and should be said as one.** I removed the leading problem numeral
-from the Repairs row because a `2` under an empty column head beside "Build 1" is read as a build number. True — but
-it was also the only constant-position element carrying magnitude, and on a three-fault row the chips wrap and nothing
-says "this is the worst". The defence is that the sort is per weapon and the group header now reads `1 unshareable ·
-2 problems`, so the magnitude is where the sort is. I think the removal holds. It is still a trade.
+**One thing I changed that is a trade, not a win, and should be said as one.** I removed the leading problem numeral from the Repairs row because a `2` under an empty column head beside "Build 1" is read as a build number. True — but it was also the only constant-position element carrying magnitude, and on a three-fault row the chips wrap and nothing says "this is the worst". The defence is that the sort is per weapon and the group header now reads `1 unshareable · 2 problems`, so the magnitude is where the sort is. I think the removal holds. It is still a trade.
 
-**And the root, which is one sentence rather than nine.** Every defect above is the same act: **writing something
-without asking what already claims that property, that job, or that name.** Not "I did not look" — that is the
-symptom. The three duplications were all built while I was actively writing comments about not duplicating, which is
-what makes it worth recording rather than merely fixing.
+**And the root, which is one sentence rather than nine.** Every defect above is the same act: **writing something without asking what already claims that property, that job, or that name.** Not "I did not look" — that is the symptom. The three duplications were all built while I was actively writing comments about not duplicating, which is what makes it worth recording rather than merely fixing.
 
 ## Round 3z — the pass resumed, because four calls was not it either (2026-09-17 11:10 EDT)
 
-He counted them. Nine sequential-thinking calls all session, four of them the pass — and every one of those four found
-something, which is the evidence it was still producing when I called it done. Same error as round 3x at a bigger
-number. Three more thoughts and three probes:
+He counted them. Nine sequential-thinking calls all session, four of them the pass — and every one of those four found something, which is the evidence it was still producing when I called it done. Same error as round 3x at a bigger number. Three more thoughts and three probes:
 
-**1 · `faultLine` returns THREE strings per fault and I rewrote ONE.** The line he actually quoted — *"'same as build
-1'... WHAT'S SAME AS BUILD 1???"* — survived verbatim in `text`, which is what the By-problem worklist prints on its
-cards and what an opened row prints as its heading. I found it by rendering `p6=b`, a shape I had never once opened.
-I fixed the string his screenshot showed. Fixing the instance of a STRING, in the same file where I had just written
-a comment about fixing the class.
+**1 · `faultLine` returns THREE strings per fault and I rewrote ONE.** The line he actually quoted — *"'same as build 1'... WHAT'S SAME AS BUILD 1???"* — survived verbatim in `text`, which is what the By-problem worklist prints on its cards and what an opened row prints as its heading. I found it by rendering `p6=b`, a shape I had never once opened. I fixed the string his screenshot showed. Fixing the instance of a STRING, in the same file where I had just written a comment about fixing the class.
 
-**2 · Do the Repairs critique's five findings generalise? I asked, and my test could not answer.** Finding 1 — a
-decorative mark that varies by nothing — does NOT recur: marks vary on every surface that has one (manifest 7/21,
-history 47/109, export 0/125). Finding 4 came back `false` on four of five surfaces, and that is my instrument, not
-the board: it tested for the phrasing `N of M` rather than for the property, and the manifest states scale as eight
-category chips while the export drawer states it as `125 BUILDS`. Findings 2, 3 and 5 are untested. **Reporting "the
-findings do not generalise" would have been a clean result from a check that could not have found the dirt.**
+**2 · Do the Repairs critique's five findings generalise? I asked, and my test could not answer.** Finding 1 — a decorative mark that varies by nothing — does NOT recur: marks vary on every surface that has one (manifest 7/21, history 47/109, export 0/125). Finding 4 came back `false` on four of five surfaces, and that is my instrument, not the board: it tested for the phrasing `N of M` rather than for the property, and the manifest states scale as eight category chips while the export drawer states it as `125 BUILDS`. Findings 2, 3 and 5 are untested. **Reporting "the findings do not generalise" would have been a clean result from a check that could not have found the dirt.**
 
 **3 · Three instrument errors today, and they are a different pattern from the writing one.**
 
@@ -993,45 +933,25 @@ findings do not generalise" would have been a clean result from a check that cou
 | the contrast check | **2.01** for light grey on near-black | it read a 5%-alpha near-white wash as an opaque ground. Real figure **6.25** |
 | the scale check | four of five surfaces omit scale | it tested a phrasing, not a property |
 
-Every one returned a well-formed, confident number while measuring the wrong thing, and **two of the three I caught
-only because the number was implausible.** If either had come back plausible I would have acted on it. So: a probe
-written in the same minute as the claim it supports is not evidence — the only thing that caught these was a prior
-about roughly what the answer should be. A fourth: `verify.cjs`'s phone gate reports 0 while two elements added today
-were 540px and 494px wide at 390px, because its sweep predates their existence.
+Every one returned a well-formed, confident number while measuring the wrong thing, and **two of the three I caught only because the number was implausible.** If either had come back plausible I would have acted on it. So: a probe written in the same minute as the claim it supports is not evidence — the only thing that caught these was a prior about roughly what the answer should be. A fourth: `verify.cjs`'s phone gate reports 0 while two elements added today were 540px and 494px wide at 390px, because its sweep predates their existence.
 
-**What the pass cleared, measured rather than assumed:** the fold control's `:focus-visible` reveal works by keyboard
-(63px, opacity 1) — a path I wrote and had never triggered; badge motion is `none` under `prefers-reduced-motion`;
-the export drawer's option B renders its three scope rows with the picker as a separate step; the named tag's dot is
-present in the SELECTION drawer too, not only the manifest rail; both `.g-status` readouts carry `.b3-nw` at 26px.
+**What the pass cleared, measured rather than assumed:** the fold control's `:focus-visible` reveal works by keyboard (63px, opacity 1) — a path I wrote and had never triggered; badge motion is `none` under `prefers-reduced-motion`; the export drawer's option B renders its three scope rows with the picker as a separate step; the named tag's dot is present in the SELECTION drawer too, not only the manifest rail; both `.g-status` readouts carry `.b3-nw` at 26px.
 
-**What it did NOT clear, said plainly:** the three badge keyframes I wrote this morning are still unrendered — the
-IntersectionObserver never fired in the probe, so `.b3-bdgs.in` was empty and I measured nothing. Findings 2, 3 and 5
-of the critique remain untested on the other four surfaces.
+**What it did NOT clear, said plainly:** the three badge keyframes I wrote this morning are still unrendered — the IntersectionObserver never fired in the probe, so `.b3-bdgs.in` was empty and I measured nothing. Findings 2, 3 and 5 of the critique remain untested on the other four surfaces.
 
 ## Round 4 — 3-D published (2026-09-17 11:31 EDT)
 
 **https://claude.ai/artifact/HJUZxNeV3vzm1UxhGiVa9H** · version 1 · 79 files · 2.68 MB · page `board3d.html`.
 
-His call, at 11:29 EDT: *"now go publish the board. new link. Design Board 3-D."* The hold from 00:28 is discharged
-on his say-so, not because the list emptied on its own.
+His call, at 11:29 EDT: *"now go publish the board. new link. Design Board 3-D."* The hold from 00:28 is discharged on his say-so, not because the list emptied on its own.
 
-**3-D gets its own page file rather than reusing `board3c.html`.** Publishing 3-D from the file the decoy table maps
-to 3-C would have made that table false, and that table is the only thing standing between a routine publish and
-overwriting a board that holds his comments. Four artifacts now, three of them decoys.
+**3-D gets its own page file rather than reusing `board3c.html`.** Publishing 3-D from the file the decoy table maps to 3-C would have made that table false, and that table is the only thing standing between a routine publish and overwriting a board that holds his comments. Four artifacts now, three of them decoys.
 
-**The last thing to land before it went out was the badge rule**, and it is the one worth carrying forward: *a badge
-is a stamped mark, its parts do not move, and what moves is a material crossing it.* Light across metal is a gleam,
-fluid across a surface is a stain — and both of those worked while every attempt at META and TOP N failed, because
-those animated the icon. Four earlier fixes were all at the level of curve and duration, which is why each came back
-wearing new clothes. `b3strike`, `b3land`, `b3climb` and `b3place` are deleted; every badge and icon measures
-`animation: none`, and the only thing moving is each badge's `::after`.
+**The last thing to land before it went out was the badge rule**, and it is the one worth carrying forward: *a badge is a stamped mark, its parts do not move, and what moves is a material crossing it.* Light across metal is a gleam, fluid across a surface is a stain — and both of those worked while every attempt at META and TOP N failed, because those animated the icon. Four earlier fixes were all at the level of curve and duration, which is why each came back wearing new clothes. `b3strike`, `b3land`, `b3climb` and `b3place` are deleted; every badge and icon measures `animation: none`, and the only thing moving is each badge's `::after`.
 
 ## Round 4a — the badges, rebuilt from what each badge IS (2026-09-17 11:58 EDT)
 
-Six asks, and his sixth was the principle the rest hang off: the motion has to carry the badge's NAME as a feeling.
-The root, though, is that this was the THIRD round of the same correction and each time I fixed the level he pointed
-at — first the easing, then what was animated, now what the animation MEANS. The level above all three is that these
-are not four slots needing four effects. They are four kinds of CLAIM, and the motion follows from the kind:
+Six asks, and his sixth was the principle the rest hang off: the motion has to carry the badge's NAME as a feeling. The root, though, is that this was the THIRD round of the same correction and each time I fixed the level he pointed at — first the easing, then what was animated, now what the animation MEANS. The level above all three is that these are not four slots needing four effects. They are four kinds of CLAIM, and the motion follows from the kind:
 
 | Badge | The claim it makes | So the motion |
 |---|---|---|
@@ -1040,141 +960,58 @@ are not four slots needing four effects. They are four kinds of CLAIM, and the m
 | META | not about this build at all: the GAME's current state, volatile | current runs through it |
 | TOXIC | how it feels to play against — a property that LEAKS | it creeps, continuously |
 
-The test that this is a rule rather than a tidy story: **it predicts the one case he never complained about.** TOXIC
-is "a property that leaks" → continuous creeping motion → which is exactly what it originally was and exactly what he
-asked me to restore. And it rules out my actual mistakes: META may not have a smooth sweep, because a sweep is what
-light does and META's claim is volatile; TOP N may not have a face sweep, because that is BEST's and TOP N differs
-from BEST in DEGREE, so it moves to the rim rather than to a new kind.
+The test that this is a rule rather than a tidy story: **it predicts the one case he never complained about.** TOXIC is "a property that leaks" → continuous creeping motion → which is exactly what it originally was and exactly what he asked me to restore. And it rules out my actual mistakes: META may not have a smooth sweep, because a sweep is what light does and META's claim is volatile; TOP N may not have a face sweep, because that is BEST's and TOP N differs from BEST in DEGREE, so it moves to the rim rather than to a new kind.
 
-**His complaint #1 was the deepest and I nearly filed it as the scheduling nit.** Four badges beating in lockstep
-tell the eye they are ONE system with one heartbeat, which contradicts the rule above — a shared pulse makes them
-four skins on one animation however different the gradients are. Phase is now a stable fraction of the build's own
-id, and the four periods are deliberately unequal: 1.9 / 5.4 / 6.4 / 9s.
+**His complaint #1 was the deepest and I nearly filed it as the scheduling nit.** Four badges beating in lockstep tell the eye they are ONE system with one heartbeat, which contradicts the rule above — a shared pulse makes them four skins on one animation however different the gradients are. Phase is now a stable fraction of the build's own id, and the four periods are deliberately unequal: 1.9 / 5.4 / 6.4 / 9s.
 
-**META took three attempts and the third was the only one derived from the badge.** An opacity flicker is a light
-switch — his words: "what about that is awwwards worthy?" The answer was not another effect: `zap` is a single closed
-path, the outline of a bolt, so the charge runs along THAT. No other badge can have this animation, because no other
-badge is a conductor, which is the test any of these should have had to pass.
-⚠️ And the first cut of it DESTROYED the mark: this icon set draws with `fill:none`, so the stroke IS the bolt, and a
-dasharray on it broke the bolt into scattered fragments. The probe cheerfully reported "45px of change" on an icon
-that had ceased to be a lightning bolt. Caught by looking. The bolt is drawn whole now and a second copy of the same
-path rides on top carrying the dash.
+**META took three attempts and the third was the only one derived from the badge.** An opacity flicker is a light switch — his words: "what about that is awwwards worthy?" The answer was not another effect: `zap` is a single closed path, the outline of a bolt, so the charge runs along THAT. No other badge can have this animation, because no other badge is a conductor, which is the test any of these should have had to pass. ⚠️ And the first cut of it DESTROYED the mark: this icon set draws with `fill:none`, so the stroke IS the bolt, and a dasharray on it broke the bolt into scattered fragments. The probe cheerfully reported "45px of change" on an icon that had ceased to be a lightning bolt. Caught by looking. The bolt is drawn whole now and a second copy of the same path rides on top carrying the dash.
 
 ### The seam test, which is new and is the check that was missing
 
-A seam is a discontinuity between the LAST frame and the FIRST. Stepping the clock to fixed marks proves motion
-EXISTS; only **t=0 against t=duration** can prove the loop closes — which is exactly the "start → pause → static →
-start" he had to report. All four now close at 0.00–0.04%.
+A seam is a discontinuity between the LAST frame and the FIRST. Stepping the clock to fixed marks proves motion EXISTS; only **t=0 against t=duration** can prove the loop closes — which is exactly the "start → pause → static → start" he had to report. All four now close at 0.00–0.04%.
 
-⚠️ **The probe was wrong three times while building it**, each time returning a confident number: it sampled at
-duration/3, which is the dead window for a front-loaded animation and called BEST's working sweep static; it ignored
-that the new negative phase delay shifts `currentTime`, so it sampled the dead window on three badges at once and
-nearly had me redesign animations that worked; and it hardcoded durations I then changed in the CSS, reporting a SEAM
-that was its own stale constant. It reads duration off the animation now.
+⚠️ **The probe was wrong three times while building it**, each time returning a confident number: it sampled at duration/3, which is the dead window for a front-loaded animation and called BEST's working sweep static; it ignored that the new negative phase delay shifts `currentTime`, so it sampled the dead window on three badges at once and nearly had me redesign animations that worked; and it hardcoded durations I then changed in the CSS, reporting a SEAM that was its own stale constant. It reads duration off the animation now.
 
 ## Round 4b — TOXIC slowed, META moved to its word, and the icon class finally applied (2026-09-17 12:16 EDT)
 
-**META, attempts three and four, and the lesson is a SIZE one.** "meta literally doesn't even have its animation
-applied" — it was applied, twice, and both were imperceptible. A 4.5-unit dash chasing a 40-unit path, then a band
-sweeping that same path. **The icon is an eleven-pixel outline: there is almost no ink in it to modulate**, so any
-treatment confined to the mark is worth about two pixels however bright it is made. The probe reported 45px of change
-both times because it counts pixels that differ at 3x, not pixels a person can see — the number was real and meant
-nothing. So the register changed: the other three badges animate their FACE, their RIM and their FILL, and the fourth
-nothing else uses is the WORD. ⛔ The rule that generalises: **at eleven pixels, detail motion does not exist.**
-⚠️ And the first cut of THAT deleted the word — `background-clip:text` needs `color:transparent`, which makes
-`currentColor` transparent too, so the gradient's base stops resolved to nothing.
+**META, attempts three and four, and the lesson is a SIZE one.** "meta literally doesn't even have its animation applied" — it was applied, twice, and both were imperceptible. A 4.5-unit dash chasing a 40-unit path, then a band sweeping that same path. **The icon is an eleven-pixel outline: there is almost no ink in it to modulate**, so any treatment confined to the mark is worth about two pixels however bright it is made. The probe reported 45px of change both times because it counts pixels that differ at 3x, not pixels a person can see — the number was real and meant nothing. So the register changed: the other three badges animate their FACE, their RIM and their FILL, and the fourth nothing else uses is the WORD. ⛔ The rule that generalises: **at eleven pixels, detail motion does not exist.** ⚠️ And the first cut of THAT deleted the word — `background-clip:text` needs `color:transparent`, which makes `currentColor` transparent too, so the gradient's base stops resolved to nothing.
 
-**TOXIC: 9s to 17s, four waypoints to eight.** Four is what made it feel cornered rather than morphing — between two
-keyframes each blob travels in a straight line, so every 25% the mesh visibly changed direction.
+**TOXIC: 9s to 17s, four waypoints to eight.** Four is what made it feel cornered rather than morphing — between two keyframes each blob travels in a straight line, so every 25% the mesh visibly changed direction.
 
-**The icon class, applied at last.** His preference has been in `ui/icons.js` since the fold was built: *"use icons
-with animation so things dont feel boring. icons that genuinely animate into different states."* Counted: **63 icons,
-one morphs.** The fold, whose chevron travels through a FLAT LINE between down and up so the mark folds through the
-horizon while the panel under it folds. Generalised as one mechanism rather than three gimmicks — **a mark that
-confirms something DRAWS itself; a mark that changes state MORPHS its path** — and applied to the three he named: the
-success check draws in the direction a hand draws it, the checkbox tick wipes along its own stroke, the close X
-re-strikes from the crossing outward. `stroke-dasharray` is inherited, so it reaches the cloned path inside a `<use>`
-shadow tree, which is what lets a sprite icon draw itself without giving each one its own component.
-⚠️ He also said I should not have asked: *"why even ask? it's already a stated preference and it clearly was never
-applied."* Correct — a gap in a stated preference is work, not a question.
+**The icon class, applied at last.** His preference has been in `ui/icons.js` since the fold was built: *"use icons with animation so things dont feel boring. icons that genuinely animate into different states."* Counted: **63 icons, one morphs.** The fold, whose chevron travels through a FLAT LINE between down and up so the mark folds through the horizon while the panel under it folds. Generalised as one mechanism rather than three gimmicks — **a mark that confirms something DRAWS itself; a mark that changes state MORPHS its path** — and applied to the three he named: the success check draws in the direction a hand draws it, the checkbox tick wipes along its own stroke, the close X re-strikes from the crossing outward. `stroke-dasharray` is inherited, so it reaches the cloned path inside a `<use>` shadow tree, which is what lets a sprite icon draw itself without giving each one its own component. ⚠️ He also said I should not have asked: *"why even ask? it's already a stated preference and it clearly was never applied."* Correct — a gap in a stated preference is work, not a question.
 
-**Six instrument errors in one day, and this is the pattern worth carrying past this board.** A baseline formula that
-assumed centring on an element set to baseline · a contrast probe that read a 5%-alpha wash as an opaque ground and
-reported 2.01 where the truth was 6.25 · a scale probe that tested a phrasing rather than a property · a frame sampler
-that used the wall clock and produced three identical frames of a 5.2s cycle whose motion is in the first tenth · the
-same sampler taking one sample at duration/3, the dead window for a front-loaded animation, and calling a working
-sweep static · and hardcoded durations that went stale the moment the CSS changed, reporting a SEAM that was its own
-constant. **Two of the six were caught only because the number was implausible.** A probe written in the same minute
-as the claim it supports is not evidence.
+**Six instrument errors in one day, and this is the pattern worth carrying past this board.** A baseline formula that assumed centring on an element set to baseline · a contrast probe that read a 5%-alpha wash as an opaque ground and reported 2.01 where the truth was 6.25 · a scale probe that tested a phrasing rather than a property · a frame sampler that used the wall clock and produced three identical frames of a 5.2s cycle whose motion is in the first tenth · the same sampler taking one sample at duration/3, the dead window for a front-loaded animation, and calling a working sweep static · and hardcoded durations that went stale the moment the CSS changed, reporting a SEAM that was its own constant. **Two of the six were caught only because the number was implausible.** A probe written in the same minute as the claim it supports is not evidence.
 
-**The one genuinely new check: the SEAM TEST.** A seam is a discontinuity between the LAST frame and the FIRST, so
-only `t=0` against `t=duration` can see one — which is exactly the "start → pause → static → start" he had to report
-twice. Stepping the clock to fixed marks proves motion EXISTS and can never prove a loop closes. All four badges now
-close at 0.00–0.04%.
+**The one genuinely new check: the SEAM TEST.** A seam is a discontinuity between the LAST frame and the FIRST, so only `t=0` against `t=duration` can see one — which is exactly the "start → pause → static → start" he had to report twice. Stepping the clock to fixed marks proves motion EXISTS and can never prove a loop closes. All four badges now close at 0.00–0.04%.
 
 ## Round 4c — the compact prep, and two findings I reported that were not true (2026-09-17 12:25 EDT)
 
-**I told him History repeats the Repairs critique's finding 3 — four ordered severities in one identical treatment.
-It does not.** Opened at 3x: `error` 4/4 pips at `#FF8A85`, `warn` 3/4 at `#FF9E72`, `caution` 2/4 at `#FF7A45`,
-`info` 1/4 at `#85939F`. Severity is encoded twice over, by count AND by hue. I read the defect off a **62%-scaled
-crop** where a 4px pip cluster is sub-pixel.
+**I told him History repeats the Repairs critique's finding 3 — four ordered severities in one identical treatment. It does not.** Opened at 3x: `error` 4/4 pips at `#FF8A85`, `warn` 3/4 at `#FF9E72`, `caution` 2/4 at `#FF7A45`, `info` 1/4 at `#85939F`. Severity is encoded twice over, by count AND by hue. I read the defect off a **62%-scaled crop** where a 4px pip cluster is sub-pixel.
 
-**The second, the delivery queue's "three statements of never ends", is also weaker than I said.** The panel head's
-`1 never ends` counts every announcement; the timeline's `∞ No end` LABELS THE POSITION at the bar's open end; the
-warn block is the advisory that carries the verb and the fix. Three registers of one fact, not three copies — and a
-defensible arrangement rather than a defect.
+**The second, the delivery queue's "three statements of never ends", is also weaker than I said.** The panel head's `1 never ends` counts every announcement; the timeline's `∞ No end` LABELS THE POSITION at the bar's open end; the warn block is the advisory that carries the verb and the fix. Three registers of one fact, not three copies — and a defensible arrangement rather than a defect.
 
-**So the generalisation sweep produced two findings and full size retired both.** The Repairs critique held because
-it was made from a full-size render; these two were not. ⚠️ **That is the seventh and eighth instrument failure of
-the day and the first I handed him as findings** — the previous six returned wrong numbers, these two returned wrong
-JUDGEMENTS from a correct picture at the wrong size.
+**So the generalisation sweep produced two findings and full size retired both.** The Repairs critique held because it was made from a full-size render; these two were not. ⚠️ **That is the seventh and eighth instrument failure of the day and the first I handed him as findings** — the previous six returned wrong numbers, these two returned wrong JUDGEMENTS from a correct picture at the wrong size.
 
 ### The count I was not carrying
 
-**Forty-nine throwaway probe scripts in `/tmp` this session.** I guessed twenty when I went to count. The deleted
-harnesses were the COMMITTED form of this and I removed them believing the lesson landed; this is the uncommitted
-form, and there are forty-nine. His sentence covers both: *a check is a failure in the ability to make the element
-correctly in the first place.*
+**Forty-nine throwaway probe scripts in `/tmp` this session.** I guessed twenty when I went to count. The deleted harnesses were the COMMITTED form of this and I removed them believing the lesson landed; this is the uncommitted form, and there are forty-nine. His sentence covers both: *a check is a failure in the ability to make the element correctly in the first place.*
 
-And the ratio is the damning part. **Every defect that mattered today was found by rendering a crop and looking at
-it** — the shattered bolt, the missing dot, the collapsed swatches, the orphaned swatch, the vanished META word, the
-hazard band, the alien export container, the two findings above. **Not one came from a probe**, and two were found
-DESPITE a probe reporting clean. A crop plus a read is one call; a probe is a script, a run, a debug and a re-run.
-⛔ **Render and look is the default. A probe is only for a question the eye cannot answer** — a 0.25px baseline, a
-contrast ratio, whether a loop closes.
+And the ratio is the damning part. **Every defect that mattered today was found by rendering a crop and looking at it** — the shattered bolt, the missing dot, the collapsed swatches, the orphaned swatch, the vanished META word, the hazard band, the alien export container, the two findings above. **Not one came from a probe**, and two were found DESPITE a probe reporting clean. A crop plus a read is one call; a probe is a script, a run, a debug and a re-run. ⛔ **Render and look is the default. A probe is only for a question the eye cannot answer** — a 0.25px baseline, a contrast ratio, whether a loop closes.
 
 ### The root under every round of this session
 
-I fix the level he points at. Easing, then what is animated, then what it means. One instance of an icon ring, then
-three parents, then the class. One of the three strings a fault returns. **I am never wrong at the level I fix — I am
-fixing one level below where the defect lives**, which is exactly why each round produces another round. The first
-question on any complaint is not *what is broken* but **what RULE is this an instance of, and where else does that
-rule reach.**
+I fix the level he points at. Easing, then what is animated, then what it means. One instance of an icon ring, then three parents, then the class. One of the three strings a fault returns. **I am never wrong at the level I fix — I am fixing one level below where the defect lives**, which is exactly why each round produces another round. The first question on any complaint is not *what is broken* but **what RULE is this an instance of, and where else does that rule reach.**
 
 
 ## Round 4d — META's discharge, authored rather than ported (2026-09-17 12:52 EDT)
 
-> 🔴 **RETRACTED 2026-09-17 17:00 EDT — WHAT THIS ROUND SHIPPED TO 3-D IS THE VERSION HE REJECTED.** He saw it and said
-> *"basically the same shit as before. it didnt address my comment and the issue at all"* and, of the frames,
-> *"the lightning bolts look like a child drew them."* **Board 3-D at version 5 still carries it.** Everything he
-> then approved — his own `Lightning VFX.svg` masked into the badge frame — exists ONLY in the badge tuner and the
-> local playground and has NEVER been applied to 3-D. Read round 4f before touching META.
+> 🔴 **RETRACTED 2026-09-17 17:00 EDT — WHAT THIS ROUND SHIPPED TO 3-D IS THE VERSION HE REJECTED.** He saw it and said *"basically the same shit as before. it didnt address my comment and the issue at all"* and, of the frames, *"the lightning bolts look like a child drew them."* **Board 3-D at version 5 still carries it.** Everything he then approved — his own `Lightning VFX.svg` masked into the badge frame — exists ONLY in the badge tuner and the local playground and has NEVER been applied to 3-D. Read round 4f before touching META.
 
-He was blocked on this one badge and would not look at the board until it was right. Four attempts had been
-rejected — an icon bounce, a light sweep, a dash chasing the bolt's outline, a band sweeping the word — and the
-instruction was *"Try an actual lightning animation by morphing its actual content into lightning."*
+He was blocked on this one badge and would not look at the board until it was right. Four attempts had been rejected — an icon bounce, a light sweep, a dash chasing the bolt's outline, a band sweeping the word — and the instruction was *"Try an actual lightning animation by morphing its actual content into lightning."*
 
-**The level I had been fixing at, and the one the defect lives at.** All four attempts are the same object: a
-LAYER CROSSING THE BADGE. That register is correct for the other three — a plaque, a medal and a leak are all
-surfaces something passes over — and it is wrong for META, which is not a surface but a conductor. What a
-conductor does is discharge. So the animation is not applied to the content; it **is** the content, in three
-states: glyph to lightning to glyph. That is his sentence read literally, and it is a level above "which effect".
+**The level I had been fixing at, and the one the defect lives at.** All four attempts are the same object: a LAYER CROSSING THE BADGE. That register is correct for the other three — a plaque, a medal and a leak are all surfaces something passes over — and it is wrong for META, which is not a surface but a conductor. What a conductor does is discharge. So the animation is not applied to the content; it **is** the content, in three states: glyph to lightning to glyph. That is his sentence read literally, and it is a level above "which effect".
 
-**The asset is a reference, not a dependency** — his correction at 12:38 EDT: *"the asset is a reference. Use it
-freely but don't confine yourself to it explicitly. You could very well create something similar entirely on your
-own which is more optimized for our situation."* Taking that literally is what made this work, because a 386x362
-full-frame cel knows nothing about this badge. The best it could ever have been is a real lightning animation
-playing OVER the mark — attempt five of the same mistake.
+**The asset is a reference, not a dependency** — his correction at 12:38 EDT: *"the asset is a reference. Use it freely but don't confine yourself to it explicitly. You could very well create something similar entirely on your own which is more optimized for our situation."* Taking that literally is what made this work, because a 386x362 full-frame cel knows nothing about this badge. The best it could ever have been is a real lightning animation playing OVER the mark — attempt five of the same mistake.
 
 | Kept from his `Lightning VFX.svg` | Discarded |
 |---|---|
@@ -1182,12 +1019,7 @@ playing OVER the mark — attempt five of the same mistake.
 | One frame held per 30fps slot | Its 386x362 square framing |
 | The decay shape — full in three frames, out over nine | Its 117KB and its SMIL timeline |
 
-`b3/build-volt.cjs` authors the cel instead. **The spine of every bolt is lucide `zap`'s own centre-line**, mapped
-to where the 11px icon actually sits, so each burst opens on the glyph itself — filled, white-hot, at the icon's
-exact size and place — and tears open from there. It retracts back into it. 30 frames, 26KB, one 100-cell strip
-shared by every META badge on screen and stepped with `steps(100)`, while each badge keeps its own `--ph` phase
-through `animation-delay`. A single shared SMIL instance would have put every badge on one timeline, which is his
-complaint #1 from this morning wearing new clothes.
+`b3/build-volt.cjs` authors the cel instead. **The spine of every bolt is lucide `zap`'s own centre-line**, mapped to where the 11px icon actually sits, so each burst opens on the glyph itself — filled, white-hot, at the icon's exact size and place — and tears open from there. It retracts back into it. 30 frames, 26KB, one 100-cell strip shared by every META badge on screen and stepped with `steps(100)`, while each badge keeps its own `--ph` phase through `animation-delay`. A single shared SMIL instance would have put every badge on one timeline, which is his complaint #1 from this morning wearing new clothes.
 
 ### What looking at it found, and no probe would have
 
@@ -1201,33 +1033,21 @@ complaint #1 from this morning wearing new clothes.
 
 Worth recording because each produced output that looked exactly like a real finding.
 
-1. **A clipped screenshot is in DOCUMENT coordinates; `getBoundingClientRect` is VIEWPORT-relative.** Sixteen
-   crops landed on empty table rows, byte-identical, and read as *the animation never renders*.
+1. **A clipped screenshot is in DOCUMENT coordinates; `getBoundingClientRect` is VIEWPORT-relative.** Sixteen crops landed on empty table rows, byte-identical, and read as *the animation never renders*.
 2. **The rect was measured once and reused for all sixteen frames.** The list re-renders underneath it.
-3. **Pausing the `Animation` object and setting `currentTime` does not survive a Preact re-render** — the paused
-   animation is discarded and a fresh running one replaces it, so three different slots came back identical. The
-   freeze has to live in a stylesheet: `animation-delay:-Xms` plus `animation-play-state:paused`, which is a
-   property of the RULE rather than of the node.
+3. **Pausing the `Animation` object and setting `currentTime` does not survive a Preact re-render** — the paused animation is discarded and a fresh running one replaces it, so three different slots came back identical. The freeze has to live in a stylesheet: `animation-delay:-Xms` plus `animation-play-state:paused`, which is a property of the RULE rather than of the node.
 
 - **Deleted, not left behind:** `.b3-zap-run` and its second `<use>`, `.b3-zap-w` and its `<b>` wrapper,
-`@keyframes b3current`, `@keyframes b3charge`. Three rejected attempts had left their markup in place. A badge
-carrying dead layers nobody dares remove is how the next round starts one level too low again.
+`@keyframes b3current`, `@keyframes b3charge`. Three rejected attempts had left their markup in place. A badge carrying dead layers nobody dares remove is how the next round starts one level too low again.
 
 
 ## Round 4e — two comments, and both were about a level above the thing named (2026-09-17 13:15 EDT)
 
 ### The slot label is an AXIS, not a sixth tag style
 
-*"named slot is the overall correct direction i think. But the actual design of the label needs to be improved now.
-Apply the {Slot}: {Attachment} method to all the other tag styles, as well as propose a few more options to try and
-refine and polish the overall label's design."*
+*"named slot is the overall correct direction i think. But the actual design of the label needs to be improved now. Apply the {Slot}: {Attachment} method to all the other tag styles, as well as propose a few more options to try and refine and polish the overall label's design."*
 
-The middle clause is a structural correction wearing the clothes of a feature request. `named` was the fifth member
-of `p2sty`, which made NAMING a sibling of WASH and NEUTRAL — and those are not the same kind of thing. A shell is
-what the chip is MADE OF; a label is what the chip SAYS. Held as one list they multiply: five shells each needing a
-named twin is ten values, and the next idea makes it twenty. Held as two axes they compose, and "apply it to the
-other styles" stops being a request and becomes a property of the model. **The instance fix here was `named-wash`,
-`named-neutral`, `named-bar` — and it would have passed review.**
+The middle clause is a structural correction wearing the clothes of a feature request. `named` was the fifth member of `p2sty`, which made NAMING a sibling of WASH and NEUTRAL — and those are not the same kind of thing. A shell is what the chip is MADE OF; a label is what the chip SAYS. Held as one list they multiply: five shells each needing a named twin is ten values, and the next idea makes it twenty. Held as two axes they compose, and "apply it to the other styles" stops being a request and becomes a property of the model. **The instance fix here was `named-wash`, `named-neutral`, `named-bar` — and it would have passed review.**
 
 | Label | What it is | Rows the nine-slot specimen takes |
 |---|---|---|
@@ -1236,41 +1056,21 @@ other styles" stops being a request and becomes a property of the model. **The i
 | `key` | the slot as a field key: micro, uppercase, tracked, data face, air alone | 2 |
 | `cap` | the slot cut into the chip as a filled tab, key and value as two objects | 2 |
 
-Every mode is variables; **one declaration reads them**, so the specimen and the live rows cannot drift apart —
-which has already happened twice on this board.
+Every mode is variables; **one declaration reads them**, so the specimen and the live rows cannot drift apart — which has already happened twice on this board.
 
-**Three things only rendering could have found.** The specimen carried no `data-slot`, so every label mode would
-have drawn nothing on the one element that exists to show the fork. The `key` mode's hairline divider **never drew
-at all** — `border-right` fed from a custom property produced no pixels at 3x — and rather than chase it the rule
-now separates with air, because case, size, family and hue already separate the two halves four ways; the claim was
-removed from the CSS, the comment and the fork text so nothing asserts a line that is not there. And `cap`'s tab,
-at 26% of the slot hue over a shell already washed 17% in that same hue, **vanished on the real manifest rows while
-still reading on the specimen** — the specimen is not the test, the rows are. Mixing toward the page's own black
-instead of toward transparent makes it a solid object on every shell.
+**Three things only rendering could have found.** The specimen carried no `data-slot`, so every label mode would have drawn nothing on the one element that exists to show the fork. The `key` mode's hairline divider **never drew at all** — `border-right` fed from a custom property produced no pixels at 3x — and rather than chase it the rule now separates with air, because case, size, family and hue already separate the two halves four ways; the claim was removed from the CSS, the comment and the fork text so nothing asserts a line that is not there. And `cap`'s tab, at 26% of the slot hue over a shell already washed 17% in that same hue, **vanished on the real manifest rows while still reading on the specimen** — the specimen is not the test, the rows are. Mixing toward the page's own black instead of toward transparent makes it a solid object on every shell.
 
 ### The small text was never a typography question
 
-*"these are all the same thing wearing makeup. Go search and look at what the core issue was with the hint texts…
-use ctx-search."*
+*"these are all the same thing wearing makeup. Go search and look at what the core issue was with the hint texts… use ctx-search."*
 
-I did, and he is right. His own pin, 2026-09-12 11:21 EDT: *"these small texts just look and feel like noise to me.
-**Never once have i glaced over it and assumed it was actually informative.**"* Read literally, the old fork could
-not have worked: NOW · SAYS · INLINE were three PLACEMENTS of one kind of string — a sentence describing its control
-— so all three kept the thing he skips and moved it.
+I did, and he is right. His own pin, 2026-09-12 11:21 EDT: *"these small texts just look and feel like noise to me. **Never once have i glaced over it and assumed it was actually informative.**"* Read literally, the old fork could not have worked: NOW · SAYS · INLINE were three PLACEMENTS of one kind of string — a sentence describing its control — so all three kept the thing he skips and moved it.
 
-🔑 **The only thing that earns the glance back is a line that is true ONLY RIGHT NOW.** A caption reads the same on
-every visit, so by the second visit it carries literally zero information and the eye is correct to skip it; a
-readout is never zero. Session 2 proved it by accident — `1 in one message, oldest first · cap 10` became `2 of 10
-slots used` and that pin closed. The difference is not weight. It is that the second one CHANGES.
+🔑 **The only thing that earns the glance back is a line that is true ONLY RIGHT NOW.** A caption reads the same on every visit, so by the second visit it carries literally zero information and the eye is correct to skip it; a readout is never zero. Session 2 proved it by accident — `1 in one message, oldest first · cap 10` became `2 of 10 slots used` and that pin closed. The difference is not weight. It is that the second one CHANGES.
 
-So the fork is a classification with a default of nothing, and its four roles are deliberately the same four
-verdicts §5c Step 3's rewrite table needs — **readout · consequence · delete · keep** — which is what makes this a
-design Session 4 can use rather than a decoration.
+So the fork is a classification with a default of nothing, and its four roles are deliberately the same four verdicts §5c Step 3's rewrite table needs — **readout · consequence · delete · keep** — which is what makes this a design Session 4 can use rather than a decoration.
 
-⚠️ **A classification that never rejects anything is not a classification**, and that is the test the first version
-failed: every string survived all three treatments, so it could only ever have been about looks. The specimen is
-therefore a CORPUS of his own pinned strings with the verdict the rule gives each — including one it **deletes** —
-so what he judges is the rule's output across cases, not a font on one line.
+⚠️ **A classification that never rejects anything is not a classification**, and that is the test the first version failed: every string survived all three treatments, so it could only ever have been about looks. The specimen is therefore a CORPUS of his own pinned strings with the verdict the rule gives each — including one it **deletes** — so what he judges is the rule's output across cases, not a font on one line.
 
 | His string | Verdict | What it becomes |
 |---|---|---|
@@ -1279,24 +1079,16 @@ so what he judges is the rule's output across cases, not a font on one line.
 | armory · `These builds are removed when you commit` | Consequence | `Removes 3 builds at commit · reversible until then` |
 | armory · `Showing all builds, grouped by weapon` | Readout | `133 builds · 8 selected` |
 
-⛔ Deleted with the fork they served: `.b3-spec-now`, `.b3-spec-says`, `.b3-spec-in` and their shared row rules. The
-corpus block reuses the specimen container rather than restating it — the duplicate-component defect this README
-already records once.
+⛔ Deleted with the fork they served: `.b3-spec-now`, `.b3-spec-says`, `.b3-spec-in` and their shared row rules. The corpus block reuses the specimen container rather than restating it — the duplicate-component defect this README already records once.
 
 
 ## Round 4f — thirteen attempts at one badge, and the 32 threads that went untouched (2026-09-17 17:00 EDT)
 
 ### The 32 open threads on 3-D — this is the worklist
 
-He left these between 16:48 and 18:40 on 2026-09-17 and said **"Fix everything everywhere, stop being lazy, and stop
-being narrow minded."** All 32 were read and triaged; **not one was fixed** — the session went to META instead, which
-is his own summary of it: *"you instead pivoted and prioritized the meta badge."* None is activated for Claude, so
-none can be replied to or resolved from a session; they are listed here because re-reading them costs three
-paginated calls and the pagination silently skips threads that re-rank between walks.
+He left these between 16:48 and 18:40 on 2026-09-17 and said **"Fix everything everywhere, stop being lazy, and stop being narrow minded."** All 32 were read and triaged; **not one was fixed** — the session went to META instead, which is his own summary of it: *"you instead pivoted and prioritized the meta badge."* None is activated for Claude, so none can be replied to or resolved from a session; they are listed here because re-reading them costs three paginated calls and the pagination silently skips threads that re-rank between walks.
 
-**ROOT 1 · No shared component — his words: "the same element is designed separately even tho it's exactly the same
-thing… mismatched micro designs because nothing is shared."** His dissection IS the spec:
-`LABEL <space> (<icon?> <Text> <count?>)`, icon and count as FLAGS.
+**ROOT 1 · No shared component — his words: "the same element is designed separately even tho it's exactly the same thing… mismatched micro designs because nothing is shared."** His dissection IS the spec: `LABEL <space> (<icon?> <Text> <count?>)`, icon and count as FLAGS.
 
 | Thread | Where | What |
 |---|---|---|
@@ -1351,18 +1143,20 @@ thing… mismatched micro designs because nothing is shared."** His dissection I
 | `29897d92` | META: *"the lightning box is also just a vertical line in the same spot. spread it across the badge… including minor bolts/sparks"* · *"what about this animation feels native and optimized for the badge and it's shape"* · *"add a pause or minor elements/phase — right now it's at 100% strength at 100% of the time"* · *"i don't like the actual large lightning bolt itself, it just looks like a cheap imitation."* **Superseded by the work in the tuner, but 3-D still carries the version this thread rejects** |
 | `35e1f097` | Not a fix: *"2+ days, on a 4th variant of design board 3, and 150+ comments… yet you're over here writing multiple test scripts to fix the lightning bolt animation when you could just put better effort into it from the start and use my eyes to judge it."* He reviews the History timeline only once the rest is done |
 
+### Two things he has REJECTED are live on board 3-D right now
+
+1. **META**, covered below — thread `29897d92`.
+2. **The Export drawer redesign**, thread `4733ffc0`: *“i outright reject your design improvement. This shit is ugly.”* It is live under `html[data-b3-exp=a|b]`, and the same thread still offers “under the scope” after he picked “its own step” repeatedly. Fix both, or the next publish shows him two rejected things again.
+
+⚠️ **He has DEFERRED the History timeline himself** (`35e1f097`) — History's two threads, the shared toggle component and the inverted severity hues, are in scope; the timeline is not, until the rest is done.
+
 ### META — thirteen attempts, and the one that worked was his own file
 
-⛔ **The objection that cost eleven of them was never tested.** My first message on META said the asset was 386x362
-against a ~140x22 badge and would look wrong — then I hand-drew substitutes for eleven rounds without once rendering
-the original on the badge. When he said *"try literally masking the asset into the badge frame"*, his verdict was
-**"the lightning itself looks great."** An untested precondition drove every decision after it.
+⛔ **THIRTEEN ATTEMPTS, TWO CAUSES — and my first write-up of this said “eleven”, which was a tidy story rather than the truth (corrected 2026-09-17 17:13 EDT).** Attempts **1–4** — icon bounce, light sweep, dash on the bolt's outline, band through the word — happened BEFORE he supplied any asset, so no objection to an asset caused them. Their cause is the badge rule applied at the wrong level: an EFFECT ON A SURFACE instead of what KIND OF CLAIM the badge makes. **Those four are the ones that generalise to the other badges.** Attempts **5–12** have a different cause: my first message after the asset arrived ruled it out — “386x362 full-frame against a ~140x22 badge, it will look wrong at icon size” — and I hand-drew substitutes for eight rounds without once rendering the original ON THE BADGE. When he said *“try literally masking the asset into the badge frame”*, his verdict was **“the lightning itself looks great.”** ⚠️ And the remedy is narrower than “render it once”, which would not have helped attempts 1–4 at all: **an objection about how something will look IN CONTEXT has to be tested in that context** — the composition, not the ingredient.
 
-⛔ **I inverted his brief.** *"Meta needs to feel electric"* came FIRST and is the requirement; the Lightning VFX
-file arrived four messages later and he said it was a reference for the STYLE. I treated the asset as the brief.
+⛔ **I inverted his brief.** *"Meta needs to feel electric"* came FIRST and is the requirement; the Lightning VFX file arrived four messages later and he said it was a reference for the STYLE. I treated the asset as the brief.
 
-⛔ **His reference has no sharp corners — it is a smooth swelling calligraphic ribbon.** Every attempt of mine drew
-angular zigzags, the emoji idea of lightning. That is literally why he said a child drew them.
+⛔ **His reference has no sharp corners — it is a smooth swelling calligraphic ribbon.** Every attempt of mine drew angular zigzags, the emoji idea of lightning. That is literally why he said a child drew them.
 
 | What is true about the implementation | |
 |---|---|
@@ -1376,20 +1170,11 @@ angular zigzags, the emoji idea of lightning. That is literally why he said a ch
 
 ### Two scripted-edit failures that corrupted files and exited 0
 
-1. **`str.replace('', x)` INSERTS AT POSITION 0.** I searched for the closing anchor from position 0 and matched a
-   **CSS** comment rather than the JS one, so the slice ran backwards and came out empty — and the replacement landed
-   **above `<!doctype html>`**. Search the closing anchor FROM the opening one, and assert the slice is non-empty.
-2. **A slice-and-replace silently deleted the `.bdg.lg` rules.** The assert checked what the slice CONTAINED, never
-   what replacing it would DESTROY. **A deletion asserts its survivors, never its target.**
+1. **`str.replace('', x)` INSERTS AT POSITION 0.** I searched for the closing anchor from position 0 and matched a **CSS** comment rather than the JS one, so the slice ran backwards and came out empty — and the replacement landed **above `<!doctype html>`**. Search the closing anchor FROM the opening one, and assert the slice is non-empty.
+2. **A slice-and-replace silently deleted the `.bdg.lg` rules.** The assert checked what the slice CONTAINED, never what replacing it would DESTROY. **A deletion asserts its survivors, never its target.**
 
 ### The photographer lied five times in one afternoon
 
-A clipped screenshot is in DOCUMENT coordinates while `getBoundingClientRect` is viewport-relative · the rect was
-measured once and reused while the list re-rendered · pausing an `Animation` and setting `currentTime` does not
-survive a Preact re-render · `animation-play-state:paused` freezes at the current wall-clock offset so
-`animation-delay` shifts from there, putting every sample twelve cells late · and the local server sent no
-`cache-control: no-store`, so two rounds were judged against a cached page.
+A clipped screenshot is in DOCUMENT coordinates while `getBoundingClientRect` is viewport-relative · the rect was measured once and reused while the list re-rendered · pausing an `Animation` and setting `currentTime` does not survive a Preact re-render · `animation-play-state:paused` freezes at the current wall-clock offset so `animation-delay` shifts from there, putting every sample twelve cells late · and the local server sent no `cache-control: no-store`, so two rounds were judged against a cached page.
 
-⛔ **Anchor #23's second half, learned here: when a render disagrees with what the code says should be there,
-suspect the photographer before the subject.** Five of six blank frames today were the camera. And his instruction
-stands above all of it — `badge-playground.html` is the instrument now, not a screenshot harness.
+⛔ **Anchor #23's second half, learned here: when a render disagrees with what the code says should be there, suspect the photographer before the subject.** Five of six blank frames today were the camera. And his instruction stands above all of it — `badge-playground.html` is the instrument now, not a screenshot harness.
