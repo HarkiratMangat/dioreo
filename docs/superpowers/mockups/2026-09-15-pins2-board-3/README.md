@@ -7,6 +7,28 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3q · "open" meant I had not looked, and the new check could not fail — 2026-09-16 21:55 EDT
+
+He asked what "open" meant on the twelve items I had listed: *"like their requested change is still pending inside the design board?"* **No.** I had written that list from reading the comment threads and not finding obvious evidence in a grep, which is an absence of looking rather than a status. Checked against the source and the render, **eleven of the twelve were already built** — several of them with a comment in the file quoting the very words I was calling unanswered. The corrected table with a verdict and a file reference per row is `local/pins2-board-3/open-from-his-comments.md`.
+
+**The one that was real was worse than he said.** `p5hint` is a fork with two options. Its *card* option had already become a three-step path — STAGED → REVIEW → GONE. Its *inline* option had not: hovering Stage deletion swapped the weapon chips for a 96-character sentence, and **`.b3-sd-note` had no rule in the stylesheet at all**, so it rendered as raw inline text in a bar made of pills. Both halves of a fork have to be finished or it is not a choice. Inline is the same step path now, with "Nothing is removed yet" under it.
+
+### The instrument could not see the defect it was written for
+
+`splitBaseline` — added in round 3p — filtered on `row.children`, which holds **elements only**. The selection chip's weapon name is a **bare text node**, so the one row he drew a line through was skipped. It reported ten other classes and stayed silent on the eleventh.
+
+🔴 **And when I injected the defect on purpose to check, it returned ZERO.** A check that reports nothing while the defect is present is not a weak check, it is a false certificate — and I had already written "class-sweep is clean" into a commit message on the strength of it. Counting bare text nodes moved it from 0 → 7 with the defect injected. **A new check is not a check until it has been observed failing.**
+
+With text nodes counted it found four more classes of the same pair, and the checker now prints a DOM path so a finding names its own home instead of being hunted:
+
+| Where | What |
+|---|---|
+| Repairs filter chips, the pass-block checks | `All`+count wrapped in `.b3-nw` |
+| Broadcast topic chips, Load older events | same |
+| The manifest's category chips, History's filters, the pick index | the portal's own markup, so the rule is applied from `board.css`: baseline, with the height moved from `height`/`min-height` to padding that reproduces it |
+
+Final: **0 findings at rest, 4 with the defect injected.** A comment in `gates.css` that justified a decision with two numbers from the broken estimator was corrected in the same pass — a wrong reason beside a right rule is the thing that gets inherited.
+
 ## Round 3p · he drew a line through a chip, and it was a whole class — 2026-09-16 21:38 EDT
 
 He put a horizontal rule across `look-selbar.png` and asked whether I noticed. The smaller **Builds 1–5** sat off the line the weapon name sits on.
