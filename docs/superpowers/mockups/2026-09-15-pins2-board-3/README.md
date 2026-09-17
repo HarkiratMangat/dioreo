@@ -7,6 +7,33 @@ status: live
 
 *Rewritten 2026-09-16 00:48 EDT; moved to a fresh URL at 16:44 EDT; **published as version 4 at 2026-09-16 19:01 EDT** carrying rounds 3 through 3m. The board is <https://claude.ai/artifact/CV6NJjCSjxCPxgjdhwVcyL>. ⚠️ Its title reads **Design board 3-repub** — another session published at 20:50:01Z and that `<title>` was its only edit, merged in rather than overwritten because a title is published content; rename it if it was a scratch name. Publish from `board3.html`, never `index.html` — the latter returns to the retired artifact. Its kit is `local/pins2-board-3/redo/`, gitignored: the board mounts the portal's own `ui/` and `b3/` modules on the captured dev database, so tracking a copy would mean committing two megabytes of duplicated portal code. This file is the tracked record — every surface, the pins it answers, every fork with its options, and every fix value — so Sessions 4 and 5 can extract from git alone.**Version 1** was the static board of 2026-09-15 afternoon. **Version 2** recreated the whole portal and was reverted the same evening — *"this whole portal re-creation thing is just confusing."* Versions 5 to 13 are the redo in board 1 and 2's gate format. **Version 14** restructured 19 gates into ten surfaces. **Version 15** fixes the five defects of 21:01 EDT and withdraws the shared-vocabulary surface. **Version 16** removes the three surfaces that asked nothing.
 
+## Round 3s · the impeccable pass, and one verb aimed at scaffolding — 2026-09-16 22:32 EDT
+
+Six verbs, on his instruction. What each one actually changed:
+
+| Verb | What it found | What it did |
+|---|---|---|
+| **extract** | The ring `inset 0 0 0 1px var(--rule2)` written out **71 times**; uppercase tracking in **ten** values; transition durations in **seven** | Nine tokens. 125 sites now read a token. ⚠️ The first ring count was 51, from a pattern anchored at `box-shadow:` — it missed every ring sitting second in a compound shadow. An assert caught the 20-site gap before a line was written |
+| **harden** | The Export picker only worked on tidy data | A clear control on the search and Escape to clear it, an empty state that names what the search reads and offers the way out, long build names truncated with their full value in a title, hidden attachments counted rather than dropped, counts grouped at a thousand and set in tabular figures |
+| **animate** | The motion thesis was never written down | Written into the stylesheet. The focal moment is the **reversal path drawing itself** when he reaches for Stage deletion — the one thing no neighbouring admin tool could copy, because no neighbouring admin tool has an invert. TOXIC was a stock radial blob sliding sideways; the acid **soaks up** from the badge's lower edge now and settles |
+| **delight** | A tick was acknowledged; a finished surface was not | The Decide panel marks a surface whose forks are all answered — certainty in the `--ok` the rows already use, not a celebration |
+| **polish** | `::selection` existed on **one** element; `scrollbar-color` nowhere | The caret, the selection and the scrollbars belong to the palette. The craft floor calls these the cheapest signal that a page was built rather than assembled |
+| **overdrive** | — | See below |
+
+### The overdrive landed on scaffolding, and he had to say so
+
+I built the stage morph: switching an option made the stage cross-fade instead of jump-cutting. He read it and said *"that's literally a temporary element. i thought you were doing something for an element that would actually be going into the portal."*
+
+He is right and the board never wrote the line down. **`b3-*` and the P-fork designs are the deliverable** — the file header says the prefix exists so a port is a rename rather than a guess. **`g-*`, `dk-*`, `pidx-*`, `b3dock-*` are the frame this board draws around the portal**, and they are deleted the day the board is. `.g-stage` is the frame. The morph is removed, the JS branch in `state.js` with it, and the line is now a comment in `board.css` so the next pass checks a prefix before spending craft.
+
+Re-aimed at `b3-sd-*`, which Session 5 ports: **the selection list opens out of the bar** instead of appearing beside it. It is cut from the bar's lower edge and unfolds downward, the weapon chips handing over to the summary line as the group heads arrive behind the sheet. The stagger is capped at four heads — a sixty-weapon list must not take a second to become readable.
+
+⚠️ **The stage morph also threw a real page error before it was removed**, and `verify.cjs` caught it: switching two options quickly aborts the first transition, and the abort was unhandled. Being interrupted is the *normal* case there — comparing options means clicking fast.
+
+The one surviving half of the original overdrive is portal-bound: **every hazard on the board is one material now.** `background-attachment: fixed` anchors the hatch to the viewport rather than to each element, so the stripes on a repairs row and the stripes on a problem chip two hundred pixels away are the same substance seen through two holes. ⛔ It does not drift, deliberately — a perpetual slow drift is the idle loop he called lazy on the META badge.
+
+impeccable's detector: **16 findings, all `side-tab`, all refused** — his own instruction put the accent on the rail.
+
 ## Round 3r · the tests were the symptom — 2026-09-16 22:00 EDT
 
 Harkirat: *"a check/test is a failure in your ability to create the element correct in the first place. This is a damn artifact, not the actual portal. A defined, small set of elements, yet you've failed to display effort and ability in creating them to the point where you'd instead had to create MULTIPLE tests to catch your mistakes."*
