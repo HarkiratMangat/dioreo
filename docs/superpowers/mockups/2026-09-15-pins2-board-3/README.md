@@ -1734,3 +1734,7 @@ He was not a fan of the tile and asked for `/design-critique`, the relevant impe
 **The rebuild:** a tile is the weapon's name, then one chip per build. A chip is the pick: its number, and a static glyph per claim in the board's badge hues (bolt META, crown BEST, ribbon TOP, skull TOXIC). The full badge, rank number included, moved into the hover preview. Hovering the name lights every chip it would pick. Measured: containers around a chip went from 5 to 3 (bay, tile, chip). 61 of 68 tiles are 79px, 6 wrap to 114px and 1 (five builds) is 149px, with no animation running in the grid.
 
 The A/B/C tile fork drawn earlier in this round was removed: each was an answer to "how do I show the badges", which was the wrong question.
+
+## Design Board 3-E — a fresh canvas for comments (2026-09-18 19:52 EDT)
+
+At his request the board as it stood at 3-D version 29 was published to a new link, **Design Board 3-E** (`2LxjJwzsg7odUiJKmvq2Jo`, page `board3e.html`), so his next round of comments starts on a clean thread list. Same kit, same files, its own `db` store, so board picks made on 3-D do not carry over. 3-D stays as the record of rounds 4 and 5; new work publishes to 3-E.
