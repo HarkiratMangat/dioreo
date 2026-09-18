@@ -1504,3 +1504,7 @@ He asked for every comment of the prior round to be re-read against the board, a
 
 **The fix is three classes, not sixteen patches:** (A) one token set for toggle labels, chips, segmented controls and readouts — `30c5b2fc`, `8184da23`, `1e4a1512`, `442a918e`, `4cec9165`; (B) one tag-rail rule — two lines, fade, scroll — wherever tags appear — `1d832319`, `cd53517e`; (C) an element survives its exit, so every hide animates — `c9604d47` and its siblings. Plus real redesigns of the pass block and the expanded repairs row.
 
+## Round 4r — class A deferred to Session 4, documented where Session 4 will read it (2026-09-17 23:12 EDT)
+
+Harkirat: *"you can defer them to session 4's work but properly and fully document them, the failures, and everything else that lead up to the deferral."* The control family — toggle label, filter chip, segmented switch and readout pill — is now **plan §5c.3b Step 4b**. It carries threads `30c5b2fc`, `8184da23`, `1e4a1512`, `442a918e` and `4cec9165` with his words, the values measured at deferral, the six-step chain of failed closes, and why it isn't a breach of §5c's "draws nothing new". The board's Settled table carries a row for it, so the drift still visible on the board reads as deferred rather than as a decision. **Classes B (tag rows: two lines, fade, scroll) and C (exits animate), and the redesigns of the pass block and the expanded Repairs row, stay in this session.**
+
