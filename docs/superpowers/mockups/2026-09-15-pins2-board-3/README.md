@@ -1563,3 +1563,20 @@ No comment was added to version 17, so the work was the open list and a second c
 **The design critique on Repairs** (asked for by name, run in-line): the eye lands on the count and the orange chips, which is right; the columns now agree; two nits stay open — PHARO's two problem chips wrap to two lines, and "Same attachments as another build" is vague whenever the twin is outside the weapon.
 
 **His answers by popup (2026-09-18 10:41 EDT):** the slot label is **Key**; the one-table mark is **Bare mark** — both ruled on the board as version 19. The tag container he will choose on the board himself. The control family stays Session 4's.
+
+## Round 4v — impeccable `polish`, and the board on a phone (2026-09-18 11:01 EDT)
+
+He asked whether the untold things were fixed and whether the impeccable verbs had been run. They had not. `polish` ran on Export first (the drawer shell stays the portal's — he rejected restyling it), then the whole board at 390px, because he reviews from his phone. Version 20.
+
+| Where | Defect on the rendered page | Now |
+|---|---|---|
+| **Every gate, on a phone** | the gate's grid sized itself to the stage's 1148px floor, so titles, switches, notes and decisions were laid out 1148px wide and cut off at 390 | text wraps to the screen, long switches scroll inside their pill, decision rows stack; 0 text elements past the edge (measured); only the stage pans |
+| Export picker | a weapon with some builds picked showed an empty box | the manifest's middle mark (a bar) |
+| Export picker | search 40px, Clear taller, 2px apart | one height, one centre line |
+| Export picker | "‹ Back" chevron rode above the word | drawer-footer icon buttons centre their icon |
+| Export picker | entering the step left focus on the close button | the caret lands in the search |
+| Every drawer on the board | a keyboard ring on the close button at load, nobody having pressed a key | the ring waits for a real key press |
+| Export scopes | counts wandered 13px (each button as wide as its own word); "Pick builds…" the only title in the accent | one button width; one title voice |
+| gates.css | 23 lines styling problem-card option B, ruled out on 09-17 (the detector flagged its stripe) | deleted |
+
+**Left as found, named:** the detector's other finding, a 3px stripe on Repairs' By-problem cards, belongs to a live fork of his. MP and DMZ repeat one description, and "up 44d" repeats "up 44 days", but the words are Session 4's.
