@@ -1356,3 +1356,29 @@ Twelve rules written tonight target a PORTAL class — `.madd`, `.pb-ib`, `.pb-t
 ### The fixed compliance question, answered with its number
 
 `node scripts/summaryShape.mjs` — week of 2026-09-14, the Silent style loaded in all four sessions: **425 mid-run-prose messages against a rule whose target is zero** (323 the week before), **89 finals carrying more than one table** (34), 121 over the 1,800-character budget, p90 **4,809** (2,726), and his own complaint count **4** (3). Every column moved the wrong way with the contract loaded. ⚠️ The mid-run count cannot tell the four permitted exceptions from violations, so it is a floor rather than a verdict — but the DIRECTION is not explainable that way.
+
+## Round 4k — the compact prep predicted a broken fix, from the code's own comment (2026-09-17 20:55 EDT)
+
+**The prep pass sorted the 28 closed threads by EVIDENCE, which I had never done, and one fell out of the bottom.** Measured in the page: the marks column at one x, the deselect column at one x, chip text at 26px, the fade quartet, five weapon cards, the scoping proven both ways, the severity hexes, the queue centres, the tag radius, META's animation. Structural only: the card's generated path, the mount/unmount flag, the tape, the ruled forks, the text-only shell. **Neither: `1615b327`** — I moved the problem label into the weapon header, ran the build gate, and never rendered it.
+
+🔴 **AND THERE WAS A RECORDED REASON IT SHOULD FAIL, THREE LINES FROM WHERE I EDITED.** `ProblemChip`'s own `place()` comment, written after three earlier failures: *"IN THE LIST THE CARD IS CLIPPED. `.b3-sd-rows` is an `overflow:auto` scroller, so an absolutely positioned card inside it is cut off."* I put the non-compact chip into `.b3-sd-gh`, which is `position:sticky` **inside that same scroller** — and I had just added a mask to it as well. Measured: a **117px card inside a 94px scroller, `clippedVertically: true`.**
+
+### It took three passes, and the second and third measured identically
+
+**`compact` was doing two unrelated jobs** — shrinking the CHIP, and switching the CARD from `absolute` to a viewport-pinned `fixed`. Separating them is the fix: the card's strategy is now DETECTED from whether any ancestor scrolls, which is a fact about its surroundings and nothing to do with the chip's size.
+
+| Attempt | What it changed | Measured |
+|---|---|---|
+| 1 | detect the scroller inside `place()` | `fixed`, but y=**777** in a 768px window |
+| 2 | detect it from the CHIP, before the card paints | `fixed`, y=**777** again |
+| 3 | the placement STYLE read `compact` too | **x=96 y=407, inside the viewport** |
+
+⚠️ **Attempt 1 failed because `place()` returns early until the card has painted** — this file already records that as the root cause of two earlier "fixes" that refined a placement which was never running. A decision made inside that guard is made too late. **Attempt 2 failed because THREE places decide this card's position** — the class, the placement branch and the inline style — and only two had been switched. A `position:fixed` card with no computed placement falls back to its base rule's `top:100%`, which resolves against the viewport: y=777, twice, for two different reasons that look the same from outside.
+
+🔴 **That is anchor #26 in miniature and it is why the anchor is not just about CSS.** A flag whose readers are scattered is the same defect as a selector whose breadth was never chosen: correct at the place you are looking, wrong at the places you are not.
+
+### What the prep also settled
+
+- **`.remember` is delivered and not read.** The hook injects it — it is visible in this session's own context — and this session still began by producing rather than reading, twice. So whatever must not be lost goes in the FIRST fifteen lines; measured reading depth under pressure is short, and the seven-surface table survived three compacts because it sits at the top with a warning.
+- **Both of today's earlier preps stopped when I ran out of ideas rather than when a check came back empty** — the 17:00 one had five of its six rules broken with it in context, and the 19:56 one lost a DEVLOG entry carrying a false verdict. A prep is finished when the plan's own checks have been RUN, not when the list is exhausted.
+- **One sentence this session is evidence for:** every failure tonight was a cost paid *before* the result exists being skipped for one paid after — the thinking pass, routing to the tool with the precondition, reading the retraction, scoping a selector, checking what else mounts a class, writing a conforming summary. Anchor #25 named that for rules; today it appeared in tools, selectors, records and output shape. The remedy is never "remember harder" — it is to make the cheap thing and the correct thing the same thing.
