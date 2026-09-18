@@ -1508,3 +1508,22 @@ He asked for every comment of the prior round to be re-read against the board, a
 
 Harkirat: *"you can defer them to session 4's work but properly and fully document them, the failures, and everything else that lead up to the deferral."* The control family — toggle label, filter chip, segmented switch and readout pill — is now **plan §5c.3b Step 4b**. It carries threads `30c5b2fc`, `8184da23`, `1e4a1512`, `442a918e` and `4cec9165` with his words, the values measured at deferral, the six-step chain of failed closes, and why it isn't a breach of §5c's "draws nothing new". The board's Settled table carries a row for it, so the drift still visible on the board reads as deferred rather than as a decision. **Classes B (tag rows: two lines, fade, scroll) and C (exits animate), and the redesigns of the pass block and the expanded Repairs row, stay in this session.**
 
+## Round 4s — the non-deferred threads, fixed and each looked at in the state it names (2026-09-17 23:24 EDT)
+
+| Thread | What was wrong | Now — seen in a render or a sampled frame |
+|---|---|---|
+| `cd53517e` one table | the image mark was drawn ON TOP of the × button: a 108px marks cell in a 64px column | the column is 110px in every template; triangle, image and × stand apart |
+| `1615b327` one table | the table still drew the full hatched `⚠ 1` chip on build rows | the bare triangle, as in the grouped view; hover or click still opens the full card |
+| `1d832319` tag cells | the manifest's cells ran to three lines with no fade and no scroll | 76px: two lines crisp, the fade over the gap and a peek of the third, scrollable |
+| `1d832319` selection cells | their sideways fade was `animation-timeline`, unverifiable, and read as a hard cut in the table | the fade script on the inline axis (`--fl`/`--fr`) |
+| `c9604d47` Hide list | the list left the DOM in the same frame | it stays for its exit and folds into the bar — sampled: clip 1% → 12% → 39% → 65% over 200ms, then gone |
+| `07c3b35a` Repairs hover | the ROW BUTTON painted a flat band over 900px and stopped at the Fix cell | the button paints nothing; the row's full-width mesh shows |
+| `16767834` pass block | a second card; "Nothing failed" over one chip read as "one check ran" | the worklist's last line: a tick, "The other 120 builds pass all five checks", the age note as a link. A clean day keeps the card with every check |
+| `a27feffa` expanded row | two columns that didn't pair: one unlabelled and centred, a weapon badge under "Attachments" | "Why it needs work" and "On the card", both top-aligned; the badge sits under the column that names the card |
+| `bff1f05b` chip × | once rest took hover's grey, hover had nothing left to say | rest is a quiet ground; hover is the danger tint, because the button removes |
+| `bd09c832` solid ground | the note lived only in the gitignored kit | plan §5d carries it: solid ships dormant beside mesh |
+| Small text switch | **it changed nothing** — nothing read `p10` | "Now · caption" shows the captions as shipped; each verdict lights its strings and quiets the rest |
+| `1b27b6cf` fold reveal | unverified | measured with a real pointer: 44px on the row's blank area, 95px on the button — the word reveals only on the button |
+
+**Still not done, named so it is not mistaken for done:** the card's MOTION (`30b7b494` point 3) has never been watched — only stills and frame samples. `d4303c12`'s label options and `32fb5a9e`'s container options are thin: separators and fills, not a real exploration of the soft-cornered rectangle. The toggle family is Session 4's (§5c.3b).
+

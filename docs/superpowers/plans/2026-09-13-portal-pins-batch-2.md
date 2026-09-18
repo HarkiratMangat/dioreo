@@ -603,6 +603,8 @@ status: live
 
 ## 5d · SESSION 5 — the build
 
+> **Carried from board 3, thread `bd09c832` (2026-09-17 18:16 EDT), recorded 2026-09-17 23:24 EDT:** *"Mesh version looks nicer. But i don't want to completely abandon the solid ground either … leave the styling for the solid ground in the files and note/document that it's something i might want to implement later on as maybe a settings menu option in the portal, but for now the mesh is the default."* So the selection bar's **solid** ground ships as a dormant variant beside **mesh**, the default — the same two declarations board 3 carries under `p5bg` — and nothing selects it until a settings option exists. It is not deleted as dead code.
+
 *Added 2026-09-15 14:48 EDT. Harkirat, pin `pmu2xd88t`: "THEN a follow-up session is what will actually take everything and write it into the code — ACCCURATELY AND CORRECTLY, i don't want to have to go through another pin phase!"*
 
 **When:** after Session 4 merges. **Model:** Premise Med · Delib Very high → Opus5-High. **Branch:** `feat/portal-pins2-build` from `v3-pre-release`. **Agents:** none. Agent D's drawer was merged from a checkpoint (`b9e4ffe6`) and never matched its board; the main thread builds and measures every surface itself.
