@@ -1441,3 +1441,19 @@ His instruction: sweep the whole artifact, every element. All 13 screens were re
 **Seen, not changed:** the Export drawer's close button shows its focus ring at rest — an artefact of a drawer the board opens without a click; the portal opens it from one, where Chrome paints no `:focus-visible` · the manifest search (44px) beside its create button (35px) is the portal's own toolbar, not pinned · the three stages inset their panels 50 / 28 / 36px because each panel carries its realm's own width.
 
 🔴 **Four of the 17 were mine: #1, #5, #8 and #17** — the same number the round before this one produced, and every one was green in `verify.cjs`. And #4 is the worst record on the board: a thread closed in round 4h with a note saying the button "is now literally that class", while a rule 600 lines further down in the same file removed its border. **A fix that adds a rule without finding the rules already styling the element is the fifth layer, not the fix.**
+
+## Round 4n — the second sweep: the states a resting render never shows (2026-09-17 22:22 EDT)
+
+Sweep 1 read the board as it loads. His Add-build catch came from outside it, so sweep 2 rendered **18 states** — every switch's other options, each try button, the open problem card, the selection bar at three and eight picks, the export picker, the queue's other placement, the timeline's rail — and read each one.
+
+| # | Defect | Measured | Now |
+|---|---|---|---|
+| 18 | **The open problem card wore a second, square frame** — his catch, from `m1-open-problem.png` | two causes. (a) `.b3-fx .b3-pc` still drew a ring, a 5px halo and square corners on the card's own box; the rule meant to retire it was one class weaker, so the ring stayed, 10px taller than the body. (b) the outline was first drawn as a 368×160 placeholder, so `d` sprang from that to the real 117px card — path 129px against a 110px card at 400ms | the old ring deleted, not out-voted; the outline drawn only once the card is measured, so only the pointer moves |
+| 19 | Eight picks: the selection bar's first chip row was unreachable | `align-content:center` on an overflowing wrap put the first row 18px above the scroll area | `safe center` |
+| 20 | Secondaries had two hues on one board | only the manifest rows went through `withSec`; the selection bar, Repairs, the drawers and the export picker drew the API's old `#023047` | every armory consumer reads the builds with pin 6 applied |
+| 21 | A category name in its own hue was unreadable for Secondaries | 9.5px labels at about 2.6:1 | the category-label family takes a lightness floor, `oklch(from var(--c) max(l, .76) c h)`; the bright hues are untouched |
+
+**Checked and not defects:** History under a filter drops the Kind word and the Who name when every visible row shares them — his own rule from round 3b, "a column with the same value on every row is not a column" · the export picker's Back chevron sits within 1.5px of its label's centre.
+
+🔴 **#18 was in a picture I had already read and passed.** I read the full-size frame, saw a popover over rows, and moved on; the second frame is 12px wide at that scale and plain at 2×. And my first fix answered a real bug that was not the one he pointed at — the frame-by-frame sample measured only the path, so it could not see a ring on the card's own box. **The zoomed crop is what found it both times; a measurement only answers the question it was written for.**
+
