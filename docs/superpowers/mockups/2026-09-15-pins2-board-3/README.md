@@ -1535,7 +1535,31 @@ Harkirat: *"you can defer them to session 4's work but properly and fully docume
 
 ## Round 4t — the compact prep's own pass (2026-09-17 23:35 EDT)
 
+> ⚠️ **Corrected by round 4u (2026-09-18 10:32 EDT).** "Every switch now starts on its baseline" is false: `segOpts()` only moved Now to the front of each switch, while `b3/state.js` still opens Small text on A readout, Slot palette on Named hues and Worklist, Warning and Timeline on option A. The board deliberately opens on its proposals; the sentence was wrong, not the defaults.
+
 - **Every switch now starts on its baseline.** Small text's fork lists `now` last, so its switch was the only one that opened on a proposal. `segOpts()` moves `now` to the front.
 - **Silent-mode compliance for this session, measured** (`node scripts/summaryShape.mjs --session latest`): 184 runs · **235 messages with mid-run prose** against a target of zero · final p90 **5,460** characters · 78 finals over budget · 51 with more than one table.
 - **The root under tonight's failures**, stress-tested before writing: I checked that my change had LANDED; he checks whether the surface looks and behaves DESIGNED. That covers closing by change, verifying by numbers, stopping sweeps at resting states, and relabelling fills instead of designing options. It does **not** cover the mechanical class — two heredocs in one command (four times), a multi-file write that saved one file and then died on an assert, and a shooter whose 300ms wait could not see a transition. Those are command-shape traps, recorded separately in `.remember` and `~/.claude/TOOLING.md` §3.
 
+## Round 4u — the v17 re-check, clause by clause, on the rendered page (2026-09-18 10:32 EDT)
+
+No comment was added to version 17, so the work was the open list and a second clause audit. **Round 4q audited 28 of the 32 threads, not 32**: `42d1faa3`, `dbd735b5`, `d4303c12` and `be83d91e` were in no row of it. Every non-deferred thread was re-read and its page state rendered at 2× in a separate Chrome, not the hidden pane.
+
+| Thread | What the page showed | Now — seen |
+|---|---|---|
+| `42d1faa3` `dbd735b5` list fades | 15px of linear alpha, shorter than a row's rounded corner, so the leaving edge read as a cut | 28px, eased, on every block scroller; small runs keep 15px through `--fdy`. The fade starts under a sticky head (`--fo`), so table rows fade before the header |
+| `cd53517e` one table | the accent reached the header; "MACHINE …" truncated; the CODE head sat 9px left of the codes and MARKS over nothing | the weapon cell stacks name over category; heads sit on what they head; numerals at 700 |
+| his mid-run note, column spacing | the code column was `auto`, so codes started at 883px on one row and 899px on the next; the marks column reserved three tracks for two marks, leaving ~120px of air after the code against 18px before it | code 118px and marks 58px on every row of both views, every gap 18px; a "staged" tag widens the column for the whole list |
+| `a27feffa` Repairs detail | its blocks started at 212px and 636px, no column of the table | the detail is the row's grid: "Why it needs work" starts on BUILD, "On the card" on the ON THE CARD head, the rule in the gap; the header inset is the rows' 18px |
+| `45bbb9ee` queue Edit | the divider was 12px from Edit's box and 17px from delete's | 12 and 12; the delete box ends on the card's 820px edge with everything above it |
+| `30b7b494` card motion | stepped frame by frame with the transitions paused: the opening matches Gemini's; the close cut in one frame — the code rendered the card on `open`, whatever its comment said | the card survives its exit: opacity 1 → .9 → .55 → 0 over 180ms, unmounted at 220ms |
+| `c9604d47` chips on Hide list | the chips reappeared in the frame the fold began | they arrive as the fold lands, staggered (0 → .87/.73/.43 at 200ms → 1) |
+| `32fb5a9e` containers | five fills of one rectangle | three new constructions — Outline, Fade, Lit edge |
+| `d4303c12` label | separators only | Trailing: the attachment first, its slot as a quiet key after it |
+| one-table triangle | my call, never shown | a fork, `p3tbl`: Bare mark · Mark and count |
+
+**Also found and fixed:** `gates.css` held a stale copy of the one-table rules and loads last, so it silently beat every fix written in `board.css` since — deleted, not overridden. The two-line tag rail clipped the slot specimen's ninth tag. The Repairs "Show in the manifest" ghost button now outdents onto its column.
+
+**The design critique on Repairs** (asked for by name, run in-line): the eye lands on the count and the orange chips, which is right; the columns now agree; two nits stay open — PHARO's two problem chips wrap to two lines, and "Same attachments as another build" is vague whenever the twin is outside the weapon.
+
+**Still his:** the tag container, the label and the table mark, asked by popup with a comparison sheet each. The control family stays Session 4's.
