@@ -1475,3 +1475,6 @@ Four of his messages in ten minutes, each off a picture: the zoomed crop, two sc
 🔴 **#23 and #25 were live on the published board and on every card opened near the bottom of a screen.** Neither could be seen from the resting render or from a card opened mid-page, which is the only way it had ever been checked. The placement is part of the element: **a popover is verified in every position it can open in, or it is not verified.**
 
 ⚠️ **#28 took three passes on one sentence** (2026-09-17 22:48 EDT): "a slight amount of fade towards the side that has the pointer arc" — I faded it away from the arc, then toward it only to half. His words, in order, were the spec; I read a direction into each and was wrong twice.
+
+**Then a fourth** (2026-09-17 22:52 EDT): the linear fade to zero read as "a cut". The plume he liked was elliptical — its lower rows gave out first, so it thinned INTO the hairline. Rebuilt as an ellipse from the far corner, full height there and tapering onto the border line just before the arc. ⚠️ A radial-gradient size mixing % and px (`calc(100% - 106px)`) is rejected by this browser and silently drops the whole mask, so the reach is computed in JS as `--reach`. Published as **version 13**.
+
