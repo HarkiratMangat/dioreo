@@ -1692,3 +1692,27 @@ He was not satisfied with 5b's nitpicking and asked for every element's alignmen
 Also: the heading's category dot was the board's only square one (every other `--c` dot is round) · the file showed `Build:  Build 3` with two spaces where the file has one, because the key carried `padding-right:.5ch` · the tile name moved from 13.5px to the drawer's 13px step · three colours meant "picked" (green on the mode switch, the category hue on chips, yellow in the system checkbox), so the mode's count went neutral, as a mode has no hue and green reads as success.
 
 Checked and left: the MP button's red bar is an inset shadow and its box ends on the search's bottom edge (279.7px both), even though it reads lower · the ragged right end of the chip row is deliberate, because equal-width chips were ruled out on board 3-A · the eyebrow stays Session 4's.
+
+## Round 5d — Export restructured: pick on the left, a stack of paste-sized files on the right (2026-09-18 19:41 EDT)
+
+His restructure, point by point, with what was measured in the running board:
+
+| His ask | What it is now |
+|---|---|
+| No bottom bar, no eyebrow | Gone for this drawer. Back and Close are the header pair; their hover now eases over 360ms with the word fading in a beat behind (the old 220ms front-loaded curve spent most of its motion in ~60ms) |
+| A file never runs past one paste, never splits a build | Files fill in pick order; a new file opens when the next whole block (plus its blank line) would pass 4,000 characters. Pick-all Assault gives **23 builds / 3,965** and **12 / 1,955** — 35 in all, and 3,965 + 2 + 1,955 = 5,922, the total measured in round 5b |
+| MP and DMZ never share a file | Separate files per mode even at a handful of builds |
+| Switching MP/DMZ changes nothing on the right | Measured: the file list read identical before and after a switch |
+| Warn near the limit | The character chip (the broadcast card's `g-fact`) turns warn at 3,600 |
+| The broadcast card's portions and fold | Each file: header · text · dashed-rule footer (Clear, Copy, Download as soft rectangles, and the fold). The fold exists only when a second file does; a new file folds the older ones and opens itself. The fold slides: measured 137→232→297→314→319px on one card as the other went 502→407→341→325→319 |
+| Header: file name right, count under it; the number in the mode's hue | `#FF3B5C` for MP, `#3DA5F5` for DMZ — the masthead's own pair |
+| "Download", not the full phrase | Done |
+| The 5/35 control | A soft rectangle now, still the system checkbox |
+| The category pills | The manifest's own markup: dot, name, count, and an **All 125** chip leading them, wrapping as the manifest wraps |
+| MP/DMZ toggles carry no counts; totals somewhere fitting | Words only. The mode's total leads the chips (All 125) and sits in the search placeholder |
+| Tell categories apart without selecting | Each category is a bay: tinted ground, a hue edge, the name in its hue, a haloed dot |
+| Use the tile's spare room | Each build's own claims (the board's badges: META, BEST/TOP n, TOXIC) under its number strip, one line per build that has any; row tiles share a height |
+
+**META's ambiance and strikes were out of step, and the cause was measurable.** Every `<img>` on the same blob URL shares one SMIL clock — the one started by the first image to load it. An image mounted 1.3s after another on the same URL drew the identical frame at every sample, while a fresh object URL of the same Blob did not. So each later badge restarted its CSS glow at its own onload against strikes already running on an earlier clock. `b3/volt.js` now gives every mount its own object URL. Measured after the change across five visible badges: the glow trails its strikes by 80–160ms (the designed decay), correlation 0.54–0.66.
+
+Also found by looking: a folded file collapsed to zero height, because `overflow:hidden` makes a flex item's automatic minimum 0 — `overflow:clip` clips the corners without that · the text's own padding could not fold inside a 0fr track, so it folds with it · equal-height tiles stretched a lone build number into a tall bar until the tile's content was pinned to the top · the manifest badge group's lead rule and dot wrapped META and TOP 4 onto two lines inside a tile.
