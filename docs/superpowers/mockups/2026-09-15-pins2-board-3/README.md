@@ -1716,3 +1716,21 @@ His restructure, point by point, with what was measured in the running board:
 **META's ambiance and strikes were out of step, and the cause was measurable.** Every `<img>` on the same blob URL shares one SMIL clock — the one started by the first image to load it. An image mounted 1.3s after another on the same URL drew the identical frame at every sample, while a fresh object URL of the same Blob did not. So each later badge restarted its CSS glow at its own onload against strikes already running on an earlier clock. `b3/volt.js` now gives every mount its own object URL. Measured after the change across five visible badges: the glow trails its strikes by 80–160ms (the designed decay), correlation 0.54–0.66.
 
 Also found by looking: a folded file collapsed to zero height, because `overflow:hidden` makes a flex item's automatic minimum 0 — `overflow:clip` clips the corners without that · the text's own padding could not fold inside a 0fr track, so it folds with it · equal-height tiles stretched a lone build number into a tall bar until the tile's content was pinned to the top · the manifest badge group's lead rule and dot wrapped META and TOP 4 onto two lines inside a tile.
+
+## Round 5f — the weapon tile, critiqued and rebuilt (2026-09-18 19:47 EDT)
+
+He was not a fan of the tile and asked for `/design-critique`, the relevant impeccable verb (`distill`: strip to essence), `/interface-design` and a harsh thinking pass on why it fails.
+
+**Why round 5d's tile did not work:**
+
+| Problem | Evidence |
+|---|---|
+| Boxes inside boxes | Around one build number: bay → tile → roster row → number box → badge pill. Five containers for one choice; the craft floor calls nested cards always wrong |
+| One choice, two controls | The number strip AND a roster repeating every number under a dashed rule. Only one of them picked anything |
+| Inverted hierarchy | Animated META/TOXIC pills out-shouted the weapon name, the thing you scan for. 35 badges breathing lightning belong to the manifest's display, not a picker |
+| Room made, then filled | 54 of 68 MP weapons have 1–2 builds and only 1 of 133 builds has a custom name. The spare room came from sizing tiles to their tallest neighbour, and I filled it instead of removing it |
+| A silent action | Clicking the weapon name picks every build, and nothing said so |
+
+**The rebuild:** a tile is the weapon's name, then one chip per build. A chip is the pick: its number, and a static glyph per claim in the board's badge hues (bolt META, crown BEST, ribbon TOP, skull TOXIC). The full badge, rank number included, moved into the hover preview. Hovering the name lights every chip it would pick. Measured: containers around a chip went from 5 to 3 (bay, tile, chip). 61 of 68 tiles are 79px, 6 wrap to 114px and 1 (five builds) is 149px, with no animation running in the grid.
+
+The A/B/C tile fork drawn earlier in this round was removed: each was an answer to "how do I show the badges", which was the wrong question.
