@@ -252,6 +252,7 @@ The **story** behind the bot: discoveries, bugs and their real root causes, the 
 - 2026-09-17 09:14 EDT — the session that kept acting on the model instead of the thing (v3.84.0-pre)
 - 2026-09-17 17:14 EDT — portal pins batch 2 — one badge, thirteen attempts, and the 32 threads it displaced (v3.85.0-pre)
 - 2026-09-17 20:04 EDT — portal pins batch 2 — the 32 threads, regrouped by the class each was an instance of (v3.85.0-pre)
+- 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
 - *Earlier milestones* `[backfill — expand later from transcripts]`
 
 **Part B — Lessons Ledger (thematic, no dated entries)** — reusable takeaways grouped by theme: War stories / root causes · Walk-backs & reversals · Design decisions & the "why" · Platform / library gotchas · Process lessons / tips · Concerns / open risks · Collaboration insights.
@@ -4447,6 +4448,14 @@ Two of my own records were wrong and both are corrected. `board.css` told the ne
 The routing failure underneath the evening is worth more than any of it. He raised it six times in one hour, each acknowledged and each followed by drift inside ten turns, so "remember the routing table" is disproven — the table was loaded every time. The mechanism is that every correct tool has a PRECONDITION and the wrong ones have none: `read_smart` needs a path, `ctx_search` a source name, `codebase-memory` a project and a symbol, `ctx_execute_file` the knowledge that it injects `FILE_CONTENT` and not `FILE_PATH`. Under pressure the lowest-precondition tool wins. The three preconditions are filed as a pinned caveat rather than left to memory. And a second cause the first does not cover: the project name was in hand once and `rg` still ran, because the question had been framed as text rather than as structure.
 
 Two defects surfaced on the way to a green suite, neither of them board work. `scripts/portalDiff.mjs` declared `args` and `flag` thirty-seven lines below their first reader — a temporal dead zone, so the module threw the moment it was evaluated and `portal:diff --help` could not run; `node --check` cannot see it and the tdz ratchet was the only gate that could. And `~/.claude/settings.json` registered `cbm-session-reminder` four times under SessionStart, so it fired four times on every session start on this machine.
+
+## 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
+
+**What happened.** Round 4m opened with the element-by-element sweep he ordered: 13 screens read one element at a time, then every suspect measured. It found 17 defects, four of them my own regressions. Sweep 2 rendered 18 states the board never shows at rest and found four more. Then his messages found what both sweeps missed. The manifest's create button still wasn't the masthead's after four of his threads: four stacked rules, each written as the fix. The problem card had a second, square frame and never flipped upward near the bottom of a screen, because it measured itself at 10px. Its upward outline had never been drawn correctly. The hazard strip took four passes on one sentence of his. His Tag style rule was recorded in a comment and never applied.
+
+**The audit.** Asked to re-read all 32 threads against the board, the honest count was that about half of those called closed were not. Threads had been closed by the change made, not by checking every clause. He deferred the control family (toggle label, chip, switch, readout) to Session 4, fully documented as plan §5c.3b. Everything else was fixed and looked at in the state its thread names (round 4s). Board 3-D is at version 16.
+
+**Lessons.** A popover is verified in every placement it can open in. A rule in a comment is not applied by the comment. Before writing a rule for an element, find every rule already styling it. Close a thread only when every clause is met. A script's output is evidence for a judgement, never a substitute for one; he said so plainly when the audit turned into probes.
 
 # Part B — Lessons Ledger (thematic)
 
