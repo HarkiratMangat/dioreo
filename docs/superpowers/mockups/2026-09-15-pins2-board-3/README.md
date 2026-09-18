@@ -1580,3 +1580,17 @@ He asked whether the untold things were fixed and whether the impeccable verbs h
 | gates.css | 23 lines styling problem-card option B, ruled out on 09-17 (the detector flagged its stripe) | deleted |
 
 **Left as found, named:** the detector's other finding, a 3px stripe on Repairs' By-problem cards, belongs to a live fork of his. MP and DMZ repeat one description, and "up 44d" repeats "up 44 days", but the words are Session 4's.
+
+## Round 4w — Export and Repairs, redrawn (2026-09-18 11:17 EDT)
+
+His ask: "aggressive, drastic design improvements, especially the export drawer", and to spend the board's time only on what ports into the portal. Both are drawn as new options beside the incumbents, so they compare; version 21.
+
+| Surface | Before | Now |
+|---|---|---|
+| **Export picker** (`expl` · Tiles + file) | every build a card with five tags — 125 builds, about 4,000px, and the file you are making nowhere on screen | the wide drawer in two panes: every weapon a tile whose builds are numbers you tap; beside it, the FILE, block by block, exactly as it downloads and as the bot reads it back. The chip strip and the "N picked" count go, because the file says both |
+| **Repairs** (`p6` · C · Tickets) | a six-column table, a fold to open before the reason was readable, one "Fix" that did not say what it fixes | each broken build is a ticket: the fault in plain words, what it costs, the evidence drawn (the slots; the code's pairs against the attachments, the extra pair lit or the missing one dashed; the shared code), and one action named for the fault ("Add the code", "Correct the code", "Compare the two"). Blocking tickets are heavier and come first; a bar shows the whole armory, 2 blocking · 3 below standard · 120 pass |
+| One tag everywhere | the picker and Repairs listed attachments as grey chips and plain boxes | every shell and label rule covers them (12 selectors widened, not copied), so the container he picks applies in all four places |
+| Near-duplicate twin | "Same attachments as another build" | the API's own first test is an identical code across weapons: "Same code as AK117 Build 1" |
+| Repairs chip | the slot meter repeated its own words and wrapped PHARO's row | text only; the ticket draws the slots |
+
+**Also recorded:** his instruction that phone view and board chrome are not the work; round 4v's phone pass stays because it cost nothing to keep.
