@@ -1181,6 +1181,8 @@ A clipped screenshot is in DOCUMENT coordinates while `getBoundingClientRect` is
 
 ## Round 4g — META applied from his own settings, and eight of the 32 closed (2026-09-17 18:31 EDT)
 
+> ⚠️ **Corrected by round 4q (2026-09-17 23:35 EDT).** The closures counted in this round were by the change made, not by every clause of the thread; about half of the threads called closed by round 4l were not met. Round 4q carries the clause-by-clause audit, round 4s the fixes.
+
 ### META is now his artwork on the board, with his numbers
 
 He tuned it in the playground and sent the values: *"keep the lightning as my Lightning VFX.svg clipped inside the frame, and scale the artwork to 2.00×, position it at 50% 60%, rotate it -16°… a much heavier bloom (1.70×), ambiance at 1.60×, resting light 0.06… a 8.2s loop, strikes 45% of the loop apart, rows staggered 1.30×."* Applied verbatim. `b3/volt.js` fetches the untouched cel, retimes it per loop length, recolours it to a blob URL and starts the badge's ambiance inside `img.onload` so the two clocks share an origin; `b3/board.css` clips it into `.b3-volt` and lights the ring at the strike's own position.
@@ -1236,6 +1238,8 @@ He tuned it in the playground and sent the values: *"keep the lightning as my Li
 
 ## Round 4h — the 24 regrouped by what they are instances OF, and 22 of the 32 closed (2026-09-17 19:00 EDT)
 
+> ⚠️ **Corrected by round 4q (2026-09-17 23:35 EDT).** The closures counted in this round were by the change made, not by every clause of the thread; about half of the threads called closed by round 4l were not met. Round 4q carries the clause-by-clause audit, round 4s the fixes.
+
 **The five root causes in round 4f were a TRIAGE grouping, and triage groupings are the wrong shape to fix from.** "Alignment" is a symptom; five alignment threads had four different causes. Regrouped by the class each is an instance of, twenty of the twenty-four collapsed into four fixes.
 
 ### A · A run that overflows is CONTAINED, not cut — four threads, one behaviour
@@ -1280,6 +1284,8 @@ He tuned it in the playground and sent the values: *"keep the lightning as my Li
 **Three of my moves today were corrected by him within minutes, and all three have the same shape.** A thinking pass that asked fifteen questions about my own process and none about the design. A "deeper" severity finding that was a retracted claim re-derived from a downscaled screenshot. A `volt.svg` 404 asserted from a directory listing without checking the artifact it was published to. **Each is reasoning about the work instead of looking at it** — and the fourth, calling `list_projects` and then immediately grepping for code, is the same failure aimed at a tool: using the instrument as a gesture rather than routing the question through it.
 
 ## Round 4i — the last six, and the compliance failure underneath the whole evening (2026-09-17 19:15 EDT)
+
+> ⚠️ **Corrected by round 4q (2026-09-17 23:35 EDT).** The closures counted in this round were by the change made, not by every clause of the thread; about half of the threads called closed by round 4l were not met. Round 4q carries the clause-by-clause audit, round 4s the fixes.
 
 **28 of the 32 are closed, one is half his own split, one is his own deferral, two were already superseded.** Board 3-D is at version 8.
 
@@ -1526,4 +1532,10 @@ Harkirat: *"you can defer them to session 4's work but properly and fully docume
 | `1b27b6cf` fold reveal | unverified | measured with a real pointer: 44px on the row's blank area, 95px on the button — the word reveals only on the button |
 
 **Still not done, named so it is not mistaken for done:** the card's MOTION (`30b7b494` point 3) has never been watched — only stills and frame samples. `d4303c12`'s label options and `32fb5a9e`'s container options are thin: separators and fills, not a real exploration of the soft-cornered rectangle. The toggle family is Session 4's (§5c.3b).
+
+## Round 4t — the compact prep's own pass (2026-09-17 23:35 EDT)
+
+- **Every switch now starts on its baseline.** Small text's fork lists `now` last, so its switch was the only one that opened on a proposal. `segOpts()` moves `now` to the front.
+- **Silent-mode compliance for this session, measured** (`node scripts/summaryShape.mjs --session latest`): 184 runs · **235 messages with mid-run prose** against a target of zero · final p90 **5,460** characters · 78 finals over budget · 51 with more than one table.
+- **The root under tonight's failures**, stress-tested before writing: I checked that my change had LANDED; he checks whether the surface looks and behaves DESIGNED. That covers closing by change, verifying by numbers, stopping sweeps at resting states, and relabelling fills instead of designing options. It does **not** cover the mechanical class — two heredocs in one command (four times), a multi-file write that saved one file and then died on an assert, and a shooter whose 300ms wait could not see a transition. Those are command-shape traps, recorded separately in `.remember` and `~/.claude/TOOLING.md` §3.
 
