@@ -1457,3 +1457,20 @@ Sweep 1 read the board as it loads. His Add-build catch came from outside it, so
 
 🔴 **#18 was in a picture I had already read and passed.** I read the full-size frame, saw a popover over rows, and moved on; the second frame is 12px wide at that scale and plain at 2×. And my first fix answered a real bug that was not the one he pointed at — the frame-by-frame sample measured only the path, so it could not see a ring on the card's own box. **The zoomed crop is what found it both times; a measurement only answers the question it was written for.**
 
+## Round 4o — the problem card, checked in every placement it can open in (2026-09-17 22:43 EDT)
+
+Four of his messages in ten minutes, each off a picture: the zoomed crop, two screenshots of the card breaking near the end of the page, and his earlier reference for the strip. Every placement is now rendered and read at 2×: opening downward in the manifest, opening upward near the window's bottom, and from inside the selection list.
+
+| # | Defect | Cause | Now |
+|---|---|---|---|
+| 22 | Square top corners on a rounded card | the header's fill and the strip were square boxes painted over the path's r=14 corners, hiding the side hairline | the header sits 1px inside the hairline, rounded to 13px |
+| 23 | **Near the end of the page the card did not flip up, and most of it was see-through** — his two screenshots | `place()`'s second pass runs the frame the card turns `position:fixed`, before its `top` lands; its box measured **10px**, so it decided no flip was needed and drew the outline 10px tall | measured by its natural height (`scrollHeight`) |
+| 24 | A pinned upward card collapsed to its padding | the upward rule's `bottom` and the pinned style's `top` were both set | the pinned style clears the other edge |
+| 25 | **The upward outline had never been drawn right** | `pcPath()` put an upward card's far edge on its pointer edge: a 10px sliver, no fill | the far edge is the top |
+| 26 | The strip sat on an upward card's bottom | an old rule moved it to the pointer edge; his instruction is the container's top | top, whichever way the card opens |
+| 27 | In the selection list the next weapon's header painted over the card | every header is `z-index:2`, a later one wins; the list's fade is a mask, which clips a pinned card too | the open card's header rises; the fade stands down while a card is open |
+| 28 | The strip, redrawn to his reference | it was a plume that thinned to nothing away from the pointer | full width inside the hairline, curving with the corners, the arc rising out of the border above it, a slight fade to about half away from the pointer |
+| 29 | The card hung to the left of its chip | its right edge ended 24px past the chip's CENTRE | right edge on the chip's right edge; pointer on the chip's centre |
+
+🔴 **#23 and #25 were live on the published board and on every card opened near the bottom of a screen.** Neither could be seen from the resting render or from a card opened mid-page, which is the only way it had ever been checked. The placement is part of the element: **a popover is verified in every position it can open in, or it is not verified.**
+
