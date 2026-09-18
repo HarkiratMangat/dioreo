@@ -1490,3 +1490,17 @@ He asked me to state back his Tag style comment (`32fb5a9e`, `5c743f2f`, 2026-09
 
 🔴 **A rule stated in a comment is not applied by the comment.** The note was accurate, sat directly above the three rules that broke it, and was read as the fix. Published as **version 14**.
 
+## Round 4q — his 32 threads re-read clause by clause: about half of the "closed" ones are not (2026-09-17 23:05 EDT)
+
+He asked for every comment of the prior round to be re-read against the board, after his Tag style thread turned out to have been ignored through three sweeps. Each thread was thought through on its own. **Rounds 4g–4l closed threads by the change that was made, not by checking every clause of the thread against the page**: most threads carry two to four asks and one was met.
+
+| State | Threads |
+|---|---|
+| **Done** (several only tonight) | `658f7fef` hues · `1f8d6efa` fill bar · `4733ffc0` export (tonight) · `32fb5a9e` + `5c743f2f` tag rule (tonight) · `158cd01e` spine (tonight) · `d8e69f24` chip rows (tonight) · `653f8eeb` Add build (tonight) |
+| **His call / split** | `35e1f097` timeline waits on the rest · `80880e0e` wording is Session 4's · `29897d92` META superseded by his own settings |
+| **Not done — observed** | `30c5b2fc` History chips 10/12 padding and 7 gap vs the manifest's 8/8 and 5 — never compared to the manifest · `8184da23` View 12px vs the other toggle labels' 9.5px, reported fixed twice · `1e4a1512` category still sentence case at weight 400 · `c9604d47` Hide list still vanishes in one frame · `1d832319` manifest tag cells up to 3 lines, no fade, no scroll — the thread is anchored ON the manifest · `1615b327`/`cd53517e` the one-table view still shows the full chip and hard-cuts its tags |
+| **Not done — design** | `16767834` the pass block was restyled, not rethought: "Nothing failed" over one chip reads as "only one thing was checked" · `a27feffa` the expanded repairs row was never rendered and repeats its own row |
+| **Unverified** | `442a918e` his shot for the fifth "misaligned" never opened · `45bbb9ee` right edges of the stacked card controls · `07c3b35a` the row hover · `4cec9165` the × column across every row type · `30b7b494` the card's MOTION, never watched · `1b27b6cf` hover-only reveal · `bff1f05b` what hover becomes once rest took hover's grey · `bd09c832` the solid-ground note is not in a tracked hand-off |
+
+**The fix is three classes, not sixteen patches:** (A) one token set for toggle labels, chips, segmented controls and readouts — `30c5b2fc`, `8184da23`, `1e4a1512`, `442a918e`, `4cec9165`; (B) one tag-rail rule — two lines, fade, scroll — wherever tags appear — `1d832319`, `cd53517e`; (C) an element survives its exit, so every hide animates — `c9604d47` and its siblings. Plus real redesigns of the pass block and the expanded repairs row.
+
