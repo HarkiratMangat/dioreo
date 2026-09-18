@@ -1323,3 +1323,36 @@ He tuned it in the playground and sent the values: *"keep the lightning as my Li
 | `35e1f097` | His deferral — the History timeline waits for the rest |
 
 ⚠️ **What a build gate cannot tell him:** `verify.cjs` checks page errors and 390px overflow. The card's motion, the scroll fade's feel and the new weapon cards have been verified structurally and in static renders, not watched.
+
+## Round 4j — twelve of tonight's rules were repainting the portal itself (2026-09-17 20:30 EDT)
+
+**Found by a think-pass he asked for, not by any gate, and it is the incident this board already has on record.**
+
+Twelve rules written tonight target a PORTAL class — `.madd`, `.pb-ib`, `.pb-tl`, `.ph`, `.sp`, `.g-status`, `.cmeter`, `.wg-at` — and every one sat unscoped in the BOARD's stylesheet. A proposal written bare in `board.css` repaints the portal's own control as well as the proposal, which is exactly the 2026-09-17 10:29 EDT Export incident: written bare, "Portal today" mounts `exportPanel.js`'s real drawer, and the surface would have shown the portal agreeing with a proposal it had never seen.
+
+**Measured before the fix**, with the queue gate switched away from those controls: `.ph .sp` still computed `display:flex` and the meter still filled `rgb(236,72,153)`. The control had been changed along with the experiment.
+
+**Measured after**, driving `a1` both ways:
+
+| | `a1=fixed` — his pinned fixes | `a1=now` — as the portal ships |
+|---|---|---|
+| The two queue readouts | `flex`, centres **0px** apart | `block` |
+| The slots meter | `#EC4899` | `rgb(58,71,82)` |
+| The attachment tag | **5px** | **6px** (the portal's own) |
+
+⚠️ **The scope is `a1=fixed` and NOT a fork value**, because these are his pinned FIXES rather than A/B proposals — `state.js` already records that the pinned changes live under `a1` and that every other axis at `now` falls back to the portal's own. The tag radius is the exception: it belongs to the `p2lab` fork, so it is scoped off that fork's own "as it ships" value.
+
+🔴 **THE RULE, and it is the one worth carrying: A SELECTOR'S BREADTH MUST BE CHOSEN, NOT INHERITED from whatever you happened to type.** A rule whose scope was decided is fine at any breadth; a rule whose scope is an accident of the selector is a defect even when the pixels look right. Twelve of these went in during one evening and every one of them rendered correctly.
+
+### And the pass block's chips did not match the sentence above them
+
+`16767834` again. Under "the other 120 builds pass every check" sat a bare row naming ONE check, which reads as "they pass one check" — the opposite of the sentence. **The chips and the sentence are one statement and I edited them as two.** The row says `NOTHING FAILED` above it now.
+
+### What the pass found that is not a defect
+
+- **My "move the board onto instruments" observation was the general form of a narrower true claim.** The badge playground converged in minutes because a badge is ONE element with a tunable parameter space and he held the dial. That is true of the palette and the tag styles; it is not true of alignment, of a scroll edge, or of which box a mark belongs to. The narrow claim is the honest one.
+- **The durable tooling facts were in a session-scoped carrier only.** The two `codebase-memory` project names and `ctx_execute_file`'s injected variables now live in `~/.claude/TOOLING.md` §3 **with their provenance and a one-line way to re-derive them**, because a rotting fact in a durable file is worse than no fact.
+
+### The fixed compliance question, answered with its number
+
+`node scripts/summaryShape.mjs` — week of 2026-09-14, the Silent style loaded in all four sessions: **425 mid-run-prose messages against a rule whose target is zero** (323 the week before), **89 finals carrying more than one table** (34), 121 over the 1,800-character budget, p90 **4,809** (2,726), and his own complaint count **4** (3). Every column moved the wrong way with the contract loaded. ⚠️ The mid-run count cannot tell the four permitted exceptions from violations, so it is a floor rather than a verdict — but the DIRECTION is not explainable that way.
