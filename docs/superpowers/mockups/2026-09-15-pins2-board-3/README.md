@@ -1738,3 +1738,7 @@ The A/B/C tile fork drawn earlier in this round was removed: each was an answer 
 ## Design Board 3-E — a fresh canvas for comments (2026-09-18 19:52 EDT)
 
 At his request the board as it stood at 3-D version 29 was published to a new link, **Design Board 3-E** (`2LxjJwzsg7odUiJKmvq2Jo`, page `board3e.html`), so his next round of comments starts on a clean thread list. Same kit, same files, its own `db` store, so board picks made on 3-D do not carry over. 3-D stays as the record of rounds 4 and 5; new work publishes to 3-E.
+
+## 3-E version 2 — the manifest would not scroll over its attachment tags (2026-09-18 19:57 EDT)
+
+His report: *"i can't scroll up/down on the manifest when my mouse pointer rests within the attachment labels area."* Every row's tag cell (`.wg-r .wg-rail`) is a scroll container, capped at two lines, and it carried `overscroll-behavior:contain` — which stops the wheel chaining outward from a scroll container even when that container has nothing to scroll. Reproduced in a real browser with a real wheel: one 200px step over a tag cell moved the manifest **0px** with `contain` and **200px** without it. The cell now hands the wheel on (`overscroll-behavior:auto`). The rule for next time: a cell inside a scrolling page never contains; only a surface that is itself the scroller (a drawer list, the palette) may.
