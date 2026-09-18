@@ -1469,8 +1469,9 @@ Four of his messages in ten minutes, each off a picture: the zoomed crop, two sc
 | 25 | **The upward outline had never been drawn right** | `pcPath()` put an upward card's far edge on its pointer edge: a 10px sliver, no fill | the far edge is the top |
 | 26 | The strip sat on an upward card's bottom | an old rule moved it to the pointer edge; his instruction is the container's top | top, whichever way the card opens |
 | 27 | In the selection list the next weapon's header painted over the card | every header is `z-index:2`, a later one wins; the list's fade is a mask, which clips a pinned card too | the open card's header rises; the fade stands down while a card is open |
-| 28 | The strip, redrawn to his reference | it was a plume that thinned to nothing away from the pointer | full width inside the hairline, curving with the corners, the arc rising out of the border above it, a slight fade to about half away from the pointer |
+| 28 | The strip, redrawn to his reference | it was a plume that thinned to nothing away from the pointer | full width inside the hairline, curving with the corners, the arc rising out of the border above it, at full strength over its far end and fading to **nothing** just before the pointer arc — his wording, after I first faded it the wrong way and then only to half |
 | 29 | The card hung to the left of its chip | its right edge ended 24px past the chip's CENTRE | right edge on the chip's right edge; pointer on the chip's centre |
 
 🔴 **#23 and #25 were live on the published board and on every card opened near the bottom of a screen.** Neither could be seen from the resting render or from a card opened mid-page, which is the only way it had ever been checked. The placement is part of the element: **a popover is verified in every position it can open in, or it is not verified.**
 
+⚠️ **#28 took three passes on one sentence** (2026-09-17 22:48 EDT): "a slight amount of fade towards the side that has the pointer arc" — I faded it away from the arc, then toward it only to half. His words, in order, were the spec; I read a direction into each and was wrong twice.
