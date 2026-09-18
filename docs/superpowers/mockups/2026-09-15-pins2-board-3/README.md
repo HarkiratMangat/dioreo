@@ -1562,4 +1562,4 @@ No comment was added to version 17, so the work was the open list and a second c
 
 **The design critique on Repairs** (asked for by name, run in-line): the eye lands on the count and the orange chips, which is right; the columns now agree; two nits stay open — PHARO's two problem chips wrap to two lines, and "Same attachments as another build" is vague whenever the twin is outside the weapon.
 
-**Still his:** the tag container, the label and the table mark, asked by popup with a comparison sheet each. The control family stays Session 4's.
+**His answers by popup (2026-09-18 10:41 EDT):** the slot label is **Key**; the one-table mark is **Bare mark** — both ruled on the board as version 19. The tag container he will choose on the board himself. The control family stays Session 4's.
