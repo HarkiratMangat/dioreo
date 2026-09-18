@@ -1623,3 +1623,19 @@ His verdict on round 4x: "enough to check off a task in a list, but not enough t
 - **Carried from 4x:** the peek (what a number adds, or which lines it occupies), Undo on Clear, and Copy confirming.
 
 Seen at 2× in the empty, picked, hover and search states; the file header's stray band (a board-wide `header` rule) is fixed on this component.
+
+## Round 4z — the Export picker v4: his list, and the importer's format (2026-09-18 15:36 EDT)
+
+He judged round 4y "in a few ways better, but mostly worse" and named what each of the three versions did best. Version 24 takes exactly that:
+
+| From | Kept |
+|---|---|
+| v1 | the compact weapon tiles, three to a row, with no category label on each tile · ONE full-height line in the weapon's colour down each block of the file |
+| v2 | the category grouping: a header per category with its count and Pick all |
+| v3 | the file as its own raised card, apart from the picker, with the build count as its headline · Enter adds the one match · the hover preview · Undo |
+
+What he disliked is gone: the side column of categories (the categories are now one row of jump chips under the search, which also badge how many you picked from each) · the colour mark on every attachment line · the picker and the file sharing one frame · the Copy/Download row wedged between the file's details and its text (count, details, Clear, Copy and Download now sit on one header row) · round 4y's space-hungry list rows.
+
+**The exported file now matches the bulk importer on this line, line for line.** It is `utils/adminParser.js`'s `formatLoadoutsAsBulkText`: `Weapon | Category`, then `Build:`, `Image:` (a stored key, never a URL), `Code:` and `Badges:` on their own lines, then `- ` attachments. Round 4y's version dropped `Image:` and `Badges:`. The one-line pipe header he quoted (`AK117 | AR | MP | Build 1 | AK117-1.png | code`) is the OLD format: `main`'s live bot still reads it, but the v3 importer rejects it (#172, `fe592460`, 2026-08-23), so a file in that format could not be imported back. He asked "why would you export a version that isn't supposed [supported] by the bulk import code?", which settles it.
+
+Found while checking it at 2×: the file card's edge was an inset ring, and the header's fill painted over it, so the card had no visible top or sides. It is a real border now. The Clear link had been squeezed under the Copy button. It moved into the action group.
