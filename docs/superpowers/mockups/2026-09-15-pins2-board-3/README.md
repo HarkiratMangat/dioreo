@@ -1610,3 +1610,16 @@ His ask: refine the Tiles + file picker hard, drawing on design-critique, interf
 | Animate | blocks appeared and vanished | a block slides in from the grid's side and the file scrolls to it; a removed block folds; numbers press; the preview rises |
 
 Checked on the render: 7 groups and 68 tiles; the category row stays 32px tall; the chosen chip scrolls into view; Undo restores; the preview shows "adds 9 lines" for a new build and the line range for one already picked.
+
+## Round 4y — the Export picker rebuilt: the requisition (2026-09-18 15:13 EDT)
+
+His verdict on round 4x: "enough to check off a task in a list, but not enough to be awwwards worthy." Correct — v22 was a list of fixes applied to a composition of boxes inside boxes. Version 23 rebuilds the composition around the one object that matters, in the portal's own world.
+
+- **One lifted object.** The index rail and the catalogue sit flat on the drawer. The file is the only raised surface, with its count as the hero (Big Shoulders, 46px, and it rolls when it changes) and its own Download and Copy on it. The drawer footer keeps Back and Close only.
+- **The catalogue is a list.** It reads top to bottom as the manifest does. Each weapon's builds are ONE segmented strip of the armory's build numbers, right-aligned so every strip ends on a single line, and a picked segment fills in the weapon's hue.
+- **The index is a map of your picks.** The category rail jumps to a category and follows the scroll, and it shows how many you have picked in each category as a hue badge. Categories with no search matches dim.
+- **The file is typeset, not decorated.** The characters are exactly the download. Line numbers run through the whole file, and each attachment line's gutter takes its slot colour, so the file speaks the tag palette.
+- **Enter adds.** When the search narrows to one build or one weapon, the search row says what Enter will add ("↵ adds 2 LOCUS builds"), and Enter adds it.
+- **Carried from 4x:** the peek (what a number adds, or which lines it occupies), Undo on Clear, and Copy confirming.
+
+Seen at 2× in the empty, picked, hover and search states; the file header's stray band (a board-wide `header` rule) is fixed on this component.
