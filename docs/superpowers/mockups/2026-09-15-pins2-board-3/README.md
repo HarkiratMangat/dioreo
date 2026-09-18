@@ -1412,3 +1412,32 @@ The fade belongs to the BAR, which is the thing that runs out; the label is what
 **A negative assertion carries the search that would falsify it, or it does not get written down.** Every worst call of the last two days was a negative nobody checked: *"386×362 against a ~140×22 badge, it will look wrong"* (eight rejected attempts) · *"severity is not encoded"* (retracted in 4c, re-derived by me tonight) · *"`volt.svg` exists nowhere in this kit"* (a published file, 26,005 bytes) · *"`.b3-pc-tape` — element AND rules"* (four rules live) · *"the pointer was settled as no connector at all"* (round 3j). **A positive claim gets tested because someone opens the thing and looks; a negative one never does, because there is nothing to look AT.**
 
 And then, ten minutes after declaring it, I wrote that the CHANGELOG had **no Unreleased entry** — read off a `ctx_search` that returned the section's header prose. **It has one**, written by Session 2 on 2026-09-15, ending "Not yet reviewed. Harkirat reviews the built portal before this ships; his corrections land in Session 3." The real gap was that it described Session 2 only. Session 3's work is appended to it now, so the pre-merge checkpoint has something true to graduate.
+
+## Round 4m — the element sweep: 17 defects, 4 of them regressions of my own (2026-09-17 22:05 EDT)
+
+His instruction: sweep the whole artifact, every element. All 13 screens were read one element at a time, then every suspect was **measured** before anything was fixed. The board is edited locally and **not republished** — 3-D is still at version 11.
+
+| # | Defect | Measured | Now |
+|---|---|---|---|
+| 1 | History LEVEL meters stacked their four rungs in a column | rungs at one x, 37px tall, 13px out of a 32px chip — my 18:27 mark-box rule set `inline-grid` on a ROW | side by side, bottom-aligned inside the chip |
+| 2 | The DECIDED chip put its tick above the word | word 9px below its own box — `.dk-k` is a grid | one row |
+| 3 | The stage switches and the DECIDE rows were two hand-written option lists | the Picker still offered "A · Under the scopes" (his `4733ffc0`), Problems "B · Spine" after it was ruled, Slot label the dropped "Tab", Tag style "Bar" and no "Text only", five options named differently | `segOpts()` in `gates/picks.js`: the switch reads the fork, and only the ruled option once he has ruled |
+| 4 | **The manifest's create button was not the masthead's** — `807f6d32`, `90b8fb7a`, `653f8eeb` (with a screenshot), pin 4 on 09-15, and again tonight | FOUR rule sites (gates.css pin 4, board.css 09:54, 09:59, 18:48), each written as the fix and layered on the last; the result had no border, a stadium radius, lime on `--sunk` | one rule; equal to a masthead `.pill.lead` on all 12 compared properties, and it says "New build" |
+| 5 | Queue card: Edit 32px beside delete 34px | my own comment said the inset was 6px; it is `--pb-inset`, 5px | both 34 |
+| 6 | UNDONE badge wider than its column | 52px in 40px, 5px from "owner" | column 56px; the head sits at its end like the buttons |
+| 7 | Repairs pass block: the age box aligned to nothing | x=490 — a hidden first child shifted every column | right edge of the block |
+| 8 | Every note lead-in | `margin-right:.4ch` doubled the source's space and opened "What was lost :" | the source's own spacing |
+| 9 | Small-text samples | each row its own grid: badges at 795/809/812, values at 879/882/895 | one subgrid: 807 / 907 |
+| 10 | Settled tables | row header top-aligned, cells centred | all top |
+| 11 | M1's pin list | "… 20, 22, 11, 29" | sorted at render |
+| 12 | Ruled rows said "Your call"; the index said "a" / "b" | — | "Ruled"; "A" / "B" |
+| 13 | Hex values in notes printed in the realm accent | "#3F6E8E" in red | its own swatch |
+| 14 | Queue panel wider than its stage | 1150 in a 1092 column, 1px past the border — a double edge | fills its column |
+| 15 | History's try row outside its switch box | the only surface that rendered it in the body | through the section's `Tries` |
+| 16 | Undo column head at the column start | — | at its end |
+| 17 | **#3's own regression**, caught on the re-sweep | the longer fork labels wrapped every segment onto two lines and clipped the swatch panel | options never wrap; the side panel drops under its switch |
+
+**Checked and not defects:** a scroll fade on `#manifest` — his `dbd735b5` screenshot is the selection list, which `fady.js` covers · the swatch and sample panels' right edges (both 1201) · the Export stage's empty band (a viewport emulated around a centred drawer) · the last screen overlapping the one before (scroll clamp).
+**Seen, not changed:** the Export drawer's close button shows its focus ring at rest — an artefact of a drawer the board opens without a click; the portal opens it from one, where Chrome paints no `:focus-visible` · the manifest search (44px) beside its create button (35px) is the portal's own toolbar, not pinned · the three stages inset their panels 50 / 28 / 36px because each panel carries its realm's own width.
+
+🔴 **Four of the 17 were mine: #1, #5, #8 and #17** — the same number the round before this one produced, and every one was green in `verify.cjs`. And #4 is the worst record on the board: a thread closed in round 4h with a note saying the button "is now literally that class", while a rule 600 lines further down in the same file removed its border. **A fix that adds a rule without finding the rules already styling the element is the fifth layer, not the fix.**
