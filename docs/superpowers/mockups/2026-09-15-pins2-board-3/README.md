@@ -1653,3 +1653,23 @@ He named seven things and said, fairly, that I should have found them. They are 
 **MP and DMZ.** A mode switch sits in front of the search. The file is one mode's, because bulk import takes its mode from the page or op target and the file carries none (`core/ops/loadouts.js`; `buildLoadoutsBulkAddModal`'s own comment records a DMZ paste once saving silently as MP). Picks in both modes are kept, the switch badges how many each holds, and Clear empties only the current mode.
 
 **The paste meter is verified, not invented.** Discord's component reference caps a text input's `max_length` at 4,000, and `/manage`'s Bulk Add modal sets no lower cap. The file header now shows `873 / 4,000 characters · fits one /manage paste`, turning to warn with `too long for one /manage paste — split it` past the cap.
+
+## Round 5b — the four-skill review: reuse what exists (2026-09-18 16:31 EDT)
+
+He asked for `/design:design-critique`, `/design:design-system`, `/verify` and `/superpowers:verification-before-completion` on round 5a. The design-system audit found the defect none of my crops showed: **five controls in the drawer were look-alikes built beside components the portal and the board already have**, which is why the file header's 9px-radius buttons sat above the footer's pills as a second button language.
+
+| Bespoke in 5a | Now reuses |
+|---|---|
+| `.b3-xt-mode` MP/DMZ switch (49px tall beside a 44px search) | the Armory masthead's `.mh-mode` (`data-arm`, `aria-checked`), 44px |
+| `.b3-xt-find` search field | the portal's `.srch` (its magnifier, label and input) |
+| `.b3-xt-chip` jump chips | `.chip.topic`, `--c` driving hover and the pressed tint; no dot, because the section heading carries it |
+| `.b3-xt-cb` tri-state box | the system checkbox `.wg-cb > .cb`, so the board's own p4 checkbox fork applies here too |
+| `.b3-xt-btn` Clear / Undo / Copy | the board's `.b3-btn2 sm`, the pill family the footer already uses |
+
+**Measured with `/verify`, in the running board:** the switch and the search are both 44px; the footer Back label went from 45px / 41px off centre to 43px / 43px (a leading icon's viewBox padding, corrected once in `.dw-f .btn > .ic:first-child`, so it fixes every footer button with an icon); the chips fit their row exactly (586 of 586px). Flows driven: Enter added both HVK-30 builds and cleared the search · Esc cleared it · a no-match search showed the empty result and disabled every chip · Pick all took 35 builds and the meter turned to warn at 5,922 characters · Clear emptied the file and Undo restored 35 · Back returned to the scopes step and its button disappeared · switching to DMZ kept the MP picks and badged both. No console errors.
+
+**Found only by looking at the full-resolution field:** `.srch` positions every `svg` inside it at `left:13px` for its magnifier, so the clear button's × landed on top of the ↵ key. It is fixed by one rule scoped to the search's right-hand group.
+
+Also fixed: the gutter numbers moved from `--ink4` (3.02:1 on `--paper`, recorded in app.css itself) to `--ink3` · the empty state's body to 13px `--ink2` · the first section's top gap closed from ~40px to the chips' 12px rhythm · a reduced-motion rule that still named the deleted field.
+
+**Not changed, and why:** the drawer eyebrow `EXPORT · REVERSIBLE` (9.5px) is chrome on every portal drawer, and where the small-text design applies is Session 4's call (plan §5c, anchor #15). The Download button in the footer was not clicked: it writes a file to disk.
