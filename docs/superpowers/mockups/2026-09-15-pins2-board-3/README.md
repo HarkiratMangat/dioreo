@@ -1399,6 +1399,14 @@ The fade belongs to the BAR, which is the thing that runs out; the label is what
 
 ⚠️ **I FOUND IT BY RUNNING `sweep-screens.cjs`, WHICH I HAD NOT RUN ALL SESSION.** Twelve surfaces exist and I had looked at four, while changing shared CSS that reaches all of them. `verify.cjs` was green every time — it is a BUILD gate, and the memory index already records that a green suite has coexisted with five visible defects.
 
+### And he found a third from the screenshot, without opening the board
+
+**"why is the edit button's container/border so abnormally large?"** — the answer is that my fix for `45bbb9ee` made it so. His thread said the Edit button's TEXT was fixed and its MISALIGNMENT was not; I read "misaligned" as "wrong height" and raised it to `var(--tap)`, 44px, to match the icon button beside it.
+
+⚠️ **`.pb-ib` IS A 44px HIT TARGET WHOSE VISIBLE BOX IS A `::before` INSET 6px.** Its chip is 32 and its touch area is 44 — that is the whole point of the pattern, recorded in `b2.css`. Setting `inset:0` alongside the height made Edit's visible container the full 44, beside a `bpill` measured at 28 and its own sibling at 32. **I matched the property name instead of measuring the row.** Edit takes `.pb-ib`'s own inset now, so it is exactly as tall as the delete button and only its WIDTH differs, because it has a word.
+
+🔴 **SO "28 OF 32 CLOSED" WAS WRONG IN A WAY WORTH STATING PLAINLY: two of those threads I made WORSE, not better.** `1f8d6efa`'s fade erased the label it pointed at, and `45bbb9ee`'s height made the control louder than anything near it. Both are fixed and both were found by LOOKING — one by rendering the surface, one by him glancing at a screenshot. Neither was found by a gate, and `npm test` was green through all of it.
+
 ### Anchor #28 — and I broke it within ten minutes of declaring it
 
 **A negative assertion carries the search that would falsify it, or it does not get written down.** Every worst call of the last two days was a negative nobody checked: *"386×362 against a ~140×22 badge, it will look wrong"* (eight rejected attempts) · *"severity is not encoded"* (retracted in 4c, re-derived by me tonight) · *"`volt.svg` exists nowhere in this kit"* (a published file, 26,005 bytes) · *"`.b3-pc-tape` — element AND rules"* (four rules live) · *"the pointer was settled as no connector at all"* (round 3j). **A positive claim gets tested because someone opens the thing and looks; a negative one never does, because there is nothing to look AT.**
