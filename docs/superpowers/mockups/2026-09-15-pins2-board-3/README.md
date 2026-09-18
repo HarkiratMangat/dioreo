@@ -1594,3 +1594,19 @@ His ask: "aggressive, drastic design improvements, especially the export drawer"
 | Repairs chip | the slot meter repeated its own words and wrapped PHARO's row | text only; the ticket draws the slots |
 
 **Also recorded:** his instruction that phone view and board chrome are not the work; round 4v's phone pass stays because it cost nothing to keep.
+
+## Round 4x — Export's Tiles + file, refined (2026-09-18 14:55 EDT)
+
+His ask: refine the Tiles + file picker hard, drawing on design-critique, interface-design and impeccable's polish, harden, onboard, distill, clarify, typeset, layout, delight and animate. The drawer shell and the scopes step are unchanged. Version 22.
+
+| Lens | What the v21 render showed | Now |
+|---|---|---|
+| Distill | "ASSAULT" in red on each of 20 tiles, a wall of one colour | tiles grouped under their category, which names it once; a tile stays neutral until you pick from it |
+| Layout | 68 equal tiles in one field | the portal's own category chips filter it, on one row that scrolls under a fade; each group has "Pick all N" |
+| Clarify | a bare "2" did not say which build | point at a number and the file answers before any click: what it adds, or which lines it already occupies |
+| Typeset | the file read as styled text | the file is a file: numbered lines across the whole file, the blank line between blocks drawn and numbered, the data face |
+| Harden | one click on Clear lost the selection | "Cleared 6 builds · Undo" for five seconds; Copy puts the text on the clipboard and says Copied; the search names its scope ("125 MP builds") |
+| Onboard | the empty file was grey bars | a real build in the format, faint, above the one action that fills it |
+| Animate | blocks appeared and vanished | a block slides in from the grid's side and the file scrolls to it; a removed block folds; numbers press; the preview rises |
+
+Checked on the render: 7 groups and 68 tiles; the category row stays 32px tall; the chosen chip scrolls into view; Undo restores; the preview shows "adds 9 lines" for a new build and the line range for one already picked.
