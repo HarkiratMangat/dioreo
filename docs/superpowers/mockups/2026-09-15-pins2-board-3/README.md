@@ -1673,3 +1673,22 @@ He asked for `/design:design-critique`, `/design:design-system`, `/verify` and `
 Also fixed: the gutter numbers moved from `--ink4` (3.02:1 on `--paper`, recorded in app.css itself) to `--ink3` · the empty state's body to 13px `--ink2` · the first section's top gap closed from ~40px to the chips' 12px rhythm · a reduced-motion rule that still named the deleted field.
 
 **Not changed, and why:** the drawer eyebrow `EXPORT · REVERSIBLE` (9.5px) is chrome on every portal drawer, and where the small-text design applies is Session 4's call (plan §5c, anchor #15). The Download button in the footer was not clicked: it writes a file to disk.
+
+## Round 5c — every element's geometry, measured (2026-09-18 16:40 EDT)
+
+He was not satisfied with 5b's nitpicking and asked for every element's alignment, spacing, geometry and shape. I dumped the position, size, radius, padding and type of 60 elements from the running drawer, checked each relation, then read five full-resolution crops for what numbers cannot show.
+
+| Relation | Was | Now |
+|---|---|---|
+| Header rule → content, and content → footer | 8px, 16px | 16px, 16px |
+| Chips → first heading · heading → tiles · between sections | 16 · 10 · 22 | 20 · 12 · 28, so each heading sits with its own tiles |
+| Left edge of every catalogue row (field, chips, heading dot, tiles) | 25 / 25 / 26 / 25 | all 25 |
+| Right edge of search, select-all, tiles | 611 / 610 / 611 | all 611 |
+| File card bottom against the catalogue bottom | 659.9 against 663.9 | both 663.9 |
+| Tile padding | 10 / 10 / 10 / 12 | 11 / 12, symmetric |
+| Gutter: number → spine → text | 4px, 15px | 10px, 10px |
+| Download's label to its own edge | 9px side padding | 18px (the `.dw-f .btn` rule, so every footer button) |
+
+Also: the heading's category dot was the board's only square one (every other `--c` dot is round) · the file showed `Build:  Build 3` with two spaces where the file has one, because the key carried `padding-right:.5ch` · the tile name moved from 13.5px to the drawer's 13px step · three colours meant "picked" (green on the mode switch, the category hue on chips, yellow in the system checkbox), so the mode's count went neutral, as a mode has no hue and green reads as success.
+
+Checked and left: the MP button's red bar is an inset shadow and its box ends on the search's bottom edge (279.7px both), even though it reads lower · the ragged right end of the chip row is deliberate, because equal-width chips were ruled out on board 3-A · the eyebrow stays Session 4's.
