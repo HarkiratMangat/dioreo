@@ -1478,3 +1478,15 @@ Four of his messages in ten minutes, each off a picture: the zoomed crop, two sc
 
 **Then a fourth** (2026-09-17 22:52 EDT): the linear fade to zero read as "a cut". The plume he liked was elliptical — its lower rows gave out first, so it thinned INTO the hairline. Rebuilt as an ellipse from the far corner, full height there and tapering onto the border line just before the arc. ⚠️ A radial-gradient size mixing % and px (`calc(100% - 106px)`) is rejected by this browser and silently drops the whole mask, so the reach is computed in JS as `--reach`. Published as **version 13**.
 
+## Round 4p — his tag rule was written into a comment and never applied (2026-09-17 22:58 EDT)
+
+He asked me to state back his Tag style comment (`32fb5a9e`, `5c743f2f`, 2026-09-17 17:51–17:52 EDT): *the slot name coloured, the attachment name white; no bar or side-tab; no pill; a soft-cornered rectangle, and the proposals expand on that container; plus a text-only style.* `board.css` carried that sentence in an 18:26 note — and **three of the five styles still coloured the attachment name**, two of them named "coloured text" for doing it, one of them starred as my pick.
+
+| # | Now |
+|---|---|
+| 30 | One rule after every shell sets the attachment white; measured under all five styles — slot in its hue, attachment `rgb(232,237,241)`, 5px corners |
+| 31 | The options are named for their CONTAINER: Wash · Light wash · Cut in · Text only · Laid on |
+| 32 | The pointer arc is filled with the header's colour on a downward card (his crop showed it grey against a warm header); the body paints the card's ground inside the hairline |
+
+🔴 **A rule stated in a comment is not applied by the comment.** The note was accurate, sat directly above the three rules that broke it, and was read as the fix. Published as **version 14**.
+
