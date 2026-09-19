@@ -1993,6 +1993,14 @@ He read the gridded screenshot and named the lines: the Expand box ends at **y76
 
 **"Nudge both the MP builds and the file name chip towards the right by ~4px, while leaving the rest as is."** Their shared column starts 4px later (48.96 → 52.96), so the name chip's border and the title's ink both sit on **x82**; the count, the chips' right column and every vertical line are unchanged. The 4px came out of the room before the character chip: the name chip may run 8px past its column, so the full name stays (7.4px left before the character chip, was 12).
 
+## 3-E version 39 — the weapon roster; the History day view on lines (2026-09-19 16:42 EDT)
+
+**The weapons you pick from, rebuilt as a system** (after "the same thing wearing different makeup"). The flaw was that a build was a bare numeral, so you chose between opaque numbers and learned what each was only from a hover card. Each category bay is now a **roster**: a line per weapon, a column per build number, a head that names each column (clicking "Build 2" picks every Build 2 in the bay), and each build a key with a face — its number, its claim in words (BEST, TOP 3, META) with a bolt or skull when it carries a second claim, and a **nine-slot signature** in the slot palette, so two builds of one weapon differ at a glance. Kept from his tile rules: the whole row picks, a 2px hue edge when picked, equal-width keys, one height per row. Built on lines: the head and every row share one grid, so every head label sits on its keys' left edge in every bay (measured, one x per column), rows are 50px, the bay head shares the rows' 8px inset. The v29 tiles stay on the Export gate's Weapons switch for comparison. Shot: `local/pins2-board-3/hk-shots/2026-09-19-export-roster.png`.
+
+**History, the day view, on lines.** Measured before: WHO's head sat 35px right of its avatars; every entity began at a different x after "Deleted" or "Added new"; the filter chips began on no table line; the search box stopped short of the table's edge; the action column held a 30px icon beside a 64px word. Now (all measured, one value each): WHO's head on the avatars (894); every entity on one line (326); times right-aligned with their head on one edge (99) so the colons align; the filter chips on the KIND column's line (117); the search box's right edge on the table's (1,120); Undo and Undone one 84px pill each, both ending on that edge. Shot: `local/pins2-board-3/hk-shots/2026-09-19-history-day-view.png`.
+
+**Breadth pass:** the manifest's grouped view and the selection dock looked at with builds selected, and the Broadcast count chip at 22px; nothing out of place. Not reached this round: the manifest's One-table view (its switch was not where the probe looked) and the hover hints.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -2028,3 +2036,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 34 (2026-09-19 15:48 EDT), for Session 5:** board.css ROUND 5R, the file header's final values: padding 12/12, count 70.32px / 4.6 / −3.17 in a 48.5px column, title 24px with a 6.18px left offset, both chips 22px (the character chip through `.b3-cc`, so Broadcast matches), count 67.84px / 4.58 / −3.06.
 
 **Version 37 (2026-09-19 16:05 EDT), for Session 5:** board.css ROUND 5S supersedes the header values of 5R: count 79.24px / 4.98 / −3.57 in a 48.96px column, title `position:relative; top:9.2px; margin-left:−0.63px`.
+
+**Version 39 (2026-09-19 16:42 EDT), for Session 5:** ExportPicker `roster()` with board.css ROUND 5T (the `xtile` fork, default roster), and History (b3/history.js) worded Undo/Undone pills with ROUND 5U's fixed Who and action columns.
