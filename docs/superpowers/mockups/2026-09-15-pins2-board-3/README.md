@@ -1787,3 +1787,16 @@ He picked **C, taper + plume**, and moved it to the row's LEFT border: *"only 1 
 
 Spot positions and timing were checked against the old glow directly: same `--sx`/`--sy` per burst, and the new layer's opacity at each sampled instant equals (lit − rest) / (peak − rest) of the old curve. **CPU with the badges on screen: 1.2% of a core**, unchanged by the extra layer. ⚠️ `.b3-vr` was the first name tried and it already existed as a divider class, which drew a grey bar beside the badge — check a new class against `board.css` before using it. Frame sheet: `local/pins2-board-3/redo/shots/meta-old-vs-new.png`. Comparison page republished as version 2.
 
+## 3-E versions 12–13 — the selection list's weapon header, to his notes (2026-09-18 23:26 EDT)
+
+My `/design-critique` of this header was wrong: I called the shared yellow and the two build references defects, and they are deliberate ("Builds 1–3" names the rows below, "Build 3" the one with a problem, and the range wears the category's accent). He listed the real faults instead.
+
+| His note | Now |
+|---|---|
+| The × in every row: a soft-cornered square, not a circle | `.b3-sd-rows .b3-x` at 6px corners, 28px, ring kept; scoped to the list's rows because `.b3-x` also draws the dock's close button |
+| The problem chip touches the row's top and bottom, sits on the wrong side, needs room before the × | on the right before the ×, 30px from it (the manifest weapon row's own spacing); header height is a toggle he asked for, **44px** (5px above and below the chip) or **48px** (7px), as fork `sdgh` |
+| "Builds 1–3" belongs after SMG, with room | follows the category, 16px after it against 9px between name and category |
+| The spacing between the Build chip, the divider and the badges is off | the divider sits centred: 12px either side in the list header; the same divider on the manifest's weapon row was 20 against 16 and is now 16 and 16 |
+
+**Decisions intaken from the board** (marked on 3-E, read from its store): **p4 B · Soft well** (23:22 EDT, now the default), **p5bg Mesh**, **p5hint Hover card**, **p6 C · Tickets** (22:42 EDT). Each carries a `decided` entry in `gates/picks.js`. The mixed-checkbox hover fault from thread 2aed701d exists in B as well as A, so the checkbox work lands on B.
+
