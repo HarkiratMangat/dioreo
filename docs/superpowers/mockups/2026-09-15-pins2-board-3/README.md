@@ -1819,3 +1819,12 @@ Each thread closed on the rendered page, in the state it names (measured at 1440
 | `444d806a` palette | — | his nine hexes and six mappings as `p2pal: final` (decided); Smoothbore and unknown or blank slots a cool grey `#94A3B3` (his popup pick). The dev database carries none of the six extra slots, so the mappings are unexercised |
 | `23900247` tag style | — | Laid on takes Outline's hue ring |
 
+**Version 15 (2026-09-18 23:46 EDT) — what v14 broke, found only by looking at M1 and M2 whole.** He: *"are you sure everything is corrected? did you take a look at m1 and m2?"* I had measured each thread's element and never looked at either gate as a page.
+
+| Found | Cause | Now |
+|---|---|---|
+| By slot cut off at the manifest's right edge, at every viewport | the icons and All's count widened the tools row 23px past a fixed-width panel; the row is a grid under gates.css, so it cannot wrap | a pixel off each chip's padding and gap, two off each toggle side; the row fits (1014 of 1014) |
+| The Repairs panel shrank to 474px, one lane, so "Two lanes" drew nothing | `container-type:inline-size` on the panel stopped it sizing to its content | removed; the panel is 985px again, two lanes |
+| The slot-palette specimen still showed his two earlier sets | never updated when the palette changed | his 09-18 palette, all fifteen slot names with their swatches |
+| The pass card left the fifth check alone on its own row | a 2-column grid of five | one row of five when wide, one column when narrow; the lanes run to one bottom, the shorter lane's tickets taking the difference under their faults |
+
