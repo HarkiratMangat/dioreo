@@ -2015,6 +2015,12 @@ He read the gridded screenshot and named the lines: the Expand box ends at **y76
 
 **The empty file card** ("wtf is this spacing and alignment??"): with nothing picked the count is a single "0", and the column sized for two digits left a hole between it and the name. An empty file now draws no drop numeral at all — the name chip's edge and "MP builds" both start on the card's own 16px inset, the line the Clear button draws (measured: 16.0 / 16.0 / 16.0).
 
+## 3-E versions 42–43 — the empty file drawn as a state; the tile's keys (2026-09-19 17:42 EDT)
+
+**"You made it worse. STOP PATCHING! AND START DESIGNING!!"** — the empty export file. Hiding the drop numeral (v41) was a patch on a header built for a file that does not exist: a name chip with a name nobody chose, a character chip reading zero, a fold for an empty body. An empty file is a **state**, and is drawn as one now: the mode it will carry, "No builds picked yet", and the one move that ends it, all on the card's own 16px line, with the ghost of a real file behind and the footer quieted. The moment a build lands, the real header takes over.
+
+**The bottom-strip tile (v41) was rejected outright** — "wtf is that???", the whole direction — with what a tile must show at a glance named in his answer: the weapon and its builds, what each build IS, and what is picked. v43 keeps the shape he has asked for twice and puts the work in the keys: 34px keys under the name, a ranked build carrying its own mark and a wash of its rank's hue (gold best, violet top, cyan meta, green toxic), and a picked key filled **solid** in the weapon's hue with the tile following — 2px edge, tinted ground, name in hue. LMG bay 329px. The strip tile, roster, index, cloud and bands are all withdrawn.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -2054,3 +2060,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 39 (2026-09-19 16:42 EDT), for Session 5:** ExportPicker `roster()` with board.css ROUND 5T (the `xtile` fork, default roster), and History (b3/history.js) worded Undo/Undone pills with ROUND 5U's fixed Who and action columns.
 
 **Versions 40–41 (2026-09-19 17:36 EDT), for Session 5:** the picker's `tile2()` with board.css ROUND 5W, and ROUND 5X's empty-file header (`.b3-xf-none`). The index/cloud/bands/roster branches are withdrawn from `xtile` and their CSS rounds (5T, 5V) are dead; do not port them.
+
+**Version 43 (2026-09-19 17:42 EDT), for Session 5:** the picker's `tile3()` with board.css ROUND 5Y, and ROUND 5Z's empty-file header (`.b3-xf-h0`, rendered instead of the file header when the file is empty).
