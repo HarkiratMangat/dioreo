@@ -1903,6 +1903,28 @@ Now every gap reads its number to within ±0.25px. Two sit at +0.25, the code �
 
 Also: "make the 'X builds' text slightly larger" → **13px**, one step up from 12.5. "The 'clear all X' hint still isn't centered" → a short hint's box was narrower than its 120px outline, and the caps title's trailing tracking pushed its ink left. Every hint is now at least 120px wide and its title drops the trailing tracking, so the ink sits **0.11px** from centre.
 
+## 3-E version 28 — Laid on decided; Repairs and Export refined (2026-09-19 11:09 EDT)
+
+**Tags.** "Let's do Laid On but keep and document the code for the Outline style." `p2sty` is decided `neutralbg` (default and a `decided` entry); the Outline rules stay in `board.css` under a KEPT ON PURPOSE note.
+
+**Repairs** — his list, then the same classes found beside it:
+- "Show build" is gone; every repair action is the green **Repair build** (tickets, By problem, the table). "Show in the manifest" in the table's detail went with it (same action).
+- "touched 2mo" → **Last edit: 2 months ago** (the long form of `ago()`); the table head says "Last edit"; the aged chip reads "106 with no edit in 90 days".
+- "A clean day… why is it a square?" The Armory panel sat centred at its content's width — 985px with tickets, **470px** on a clean day, where the pass tile's container query then stacked its five checks. It spans the stage (1046px) on both days now.
+- By severity: the section heads were micro grey caps. Each is a heading at reading size with the severity's icon in its well (lock / triangle) and the count as a pill; each ticket's own severity chip steps aside there, because it repeated the heading.
+- "Age, not a fault", "of 125 · MP", and — the same class — the header's "unshareable first · MP" are gone.
+- The shield-and-check mark now sits on the Repairs tab's all-pass state and on the pass tile's header, so it reads as the list's "passes every check".
+- The pass tile's five checks hold one line each ("Code matches the build" wrapped).
+
+**Export** — his list, then the rest:
+- The whole tile picks: a click anywhere that is not a build chip picks or unpicks the weapon; the chips stop the click; the name stays the keyboard's button. Hovering a tile previews it: every unpicked chip lights.
+- **Pick all** beside the search: every build the mode and search show, with the same checkbox and count as the category bays.
+- One character chip everywhere: `CharCount` in `gates/lib.js`, used by the file and by the Broadcast card — "3,951 characters", the limit drawn as a fill line along the chip's bottom edge and named in its tooltip, warn near the limit.
+- Only one file open at a time; both may be shut. A shut file's body no longer leaves its top rule on the footer's dashed one.
+- The file's name is editable in place (the `.txt` is fixed; a typed .txt, illegal characters and an empty name are handled; focusing selects it). The header is identity left — count, mode, name — and capacity right, down from two stacked chips.
+- A picked tile's edge is 2px in the weapon's hue (tint unchanged). The weapon name is 14.5px, with the picked count ("2/3") or the build count on its right; every build numeral has the same box, so "1" and "3" make the same chip; tiles in a row share a height.
+Checked by driving the page: a blank-space click picked PP19 BIZON (3/3); Pick all built six files; expanding one shut the other five; renaming to "my-mp-export.txt" gave `my-mp-export.txt`. No console errors.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
