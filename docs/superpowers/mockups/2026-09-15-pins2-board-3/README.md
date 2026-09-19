@@ -1967,16 +1967,17 @@ His queue from before the compact, each measured before it was changed. His desi
 
 **"Not the reveal version, use the version from the manifest header row."** The file header's fold is now the manifest's Collapse all / Expand all button (`.wg-fold`): its Fold mark and its word always shown, in the same raised 34px box, the box's right edge on the character chip's (0). The second row, the numeral (0.0–0.5 on the ink) and the 16px insets are unchanged from v32. The tuner draws the same button, with its text size, icon, gap and padding on sliders.
 
-## 3-E version 34 — his header numbers, refined on the ink (2026-09-19 15:48 EDT)
+## 3-E versions 34–35 — his header numbers, refined on the ink (2026-09-19 15:48 EDT)
 
 He set the header on the tuner from his phone and asked for the numbers to be nudged true. His values (padding 12/12, count 69.7px at 6.4 down, its column 48.5, "MP builds" at 24px nudged 2.5 right, name chip 22 tall), then what each became:
 
 | His value | Measured with it | Now |
 |---|---|---|
-| Count 69.7px, 6.4 down | cap top 2.1px below the chips' top line, foot 1.6px below the title's baseline | **70.32px, 4.6 down**: cap on the chips' line (±0.3 by digit), foot on the baseline (−0.2) |
+| Count 69.7px, 6.4 down | cap top 2.1px below the chips' top line, foot 1.6px below the title's baseline | **67.84px, 4.58 down** (re-solved for the 22px row): cap on the chips' line, foot on the title's baseline |
 | Title nudge +2.5 | title ink 3.1px right of the name chip's edge and 3.7px short of the name's text | **+6.18**: title ink on the file name's text (0), one left line for both names |
 | (no change) | count's ink 0.5–1.2px off the Clear button's edge, since its bearing grows with size | **left −3.17**: ±0.4 by digit |
-| Padding 12/12, name chip 22, column 48.5, title 24px | chips 12 from the top, fold box 12 from the seam, name chip centred on the character chip (0) | kept as given |
+| Padding 12/12, column 48.5, title 24px | chips 12 from the top, fold box 12 from the seam | kept as given |
+| Name chip 22 tall | 2px shorter than the character chip | **Both chips 22** (his: "Both should be 22px, not 24"): the character chip is set to 22 on its own class, `.b3-cc`, so Broadcast's copy is 22 too and the two stay one chip; both on the 12px line |
 
 Header height is 90px. The tuner now opens on these values.
 
@@ -2012,4 +2013,4 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 
 **Version 33 (2026-09-19 15:24 EDT), for Session 5:** the file header's fold is `.wg-fold` with `Fold` and a word, the manifest header row's control (v32's `.wg-fbtn` is superseded).
 
-**Version 34 (2026-09-19 15:48 EDT), for Session 5:** board.css ROUND 5R, the file header's final values: padding 12/12, count 70.32px / 4.6 / −3.17 in a 48.5px column, title 24px with a 6.18px left offset, name chip 22px centred on row 1.
+**Version 34 (2026-09-19 15:48 EDT), for Session 5:** board.css ROUND 5R, the file header's final values: padding 12/12, count 70.32px / 4.6 / −3.17 in a 48.5px column, title 24px with a 6.18px left offset, both chips 22px (the character chip through `.b3-cc`, so Broadcast matches), count 67.84px / 4.58 / −3.06.
