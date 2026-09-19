@@ -1752,3 +1752,11 @@ His report, with a screenshot: the scroll fix *"messed up the problem container 
 He asked for the problem card's elliptical fade on the manifest row's right-edge hazard strip, top and bottom. The strip is now masked by an ellipse anchored on the border line (`farthest-side` at 100% 50%, since this browser rejects an ellipse size mixing px and %), so it runs full width through the middle of the row and thins into the border toward both ends instead of stopping on a flat cut. The same rule covers the selection list's edge variant, which draws the same strip.
 
 **Version 5 (2026-09-18 20:06 EDT):** *"that doesn't look smooth. it feels abrupt."* It held full strength to 74% of the ellipse and dropped out over the last quarter, and the ellipse was only as wide as the 4px strip, so the band was thinning even at the middle. The pseudo is 8px now with the hatch in its right 4px, so the strip stays full width over the middle half of the row and eases out over the whole outer half through five stops, thinning and dimming together.
+
+## 3-E version 6 — three fixes from his review (2026-09-18 20:15 EDT)
+
+| His words | Cause | Fix, measured |
+|---|---|---|
+| v5's fade: *"not a fan. do it better."* then *"add all as a toggle… for C, make the fade start earlier… it should be fading to 0"* | I was guessing at a shape twice | Board toggle `hzf` (A taper · B plume · C taper + plume · D wedge). C's brightness now falls from the row's centre line, eased, and reaches nothing where the taper closes |
+| *"when it opens, it opens based on wherever the button's position was before, then snaps onto it after scrolling"* | The card mounts one render after `open`; the placement effect ran on `[open]`, found no card, and the card painted at the PREVIOUS open's `fix` until a scroll re-placed it | The effect runs on `[open, mounted]`, `fix` is cleared on close, and a pinned card without a position is hidden. Measured on a second open at a different chip: 8px below its chip from the first frame |
+| *"in the container, the hazard strip is inside the border… on the button, it sits on top of the border"* | The chip's border is an inset box-shadow, which its own `::before` paints over | The strip is inset by the ring's 1px and rounded to the inner radius; where the chip opens into its card that edge has no ring, so the strip runs to it |
