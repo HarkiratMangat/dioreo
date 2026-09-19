@@ -1963,6 +1963,10 @@ His queue from before the compact, each measured before it was changed. His desi
 - The second row is that 34px box: 8px under the chips, 16px above the dashed seam, as the chips are 16px below the top. "MP builds" is centred on the box, and the drop numeral was re-solved to span from the name's cap to the title's baseline (56.5px, within 1px on the ink), with its column widened so the title stays **14px** from the count. The header is 98px tall (it was 80 with the borderless button).
 - b2.css and gates.css are back to their own selectors. The tuner draws the manifest fold too.
 
+## 3-E version 33 — the fold is the manifest header row's (2026-09-19 15:24 EDT)
+
+**"Not the reveal version, use the version from the manifest header row."** The file header's fold is now the manifest's Collapse all / Expand all button (`.wg-fold`): its Fold mark and its word always shown, in the same raised 34px box, the box's right edge on the character chip's (0). The second row, the numeral (0.0–0.5 on the ink) and the 16px insets are unchanged from v32. The tuner draws the same button, with its text size, icon, gap and padding on sliders.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -1992,3 +1996,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 31 (2026-09-19 14:42 EDT), for Session 5:** the file header's order (name, then title on the numeral's baseline), the fold rendered as `.pb-exp` with b2.css `.pb-enc .pb-exp` and gates.css `.g-card .pb-exp:hover` widened to `.b3-xf-h .pb-exp`, and the character chip with no header-specific overrides.
 
 **Version 32 (2026-09-19 15:18 EDT), for Session 5:** v31's `.pb-exp` in the file header is replaced by the manifest's `.wg-ib.wg-fbtn` with `Fold`; the b2.css/gates.css widenings listed under v31 are reverted and must NOT be ported.
+
+**Version 33 (2026-09-19 15:24 EDT), for Session 5:** the file header's fold is `.wg-fold` with `Fold` and a word, the manifest header row's control (v32's `.wg-fbtn` is superseded).
