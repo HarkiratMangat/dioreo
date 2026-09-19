@@ -1750,3 +1750,5 @@ His report, with a screenshot: the scroll fix *"messed up the problem container 
 ## 3-E version 4 — the row's hazard edge tapers at both ends (2026-09-18 20:05 EDT)
 
 He asked for the problem card's elliptical fade on the manifest row's right-edge hazard strip, top and bottom. The strip is now masked by an ellipse anchored on the border line (`farthest-side` at 100% 50%, since this browser rejects an ellipse size mixing px and %), so it runs full width through the middle of the row and thins into the border toward both ends instead of stopping on a flat cut. The same rule covers the selection list's edge variant, which draws the same strip.
+
+**Version 5 (2026-09-18 20:06 EDT):** *"that doesn't look smooth. it feels abrupt."* It held full strength to 74% of the ellipse and dropped out over the last quarter, and the ellipse was only as wide as the 4px strip, so the band was thinning even at the middle. The pseudo is 8px now with the hatch in its right 4px, so the strip stays full width over the middle half of the row and eases out over the whole outer half through five stops, thinning and dimming together.
