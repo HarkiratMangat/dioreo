@@ -1955,6 +1955,14 @@ His queue from before the compact, each measured before it was changed. His desi
 - **The weapon tile.** He rejected v30's three options: "all equally shit… the same thing wearing different makeup." The fork and its CSS (ROUND 5P) are withdrawn and the tile is back to v29's while a structural redesign is worked out.
 - **A tuner for this card, for his phone:** [Export Card Tuner](https://claude.ai/artifact/T344VRN1LYzbaensyu8TYF), every header, chip, button and footer measurement on a slider at the portal's own size, with the changes listed to copy or saved to the page's store (`tweaks/latest`) for me to read. Source: `local/pins2-board-3/export-card-tuner.html`.
 
+## 3-E version 32 — the file header's fold is the manifest's (2026-09-19 15:18 EDT)
+
+**"Why use the collapse/expand button from the broadcast gate instead of standardizing the refined one from the manifest??"** He was right, and it was the second time: on 2026-09-17 10:45 EDT he had said "use the version from the manifest weapon rows" and board.css already records that I read it as "build that". v31 took Broadcast's Show all button because my search for the fold mark found the Broadcast card first, and I never opened the manifest, the surface this whole session refined.
+
+- The fold is now the manifest weapon row's `.wg-ib.wg-fbtn`: the morphing Fold mark in its 34px box, the word opening on hover on the track that animates its real width. No header-specific look; only its grid placement is local.
+- The second row is that 34px box: 8px under the chips, 16px above the dashed seam, as the chips are 16px below the top. "MP builds" is centred on the box, and the drop numeral was re-solved to span from the name's cap to the title's baseline (56.5px, within 1px on the ink), with its column widened so the title stays **14px** from the count. The header is 98px tall (it was 80 with the borderless button).
+- b2.css and gates.css are back to their own selectors. The tuner draws the manifest fold too.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -1982,3 +1990,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 30 (2026-09-19 14:27 EDT), for Session 5:** the ExportPicker's `spy()` and `jump()` (a reading line on screen, a click lock released on `scrollend`), `toggleShut()` scrolling an opened file into view, `data-fk` on each file card, and board.css ROUND 5O (the header's rows, the one-property fold) and ROUND 5P (the tile options, once he picks one).
 
 **Version 31 (2026-09-19 14:42 EDT), for Session 5:** the file header's order (name, then title on the numeral's baseline), the fold rendered as `.pb-exp` with b2.css `.pb-enc .pb-exp` and gates.css `.g-card .pb-exp:hover` widened to `.b3-xf-h .pb-exp`, and the character chip with no header-specific overrides.
+
+**Version 32 (2026-09-19 15:18 EDT), for Session 5:** v31's `.pb-exp` in the file header is replaced by the manifest's `.wg-ib.wg-fbtn` with `Fold`; the b2.css/gates.css widenings listed under v31 are reverted and must NOT be ported.
