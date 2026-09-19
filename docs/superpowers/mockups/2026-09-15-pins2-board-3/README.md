@@ -1746,3 +1746,7 @@ His report: *"i can't scroll up/down on the manifest when my mouse pointer rests
 ## 3-E version 3 — the problem card stopped following its chip (2026-09-18 20:03 EDT)
 
 His report, with a screenshot: the scroll fix *"messed up the problem container pop-up's anchoring to the button. it doesn't move attached to the button anymore."* The fix exposed a gap rather than causing one: an open problem card inside a scroller is `position:fixed`, and `place()` re-ran only on `<main>`'s scroll. The manifest scrolls its own `.panel`, and once the wheel over the tag cells reached that panel the rows moved and the card stayed put. `ProblemChip` now listens for a scroll from ANY element (a capturing listener on the document, one placement per frame), and closes the card when its chip leaves its scroller rather than leaving it hanging over other rows. Measured in a real browser: the panel scrolled 120px, the chip moved from 427 to 307, and the card stayed 40px below it throughout.
+
+## 3-E version 4 — the row's hazard edge tapers at both ends (2026-09-18 20:05 EDT)
+
+He asked for the problem card's elliptical fade on the manifest row's right-edge hazard strip, top and bottom. The strip is now masked by an ellipse anchored on the border line (`farthest-side` at 100% 50%, since this browser rejects an ellipse size mixing px and %), so it runs full width through the middle of the row and thins into the border toward both ends instead of stopping on a flat cut. The same rule covers the selection list's edge variant, which draws the same strip.
