@@ -1848,3 +1848,18 @@ Also from 3-D thread 1e4a1512: the list header's category is now FULL CAPS at th
 
 **Version 18 (2026-09-19 00:22 EDT) — L1, the selection list spacing lab.** *"give me this selection bar list view, both by weapon and by table, as an interactive playground so i can literally spoonfeed you the literal correct horizontal spacing of each of these elements in the rows since you still can't get it right."* A new first gate on 3-E: 24 sliders in three groups (the weapon header · a build row By weapon · a build row in One table), each driving a CSS variable that the REAL list rules read (board.css "ROUND 5J"), over the real selection list with five builds (two with problems), both views switchable; presets, Copy, and Save for Claude (writes `spacing/list` to the board's store). The rows became subgrids with no column gap and a leading margin per cell, so every gap is its own number and the columns still line up; defaults reproduce v17 exactly (measured: number→attachments 18–20, code→triangle 18, triangle→image 18, image→× 18). ⚠️ A subgrid's own `column-gap` overrides its parent's — the first cut doubled every gap until both were zeroed.
 
+## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
+
+The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
+
+| File | Change |
+|---|---|
+| `ui/manifest.js` | `toggleAll`: any shown selection → clears the SHOWN ids only; none → adds them to the existing selection (it used to replace it) · `FilterChips`: the All chip carries the sum of the chips' counts; each label in `<span class="cl">` |
+| `ui/armory.js` | weapon-group checkbox: mixed clears (`setMany(ids, !allSel && !someSel)`) · List / By slot carry `list` / `columns-3` icons · `slotVar` falls back to `--sl-unknown`, and every slot (not only the nine) gets `--sl` |
+| `ui/icons.js` | `list`, `columns-3` added to the sprite |
+| `b3/armory-parts.js` (board parts Session 5 ports) | `SelectAllBox` one-line hint, mixed clears · `Hint` rebuilt on `pcPath` (centred, glow path) · the list's `namedG` / `anyWarn` classes · the weapon header's chip order |
+| `b3/repairs.js` | `agoShort`, `.pb-pill` age chip, ticket layouts (`p6lay`), the pass card |
+| `b3/board.css` | rounds 5G–5J: `.b3-btn2` soft rectangles board-wide and ringed ghost buttons (**his call: the whole control family now**, which touches plan §5c.3b), the lit ring on every `.seg` pressed segment, the list's subgrid + variable spacing, the hint's dioreo.app look |
+
+**Honest state before the compact:** summaryShape for this session reads 261 mid-run-prose messages, finals p90 5,212 characters, 93 over budget. The kit's code graph could not be re-indexed (daemon coordination refused); the handoff carries the retry.
+
