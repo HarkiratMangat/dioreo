@@ -1866,6 +1866,12 @@ His ask, both views of the list: the image mark becomes "something that implies 
 
 His words: "in the selection bar's list's weapon rows, let's remove the problem chip since the triangle mark serves the purpose. and shrink its height from 48px to 44px." Done in `SelectionDock`'s grouped header: each build with a problem already carries the triangle, and hovering it opens the same problem card. The header is 44px in `board.css`, `state.js` and the `sdgh` decision in `picks.js`. L1 loses its "Problem chip → ×" row. Measured: all four headers are 44px with no chip, and the row marks are unchanged at 18.1–18.25px to the copy icon and 17.9–18.05px to the ×.
 
+## 3-E version 24 — the list's rows centred on their capitals, the first row uncovered, the groups apart (2026-09-19 10:16 EDT)
+
+1. **"Fix the middle vertical alignment of the elements inside the rows."** Measured with each font's own cap height, relative to the row's centre: the numeral sat at 0, the copy icon, mark and × at 0. The capitals of every attachment tag sat **0.9px above** the tag's centre (the slot key 0.7px), and the gunsmith code sat **0.4px** above the row's. Cause: the list's tags are 24px tall with a 1× line-height, and Space Grotesk and JetBrains Mono carry more ascent than descent. Top padding inside the fixed height moves them down; the copy icon is pulled back up by the same amount. Now: tag value −0.03px, key +0.17px, code −0.01px, icon 0. The manifest's 28px tags already measured within 0.2px, and the same padding pushed them 0.7px low, so the fix is scoped to the list's tags.
+2. **"That top build row gets slightly cut off at the top by the weapon name row."** The weapon header, under the Mesh ground, carried a drop shadow (`0 6px 18px -10px`) that fell about 14px onto the first build row. It is gone; the header's ring and solid ground still separate a row sliding under it.
+3. **"Add a ~5-10 pixel padding below the last build row and the next weapon row."** The groups sat 6px apart; they are now **14px**.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
