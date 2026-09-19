@@ -1828,3 +1828,19 @@ Each thread closed on the rendered page, in the state it names (measured at 1440
 | The slot-palette specimen still showed his two earlier sets | never updated when the palette changed | his 09-18 palette, all fifteen slot names with their swatches |
 | The pass card left the fifth check alone on its own row | a 2-column grid of five | one row of five when wide, one column when narrow; the lanes run to one bottom, the shorter lane's tickets taking the difference under their faults |
 
+**Version 16 (2026-09-19 00:06 EDT) — nine things he found in five seconds that I had not.**
+
+| His note | Cause | Now (measured) |
+|---|---|---|
+| Manifest weapon row's text misaligned | baseline-aligned to the 22px badges, the words rode ~4px above the row's centre | name, category, checkbox and badges share the row's centre (0px off each) |
+| The 7 in Assault misaligned | a 9.5px count beside 13px words can match their centre but neither their top nor their baseline | count at 12px, figures at the words' cap height; tools row still fits (1014 of 1014) |
+| Checkbox hint ugly, poorly spaced, no glow | — | dioreo.app's `.tipx` style (ink-9%-into-desk surface, ink-24% hairline, 4px accent halo, drop, mono uppercase tracked) on our arc and motion; opaque, since an SVG fill cannot take the site's backdrop blur |
+| Tags don't light on row hover in the list | the lift rule named manifest rows only | `.b3-sd-r`/`.b3-sd-tr` hover lifts the ring (0.44 → 0.66) |
+| Stage deletion hint off to the side | the hint was placed pointer-first from its left | every hint centred over its anchor (card centre = button centre, 1101 = 1101) |
+| List build-row spacing never corrected (3-D threads 1615b327, cd53517e) | a triangle track reserved when no listed build had a problem | no problem in the list → no track, code→image 18px; with one → code column → triangle → image at 18px each |
+| "Xbuilds" still attached | one p10 treatment set the count's gap to 0 | 8px in every treatment |
+| Builds chip │ badges uneven (32 vs 29 at 2x) | the divider is a 1px inset line inside the badges' padding | 12px │ 12px; the manifest row's 16 │ 16 the same way |
+| The list lost the problem chip | not lost: his selection held PP19 BIZON Build 1, and the fault is on Build 3 | the header chip appears for the selected builds that have one (checked with JAK-12 Build 1) |
+
+Also from 3-D thread 1e4a1512: the list header's category is now FULL CAPS at the Builds chip's weight — its rule targeted `.b3-sd-gh > small` while the small sits inside `.b3-nw`.
+
