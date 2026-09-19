@@ -1848,6 +1848,10 @@ Also from 3-D thread 1e4a1512: the list header's category is now FULL CAPS at th
 
 **Version 18 (2026-09-19 00:22 EDT) — L1, the selection list spacing lab.** *"give me this selection bar list view, both by weapon and by table, as an interactive playground so i can literally spoonfeed you the literal correct horizontal spacing of each of these elements in the rows since you still can't get it right."* A new first gate on 3-E: 24 sliders in three groups (the weapon header · a build row By weapon · a build row in One table), each driving a CSS variable that the REAL list rules read (board.css "ROUND 5J"), over the real selection list with five builds (two with problems), both views switchable; presets, Copy, and Save for Claude (writes `spacing/list` to the board's store). The rows became subgrids with no column gap and a leading margin per cell, so every gap is its own number and the columns still line up; defaults reproduce v17 exactly (measured: number→attachments 18–20, code→triangle 18, triangle→image 18, image→× 18). ⚠️ A subgrid's own `column-gap` overrides its parent's — the first cut doubled every gap until both were zeroed.
 
+## 3-E version 20 — the selection list's weapon header is 48px (2026-09-19 09:22 EDT)
+
+He marked **48px** as decided on the board at 00:21 EDT (`decisions/sdgh`), after the handoff had listed it as open. 48 is now the header's only height: `state.js` defaults `sdgh` to `48`, `picks.js` records the decision, and `board.css` round 5G drops the 44px rule, so a browser still holding the old 44 pick draws 48 as well. Looked at in a render with five builds selected (two with a problem): every header measures 48px and the problem chip keeps 7px above and below. His L1 spacing values were **not** in the store (`spacing/list` is empty), so no spacing changed in this version.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
