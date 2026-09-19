@@ -1948,6 +1948,13 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 | `b3/armory-parts.js` (board parts Session 5 ports) | `SelectAllBox` one-line hint, mixed clears · `Hint` rebuilt on `pcPath` (centred, glow path) · the list's `namedG` / `anyWarn` classes · the weapon header's chip order |
 | `b3/repairs.js` | `agoShort`, `.pb-pill` age chip, ticket layouts (`p6lay`), the pass card |
 | `b3/board.css` | rounds 5G–5J: `.b3-btn2` soft rectangles board-wide and ringed ghost buttons (**his call: the whole control family now**, which touches plan §5c.3b), the lit ring on every `.seg` pressed segment, the list's subgrid + variable spacing, the hint's dioreo.app look |
+| `ui/icons.js` (v22) | `shield-check` added — the list's "passes every check" mark |
+| `ui/armory.js` (v26) | a code-length mismatch marks the attachments past the code's last pair (`.nocode`) in the manifest's rail and slot cells |
+| `b3/armory-parts.js` (v21–v27) | `ProblemChip tone="ok"` (the --ok card, `PASS_LINES` exported, `passLines`) · one mark per list row in both views · the card's right edge reaches ≥44px past a small chip so the pointer lands on it · list header without a problem chip · `.codeoff` row + `.nocode` tags · table head "Weapon & Build" / "Status" · the stage-deletion `Hint` drawn as a stage track (`.b3-hs`) |
+| `b3/repairs.js` (v28–v29) | "Repair build" everywhere, "Show build" gone · "Last edit: …" · By severity headings (`.b3-tk-sh`) · shield on the pass tile, no "PASSES" chip · no "of N · MP" / "unshareable first" / "Age, not a fault" |
+| `gates/lib.js` (v28) | `CharCount` — ONE character chip (Broadcast card + Export file); warn from 3,600; the portal's `ui/broadcast.js` and export panel take it · the Repairs tab's all-pass mark is `shield-check` |
+| `gates/armory.js` ExportPicker (v28–v29) | whole-tile picking · Pick all · one open file at a time · renameable file name (text chip at rest, field while renaming, `.txt` fixed) · the header on a type grid with the drop numeral |
+| `b3/board.css` rounds 5L–5N and the v23–v29 blocks | one-mark list rows, cap-centred tags and code, group spacing, L1 vertical + top-line variables, Laid on default, Outline KEPT, Repairs + Export refinement |
 
 **Honest state before the compact:** summaryShape for this session reads 261 mid-run-prose messages, finals p90 5,212 characters, 93 over budget. The kit's code graph could not be re-indexed (daemon coordination refused); the handoff carries the retry.
 
