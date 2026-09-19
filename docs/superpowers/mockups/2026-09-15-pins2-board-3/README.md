@@ -1883,6 +1883,26 @@ His words: "in the selection bar's list's weapon rows, let's remove the problem 
 
 His words, on JAK-12 build 1: "the problem is 'code disagrees with the build'… yet there's no indicator in the actual build row… make the gunsmith code in the warn text + squiggly underline, and style the attachments which don't agree with the code in a 'problem' design." The list's code now takes the near-duplicate's warn squiggle in both views; the manifest's `.wg-ct.bad` already had it. An attachment past the code's last pair (the code's four pairs against the build's five attachments here: Ammunition 8-R Dragon's Breath) keeps its name and slot word, but trades its slot ring for a dashed warn ring over a faint hazard hatch, with the title "not in the gunsmith code". The same rule applies wherever the build's tags are drawn: both list views, and the manifest's rail and slot cells (`ui/armory.js`, a Session 5 port). **Seen, not built:** in the list the flagged tag is the LAST one, so the attachments column's fade half-hides it (the table shows only "AMMU").
 
+## 3-E version 27 — his L1 spacing is the default, and every number reads true on the ink (2026-09-19 10:41 EDT)
+
+He pasted the lab's prompt. Changed values, now the defaults in `LAB_GROUPS` and in every `var(--x, default)` in `board.css`:
+
+| Group | Values (was → now) |
+|---|---|
+| Top line | edge → icon 19 → **26** · toggle → edge 14 → **10** |
+| Weapon header | edge → name 14 → **16** · category → Builds chip 16 → **18** · × → edge 8 → **16** |
+| Row · By weapon | edge → number 12 → **7** · number → attachments 18 → **30** · attachments → code 18 → **30** · code → mark 18 → **20** · mark → × 18 → **30** · × → edge 8 → **16** |
+| Row · One table | rail 5 → **9** · edge → number 22 → **30** · number → weapon 18 → **20** · weapon → attachments 18 → **30** · attachments → code 18 → **30** · code → mark 18 → **20** · mark → × 18 → **30** · × → edge 8 → **16** |
+| Vertical | weapon row → first tags 10 → **12** · last tags → next weapon row 24 → **20** |
+
+**Measured on the ink after applying, and six of his numbers did not read true**, so each got the compensation it needed:
+- The build numeral's box had an **11px left padding** and sat centred in its column, so "edge → number" read 20.7 against his 7. The box is the glyph now and starts the column (`padding-left:0; justify-self:start`).
+- The remaining gaps are corrected for the digits' and letters' side bearings: edge → number −.73, number → attachments −.95, number → weapon −1.46, attachments → code −1.02 more (−10.02 in total with the 9px button padding), edge → name −.6, category → Builds chip −1.79.
+
+Now every gap reads its number to within ±0.25px. Two sit at +0.25, the code → mark gap over the shield, and number → attachments after a "1" reads 34, because the column is sized to the widest digit. The table head's "Weapon & Build" starts at x=209.99, with the numerals at 209.97–210.2.
+
+Also: "make the 'X builds' text slightly larger" → **13px**, one step up from 12.5. "The 'clear all X' hint still isn't centered" → a short hint's box was narrower than its 120px outline, and the caps title's trailing tracking pushed its ink left. Every hint is now at least 120px wide and its title drops the trailing tracking, so the ink sits **0.11px** from centre.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
