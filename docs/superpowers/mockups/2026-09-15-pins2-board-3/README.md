@@ -1981,6 +1981,10 @@ He set the header on the tuner from his phone and asked for the numbers to be nu
 
 Header height is 90px. The tuner now opens on these values.
 
+## 3-E version 36 — the title's M on the file name's d (2026-09-19 15:52 EDT)
+
+**"These should be aligned…"**, with a zoomed phone shot of the name's "d" over the title's "M". On the pixels at 4x the M's stem sat **0.1px left** of the d's bowl in Chrome (the earlier 0 was a text-metrics number, not the pixels), and more on his phone, where a straight stem beside a round bowl reads further left still. The title moves 0.4px right (6.18 → 6.58) so the stem sits on the bowl; the tuner starts there too.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
