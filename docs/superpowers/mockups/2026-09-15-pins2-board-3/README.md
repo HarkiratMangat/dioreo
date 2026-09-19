@@ -1985,6 +1985,10 @@ Header height is 90px. The tuner now opens on these values.
 
 **"These should be aligned…"**, with a zoomed phone shot of the name's "d" over the title's "M". On the pixels at 4x the M's stem sat **0.1px left** of the d's bowl in Chrome (the earlier 0 was a text-metrics number, not the pixels), and more on his phone, where a straight stem beside a round bowl reads further left still. The title moves 0.4px right (6.18 → 6.58) so the stem sits on the bowl; the tuner starts there too.
 
+## 3-E version 37 — the file header on his grid lines (2026-09-19 16:05 EDT)
+
+He read the gridded screenshot and named the lines: the Expand box ends at **y76**, so "MP builds" sits on y76; the count's top touches **y12**, its left **x16**, its bottom **y76**; the title's left touches **x78**, the name chip's border. ("Was that seriously so complicated to figure out yourself?" No — each line was already on the grid.) Measured: count cap 12.0–12.6 by digit, foot 76.0, ink 15.6–16.4; title baseline 76.0, ink 78.0; name chip 78.0. The count is 79.24px in a 48.96px column; the title keeps its row and sits 9.2px lower. Grid shot: `local/pins2-board-3/hk-shots/2026-09-19-export-header-grid-v37.png`.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -2018,3 +2022,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 33 (2026-09-19 15:24 EDT), for Session 5:** the file header's fold is `.wg-fold` with `Fold` and a word, the manifest header row's control (v32's `.wg-fbtn` is superseded).
 
 **Version 34 (2026-09-19 15:48 EDT), for Session 5:** board.css ROUND 5R, the file header's final values: padding 12/12, count 70.32px / 4.6 / −3.17 in a 48.5px column, title 24px with a 6.18px left offset, both chips 22px (the character chip through `.b3-cc`, so Broadcast matches), count 67.84px / 4.58 / −3.06.
+
+**Version 37 (2026-09-19 16:05 EDT), for Session 5:** board.css ROUND 5S supersedes the header values of 5R: count 79.24px / 4.98 / −3.57 in a 48.96px column, title `position:relative; top:9.2px; margin-left:−0.63px`.
