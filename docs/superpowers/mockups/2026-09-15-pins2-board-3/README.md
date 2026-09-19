@@ -2001,6 +2001,20 @@ He read the gridded screenshot and named the lines: the Expand box ends at **y76
 
 **Breadth pass:** the manifest's grouped view and the selection dock looked at with builds selected, and the Broadcast count chip at 22px; nothing out of place. Not reached this round: the manifest's One-table view (its switch was not where the probe looked) and the hover hints.
 
+## 3-E versions 40–41 — three compact pickers, his verdict, and the tile rebuilt (2026-09-19 17:36 EDT)
+
+**The roster was rejected** ("i don't like the roster… propose 2-3 genuinely new designs that remain compact"), so three were built and shown, each keeping the bays, Pick all and the scrollspy, each measured on the LMG bay (the roster was 510px, v29's tiles 339):
+
+| Option | What it was | His verdict |
+|---|---|---|
+| Index (317px) | A weapon as a line of type: name, dotted leader, builds as numerals with their claim beside them | "wastes too much space" |
+| Cloud (136px) | Each weapon one small unit, units wrapping like words; a claim as a dot on the key | "feels terrible to use and is super messy" |
+| Bands (215px) | The bay grouped by what a build IS — Best, Top ranked, Meta, Everything else — one chip per build | "feels noisy" |
+
+**"I still want tiles, but I want them drastically better."** v41 rebuilds the tile: three to a row, 70px each, and the builds stop floating in the tile's empty middle — they are the tile's **bottom edge**, one segmented strip flush to three sides with a hairline between segments, each segment an equal key. A claim rides its segment as a **3px cap** in the badge hue (gold best, violet top, cyan meta, green toxic), so a build's rank reads without a word, a glyph or a hover, and the "2 builds" line is gone because the strip counts itself. The LMG bay is **298px**, the shortest of anything shown, and the tiles keep his rules: the whole tile picks, a 2px hue edge when picked, equal-width keys, one height per row. Index, Cloud, Bands and the Roster are withdrawn from the fork.
+
+**The empty file card** ("wtf is this spacing and alignment??"): with nothing picked the count is a single "0", and the column sized for two digits left a hole between it and the name. An empty file now draws no drop numeral at all — the name chip's edge and "MP builds" both start on the card's own 16px inset, the line the Clear button draws (measured: 16.0 / 16.0 / 16.0).
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
@@ -2038,3 +2052,5 @@ The kit's `ui/` files are the portal's own code, copied. These changes were made
 **Version 37 (2026-09-19 16:05 EDT), for Session 5:** board.css ROUND 5S supersedes the header values of 5R: count 79.24px / 4.98 / −3.57 in a 48.96px column, title `position:relative; top:9.2px; margin-left:−0.63px`.
 
 **Version 39 (2026-09-19 16:42 EDT), for Session 5:** ExportPicker `roster()` with board.css ROUND 5T (the `xtile` fork, default roster), and History (b3/history.js) worded Undo/Undone pills with ROUND 5U's fixed Who and action columns.
+
+**Versions 40–41 (2026-09-19 17:36 EDT), for Session 5:** the picker's `tile2()` with board.css ROUND 5W, and ROUND 5X's empty-file header (`.b3-xf-none`). The index/cloud/bands/roster branches are withdrawn from `xtile` and their CSS rounds (5T, 5V) are dead; do not port them.
