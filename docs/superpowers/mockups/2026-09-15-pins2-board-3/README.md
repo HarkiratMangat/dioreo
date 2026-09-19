@@ -1800,3 +1800,22 @@ My `/design-critique` of this header was wrong: I called the shared yellow and t
 
 **Decisions intaken from the board** (marked on 3-E, read from its store): **p4 B · Soft well** (23:22 EDT, now the default), **p5bg Mesh**, **p5hint Hover card**, **p6 C · Tickets** (22:42 EDT). Each carries a `decided` entry in `gates/picks.js`. The mixed-checkbox hover fault from thread 2aed701d exists in B as well as A, so the checkbox work lands on B.
 
+## 3-E version 14 — the other twelve M1/M2 threads (2026-09-18 23:38 EDT)
+
+Each thread closed on the rendered page, in the state it names (measured at 1440px, grouped and table views both open).
+
+| Thread | What was wrong | Now |
+|---|---|---|
+| `2aed701d` [-] click | `SelectAllBox` ran `setMany(ids, !all)`: mixed selected everything while its own hint said "Click to clear" | mixed clears the shown builds only (his pick); same in every weapon header and the portal Manifest's `toggleAll`, which also stopped replacing selections made under another filter |
+| `2aed701d` blank yellow | the off-hover rule (0,5,2) painted the dash in the fill colour over the mixed rule (0,4,2), in both checkbox styles | the dash stays on hover; measured in B · Soft well, the decided style |
+| `2aed701d` hint | a CSS card that inherited the column head's capitals and said two lines | one line ("Select all 21" · "Clear 2 of 21"), drawn by the problem card's `pcPath` with its two-way motion; pointer lands on the checkbox's centre (227 = 227). The Stage deletion hint uses the same component |
+| `835f9aa3` pills | the pressed count had a fill (a selection lookalike), grey, not centred; no glow on hover; All had no count | count in the pill's hue (lifted for legibility), weight 700, no fill; label and count trimmed to cap height so dot, word and number share one centre (16/16/16 of 32); hover shows the dot's ring; **All 21** |
+| `9ac5e9ae` toggles | `.b3-sd-lh > span` set every header span to 12px, VIEW included | the rule targets `.b3-nw`; VIEW 9.5px like ATTACHMENTS; every rail toggle's pressed segment has the lit ring; List and By slot have icons |
+| `28dca303` "7builds" | same selector family | 8px between count and word |
+| `7e265e57` `ae7b2bbb` `d3120fb3` gaps | every row its own grid with worst-case tracks | one grid per list, rows as subgrids, `max-content` columns: code→triangle 18px, triangle→image 10px, weapon→attachments ~21–27px (was ~84); table head and cells on the same tracks |
+| `846eb917` footers | an overflow pushed the last button into the ring | every button 16px from the ring, the same as the severity badge; `.b3-btn2` soft rectangles (8px) board-wide; ghost buttons ringed; age is Broadcast's `.pb-pill` ("touched 5mo"); "Show build" with its arrow |
+| `1f502de1` layout | a row-major grid left holes under short tickets | fork `p6lay`: Two lanes (default), Even rows, By severity |
+| `96b7a5b1` pass card | a line of text | a full-width ticket in the ok hue: "120 builds pass every check", the five checks as what passing means, the 90-day nudge as the same age chip |
+| `444d806a` palette | — | his nine hexes and six mappings as `p2pal: final` (decided); Smoothbore and unknown or blank slots a cool grey `#94A3B3` (his popup pick). The dev database carries none of the six extra slots, so the mappings are unexercised |
+| `23900247` tag style | — | Laid on takes Outline's hue ring |
+
