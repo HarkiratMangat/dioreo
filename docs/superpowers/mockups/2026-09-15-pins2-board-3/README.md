@@ -1989,6 +1989,10 @@ Header height is 90px. The tuner now opens on these values.
 
 He read the gridded screenshot and named the lines: the Expand box ends at **y76**, so "MP builds" sits on y76; the count's top touches **y12**, its left **x16**, its bottom **y76**; the title's left touches **x78**, the name chip's border. ("Was that seriously so complicated to figure out yourself?" No — each line was already on the grid.) Measured: count cap 12.0–12.6 by digit, foot 76.0, ink 15.6–16.4; title baseline 76.0, ink 78.0; name chip 78.0. The count is 79.24px in a 48.96px column; the title keeps its row and sits 9.2px lower. Grid shot: `local/pins2-board-3/hk-shots/2026-09-19-export-header-grid-v37.png`.
 
+## 3-E version 38 — the name and the title 4px right (2026-09-19 16:21 EDT)
+
+**"Nudge both the MP builds and the file name chip towards the right by ~4px, while leaving the rest as is."** Their shared column starts 4px later (48.96 → 52.96), so the name chip's border and the title's ink both sit on **x82**; the count, the chips' right column and every vertical line are unchanged. The 4px came out of the room before the character chip: the name chip may run 8px past its column, so the full name stays (7.4px left before the character chip, was 12).
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
