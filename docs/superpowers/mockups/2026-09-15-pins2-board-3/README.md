@@ -1844,3 +1844,5 @@ Each thread closed on the rendered page, in the state it names (measured at 1440
 
 Also from 3-D thread 1e4a1512: the list header's category is now FULL CAPS at the Builds chip's weight — its rule targeted `.b3-sd-gh > small` while the small sits inside `.b3-nw`.
 
+**Version 17 (2026-09-19 00:13 EDT) — "is it really middle aligned tho? be honest."** It was not. v16's "0px off" was measured on element BOXES; the ink said otherwise — against a row centre of 26px, the name drew at 25.87, the category, count and badge words at 25.50, the checkbox at 26.25, because Space Grotesk's declared cap height is not its drawn one. The line now drops half a pixel and the name rises by its own difference. Measured by ink on three rows: at 2x the category sits at 26.00 and the name at 25.75 (a quarter pixel, the finest a 2x screen resolves); at 4x 26.00 and 26.13–26.25. 🔴 An alignment claim is measured on ink, not on boxes.
+
