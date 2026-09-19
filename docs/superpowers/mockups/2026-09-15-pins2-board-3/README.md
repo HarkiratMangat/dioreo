@@ -2088,3 +2088,22 @@ He sent nine items over a run of prompts and asked for all of them before the Hi
 **9 · The delivery card.** The problem block said three things the card already said — the End chip reads "Never", the bar runs off its right edge, the age is the pill two rows down — so only its ACTION survived, into the row where the card's other actions live, in warn. START and END are their own row on the timeline's three columns, so a chip growing upward never drags its centre off the bar: measured after, the pill and the Set end date button share a centre line at 211.4 and the bar's centre sits on the chips' at 172.4. The chips were 100px fixed and are content-sized now. Show all takes the manifest fold's bordered box, and the footer's right inset goes 8 → 18 so the fold's box draws the same line the character chip's left edge does. The character chip finally learns there is a 4,000 limit — the behaviour was always in the class, this call site just never passed a cap.
 
 **Left for him:** his screenshots are the **Tiles, v29** option (`.b3-xt-*`), while the board's default is **Tiles** (tile3, `.b3-xk-*`) — 8a and 8d only exist in the v29 layout, so both were fixed there and the hover contract covers both. Which one carries forward is his call.
+
+## 3-E version 45 — the looking I had skipped, and the one defect it found (2026-09-19 19:36 EDT)
+
+He asked whether I was proud of v44. I was not, and the reason was specific: **most of v44 was verified numerically and never looked at.** The colours were resolved in a canvas, the rects were measured, the rules were confirmed present in the CSSOM — and the thing he would actually see was never put on screen. That is the instrument-said-green failure, and it is the one his comments keep circling.
+
+Looked at afterwards, at 2.2–3×, hovering with a real pointer:
+
+| What | Verdict |
+|---|---|
+| Repair build hover (4) | Brighter fill, a green halo and a 1px rise, unmistakable beside a resting twin. The 3px ring is not clipped — the ticket's footer keeps 16px and the ring needs 3 |
+| Filter chip hover (3) | Warm ring and tint in the chip's own hue, clearly apart from the grey it replaced and from the selected step |
+| Count chip (7) | The word and the faded mark arrive together; the resting box stays `inset(0 100% 0 0)` |
+| Location hint (8f) | Reads **AK117 · Build 1 — ALREADY IN THIS EXPORT**, then the file and `lines 1–9`, then the bar. The lit span measured 22% of a 41-line file, which is 9 lines |
+| Tile chips (8a, 8d) | Numeral is Space Grotesk 13/600 tabular; within a tile the chips stay equal width (42.1/42.1, 62/62), so his decided constraint survives the face change; the hint is absent at rest and reads `1/1` once picked |
+| Ticket edges (1) | Continuous through the header rule at 3× |
+
+**The defect it found, which numbers alone would not have:** `.b3-rv.warn` carries its own `padding-left:7px`, so setting `6px` on the base class moved the **all pass** variant and left **need work** where it was. The two states ended up with different left insets — the precise opposite of "so the overall button matches designs in both variants". Both are 6 now, which also puts the 22px well concentric with the 34px pill's own left cap; measured after: well left 6.00 and well centre 17.00 on a pill centre of 17.00 in **both** states.
+
+**Judged and kept as-is:** the quote box's footer now carries a 22px readout chip beside a 34px bordered fold. Different heights, but they share a centre line (both at 23 in a 45px row) and they are different kinds of object — a readout and a control — and 34 is the height he standardised the fold on.
