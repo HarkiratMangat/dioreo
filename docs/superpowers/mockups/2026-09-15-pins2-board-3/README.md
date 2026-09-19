@@ -1925,6 +1925,17 @@ Also: "make the 'X builds' text slightly larger" → **13px**, one step up from 
 - A picked tile's edge is 2px in the weapon's hue (tint unchanged). The weapon name is 14.5px, with the picked count ("2/3") or the build count on its right; every build numeral has the same box, so "1" and "3" make the same chip; tiles in a row share a height.
 Checked by driving the page: a blank-space click picked PP19 BIZON (3/3); Pick all built six files; expanding one shut the other five; renaming to "my-mp-export.txt" gave `my-mp-export.txt`. No console errors.
 
+## 3-E version 29 — the Export file's header set as type; the pass tile on one inset (2026-09-19 12:00 EDT)
+
+**Export file header** — "Not satisfied… look at it thoroughly", then four corrections while it was being built:
+- A 3-column, 2-row grid. The count is a drop numeral spanning both rows, with its cap top on the title's cap top (measured −0.06px) and its foot on the name's baseline (+0.05). It used to be centred on the block and aligned with nothing. The title and the character chip share one baseline (0; an inline-flex chip takes its baseline from its icon, so it is set down 2.25px). The name and the fold share the second row: both are 24px tall on one centre line, and the fold's right edge sits on the chip's (0).
+- Padding above the numeral and below it: 23.7 / 23.95px. The numeral's ink sits on the Clear button's edge (0.05px). The chip's right edge sits on Download's (0).
+- **Rejected by him and reverted:** a fill line along the header seam ("that red fill line is stupid… just make the character chip the warn color", so the chip warns from 3,600 and nothing else draws the limit); moving the fold to the footer ("Don't move the fold button into the footer"); dropping the dashed seam ("that was the entire design"); the name as bare text ("the border… made it feel like a clickable option").
+- The name is a bordered chip at rest and becomes a field only while renaming. An input cannot be sized to its text reliably: a width in `ch` and a mirror both clipped the last character, which is the "fading" he saw. The chip shows the whole name: measured, none clipped. Renaming works (typing "ranked-smgs" gives `ranked-smgs.txt`).
+- The fold is a bordered button of the name chip's height, in the header.
+
+**The pass tile ("a clean day… lazy work")**, measured on the render: the shield, the first check and the aged chip had started at three insets (17 / 15 / 18px); the checks sat 1.5px under the header band and 12px above the footer; the fifth check was cut to "Code matches the bu…"; "PASSES" repeated the headline; and on a clean day the tile opened 32px down the panel, where the working day's header starts at 20. Now one 16px inset runs down both sides (16/16/16 left, 16/16 right), the checks sit 14px from the band and 14px from the footer, all five fit on one row unclipped, "PASSES" is gone, and the clean-day tile starts 21px down.
+
 ## Session 5 port list — portal code changed in the board's kit this session (2026-09-19 00:31 EDT)
 
 The kit's `ui/` files are the portal's own code, copied. These changes were made there and are **portal changes**, not board chrome:
