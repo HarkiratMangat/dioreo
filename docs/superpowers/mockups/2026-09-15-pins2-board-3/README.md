@@ -2107,3 +2107,22 @@ Looked at afterwards, at 2.2–3×, hovering with a real pointer:
 **The defect it found, which numbers alone would not have:** `.b3-rv.warn` carries its own `padding-left:7px`, so setting `6px` on the base class moved the **all pass** variant and left **need work** where it was. The two states ended up with different left insets — the precise opposite of "so the overall button matches designs in both variants". Both are 6 now, which also puts the 22px well concentric with the 34px pill's own left cap; measured after: well left 6.00 and well centre 17.00 on a pill centre of 17.00 in **both** states.
 
 **Judged and kept as-is:** the quote box's footer now carries a 22px readout chip beside a 34px bordered fold. Different heights, but they share a centre line (both at 23 in a 45px row) and they are different kinds of object — a readout and a control — and 34 is the height he standardised the fold on.
+
+## 3-E version 46 — the mesh was not the same mesh (2026-09-19 19:52 EDT)
+
+He asked: *"is this the same mesh used in the selection bar? because idk... it feels different here."* It was the same seven layers and the same blend mode, and it was still not the same mesh. Three reasons, all measured:
+
+1. **The hues are the bar's CONTENT, not its stylesheet.** `--m1` and `--m2` are written inline by the component from the first two selected weapons' accents — `m1 = groups[0].accent`, `m2 = groups[1].accent` (`b3/armory-parts.js:546`). I had copied the pair the bar happened to be showing, so the drawer's light was a photograph of one selection and never moved again. **Fixed, and not as an option:** the picker lights its own mesh from what is picked, with the bar's own fallbacks (`--patch`, `--r-armory`). The CSS keeps those fallbacks too, because a `var()` that resolves to nothing makes the whole `background` invalid and the drawer would render with no ground at all — the failure this same fork already hit once.
+2. **Every radius is a percentage of the box.** The bar renders **1100×560**, the drawer **1100×756**. The same string therefore paints blobs 35% taller, pushes their centres 35% further outside the edges, and stretches the top sheen from **146px to 197px**. Identical recipe, different light.
+3. **The drawer covers it.** Measured: **78.6%** of the drawer's area is opaque children — the bays, the file panel, the header strip. On the bar the mesh *is* the surface; in the drawer it survives only in the gutters, which reads as a tint leaking at the edges rather than as the same material.
+
+(1) is a defect and is fixed everywhere. (2) and (3) are choices, so they are fork options rather than something decided for him — `xbg` now carries four:
+
+| Option | What it is |
+|---|---|
+| **Flat** | today's drawer, no mesh |
+| **Mesh** | the same declaration, proportional to the drawer's own box — what he was looking at |
+| **Bar's light** | the bar's geometry in absolute pixels (858×1176 blobs, centres 100.8px below the edge, a 145.6px sheen), so the blobs are literally the same size and the same distance outside |
+| **Ground** | the proportional mesh plus the bar's *relationship* — the bay, the file card and the tiles stop being opaque and sit **on** the mesh. The bay keeps its hue tint and its edge from round 5d; only its opacity changes |
+
+Looking at the four, **Ground** is the one that reads like the selection bar, because on the bar the mesh is the surface rather than a rim. It is also the one that touches a decision of his, which is why it is shown rather than taken.
