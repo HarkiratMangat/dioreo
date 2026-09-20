@@ -2151,30 +2151,48 @@ His: *"ground seems to be losing the tint over the tiles? is that a bug or inten
 
 **The correction:** only the bay is translucent now. The mesh reads through the pane — which is the relationship the selection bar actually has — and the tile stays solid on top of it. Three layers, each distinct: ground, tinted pane, object. Verified after: bay `srgb(0.221 0.219 0.156) / 0.558`, picked tile opaque with its hue, plain tile opaque `--raised`. The file card stays solid for the same reason.
 
-## 3-E version 50 — the export file card's header, his layout (%s)
+## 3-E versions 50-56 - the export file card's header, and everything that fell out of it (2026-09-20 01:04 EDT)
 
-He scratched his own header geometry — *"can you scratch my earlier idea and try to redesign it so it works and fits nicely"* — and then, after three of mine, supplied the one that works: *"move the file name chip and the character count chip as 2 stacked, left aligned, chips to the bottom portion… then the header would basically just be `## MP builds [clear] | [expand]` as 1 line. This way, the file, the character count, and the action of either copying the info or downloading it, all sit together."*
+He scratched his own header geometry - *"can you scratch my earlier idea and try to redesign it so it works and fits nicely"* - rejected three of mine (*"all 3 look shit"*), and then supplied the layout himself: *"move the file name chip and the character count chip as 2 stacked, left aligned, chips to the bottom portion... then the header would basically just be `## MP builds [clear] | [expand]` as 1 line. This way, the file, the character count, and the action of either copying the info or downloading it, all sit together."*
 
-**What the measurement said before any of it was drawn.** The old header carried five elements and its ink covered **58%%** of the box. My two redesigns dropped the 80px drop numeral and fell to **41%%** and **42%%** — emptier than the thing they replaced, because removing the only element that filled the left half left a row holding one short title and one button with ~180px between them. Collapsing to one row did not fit either: count 18 + name 195 + chip 140 + fold 89 + four 12px gaps = **490px inside a 440px card**. His move is the one that resolves it, and it resolves it by moving the two chips that were competing for that row to the actions that consume them.
+**What the measurement said before any of it was drawn.** The old header carried five elements and its ink covered **58 per cent** of the box. My two redesigns dropped the 80px drop numeral and fell to **41** and **42** - emptier than the thing they replaced, because removing the only element that filled the left half left a row holding one short title and one button with ~180px between them. Collapsing to one row did not fit either: count 18 + name 195 + chip 140 + fold 89 + four 12px gaps = **490px inside a 440px card**. His move resolves it by sending the two chips that were competing for that row to the actions that consume them.
 
 | Element | Before | Now |
 |---|---|---|
 | Header | 88px, five elements | **58px**, one line |
 | Count | 80px drop numeral in a measured well | the selection bar's own 40px square (`.b3-sd-count`: 10px corners, JetBrains Mono 16.5/700, near-black ink) in the mode accent |
-| Clear · fold | Clear in the footer, fold in the header | both in the header, words at rest, a 1px divider with **16px** either side |
-| File name · character count | in the header | stacked in the footer beside Copy and Download, the name carrying a faint `--ok` tint so the pair reads name-first |
+| Clear / fold | Clear in the footer, fold in the header | both in the header, **words always on** (*"theres enough room... just put the always present text variants"*), a 1px divider with **16px** either side |
+| File name / character count | in the header | stacked in the footer beside Copy and Download; the name carries an `--ok` tint and the character chip's **two-rule edge** - `.g-fact`'s inset ring plus a 1px border at 55 per cent |
+| Empty card | 17.5px of bare 15px type | the same 58px shell with the square **unlit** - sunk fill, rule border, `0` in `--ink4` |
 | Shut card | 145px, 14px of it empty below the footer | **131px**, header + footer exactly |
 
-**THE DEFECT THIS CLOSES, and it is the one he spotted in the screenshots.** The drop numeral was right-aligned in a measured well, which pins the edge nothing draws: across six files the numeral boxes sat at 13.75 / 13.75 / 12.23 / 13.13 / 13.13 / **42.08** — **29.85px of ragged left edge** on a card whose every other element starts on 16. His settled line was always *numeral ink left on the card's 16px inset*; I had pinned the right. The count now sits inside the title's own text flow, so there is no well to measure, no per-card sidebearing to compensate, and no edge that can go ragged. **120 lines of measuring JavaScript went with it.**
+**THE DEFECT THIS CLOSES.** The drop numeral was right-aligned in a measured well, which pins the edge nothing draws: across six files the numeral boxes sat at 13.75 / 13.75 / 12.23 / 13.13 / 13.13 / **42.08** - **29.85px of ragged left edge** on a card whose every other element starts on 16. His settled line was always *numeral ink left on the card's 16px inset*; I had pinned the right. The count now sits inside the title's own text flow, so there is no well, no per-card sidebearing compensation, and no edge that can go ragged. **120 lines of measuring JavaScript went with it.**
 
-**Three more literals that had rotted, each found by measuring rather than by reading:**
-- `min-height: var(--xf-rest, 145px)` on the card was the OLD header (88) plus the OLD footer (57). With 58 + 73 it hung **14px of empty card** below Download — his *"why tf is the bottom portion's bottom spacing so messed up when it's closed"*. The shut card sizes itself now.
-- `top: var(--xf-ty, 5.5px)` on the title was the nudge that used to drop it onto the numeral's baseline. Left in place it sat the whole row 5.5px low — 14.5 above and 3.5 below where 9 and 9 was asked for.
-- `margin-left: 1.04px` on the name chip aligned its ink with a title that is no longer above it, and put the two footer chips 1px apart.
+### Four stale literals, each a copy of a layout that nothing updated
 
-**⚠️ And one that only a computed read would have caught.** The `--ok` tint was written at two classes and lost silently to `.b3-xf .b3-xf-fn:not(.editing)`, which is three — the chip kept computing `--paper` while the name text changed colour, so it looked like the words had been tinted and the chip skipped. His words: *"i asked for a tint and u instead only colored the filename text"*, and *"nor did you color the pencil icon"*. Both true. Raised to four classes and five for the mark, then **read back as computed values** rather than assumed.
+| Literal | Was derived from | What it did |
+|---|---|---|
+| `min-height: var(--xf-rest, 145px)` | the OLD 88px header + 57px footer | hung **14px** of empty card below Download - *"why tf is the bottom portion's bottom spacing so messed up when it's closed"* |
+| `top: var(--xf-ty, 5.5px)` on the title | the drop numeral's baseline | sat the whole row 5.5px low - 14.5 above, 3.5 below, where 9/9 was asked for |
+| `margin-left: 1.04px` on the name chip | aligning its ink with a title no longer above it | put the two footer chips 1px apart - and a `.04` no authored length should carry |
+| `--pb-inset: 5px` on `.pb-ib` | a **44px** control (44 - 10 = a 34px box) | the delivery card squeezes those controls to 28px, so **Edit and the bin painted an 18px box inside a 28px control** - 10px short of their own hit area and of the button beside them |
 
-**Measured after, on a browser that paints** (`visibilityState: "visible"`, dpr 2 — the Claude pane reports `hidden`, freezes every animation at frame 0 and downscales 1440×960 to 800×533, which is why three "defects" I reported earlier tonight were not real): square left **16**, 9 above and 9 below in a 58px header · 16 from its border to *MP builds* · divider **16/16** · both footer chips on **16** · the actions' right edge on **16** · shut card **131px** with **0** below the footer · DMZ swaps the square to `#3DA5F5` and the title to *5 DMZ builds*.
+### The fold: three regressions, all mine, and the instrument that settled it
+
+He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when collapsing... abrupt/stuttery when expanding"*.
+
+1. **ROUND 8A pinned the body wrapper** to `flex:0 0 0; height:0` to close the 14px gap. An untransitioned hard zero: the wrapper snapped in one frame, so the card's eased grow had nothing left to reveal. ~130ms against the ~290ms it had before, traced off his own two screen recordings frame by frame.
+2. **ROUND 8B retimed it** 420ms to 300ms and stripped the content delays. Never the cause. Reverted verbatim.
+3. **Taking `min-height` out of the transition** left `.b3-xf:not(.shut){min-height:min(380px,100%)}` applying with no easing - the expand's **first frame was already at 380px**, a 249px jump (43 per cent of the travel) before the transition began. The collapse has no twin because that floor is released at the end of a curve that has almost stopped, which is exactly why one direction felt fine and the other did not.
+
+**The instrument that settled it was his, not mine:** *"why can't you just look at whatever code is still running in that chrome tab with the old version and copy it's animation?"* The pre-rework build was still live in a stale tab; reading its CSSOM gave the original rules exactly - both legs transitioned, shut floor `var(--xf-rest,145px)` which **was that build's true resting height** (88 + 57), so min-height and flex-grow agreed from the first frame and neither raced. Both floors are gone now; `flex-grow` alone moves the height, no literal is left to rot, and with three files open the two directions are mirror images at a **28px first step** each way.
+
+### Also
+- **The scrollspy rail was clipping its own chips** (*"being cutoff at the top when hovering them"*). `.b3-xt-chips` is `overflow:auto hidden` so it can swipe sideways, and a scroll container clips on **both** axes - there is no value that scrolls one axis and lets the other paint. Row 32px, chips 32px, zero headroom, so every ring met the clip edge. It pads 4px vertically and takes the same back as negative margin: paint box grows, layout box does not move.
+- **`Set end date` took two corrections.** First I read "the Repairs button" as `Repair build` - the solid `--ok` pill inside a ticket - and shipped a saturated orange block. Then, with the right source (`.b3-rv.warn`, the panel readout), I carried its whole construction across. He: *"I ASKED FOR THE TINT. not the actual pill design."* It keeps the row's own 28px / 6px shape and takes only the ground (`--warn` 9 per cent over `--sunk`), the ring (38) and the ink.
+- **An `--ok` tint written at two classes lost silently** to `.b3-xf .b3-xf-fn:not(.editing)`, which is three. The chip kept computing `--paper` while only the name text changed colour - *"i asked for a tint and u instead only colored the filename text"*, *"nor did you color the pencil icon"*. **Verify a style by reading the element's COMPUTED value, never by confirming the rule you wrote exists.**
+
+**Measured after, on a browser that paints** (`visibilityState: "visible"`, dpr 2): square left **16**, 9 above and 9 below in a 58px header, **16** from its border to *MP builds*, divider **16/16**, both footer chips on **16**, the actions' right edge on **16**, shut card **131px** with **0** below the footer, DMZ swaps the square to `#3DA5F5`, fold first-step 28px in both directions with three files open.
 
 ---
 
