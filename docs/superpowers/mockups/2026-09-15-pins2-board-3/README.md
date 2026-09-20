@@ -2151,6 +2151,33 @@ His: *"ground seems to be losing the tint over the tiles? is that a bug or inten
 
 **The correction:** only the bay is translucent now. The mesh reads through the pane — which is the relationship the selection bar actually has — and the tile stays solid on top of it. Three layers, each distinct: ground, tinted pane, object. Verified after: bay `srgb(0.221 0.219 0.156) / 0.558`, picked tile opaque with its hue, plain tile opaque `--raised`. The file card stays solid for the same reason.
 
+## 3-E version 50 — the export file card's header, his layout (%s)
+
+He scratched his own header geometry — *"can you scratch my earlier idea and try to redesign it so it works and fits nicely"* — and then, after three of mine, supplied the one that works: *"move the file name chip and the character count chip as 2 stacked, left aligned, chips to the bottom portion… then the header would basically just be `## MP builds [clear] | [expand]` as 1 line. This way, the file, the character count, and the action of either copying the info or downloading it, all sit together."*
+
+**What the measurement said before any of it was drawn.** The old header carried five elements and its ink covered **58%%** of the box. My two redesigns dropped the 80px drop numeral and fell to **41%%** and **42%%** — emptier than the thing they replaced, because removing the only element that filled the left half left a row holding one short title and one button with ~180px between them. Collapsing to one row did not fit either: count 18 + name 195 + chip 140 + fold 89 + four 12px gaps = **490px inside a 440px card**. His move is the one that resolves it, and it resolves it by moving the two chips that were competing for that row to the actions that consume them.
+
+| Element | Before | Now |
+|---|---|---|
+| Header | 88px, five elements | **58px**, one line |
+| Count | 80px drop numeral in a measured well | the selection bar's own 40px square (`.b3-sd-count`: 10px corners, JetBrains Mono 16.5/700, near-black ink) in the mode accent |
+| Clear · fold | Clear in the footer, fold in the header | both in the header, words at rest, a 1px divider with **16px** either side |
+| File name · character count | in the header | stacked in the footer beside Copy and Download, the name carrying a faint `--ok` tint so the pair reads name-first |
+| Shut card | 145px, 14px of it empty below the footer | **131px**, header + footer exactly |
+
+**THE DEFECT THIS CLOSES, and it is the one he spotted in the screenshots.** The drop numeral was right-aligned in a measured well, which pins the edge nothing draws: across six files the numeral boxes sat at 13.75 / 13.75 / 12.23 / 13.13 / 13.13 / **42.08** — **29.85px of ragged left edge** on a card whose every other element starts on 16. His settled line was always *numeral ink left on the card's 16px inset*; I had pinned the right. The count now sits inside the title's own text flow, so there is no well to measure, no per-card sidebearing to compensate, and no edge that can go ragged. **120 lines of measuring JavaScript went with it.**
+
+**Three more literals that had rotted, each found by measuring rather than by reading:**
+- `min-height: var(--xf-rest, 145px)` on the card was the OLD header (88) plus the OLD footer (57). With 58 + 73 it hung **14px of empty card** below Download — his *"why tf is the bottom portion's bottom spacing so messed up when it's closed"*. The shut card sizes itself now.
+- `top: var(--xf-ty, 5.5px)` on the title was the nudge that used to drop it onto the numeral's baseline. Left in place it sat the whole row 5.5px low — 14.5 above and 3.5 below where 9 and 9 was asked for.
+- `margin-left: 1.04px` on the name chip aligned its ink with a title that is no longer above it, and put the two footer chips 1px apart.
+
+**⚠️ And one that only a computed read would have caught.** The `--ok` tint was written at two classes and lost silently to `.b3-xf .b3-xf-fn:not(.editing)`, which is three — the chip kept computing `--paper` while the name text changed colour, so it looked like the words had been tinted and the chip skipped. His words: *"i asked for a tint and u instead only colored the filename text"*, and *"nor did you color the pencil icon"*. Both true. Raised to four classes and five for the mark, then **read back as computed values** rather than assumed.
+
+**Measured after, on a browser that paints** (`visibilityState: "visible"`, dpr 2 — the Claude pane reports `hidden`, freezes every animation at frame 0 and downscales 1440×960 to 800×533, which is why three "defects" I reported earlier tonight were not real): square left **16**, 9 above and 9 below in a 58px header · 16 from its border to *MP builds* · divider **16/16** · both footer chips on **16** · the actions' right edge on **16** · shut card **131px** with **0** below the footer · DMZ swaps the square to `#3DA5F5` and the title to *5 DMZ builds*.
+
+---
+
 ## 3-E version 49 — his second round of six (2026-09-19 21:30 EDT)
 
 **1 · The tiles flow.** Measured first: the grid computed `align-items:stretch`, so AK117 with one chip stood as tall as SKS with four and the air went under the short ones. Three columns of flow now, gap 10 → 8, each tile its own height (82.4 / 152.4 at 1100, 82.4 / 117.4 / 222.4 at 760). The cost is that reading runs down a column rather than across a row; within a bay the weapons are alphabetical, and the Repairs panel already packs its tickets this way. A long name fades under its own count and side-scrolls on hover — pure CSS, the travel is exactly the overflow (`100cqw - 100%`) and clamps at zero. ⚠️ **The fade was wrong first and only looking caught it:** on the `<b>`, whose width is its own ink, the fade zone always lands on real text — every weapon in the bay read `AK11`, `DR-`, `LK2`. It belongs on the container. The other tile layout, its fork, its control, its stored default and its 36 CSS rules are gone.
