@@ -42,7 +42,7 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 | The river's columns | **ledger, 2026-09-01** | Five, including **Source**, against the design's four. He chose to keep Source. |
 | The search's label | **ledger, 2026-09-01** | "Search events" — the river holds alerts, changes AND restarts. |
 | The panel's title | **ledger, 2026-09-01** | Titles the panel with what it is FOR, not with the component's name. |
-| A row opens the event drawer | **ledger, closed** | It was a gap, not a difference. Rows are `role=button` and keyboard-reachable. |
+| A row opens the event drawer | **ledger, closed** | It must open the drawer and be keyboard-reachable. ⚠ The ROW no longer carries `role=button`: a real button around the phrase does, because a row carrying it CONTAINED the Undo button (fixed 2026-09-20 13:40 EDT). |
 | Filter chips by kind AND level | **ledger, 2026-09-01** | Nine chips against the design's seven. Kept. |
 | The day as a row of the table | **round 9A** | The day header is a row of the list's own grid. |
 | One grid, rows as subgrids | **v14 `7e265e57`, round 9B** | A column is as wide as its widest entry and still lines up. |
@@ -70,6 +70,17 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 2. **The count line is gone.** I removed "100 shown · 1,421 recorded" on the argument that the portal's own manifest toolbar carries no count readout. But the ledger has that exact question **flagged OPEN and explicitly not adjudicated** — so it was not mine to settle by porting.
 3. **The whole toolbar is now the portal's `.mtools` component.** He asked for the header to be reworked and for it to stop using a different search bar. Adopting the portal's entire two-row toolbar is broader than that, and it is what silently dropped items 1 and 2.
 
+## Added after this table was first written (2026-09-20 13:40 EDT)
+
+| Element | Decided by | What it is allowed to be |
+|---|---|---|
+| A story — consecutive rows in a day on one entity by one person | **round 3f's unbuilt note**, built 2026-09-20 | Bound, never merged: one unbroken left rail, no hairline inside the pair. Completeness is untouched |
+| The row separator | **the design review, P1** | Visible between UNBOUND rows only; a bound pair has none |
+| Undone | **the design review, P0** | Not a button. A tick and a word, no box, no pointer. Undo is the only button-shaped thing in the column |
+| The kind tab's saturation | **the design review, P3**, inside pin 53 | Lowered. Shape, hue and position are pin 53's and are untouched. ⚠️ `:not(.quiet)` — the DEMOTED mark keeps its 14% fill and no ring |
+| The row as a control | **a11y, and the ledger's closed row still holds** | The row is a plain div; the keyboard path is a real button around the phrase. No interactive nested in an interactive |
+| Anything measured on a shared browser page | **anchor #42 and the page-2 contamination** | Re-taken on a page no other actor is using |
+
 ## Also unattributed, introduced by me today
 
-`--fc` as the chip hue contract · the chip's four-state percentages · the burst sub-head's "6 in 9 min" wording · the export landing's lead/secondary/strip composition · `exs-pick`. Each may be fine; none was shown as a choice.
+`--fc` as the chip hue contract · the chip's four-state percentages · the burst sub-head's "6 in 9 min" wording · the export landing's lead/secondary/strip composition · `exs-pick` · the story binding's own rule (consecutive, same entity, same actor, within a day) · the row separator's weight · the 440px filter column. Each may be fine; none was shown as a choice.
