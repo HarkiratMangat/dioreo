@@ -2223,6 +2223,22 @@ A day on this manifest is three things: the boundary his memory indexes by, a su
 
 ---
 
+## 3-E versions 58–59 — columns by their content, the chips as the class, three more day shapes (2026-09-20 09:55 EDT)
+
+**His verdict on v57, verbatim:** *"ALL those turns and that's all you did? little tweaks that you could have done in a handful of turns… you worked instances instead of the class and worked with a narrow mind. Like look at the manifest's header toggles… 1. their rest/hover/selected states use the washed out grey style which was already asked to be corrected earlier in the session. 2. the header toggles use circle dots even tho majority of them already have dedicated icon designs… 3. look at the poorly thought out spacing of the columns of the manifest itself. 75+ turns/calls and all you have to show for it is something that should have taken you 5-10 turns/calls AT MOST???"* All three are class faults and each already had its answer on this board; the round cost ~75 turns because the thinking pass ran as seven turns, twenty-five screenshots were read in three batches, one sweep ran on the wrong browser and one heredoc died on a `%`.
+
+| Fault | The answer already on the board | Now |
+|---|---|---|
+| KIND 104px for an 82px tab, WHO 124 for 78, TIME 76 for 58 | version 14, `7e265e57`: one grid per list, rows as subgrids, a column as wide as its widest entry | `.b3-hi-list` is the grid; head, day sections, rows and bursts are subgrids — measured **89 · 82 · 1fr · 78 · 84(+16)**, head cells on row cells to 0.1px, uniform states shrink on their own so the `uk`/`uw` grids are gone |
+| Chips hovered and pressed grey wherever they had no topic hue (Level, Who, When, Undo) | round 6B: hover is the pressed fill at a third — but `--c` fell back to `--ink3` | `--c` falls back to **`--patch`**, the state hue; Level carries its severity hue; the count takes version 14's pill rule (hue lifted, 700) |
+| Dots on Kind and Realm chips while the rows carry square-pen / triangle-alert / rotate-cw and calendar-days / layers / radio / shield | the row's own `KIND[k][1]` and `REALM[k][4]` | the chip carries the row's icon in its hue; the day mix too |
+
+**Three more day shapes on the `p9` switch**, rendered on the real data for him to pick from (shots `local/pins2-board-3/redo/shots/h1-v58-*.png`): **C · Day blocks** — a 52px head with the date at `--t-md`, the mix and the day's first–last span, blocks set apart by a slot of `--sunk`; **D · Bursts** — 40px rows and, in a day of more than eight events, sub-heads for each burst (a gap over twenty minutes starts one) with its span and count; **E · Date gutter** — no band, the date and its mix stand in a left gutter cell that spans its rows (`grid-row: 1 / span var(--n)`) and stays sticky while they pass. v59 fixed C's stuck header, which was transparent and let the previous block's rows bleed through. **Not looked at:** D's burst sub-heads in the storm (the DOM count is checked, the render is not); every shape on the phone.
+
+**Files:** `b3/history.js` (the list grid, day sections, bursts, `--n`, icons on the chips and the mix), `b3/board.css` (ROUND 9B), `gates/picks.js` (`p9` c · d · e).
+
+---
+
 ## 3-E version 49 — his second round of six (2026-09-19 21:30 EDT)
 
 **1 · The tiles flow.** Measured first: the grid computed `align-items:stretch`, so AK117 with one chip stood as tall as SKS with four and the air went under the short ones. Three columns of flow now, gap 10 → 8, each tile its own height (82.4 / 152.4 at 1100, 82.4 / 117.4 / 222.4 at 760). The cost is that reading runs down a column rather than across a row; within a bay the weapons are alphabetical, and the Repairs panel already packs its tickets this way. A long name fades under its own count and side-scrolls on hover — pure CSS, the travel is exactly the overflow (`100cqw - 100%`) and clamps at zero. ⚠️ **The fade was wrong first and only looking caught it:** on the `<b>`, whose width is its own ink, the fade zone always lands on real text — every weapon in the bay read `AK11`, `DR-`, `LK2`. It belongs on the container. The other tile layout, its fork, its control, its stored default and its 36 CSS rules are gone.
