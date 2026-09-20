@@ -85,7 +85,11 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 **Found while looking, not reported by him:** the p9=b rail line carried `z-index:-1` and had never rendered · `applyDecision` called `b3()` without importing it · the filter grid double-inset every label by 22px · the column head right-aligned TIME over a left-aligned value.
 
 **Looked at after the build, at 1282×888 and 1440×960:** every band's left ink at x=118 · right ink at 1168 · row height uniform at 56 · chip/tab/day-chip 32/24/22 · the no-hit state · the Alerts filter and its kind demotion to a 24px mark · the focus ring (2px, offset 2) · 4 bound story pairs in the first 8 rows · one pre-existing 404 and no new console error.
-**Not opened:** a real pointer `:hover` (measured through `.open`, which shares the rule) · the empty-data state · filters on top of the knobs at non-default values.
+**Opened after the publish of v70:** a real pointer `:hover` through the CLI (the verb underlines and the mesh lifts in the row's hue) · the knobs driven to their ends, which found a real defect — the filter grid's first column was pinned at a magic 440px while `--h1-lab` set the label width inside it, so widening a label squeezed its own chips until Restarts wrapped. The column sizes to its content now.
+
+**The filters-empty branch is UNREACHABLE from the chips, by design and not by accident:** round 9A made a zero-count chip inert, and every chip that would empty the list computes its own count with its own filter skipped — so the chip that would take the list to nothing is always the one that is disabled. The no-hit branch (search) is the only reachable empty state, and it was opened.
+
+**Not opened:** the empty-data state (the dev database always returns rows).
 
 ## Changed against his record, never shown to him
 
