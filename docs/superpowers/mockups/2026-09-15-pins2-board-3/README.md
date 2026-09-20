@@ -2229,7 +2229,17 @@ Neither, and that was a defect. Widening the file panel's selector handed the la
 
 It is also the screen every export drawer in the portal opens on, so a pair of Armory weapon accents would have painted Broadcast's and Season's drawers Assault red. The one hue every realm has is its own, so the landing's ground is built from `--rc` (the realm accent, set where the drawer mounts, Armory's as the fallback) with `--patch` as its second light. The file panel's selection-lit ground is untouched.
 
-**NOT looked at:** the four states on a phone; D's burst sub-heads; C and E after the column change; the Broadcast rail rendered (its icons are verified in the DOM, not in a shot).
+### v64 — the three day shapes after the column change (2026-09-20 12:06 EDT)
+
+**C and E were already right** and are now looked at rather than assumed: C's day block keeps its date on the left and its first-to-last span right-aligned on the panel's edge; E's sticky gutter holds the date and its kind mix beside rows that span columns 2 to −1. Both were re-measured after the list went from five columns to four.
+
+**D's burst sub-head was wrong in three ways and all three are fixed.** It was painted like a row — the same near-black, a hairline above and nothing below — so a reader scanning the storm met it as another event; it is sunk now, ruled on both edges. Its count was a bare `6` with no noun, orphaned in the column where the verbs start; a burst's whole subject is DENSITY, so it states the span it took as well — `6 in 9 min` — in the grammar the day header above it already uses. And that pair sat 26px left of every verb below it, because the rows' phrases begin after a 16px kind mark and a 10px gap; the sub-head is inset by the same, measured at 280px against 280px.
+
+⚠️ **A bare text node after an element inside a subgrid becomes its own anonymous grid item.** The first cut put `<b>6</b>` and the text `in 9 min` side by side, and the text landed in the WHO column, 1,200px away. They are one `<em>` now.
+
+🚫 **The phone is not a review surface for these boards** — Harkirat, 2026-09-20 12:02 EDT: *"why is 'phone' even an option you're looking at when it's already been decided not important?"* It is out of every checklist here; listing it as unchecked was noise, not diligence.
+
+**NOT looked at:** the Broadcast rail rendered (its icons are verified in the DOM, not in a shot).
 
 ## 3-E version 57 — the History day as a row of its own table, and the whole gate swept first (2026-09-20 02:00 EDT)
 
