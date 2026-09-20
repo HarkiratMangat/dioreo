@@ -29,22 +29,22 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 
 ## The edits, by file, newest first
 
-### `local/pins2-board-3/redo/gates/picks.js`
+### `local/pins2-board-3/redo/gates/picks.js` — ✅ REVERTED
 - 🔴 **The `p9` fork's options A–E were DELETED and replaced with one line.** His five day-shape options are gone from the Decide panel and from the stage switch. He said A–D were the same thing and E was a no, which is a verdict on the options — I turned it into a deletion of the record. **Suspect first if the Decide panel looks wrong or a fork he remembers is missing.**
 - Then a second option, `r` · "By form", was added for ROUND 14.
 
-### `local/pins2-board-3/redo/b3/state.js`
+### `local/pins2-board-3/redo/b3/state.js` — ✅ REVERTED
 - 🔴 **A migration now DROPS the stored `p9` key** (`2026-09-20-p9-one-shape`). Any value he had chosen on this machine is discarded once, silently, on next load.
 
-### `local/pins2-board-3/redo/gates/history.js`
+### `local/pins2-board-3/redo/gates/history.js` — ✅ REVERTED
 - A third branch renders `B3River` when `p9 === 'r'`. The `now` and default branches are untouched.
 
-### `local/pins2-board-3/redo/b3/river.js` — NEW FILE (ROUND 14)
+### `local/pins2-board-3/redo/b3/river.js` — ✅ DELETED. ⚠️ Its `b3-hlog` namespace no longer exists anywhere; do not go looking for it
 - The whole "By form" view: change entries, an alert table grouped by message, a restart strip, a masthead figure row, a sparkline, two filter groups.
 - ⚠️ **It shipped under the class `b3-rv`, WHICH ALREADY EXISTED** as a pill component (`.b3-rv{border-radius:var(--rad-pill)}`), so the panel clipped itself into a circle. Renamed to `b3-hlog` by a blanket string replace over the ROUND 14 CSS block and this file — **if anything else on the board lost a `rv-` class, that replace is the cause.**
 - Known unfinished: the sparkline is clipped at the panel's right edge; `Season owner` repeats on every entry; entries are a uniform stack.
 
-### `local/pins2-board-3/redo/b3/board.css` — ROUND 13 (local, unpublished)
+### `local/pins2-board-3/redo/b3/board.css` — ROUND 13 — ✅ REVERTED, 84 lines removed
 - 🔴 **The kind tab lost its tinted fill and its hued ring**, going back to an inset 3px left edge. Pin 53 owns that tab. **Suspect first for "the Change chip looks wrong".**
 - 🔴 **Filter chips lost their ground and ring at rest** inside `.b3-hi-f`. Seventeen chips changed appearance at once.
 - The entity moved out of `--data` (mono) into `--ui`; time and who dropped to `--t-xs`; the avatar to 20px.
@@ -76,3 +76,19 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 5. **Filter chips stripped of chrome at rest** (ROUND 13) — pin 57's groups all changed appearance.
 6. **`p9`'s five options deleted** from the fork record (picks.js).
 7. **The entity's typeface** moved from mono to UI.
+
+## ⚠️ Claims I made today that I cannot stand behind — corrected 2026-09-20 16:23 EDT rather than left in the record
+
+| I said | The truth |
+|---|---|
+| 1,421 events ≈ **71 days**, ≈ **43 screens** of the proposed layout | The 100 loaded rows span **Aug 27 → Sep 6, about 10 calendar days**, so 14 further pages is nearer **140 days** — and density is nowhere near uniform, since one of those days held 73 events. The argument stands; both numbers were mine and are withdrawn |
+| At prod, ~**200 subjects** | Extrapolated from a dev sample he explicitly said is not representative. Withdrawn |
+| The portal's History **has no Undo control** | Read off one screenshot. The shared `Manifest` is passed `bulkTier=2` and may expose row actions I never looked for. **Unverified, and I stated it as fact** |
+| Three of five columns are promises the data never keeps | `Source` `—` on **100/100** is measured and stands. The `Kind` and `Who` uniformity is measured on the **loaded sample, across change rows only** — narrower than I said |
+| Only people author changes | Already corrected to him: that was a reading of today's callers quoting a comment written for the `/manage` era, on a product whose roadmap carries autonomy |
+
+## What the revert is verified against, and what it is not
+
+**Looked at, at 1282×888, after the revert:** `p9` a, b, c, d and e all render 100 rows in a 764px panel; **option D produces 10 bursts, so the string-spliced restore actually executes**; the kind tab is back to its 8% fill and ring, the entity back in JetBrains Mono, the filter chips back to their rings, no river panel in the document, no new console error.
+
+**NOT opened after the revert:** 1440×960 · the empty and no-hit states · a real `:hover` · the focus ring · any filter applied on top of b/c/e.
