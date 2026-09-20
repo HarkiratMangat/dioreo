@@ -17,6 +17,16 @@ status: live
 | Local, never published | **ROUND 13** (three row weights) and **ROUND 14 / 14B–14E** (the "By form" view), plus every `p9` change |
 | Git | `7f889492`, docs only. Branch `feat/portal-pins2-manifests`, nothing pushed |
 
+## ✅ REVERTED at 2026-09-20 16:18 EDT, on his instruction — *"revert the stupid changes you made to the 'day grouped' variant"*
+
+**ROUND 13 is gone** (84 lines of CSS, the `k-` row classes, the three row heights, the kind tab's stripped fill and ring, the filter chips' stripped chrome, the entity's typeface, the day header's type and span). **ROUND 14/14B–14E is gone** with it, including `b3/river.js`, its gate branch and its CSS — the option that reached it no longer exists, and dead code on a board whose next session is a bug hunt is a trap.
+
+**`p9`'s five options are restored verbatim** (A · Day groups · B · Time rail · C · Day blocks · D · Bursts · E · Date gutter), the burst rendering that option D needs is back in `b3/history.js`, and **the migration that discarded his stored `p9` is deleted** so a choice he made on this machine survives again.
+
+Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab back to its 8% fill and its ring, the entity back in JetBrains Mono, the filter chips back to their ring, and no river panel in the document.
+
+**So the day-grouped variant now matches the published v68 exactly, and everything below this line that is marked ROUND 13 or ROUND 14 is HISTORY, not live.** Rounds 12–12H remain, because they are what v68 published and they were corrections rather than the restyle he rejected.
+
 ## The edits, by file, newest first
 
 ### `local/pins2-board-3/redo/gates/picks.js`
