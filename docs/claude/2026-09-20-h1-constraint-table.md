@@ -39,7 +39,7 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 | The entity | **round 3f** | Text with its realm icon. Never a chip: "a chip is for something you act on, a name is a name". |
 | `undone` and the undo button | **round 3f** | Both in the action column. They are one relationship. |
 | The verb | **round 3f** | Drops a trailing type noun when the entity renders beside it. |
-| The river's columns | **ledger, 2026-09-01** | Five, including **Source**, against the design's four. He chose to keep Source. |
+| The river's columns | **ledger 2026-09-01, narrowed by round 3f** | Five. 🔴 **The ledger names them When / Kind / Source / What / Who; the BOARD's five are Time / Kind / What / Who / Undo with source folded into the WHAT cell as `.b3-src`, and round 3f settled that ("Five columns, four header labels | The fifth is named").** Round 3f is later and wins. Read this row before "restoring" a Source column - the first draft of this table said the ledger's five plainly and would have caused exactly the mistake the table exists to prevent (caught 2026-09-20 13:46 EDT). |
 | The search's label | **ledger, 2026-09-01** | "Search events" — the river holds alerts, changes AND restarts. |
 | The panel's title | **ledger, 2026-09-01** | Titles the panel with what it is FOR, not with the component's name. |
 | A row opens the event drawer | **ledger, closed** | It must open the drawer and be keyboard-reachable. ⚠ The ROW no longer carries `role=button`: a real button around the phrase does, because a row carrying it CONTAINED the Undo button (fixed 2026-09-20 13:40 EDT). |
@@ -74,7 +74,7 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 
 | Element | Decided by | What it is allowed to be |
 |---|---|---|
-| A story — consecutive rows in a day on one entity by one person | **round 3f's unbuilt note**, built 2026-09-20 | Bound, never merged: one unbroken left rail, no hairline inside the pair. Completeness is untouched |
+| A story - consecutive rows in a day on one entity by one person | **round 3f's unbuilt note**, built 2026-09-20 | Bound, never merged: one unbroken left rail, no hairline inside the pair. Completeness untouched. ⚠ **THE RULE IS MINE AND HAS TWO KNOWN LIMITS, neither shown to him:** two genuinely separate changes to one entity minutes apart WILL bind, and a real pair separated by an unrelated row will NOT. Measured: 13 stories, all pairs, in 100 rows. |
 | The row separator | **the design review, P1** | Visible between UNBOUND rows only; a bound pair has none |
 | Undone | **the design review, P0** | Not a button. A tick and a word, no box, no pointer. Undo is the only button-shaped thing in the column |
 | The kind tab's saturation | **the design review, P3**, inside pin 53 | Lowered. Shape, hue and position are pin 53's and are untouched. ⚠️ `:not(.quiet)` — the DEMOTED mark keeps its 14% fill and no ring |
