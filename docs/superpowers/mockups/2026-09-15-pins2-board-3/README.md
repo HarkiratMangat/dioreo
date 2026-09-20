@@ -2229,6 +2229,22 @@ Neither, and that was a defect. Widening the file panel's selector handed the la
 
 It is also the screen every export drawer in the portal opens on, so a pair of Armory weapon accents would have painted Broadcast's and Season's drawers Assault red. The one hue every realm has is its own, so the landing's ground is built from `--rc` (the realm accent, set where the drawer mounts, Armory's as the fallback) with `--patch` as its second light. The file panel's selection-lit ground is untouched.
 
+### The design review, and what it changed (2026-09-20 13:32 EDT, local, NOT published)
+
+An isolated design review scored the panel **25 / 40** on Nielsen's ten. Its three sharpest findings are one idea: the loudest ink on the surface is the least informative, and *shape carries state* — this portal's own principle — is contradicted in the one column where state matters.
+
+| Rank | Finding | Measured | Now |
+|---|---|---|---|
+| **P0** | **Undo and Undone are the same object** | both 84×28, both 10.5px, both `rgb(133,147,159)`; the only difference an **eight-point RGB step** of fill — and the INERT one carried `cursor:pointer` | Undone gives the button footprint back: a tick, a word, no box, no pointer. Undo is the only button-shaped thing in the column |
+| **P1** | **There is no row separator** | sampled at x=700/900/1000/1200 across a row boundary — every pixel identical. `--rule3` is within a point of the ground, so the 3px left rail was the only boundary on a 1092px table | the rule returns at a weight you can see, and **only between unbound rows**, so a bound story pair still reads as one block |
+| **P3** | **The kind tab out-shouts the event** | bright hue, tinted fill, hued border, an icon, repeated identically on 27 of 100 rows, beside the white verb that differs on every one | saturation down; shape, hue and position untouched. ⚠️ **The fix stays inside pin 53**, which owns the tab's existence, its one shape and its one colour and says nothing about it being the brightest thing in the row — the same inversion ROUND 10C tried to fix by DELETING the tab |
+
+🔴 **And a real accessibility bug: an interactive control nested inside an interactive control.** The row carried `role="button" tabIndex="0"` and *contained* the Undo `<button>`, which is invalid and breaks keyboard and screen-reader behaviour on the one control that matters here. The ledger's closed row — a History row opens the event drawer and is keyboard-reachable — still holds: the row is now a plain div that opens on a click outside any button, and the keyboard path is a real button around the phrase, the thing you would read and press anyway. Verified: **0 nested interactives**, row role and tabindex both gone.
+
+⚠️ **These four came from my own critique, not from him.** They are offered, not settled — each is one rule and reversible.
+
+**Left open by the review, not acted on:** the counts describe the loaded 100 rather than the 1,421-row set; the toolbar scrolls away after 4% of the range; 73 of 100 rows are structurally half-empty because only a change carries an entity; the burst head names a rate and then renders all 25 rows; and its sharpest question — *every restart is followed by a "Bot online" alert at the same minute, so is Alert a kind or a property of the restart?*
+
 ### What the measurement pass found (2026-09-20 13:29 EDT, local, NOT published)
 
 An isolated assessment measured every relation on the panel — 31 colour pairs, every column edge, ten states. The bundled detector returned **zero findings**; every defect below needed a number, and five of the six are invisible in the CSS.
