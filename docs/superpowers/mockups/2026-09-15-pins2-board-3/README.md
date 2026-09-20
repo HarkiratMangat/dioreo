@@ -2229,6 +2229,24 @@ Neither, and that was a defect. Widening the file panel's selector handed the la
 
 It is also the screen every export drawer in the portal opens on, so a pair of Armory weapon accents would have painted Broadcast's and Season's drawers Assault red. The one hue every realm has is its own, so the landing's ground is built from `--rc` (the realm accent, set where the drawer mounts, Armory's as the fallback) with `--patch` as its second light. The file panel's selection-lit ground is untouched.
 
+### What the measurement pass found (2026-09-20 13:29 EDT, local, NOT published)
+
+An isolated assessment measured every relation on the panel — 31 colour pairs, every column edge, ten states. The bundled detector returned **zero findings**; every defect below needed a number, and five of the six are invisible in the CSS.
+
+| Found | Measured | Now |
+|---|---|---|
+| Three right insets and two left insets **inside one panel** | rows/head/day 197→1249 on `0 16px 0 22px`; the toolbar 197→**1247** on `16px 18px 14px 22px`; Load-older starting at **193** on a flat `18px` | one token on the panel, used by all four. Every content edge 197→1249 |
+| The filter block's second column **moved with the data** | `max-content max-content` sized both tracks to their chips, so a count going `27`→`0` slid LEVEL/REALM/UNDO left — **four distinct x values, 18.89px of drift** | column one pinned at its measured maximum, column two takes the rest. Drift re-measured at **0** |
+| The zero-count chips fail contrast | `--ink4` on `--sunk` = **3.46:1** against the 4.5 floor, on seven chips at once | text to `--ink3`, **5.35:1**. Inertness stays on the ring, the mark and the cursor — this board's own shape-carries-state |
+| The one in-row button rang a **different focus colour** | `.b3-undo` has no `:focus-visible` of its own and fell to the global `:where(button,a,input,…)`, ringing **amber** where every other control rings cyan | its own rule, `--focus`, verified by focusing it and reading the computed outline |
+| `.mlabel` tracked **1.52px** where the other two 9.5px uppercase labels track 1.33 | one label in three | 1.33 |
+
+🔴 **FIVE rules set `grid-template-columns` on the filter block** — `.b3-hi-f` three times and `html[data-b3-a1=fixed] .mt-r2` twice — and the winner was the attribute-scoped one at (0,2,1), which is what the drift actually came from. Found by asking the page which rules matched, never by reading the file. Same specificity class as the `button:hover` defect two rounds earlier.
+
+⚠️ **The first fix for the drift cost a line and I only saw it by looking.** Two equal halves stopped the movement but gave REALM 518px for chips that need 537, so Access wrapped and the two columns lost their shared rhythm. Pinning column one instead holds both: six groups at 32px, drift 0.
+
+**Not fixed, and stated rather than filed:** `.b3-htab` 24px, `.b3-undo` 28px and `.b3-fc` 32px are all under the 44px touch floor. The row itself is 46px and is the hit area on a pointer surface, which is the trade this console already makes; it is a real finding on a touch device and this board is not reviewed on one.
+
 ### The story — round 3f's one unbuilt observation, built (2026-09-20 13:25 EDT, local, NOT published)
 
 Round 3f wrote this on 2026-09-16 and marked it **Not built**, calling it *"the observation I would not have reached by listing defects"*: **the rows come in pairs that are one story** — 3:25 "Deleted X" and 3:22 "Added X, UNDONE", same minute, same name, all the way down — and merging them would be wrong, because an audit log's value is that it is complete.
