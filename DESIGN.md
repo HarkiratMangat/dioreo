@@ -138,6 +138,28 @@ Structure is carried by **borders** (`--rule`, `--rule2`) — but "no shadows" i
 
 **Slot hues, the box inset and the Best tier — added 2026-09-14 23:59 EDT (pins batch 2, design board 2).** Nine `--sl-<slot>` tokens, `oklch(76% .055 H)` with H muzzle 25 · barrel 65 · stock 105 · underbarrel 150 · optic 190 · laser 225 · rear grip 260 · perk 300 · ammunition 340, used only as a faint wash and outline on an attachment tag, never as ink. `--box-inset:5px` is how far a boxed icon button draws its visible box inside its 44px target. `--tier-best` is the legendary gold of the Best tier. The board's 5px and 7px radii port onto `--rad-2`. One step was added: `--rad-box:8px`, the visible box of a boxed icon button, which is 2px from either neighbour.
 
+## Overflow fades, it never cuts — added 2026-09-19 21:23 EDT
+
+*Recorded because the device had been reached for independently in five places before anyone wrote it down, and each one solved it slightly differently.*
+
+**Where a run of content is longer than its box, the box fades it out rather than clipping it or ellipsing it.** A hard edge says "this is the end"; an ellipsis says "there is more, and you cannot have it"; a fade says "there is more, keep going" — which is true, because in every one of these cases the content is reachable by scrolling, hovering or opening.
+
+| Surface | What runs over |
+|---|---|
+| Selection bar's weapon chips | two rows of chips that swipe sideways |
+| Export drawer's category bays | one row of bays that swipes, and follows the scrollspy |
+| Export tile's weapon name | a long name slides under its own build count on hover |
+| Export file body | the text block under its footer |
+| Delivery card's lifespan bar | a run with no end date fades off its right edge |
+
+**The rules.**
+
+1. **The mask goes on the BOX, not on the content.** A mask on the text itself is sized to the text, so its fade zone always lands on real ink and every short string loses its last characters. On the container, a short string stops before the fade and is untouched — no conditional, no measurement, no JavaScript. *(This was got wrong first, on the Export tile's names: every weapon in the bay read `AK11`, `DR-`, `LK2`.)*
+2. **A fade that can be scrolled past fades on BOTH edges, driven by scroll position.** A right-only mask keeps promising more content after the reader has reached the end. Each edge fades only while there is something beyond it.
+3. **The fade is 18–28px** — wide enough to read as a fade rather than a blur on the final glyph, narrow enough not to eat a whole word.
+4. **If the run can also move on its own** (a name that scrolls on hover, a row that follows a selection), the travel is exactly the overflow and clamps at zero, so content that already fits never moves. `100cqw - 100%` inside a container query does this with no measurement; `prefers-reduced-motion` keeps the fade and drops the travel.
+5. **It never replaces a control.** A faded edge tells you there is more; it does not tell you how to get there. Anything that must be reachable by keyboard still needs its own affordance.
+
 ## Components
 
 *Added 2026-09-06 00:27 EDT, from `impeccable doctor`'s only finding: nothing here told a screen generator what a control looks like, so the live design panel drew generic approximations in their place.*
@@ -183,6 +205,12 @@ The package carries **91 `transition` declarations**; `portal/ui/app.css` carrie
 ## Spacing — a six-step scale, from 2026-09-06 01:24 EDT
 
 `--s1 4 · --s2 8 · --s3 12 · --s4 16 · --s5 24 · --s6 32` (`portal/ui/tokens.css`, build-out decision D6, `layout`). Structural gaps use s4–s6 — the masthead's padding, `.mh-stats` above the figures, `.panel + .panel` (the view layer and the Manifest sat flush), the record panel's margin, the identity panel's foot; inside a control s1–s3. A literal stays legal where it is optical (a hairline, an 11px diamond); a NEW structural gap on a literal is a defect. Pin 14 ("no breathing room in this entire design") is the finding it answers.
+
+🔴 **EVERY AUTHORED LENGTH IS A WHOLE PIXEL, OR A HALF AT THE FINEST — Harkirat, 2026-09-19 21:23 EDT.** *"can we not do .xx numbers for pixels? at mostttt 0.5 is okay but otherwise try to keep them whole numbers like 1, 2, 3."*
+
+This is about what gets WRITTEN, not about what gets measured. Measuring on the ink produces values like `67.84px` or `-3.57px`, and shipping those makes a stylesheet that nobody can read, reason about or re-derive — a number with two decimal places looks like a constant when it is really one render's residue. **Measure precisely, then round before it lands in a file**, and round in the code that computes it rather than afterwards, so a value that is recomputed at runtime cannot reintroduce the noise.
+
+⚠️ **The one thing this rule must not do is falsify the record.** A sweep that rounds `px` literals will also hit the numbers inside comments — the measurements that explain why a value is what it is — and rounding *those* turns an observation into a fiction. Values the browser reads get rounded; values the reader reads stay exactly as they were measured.
 
 **Before 2026-09-06 01:24 EDT there was no spacing scale, in either the mockups or the portal, and none was invented.** Measured across the six mockups 2026-08-30: **28 CSS custom properties, zero of them spacing**, and 19 distinct off-4px-grid values in padding/margin/gap — `9px` used 41 times, `11px` 31 times, plus 13/15/17/22/26/34/90px.
 
