@@ -2126,3 +2126,17 @@ He asked: *"is this the same mesh used in the selection bar? because idk... it f
 | **Ground** | the proportional mesh plus the bar's *relationship* — the bay, the file card and the tiles stop being opaque and sit **on** the mesh. The bay keeps its hue tint and its edge from round 5d; only its opacity changes |
 
 Looking at the four, **Ground** is the one that reads like the selection bar, because on the bar the mesh is the surface rather than a rim. It is also the one that touches a decision of his, which is why it is shown rather than taken.
+
+## 3-E version 47 — the mesh follows the whole selection, and one option is gone (2026-09-19 20:18 EDT)
+
+His answer to the fork: *"honestly idk… idrk what the difference is except the export list changing shades on ground vs the others. like i only really see my first weapon selection changing it. any additional selection dont seem to move the colors at all visually."*
+
+Both halves were right, and the second was a defect I had shipped one version earlier.
+
+**An accent is a CATEGORY, not a weapon.** Measured: every Assault tile is `#ff3b5c`, every SMG `#ffd23f`, every LMG `#845ec2`. The selection bar takes the first two DISTINCT accents, so on this surface the mesh filled both slots on his first two categories and then froze — however many of the 125 builds he went on to pick. That rule fits a bar holding a handful of builds; it does not fit a picker holding seven bays. **The recipe already has four coloured layers**, so all four are fed now, ranked by how many builds are picked in each category. Verified: Assault → SMG → LMG → Marksman each moves the set, and a ten-Assault selection reads `#ff3b5c` first while a Marksman/Sniper/Shotgun one reads `#3ddc97 · #4361ee · #f6a93b` — a visibly cooler drawer.
+
+⚠️ **The tie-break mattered more than the sort.** Ranking equal counts by their hex string made a single LMG pick demote ten Assaults out of the first light, because `#845ec2` sorts before `#ff3b5c` — the mesh FLIPPED on a pick that should have nudged it. Ties go to whichever category was picked first now, so the light drifts with the selection instead of reshuffling under it. Measured both ways.
+
+**The selection bar is untouched.** Layers 2 and 4 read `var(--m3, var(--patch))` and `var(--m4, var(--r-armory))`, and the bar sets neither, so its four lights still resolve to exactly what they did before — checked on the rendered bar, not on the rule.
+
+**"Bar's light" is withdrawn.** He could not tell it from Mesh, and he was right not to: the difference is a 35% change in the radius of a 15%-alpha blob, which is invisible on a dark ground. An option nobody can distinguish is not a choice, it is a thing to maintain. `xbg` is **Flat · Mesh · Ground**, and its dead rules were removed with the option.
