@@ -216,6 +216,31 @@ This is about what gets WRITTEN, not about what gets measured. Measuring on the 
 
 Recording an invented scale would have been the wrong move twice over: it would make an arbitrary set of numbers look decided, and snapping the portal onto a grid would move pixels and **raise** the conformance diff. Per Harkirat's decision 2026-08-30 11:46 EDT: **no action now; revisit once the portal is conformed to the mockups, since that is when redesign work resumes anyway.** That revisit is the 2026-09-06 01:24 EDT scale above; the mockups keep their off-grid values because they are the approved design, not a live sheet.
 
+## The manifest row — five rules design board 3 settled, added 2026-09-20 14:16 EDT
+
+*This section is a MERGE, not a regeneration: `impeccable document`'s own reference says never to overwrite an existing DESIGN.md, and this file's header says it describes the mockups rather than `portal/ui/`. Everything below is read out of the board's own files — `local/pins2-board-3/redo/b3/board.css` (rounds 6B · 9A · 9B · 10A · 10J · 10K · 11 · 11B · 11C · 12–12G), `b3/history.js`, `gates/history.js`'s `notes` (Harkirat's pins 51–57), and the package README's v62–v67 sections. It is recorded as SYSTEM rather than as one gate's styling because the same vocabulary draws the Armory manifest, the Season Repairs list and the History river; every rule below was reached on one of them and then found to be true of the others.*
+
+**The Mesh Rule.** A manifest row's hover and open ground is a FIELD, not a band. Three radial gradients plus a white 8% linear wash, composited `screen, screen, screen, normal`, so the layers mix like light and the ground stays dark: `70% 220% at -6% 120%` of `--c` at 14%, `62% 200% at 34% -24%` of `--warn` at 10%, `66% 210% at 104% 128%` of `--c` at 9%, then `linear-gradient(180deg,#ffffff08 0,transparent 30%)`. **Only `--c` changes** — it is the row's own topic hue. A band stops where its element stops, which is why a flat wash kept reading as a partial highlight; a field belongs to the whole row including its action cell. Swapping any other layer produces a glow that is *nearly* the manifest's, which is the same as not being it.
+
+**The Demotion Rule.** A column whose value is identical on every SHOWN row demotes — kind to a mark, who to the avatar alone — and never disappears. It is measured on the rows on screen rather than on the whole dataset, so it answers a filter. The column keeps its track and keeps telling the truth about being uniform; a column that vanishes tells the reader nothing about why.
+
+**The Story Rule.** Consecutive rows in one day naming the same thing by the same actor are drawn as ONE story: their left rails join into a single unbroken bar and the hairline between them goes. **Nothing merges and nothing hides** — every row stays present and countable, because a log's whole value is that it is complete. An event with no entity is identified by what it SAYS, so a run of repeated alerts binds exactly as a change pair does, and a genuinely different event inside a storm breaks the rail visibly.
+
+**The Neutral Chip Rule.** A chip's fallback hue is a neutral declared per surface (`--fc`), never a STATE colour. Reaching for `--patch` as "the default accent" tinted every unstated chip staging-yellow and said *staged* about things that were not.
+
+**The One Inset Rule.** A panel declares its content inset ONCE and every member uses it — rows, column head, day header, toolbar, foot. Three right insets and two left insets inside one panel is the defect class Harkirat finds by eye every time, and it is invisible in the CSS because each rule looks correct on its own.
+
+### The scrolling manifest — added with round 12
+
+**A long manifest scrolls its LIST, not its panel.** The toolbar and the column head are the frame; the rows are the thing that moves. The head sticks at the top of its own scrollport carrying an `inset 0 -1px 0` ring rather than a border, and day headers stack beneath it. Measured on H1 before the change: the day header had been written `position:sticky` since round 9A and had never once stuck, because its nearest scrollport was a panel that does not scroll — and the toolbar, 26% of the panel's height, left on the first scroll of a 4802px list.
+
+### Four don'ts the board paid for, added 2026-09-20 14:16 EDT
+
+- **Don't put `border-radius` on an `<svg>`.** An svg's overflow is hidden and the clip follows the radius, so `border-radius:50%` on an icon turns it into an ellipse and eats the corner strokes of its own glyph. Round the BOX around it.
+- **Don't let a child redraw its container's edge.** A panel draws a 1px border at `--rad-2`; a child sitting exactly 1px inside it with a full `inset 0 0 0 1px` ring of its own puts two 1px lines on the same three edges at two different radii. Measured at 175 against 174 and 1265 against 1266 — read as "why are there 2 different borders overlapped on the panels".
+- **Don't write `all:unset` on a `<button>` and stop there.** It strips the UA sheet's `user-select:none` as well, so the label becomes selectable and a stray drag leaves a highlight behind the text that reads as a rendering bug. Restore it explicitly.
+- **Don't trust source order over specificity.** `button:hover:not(:disabled)` is (0,2,1) and outranks every `.control:hover` at (0,2,0); an attribute-scoped `html[data-x] .mt-r2` beats a plain class. When a rule you wrote has no visible effect, ask the PAGE which rules match the element instead of re-reading the file — five separate rules were found setting `grid-template-columns` on one element that way.
+
 ## Known divergences — the build-out's deliberate ones
 
 **From 2026-09-06 01:24 EDT the portal is AHEAD of the mockup package on purpose** (Harkirat, 2026-09-06 00:43 EDT: the conformance is done; build out, redesigns included; floors move). The package stays as approved. Each row is a divergence a future measurement will report, and the reason it should NOT be closed:

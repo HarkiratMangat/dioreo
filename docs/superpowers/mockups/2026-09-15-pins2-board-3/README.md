@@ -2196,6 +2196,41 @@ He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when
 
 ---
 
+## 3-E version 68 — the river scrolls, the story reaches the alerts, and two of my own changes were wrong (2026-09-20 14:19 EDT)
+
+*The first round on this gate that was planned before he spoke. One sequential-thinking pass produced the session's work plan, and the plan's centre — "the row is one shape serving three creatures" — came out of reading the record rather than out of his last sentence.*
+
+### The 1282 falsifier, run and come out clean
+
+Caveat 49177 is pinned: **render every board at 1282×888, that is his browser viewport**, and a pins-2 board checked only at 1440 "went out broken and he called it a mess". Every number in ROUND 11B was taken at 1440, and 11B pinned the filter block to a fixed `440px` track. Measured at both: the gate stage is fixed, so the panel is **1092px wide at 1282 and at 1440**, `440px minmax(0,1fr)` resolves to `440px 596px` at both, **0 groups wrap and 0 chips pass the panel edge**. The risk was real, it is dead, and it is written down as dead so nobody re-runs it.
+
+### Three things the measurements found that nothing had reported
+
+| Found | Measured | Now |
+|---|---|---|
+| **The day header's `position:sticky` had never once stuck** | scrolled 400px into the panel and read it back at **top −167px** — its nearest scrollport is `.b3-hi`, which is not the thing that scrolls | the LIST is the scroller, the column head sticks inside it with an `inset 0 -1px 0` ring, and day headers stack beneath it |
+| **The toolbar is 200px of a 764px panel** — 26% spent on controls before one event, and it left on the first scroll of a 4802px list | the design review's second finding, with the number | the toolbar and head are the frame, Load-older is a pinned foot |
+| **`EVENTS` sits 22px right of every filter label** | the box starts at 118 with them; `min-width:64px` (pin 3) plus right-aligned text puts the WORD at 140 | the label fills its gutter and reads from its left edge. ⚠️ ROUND 10K was written to catch exactly this and measured the BOXES — the same ink-versus-box lesson as round 3 |
+
+### The story finally reaches the rows that needed it most
+
+ROUND 11 bound consecutive rows naming the same entity by the same actor. The key was built from a **quoted entity, which only a change row has**, so 73 of 100 rows could never bind. Filtered to alerts and looked at it: **nine consecutive rows reading "Bot online"** at 9:42, 9:39, 9:38, 9:37, 9:37, 9:35, 9:35, 9:35 and 9:34, each with its own hairline. The design review said the same thing in words — *"a crash loop in which three genuinely different alerts are buried"*. An event with no entity is identified by **what it says**, so the run binds on its phrase: 47 alerts resolve into **3 runs and 18 singletons**, nothing merged, nothing hidden, and a real alert inside a storm now breaks the rail visibly.
+
+### Two changes of mine that were wrong, and the shot is what said so
+
+1. **The level meter, right-aligned inside WHAT.** The argument was that 47 severities would line up in a column already being paid for. Rendered: the phrase is "Bot online", it ends at x=310, the meter moved to 1040, and the row read as **two islands with 730px between them**. Sound for long messages; this log has none. Reverted — the facets trail the phrase again.
+2. **The fade on the WHAT cell.** DESIGN.md's rule is *overflow fades, it never cuts*, and the cell was `overflow:hidden` on a `nowrap` phrase. But a mask on the cell fades whatever sits at the cell's right edge — so it would have eaten the meter first. The mask moved onto the verb-and-entity group, which reserves its own 24px of padding: the fade sits on padding when the phrase fits and on the overrun when it does not.
+
+### Also
+
+- **The avatar disc stops out-shouting the name it duplicates** — 26px and a 700-weight `--ink` initial beside a 12px `--ink3` name, a hundred times down a column. It demotes to 22px at `--ink2`; it keeps its shape and its gradient, because round 3f says a thing demotes rather than disappearing. Same hierarchy inversion the design review found on the kind tab, one column to the right, and it was not in its list.
+- **The row that opens says so.** ROUND 11C gave the phrase a real button for the keyboard; nothing told a pointer. The verb underlines on hover and on focus at 35% ink — no new control, no new column.
+- **A row cut in half at the list's bottom edge** now fades, carried on the foot so it follows it.
+
+### What this round is evidence of
+
+Every earlier round on this gate began with a sentence of his and ended with the smallest change that made it stop being true. This one began with a plan, and the two sharpest findings — the sticky that never stuck, and the story never reaching the alerts — were **invisible from the outside and would never have been reported**. The two changes that had to be withdrawn were both cases of measuring the IDEA instead of the render, which is the same failure at a smaller scale.
+
 ## 3-E version 62 — the chip's hue contract, the portal's own toolbar and glyphs, the export landing (2026-09-20 11:25 EDT)
 
 **His intake, five items over six prompts**, ending: *"I'm just so disappointed in your quality of work, level of effort, laziness, and narrow minded output. You never check relevant designs and elements."* Four of the five turned out to be rules I had written myself in ROUND 9B the night before, which is the whole of his point.

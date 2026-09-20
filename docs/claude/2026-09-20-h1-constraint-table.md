@@ -81,6 +81,21 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 | The row as a control | **a11y, and the ledger's closed row still holds** | The row is a plain div; the keyboard path is a real button around the phrase. No interactive nested in an interactive |
 | Anything measured on a shared browser page | **anchor #42 and the page-2 contamination** | Re-taken on a page no other actor is using |
 
+## Added by ROUND 12 (2026-09-20 14:19 EDT)
+
+| Element | Decided by | What it is allowed to be |
+|---|---|---|
+| Which part of the panel scrolls | **ROUND 12, measured** | The LIST scrolls; the toolbar and the column head are the frame. The head sticks inside the list's scrollport; day headers stack beneath it at `--hi-head`. The day header's sticky had never worked before this |
+| The story's identity key | **round 3f's rule, extended in ROUND 12F** | An event with no entity is identified by WHAT IT SAYS. Repeated alerts bind exactly as a change pair does. Nothing merges, nothing hides |
+| A run of content longer than its box | **DESIGN.md § Overflow fades** | Fades on the BOX, never cuts. On a row it is the verb-and-entity group that carries the mask, not the cell — a mask on the cell eats whatever is right-aligned in it |
+| The WHO avatar | **round 3f's demotion, applied to weight** | 22px, initial at `--ink2`. It keeps its shape and gradient; it stops being louder than the name beside it |
+| The row's open affordance | **ROUND 12H** | The verb underlines on hover and on focus. No new control, no new column |
+| ⚠️ The level meter's position | **round 3f, re-read** | It stays in the WHAT cell, trailing the phrase. Moving it into the action column was tried and is WRONG: 3f says `undone` and the undo button are both in the action column because *they are one relationship*, so that column is the undo relationship and nothing else |
+
+**Recorded as answered, not built:** the design review's "73 of 100 rows are structurally half-empty". The census is 27 change / 47 alert / 26 restart, with 27 entities and 73 empty action cells. That is the log telling the truth, not a layout defect, and the board's own answers to it are round 3f's demotion and ROUND 12F's story binding. No column was added and none was hidden.
+
+**Still his, untouched:** the count readout (ledger-OPEN) · whether Alert is a kind or a property of a restart · the `p9` day shape.
+
 ## Also unattributed, introduced by me today
 
 `--fc` as the chip hue contract · the chip's four-state percentages · the burst sub-head's "6 in 9 min" wording · the export landing's lead/secondary/strip composition · `exs-pick` · the story binding's own rule (consecutive, same entity, same actor, within a day) · the row separator's weight · the 440px filter column. Each may be fine; none was shown as a choice.
