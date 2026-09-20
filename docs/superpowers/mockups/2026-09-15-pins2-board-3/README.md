@@ -2196,6 +2196,33 @@ He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when
 
 ---
 
+## 3-E version 57 — the History day as a row of its own table, and the whole gate swept first (2026-09-20 02:00 EDT)
+
+**His brief, verbatim:** *"you'll be working on the history manifest's `day groups` view and drastically improving it's design… I dont want multiple rounds of this shit. i want 1 FULL THOROUGH HARSHLY NITPICKED design improvement round where you catch and fix and build and improve everything with the history manifest."* One round, so every state was opened on a painting browser (chrome-devtools, 1282×888 and 1440) before anything was drawn: resting, stuck mid-scroll, the Aug 27 storm, Only alerts, Can be undone, an empty result, one person, one realm, one kind, a search, a one-day result, an open row, the drawer, the Time rail, and 1440. Shots in `local/pins2-board-3/redo/shots/h1-*.png` (`h1-before-*` is version 56, `h1-after-*` is this).
+
+### What a day IS here, and what the header now carries
+
+A day on this manifest is three things: the boundary his memory indexes by, a summary of how much and what kind happened, and a density — and "73 events" said nothing about Aug 27 being 26 restarts and 47 alerts. The header was a date and a count set on the label inset, a sentence where labels sit, on no line the rows draw. **Now it is a row of the table**, on the grid the head and rows share (76 · 104 · 1fr · 124 · 84): the date sits on the times' right edge, the day's **kind mix** starts on the KIND line where every row's first object starts — `● 4 changes`, `● 47 alerts  ● 26 restarts` — in the kinds' own hues, count in mono, and the bare count is gone because the mix is the count. Measured: date right edge = time right edge = head right edge (194 · 194 · 194; on the rail 228 · 228 · 228), summary x = kind tab x (212), date, count and word on ONE baseline (339.94 all three), dot centred on the date's mid-line. A day outside the current year says its year. The ground is a ladder — head `--sunk`, day sunk-into-paper 60/40 at 92% with the blur kept so the row sliding under a stuck day shows through, rows paper — and the first day under the head drops its top rule, so the top of the list is no longer a 66px block of two dark bands.
+
+### What the sweep found before the header was touched, and what each became
+
+| Found | Measured | Now |
+|---|---|---|
+| 60px of dead band above the panel, 28 below, 4/5 at the sides | portal's `#manifest` top margin copied into `gates.css`; then `width:auto` in a `justify-items:center` grid = max-content, 1,135px in a 1,092px track | 28px on every side; `width:100%; justify-self:stretch` |
+| The day count painted full `--ink` | the generic `.b3-nw > em` lightness floor with no `--c` → invalid → inherit, beating `.b3-hi-day em` at equal specificity; same on "1,321 more" | class fix: `@container style(--c)` gates the floor; five-site sweep re-run, only the two wrong sites moved |
+| Seven zero-count chips offered as live controls | Error 0 · Warn 0 · Armory 0 · Broadcast 0 · Access 0 · Today 0 · 7 days 0, each a door into the empty state | `.none`: `--ink4`, `--rule3` ring, mark at 40%, inert — unless it is the pressed chip, whose own count skips its filter |
+| The filter block did not fit its real width | col1 520 + col2 537 + 36 > 1,052; it had fit only because the panel grew | Can-be-undone is its own group (UNDO), rows pair KIND·LEVEL, WHO·REALM, WHEN·UNDO; `minmax(0,1fr) max-content`, so column two ends on the table's edge (1,168 = search box = head) |
+| Demoted columns kept their width | a 24px icon in a 104px column, a 26px avatar in 124px | `uk` / `uw` on the section narrow head, rows AND day to 28px — the head's own four-letter labels measure 28.1 |
+| The Time rail's head on the wrong grid, its Undo pill clipped | KIND 12px off its tabs, WHO 26px off; v39's 84px pill in a 44px column | head, rows and day share the rail's grid; the action column is 84 |
+| The empty state | a column head over nothing; "Load older events" under a Today filter; "these filters" for a search | no head when nothing is shown; no load-more under a WHEN chip; *Nothing matches "zzzz". Clear the search to widen the list.*; the button says Clear search; the panel hugs its content instead of a 732px sheet |
+| The Today try | a zero-count chip is inert now, so the try was dead | *Only the probes* searches `Realwalk`: four days, one kind, one person |
+
+**Not swept, filed:** the Armory manifest carries the same `#manifest` top margin and the same 60px band; it is an accepted gate, so it is in `docs/db-deferred-list.md` as the fourth class fault with a verify condition rather than moved silently. **Not verified:** a day dated before 2026 (the data has none, the year suffix is one branch), a row's hover on his hardware (the 5% tint was not changed).
+
+**Files:** `b3/history.js` (day header, `uk`/`uw`, inert zero chips, UNDO group, empty copy, `fmtDay`), `b3/board.css` (ROUND 9A + the `--c` gate at the old line 2654), `gates.css` (the panel in its stage, the rail's shared grid), `gates/history.js` (the third try). No console errors on reload.
+
+---
+
 ## 3-E version 49 — his second round of six (2026-09-19 21:30 EDT)
 
 **1 · The tiles flow.** Measured first: the grid computed `align-items:stretch`, so AK117 with one chip stood as tall as SKS with four and the air went under the short ones. Three columns of flow now, gap 10 → 8, each tile its own height (82.4 / 152.4 at 1100, 82.4 / 117.4 / 222.4 at 760). The cost is that reading runs down a column rather than across a row; within a bay the weapons are alphabetical, and the Repairs panel already packs its tickets this way. A long name fades under its own count and side-scrolls on hover — pure CSS, the travel is exactly the overflow (`100cqw - 100%`) and clamps at zero. ⚠️ **The fade was wrong first and only looking caught it:** on the `<b>`, whose width is its own ink, the fade zone always lands on real text — every weapon in the bay read `AK11`, `DR-`, `LK2`. It belongs on the container. The other tile layout, its fork, its control, its stored default and its 36 CSS rules are gone.
