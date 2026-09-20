@@ -2229,6 +2229,18 @@ Neither, and that was a defect. Widening the file panel's selector handed the la
 
 It is also the screen every export drawer in the portal opens on, so a pair of Armory weapon accents would have painted Broadcast's and Season's drawers Assault red. The one hue every realm has is its own, so the landing's ground is built from `--rc` (the realm accent, set where the drawer mounts, Armory's as the fallback) with `--patch` as its second light. The file panel's selection-lit ground is untouched.
 
+### The story — round 3f's one unbuilt observation, built (2026-09-20 13:25 EDT, local, NOT published)
+
+Round 3f wrote this on 2026-09-16 and marked it **Not built**, calling it *"the observation I would not have reached by listing defects"*: **the rows come in pairs that are one story** — 3:25 "Deleted X" and 3:22 "Added X, UNDONE", same minute, same name, all the way down — and merging them would be wrong, because an audit log's value is that it is complete.
+
+It sat there for four days while eight rounds moved paint. Measured on the real log: **13 stories across 100 rows**, every one a pair, which is exactly what every screenshot he has sent of this gate shows.
+
+Nothing merges and nothing hides. Consecutive rows in a day touching the same entity by the same person are bound: the left rail — already the kind's colour — stops being a stub per row and becomes one unbroken bar down the story, and the hairline inside a story goes. Twelve rows that read as twelve events now read as six things that each happened in two acts.
+
+⚠️ **The first cut blanked the whole board.** I wrote the explanation as `${''/* … */}` — template-literal syntax — inside plain JS in the day's `map`, an Uncaught SyntaxError. A comment's form follows the position it sits in, not the file it is in.
+
+🚫 **Not published.** Anchor #40, declared 2026-09-20 13:25 EDT: Board 3-E is not published again until he says his round is done. Six publishes went out during his review today (v62–v67), which is precisely what anchors #19 and #21 exist to prevent.
+
 ### v66 — the sweep I had deferred, a composed landing, and a doubled panel edge (2026-09-20 13:07 EDT)
 
 **"Why not?" had no answer.** I closed a run by listing an unswept gap — whether any of 240 classed buttons relied on the bare `button:hover` for its only hover — which is the verification the v65 change itself owed. Run now: **36 distinct button class-groups against 410 hover rules.** 25 declared a background, 11 did not. Six of the eleven are correct and were the point: `.wg-ib`, `.wg-fold`, `.wg-sort`, `.wg-code`, `.wg-cb` and `.wg-igb` light a `::before` and `gates.css:261` sets `background:none` on them deliberately — they were the previous round's six named instances. The other five genuinely lost their only hover and have one now, each in its own register; a button carrying `class=""` is treated as unstyled again, since `[class]` matches an empty attribute.
