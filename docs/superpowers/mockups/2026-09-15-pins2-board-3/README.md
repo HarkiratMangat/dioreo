@@ -2140,3 +2140,13 @@ Both halves were right, and the second was a defect I had shipped one version ea
 **The selection bar is untouched.** Layers 2 and 4 read `var(--m3, var(--patch))` and `var(--m4, var(--r-armory))`, and the bar sets neither, so its four lights still resolve to exactly what they did before — checked on the rendered bar, not on the rule.
 
 **"Bar's light" is withdrawn.** He could not tell it from Mesh, and he was right not to: the difference is a 35% change in the radius of a 15%-alpha blob, which is invisible on a dark ground. An option nobody can distinguish is not a choice, it is a thing to maintain. `xbg` is **Flat · Mesh · Ground**, and its dead rules were removed with the option.
+
+## 3-E version 48 — Ground: only the bay goes through (2026-09-19 20:26 EDT)
+
+His: *"ground seems to be losing the tint over the tiles? is that a bug or intended?"*
+
+**Neither, exactly — and the measurement says something more useful than the guess would have.** The picked tile's hue is still in the CSS: `srgb(0.242 0.245 0.190) / 0.73` against a plain tile's `(0.122 0.153 0.180) / 0.70`. Nothing was lost in the colour. What was lost is the **separation**. Once the tile and the bay are both translucent over the same mesh they composite toward the same value, so the tile stops reading as an object sitting on the bay — the border ends up carrying it alone, and a picked tile's tint has nothing left to stand against.
+
+⚠️ **And I nearly reported the wrong cause.** A first sample said the picked and plain tiles computed to an identical colour, which would have meant the `.all` rule was being lost — a completely different defect with a completely different fix. Probing the two expressions directly showed they resolve 0.242/0.245/0.190 against 0.122/0.153/0.180: the nesting works, and my sampling had read one element twice. **A measurement can be wrong in a way that looks precise;** the second probe existed only because the first answer disagreed with what the stylesheet said should happen.
+
+**The correction:** only the bay is translucent now. The mesh reads through the pane — which is the relationship the selection bar actually has — and the tile stays solid on top of it. Three layers, each distinct: ground, tinted pane, object. Verified after: bay `srgb(0.221 0.219 0.156) / 0.558`, picked tile opaque with its hue, plain tile opaque `--raised`. The file card stays solid for the same reason.
