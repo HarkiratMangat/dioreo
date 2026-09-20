@@ -2196,6 +2196,33 @@ He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when
 
 ---
 
+## 3-E version 62 — the chip's hue contract, the portal's own toolbar and glyphs, the export landing (2026-09-20 11:25 EDT)
+
+**His intake, five items over six prompts**, ending: *"I'm just so disappointed in your quality of work, level of effort, laziness, and narrow minded output. You never check relevant designs and elements."* Four of the five turned out to be rules I had written myself in ROUND 9B the night before, which is the whole of his point.
+
+| His words | The cause, found | Now |
+|---|---|---|
+| "why tf does the All button have a yellow tint randomly?" · "Doesn't this shade of yellow mean staged?" | `.b3-fc{--c:var(--patch)}` — I used a STATE colour (`#F2C230`) as the neutral fallback for a chip with no topic | `--c:var(--fc,…)`, and the SURFACE declares its hue once: History `--r-history`, Repairs `--warn`. The `All` chip now matches the four it sits beside |
+| "why does 2 or fewer attachments' icon have a circle around it?" · "why is Near-duplicate's icon clipping?" | `.b3-fc > .ic{border-radius:50%}` clipped the svg to an **ellipse** (an svg's overflow is hidden and overflow clipping follows the radius) in a 16×13 box, so any glyph reaching a corner lost it. The hover ring sat on the mark, which read as the circle | radius off the icon, kept on the dot; hover belongs to the control |
+| "the grey washed out tints … already asked to be corrected" (Repairs, Broadcast, History) | round 6B's hover rule — the pressed fill at a third, in the hue — had never reached `.b3-fc`; its hover was `--ink4` | rest → hover → pressed → **pressed+hover**, four steps of one hue |
+| "why doesn't Repair build, when active, have any 4th step hover event … for both variants?" | `.b3-rv.on` had no `:hover` | both tones gained it |
+| "i asked for icons on all toggle switcher rails" | the manifest's own View toggle had them since 2026-09-16; `PanelHead`, which draws every OTHER rail, did not | a `VIEW_ICON` map on the shared component — Tier board, Compare, Delivery queue, Airtime, Repairs, Coverage |
+| "that 64/125 number is useless hint text" | a count on a switch, which moves with the filters while the switch does not | removed |
+| "give the mesh gradient background … prime example of you designing the instance" | the rule said `.drawer:has(.b3-xt)` — the export FILE panel — so the LANDING never got it, and `xbg` still defaulted to Flat | the selector covers the landing; `xbg` ships on Mesh, with a one-time migration so a stored Flat does not outlive the default |
+| "why are the download buttons yellow here but green in Pick Builds?" · "why don't they have icons here?" | two controls for one action: `.pill.lead` on the landing, `.b3-btn2.go` one step in | one control — taking a file is `.go` with its mark, everywhere; Pick takes no file and stops wearing the primary treatment |
+| "improve the design of the export drawer landing drastically. Look how ugly and prose heavy it is" | every row repeated the SAME fourteen-word sentence, because the file format is the one thing that does NOT differ between rows | the format is said once; each row carries the count as its hero, the set name, and **the filename that lands** — the line that used to be a duplicated paragraph |
+| "its layout is so oddly spaced and for some reason it uses a completely different search bar" | History had grown a parallel toolbar — its own pill search, its own grid, its own spacing — beside `ui/manifest.js`'s `.mtools` / `.mt-r1` / `.srch` / `.mt-r2` | it IS the portal's toolbar now, markup for markup. The count readout goes, which is the portal's own settled decision (counts ride on the chips, a typed search reports its own matches) |
+| "look at the Realm icons, they don't even match the icons used for those realms" | true: the portal draws Armory as a ringed sight, Broadcast as a megaphone, Access as a key; the chips had invented layers, a radio wave and a shield | seven `i-r-*` sprite symbols, `portal/ui/shell.js`'s REALM_ICON path data verbatim |
+| "the 'can be undone' button uses the staging yellow yet the actual 'undone' button doesn't do its tint" | two halves of one idea drawn by unrelated rules | one vocabulary in `--r-history`: the chip, the button's hover, and the spent state at a quarter |
+| "why don't the rows use the same mesh glow that the armory manifest's rows use?" | they used a flat transition | `.b3-wr:hover`'s four-layer screen-blended field, carried by the row's own kind hue |
+| "the manifest rows need a thorough redesign" | five columns weighted the same, and the loudest ink (the blue KIND chip) was the least informative — 27 of 100 rows said "Change", the left rail already carried that hue, and the verb beside it said it again | four columns. The kind is a 16px hued mark inside the phrase, the verb takes the row's weight, ~90px returns to the only column whose content differs |
+
+⚠️ **Two things I broke and caught by looking, not by reasoning.** Wearing `.b3-hi-top` (which carries `display:flex`) on `.mtools` laid the two toolbar rows out side by side, running the filter grid 180px past the panel. And the first migration deleted `xbg` from the parsed copy without writing it back, so the default won for exactly one page load while the marker said the job was done.
+
+**Files:** `b3/board.css` (ROUND 10A/10B/10C), `b3/history.js`, `b3/state.js`, `ui/icons.js`, `gates/lib.js`, `gates/armory.js`, `gates.css`.
+
+**NOT looked at:** the four states on a phone; D's burst sub-heads; C and E after the column change; the Broadcast rail rendered (its icons are verified in the DOM, not in a shot).
+
 ## 3-E version 57 — the History day as a row of its own table, and the whole gate swept first (2026-09-20 02:00 EDT)
 
 **His brief, verbatim:** *"you'll be working on the history manifest's `day groups` view and drastically improving it's design… I dont want multiple rounds of this shit. i want 1 FULL THOROUGH HARSHLY NITPICKED design improvement round where you catch and fix and build and improve everything with the history manifest."* One round, so every state was opened on a painting browser (chrome-devtools, 1282×888 and 1440) before anything was drawn: resting, stuck mid-scroll, the Aug 27 storm, Only alerts, Can be undone, an empty result, one person, one realm, one kind, a search, a one-day result, an open row, the drawer, the Time rail, and 1440. Shots in `local/pins2-board-3/redo/shots/h1-*.png` (`h1-before-*` is version 56, `h1-after-*` is this).
