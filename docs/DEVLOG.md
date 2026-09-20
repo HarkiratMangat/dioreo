@@ -4449,7 +4449,7 @@ The routing failure underneath the evening is worth more than any of it. He rais
 
 Two defects surfaced on the way to a green suite, neither of them board work. `scripts/portalDiff.mjs` declared `args` and `flag` thirty-seven lines below their first reader — a temporal dead zone, so the module threw the moment it was evaluated and `portal:diff --help` could not run; `node --check` cannot see it and the tdz ratchet was the only gate that could. And `~/.claude/settings.json` registered `cbm-session-reminder` four times under SessionStart, so it fired four times on every session start on this machine.
 
-## 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0)
+## 2026-09-17 23:29 EDT — Portal pins batch 2, Session 3: board 3 swept twice, the problem card rebuilt, his 32 threads re-read clause by clause (v3.85.0-pre)
 
 **What happened.** Round 4m opened with the element-by-element sweep he ordered: 13 screens read one element at a time, then every suspect measured. It found 17 defects, four of them my own regressions. Sweep 2 rendered 18 states the board never shows at rest and found four more. Then his messages found what both sweeps missed. The manifest's create button still wasn't the masthead's after four of his threads: four stacked rules, each written as the fix. The problem card had a second, square frame and never flipped upward near the bottom of a screen, because it measured itself at 10px. Its upward outline had never been drawn correctly. The hazard strip took four passes on one sentence of his. His Tag style rule was recorded in a comment and never applied.
 
