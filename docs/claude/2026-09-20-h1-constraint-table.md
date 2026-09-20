@@ -96,6 +96,23 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 
 **Still his, untouched:** the count readout (ledger-OPEN) · whether Alert is a kind or a property of a restart · the `p9` day shape.
 
+## Added by ROUND 15 — the intake round (2026-09-20 17:46 EDT)
+
+*Seven items from Harkirat, sorted by CAUSE. Three roots: PROVENANCE (a component existed and the surface drew its own), EDGE OWNERSHIP (a boundary drawn by something that does not own it), and A MISSING SYSTEM (H1 had no spacing scale).*
+
+| Element | Decided by | What it is allowed to be |
+|---|---|---|
+| The day shape (`p9`) | **his instruction, 2026-09-20 17:22 EDT** | **B · Time rail. DECIDED** — *"the drastic redesign is deferred for now."* A, C, D and E are no longer offered; the fork carries `decided` and the switch collapses to it |
+| The row's left accent | **his instruction, ROUND 15** | The Armory manifest's rail, ported: 3px at `--c` 42%, `left:0`, inset 9px top and bottom, joined across a bound story. The p9=b dots and the 1px rail line are gone — that line carried `z-index:-1` and had never once rendered |
+| The kind tab's edge | **pin 53, restored** | `inset 3px 0 0 var(--c)` — the state tab "carried on its left edge". A ring had replaced it while the design review's saturation change was applied; a saturation change must not take the shape with it |
+| The day row's kind mix | **ROUND 15** | The same kind tab as the rows, not bare text. One object names a kind on this surface |
+| The row's hover ground | **his instruction, 2026-09-20, corrected in ROUND 15** | The Armory mesh **parameterised, not copied**. The recipe's middle radial is hard-coded to `--warn`, which screens to grey against H1's cool state hues; it derives from `--c` here. A literal port of a parameterised recipe is not a port |
+| Any 1px container edge | **ROUND 15, board-wide** | Declared as `--b3-edge` and drawn by the shared `outline` rule, never as an inset ring. An outline paints above descendants; an inset ring does not, which is why a full-bleed child cut it. 153 crossings over 24 child/parent pairs before the change |
+| A band's inset | **ROUND 15** | Declared once, by the band that spans the panel. The toolbar owns its bottom edge; the filter grid owns neither an edge nor an inset |
+| H1's spacing | **his instruction, 2026-09-20 17:22 EDT** | Thirteen named relationships as `--h1-*` on `:root`, written by the Spacing playground in the gate's own controls and persisted in the board store. No hard-coded gap in the H1 block |
+
+**Still his, untouched:** the count readout (ledger-OPEN) · the panel titled EVENTS · the whole-toolbar port · whether Alert is a kind or a property of a restart.
+
 ## Also unattributed, introduced by me today
 
 `--fc` as the chip hue contract · the chip's four-state percentages · the burst sub-head's "6 in 9 min" wording · the export landing's lead/secondary/strip composition · `exs-pick` · the story binding's own rule (consecutive, same entity, same actor, within a day) · the row separator's weight · the 440px filter column. Each may be fine; none was shown as a choice.

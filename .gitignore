@@ -97,3 +97,7 @@ CLAUDE.local.md
 # report FINDS must be filed in docs/db-deferred-list.md, because an ignored path carries nothing forward.
 .impeccable/critique/
 .impeccable/audit/
+
+# Board-round screenshots I take while verifying a gate — scratch, never a deliverable.
+# They were swept into a commit by `git add -A` on 2026-09-20 17:46 EDT and removed again.
+shots/

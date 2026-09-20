@@ -69,6 +69,24 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 - `docs/claude/2026-09-20-h1-constraint-table.md` gained its ROUND 12 rows.
 - `docs/db-deferred-list.md` gained three filed items: the river's capped window starving changes `[P0]`, the unshared revert horizon `[P1]`, and the undo-without-validation entry it supersedes.
 
+## ROUND 15 — the intake round (2026-09-20 17:46 EDT), and what each item actually was
+
+| # | His words | Cause | Where |
+|---|---|---|---|
+| 1 | three export tiles, three designs | I invented a lead/secondary/strip composition and recorded it as unattributed, then shipped it | `gates.css` 15C — one tile, one ring, one button; `.exs-pick` stays a door |
+| 2 | the horizontal lines still cut the outer border | Yesterday's fix was `outline` + `--b3-edge` on **four enumerated selectors**; `.dk.settled` kept its own green inset ring at higher specificity | `gates.css` 15A — 153 crossings, 24 pairs |
+| 3 | the title tints only on the title | `.b3-xt-wn:hover b` — the part owned a state the tile owns; the tile's hover already drove the chips and the marquee | `gates.css` 15H |
+| 4 | both options still on the board after I chose | The `p9` fork had no `decided`, so `segOpts` kept offering five | `gates/picks.js` — `decided: b` |
+| 5 · 7c · 7d | spacing, then spacing as knobs | 58 hard-coded declarations, four of them setting one row's padding | `gates.css` 15I, `b3/state.js`, `gates/picks.js` `Knobs` |
+| 6 | H1's glow is not the Armory's | The mesh was byte-identical. Its middle radial is hard-coded `--warn`, which screens to grey against `--info` | `gates.css` 15D |
+| 7a·7b·7e | circles, kind chip, day row | The dots were a second kind signal; the ring had replaced pin 53's left bar; the day chip was bare text | `gates.css` 15E/15F/15G |
+| 7f | a divider floating in the header | `.b3-hi-f` is a max-content grid, so its `border-bottom` was 1052px in a 1092px panel | `gates.css` 15B |
+
+**Found while looking, not reported by him:** the p9=b rail line carried `z-index:-1` and had never rendered · `applyDecision` called `b3()` without importing it · the filter grid double-inset every label by 22px · the column head right-aligned TIME over a left-aligned value.
+
+**Looked at after the build, at 1282×888 and 1440×960:** every band's left ink at x=118 · right ink at 1168 · row height uniform at 56 · chip/tab/day-chip 32/24/22 · the no-hit state · the Alerts filter and its kind demotion to a 24px mark · the focus ring (2px, offset 2) · 4 bound story pairs in the first 8 rows · one pre-existing 404 and no new console error.
+**Not opened:** a real pointer `:hover` (measured through `.open`, which shares the rule) · the empty-data state · filters on top of the knobs at non-default values.
+
 ## Changed against his record, never shown to him
 
 1. The panel titled **EVENTS** · 2. the **deleted count line** · 3. the **whole-toolbar port** — all three from before today and still unruled.
