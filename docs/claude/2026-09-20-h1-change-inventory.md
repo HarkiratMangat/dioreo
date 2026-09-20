@@ -82,6 +82,14 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 | 7a·7b·7e | circles, kind chip, day row | The dots were a second kind signal; the ring had replaced pin 53's left bar; the day chip was bare text | `gates.css` 15E/15F/15G |
 | 7f | a divider floating in the header | `.b3-hi-f` is a max-content grid, so its `border-bottom` was 1052px in a 1092px panel | `gates.css` 15B |
 
+## 🔴 15A WAS WRONG AND HE CAUGHT IT — corrected 2026-09-20 18:47 EDT
+
+I wrote that an outline paints above descendants and therefore protects a container's ring. That is true only **within one stacking context**. `.b3-tk .b3-tk-h` carries `z-index:40` on a grid item while `.b3-tk` is `position:static`, so that header joined an ancestor's stacking context and painted over the card's outline — the repair tickets still showed a cut ring, which is what he screenshotted. **I verified 15A by reading the rule I had just written, not by looking at the surface it governs.**
+
+The edge is an **overlay** now: a pseudo-element pinned to the container, inheriting its radius, above a stacking context the container establishes with `isolation:isolate`. Nothing inside can reach it whatever z-index it declares. **Verified at 9× magnification on a crop of both card edges where a divider meets them, and by a DOM sweep that now reports ZERO containers drawing their own edge as an inset ring under a full-bleed child (was 24 pairs).**
+
+Second correction in the same pass: `segOpts` filtered on my hand-written `decided` only, so a fork he ticked in the Decide panel and I had not transcribed kept offering every option. **Writing `decided` onto `p9` by hand was fixing the instance again.** It reads the recorded pick now, and `p8` (the never-ends warning, his own example) is transcribed as well so it holds where the decisions db is unreachable.
+
 **Found while looking, not reported by him:** the p9=b rail line carried `z-index:-1` and had never rendered · `applyDecision` called `b3()` without importing it · the filter grid double-inset every label by 22px · the column head right-aligned TIME over a left-aligned value.
 
 **Looked at after the build, at 1282×888 and 1440×960:** every band's left ink at x=118 · right ink at 1168 · row height uniform at 56 · chip/tab/day-chip 32/24/22 · the no-hit state · the Alerts filter and its kind demotion to a 24px mark · the focus ring (2px, offset 2) · 4 bound story pairs in the first 8 rows · one pre-existing 404 and no new console error.
