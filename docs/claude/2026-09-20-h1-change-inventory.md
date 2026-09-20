@@ -82,6 +82,23 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 | 7a·7b·7e | circles, kind chip, day row | The dots were a second kind signal; the ring had replaced pin 53's left bar; the day chip was bare text | `gates.css` 15E/15F/15G |
 | 7f | a divider floating in the header | `.b3-hi-f` is a max-content grid, so its `border-bottom` was 1052px in a 1092px panel | `gates.css` 15B |
 
+## ROUND 16 — the verdict round, and the third mechanism for one 1px line (2026-09-20 19:50 EDT)
+
+He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 6, 7a and 7e failed or regressed, item 1 came back with ten sub-defects, and the spacing lab was rejected as design.** Every item with more than one site was still open, and both items I had presented with the strongest evidence — a 9× crop, a byte-identical declaration — were among the failures, because each piece of evidence was framed on the thing I had changed.
+
+**His diagnosis of the cause was better than mine:** *"you keep creating scripts and probes instead of doing the work yourself and using correct tools like codebase-memory."* Nine throwaway probes in this session, zero corpus queries. A probe answers only the question written into it, against the DOM on screen — it cannot see a container that was never listed or a component that already exists. The moment the routing was corrected, `search_code` returned **361 `inset 0 0 0 1px` declarations in this kit**, which is why a selector list could never have been the class.
+
+| Item | What round 16 did | How it was checked |
+|---|---|---|
+| 2 · the edge | Third mechanism, and the first structural one: **a real `border`**. A border sits outside the padding box, so a child cannot reach it — no paint order, no z-index, nothing to remember. It is why `.panel` has never appeared in one of his screenshots | Rendered; the board's own `class-sweep.cjs` |
+| 5 / 7d · the lab | **Deleted my widget.** H1 uses `ListLab`'s own rows — grouped by region, every row a RELATION in plain words, typed box, per-row default, presets, and **Save for Claude**, which is the whole point: mine wrote `localStorage`, so his values would have died in his browser cache | Rendered |
+| 7a · the rail | Back to full `--c`. 42% was Armory's number, tuned for a saturated weapon accent; the board's own rails carry `--c` at strength | Rendered |
+| 1 · the export landing | All ten. The count wears the picker's square, the filename its editable chip, the chevron its icon button, both downloads one control, the door has a ground, and there is one edge | Rendered five times; four defects of my own were found and fixed in that loop |
+
+**Four defects I introduced and caught by looking, not by measuring:** the ported square lost `--m` and rendered as bare text · removing the tick icon left the title in the icon's gutter so it wrapped · L1's 48px number box cannot hold three digits · the chip clipped itself, which the CSSOM walk found in one call after two wrong guesses.
+
+**The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
+
 ## 🔴 15A WAS WRONG AND HE CAUGHT IT — corrected 2026-09-20 18:47 EDT
 
 I wrote that an outline paints above descendants and therefore protects a container's ring. That is true only **within one stacking context**. `.b3-tk .b3-tk-h` carries `z-index:40` on a grid item while `.b3-tk` is `position:static`, so that header joined an ancestor's stacking context and painted over the card's outline — the repair tickets still showed a cut ring, which is what he screenshotted. **I verified 15A by reading the rule I had just written, not by looking at the surface it governs.**
