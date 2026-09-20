@@ -2221,6 +2221,14 @@ He reported it twice - *"it feels like it's lagging behind"*, then *"smooth when
 
 **Files:** `b3/board.css` (ROUND 10A/10B/10C), `b3/history.js`, `b3/state.js`, `ui/icons.js`, `gates/lib.js`, `gates/armory.js`, `gates.css`.
 
+### v63 — his question caught the landing's ground one publish later (2026-09-20 12:01 EDT)
+
+*"so which version of the mesh does it use? because the file panel's mesh is based on which loadouts are selected and changes dynamically? so what did you use for the landing panel? same as the selection bar's ground?"*
+
+Neither, and that was a defect. Widening the file panel's selector handed the landing that rule's **fallback** pair — `#ff3b5c` and `#f6a93b`, measured with no inline style on the drawer — which is exactly the frozen two-hue photograph the picker was fixed for on 2026-09-19. The landing cannot use the picker's rule either: those hues ARE the selection, and on the landing nothing is selected yet.
+
+It is also the screen every export drawer in the portal opens on, so a pair of Armory weapon accents would have painted Broadcast's and Season's drawers Assault red. The one hue every realm has is its own, so the landing's ground is built from `--rc` (the realm accent, set where the drawer mounts, Armory's as the fallback) with `--patch` as its second light. The file panel's selection-lit ground is untouched.
+
 **NOT looked at:** the four states on a phone; D's burst sub-heads; C and E after the column change; the Broadcast rail rendered (its icons are verified in the DOM, not in a shot).
 
 ## 3-E version 57 — the History day as a row of its own table, and the whole gate swept first (2026-09-20 02:00 EDT)
