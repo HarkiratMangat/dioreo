@@ -2306,6 +2306,36 @@ The check is mechanical once the grammar is right: for every `[x]` line, assert 
 - ✅ **DECIDED 2026-09-09 18:09 EDT — YES, it keeps counting `/manage` traffic.** Harkirat: *"/bot analytics counting /manage is fine."* The two `includeAdmin: true` arguments stay as they are; nothing to build, and the before/after p50/p95 comparison the row asked for is not needed because the question is answered rather than measured. ~~DECISION NEEDED: should `/bot analytics`'s Timing panel keep counting `/manage` traffic?~~ `[P2 · XS · any]` *(filed 2026-08-26 20:0x EDT, out of the portal migration.)* `computeUsageStats` has always filtered `isAdmin: false`; **`computeTimingStats` never filtered it at all** — so the Usage counts and the Timing percentiles, side by side on one screen in both Discord and the portal, have been computed over different populations with nothing saying so. `/manage` is the heaviest thing this bot does, so a "usually 40ms" that includes it is answering a question nobody asked. The shared functions now take `includeAdmin` (default **false**, the consistent reading) and **the two Discord call sites pass `includeAdmin: true` explicitly**, so `/bot analytics` prints exactly what it always has and nothing shipped moved. Closing this is deleting two arguments — but it changes numbers on a live panel, which is Harkirat's call, not a session's.
   - **Verify by:** run `/bot analytics` before and after dropping the two `includeAdmin: true` arguments and compare the p50/p95 figures; if `/manage` is a meaningful share of recent traffic they will drop visibly, which is the point.
 
+### The event river merges three collections into ONE capped window, so machine noise starves the changes `[P0 . M . Opus5-High]`
+
+*Filed 2026-09-20 15:20 EDT. Found by reading `portal/api/analytics.js` after Harkirat's correction that today's 1,421 events are a near-idle DEV bot and prod climbs exponentially.*
+
+`eventRiver({limit=100})` takes the newest **100 of each** of `ChangeLog`, `AlertLog` and `BootRecord`, concatenates, sorts by time and **slices to 100**. Changes, alerts and restarts therefore compete for the same hundred slots — and they do not arrive at the same rate. **Changes scale with admin hours; alerts and restarts scale with uptime and traffic.** On the dev sample the split is already 27 / 47 / 26. On a prod bot with real users, the newest hundred events can be entirely machine conditions, and **a change made an hour ago simply will not appear on the History realm at all.**
+
+The file's own header already records the sibling defect ("THE RIVER IS A CAPPED WINDOW AND THE TABLE SAID '11 of 11' … over a database holding thousands") and fixed the COUNT. The starvation is the same cap and is not fixed.
+
+**Verify:** with alerts outnumbering changes 20:1 in the window, the most recent change is still reachable on the realm's first screen without a filter. The three collections are already separate at the source — it is only the UI that merges them.
+
+### The revert horizon exists, and only Discord uses it `[P1 . S . Opus5-High]`
+
+*Filed 2026-09-20 15:20 EDT, superseding the narrower entry below — the check is not missing, it is unshared.*
+
+`utils/changeStore.js:163` defines `getLaterChangesTo({page, target, after, excludeChangeId})`, and it has **exactly one caller: `commands/bot.js:466`**, the Discord `/bot analytics` Changes page. `core/revert.js`'s `canRevert()` tests three things — the row exists, it is not already undone, it has an inverse — and **never asks whether the entity changed since**. The portal's History realm never calls the helper either.
+
+So Discord warns you that a change has been superseded and the portal does not, which is PRODUCT.md's fifth principle in the flesh: *a capability that exists in only one of them is a gap to explain, not a feature.*
+
+**Verify:** the portal's Undo control and its "can be undone" count both reflect `getLaterChangesTo`, or state plainly that they do not.
+
+### Undo is offered without checking that the inverse still validates `[P1 . S . Opus5-High]`
+
+*Filed 2026-09-20 15:18 EDT from Harkirat's scale correction — the portal's History numbers come from the dev bot, which is rarely active; prod climbs exponentially. This is a live portal defect, not a board question.*
+
+The "Can be undone" filter and the row's Undo control are both computed as `kind === 'change' && !r.undone` — **presence of a change that was never reverted, with no check that its inverse is still applicable.** But `core/ops` runs `validate()` on a replayed inverse, and an inverse whose entity has since been deleted or edited will fail. So the control is offered on changes that cannot actually be reverted.
+
+**Two things make this worse than it looks.** It is monotonic: reverting removes one item, every new change adds one, so the count accumulates forever — measured at **14 of 27 acts (52%)** on the dev sample, which at prod volume is a chip reading in the thousands. And a session claimed in this very list that the reversible set was bounded; it is not, and that claim was made by reading the UI instead of the predicate.
+
+**Verify:** a change whose entity was subsequently deleted shows no Undo control and is not counted by the chip — or the control is present, states the horizon, and fails gracefully with the validator's own message. Either is acceptable; silently offering it is not.
+
 ### H1 History manifest — what the design review found and this session did NOT act on `[P2 . M . Opus5-High]`
 
 *Filed 2026-09-20 13:40 EDT from the isolated critique of Board 3-E's History gate (scored 25/40 on Nielsen's ten). Each row is diagnosed and measured; none is built. The governing constraint list is `docs/claude/2026-09-20-h1-constraint-table.md` — check an element's row there before changing it.*
