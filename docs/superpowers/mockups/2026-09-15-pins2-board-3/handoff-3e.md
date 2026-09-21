@@ -356,6 +356,8 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 🔴 **BOARDS 1 AND 2 WERE NOT FROZEN — fixed 2026-09-21 10:34 EDT.** Both linked `../../../../portal/public/app.css`, the LIVE portal build, so they re-rendered with every portal change, including the port they are the spec for. Measured before the fix: 0 computed differences on all 862 and 1,881 elements (the probe gives 5,882 against an empty stylesheet, so it can fail) — Session 2's CSS had not reached them yet, but Session 4 Step 4c and Session 5 edit exactly the rules they inherit, and a board drifting toward the port makes the comparator agree with the port. They now link `../2026-09-14-pins2-board/app.css`, the stylesheet he approved them on, taken from their published artifacts. And both boards now have an enumerating value spec, `resolved-spec-full.md`: **board 1 · 392 looks across 158 signatures, G10 Compare included** (the old curated spec never had it), and board 2 re-run the same way.
 
+🔴 **CORRECTED 2026-09-21 10:41 EDT — the precedence below was too broad.** Board 3's kit runs Session 2's code, so it shows Session 2's PORT of boards 1 and 2 wherever board 3 did not change a rule. Measured over `3e/resolved-spec/`: of **10,604** declaration rows, **6,955** come from board 3's own stylesheets and **3,007** are Session 2's `app.css` untouched — and 326 of 335 signatures mix the two. So "board 3 wins" holds only for what board 3 CHANGED (its own rules, `portal-class-rules.md`, the diff hunks). An inherited value is Session 2's port, which may still carry the 5% he pinned. **Which one wins there is not settled yet** — see §11.
+
 🔴 **THE PRECEDENCE, stated once (2026-09-21 10:24 EDT).** Board 3-E ran the portal's own code AFTER Session 2 shipped boards 1 and 2 at ~95%, and he corrected what shipped. So: **for any element board 3 draws, board 3 wins over boards 1 and 2.** For an element board 3 does NOT draw, its own board's spec governs — **except where board 3 ruled a whole CLASS** (the control family below: *"the whole control family now"*), which reaches every board. [`3e/portal-class-rules.md`](3e/portal-class-rules.md) lists every board-3 rule that restyles a class the portal already ships — that is where the corrections to the 95% live, and nothing else indexes them.
 
 | Surface | Board | Spec | Board 3 draws it? | How Session 5 closes it |
@@ -400,7 +402,7 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 | **H1 — three of my changes against his record, awaiting his word** | he keeps or strikes each: the panel titled **EVENTS** where the ledger says to title a panel with what it is FOR · the **count line deleted** (the ledger's History section carries the count as OPEN and explicitly not adjudicated) · the **whole portal toolbar ported** when he asked for the header reworked and the search unified. `docs/db-deferred-list.md` § *H1 History manifest* row 7 |
 | **H1 — a product question, not a layout one** | every restart is followed by a *"Bot online"* alert in the same minute: **is Alert a kind, or a property of the restart?** Merged, 47 alerts and 26 restarts become 26 restarts plus ~21 real alerts. Same row 5 |
 | **H1 — the burst head** | variant D states a rate (*"25 in 1h"*) and then draws all 25 rows. Same row 4 |
-| **Phone width was never specced** | every value in `3e/` was taken at **1282×888**, and he reviewed no gate at phone width. Session 4's board 4 (G14) renders each board-3 surface at 390 beside the portal's current phone rules and asks him; until then the portal's existing phone rules stand. **Not a Session 5 decision** |
+| ~~Phone width~~ | **Out of scope — future work.** *"phone doesn't matter. i've stated this already. It's a future scope."* (Harkirat, 2026-09-21 10:41 EDT) Nothing in `3e/` or in Sessions 4–5 is judged at phone width |
 | **The board renders `p10 = state` and `e1`–`e6 = now`** | `p10`'s three live rules and every ⏳-marked row in `3e/resolved-spec/` are the board's CURRENT value, not his decision. `e6 = now` means `exportPanel.js`'s facts markup does NOT render on the board — it is E6's candidate, Session 4's to rule |
 | **Every interactive mark in the H1 panel is under the 44px touch floor** | `.b3-htab` 24 · `.b3-undo` 28 · `.b3-fc` 32 — the row is the hit area on a pointer surface. Same row 6 |
 
@@ -432,4 +434,18 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 | # | Element | Board value (v77) | Decided value | His words · when | `3e/` files regenerated or superseded |
 |---|---|---|---|---|---|
 | — | *none yet* | | | | |
+
+---
+
+## 11 · The composition problem — OPEN, recorded 2026-09-21 10:41 EDT
+
+Three boards changed the same portal in sequence, and each one built on what the one before it shipped:
+
+| Board | What it drew |
+|---|---|
+| 1 (2026-09-14, 5 versions) | the New Build drawer, the Compare panel, the Post-an-announcement drawer |
+| 2 (2026-09-14, 21 versions) | the Armory manifest rows, the build-name rule, the Broadcast and History manifests, the announcement card, admin traffic, the small-text sweep |
+| 3 (2026-09-15 → 20, 77 versions of 3-E) | the Armory manifest again (selection bar, list, problem card, hazard edge), Repairs, Export, the delivery-queue card, History, and the whole button family |
+
+**No document says, for one element, what the final design is.** Session 5 would otherwise have to merge three specs and Session 4's table by hand, which is how the 5% happened. Owed: one compiled table, one row per element — its portal selector, what each board set, what Session 4 sets, and which value ships.
 
