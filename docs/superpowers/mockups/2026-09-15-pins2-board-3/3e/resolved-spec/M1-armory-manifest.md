@@ -202,7 +202,7 @@ inside `.mlabel` · 9 on screen · **3 looks**
 
 #### look 3 of 3
 
-`M1-78` · rendered **492×0** · 5 instances look like this
+`M1-78` · rendered **496×0** · 5 instances look like this
 
 ```html
 <span></span>
@@ -1900,7 +1900,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 411.375px 491.625px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 407.375px 495.625px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -1959,7 +1959,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 186.5px 716.5px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 184.5px 718.5px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2018,7 +2018,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 362.984px 540.016px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 358.984px 544.016px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2077,7 +2077,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 393.578px 509.422px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 389.578px 513.422px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2136,7 +2136,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 446.438px 456.562px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 442.438px 460.562px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2195,7 +2195,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 189.234px 713.766px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 187.234px 715.766px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2301,7 +2301,7 @@ inside `.wg-h` · 8 on screen · **2 looks**
 
 #### look 1 of 2
 
-`M1-65` · rendered **411×22** · 5 instances look like this
+`M1-65` · rendered **407×22** · 5 instances look like this
 
 ```html
 <div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span><i class="sep" aria-hidden="true"></i><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></s
@@ -2310,9 +2310,9 @@ inside `.wg-h` · 8 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `flex` | `flex` | .wg-line · app.css:1123 |
-| gap | `var(--s3)` | `` | .wg-line · app.css:1123 |
-| column-gap | `` | `12px` | .wg-line · app.css:1123 |
-| row-gap | `` | `12px` | .wg-line · app.css:1123 |
+| gap | `10px` | `` | .wg-line · b3/board.css:5143 |
+| column-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
+| row-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
 | align-items | `center` | `center` | .wg-h > .wg-line · b3/board.css:3422 |
 | min-width | `0px` | `0px` | .wg-line · app.css:1123 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -2327,7 +2327,7 @@ inside `.wg-h` · 8 on screen · **2 looks**
 
 #### look 2 of 2
 
-`M1-210` · rendered **187×10** · 3 instances look like this
+`M1-210` · rendered **185×10** · 3 instances look like this
 
 ```html
 <div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div>
@@ -2336,9 +2336,9 @@ inside `.wg-h` · 8 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `flex` | `flex` | .wg-line · app.css:1123 |
-| gap | `var(--s3)` | `` | .wg-line · app.css:1123 |
-| column-gap | `` | `12px` | .wg-line · app.css:1123 |
-| row-gap | `` | `12px` | .wg-line · app.css:1123 |
+| gap | `10px` | `` | .wg-line · b3/board.css:5143 |
+| column-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
+| row-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
 | align-items | `center` | `center` | .wg-h > .wg-line · b3/board.css:3422 |
 | min-width | `0px` | `0px` | .wg-line · app.css:1123 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -3308,7 +3308,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`M1-84` · rendered **4×32** · 21 instances look like this · text “1” · title=""
+`M1-84` · rendered **5×32** · 21 instances look like this · text “1” · title=""
 
 ```html
 <span class="wg-ix" title="">1</span>
@@ -3324,9 +3324,9 @@ inside `.wg-r` · 21 on screen · **1 look**
 | font | `500 21px/1 var(--display)` | `` | .wg-ix · app.css:1167 |
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-ix · app.css:1167 |
 | font-size | `` | `21px` | .wg-ix · app.css:1167 |
-| font-weight | `` | `500` | .wg-ix · app.css:1167 |
+| font-weight | `700` | `700` | .wg-r .wg-ix · b3/board.css:5142 |
 | font-style | `` | `normal` | .wg-ix · app.css:1167 |
-| font-variant-numeric | `` | `normal` | .wg-ix · app.css:1167 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .wg-r .wg-ix · b3/board.css:5142 |
 | line-height | `` | `21px` | .wg-ix · app.css:1167 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .wg-ix · app.css:1167 |

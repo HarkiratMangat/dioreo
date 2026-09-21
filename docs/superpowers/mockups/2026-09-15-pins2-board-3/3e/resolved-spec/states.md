@@ -5607,7 +5607,7 @@ inside `.wg-line` · 1 on screen · **1 look**
 `M1s-69` · rendered **206×22** · 1 instance look like this
 
 ```html
-<span class="b3-bdgs in" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/4e627ad5-3dc3-4587-b2f1-602cf7b884f6"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 11.61s linear 0s infinite normal none running b3vr2;"></span></span><span class="b3-vb"
+<span class="b3-bdgs in" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/9d02fa1a-8c54-45e7-993e-2b7bd004e0b9"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 11.61s linear 0s infinite normal none running b3vr2;"></span></span><span class="b3-vb"
 ```
 
 | property | winning declaration | computed | from |
@@ -5711,7 +5711,7 @@ inside `.b3-vl` · 3 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.400641` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.3883` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
 | animation | `11.61s linear 0s infinite normal none running b3vb20` | `` | style attribute |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 

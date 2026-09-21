@@ -5,11 +5,11 @@ status: live
 
 # Lineage — board-3 values against the board-2 designs they descend from
 
-*Generated 2026-09-21T15:01:25.765Z by `lineage.cjs`. Read [`FINAL.md`](FINAL.md) first; this is its appendix. Session 2's commits on the portal stylesheets: 10.*
+*Generated 2026-09-21T15:13:13.659Z by `lineage.cjs`. Read [`FINAL.md`](FINAL.md) first; this is its appendix. Session 2's commits on the portal stylesheets: 10.*
 
 ## M1 · the Armory manifest ← board 2 · G4
 
-31 board-3 signatures paired with a board-2 element by class (the same class, the alias table in `lineage.cjs`, else `wg-x` ↔ `pb-x`). **72 property differences.** Not paired by name — compare these by eye, or through `../2026-09-14-pins2-board-2/port-g4-g3-g11.md`: `wg-cb` `ic-fold`.
+31 board-3 signatures paired with a board-2 element by class (the same class, the alias table in `lineage.cjs`, else `wg-x` ↔ `pb-x`). **68 property differences.** Not paired by name — compare these by eye, or through `../2026-09-14-pins2-board-2/port-g4-g3-g11.md`: `wg-cb` `ic-fold`.
 
 | Board 3 element | Board 2 element | Property | Board 2 | Board 3 | Board-3 value from | Kind | Ships |
 |---|---|---|---|---|---|---|---|
@@ -35,10 +35,8 @@ status: live
 | `button.wg-sort` | `button.pb-sort` | line-height | `9.5px` | `10.5px` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
 | `button.wg-sort` | `button.pb-sort` | letter-spacing | `1.33px` | `1.26px` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
 | `button.wg-sort` | `button.pb-sort` | text-align | `center` | `start` | UA | UA | browser default on one side — check on the page |
-| `div.wg-h` | `div.pb-gh` | grid-template-columns | `32px 294.688px 710.312px 39px` | `32px 411.375px 491.625px 39px` | PORT | STAGE | gate width — not a design value |
+| `div.wg-h` | `div.pb-gh` | grid-template-columns | `32px 294.688px 710.312px 39px` | `32px 407.375px 495.625px 39px` | PORT | STAGE | gate width — not a design value |
 | `div.wg-h` | `div.pb-gh` | background-image | `linear-gradient(90deg, color(srgb 0.2431` | `linear-gradient(90deg, color(srgb 1 0.23` | PORT | HUE | a different row's colour — compare the same weapon |
-| `div.wg-line` | `div.pb-gline` | column-gap | `10px` | `12px` | OLDER? | DESIGN | older portal rule — **board 2** unless he ruled otherwise on board 3 |
-| `div.wg-line` | `div.pb-gline` | row-gap | `10px` | `12px` | OLDER? | DESIGN | older portal rule — **board 2** unless he ruled otherwise on board 3 |
 | `button.wg-fbtn.wg-ib` | `button.pb-fbtn` | min-height | `auto` | `0px` | PORT | GENERIC | board 2 did not style it — not a design value |
 | `button.wg-fbtn.wg-ib` | `button.pb-fbtn` | padding-top | `1px` | `0px` | BOARD3 | GENERIC | board 3 changed it — **board 3** |
 | `button.wg-fbtn.wg-ib` | `button.pb-fbtn` | padding-right | `6px` | `12px` | BOARD3 | GENERIC | board 3 changed it — **board 3** |
@@ -49,8 +47,6 @@ status: live
 | `button.wg-fbtn.wg-ib` | `button.pb-fbtn` | line-height | `19.5px` | `12px` | BOARD3 | GENERIC | board 3 changed it — **board 3** |
 | `div.wg-r` | `div.pb-rb` | grid-template-columns | `32px 28px 707px 28px 144px 113px` | `32px 28px 605px 28px 144px 113px` | PORT | STAGE | gate width — not a design value |
 | `div.wg-r` | `div.pb-rb` | min-height | `52px` | `58px` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
-| `span.wg-ix` | `span.pb-ix` | font-weight | `700` | `500` | PORT | DESIGN | **board 2** — the port lost it |
-| `span.wg-ix` | `span.pb-ix` | font-variant-numeric | `tabular-nums` | `normal` | PORT | DESIGN | **board 2** — the port lost it |
 | `span.wg-at` | `span.pb-at` | background-color | `rgba(0, 0, 0, 0)` | `color(srgb 0.0951373 0.111059 0.123059)` | BOARD3 | HUE | board 3 changed it — **board 3** |
 | `span.wg-at` | `span.pb-at` | background-image | `linear-gradient(color(srgb 0.0778039 0.0` | `none` | BOARD3 | HUE | board 3 changed it — **board 3** |
 | `span.wg-at` | `span.pb-at` | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset, c` | `color(srgb 1 0.439216 0.341176 / 0.46) 0` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
@@ -113,10 +109,10 @@ status: live
 | `button.pb-exp` | `button.pb-exp` | margin-left | `482.094px` | `347.078px` | BOARD2 | DESIGN | board 2 rule — **board 2** |
 | `div.pb-tl` | `div.pb-tl` | grid-template-columns | `100px 474px 100px` | `75px 444px 75px` | BOARD3 | STAGE | board 3 changed it — **board 3** |
 | `div.pb-tl` | `div.pb-tl` | row-gap | `12px` | `5px` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
-| `span.g-run.pb-span` | `span.pb-span` | left | `63.5px` | `122.969px` | OTHER | STAGE | gate width — not a design value |
+| `span.g-run.pb-span` | `span.pb-span` | left | `63.5px` | `122.906px` | OTHER | STAGE | gate width — not a design value |
 | `span.g-run.pb-span` | `span.pb-span` | background-color | `rgb(31, 138, 94)` | `rgba(0, 0, 0, 0)` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
 | `span.g-run.pb-span` | `span.pb-span` | background-image | `none` | `linear-gradient(90deg, rgb(242, 194, 48)` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
-| `span.pb-now` | `span.pb-now` | left | `332.625px` | `403px` | OTHER | STAGE | gate width — not a design value |
+| `span.pb-now` | `span.pb-now` | left | `332.625px` | `403.016px` | OTHER | STAGE | gate width — not a design value |
 | `span.g-noend.pb-end` | `span.pb-end` | box-shadow | `rgb(42, 52, 61) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.4) 0p` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
 | `span.g-noend.pb-end` | `span.pb-end` | color | `rgb(157, 170, 180)` | `rgb(255, 158, 114)` | BOARD3 | DESIGN | board 3 changed it — **board 3** |
 | `div.pb-cacts` | `div.pb-cacts` | margin-right | `-5px` | `0px` | BOARD2 | DESIGN | board 2 rule — **board 2** |

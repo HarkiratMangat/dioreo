@@ -27,7 +27,7 @@ for (const f of ['portal/ui/app.css', 'portal/ui/tokens.css', 'portal/ui/v2card.
   }
 }
 // A longhand row is usually set by its shorthand (`padding-top` by `padding`), so the blame looks for both.
-const SHORT = (p) => [...new Set([p, p.replace(/-(top|right|bottom|left)$/, ''), p.replace(/^(background|border|font|outline|grid-template|text-decoration)-.*$/, '$1'),
+const SHORT = (p) => [...new Set([p, p.replace(/^(column|row)-gap$/, 'gap'), p.replace(/-(top|right|bottom|left)$/, ''), p.replace(/^(background|border|font|outline|grid-template|text-decoration)-.*$/, '$1'),
   p.replace(/^(padding|margin)-(top|bottom)$/, '$1-block').replace(/^(padding|margin)-(left|right)$/, '$1-inline')])];
 const origin = (from, prop) => {
   if (/b3\/board\.css|gates\.css/.test(from)) return 'BOARD3';

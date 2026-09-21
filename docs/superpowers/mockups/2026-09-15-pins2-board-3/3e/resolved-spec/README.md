@@ -5,7 +5,7 @@ status: live
 
 # Board 3-E — the resolved values
 
-*Generated 2026-09-21T14:18:12.642Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html at 1282×888, fresh profile. 596 looks specced across 307 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **0**. Winning declarations the computed value contradicts: **2** (marked ⚠️).*
+*Generated 2026-09-21T15:13:02.431Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html at 1282×888, fresh profile. 596 looks specced across 307 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **0**. Winning declarations the computed value contradicts: **2** (marked ⚠️).*
 
 **How to read a table.** *winning declaration* is the text Chrome applied for that property name — or its logical twin, shown as `(as padding-inline-start)` — in cascade order with `!important` honoured; *computed* is what it resolved to; *from* is the selector and `file:line` in the kit. ↑ means nothing on the element declares it and the value is inherited from the named ancestor rule. A percentage beside a pixel value is RESOLUTION: port the percentage. ⚠️ marks the only real conflict — two absolute lengths that disagree — and the computed column is the truth. ⏳ marks a rule keyed on a switch Session 4 still owns (p10, e1–e6): provisional, however it renders. A user-agent row is kept only where it sets something other than a default.
 

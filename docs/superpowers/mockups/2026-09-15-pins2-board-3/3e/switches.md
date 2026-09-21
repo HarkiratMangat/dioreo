@@ -5,7 +5,7 @@ status: live
 
 # Board 3-E — the switches, and which option the board holds
 
-*Generated 2026-09-21T14:24:09.181Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **212 keyed selectors are live and 256 are dead** under the values below.*
+*Generated 2026-09-21T15:11:57.714Z by `switches.cjs` from the kit's `b3/state.js` DEFAULTS, `b3/board.css`, `gates.css`, `b2.css` and every `useB3`/`b3()` call. **212 keyed selectors are live and 256 are dead** under the values below.*
 
 ## How to port a switched rule or branch
 

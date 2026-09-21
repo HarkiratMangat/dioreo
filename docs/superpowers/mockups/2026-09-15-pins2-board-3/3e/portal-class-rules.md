@@ -5,7 +5,7 @@ status: live
 
 # Board 3-E — its rules on SHIPPED portal classes
 
-*Generated 2026-09-21T14:24:09.089Z by `overrides.cjs`. **257 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
+*Generated 2026-09-21T15:11:57.908Z by `overrides.cjs`. **259 live rules** (11 of them ⏳ Session 4's) restyle classes the portal already ships; 94 more are losing options and are not listed.*
 
 **This is where the corrections to boards 1 and 2 live.** Session 2 shipped board 1 and board 2 at ~95%; board 3 ran the portal's own code and corrected the rest with rules like these. Each row is a change to `portal/ui/app.css` (or `tokens.css`): find the portal rule for the same selector, change it to this, and close the element with `portalProbe` against board 3.
 
@@ -180,6 +180,8 @@ status: live
 | `b3/board.css:4961` | `.chip:hover:not(:disabled)` | background:var(--hi);color:var(--ink) | unswitched |
 | `b3/board.css:4962` | `.b3-sd-vt button.on:hover,.seg button[aria-selected=true]:hover` | background:color-mix(in srgb,var(--ink) 12%,var(--raised));color:var(--ink) | unswitched |
 | `b3/board.css:4976` | `:is(button,[role=button],[role=tab],[role=checkbox],[role=radio],.b3-fc,.b3-xt-wn,.b3-xt-c,.seg button,.pill,.chip,.b3-btn2,.b3-hi-h,.b3-fgl,.mlabel,.b3-hi-day)` | -webkit-user-select:none;user-select:none | unswitched |
+| `b3/board.css:5142` | `.wg-r .wg-ix` | font-weight:700;font-variant-numeric:tabular-nums | unswitched |
+| `b3/board.css:5143` | `.wg-line` | gap:10px | unswitched |
 | `gates.css:51` | `.pidx` | margin: 0 0 22px; border-radius: var(--rad-3); background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); overflow: hidden | unswitched |
 | `gates.css:52` | `.pidx-h` | display: flex; align-items: baseline; gap: 14px; padding: 18px 20px 12px | unswitched |
 | `gates.css:53` | `.pidx-h h2` | margin: 0; font: 600 var(--t-lg)/1 var(--ui); color: var(--ink) | unswitched |
