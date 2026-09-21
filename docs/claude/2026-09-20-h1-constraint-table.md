@@ -119,7 +119,7 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 
 ## Ruled on Board 4 — 2026-09-21 16:12 EDT
 
-*Harkirat's popup answers, shown each option as a capture from Board 4 first (`local/b4-nitpick/C8-*.png`).*
+*Harkirat's popup answers, shown each option as a capture from Board 4 first (`local/pins2-board-3/board4-review/C8-*.png`).*
 
 | Element | Ruling | Built |
 |---|---|---|

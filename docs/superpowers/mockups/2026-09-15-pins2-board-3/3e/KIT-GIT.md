@@ -22,3 +22,7 @@ Everything but `shots/`, which is 277 MB of the kit's 281 MB and is entirely rep
 ## Using it
 
 Commit at the end of a round, the way the board is published: one commit per round, named for the round. Then "revert the landing to v2" is `git show <sha>:gates/armory.js`, not an hour of archaeology.
+
+## Re-rooted 2026-09-21 19:10 EDT
+
+The repo's `.git` moved from `local/pins2-board-3/redo/` to `local/pins2-board-3/`, at Harkirat's direction, so his screenshots (`hk-shots/`, `refs/`, `board4-review/intake/`), the pre-redo boards (`v1-*`, `v2/`, `board.html`) and the Board 4 review renders share one local history with the kit. The kit's files now sit under `redo/`; `git -C local/pins2-board-3/redo …` still works from the subfolder. Still local only, never pushed.
