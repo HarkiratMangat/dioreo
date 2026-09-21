@@ -9,7 +9,7 @@ status: live
 
 ## Identity
 
-**Board 4: Collective** — every finished surface of pins-2 boards 1, 2 and 3 on one board in the kit's portal code. Page `local/pins2-board-3/redo/board4.html` (`gates4/main.js`, `gates4/surfaces.js`, `b4.css`); artifact **https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh**, v2 (round-1 fixes) published at his popup yes of 14:50 EDT. Spec `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/` (12 files). Governing plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.
+**Board 4: Collective** — every finished surface of pins-2 boards 1, 2 and 3 on one board in the kit's portal code. Page `local/pins2-board-3/redo/board4.html` (`local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/b4.css`); artifact **https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh**, v2 (round-1 fixes) published at his popup yes of 14:50 EDT. Spec `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/` (12 files). Governing plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md`.
 
 ## Goal
 
@@ -46,7 +46,7 @@ It is the design Session 5 ports once he signs it off; Session 4 standardizes in
 
 1. His review of v2; fix his round in one pass, look, then ask before republishing.
 2. When he signs it off: Session 3's close — plan §5b Step 8 (CHANGELOG entry), then §13 push → PR → merge, each with his approval restated.
-3. Session 4 opens on `FINAL.md` → this board → `board4-spec/README.md`.
+3. Session 4 opens on `FINAL.md` → this board → `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/README.md`.
 
 ## Deliberately untouched
 
