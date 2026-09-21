@@ -281,7 +281,7 @@ inside `.srch` · 1 on screen · **1 look**
 | overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
 | cursor | `default` | `default` | label · user-agent:? |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -290,7 +290,7 @@ inside `.srch` · 1 on screen · **1 look**
 | outline-offset | `0px` | `2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 
 ### `button.lead.madd.pill`
@@ -345,24 +345,21 @@ inside `.mt-r1` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | `oklab(0.833966 0.0029082 0.158417 / 0.14)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| background-color | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | `color(srgb 0.94902 0.760784 0.188235 / 0.24)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| background-color | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | `oklab(0.833966 0.0029082 0.158417 / 0.142174)` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.0217365)` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | `oklab(0.833966 0.0029082 0.158417 / 0.142174)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.0217365)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `svg.ic`
@@ -683,9 +680,9 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
 | padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-right | ⚠️ `8px` | `7px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 · **overridden — see computed** |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-left | ⚠️ `8px` | `7px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 · **overridden — see computed** |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
 | border-color | `var(--ink4)` | `` | .chip[aria-pressed="true"] · app.css:1245 |
@@ -712,7 +709,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
 
@@ -720,13 +717,12 @@ inside `.mt-grp` · 1 on screen · **1 look**
 |---|---|---|
 | outline-offset | `0px` | `2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.455691)` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.109191)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `span.cl`
@@ -976,9 +972,9 @@ inside `.mt-grp` · 7 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
 | padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-right | ⚠️ `8px` | `7px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 · **overridden — see computed** |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-left | ⚠️ `8px` | `7px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 · **overridden — see computed** |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
@@ -1000,12 +996,29 @@ inside `.mt-grp` · 7 on screen · **1 look**
 | cursor | `pointer` | `pointer` | button · app.css:621 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(11, 15, 18)` | `oklab(0.165465 -0.0044266 -0.0078463)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| background-color | `rgb(11, 15, 18)` | `color(srgb 1 0.231373 0.360784 / 0.09)` |
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| i | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| i | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| i | box-shadow | `rgba(0, 0, 0, 0.4) 0px 0px 0px 1px` | `color(srgb 1 0.231373 0.360784 / 0.35) 0px 0px 0px 2px` |
+| i | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.cl | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.cl | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.cl | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 
 **:focus-visible** — changes
 
@@ -1018,7 +1031,7 @@ inside `.mt-grp` · 7 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `i`
@@ -1398,16 +1411,24 @@ inside `.b3-hint` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .wg-cb · app.css:1120 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself; parts inside it respond (table below)
 
-**:focus-visible** — changes
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| span.cb | box-shadow | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, color(srgb 0.94902 0.760784 0.188235 / 0.45) 0px 0px 0px 1px inset` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `-8px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| span.cb | box-shadow | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(31, 39, 46) 0px 0px 0px 2px, rgb(95, 212, 232) 0px 0px 0px 4px` |
+
+**:active** — changes nothing on the element itself
 
 
 ### `span.cb`
@@ -1565,7 +1586,7 @@ inside `.—` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .wg-sort · app.css:1109 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -1647,26 +1668,48 @@ inside `.wg-heads` · 1 on screen · **1 look**
 | content | `""` | .wg-fold::before · app.css:1113 |
 | z-index | `-1` | .wg-fold::before · app.css:1113 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 
-**:focus-visible** — changes
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
+
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `svg.ic.ic-fold`
@@ -1893,7 +1936,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -1902,7 +1945,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 #### look 2 of 7
 
@@ -1952,7 +1995,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -1961,7 +2004,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 #### look 3 of 7
 
@@ -2011,7 +2054,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -2020,7 +2063,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 #### look 4 of 7
 
@@ -2070,7 +2113,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -2079,7 +2122,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 #### look 5 of 7
 
@@ -2129,7 +2172,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -2138,7 +2181,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 #### look 6 of 7
 
@@ -2188,7 +2231,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | background-image | `` | .wg-h::before · app.css:1118 |
 | content | `""` | .wg-h::before · app.css:1118 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -2197,7 +2240,7 @@ inside `.wg` · 8 on screen · **7 looks**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 *1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
@@ -2232,16 +2275,24 @@ inside `.wg-h` · 29 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .wg-cb · app.css:1120 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself; parts inside it respond (table below)
 
-**:focus-visible** — changes
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| span.cb | box-shadow | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, color(srgb 0.94902 0.760784 0.188235 / 0.45) 0px 0px 0px 1px inset` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `-8px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| span.cb | box-shadow | `rgba(0, 0, 0, 0.55) 0px 1px 2px 0px inset, rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(31, 39, 46) 0px 0px 0px 2px, rgb(95, 212, 232) 0px 0px 0px 4px` |
+
+**:active** — changes nothing on the element itself
 
 
 ### `div.wg-line`
@@ -3096,28 +3147,76 @@ inside `.wg-h` · 8 on screen · **1 look**
 | content | `"Collapse"` | html[data-b3-a1="fixed"] .wg-fbtn[aria-expanded="true"]::after · b3/board.css:1632 |
 | pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
+| grid-template-columns | `14px 0px` | `14px 49.2188px` |
+| column-gap | `0px` | `8px` |
+| width | `44px` | `95.2188px` |
 | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | z-index | `auto` | `4` |
 
-**:focus-visible** — changes
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| ::before | width | `34px` | `85.2188px` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | opacity | `0` | `1` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | width | `0px` | `49.2188px` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
+| grid-template-columns | `14px 0px` | `14px 49.2188px` |
+| column-gap | `0px` | `8px` |
+| width | `44px` | `95.2188px` |
 | outline-offset | `0px` | `-3px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | z-index | `auto` | `4` |
 
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| ::before | width | `34px` | `85.2188px` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | opacity | `0` | `1` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | width | `0px` | `49.2188px` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.ic-fold | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| grid-template-columns | `14px 0px` | `14px 0.421875px` |
-| column-gap | `0px` | `0.637617px` |
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
@@ -3174,11 +3273,24 @@ inside `.wg` · 18 on screen · **1 look**
 | transition | `opacity .18s` | .wg-r::before · app.css:1159 |
 | content | `""` | .wg-r::before · app.css:1159 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(23, 30, 36)` |
 | background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 1 0.231373 0.360784 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 1 0.231373 0.360784 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | opacity | `0` | `1` |
+| span.wg-ix | color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-ix | border-color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-ix | outline-color | `rgb(133, 147, 159)` | `rgb(255, 59, 92)` |
+| span.wg-at | box-shadow | `color(srgb 1 0.439216 0.341176 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.439216 0.341176 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 1 0.603922 0.235294 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.603922 0.235294 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0.952941 0.819608 0.247059 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0.952941 0.819608 0.247059 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0.686275 0.580392 1 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0.686274 0.580392 1 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 1 0.164706 0.333333 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.164706 0.333333 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
 
 **:focus-visible** — changes
 
@@ -3187,7 +3299,7 @@ inside `.wg` · 18 on screen · **1 look**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 
 ### `span.wg-ix`
@@ -3744,7 +3856,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 |---|---|---|---|
 | display | `flex` | `flex` | .wg-code · app.css:1183 |
 | align-items | `center` | `center` | .wg-code · app.css:1183 |
-| width | ⚠️ `100%` | `144px` | .wg-code · app.css:1183 · **overridden — see computed** |
+| width | `100%` | `144px` | .wg-code · app.css:1183 |
 | min-height | `var(--tap)` | `44px` | .wg-code · app.css:1183 |
 | box-sizing | `border-box` | `border-box` | .wg-code · app.css:1183 |
 | padding | `var(--ctl-pad, 7px 10px)` | `` | input, select, textarea, button · app.css:388 |
@@ -3771,14 +3883,30 @@ inside `.wg-r` · 21 on screen · **1 look**
 | cursor | `pointer` | `pointer` | html[data-b3-a1="fixed"] .wg-code · gates.css:326 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
-**:focus-visible** — changes
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| span.wg-igb | color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| span.wg-igb | background-color | `rgb(31, 39, 46)` | `color(srgb 0.262118 0.16549 0.209255)` |
+| span.wg-igb | border-color | `rgb(157, 170, 180) rgb(157, 170, 180) rgb(157, 170, 180) rgb(58, 71, 82)` | `color(srgb 1 0.446588 0.539765) color(srgb 1 0.446588 0.539765) color(srgb 1 0.446588 0.539765) rgb(58, 71, 82)` |
+| span.wg-igb | box-shadow | `none` | `color(srgb 1 0.231373 0.360784 / 0.5) 0px 0px 0px 1px inset` |
+| span.wg-igb | outline-color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| svg.ic | color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| svg.ic | border-color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| svg.ic | outline-color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| svg.ic | stroke | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| use | color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| use | border-color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| use | outline-color | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
+| use | stroke | `rgb(157, 170, 180)` | `color(srgb 1 0.446588 0.539765)` |
 
 **:active** — changes
 
@@ -3804,7 +3932,7 @@ inside `.wg-code` · 21 on screen · **1 look**
 | display | `flex` | `flex` | .wg-ig · app.css:1185 |
 | position | `relative` | `relative` | html[data-b3-a1="fixed"] .wg-ig · gates.css:321 |
 | align-items | `stretch` | `stretch` | .wg-ig · app.css:1185 |
-| width | ⚠️ `100%` | `144px` | .wg-ig · app.css:1185 · **overridden — see computed** |
+| width | `100%` | `144px` | .wg-ig · app.css:1185 |
 | height | `34px` | `34px` | .wg-ig · app.css:1185 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `var(--rad-2)` | `` | .wg-ig · app.css:1185 |
@@ -4074,20 +4202,48 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
 | pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes; parts inside it respond (table below)
 
-**:focus-visible** — changes
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `-3px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `i.wg-vr`
@@ -4212,20 +4368,48 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
 | pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes; parts inside it respond (table below)
 
-**:focus-visible** — changes
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `color(srgb 0.22698 0.199529 0.221333)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(84, 50, 47) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `-3px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `span.b3-fx.wg-fwrap`
@@ -4328,8 +4512,8 @@ inside `.wg-fwrap` · 3 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `oklab(0.221254 0.0116117 0.00784855)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.38) 0px 0px 0px 1px inset` |
+| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `color(srgb 0.186667 0.121765 0.100588)` |
+| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.62) 0px 0px 0px 1px inset` |
 
 **:focus-visible** — changes
 
@@ -4414,11 +4598,23 @@ inside `.wg` · 3 on screen · **1 look**
 | mask-image | `radial-gradient(farthest-side at 0px 50%, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 90%, transparent 100%), linear-gradient(transparent 0px, rgba(0, 0, 0, 0.14) 10%, rgba(0, 0, 0, 0.42) 24%, rgba(0, 0, 0, 0.78) 38%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0.78) 62%, rgba(0, 0, 0, 0.42) 76%, rgba(0, 0, 0, 0.14) 90%, transparent 100%)` | .wg-r.bad::after · b3/board.css:3176 |
 | content | `""` | .wg-r.bad::after · app.css:1164 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(23, 30, 36)` |
 | background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 0.964706 0.662745 0.231373 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 0.964706 0.662745 0.231373 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | opacity | `0` | `1` |
+| span.wg-ix | color | `rgb(133, 147, 159)` | `rgb(246, 169, 59)` |
+| span.wg-ix | border-color | `rgb(133, 147, 159)` | `rgb(246, 169, 59)` |
+| span.wg-ix | outline-color | `rgb(133, 147, 159)` | `rgb(246, 169, 59)` |
+| span.wg-at | box-shadow | `color(srgb 1 0.439216 0.341176 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.439216 0.341176 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 1 0.603922 0.235294 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 1 0.603922 0.235294 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0 0.964706 0.607843 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0 0.964706 0.607843 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
+| span.wg-at | box-shadow | `color(srgb 0.686275 0.580392 1 / 0.46) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` | `color(srgb 0.686274 0.580392 1 / 0.72) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px` |
 
 **:focus-visible** — changes
 
@@ -4427,7 +4623,7 @@ inside `.wg` · 3 on screen · **1 look**
 | outline-offset | `0px` | `-2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 
 ### `span.nocode.wg-at`
@@ -4534,5 +4730,3 @@ inside `.wg-igf` · 1 on screen · **1 look**
 | white-space | `nowrap` | `` | .wg-ct · app.css:1187 |
 | color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .wg-ct.bad · app.css:1188 |
 | cursor | ↑ `pointer` | `pointer` | inherited · html[data-b3-a1="fixed"] .wg-code · gates.css:326 |
-
-

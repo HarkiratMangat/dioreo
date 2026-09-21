@@ -72,8 +72,8 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | width | `min(560px, -40px + 100vw)` | `560px` | .drawer · app.css:1361 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | ⚠️ `50%` | `450px` | .drawer · app.css:1361 · **overridden — see computed** |
-| left | ⚠️ `50%` | `574px` | .drawer · app.css:1361 · **overridden — see computed** |
+| top | `50%` | `450px` | .drawer · app.css:1361 |
+| left | `50%` | `574px` | .drawer · app.css:1361 |
 | border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
 | border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
 | background | `radial-gradient(78% 210% at -8% 118%,color-mix(in srgb,var(--rc-a) 15%,transparent) 0,transparent 68%), radial-gradient(66% 190% at 26% -22%,color-mix(in srgb,var(--patch) 13%,transparent) 0,transparent 66%), radial-gradient(72% 200% at 68% 132%,color-mix(in srgb,color-mix(in srgb,var(--rc-a) 55%,var(--patch)) 12%,transparent) 0,transparent 70%), radial-gradient(60% 180% at 112% -16%,color-mix(in srgb,var(--rc-a) 11%,transparent) 0,transparent 68%), radial-gradient(120% 120% at 50% 50%,transparent 38%,#00000055 100%), linear-gradient(180deg,#ffffff0a 0,transparent 26%), color-mix(in srgb,#0B0F12 42%,var(--raised))` | `` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) .drawer:has(.exs) · b3/board.css:4238 |
@@ -266,20 +266,39 @@ inside `.dw-nav` · 1 on screen · **1 look**
 | border-radius | `inherit` | .dw-h .x::after · app.css:1385 |
 | content | `""` | .dw-h .x::after · app.css:1385 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes; parts inside it respond (table below)
 
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
+| property | at rest | hover |
 |---|---|---|
-| background-color | `rgba(0, 0, 0, 0)` | `rgba(35, 44, 52, 0.07)` |
-| color | `rgb(133, 147, 159)` | `rgb(140, 153, 165)` |
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
+| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.sm | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.sm | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.sm | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic.sm | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| b | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| b | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| b | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes nothing on the element itself
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| color | `rgb(133, 147, 159)` | `rgb(140, 153, 165)` |
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
@@ -1023,7 +1042,7 @@ inside `.b3-xf-fid` · 2 on screen · **1 look**
 | align-items | `center` | `center` | :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3732 |
 | align-self | `start` | `start` | :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing), :is(.b3-xf, .exs-i) .b3-xf-fn.editing · b3/board.css:3838 |
 | justify-self | `start` | `start` | :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3732 |
-| width | ⚠️ `100%` | `228.312px` | .exs-i .b3-xf-fn:not(.editing), .exs-i .b3-xf-fn.editing · gates.css:583 · **overridden — see computed** |
+| width | `100%` | `228.312px` | .exs-i .b3-xf-fn:not(.editing), .exs-i .b3-xf-fn.editing · gates.css:583 |
 | min-width | `0px` | `0px` | :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3823 |
 | max-width | `100%` | `100%` | .exs-i .b3-xf-fn:not(.editing), .exs-i .b3-xf-fn.editing · gates.css:583 |
 | height | `24px` | `24px` | .exs-i .b3-xf-fn:not(.editing), .exs-i .b3-xf-fn.editing · gates.css:583 |
@@ -1066,19 +1085,37 @@ inside `.b3-xf-fid` · 2 on screen · **1 look**
 | cursor | `text` | `text` | :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3732 |
 | user-select | `none` | `auto` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.091451 0.146824 0.105529)` | `oklab(0.249595 -0.0245177 0.0130845)` |
+| background-color | `color(srgb 0.091451 0.146824 0.105529)` | `color(srgb 0.122196 0.202824 0.127765)` |
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| svg.ic | border-color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| svg.ic | outline-color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| svg.ic | stroke | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| use | color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| use | border-color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| use | outline-color | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
+| use | stroke | `color(srgb 0.497255 0.751529 0.477647)` | `color(srgb 0.559294 0.871529 0.488471)` |
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
-| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(58, 71, 82) 0px 0px 0px 1px inset, oklab(0 0 0 / 0) 0px 0px 0px 0px, oklab(0 0 0 / 0) 0px 0px 0px 0px` |
+| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(95, 212, 232) 0px 0px 0px 1px inset, color(srgb 0.482353 0.858824 0.388235 / 0.26) 0px 0px 0px 3px, color(srgb 0.482353 0.858824 0.388235 / 0.4) 0px 0px 16px -2px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 
 ### `span.b3-xf-nm`
@@ -1175,9 +1212,9 @@ inside `.exs-i` · 2 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 12px 0 10px` | `` | .exs-i .b3-btn2.sm · gates.css:620 |
 | padding-top | `0px` | `0px` | .exs-i .b3-btn2.sm · gates.css:620 |
-| padding-right | `12px` | `12px` | .exs-i .b3-btn2.sm · gates.css:620 |
+| padding-right | `12px (as padding-inline-end)` | `12px` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | padding-bottom | `0px` | `0px` | .exs-i .b3-btn2.sm · gates.css:620 |
-| padding-left | ⚠️ `10px` | `12px` | .exs-i .b3-btn2.sm · gates.css:620 · **overridden — see computed** |
+| padding-left | `12px (as padding-inline-start)` | `12px` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | padding-inline | `12px` | `` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
 | border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3320 |
@@ -1204,23 +1241,23 @@ inside `.exs-i` · 2 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(123, 219, 99)` | `oklab(0.805967 -0.138767 0.117861)` |
-| box-shadow | `none` | `oklab(0 0 0 / 0) 0px 0px 0px 0px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| background-color | `rgb(123, 219, 99)` | `color(srgb 0.616941 0.895529 0.547294)` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858824 0.388235 / 0.26) 0px 0px 0px 3px` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `oklab(0 0 0 / 0) 0px 0px 0px 0px` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 3px` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `rgb(123, 219, 99)` | `oklab(0.805967 -0.138767 0.117861)` |
-| box-shadow | `none` | `oklab(0 0 0 / 0) 0px 0px 0px 0px` |
+| background-color | `rgb(123, 219, 99)` | `color(srgb 0.424471 0.755765 0.341647)` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858823 0.388235 / 0.18) 0px 0px 0px 2px` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
 
 
@@ -1324,9 +1361,9 @@ inside `.exs-i` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 12px 0 10px` | `` | .exs-i .b3-btn2.sm · gates.css:620 |
 | padding-top | `0px` | `0px` | .exs-i .b3-btn2.sm · gates.css:620 |
-| padding-right | `12px` | `12px` | .exs-i .b3-btn2.sm · gates.css:620 |
+| padding-right | `12px (as padding-inline-end)` | `12px` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | padding-bottom | `0px` | `0px` | .exs-i .b3-btn2.sm · gates.css:620 |
-| padding-left | ⚠️ `10px` | `12px` | .exs-i .b3-btn2.sm · gates.css:620 · **overridden — see computed** |
+| padding-left | `12px (as padding-inline-start)` | `12px` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | padding-inline | `12px` | `` | .g-exs .exs-i > .b3-btn2:last-child · gates.css:638 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
 | border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3320 |
@@ -1353,7 +1390,7 @@ inside `.exs-i` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.155686 0.183451 0.101333)` | `oklab(0.291081 -0.0206437 0.0307658)` |
+| background-color | `color(srgb 0.155686 0.183451 0.101333)` | `color(srgb 0.236078 0.272471 0.123294)` |
 
 **:focus-visible** — changes
 
@@ -1365,7 +1402,5 @@ inside `.exs-i` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `color(srgb 0.155686 0.183451 0.101333)` | `oklab(0.291081 -0.0206437 0.0307658)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
-
-
+| background-color | `color(srgb 0.155686 0.183451 0.101333)` | `color(srgb 0.284314 0.325882 0.136471)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |

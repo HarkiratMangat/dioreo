@@ -25,6 +25,19 @@ status: live
 | `ui/shell.js` | 9 |
 | `app.css` | 26 |
 
+## 🔴 How to apply — NEVER verbatim (added 2026-09-21 10:16 EDT)
+
+These diffs are the board's code against the portal's, and the board's code is a **switchboard**: it imports `../b3/state.js` and branches on `useB3('<switch>')` so it can show every option of every fork. The portal has one design. So each hunk is one of four kinds:
+
+| Kind | Where | What to do |
+|---|---|---|
+| **Chrome — skip the whole file** | `app.js` (stubs five realms), `httpClient.js` (fixture fetch client, pre-Preact base), `conform.js` | Nothing. Applying `app.js` deletes five realms; applying `httpClient.js` replaces the real network layer |
+| **Switch plumbing** | every `import … from '../b3/state.js'`, every `useB3(…)` / `b3(…)` call, every `data-b3-*` attribute | Delete. Collapse each branch to the arm the board holds, per [`switches.md`](switches.md) — e.g. `exportPanel.js`'s `b3e6 !== 'now' ? facts : summary` ships **the portal's own summary line**, because `e6` holds `now` and E6 is Session 4's |
+| **A board component imported from `../b3/`** | `armory.js` (`armory-parts`, `drawer`, `repairs`), `broadcast.js`, `history.js`, `shell.js` (`B3CommandBar`) | Port the component INTO the `portal/ui/` file `file-map.md` names; never keep a `../b3/` path |
+| **Design hunk** | `overlay.js` (Back/Close pair) · `icons.js` (new icons) · the live arm of every branch | Apply |
+
+⚠️ **A branch keyed on an ⏳ OPEN switch (`p10`, `e1`–`e6`) is not decided.** Port the arm the board holds only if Session 4 has confirmed it in `../handoff-3e.md` §10; otherwise leave the portal's current code.
+
 
 ## `portal/ui/app.js`
 

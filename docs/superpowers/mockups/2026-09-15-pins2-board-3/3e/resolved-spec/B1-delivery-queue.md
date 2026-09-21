@@ -30,7 +30,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | ⚠️ `100%` | `1092px` | .pb-stage > .g-bpanel · b3/board.css:2643 · **overridden — see computed** |
+| width | `100%` | `1092px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
 | min-width | `0px` | `0px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0` | `` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
@@ -495,8 +495,8 @@ inside `.cmeter` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .cmeter i · app.css:2480 |
-| width | ⚠️ `10%` | `4.39062px` | style attribute · **overridden — see computed** |
-| height | ⚠️ `100%` | `4px` | .cmeter i · app.css:2480 · **overridden — see computed** |
+| width | `10%` | `4.39062px` | style attribute |
+| height | `100%` | `4px` | .cmeter i · app.css:2480 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `var(--rad-1)` | `` | .cmeter i · app.css:2480 |
 | background | `var(--r-broadcast)` | `` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2519 |
@@ -532,7 +532,7 @@ inside `.panel` · 1 on screen · **1 look**
 | gap | `18px` | `` | .g-queue · gates.css:364 |
 | column-gap | `18px` | `18px` | .g-queue · gates.css:364 |
 | row-gap | `18px` | `18px` | .g-queue · gates.css:364 |
-| width | ⚠️ `1148px` | `1090px` | .pb-qafter · b2.css:265 · **overridden — see computed** |
+| width | ⚠️ `1148px` | `1090px` | .pb-qafter · b2.css:265 · **a later rule wins — port the computed value and find that rule** |
 | max-width | `100%` | `100%` | .pb-qafter · b2.css:265 |
 | box-sizing | `border-box` | `border-box` | .pb-qafter · b2.css:265 |
 | padding | `var(--s4)` | `` | .g-queue · gates.css:364 |
@@ -936,26 +936,48 @@ inside `.pb-encf` · 1 on screen · **1 look**
 | content | `""` | .pb-enc .pb-exp::before · b3/board.css:4272 |
 | z-index | `-1` | .pb-enc .pb-exp::before · b3/board.css:4272 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 
-**:focus-visible** — changes
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
 | box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
+
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| color | `rgb(157, 170, 180)` | `rgb(212, 219, 224)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `div.pb-life3`
@@ -967,7 +989,7 @@ inside `.pb-body` · 1 on screen · **1 look**
 `B1-29` · rendered **618×79** · 1 instance look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.7097%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7634%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6985%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7672%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -994,7 +1016,7 @@ inside `.pb-life3` · 1 on screen · **1 look**
 `B1-30` · rendered **618×43** · 1 instance look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.7097%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7634%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6985%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7672%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
 ```
 
 | property | winning declaration | computed | from |
@@ -1121,7 +1143,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 `B1-35` · rendered **444×20** · 1 instance look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.7097%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7634%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6985%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7672%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1185,7 +1207,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 `B1-37` · rendered **321×6** · 1 instance look like this
 
 ```html
-<span class="pb-span g-run" style="left: 27.7097%; right: 0px;"></span>
+<span class="pb-span g-run" style="left: 27.6985%; right: 0px;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1196,7 +1218,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:371 |
 | right | `0px` | `0px` | style attribute |
-| left | ⚠️ `27.7097%` | `123.016px` | style attribute · **overridden — see computed** |
+| left | `27.6985%` | `122.969px` | style attribute |
 | border-radius | `3px` | `` | .pb-span · b2.css:225 |
 | background | `linear-gradient(90deg, var(--c) 0, var(--c) calc(100% - 96px), color-mix(in srgb, var(--c) 0%, transparent))` | `` | .g-card .pb-span.g-run · gates.css:378 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .g-card .pb-span.g-run · gates.css:378 |
@@ -1218,7 +1240,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 `B1-38` · rendered **2×18** · 1 instance look like this · title="Up 47 days"
 
 ```html
-<span class="pb-now" title="Up 47 days" style="left: 90.7634%;"></span>
+<span class="pb-now" title="Up 47 days" style="left: 90.7672%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1229,7 +1251,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:372 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:372 |
-| left | ⚠️ `90.7634%` | `402.984px` | style attribute · **overridden — see computed** |
+| left | `90.7672%` | `403px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:228 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:228 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:228 |
@@ -1496,8 +1518,8 @@ inside `.b3-endwrap` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `oklab(0.221254 0.0116117 0.00784855)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.38) 0px 0px 0px 1px inset` |
+| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `color(srgb 0.186667 0.121765 0.100588)` |
+| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.62) 0px 0px 0px 1px inset` |
 
 **:focus-visible** — changes
 
@@ -1509,7 +1531,7 @@ inside `.b3-endwrap` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `oklab(0.221254 0.0116117 0.00784855)` |
+| background-color | `color(srgb 0.129255 0.0965882 0.0885882)` | `color(srgb 0.23451 0.142745 0.110588)` |
 
 
 ### `button.g-edit.has-word.pb-ib`
@@ -1601,7 +1623,30 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
 | content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `color(srgb 0.909804 0.929412 0.945098 / 0.24) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 
 **:focus-visible** — changes
 
@@ -1614,7 +1659,7 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `i.pb-vr`
@@ -1736,7 +1781,30 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
 | content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `color(srgb 0.244549 0.207294 0.228157)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `color(srgb 1 0.541176 0.521569 / 0.45) 0px 0px 0px 1px inset` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 
 **:focus-visible** — changes
 
@@ -1749,7 +1817,7 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `div.pb-cg`
@@ -1796,11 +1864,13 @@ inside `.pb-cg` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `block` | `block` | p · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-top | `1em (as margin-block-start)` | `13px` | p · user-agent:? |
+| margin-right | `0px (as margin-inline-end)` | `0px` | p · user-agent:? |
+| margin-bottom | `1em (as margin-block-end)` | `13px` | p · user-agent:? |
+| margin-left | `0px (as margin-inline-start)` | `0px` | p · user-agent:? |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:3 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-

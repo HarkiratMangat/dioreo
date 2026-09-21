@@ -13,5 +13,3 @@ status: live
 ### L1 stage
 
 `#g-list-lab .g-stage` — **not present in this state**
-
-

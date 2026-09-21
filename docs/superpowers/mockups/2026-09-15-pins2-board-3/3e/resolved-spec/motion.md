@@ -284,5 +284,3 @@ status: live
 ```css
 @keyframes b3xtname { 0%, 12% { transform: translateX(0px); } 88%, 100% { transform: translateX(min(0px, -100% + 100cqw)); } }
 ```
-
-

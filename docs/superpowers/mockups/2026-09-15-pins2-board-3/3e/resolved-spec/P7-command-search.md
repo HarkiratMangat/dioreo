@@ -135,7 +135,7 @@ inside `.cmdbar` · 1 on screen · **1 look**
 | cursor | `text` | `text` | input · user-agent:? |
 | user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4977 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -143,7 +143,7 @@ inside `.cmdbar` · 1 on screen · **1 look**
 |---|---|---|
 | outline-offset | `0px` | `2px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:active** — changes nothing on the element itself
 
 
 ### `kbd`
@@ -464,7 +464,7 @@ inside `.b3-cmd` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-compose · b3/board.css:1424 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -476,7 +476,7 @@ inside `.b3-cmd` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `span.row`
@@ -1189,7 +1189,7 @@ inside `.b3-cmdl` · 4 on screen · **1 look**
 | column-gap | `12px` | `12px` | .b3-cmdr · b3/board.css:1410 |
 | row-gap | `12px` | `12px` | .b3-cmdr · b3/board.css:1410 |
 | align-items | `center` | `center` | .b3-cmdr · b3/board.css:1410 |
-| width | ⚠️ `100%` | `504px` | .b3-cmdr · b3/board.css:1410 · **overridden — see computed** |
+| width | `100%` | `504px` | .b3-cmdr · b3/board.css:1410 |
 | min-height | `50px` | `50px` | .b3-cmdr · b3/board.css:1410 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 10px` | `` | .b3-cmdr · b3/board.css:1410 |
@@ -1216,7 +1216,7 @@ inside `.b3-cmdl` · 4 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-cmdr · b3/board.css:1410 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -1229,7 +1229,7 @@ inside `.b3-cmdl` · 4 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### `span.t`
@@ -1524,7 +1524,7 @@ inside `.b3-cmdl` · 1 on screen · **1 look**
 | column-gap | `12px` | `12px` | .b3-cmdr · b3/board.css:1410 |
 | row-gap | `12px` | `12px` | .b3-cmdr · b3/board.css:1410 |
 | align-items | `center` | `center` | .b3-cmdr · b3/board.css:1410 |
-| width | ⚠️ `100%` | `504px` | .b3-cmdr · b3/board.css:1410 · **overridden — see computed** |
+| width | `100%` | `504px` | .b3-cmdr · b3/board.css:1410 |
 | min-height | `50px` | `50px` | .b3-cmdr · b3/board.css:1410 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 10px` | `` | .b3-cmdr · b3/board.css:1410 |
@@ -1552,7 +1552,7 @@ inside `.b3-cmdl` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-cmdr · b3/board.css:1410 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
@@ -1564,7 +1564,7 @@ inside `.b3-cmdl` · 1 on screen · **1 look**
 
 | property | at rest | active |
 |---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
 ### P7 · typed “zzzz” — nothing matches — the empty state

@@ -5,6 +5,8 @@ status: live
 
 # Board 3-E — every custom property the design reads, against the portal
 
+> 🔴 **CORRECTED 2026-09-21 10:17 EDT:** the L1 lab's 36 variables were labelled COMPONENT (*set by the rule that uses it*). No rule sets them — the lab writes them onto `:root` from JavaScript and the rules read them with a fallback. Two fallbacks disagreed with his saved values (`--gh-chip-x` 30 vs **20**, `--r-warn-img` 18 vs **14**), fixed in the kit at commit `a315c2c`. Each row now carries his saved value.
+
 *Generated 2026-09-21 09:37 EDT. Values are resolved on the running board (`resolved-spec/tokens.md`); "portal" means defined in `portal/ui/tokens.css`, `app.css` or `v2card.css`.*
 
 🔴 **This is the table that makes a verbatim port safe.** Board 2 told Session 5 to port the winning declaration "tokens intact", which was right for a board built on portal tokens. Board 3-E's declarations read tokens the portal does not have. Porting `.b3-btn2.stage` verbatim writes `var(--b3-fill)` and `var(--b3-under)` into a stylesheet where both resolve to nothing, and the button renders transparent — with no error anywhere.
@@ -89,7 +91,7 @@ status: live
 | `--c` | — | 380 | **PORTAL** | ports as is |
 | `--ci` | — | 8 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--ci-bg` | — | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--code-js` | `end` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--code-js` | `end` | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`end`** — port as a literal or a Session-4 token name, never as `var(--code-js, fallback)` |
 | `--code-w` | — | 4 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--colsc` | — | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--ctl-min` | `auto` | 1 | **PORTAL** | ports as is |
@@ -142,13 +144,13 @@ status: live
 | `--fx-r` | — | 4 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--gap` | `14px` | 1 | **PORTAL** | ports as is |
 | `--gc` | — | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-cat-range` | `18px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-chip-x` | — | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-div-badge` | `12px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-name-cat` | `9px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-pl` | `16px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-pr` | `16px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--gh-range-div` | `12px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--gh-cat-range` | `18px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`18px`** — port as a literal or a Session-4 token name, never as `var(--gh-cat-range, fallback)` |
+| `--gh-chip-x` | — | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`20px`** — port as a literal or a Session-4 token name, never as `var(--gh-chip-x, fallback)` |
+| `--gh-div-badge` | `12px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`12px`** — port as a literal or a Session-4 token name, never as `var(--gh-div-badge, fallback)` |
+| `--gh-name-cat` | `9px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`9px`** — port as a literal or a Session-4 token name, never as `var(--gh-name-cat, fallback)` |
+| `--gh-pl` | `16px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`16px`** — port as a literal or a Session-4 token name, never as `var(--gh-pl, fallback)` |
+| `--gh-pr` | `16px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`16px`** — port as a literal or a Session-4 token name, never as `var(--gh-pr, fallback)` |
+| `--gh-range-div` | `12px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`12px`** — port as a literal or a Session-4 token name, never as `var(--gh-range-div, fallback)` |
 | `--glo` | — | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--gut` | `24px` | 1 | **PORTAL** | ports as is |
 | `--gutter` | `138px` | 8 | **PORTAL** | ports as is |
@@ -188,12 +190,12 @@ status: live
 | `--lab-w` | `700` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--lc` | — | 18 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--lh-body` | `1.5` | 1 | **PORTAL** | ports as is |
-| `--lh-ic-n` | `10px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--lh-n-w` | `11px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--lh-pl` | `26px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--lh-pr` | `10px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--lh-ic-n` | `10px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`10px`** — port as a literal or a Session-4 token name, never as `var(--lh-ic-n, fallback)` |
+| `--lh-n-w` | `11px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`11px`** — port as a literal or a Session-4 token name, never as `var(--lh-n-w, fallback)` |
+| `--lh-pl` | `26px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`26px`** — port as a literal or a Session-4 token name, never as `var(--lh-pl, fallback)` |
+| `--lh-pr` | `10px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`10px`** — port as a literal or a Session-4 token name, never as `var(--lh-pr, fallback)` |
 | `--lh-ui` | `1.35` | 4 | **PORTAL** | ports as is |
-| `--lh-vl-vt` | `12px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--lh-vl-vt` | `12px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`12px`** — port as a literal or a Session-4 token name, never as `var(--lh-vl-vt, fallback)` |
 | `--lift` | `2px` | 2 | **PORTAL** | ports as is |
 | `--lit` | `0.06` | 6 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--live` | — | 20 | **PORTAL** | ports as is |
@@ -232,18 +234,18 @@ status: live
 | `--r-access` | `#6C8AF7` | 1 | **PORTAL** | ports as is |
 | `--r-analytics` | `#9CC85A` | 6 | **PORTAL** | ports as is |
 | `--r-armory` | `#EF4444` | 8 | **PORTAL** | ports as is |
-| `--r-att-code` | `30px` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--r-att-code` | `30px` | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--r-att-code, fallback)` |
 | `--r-broadcast` | `#EC4899` | 12 | **PORTAL** | ports as is |
-| `--r-code-warn` | `20px` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--r-code-warn` | `20px` | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`20px`** — port as a literal or a Session-4 token name, never as `var(--r-code-warn, fallback)` |
 | `--r-history` | `#00E1D9` | 3 | **PORTAL** | ports as is |
-| `--r-img-x` | `30px` | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--r-n-att` | `30px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--r-pl` | `7px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--r-pr` | `16px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--r-img-x` | `30px` | 3 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--r-img-x, fallback)` |
+| `--r-n-att` | `30px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--r-n-att, fallback)` |
+| `--r-pl` | `7px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`7px`** — port as a literal or a Session-4 token name, never as `var(--r-pl, fallback)` |
+| `--r-pr` | `16px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`16px`** — port as a literal or a Session-4 token name, never as `var(--r-pr, fallback)` |
 | `--r-review` | `#D8F24A` | 26 | **PORTAL** | ports as is |
 | `--r-season` | `#F59E0C` | 2 | **PORTAL** | ports as is |
-| `--r-tag` | `4px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--r-warn-img` | — | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--r-tag` | `4px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`4px`** — port as a literal or a Session-4 token name, never as `var(--r-tag, fallback)` |
+| `--r-warn-img` | — | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`14px`** — port as a literal or a Session-4 token name, never as `var(--r-warn-img, fallback)` |
 | `--rad-1` | `3px` | 155 | **PORTAL** | ports as is |
 | `--rad-2` | `6px` | 231 | **PORTAL** | ports as is |
 | `--rad-3` | `10px` | 58 | **PORTAL** | ports as is |
@@ -293,9 +295,9 @@ status: live
 | `--sx` | `50%` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--sy` | `50%` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--t` | — | 1107 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--t-att-code` | `30px` | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--t-att-code` | `30px` | 3 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--t-att-code, fallback)` |
 | `--t-base` | `13px` | 96 | **PORTAL** | ports as is |
-| `--t-code-warn` | `20px` | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--t-code-warn` | `20px` | 3 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`20px`** — port as a literal or a Session-4 token name, never as `var(--t-code-warn, fallback)` |
 | `--t-display` | `44px` | 9 | **PORTAL** | ports as is |
 | `--t-epic` | `#C0A3D4` | 3 | **PORTAL** | ports as is |
 | `--t-epic-edge` | `rgba(142,107,166,.4)` | 1 | **PORTAL** | ports as is |
@@ -303,20 +305,20 @@ status: live
 | `--t-figure` | `34px` | 6 | **PORTAL** | ports as is |
 | `--t-h1` | `22px` | 7 | **PORTAL** | ports as is |
 | `--t-hero` | `26px` | 2 | **PORTAL** | ports as is |
-| `--t-img-x` | `30px` | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--t-img-x` | `30px` | 3 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--t-img-x, fallback)` |
 | `--t-lg` | `16.5px` | 28 | **PORTAL** | ports as is |
 | `--t-md` | `14.5px` | 67 | **PORTAL** | ports as is |
 | `--t-micro` | `9.5px` | 242 | **PORTAL** | ports as is |
 | `--t-mythic` | `#E254DE` | 3 | **PORTAL** | ports as is |
 | `--t-mythic-edge` | `rgba(226,84,222,.35)` | 1 | **PORTAL** | ports as is |
 | `--t-mythic-wash` | `rgba(226,84,222,.15)` | 1 | **PORTAL** | ports as is |
-| `--t-n-w` | `20px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--t-pl` | `30px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--t-pr` | `16px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--t-rail` | `9px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--t-n-w` | `20px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`20px`** — port as a literal or a Session-4 token name, never as `var(--t-n-w, fallback)` |
+| `--t-pl` | `30px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--t-pl, fallback)` |
+| `--t-pr` | `16px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`16px`** — port as a literal or a Session-4 token name, never as `var(--t-pr, fallback)` |
+| `--t-rail` | `9px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`9px`** — port as a literal or a Session-4 token name, never as `var(--t-rail, fallback)` |
 | `--t-sm` | `12px` | 395 | **PORTAL** | ports as is |
-| `--t-w-att` | `30px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--t-warn-img` | — | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--t-w-att` | `30px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`30px`** — port as a literal or a Session-4 token name, never as `var(--t-w-att, fallback)` |
+| `--t-warn-img` | — | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`18px`** — port as a literal or a Session-4 token name, never as `var(--t-warn-img, fallback)` |
 | `--t-xl` | `19px` | 11 | **PORTAL** | ports as is |
 | `--t-xs` | `10.5px` | 221 | **PORTAL** | ports as is |
 | `--tap` | `44px` | 68 | **PORTAL** | ports as is |
@@ -342,12 +344,12 @@ status: live
 | `--ty2` | `64%` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--ty3` | `12%` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--ui` | `"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,` | 412 | **PORTAL** | ports as is |
-| `--v-code` | `8px` | 2 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--v-group` | `20px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--v-head-h` | `44px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--v-head-row` | `12px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--v-row-h` | `44px` | 3 | **COMPONENT** | set by the rule that uses it; ports with that rule |
-| `--v-tag` | `18px` | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
+| `--v-code` | `8px` | 2 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`8px`** — port as a literal or a Session-4 token name, never as `var(--v-code, fallback)` |
+| `--v-group` | `20px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`20px`** — port as a literal or a Session-4 token name, never as `var(--v-group, fallback)` |
+| `--v-head-h` | `44px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`44px`** — port as a literal or a Session-4 token name, never as `var(--v-head-h, fallback)` |
+| `--v-head-row` | `12px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`12px`** — port as a literal or a Session-4 token name, never as `var(--v-head-row, fallback)` |
+| `--v-row-h` | `44px` | 3 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`44px`** — port as a literal or a Session-4 token name, never as `var(--v-row-h, fallback)` |
+| `--v-tag` | `18px` | 1 | **JS-ONLY · L1 lab** | stamped on `:root` by the L1 lab (`gates/armory.js:1142`); his saved `spacing/list` value is **`18px`** — port as a literal or a Session-4 token name, never as `var(--v-tag, fallback)` |
 | `--v2-accent` | — | 1 | **COMPONENT** | set by the rule that uses it; ports with that rule |
 | `--warn` | `#FF7A45` | 371 | **PORTAL** | ports as is |
 | `--warn-ink` | `#FF9E72` | 103 | **COMPONENT** | set by the rule that uses it; ports with that rule |

@@ -368,5 +368,3 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--xf-ty` | — | fallback only |
 | `--xtop` | — | fallback only |
 | `--z` | — | fallback only |
-
-

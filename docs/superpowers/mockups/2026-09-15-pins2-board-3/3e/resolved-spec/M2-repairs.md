@@ -399,8 +399,8 @@ inside `.ph` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.186667 0.121765 0.100588)` | `oklab(0.258531 0.0217457 0.0174983)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.62) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.62) 0px 0px 0px 1px inset` |
+| background-color | `color(srgb 0.186667 0.121765 0.100588)` | `color(srgb 0.253647 0.151137 0.114588)` |
+| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.62) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.72) 0px 0px 0px 1px inset` |
 
 **:focus-visible** — changes
 
@@ -950,30 +950,36 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1225 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `color(srgb 0.215373 0.134353 0.106588)` | `oklab(0.276976 0.0265865 0.0220637)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.65) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.65) 0px 0px 0px 1px inset` |
-| color | `rgb(232, 237, 241)` | `oklab(0.943445 -0.00357178 -0.00668496)` |
+| background-color | `color(srgb 0.215373 0.134353 0.106588)` | `color(srgb 0.291922 0.167922 0.122588)` |
+| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.65) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.85) 0px 0px 0px 1px inset` |
+| color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| ::before | border-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| ::before | outline-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| ::after | color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| ::after | border-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| ::after | outline-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| span.b3-nw | color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| span.b3-nw | border-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
+| span.b3-nw | outline-color | `rgb(232, 237, 241)` | `oklch(0.93 0.0790864 41.2014)` |
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| background-color | `color(srgb 0.215373 0.134353 0.106588)` | `oklab(0.282451 0.0279772 0.0233593)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.65) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.672631) 0px 0px 0px 1px inset` |
-| color | `rgb(232, 237, 241)` | `oklab(0.941924 0.00356576 -0.0000335871)` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `color(srgb 0.215373 0.134353 0.106588)` | `oklab(0.276978 0.026587 0.0220642)` |
-| box-shadow | `color(srgb 1 0.478431 0.270588 / 0.65) 0px 0px 0px 1px inset` | `oklab(0.7266 0.132232 0.115766 / 0.672631) 0px 0px 0px 1px inset` |
-| color | `rgb(232, 237, 241)` | `oklab(0.941924 0.00356576 -0.0000335871)` |
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
@@ -1198,13 +1204,25 @@ inside `.b3-rp-f` · 4 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1225 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(11, 15, 18)` | `oklab(0.165465 -0.0044266 -0.0078463)` |
-| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `oklab(0.390863 -0.0110071 -0.0225948) 0px 0px 0px 1px inset` |
-| color | `rgb(157, 170, 180)` | `oklab(0.730943 -0.0100129 -0.0179923)` |
+| background-color | `rgb(11, 15, 18)` | `color(srgb 0.148392 0.10498 0.0925882)` |
+| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `color(srgb 1 0.478431 0.270588 / 0.45) 0px 0px 0px 1px inset` |
+| color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| ::after | color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| span.b3-nw | color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| span.b3-nw | border-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
+| span.b3-nw | outline-color | `rgb(157, 170, 180)` | `oklch(0.88 0.0966612 41.2014)` |
 
 **:focus-visible** — changes
 
@@ -2635,26 +2653,24 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(123, 219, 99)` | `oklab(0.805967 -0.138767 0.117861)` |
-| box-shadow | `none` | `oklab(0 0 0 / 0) 0px 0px 0px 0px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
+| background-color | `rgb(123, 219, 99)` | `color(srgb 0.616941 0.895529 0.547294)` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858824 0.388235 / 0.26) 0px 0px 0px 3px` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| background-color | `rgb(123, 219, 99)` | `oklab(0.806934 -0.138061 0.117274)` |
-| box-shadow | `none` | `oklab(0.805967 -0.138767 0.117861 / 0.136515) 0px 0px 0px 1.38894px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.0211074)` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 3px` |
 
 **:active** — changes
 
 | property | at rest | active |
 |---|---|---|
-| background-color | `rgb(123, 219, 99)` | `oklab(0.806933 -0.138061 0.117274)` |
-| box-shadow | `none` | `oklab(0.805967 -0.138767 0.117861 / 0.136527) 0px 0px 0px 1.38905px` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -0.0211031)` |
+| background-color | `rgb(123, 219, 99)` | `color(srgb 0.424471 0.755765 0.341647)` |
+| box-shadow | `none` | `color(srgb 0.482353 0.858823 0.388235 / 0.18) 0px 0px 0px 2px` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, 0)` |
 
 
 ### `span.b3-tk-ev.pairs`
@@ -3225,15 +3241,20 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-wr-main · b3/board.css:1303 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+**:hover** — changes nothing on the element itself
 
-**:focus-visible** — changes
+**:focus-visible** — changes; parts inside it respond (table below)
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `-2px` |
 
-**:active** — changes nothing on the element (its ::before or a parent may still respond; see the rows above)
+| part inside | property | at rest | focus-visible |
+|---|---|---|---|
+| b | opacity | `0` | `1` |
+| b | max-width | `0px` | `63px` |
+
+**:active** — changes nothing on the element itself
 
 
 ### `span.b3-wr-b`
@@ -3868,11 +3889,33 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes
+**:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| box-shadow | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | `oklab(0.390863 -0.0110071 -0.0225948 / 0.7) 0px 0px 0px 1px inset` |
+| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
+| box-shadow | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.lbl | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.lbl | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| span.lbl | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 
 **:focus-visible** — changes
 
@@ -3916,5 +3959,3 @@ inside `.b3-btn2` · 1 on screen · **1 look**
 | white-space | ↑ `nowrap` | `` | inherited · .b3-btn2 · b3/board.css:801 |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-btn2.ghost · b3/board.css:3321 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
-
-

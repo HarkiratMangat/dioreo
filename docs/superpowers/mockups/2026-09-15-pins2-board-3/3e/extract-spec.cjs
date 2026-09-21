@@ -23,8 +23,27 @@
 //   ruled pick — rather than whatever a browser remembered.
 const path = require('path'); const fs = require('fs'); const os = require('os');
 const puppeteer = require(path.resolve(__dirname, '../../../../../node_modules/puppeteer-core'));
-const URL_ = process.argv[2] || 'http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html';
-const OUT = process.argv[3] || path.join(require('os').tmpdir(), 'b3e-spec.md');
+// 🔴 BOARDS 1 AND 2 TOO (2026-09-21 10:31 EDT). Harkirat: "board 1's designs were very poorly and incorrectly ported into the portal because
+// board 1's session never ran the spec extractor over those refined designs … that's part of session 5's work — fixing those old, bad
+// ports." Board 1's spec was written after the fact by a CURATED extractor (first match only, no states, no G10 Compare at all) and board
+// 2's by the same method. `BOARD=1` / `BOARD=2` run THIS enumerating extractor over them, against the stylesheet each was approved on.
+const MODE = process.env.BOARD || '3e';
+const MK = 'http://127.0.0.1:8900/docs/superpowers/mockups';
+const CFG = {
+  '3e': { url: 'http://127.0.0.1:8900/local/pins2-board-3/redo/board3e.html', wait: '#g-history .b3-hi-r', title: 'Design Board 3-E', out: 'b3e-spec.md', stageAll: '.g-stage',
+    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css'].map((f) => path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f)) },
+  '1': { url: `${MK}/2026-09-14-pins2-board/index.html`, wait: 'aside.drawer', title: 'Pins-2 design board 1 (G9 · G10 · G8)', out: 'b1-spec.md', stageAll: '.pb-stage',
+    css: [path.resolve(__dirname, '../../2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../2026-09-14-pins2-board/index.html')],
+    prepare: () => { ['g9', 'g10', 'g8'].forEach((g, i) => { const s = document.querySelectorAll('section.pb-gate')[i]; if (s) s.id = 'gate-' + g; }); },
+    gates: [['G9', 'gate-g9', 'New build drawer'], ['G10', 'gate-g10', 'Compare'], ['G8', 'gate-g8', 'Post an announcement']] },
+  '2': { url: `${MK}/2026-09-14-pins2-board-2/index.html`, wait: '#g4man *', title: 'Pins-2 design board 2 (G4 · G6 · G11 · G3 · G1)', out: 'b2-spec.md', stageAll: 'section.pb-gate',
+    css: [path.resolve(__dirname, '../../2026-09-14-pins2-board/app.css'), path.resolve(__dirname, '../../2026-09-14-pins2-board-2/index.html')],
+    prepare: () => { document.querySelectorAll('section.pb-gate[data-gate]').forEach((s) => { s.id = 'gate-' + s.dataset.gate; }); },
+    gates: [['G4', 'gate-g4', 'Armory manifest'], ['G6', 'gate-g6', 'Build name'], ['G11', 'gate-g11', 'Broadcast and History manifests'], ['G3', 'gate-g3', 'Announcement card'], ['G2', 'gate-g2', 'Admin traffic'], ['G1', 'gate-g1', 'Small text']] },
+}[MODE];
+if (!CFG) throw new Error(`BOARD=${MODE}: expected 3e, 1 or 2`);
+const URL_ = process.argv[2] || CFG.url;
+const OUT = process.argv[3] || path.join(require('os').tmpdir(), CFG.out);
 const cell = (v) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
 const PROPS = ['display', 'position', 'grid-template-columns', 'grid-template-rows', 'grid-column', 'grid-row', 'gap', 'column-gap', 'row-gap',
   'flex', 'flex-direction', 'flex-wrap', 'align-items', 'align-self', 'justify-content', 'justify-self', 'place-items',
@@ -57,17 +76,27 @@ const GATES = [
   await p.setViewport({ width: 1282, height: 888 });
   const c = await p.target().createCDPSession();
   const sheets = {};
-  c.on('CSS.styleSheetAdded', ({ header }) => { sheets[header.styleSheetId] = (header.sourceURL || '').split('/redo/').pop() || (header.isInline ? 'inline <style>' : '?'); });
+  c.on('CSS.styleSheetAdded', ({ header }) => { sheets[header.styleSheetId] = (header.sourceURL || '').split(/\/redo\/|\/mockups\//).pop() || (header.isInline ? 'inline <style>' : '?'); });
   await c.send('DOM.enable'); await c.send('CSS.enable');
   await p.goto(URL_, { waitUntil: 'networkidle0' });
-  await p.waitForSelector('#g-history .b3-hi-r', { timeout: 20000 });
+  await p.waitForSelector(CFG.wait, { timeout: 20000 });
+  if (CFG.prepare) await p.evaluate(CFG.prepare);
   await p.evaluate(() => document.fonts.ready); await new Promise((r) => setTimeout(r, 900));
 
   const src = (rule) => `${sheets[rule.styleSheetId] || (rule.origin === 'user-agent' ? 'user-agent' : '?')}:${rule.style && rule.style.range ? rule.style.range.startLine + 1 : '?'}`;
+  // 🔴 A PHYSICAL PROPERTY IS ALSO SET BY ITS LOGICAL TWIN, and matching on the name alone missed it (2026-09-21 10:10 EDT): `.exs-i .b3-btn2.sm`
+  // declares `padding-left:10px` and a later rule's `padding-inline:12px` wins, so the table printed 10px as the winner and flagged it ⚠️ —
+  // a porter reading the winner column would have shipped 10. Chrome reports `padding-inline` as its longhands `padding-inline-start/end`,
+  // never as `padding-left`, so both names are taken in ONE pass, in cascade order. The board is LTR throughout.
+  const TWIN = { 'padding-left': 'padding-inline-start', 'padding-right': 'padding-inline-end', 'padding-top': 'padding-block-start', 'padding-bottom': 'padding-block-end',
+    'margin-left': 'margin-inline-start', 'margin-right': 'margin-inline-end', 'margin-top': 'margin-block-start', 'margin-bottom': 'margin-block-end',
+    left: 'inset-inline-start', right: 'inset-inline-end', top: 'inset-block-start', bottom: 'inset-block-end',
+    width: 'inline-size', height: 'block-size', 'min-width': 'min-inline-size', 'max-width': 'max-inline-size', 'min-height': 'min-block-size', 'max-height': 'max-block-size',
+    'border-top-width': 'border-block-start-width', 'border-top-color': 'border-block-start-color' };
   const winner = (rules, inline, prop) => {
     let best = null;
-    const take = (props, from) => (props || []).forEach((d) => { if (d.name !== prop || d.disabled || d.parsedOk === false) return;
-      const imp = !!d.important; if (!best || imp || !best.imp) best = { v: d.value + (imp ? ' !important' : ''), from, imp }; });
+    const take = (props, from) => (props || []).forEach((d) => { if ((d.name !== prop && d.name !== TWIN[prop]) || d.disabled || d.parsedOk === false) return;
+      const imp = !!d.important; if (!best || imp || !best.imp) best = { v: d.value + (imp ? ' !important' : '') + (d.name !== prop ? ` (as ${d.name})` : ''), from, imp }; });
     (rules || []).forEach((m) => take(m.rule.style.cssProperties, `${cell(m.rule.selectorList.text).slice(0, 90)} · ${src(m.rule)}`));
     if (inline) take(inline.cssProperties, 'style attribute');
     return best;
@@ -110,10 +139,13 @@ const GATES = [
       const w = winner(m.matchedCSSRules, m.inlineStyle, pr);
       if (w) {
         if (/user-agent/.test(w.from) && /^(0e?m?|0px|normal|none|auto|initial)$/.test(String(w.v).trim()) && !ALWAYS.includes(pr)) continue;
-        const plain = (x) => /^-?[\d.]+(px|em|%)?$/.test(String(x).trim());
-        const bad = plain(w.v) && plain(comp[pr]) && parseFloat(w.v) !== parseFloat(comp[pr]) && !/em$/.test(String(w.v).trim());
+        // A percentage resolving to pixels is RESOLUTION, not an override: port the percentage. Only two absolute lengths that disagree are a real conflict.
+        const abs = (x) => /^-?[\d.]+(px)?$/.test(String(x).replace(/ \(as [\w-]+\)$/, '').trim());
+        const bad = abs(w.v) && abs(comp[pr]) && parseFloat(w.v) !== parseFloat(comp[pr]);
         if (bad) mismatches++;
-        rows.push(`| ${pr} | ${bad ? '⚠️ ' : ''}\`${cell(w.v)}\` | \`${cell(comp[pr])}\` | ${w.from}${bad ? ' · **overridden — see computed**' : ''} |`); continue; }
+        // A rule keyed on a switch Session 4 still owns (p10 small text, e1–e6 the shared elements) is provisional however it renders today.
+        const open = /data-b3-(p10|e[1-6])\b/.test(w.from) ? ' · ⏳ **OPEN — Session 4 owns this switch; see `switches.md`**' : '';
+        rows.push(`| ${pr} | ${bad ? '⚠️ ' : ''}\`${cell(w.v)}\` | \`${cell(comp[pr])}\` | ${w.from}${bad ? ' · **a later rule wins — port the computed value and find that rule**' : ''}${open} |`); continue; }
       if (INHERITABLE.has(pr)) {
         let from = null; (m.inherited || []).some((inh) => { const iw = winner(inh.matchedCSSRules, inh.inlineStyle, pr); if (iw) { from = iw; return true; } return false; });
         if (from) { rows.push(`| ${pr} | ↑ \`${cell(from.v)}\` | \`${cell(comp[pr])}\` | inherited · ${from.from} |`); continue; }
@@ -129,12 +161,26 @@ const GATES = [
       if (prow.length) out.push(`**::${ps}**\n\n| property | winning declaration | from |\n|---|---|---|\n` + prow.join('\n') + '\n');
     }
     if (v.interactive) {
+      // 🔴 TWO BLIND SPOTS FIXED 2026-09-21 10:15 EDT. (1) The computed style was read the instant the state was forced, while a
+      // transition was still running, so the same button's :focus-visible delta appeared on one run and vanished on the next — a spec
+      // that changes between two runs of the same board is not a spec. Transitions are switched off for the read. (2) Only the element
+      // itself was diffed, so a control whose CHILD answers the state (the drawer's Back/Close say their word on hover; a row's glow is a
+      // ::before) read as "changes nothing". Its pseudo-elements and first 40 descendants are diffed too.
+      const DPROPS = ['opacity', 'visibility', 'display', 'transform', 'color', 'background-color', 'border-color', 'box-shadow', 'width', 'max-width', 'clip-path', 'outline-color', 'outline-width', 'text-decoration-line', 'fill', 'stroke', 'content'];
+      const snap = () => p.evaluate((id, props) => { const e = document.querySelector(`[data-spec-id="${id}"]`); if (!e) return [];
+        const list = [['::before', e, '::before'], ['::after', e, '::after'], ...[...e.querySelectorAll('*')].slice(0, 40).map((x) => [x.tagName.toLowerCase() + (x.getAttribute('class') ? '.' + x.getAttribute('class').trim().split(/\s+/).join('.') : ''), x, null])];
+        return list.map(([n, x, ps]) => { const cs = getComputedStyle(x, ps); return [n, props.map((pp) => cs.getPropertyValue(pp))]; }); }, v.id, DPROPS);
       for (const st of ['hover', 'focus-visible', 'active']) {
+        await p.evaluate(() => { const t = document.createElement('style'); t.id = '__spec-no-transition'; t.textContent = '*,*::before,*::after{transition:none!important}'; document.head.appendChild(t); });
+        const before = await snap();
         await c.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [st] });
-        const cs2 = await computed(nodeId);
+        const cs2 = await computed(nodeId); const after = await snap();
         await c.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
-        const d = PROPS.filter((pr) => comp[pr] !== undefined && cs2[pr] !== comp[pr]).map((pr) => `| ${pr} | \`${cell(comp[pr])}\` | \`${cell(cs2[pr])}\` |`);
-        out.push(`**:${st}** — ${d.length ? 'changes' : 'changes nothing on the element (its ::before or a parent may still respond; see the rows above)'}\n` + (d.length ? '\n| property | at rest | ' + st + ' |\n|---|---|---|\n' + d.join('\n') + '\n' : ''));
+        await p.evaluate(() => { const t = document.getElementById('__spec-no-transition'); if (t) t.remove(); });
+        const d = PROPS.filter((pr) => !/^(transition|animation)/.test(pr) && comp[pr] !== undefined && cs2[pr] !== comp[pr]).map((pr) => `| ${pr} | \`${cell(comp[pr])}\` | \`${cell(cs2[pr])}\` |`);
+        const kid = []; before.forEach(([n, vals], i) => { if (!after[i]) return; DPROPS.forEach((pp, j) => { if (vals[j] !== after[i][1][j]) kid.push(`| ${n} | ${pp} | \`${cell(vals[j])}\` | \`${cell(after[i][1][j])}\` |`); }); });
+        out.push(`**:${st}** — ${d.length ? 'changes' : 'changes nothing on the element itself'}${kid.length ? '; parts inside it respond (table below)' : ''}\n` + (d.length ? '\n| property | at rest | ' + st + ' |\n|---|---|---|\n' + d.join('\n') + '\n' : '')
+          + (kid.length ? `\n| part inside | property | at rest | ${st} |\n|---|---|---|---|\n` + kid.join('\n') + '\n' : ''));
       }
     }
     specced++;
@@ -156,7 +202,7 @@ const GATES = [
   };
 
   // ── Tokens, including every board-scoped one the design reads ──
-  const kitCss = ['b3/board.css', 'gates.css', 'app.css', 'b2.css'].map((f) => fs.readFileSync(path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f), 'utf8')).join('\n');
+  const kitCss = CFG.css.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
   const names = [...new Set([...kitCss.matchAll(/var\((--[\w-]+)/g)].map((x) => x[1]))].sort();
   const tok = await p.evaluate((names) => { const s = getComputedStyle(document.documentElement); return names.map((n) => [n, s.getPropertyValue(n).trim()]); }, names);
   const defined = new Set([...kitCss.matchAll(/(--[\w-]+)\s*:/g)].map((x) => x[1]));
@@ -170,11 +216,27 @@ const GATES = [
   out.push('\n## @keyframes the board uses\n\n' + kf.filter(([n]) => usedKf.has(n)).map(([n, f, t]) => `**\`${n}\`** · ${f}\n\n\`\`\`css\n${t}\n\`\`\`\n`).join('\n'));
 
   // ── Every gate, resting ──
-  for (const [gid, id, title, note] of GATES) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#g-${id} .g-stage`, `${gid}-`, note); }
+  if (MODE === '3e') for (const [gid, id, title, note] of GATES) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#g-${id} .g-stage`, `${gid}-`, note); }
+  else for (const [gid, id, title] of CFG.gates) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#${id} ${MODE === '1' ? '.pb-stage' : ''}`.trim(), `${gid}-`); }
 
   // ── Reachable states, each re-censused so only what is NEW is specced ──
   const click = async (sel) => { const ok = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; e.scrollIntoView({ block: 'center' }); e.click(); return true; }, sel); await new Promise((r) => setTimeout(r, 700)); return ok; };
   out.push('\n## Reachable states\n\nEach state is reached by the interaction named, then the stage is walked again; only signatures or looks not seen above are specced.\n');
+  if (MODE === '1') {
+    // Board 1's own switches (its inline script): DMZ, Bulk create, an existing image key, and G8's deliberate bad-link view.
+    for (const [seg, name] of [['arm', 'G9 · DMZ'], ['many', 'G9 · Bulk create'], ['img', 'G9 · Existing image key']]) {
+      if (await click(`#gate-g9 [data-seg=${seg}] button:nth-of-type(2)`)) await dumpStage(name, '#gate-g9 .pb-stage', `G9${seg}-`);
+    }
+    if (await click('#gate-g8 [data-seg=views] button:nth-of-type(2)')) await dumpStage('G8 · Bad link, short window', '#gate-g8 .pb-stage', 'G8bad-');
+  }
+  if (MODE === '2') {
+    // The three states board 2's own curated extractor drove (its extract-spec.cjs:82–90) — kept, so nothing it covered is lost.
+    if (await click('#gate-g4 [data-seg=att] button[data-v=slots]')) await dumpStage('G4 · By slot view', '#gate-g4', 'G4s-');
+    await click('#gate-g4 [data-seg=att] button[data-v=list]');
+    if (await click('[data-seg=bstaged] button[data-v=on]')) await dumpStage('G11 · a staged state', '#gate-g11', 'G11s-');
+    if (await click('.chip.pb-adm')) await dumpStage('G2 · Admin traffic, toggled', '#gate-g2', 'G2a-');
+  }
+  if (MODE === '3e') {
   if (await click('#g-export .exs-i .b3-xf-fn')) await dumpStage('M3 · the landing\'s rename field, open', '#g-export .g-stage', 'M3e-');
   await p.keyboard.press('Escape'); await new Promise((r) => setTimeout(r, 300));
   if (await click('#g-export .exs-i .b3-btn2.stage')) {
@@ -185,9 +247,10 @@ const GATES = [
   if (await click('#g-armory-manifest .wg-r .wg-cb, #g-armory-manifest .wg-r .cb')) await dumpStage('M1 · one build selected (the selection bar)', '#g-armory-manifest .g-stage', 'M1s-');
   const typed = await p.evaluate(() => { const i = document.getElementById('history-search'); if (!i) return false; i.focus(); i.value = 'bot'; i.dispatchEvent(new Event('input', { bubbles: true })); return true; });
   if (typed) { await new Promise((r) => setTimeout(r, 600)); await dumpStage('H1 · a typed search', '#g-history .g-stage', 'H1q-'); }
+  }
 
   // ── Command search: settled, unmounted, and this board is still its only specification ──
-  const cmdOk = await p.evaluate(async () => {
+  const cmdOk = MODE !== '3e' ? 'n/a' : await p.evaluate(async () => {
     const host = document.createElement('section'); host.id = 'g-cmd'; host.innerHTML = '<div class="pb-stage g-stage" style="position:relative;min-height:520px;padding:24px"></div>';
     document.getElementById('board').appendChild(host);
     const { html } = await import('/local/pins2-board-3/redo/vendor/htm-preact.mjs'); const { render } = await import('/local/pins2-board-3/redo/vendor/preact.mjs');
@@ -195,21 +258,21 @@ const GATES = [
     render(html`<${B3CommandBar} commands=${[]} realmLabel="Armory" />`, host.firstElementChild); await new Promise((r) => setTimeout(r, 300));
     window.__cmd = (t) => hooks.paletteType && hooks.paletteType(t); return !!hooks.paletteType;
   }).catch((e) => String(e));
-  out.push('\n## P7 · Command search — settled "as shown", mounted here from `b3/palette.js`\n\nHe settled it: *"Build it properly, and exactly as shown."* It carries no fork, it is no longer a gate, and this board is still its only specification — so it is mounted here from the kit\'s own `B3CommandBar` over the board\'s stylesheets. ⚠️ **The LOOK ships with this plan; the RANKING does not** — `gates/main.js` records it as its own session: *"badge cx9" returns what "badge" alone returns, and the ranking needs rebuilding.*\n');
+  if (MODE === '3e') out.push('\n## P7 · Command search — settled "as shown", mounted here from `b3/palette.js`\n\nHe settled it: *"Build it properly, and exactly as shown."* It carries no fork, it is no longer a gate, and this board is still its only specification — so it is mounted here from the kit\'s own `B3CommandBar` over the board\'s stylesheets. ⚠️ **The LOOK ships with this plan; the RANKING does not** — `gates/main.js` records it as its own session: *"badge cx9" returns what "badge" alone returns, and the ranking needs rebuilding.*\n');
   if (cmdOk === true) {
     await dumpStage('P7 · closed, resting', '#g-cmd .g-stage', 'P7-');
     for (const [q, name] of [['meta cx9', 'a badge and a weapon — the compose row'], ['badge', 'an action word — Do · Find · Go'], ['zzzz', 'nothing matches — the empty state']]) {
       await p.evaluate((q) => window.__cmd(q), q); await new Promise((r) => setTimeout(r, 500));
       await dumpStage(`P7 · typed “${q}” — ${name}`, '#g-cmd .g-stage', `P7${q.replace(/\W/g, '')}-`);
     }
-  } else out.push(`**Could not be mounted:** \`${cell(cmdOk)}\` — spec it from \`b3/palette.js\` and the \`.b3-cmd*\` rules in \`b3/board.css\`.\n`);
+  } else if (MODE === '3e') out.push(`**Could not be mounted:** \`${cell(cmdOk)}\` — spec it from \`b3/palette.js\` and the \`.b3-cmd*\` rules in \`b3/board.css\`.\n`);
 
   // ── Coverage: nothing that rendered in a stage went unspecced ──
-  const untagged = await p.evaluate(() => [...document.querySelectorAll('.g-stage *')].filter((e) => !e.closest('svg') || e.tagName.toLowerCase() === 'svg')
+  const untagged = await p.evaluate((all) => [...document.querySelectorAll(all + ' *')].filter((e) => !e.closest('svg') || e.tagName.toLowerCase() === 'svg')
     .filter((e) => (e.getAttribute('class') || '').trim() && getComputedStyle(e).display !== 'none')
-    .map((e) => e.tagName.toLowerCase() + '.' + e.getAttribute('class').trim().split(/\s+/).sort().join('.') + (e.getAttribute('role') ? `[role=${e.getAttribute('role')}]` : '')))
-    .then((list) => [...new Set(list)].filter((sig) => !sigSeen.has(sig)).slice(0, 60));
-  const head = [`# Design Board 3-E — resolved values`, '', `*Generated ${new Date().toISOString()} by \`extract-spec.cjs\` from ${URL_} at 1282×888, fresh profile. ${specced} looks specced across ${sigSeen.size} signatures. Page errors: ${errs.length}. Classed signatures rendered in a stage that no pass reached: **${untagged.length}**. Winning declarations the computed value contradicts: **${mismatches}** (marked ⚠️).*`, '',
+    .map((e) => e.tagName.toLowerCase() + '.' + e.getAttribute('class').trim().split(/\s+/).sort().join('.') + (e.getAttribute('role') ? `[role=${e.getAttribute('role')}]` : ''))
+    , CFG.stageAll).then((list) => [...new Set(list)].filter((sig) => !sigSeen.has(sig)).slice(0, 60));
+  const head = [`# ${CFG.title} — resolved values`, '', `*Generated ${new Date().toISOString()} by \`extract-spec.cjs\` from ${URL_} at 1282×888, fresh profile. ${specced} looks specced across ${sigSeen.size} signatures. Page errors: ${errs.length}. Classed signatures rendered in a stage that no pass reached: **${untagged.length}**. Winning declarations the computed value contradicts: **${mismatches}** (marked ⚠️).*`, '',
     '**How to read a table.** *winning declaration* is the text Chrome applied for that property name, in cascade order with `!important` honoured; *computed* is what it resolved to; *from* is the selector and `file:line` in the kit. ↑ means nothing on the element declares it and the value is inherited from the named ancestor rule. ⚠️ means a DIFFERENT property name overrode it later — a shorthand beaten by a longhand or the reverse (`padding` against `padding-inline`) — and **the computed column is the truth**. A user-agent row is kept only where it sets something other than a default.', ''];
   if (untagged.length) head.push('⚠️ **Not reached** (rendered, classed, never walked — each is a coverage hole):\n\n' + untagged.map((x) => `- \`${x}\``).join('\n') + '\n');
   if (errs.length) head.push('⚠️ **Page errors during extraction:**\n\n' + errs.map((x) => `- \`${cell(x).slice(0, 200)}\``).join('\n') + '\n');
