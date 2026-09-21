@@ -99,6 +99,8 @@ Silent mode. Questions in popups. Tool routing by the question. One heredoc per 
 
 ## Next, in order
 
+*Progress at 2026-09-21 13:39 EDT: steps 1–4 done (Compare, New build and the Broadcast manifest measured and brought to their boards; every section re-rendered and its open line rewritten; `BOARD=4` spec at `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/README.md`), step 5's records written. Left: step 6, his yes to publish, then step 7.*
+
 1. Render and measure Compare against board 1 (`scratchpad/g10cmp.cjs` pattern: pair by class path, list differences), fix in `local/pins2-board-3/redo/b1.css` or markup, re-measure until only data differs.
 2. Measure C2 New build (board 1 G9) and C7's manifest (board 2 G11) the same way; fix.
 3. Re-render all of Board 4; read every section; update each section's "open" line (drop "Session 2's port" where closed).

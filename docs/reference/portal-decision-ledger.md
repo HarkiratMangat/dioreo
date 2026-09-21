@@ -696,6 +696,8 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 
 ## Decided 2026-09-20 — portal pins batch 2, board 3
 
+> 🔴 **2026-09-21 13:39 EDT — Board 4: Collective supersedes the three-board reading once he signs it off** (`docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md`). The precedence below still decides what it shows: a board's own rule wins, the later board where two drew the same surface, and Session 2's port never.
+
 *Harkirat's answers on Design Board 3-E, closed at version 77 (2026-09-20 23:55 EDT). Every row is his call made against the rendered board; the build rows are plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.5, and the spec — `handoff-3e.md`, the generated `3e/resolved-spec/`, the three maps and `3e/measure.cjs` — is in `docs/superpowers/mockups/2026-09-15-pins2-board-3/`. Written 2026-09-21 09:46 EDT.*
 
 | Surface | Decision | Why | Reopens if |

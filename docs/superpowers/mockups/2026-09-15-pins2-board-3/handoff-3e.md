@@ -420,6 +420,8 @@ A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carri
 
 ## 10 · After the board closed — amendments. SESSION 4 WRITES HERE
 
+🔴 **2026-09-21 13:39 EDT — Board 4: Collective changed the kit, and these changes are design, not chrome:** `b2.css` guards 35 board-2 selector parts off `.b1` and `.b3-nb` markup (the `pb-*` collision); `b1.css` carries board 1's stylesheet scoped `.b1`, board 3's button family on every board-1 drawer footer, and board 1's Compare empty state; `ui/armory.js` Compare is board 1's structure (stats and table under the bar, Same and Show cards inside `.pb-cmp`, Rank on one weapon and Category across two, the Code group on one weapon only); `ui/broadcast.js` PostForm is board 1's G8; `ui/manifest.js` rows carry their own `--c`, so the Broadcast manifest takes board 2's row hover. Its spec is `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/README.md`.
+
 *Added 2026-09-21 10:17 EDT, at Harkirat's question: "is session 4 aware that any decisions with the standardization would mean that the spec goes stale and it'll need to be updated?"*
 
 **Everything above describes the board as he closed it at v77.** Session 4 draws — elements on portal captures, on this kit and on board 4, for his ruling (Harkirat, 2026-09-21 10:32 EDT); it does not redesign a whole gate. It then decides the small text (`p10`, G1), the shared elements (`e1`–`e6`), the apply map, the exemptions, the rewrites and any tweak he approves — and every one of those can contradict a value in `3e/`. A spec that is right about the board and wrong about the decision is the failure that stopped board 2 at 95%.
