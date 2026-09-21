@@ -62,3 +62,17 @@ Roughly 60–120 turns across `b4.css`, `b1.css`, `b3/drawer.js`, `b3/armory-par
 | K2 shell, K3 C2 form, K4 mesh, K5 bulk list, K6 chips (Editing X, Compare toggles), K7 Compare, K8 C5 hover card, K12 images | **Next** | — |
 
 ⚠️ A measuring lesson from this pass: the first cap-centre probe inserted an inline-block, which is blockified inside a flex tab and reported −4.4px that was not on screen; History looked broken and was not. The instrument now reads each text run's own range and the font's descent, and never mutates the DOM.
+
+## Compact instructions (2026-09-21 19:54 EDT)
+
+```text
+/compact KEEP: Board 4 intake fix pass. Read docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md first (classes K1–K12, pass 1 built: K1 K9 K10 K11), then 2026-09-21-board4-intake.md (his C1–C9 verbatim; screenshots local/pins2-board-3/board4-review/intake/). Nothing from pass 1 is published; v5 is live. Kit git re-rooted at local/pins2-board-3 (kit files under redo/). Instruments: docs/claude/pins2/instruments/b4states.cjs (hover/pressed/grey/cap-centre/containment, Cloudinary blocked) and board4-review/shots.cjs. Rules he restated: fix classes not instances, check neighbouring elements, no fixes shown piecemeal, questions in popups, silent style, tool routing by the question (codebase-memory for code, read_smart for files, ctx_search for prose, chrome-devtools/puppeteer for the page; no rg/cat/sed for discovery). Next: K8, K7, K6, K12, then K2 header+footer OPTIONS as board switches for his ruling, then the C2 rebuild (K3–K5). DROP: the screenshot reads, tool dumps, the instrument-debugging turns.
+```
+
+## Post-compact start prompt
+
+```text
+/rename Opus5-High · Pins2 S3 Board 4 intake fix pass 2 · Sep 21
+Continue the Board 4 intake fix pass. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md and 2026-09-21-board4-intake.md in full before the first tool call. Run a real sequential-thinking pass first (harsh questions, not sorting), then build K8 (C5 hover card), K7 (Compare: toggles, 1–6 card layout, fonts, landing), K6, K12 — each verified with b4states and shots across every section — then put the C2 header/footer options on the board as switches and ask me. Do not publish until I say.
+Silent mode. Questions in popups. Tool routing by the question. Mega-batch. One heredoc per Bash call.
+```
