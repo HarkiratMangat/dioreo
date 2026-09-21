@@ -103,7 +103,7 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 *"set up a local git for the kit, i dont want it in the online github for the dioreo repo."*
 
-`local/pins2-board-3/redo/` is now a standalone git repo. **No remote, and two independent layers refuse one:** this repo's `.gitignore:25` makes the directory invisible to it, and the kit's own `.git/hooks/pre-push` exits 1 — **tested by running the hook directly**, not assumed. 107 files, 1.7 MB of `.git`; `shots/` is excluded because it is 277 MB of the kit's 281 MB and every frame is reproducible from `sweep-screens.cjs`, `shot-el.cjs` or `verify.cjs`. Its own README is `local/pins2-board-3/redo/KIT-GIT.md`.
+`local/pins2-board-3/redo/` is now a standalone git repo. **No remote, and two independent layers refuse one:** this repo's `.gitignore:25` makes the directory invisible to it, and the kit's own `.git/hooks/pre-push` exits 1 — **tested by running the hook directly**, not assumed. 107 files, 1.7 MB of `.git`; `shots/` is excluded because it is 277 MB of the kit's 281 MB and every frame is reproducible from `sweep-screens.cjs`, `shot-el.cjs` or `verify.cjs`. Its own README is `local/pins2-board-3/redo/KIT-GIT.md`, and a tracked copy is `docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/KIT-GIT.md`.
 
 **Commit at the end of each round, named for the round.** Then "revert that to the version before" is `git show <sha>:gates/armory.js`.
 
