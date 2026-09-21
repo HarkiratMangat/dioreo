@@ -99,7 +99,9 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
-## ROUND 17 — v3 scrapped, v2 restored, his five applied to THAT (2026-09-20 20:56 EDT)
+## ROUND 17 — v3 scrapped; the landing is v2, ENTIRELY (2026-09-20 20:58 EDT)
+
+⚠️ **He had to say it twice.** The first pass reverted to v2 *and* applied his five in one change, so he was again judging a composition he had never approved — the readout strip, the mode-hued squares, the staging-yellow Pick were all still mine. The panel is v2 now, unmodified, and his five land on it next.
 
 *"scrap your v3 version entirely, i don't want you making patches on top of it. revert back to v2 and then fix it with my feedback."*
 
