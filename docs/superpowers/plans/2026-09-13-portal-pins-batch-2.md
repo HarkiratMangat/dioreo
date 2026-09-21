@@ -84,6 +84,8 @@ status: live
 
 ## 2b · Review pins → work map
 
+> 🔴 *(2026-09-21 11:13 EDT)* A row routed **S3 port table → S5** now resolves through `docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md` §2, which names the board that owns that surface and where its structure and values live. §10.5 no longer carries a port table.
+
 *Added 2026-09-15 14:48 EDT. Harkirat's review of the built portal, 2026-09-15 11:16–14:17 EDT. His first line per pin and what each touches are in `docs/superpowers/mockups/2026-09-15-pins2-board-3/triage/2026-09-15-s3-triage.md`. **B3** is board 3 (§5b), **S4** Session 4 (§5c), **S5** Session 5 (§5d). A pin reaching Session 4 arrives as a design board 3 already made: Session 4 decides where it applies and rewrites the words.*
 
 | # | Pin | Realm | Item | Session · stream |
