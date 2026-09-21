@@ -13,6 +13,8 @@ Harkirat's direction: compile every finished surface of boards 1, 2 and 3 onto *
 
 **State at 2026-09-21 13:39 EDT.** Every surface is on the board and measured against the board that drew it (`docs/claude/pins2/instruments/b4parity.cjs`, element by element; captures by `pairs.cjs`). Compare matches board 1 in all four states; the post drawer and New build differ from board 1 only in sample data, in board 3's own rules (lineage: the later board's rule wins) and in board 3's button family (his yes). The Broadcast manifest carries board 2's heads and row hover. **One cause sat under several defects:** both boards named their classes `pb-*`, and 35 of board 2's selector parts reached board 1's markup — a 26px toolbar, a Compare that could not scroll sideways — so `b2.css` now fences them off with a zero-specificity guard. **The spec is [`board4-spec/`](board4-spec/README.md)** — 879 looks across 489 signatures, every Try state and Compare's states, 0 elements unreached, 0 page errors. What is still his to rule is listed under each surface on the board.
 
+**Published 2026-09-21 13:47 EDT** at his popup yes of 13:39 EDT: Board 4: Collective v1, https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh — a NEW artifact; 3-E untouched. It is republished only from `local/pins2-board-3/redo/board4.html` in the session that published it, or with this URL.
+
 ## 0 · What "done" means
 
 > *"What i see in these boards is what i expect to see exactly in the portal."*

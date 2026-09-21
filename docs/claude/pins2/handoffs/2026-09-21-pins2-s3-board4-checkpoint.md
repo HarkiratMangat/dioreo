@@ -99,6 +99,8 @@ Silent mode. Questions in popups. Tool routing by the question. One heredoc per 
 
 ## Next, in order
 
+**Published 2026-09-21 13:47 EDT** at his popup yes of 13:39 EDT: Board 4: Collective v1, https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh — a NEW artifact; 3-E untouched. It is republished only from `local/pins2-board-3/redo/board4.html` in the session that published it, or with this URL.
+
 *Progress at 2026-09-21 13:39 EDT: steps 1–4 done (Compare, New build and the Broadcast manifest measured and brought to their boards; every section re-rendered and its open line rewritten; `BOARD=4` spec at `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/README.md`), step 5's records written. Left: step 6, his yes to publish, then step 7.*
 
 1. Render and measure Compare against board 1 (`scratchpad/g10cmp.cjs` pattern: pair by class path, list differences), fix in `local/pins2-board-3/redo/b1.css` or markup, re-measure until only data differs.
