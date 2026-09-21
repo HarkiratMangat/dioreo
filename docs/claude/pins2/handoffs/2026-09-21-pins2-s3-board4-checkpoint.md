@@ -42,7 +42,7 @@ status: live
 | Board date stub | kit `local/pins2-board-3/redo/ui/httpClient.js` | parses "in N days", "tomorrow", "Sep 20" — board chrome only |
 | **Compare (board 1 · G10)** | kit `local/pins2-board-3/redo/ui/armory.js` Compare | classes remapped to board 1's (`pb-tbl`, `pb-k`, `pb-base`, `pb-v`, `pb-d`, `pb-x`, `pb-rm`, `pb-m`, `pb-gap`, `pb-same`, `pb-fold`, `pb-cut`, `pb-over`), wrapped in `pb-cmp`, Meta/Toxic/Image removed (board 1 names Rank on one weapon and Category across two), root `class="b1"`. **`node --check` passes; NOT yet rendered or measured** — next step |
 | **Element census** | `scripts/portalCensus.cjs` (`npm run portal:census`) | every realm, every state in `portal/fixtures/states/*.json`, every view tab, forced hover/focus/active; groups by LOOK with colours read as their variable; drift groups for near-copies; the hand-typed value scan. First run: **78 passes · 763 families (109 buttons) · 42 drift groups · 249 hand-typed values used 339 times**; `--plant` falsifier passed. Output `local/census/` (gitignored — regenerate) |
-| **Census check** | `scripts/portalCensusCheck.cjs` (`npm run portal:census:check`) | fails on any family or value unassigned in `docs/superpowers/mockups/2026-09-21-pins2-final/element-map.json` (Session 4 writes it); `--after` also fails on a standard still drawn more than one way. Family ids are hashes of the look |
+| **Census check** | `scripts/portalCensusCheck.cjs` (`npm run portal:census:check`) | fails on any family or value unassigned in the element map, `element-map.json` beside FINAL.md (Session 4 creates it) (Session 4 writes it); `--after` also fails on a standard still drawn more than one way. Family ids are hashes of the look |
 | Plan | §5c Step 4f (census → map → check), Step 4g (standardization artifact, then Board 4: Final), §5d Step 8 closes on the census and adds a no-new-hand-typed-values ratchet to `npm test` | committed |
 | FINAL.md | leads with Board 4: Collective as the design once he signs it off | committed |
 
@@ -59,8 +59,8 @@ status: live
 | Artifact | What it is | Where |
 |---|---|---|
 | **Board 3-E spec set** | the structural handoff (§0 first), the diffs of the kit's portal files and how to apply them (never verbatim), the generated resolved spec, token / class / file maps, 13 layout relations | `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md` · `3e/` |
-| `3e/switches.md` (`switches.cjs`) | every board switch, the value the board holds, live vs dead selectors — p10 and e1–e6 are Session 4's | generated |
-| `3e/portal-class-rules.md` (`overrides.cjs`) | the 259 board-3 rules on classes the portal already ships | generated |
+| `docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/switches.md` (`switches.cjs`) | every board switch, the value the board holds, live vs dead selectors — p10 and e1–e6 are Session 4's | generated |
+| `docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/portal-class-rules.md` (`overrides.cjs`) | the 259 board-3 rules on classes the portal already ships | generated |
 | `3e/extract-spec.cjs` | enumerating extractor; `BOARD=1\|2` modes; logical-twin matching; forced states with transitions off; child-state deltas | tool |
 | **Boards 1 and 2 frozen** | both relinked from the live `portal/public/app.css` to the stylesheet he approved them on (`docs/superpowers/mockups/2026-09-14-pins2-board/app.css`, from their published artifacts) | commit `a90ef6bb` |
 | `resolved-spec-full.md` for boards 1 and 2 | enumerated value specs; board 1's is the first with G10 Compare | beside each board |
