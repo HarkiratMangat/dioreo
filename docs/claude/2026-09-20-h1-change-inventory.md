@@ -99,6 +99,14 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
+## ROUND 16B — two findings from "you call this fixed???" (2026-09-20 20:23 EDT)
+
+**1 · EVERY DATE THIS BOARD RENDERS WAS TOMORROW'S.** He screenshotted the export panel at 20:22 EDT and its filenames read `2026-09-21`. `new Date().toISOString().slice(0,10)` is UTC, so from 20:00 EDT onward the board shows the next day — and it is not one filename: **eight sites board-side, thirty-six across the kit** (`codebase-memory search_code`). A stored instant wants UTC; a date a person reads wants the day they are living in. `isoLocal` now lives in `b3/state.js` and the eight board-side sites use it. ⚠️ **The remaining 28 are portal code that Session 5 ships and they need triage, not a blanket replace** — some of those slices are storage keys and diff values where UTC is correct. Filed.
+
+**2 · I HAD BEEN BENCHMARKING THE GLOW AGAINST AN ELEMENT THAT IS NOT ON SCREEN.** For three rounds I ported `.b3-wr:hover` because its name matched the words "armory manifest row". **Five `.b3-wr` exist on this board and every one measures zero pixels high** — it is a collapsed weapon-group header. The row he means is `.wg-r`, twenty-two of them, and its hover (`app.css:1160`) is a different recipe: **three fixed-pixel ellipses placed INSIDE the row** (360×80 at 14% 40%), all in the row's own hue with a `--realm-c` layer, **no blend modes**, over the row's ground. Percentage-of-box ellipses anchored outside the corners wash the whole band; fixed ellipses pool the light where the eye is. That is why two attempts at "the same mesh" both came back looking unchanged — the mesh was never what he was comparing against. H1 takes `.wg-r`'s recipe now, with `--c` lifted to `max(l,.72)` because a state hue sits near L .58 where a weapon accent sits near .85.
+
+**Both were found by a corpus query, not by a probe** — the first by counting the pattern across the kit, the second by asking which rows actually have a height.
+
 ## 🔴 15A WAS WRONG AND HE CAUGHT IT — corrected 2026-09-20 18:47 EDT
 
 I wrote that an outline paints above descendants and therefore protects a container's ring. That is true only **within one stacking context**. `.b3-tk .b3-tk-h` carries `z-index:40` on a grid item while `.b3-tk` is `position:static`, so that header joined an ancestor's stacking context and painted over the card's outline — the repair tickets still showed a cut ring, which is what he screenshotted. **I verified 15A by reading the rule I had just written, not by looking at the surface it governs.**
