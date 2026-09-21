@@ -12,7 +12,7 @@ status: live
 
 ### C8 stage
 
-46 distinct signatures on screen; 43 not already specced above.
+46 distinct signatures on screen; 42 not already specced above.
 
 
 ### `section.b3-hi.panel`
@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-1` · rendered **1092×764** · 1 instance look like this
+`C8-1` · rendered **1148×820** · 1 instance look like this
 
 ```html
 <section class="panel b3-hi" id="history-manifest"><div class="mtools b3-hi-tools"><div class="mt-r1"><span class="mlabel"><span>Events</span></span><span class="srch">⟨svg⟩<label class="sr" for="history-search">Search events</label><input id="history-search" class="" placeholder="Search what happened, or who"></span></div><div class="mt-r2 b3-hi-f"><div class="b3-fg"><span class="b3-fgl">Kind</span><button type="but
@@ -33,7 +33,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | flex-direction | `column` | `column` | .panel.b3-hi · b3/board.css:5028 |
 | align-self | `start` | `start` | #history-manifest · b3/board.css:4703 |
 | justify-self | `stretch` | `stretch` | #history-manifest · gates.css:42 |
-| width | `100%` | `1092px` | #history-manifest · gates.css:42 |
+| width | `100%` | `1148px` | #history-manifest · gates.css:42 |
 | min-width | `0px` | `0px` | #history-manifest · gates.css:42 |
 | max-height | `100%` | `100%` | .g-stage.g-fixed > .panel, .g-stage.g-fixed > section.panel · gates.css:148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -70,7 +70,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-2` · rendered **1090×221** · 1 instance look like this
+`C8-2` · rendered **1146×221** · 1 instance look like this
 
 ```html
 <div class="mtools b3-hi-tools"><div class="mt-r1"><span class="mlabel"><span>Events</span></span><span class="srch">⟨svg⟩<label class="sr" for="history-search">Search events</label><input id="history-search" class="" placeholder="Search what happened, or who"></span></div><div class="mt-r2 b3-hi-f"><div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c:
@@ -105,7 +105,7 @@ inside `.mtools` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-3` · rendered **1046×44** · 1 instance look like this
+`C8-3` · rendered **1102×44** · 1 instance look like this
 
 ```html
 <div class="mt-r1"><span class="mlabel"><span>Events</span></span><span class="srch">⟨svg⟩<label class="sr" for="history-search">Search events</label><input id="history-search" class="" placeholder="Search what happened, or who"></span></div>
@@ -114,7 +114,7 @@ inside `.mtools` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi .mt-r1 · b3/board.css:4904 |
-| grid-template-columns | `calc(var(--h1-labw,56px) + var(--h1-lab,16px)) minmax(0,1fr) max-content` | `72px 974px 0px` | html[data-b3-a1] .b3-hi .mt-r1 · gates.css:1012 |
+| grid-template-columns | `calc(var(--h1-labw,56px) + var(--h1-lab,16px)) minmax(0,1fr) max-content` | `72px 1030px 0px` | html[data-b3-a1] .b3-hi .mt-r1 · gates.css:1012 |
 | gap | `var(--s3)` | `` | .mt-r1 · app.css:943 |
 | column-gap | `0px` | `0px` | .b3-hi .mt-r1 · b3/board.css:4904 |
 | row-gap | `` | `12px` | .mt-r1 · app.css:943 |
@@ -334,7 +334,7 @@ inside `.mtools` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-8` · rendered **1046×130** · 1 instance look like this
+`C8-8` · rendered **1102×130** · 1 instance look like this
 
 ```html
 <div class="mt-r2 b3-hi-f"><div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--info);">⟨svg.ic⟩Changes<em>27</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--warn);">⟨svg.ic⟩Alerts<em>47</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--sched);">⟨svg.ic⟩Restarts<em>26<
@@ -343,7 +343,7 @@ inside `.mtools` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
-| grid-template-columns | `max-content minmax(0px, 1fr)` | `411.969px 598.031px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
+| grid-template-columns | `max-content minmax(0px, 1fr)` | `411.969px 654.031px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
 | gap | `9px 36px` | `` | .b3-hi-f · b3/board.css:1506 |
 | column-gap | `var(--h1-col,36px)` | `36px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
 | row-gap | `var(--h1-row,10px)` | `10px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
@@ -1698,7 +1698,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-86` · rendered **1090×465** · 1 instance look like this
+`C8-86` · rendered **1146×521** · 1 instance look like this
 
 ```html
 <div class="b3-hi-list"><div class="b3-hi-h" aria-hidden="true"><span>Time</span><span>Kind</span><span>What</span><span>Who</span><span>Undo</span></div><section class="b3-hi-dg" style="--n: 4;"><div class="b3-hi-day"><b class="b3-hi-dd">Sun, Sep 6</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span></span><span class="b3-hi-ds">9:36 AM – 3:25 PM</span></div><di
@@ -1707,7 +1707,7 @@ inside `.panel` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list · b3/board.css:4715 |
-| grid-template-columns | `max-content max-content minmax(0px, 1fr) max-content max-content` | `0px 0px 1002px 0px 0px` | .b3-hi-list · b3/board.css:4715 |
+| grid-template-columns | `max-content max-content minmax(0px, 1fr) max-content max-content` | `0px 0px 1058px 0px 0px` | .b3-hi-list · b3/board.css:4715 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list · gates.css:1021 |
 | flex | `1 1 auto` | `` | .panel.b3-hi > .b3-hi-list · b3/board.css:5030 |
 | min-height | `0px` | `0px` | .panel.b3-hi > .b3-hi-list · b3/board.css:5030 |
@@ -1729,7 +1729,7 @@ inside `.b3-hi-list` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-87` · rendered **1090×32** · 1 instance look like this · aria-hidden="true"
+`C8-87` · rendered **1146×32** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <div class="b3-hi-h" aria-hidden="true"><span>Time</span><span>Kind</span><span>What</span><span>Who</span><span>Undo</span></div>
@@ -1739,7 +1739,7 @@ inside `.b3-hi-list` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `sticky` | `sticky` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5034 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -1775,7 +1775,7 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 1 of 5
 
-`C8-93` · rendered **1090×239** · 1 instance look like this
+`C8-93` · rendered **1146×239** · 1 instance look like this
 
 ```html
 <section class="b3-hi-dg" style="--n: 4;"><div class="b3-hi-day"><b class="b3-hi-dd">Sun, Sep 6</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span></span><span class="b3-hi-ds">9:36 AM – 3:25 PM</span></div><div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">3:25 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="bu
@@ -1799,7 +1799,7 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 2 of 5
 
-`C8-168` · rendered **1090×380** · 1 instance look like this
+`C8-168` · rendered **1146×380** · 1 instance look like this
 
 ```html
 <section class="b3-hi-dg" style="--n: 7;"><div class="b3-hi-day"><b class="b3-hi-dd">Fri, Sep 4</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>7</em>changes</span></span><span class="b3-hi-ds">12:18 PM – 8:11 PM</span></div><div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">8:11 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="b
@@ -1823,7 +1823,7 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 3 of 5
 
-`C8-294` · rendered **1090×333** · 1 instance look like this
+`C8-294` · rendered **1146×333** · 1 instance look like this
 
 ```html
 <section class="b3-hi-dg" style="--n: 6;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Sep 3</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>6</em>changes</span></span><span class="b3-hi-ds">12:21 AM – 9:04 AM</span></div><div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">9:04 AM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="b
@@ -1847,7 +1847,7 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 4 of 5
 
-`C8-403` · rendered **1090×521** · 1 instance look like this
+`C8-403` · rendered **1146×521** · 1 instance look like this
 
 ```html
 <section class="b3-hi-dg" style="--n: 10;"><div class="b3-hi-day"><b class="b3-hi-dd">Wed, Sep 2</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>10</em>changes</span></span><span class="b3-hi-ds">10:38 PM – 11:35 PM</span></div><div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">11:35 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button typ
@@ -1871,7 +1871,7 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 5 of 5
 
-`C8-580` · rendered **1090×3264** · 1 instance look like this
+`C8-580` · rendered **1146×3264** · 1 instance look like this
 
 ```html
 <section class="b3-hi-dg" style="--n: 73;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Aug 27</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>47</em>alerts</span><span class="b3-hi-dk" style="--c: var(--sched);">⟨svg.ic⟩<em>26</em>restarts</span></span><span class="b3-hi-ds">10:30 AM – 9:42 PM</span></div><div class="b3-hi-r" style="--c: var(--sched);"><span class="when">9:4
@@ -1900,7 +1900,7 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C8-94` · rendered **1090×52** · 1 instance look like this
+`C8-94` · rendered **1146×52** · 1 instance look like this
 
 ```html
 <div class="b3-hi-day"><b class="b3-hi-dd">Sun, Sep 6</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span></span><span class="b3-hi-ds">9:36 AM – 3:25 PM</span></div>
@@ -1910,7 +1910,7 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1516 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4720 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
@@ -1967,7 +1967,7 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-169` · rendered **1090×52** · 4 instances look like this
+`C8-169` · rendered **1146×52** · 4 instances look like this
 
 ```html
 <div class="b3-hi-day"><b class="b3-hi-dd">Fri, Sep 4</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>7</em>changes</span></span><span class="b3-hi-ds">12:18 PM – 8:11 PM</span></div>
@@ -1977,7 +1977,7 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1516 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4720 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
@@ -2069,7 +2069,7 @@ inside `.b3-hi-day` · 5 on screen · **1 look**
 
 #### the one look
 
-`C8-96` · rendered **706×22** · 5 instances look like this
+`C8-96` · rendered **762×22** · 5 instances look like this
 
 ```html
 <span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span></span>
@@ -2221,7 +2221,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C8-100` · rendered **1090×46** · 4 instances look like this
+`C8-100` · rendered **1146×46** · 4 instances look like this
 
 ```html
 <div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">3:25 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><span>own
@@ -2231,7 +2231,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -2287,7 +2287,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C8-134` · rendered **1090×47** · 9 instances look like this
+`C8-134` · rendered **1146×47** · 9 instances look like this
 
 ```html
 <div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">9:36 AM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Realwalk Probe 2026-09-06T13-36-…</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><s
@@ -2297,7 +2297,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -2353,7 +2353,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C8-699` · rendered **1090×44** · 3 instances look like this
+`C8-699` · rendered **1146×44** · 3 instances look like this
 
 ```html
 <div class="b3-hi-r st-a" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</sp
@@ -2363,7 +2363,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -2577,7 +2577,7 @@ inside `.b3-hi-r` · 100 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C8-105` · rendered **574×46** · 27 instances look like this · type="button"
+`C8-105` · rendered **630×46** · 27 instances look like this · type="button"
 
 ```html
 <button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button>
@@ -2642,7 +2642,7 @@ inside `.b3-hi-r` · 100 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-595` · rendered **574×41** · 73 instances look like this · type="button"
+`C8-595` · rendered **630×41** · 73 instances look like this · type="button"
 
 ```html
 <button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">restarted — automatic</span></span></button>
@@ -3010,7 +3010,7 @@ inside `.b3-hi-dg` · 16 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C8-117` · rendered **1090×47** · 13 instances look like this
+`C8-117` · rendered **1146×47** · 13 instances look like this
 
 ```html
 <div class="b3-hi-r st-z" style="--c: var(--info);"><span class="when">3:22 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Added new</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><span>o
@@ -3020,7 +3020,7 @@ inside `.b3-hi-dg` · 16 on screen · **2 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3076,7 +3076,7 @@ inside `.b3-hi-dg` · 16 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-718` · rendered **1090×44** · 3 instances look like this
+`C8-718` · rendered **1146×44** · 3 instances look like this
 
 ```html
 <div class="b3-hi-r st-z" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</sp
@@ -3086,7 +3086,7 @@ inside `.b3-hi-dg` · 16 on screen · **2 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3196,7 +3196,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C8-277` · rendered **1090×47** · 1 instance look like this
+`C8-277` · rendered **1146×47** · 1 instance look like this
 
 ```html
 <div class="b3-hi-r" style="--c: var(--info);"><span class="when">12:18 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Added new</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Realwalk Probe 2026-09-04T16-18-…</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><spa
@@ -3206,7 +3206,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3262,7 +3262,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C8-590` · rendered **1090×44** · 1 instance look like this
+`C8-590` · rendered **1146×44** · 1 instance look like this
 
 ```html
 <div class="b3-hi-r" style="--c: var(--sched);"><span class="when">9:42 PM</span><span><span class="b3-htab">⟨svg.ic⟩Restart</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">restarted — automatic</span></span></button><span class="b3-who sys" title=""><span class="b3-av sys">⟨svg.ic⟩</span><span>system</span></span><span class="act"></span></div>
@@ -3272,7 +3272,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3328,7 +3328,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C8-603` · rendered **1090×44** · 65 instances look like this
+`C8-603` · rendered **1146×44** · 65 instances look like this
 
 ```html
 <div class="b3-hi-r" style="--c: var(--warn);"><span class="when">9:42 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span></
@@ -3338,7 +3338,7 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3509,7 +3509,7 @@ inside `.b3-hi-dg` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-1566` · rendered **1090×44** · 1 instance look like this
+`C8-1566` · rendered **1146×44** · 1 instance look like this
 
 ```html
 <div class="b3-hi-r st-m" style="--c: var(--warn);"><span class="when">11:49 AM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</s
@@ -3519,7 +3519,7 @@ inside `.b3-hi-dg` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 574px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
+| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
 | grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
@@ -3580,7 +3580,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-1821` · rendered **1090×76** · 1 instance look like this
+`C8-1821` · rendered **1146×76** · 1 instance look like this
 
 ```html
 <div class="b3-hi-more"><button type="button" class="b3-btn2">⟨svg.ic⟩<span class="b3-nw">Load older events<em>1,321 more</em></span></button></div>
@@ -3620,93 +3620,3 @@ inside `.panel` · 1 on screen · **1 look**
 | background-image | `` | .b3-hi-more::before · b3/board.css:5075 |
 | content | `""` | .b3-hi-more::before · b3/board.css:5075 |
 | pointer-events | `none` | .b3-hi-more::before · b3/board.css:5075 |
-
-
-### `button.b3-btn2`
-
-inside `.b3-hi-more` · 1 on screen · **1 look**
-
-#### the one look
-
-`C8-1822` · rendered **224×40** · 1 instance look like this · type="button"
-
-```html
-<button type="button" class="b3-btn2">⟨svg.ic⟩<span class="b3-nw">Load older events<em>1,321 more</em></span></button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-btn2 · b3/board.css:801 |
-| gap | `8px` | `` | .b3-btn2 · b3/board.css:801 |
-| column-gap | `8px` | `8px` | .b3-btn2 · b3/board.css:801 |
-| row-gap | `8px` | `8px` | .b3-btn2 · b3/board.css:801 |
-| flex | `none` | `` | .b3-btn2 · b3/board.css:801 |
-| align-items | `center` | `center` | .b3-btn2 · b3/board.css:801 |
-| height | `40px` | `40px` | .b3-btn2 · b3/board.css:801 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 15px 0 13px` | `` | .b3-btn2 · b3/board.css:801 |
-| padding-top | `0px` | `0px` | .b3-btn2 · b3/board.css:801 |
-| padding-right | `15px` | `15px` | .b3-btn2 · b3/board.css:801 |
-| padding-bottom | `0px` | `0px` | .b3-btn2 · b3/board.css:801 |
-| padding-left | `13px` | `13px` | .b3-btn2 · b3/board.css:801 |
-| border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3320 |
-| background | `color-mix(in srgb,var(--sunk) 85%,transparent)` | `` | .b3-btn2 · b3/board.css:801 |
-| background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.85)` | .b3-btn2 · b3/board.css:801 |
-| background-image | `` | `none` | .b3-btn2 · b3/board.css:801 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-btn2 · b3/board.css:801 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-btn2 · b3/board.css:801 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-btn2 · b3/board.css:801 |
-| font-size | `` | `12px` | .b3-btn2 · b3/board.css:801 |
-| font-weight | `` | `600` | .b3-btn2 · b3/board.css:801 |
-| font-style | `` | `normal` | .b3-btn2 · b3/board.css:801 |
-| font-variant-numeric | `` | `normal` | .b3-btn2 · b3/board.css:801 |
-| line-height | `` | `12px` | .b3-btn2 · b3/board.css:801 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2 · b3/board.css:801 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
-| cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.85)` | `rgb(35, 44, 52)` |
-| box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
-| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| span.b3-nw | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| span.b3-nw | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| span.b3-nw | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |

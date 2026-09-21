@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the resolved values
 
-*Generated 2026-09-21T17:37:55.534Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 879 looks specced across 489 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **0**. Winning declarations the computed value contradicts: **22** (marked ⚠️).*
+*Generated 2026-09-21T18:49:55.362Z by `extract-spec.cjs` from http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html at 1282×888, fresh profile. 694 looks specced across 372 signatures. Page errors: 0. Classed signatures rendered in a stage that no pass reached: **14**. Winning declarations the computed value contradicts: **8** (marked ⚠️).*
 
 🔴 **Board 4: Collective is every finished surface of boards 1–3 on the kit's portal code, no switches.** Regenerate with `BOARD=4` on both scripts: `BOARD=4 node docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/extract-spec.cjs '' $TMPDIR/b4-spec.md` then `BOARD=4 node docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/split-spec.cjs $TMPDIR/b4-spec.md`. Read [`../FINAL.md`](../FINAL.md) first.
 
@@ -26,14 +26,13 @@ node docs/superpowers/mockups/2026-09-15-pins2-board-3/3e/measure.cjs
 |---|---|---|
 | [`tokens.md`](tokens.md) | Tokens as resolved on `:root` | 14 KB |
 | [`motion.md`](motion.md) | @keyframes the board uses | 9 KB |
-| [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 285 KB |
-| [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 237 KB |
-| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 0 KB |
-| [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 213 KB |
-| [`C5-export.md`](C5-export.md) | C5 · Export — resting | 79 KB |
+| [`C1-armory-manifest.md`](C1-armory-manifest.md) | C1 · The Armory manifest — resting | 286 KB |
+| [`C2-new-build.md`](C2-new-build.md) | C2 · New build — resting | 145 KB |
+| [`C3-compare.md`](C3-compare.md) | C3 · Compare — resting | 79 KB |
+| [`C4-repairs.md`](C4-repairs.md) | C4 · Repairs — resting | 215 KB |
+| [`C5-export.md`](C5-export.md) | C5 · Export — resting | 69 KB |
 | [`C6-delivery-queue.md`](C6-delivery-queue.md) | C6 · The delivery queue — resting | 99 KB |
-| [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 186 KB |
-| [`C8-history.md`](C8-history.md) | C8 · History — resting | 232 KB |
-| [`C9-command-search.md`](C9-command-search.md) | C9 · Command search — resting | 1 KB |
-| [`C10-admin-traffic.md`](C10-admin-traffic.md) | C10 · Admin traffic — resting | 84 KB |
-| [`states.md`](states.md) | Reachable states | 439 KB |
+| [`C7-broadcast.md`](C7-broadcast.md) | C7 · The Broadcast manifest, and posting — resting | 87 KB |
+| [`C8-history.md`](C8-history.md) | C8 · History — resting | 227 KB |
+| [`C9-admin-traffic.md`](C9-admin-traffic.md) | C9 · Admin traffic — resting | 11 KB |
+| [`states.md`](states.md) | Reachable states | 313 KB |

@@ -12,44 +12,7 @@ status: live
 
 ### C5 stage
 
-27 distinct signatures on screen; 27 not already specced above.
-
-
-### `div.on.scrim`
-
-inside `.pb-stage` · 1 on screen · **1 look**
-
-#### the one look
-
-`C5-1` · rendered **1148×900** · 1 instance look like this
-
-```html
-<div class="scrim on"></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `absolute` | `absolute` | .g-stage .scrim · gates.css:164 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .scrim · app.css:1354 |
-| top | `0px` | `0px` | .scrim · app.css:1354 |
-| right | `0px` | `0px` | .scrim · app.css:1354 |
-| bottom | `0px` | `0px` | .scrim · app.css:1354 |
-| left | `0px` | `0px` | .scrim · app.css:1354 |
-| background | `var(--overlay-66)` | `` | .scrim · app.css:1354 |
-| background-color | `` | `rgba(6, 9, 11, 0.66)` | .scrim · app.css:1354 |
-| background-image | `` | `none` | .scrim · app.css:1354 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| opacity | `1` | `1` | .scrim.on · app.css:1356 |
-| transition | `opacity .16s` | `` | .scrim · app.css:1354 |
-| z-index | `44` | `44` | .scrim · app.css:1354 |
-| pointer-events | `auto` | `auto` | .scrim.on · app.css:1356 |
+27 distinct signatures on screen; 22 not already specced above.
 
 
 ### `aside.drawer.open[role=dialog]`
@@ -94,108 +57,6 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
-
-
-### `header.dw-h`
-
-inside `.drawer` · 1 on screen · **1 look**
-
-#### the one look
-
-`C5-3` · rendered **558×57** · 1 instance look like this
-
-```html
-<header class="dw-h"><div class="dw-ttl"><h2>Export</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-h · app.css:1375 |
-| position | `sticky` | `sticky` | header · app.css:682 |
-| grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `14px` | `` | .dw-h · app.css:1375 |
-| column-gap | `14px` | `14px` | .dw-h · app.css:1375 |
-| row-gap | `14px` | `14px` | .dw-h · app.css:1375 |
-| flex | `none` | `` | .dw-h · app.css:1375 |
-| align-items | `flex-start` | `flex-start` | .dw-h · app.css:1375 |
-| min-width | `0px` | `0px` | header · app.css:1427 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `var(--s4) var(--s5) var(--s3)` | `` | .dw-h · app.css:1375 |
-| padding-top | `` | `16px` | .dw-h · app.css:1375 |
-| padding-right | `` | `24px` | .dw-h · app.css:1375 |
-| padding-bottom | `` | `12px` | .dw-h · app.css:1375 |
-| padding-left | `` | `24px` | .dw-h · app.css:1375 |
-| top | `0px` | `0px` | header · app.css:682 |
-| border-bottom | `1px solid var(--rule)` | `` | .dw-h · app.css:1375 |
-| background | `linear-gradient(180deg,rgba(255,255,255,.03),transparent)` | `` | .dw-h · app.css:1375 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .dw-h · app.css:1375 |
-| background-image | `linear-gradient(rgba(255, 255, 255, 0.03), transparent)` | `linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0))` | .dw-h · app.css:1375 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `40` | `40` | header · app.css:682 |
-
-
-### `div.dw-ttl`
-
-inside `.dw-h` · 1 on screen · **1 look**
-
-#### the one look
-
-`C5-4` · rendered **70×28** · 1 instance look like this
-
-```html
-<div class="dw-ttl"><h2>Export</h2></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-ttl · app.css:1377 |
-| gap | `6px` | `` | .dw-ttl · app.css:1377 |
-| column-gap | `6px` | `6px` | .dw-ttl · app.css:1377 |
-| row-gap | `6px` | `6px` | .dw-ttl · app.css:1377 |
-| flex-direction | `column` | `column` | .dw-ttl · app.css:1377 |
-| min-width | `0px` | `0px` | .dw-ttl · app.css:1377 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.dw-nav`
-
-inside `.dw-h` · 1 on screen · **1 look**
-
-#### the one look
-
-`C5-5` · rendered **67×28** · 1 instance look like this
-
-```html
-<div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-nav · gates.css:811 |
-| gap | `6px` | `` | .dw-nav · gates.css:811 |
-| column-gap | `6px` | `6px` | .dw-nav · gates.css:811 |
-| row-gap | `6px` | `6px` | .dw-nav · gates.css:811 |
-| flex | `none` | `` | .dw-nav · gates.css:811 |
-| align-items | `center` | `center` | .dw-nav · gates.css:811 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `auto` | `359.812px` | .dw-nav · gates.css:811 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
 ### `button.x`
@@ -300,42 +161,6 @@ inside `.dw-nav` · 1 on screen · **1 look**
 | property | at rest | active |
 |---|---|---|
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `svg.ic.sm`
-
-inside `.x` · 1 on screen · **1 look**
-
-#### the one look
-
-`C5-7` · rendered **10×10** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic sm" aria-hidden="true"><use href="#i-x"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `0.85em` | `10.1875px` | .ic.sm · app.css:6461 |
-| height | `0.85em` | `10.1875px` | .ic.sm · app.css:6461 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .dw-h .x · app.css:1383 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .drawer .x · app.css:1398 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .dw-h .x · app.css:1383 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 
 ### `b`
@@ -548,9 +373,9 @@ inside `.exs-facts` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.—` · 8 on screen · **5 looks**
+inside `.—` · 8 on screen · **4 looks**
 
-#### look 1 of 5
+#### look 1 of 4
 
 `C5-13` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -577,7 +402,7 @@ inside `.—` · 8 on screen · **5 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 2 of 5
+#### look 2 of 4
 
 `C5-15` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -604,7 +429,7 @@ inside `.—` · 8 on screen · **5 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 5
+#### look 3 of 4
 
 `C5-26` · rendered **12×12** · 2 instances look like this · aria-hidden="true"
 
@@ -639,7 +464,7 @@ inside `.—` · 8 on screen · **5 looks**
 | cursor | ↑ `text` | `text` | inherited · :is(.b3-xf, .exs-i) .b3-xf-fn:not(.editing) · b3/board.css:3732 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 5
+#### look 4 of 4
 
 `C5-43` · rendered **20×20** · 1 instance look like this · aria-hidden="true"
 
@@ -662,39 +487,6 @@ inside `.—` · 8 on screen · **5 looks**
 | color | `var(--staged)` | `rgb(216, 242, 74)` | .exs-n > .ic · gates.css:555 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-
-#### look 5 of 5
-
-`C5-48` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `14px` | `14px` | .exs-i .b3-btn2.sm .ic · gates.css:621 |
-| height | `14px` | `14px` | .exs-i .b3-btn2.sm .ic · gates.css:621 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `-5px` | `-5px` | .exs-i .b3-btn2 > .ic:last-child · gates.css:648 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-btn2 · b3/board.css:801 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-btn2 · b3/board.css:801 |
-| font-size | ↑ `` | `12px` | inherited · .b3-btn2 · b3/board.css:801 |
-| font-weight | ↑ `` | `600` | inherited · .b3-btn2 · b3/board.css:801 |
-| font-style | ↑ `` | `normal` | inherited · .b3-btn2 · b3/board.css:801 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-btn2 · b3/board.css:801 |
-| line-height | ↑ `` | `12px` | inherited · .b3-btn2 · b3/board.css:801 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-btn2 · b3/board.css:801 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-btn2.stage · b3/board.css:4127 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 
 ### `li.exs-fact-w`

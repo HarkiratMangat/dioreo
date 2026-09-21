@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-1` · rendered **1048×732** · 1 instance look like this
+`C1-1` · rendered **1148×788** · 1 instance look like this
 
 ```html
 <section class="panel" id="manifest"><div class="mtools"><div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search builds</label><input id="manifest-search" class="" placeholder="Search…"></span><button class="pill lead madd">⟨svg.ic⟩New build</button></div><div class="mt-r2"><span class="mt-grp" role="group" aria-label="Category"><span 
@@ -35,9 +35,9 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `var(--s6)` | `32px` | #manifest, #sessions · app.css:2852 |
-| margin-right | `22px` | `22px` | .panel · app.css:723 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `22px` | `22px` | .panel · app.css:723 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -61,7 +61,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-2` · rendered **1046×125** · 1 instance look like this
+`C1-2` · rendered **1146×125** · 1 instance look like this
 
 ```html
 <div class="mtools"><div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search builds</label><input id="manifest-search" class="" placeholder="Search…"></span><button class="pill lead madd">⟨svg.ic⟩New build</button></div><div class="mt-r2"><span class="mt-grp" role="group" aria-label="Category"><span class="mlabel"><span>Category</span><
@@ -94,7 +94,7 @@ inside `.mtools` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-3` · rendered **1014×44** · 1 instance look like this
+`C1-3` · rendered **1114×44** · 1 instance look like this
 
 ```html
 <div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search builds</label><input id="manifest-search" class="" placeholder="Search…"></span><button class="pill lead madd">⟨svg.ic⟩New build</button></div>
@@ -179,7 +179,7 @@ inside `.mlabel` · 9 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C1-56` · rendered **835×48** · 1 instance look like this
+`C1-56` · rendered **935×48** · 1 instance look like this
 
 ```html
 <span><button type="button" class="wg-sort" aria-sort="ascending">Weapon⟨svg.ic⟩</button></span>
@@ -202,7 +202,7 @@ inside `.mlabel` · 9 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C1-78` · rendered **496×0** · 5 instances look like this
+`C1-78` · rendered **596×0** · 5 instances look like this
 
 ```html
 <span></span>
@@ -319,7 +319,7 @@ inside `.mt-r1` · 1 on screen · **1 look**
 | padding-right | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
 | padding-bottom | `10px` | `10px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
 | padding-left | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| margin-left | `auto` | `473.844px` | .mtools .madd · app.css:7208 |
+| margin-left | `auto` | `573.844px` | .mtools .madd · app.css:7208 |
 | border | `1px solid var(--rule)` | `` | .pill · app.css:4527 |
 | border-color | `var(--patch)` | `` | .pill.lead · app.css:4543 |
 | border-radius | `var(--rad-3)` | `` | .pill.lead, .pill.mh-t · app.css:5049 |
@@ -554,7 +554,7 @@ inside `.mtools` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-10` · rendered **1014×40** · 1 instance look like this
+`C1-10` · rendered **1114×40** · 1 instance look like this
 
 ```html
 <div class="mt-r2"><span class="mt-grp" role="group" aria-label="Category"><span class="mlabel"><span>Category</span></span><button aria-pressed="true" class="chip" title="All category"><span class="cl">All</span> <em>21</em></button><button aria-pressed="false" class="chip topic" title="Only Assault" style="--c: #ff3b5c;"><i></i><span class="cl">Assault</span> <em>7</em></button><button aria-pressed="false" class="c
@@ -709,6 +709,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 
 | property | at rest | hover |
 |---|---|---|
+| background-color | `rgb(35, 44, 52)` | `color(srgb 0.21451 0.248235 0.278039)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
@@ -1288,7 +1289,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-51` · rendered **1046×2258** · 1 instance look like this
+`C1-51` · rendered **1146×2258** · 1 instance look like this
 
 ```html
 <div class="wg-wrap"><div class="wg-heads"><span class="b3-hint" data-side="top-start"><span class="wg-cb b3-allcb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all 21"><span class="cb"></span></span></span><span><button type="button" class="wg-sort" aria-sort="ascending">Weapon⟨svg.ic⟩</button></span><button type="button" class="wg-fold">⟨svg.ic.ic-fold⟩Collapse all</button></div><div class="
@@ -1313,7 +1314,7 @@ inside `.wg-wrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-52` · rendered **1046×48** · 1 instance look like this
+`C1-52` · rendered **1146×48** · 1 instance look like this
 
 ```html
 <div class="wg-heads"><span class="b3-hint" data-side="top-start"><span class="wg-cb b3-allcb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select all 21"><span class="cb"></span></span></span><span><button type="button" class="wg-sort" aria-sort="ascending">Weapon⟨svg.ic⟩</button></span><button type="button" class="wg-fold">⟨svg.ic.ic-fold⟩Collapse all</button></div>
@@ -1322,7 +1323,7 @@ inside `.wg-wrap` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-heads · app.css:1108 |
-| grid-template-columns | `32px minmax(0px, 1fr) auto` | `32px 834.547px 111.453px` | .wg-heads · app.css:1108 |
+| grid-template-columns | `32px minmax(0px, 1fr) auto` | `32px 934.547px 111.453px` | .wg-heads · app.css:1108 |
 | column-gap | `var(--s4)` | `16px` | .wg-heads · app.css:1108 |
 | align-items | `center` | `center` | .wg-heads · app.css:1108 |
 | min-height | `48px` | `48px` | html[data-b3-a1="fixed"] .wg-heads · gates.css:255 |
@@ -1785,7 +1786,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 1 of 5
 
-`C1-61` · rendered **1046×478** · 1 instance look like this
+`C1-61` · rendered **1146×478** · 1 instance look like this
 
 ```html
 <div class="wg" data-w="BAL-27" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b
@@ -1805,7 +1806,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 2 of 5
 
-`C1-206` · rendered **1046×308** · 2 instances look like this
+`C1-206` · rendered **1146×308** · 2 instances look like this
 
 ```html
 <div class="wg" data-w="HOLGER 26" style="--c: #845ec2;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div><span></span><button type="button" class="wg-ib wg-fbtn" aria-expanded="true
@@ -1825,7 +1826,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 3 of 5
 
-`C1-292` · rendered **1046×138** · 2 instances look like this
+`C1-292` · rendered **1146×138** · 2 instances look like this
 
 ```html
 <div class="wg" data-w="JAK-12" style="--c: #f6a93b;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="to
@@ -1845,7 +1846,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 4 of 5
 
-`C1-342` · rendered **1046×223** · 2 instances look like this
+`C1-342` · rendered **1146×223** · 2 instances look like this
 
 ```html
 <div class="wg" data-w="KILO 141" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every KILO 141 build"><span class="cb"></span></span><div class="wg-line"><b>KILO 141</b><small>Assault<em class="wg-nb">2 builds</em></small></div><span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-ex
@@ -1865,7 +1866,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 5 of 5
 
-`C1-607` · rendered **1046×393** · 1 instance look like this
+`C1-607` · rendered **1146×393** · 1 instance look like this
 
 ```html
 <div class="wg" data-w="SKS" style="--c: #3ddc97;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every SKS build"><span class="cb"></span></span><div class="wg-line"><b>SKS</b><small>Marksman<em class="wg-nb">4 builds</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="top3" ari
@@ -1890,7 +1891,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 1 of 7
 
-`C1-62` · rendered **1046×52** · 2 instances look like this · aria-expanded="true"
+`C1-62` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3
@@ -1900,7 +1901,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 407.375px 495.625px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 407.375px 595.625px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -1949,7 +1950,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 2 of 7
 
-`C1-207` · rendered **1046×52** · 1 instance look like this · aria-expanded="true"
+`C1-207` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div><span></span><button type="button" class="wg-ib wg-fbtn" aria-expanded="true" aria-label="Collapse HOLGER 26">⟨svg.ic.ic-fold⟩</butto
@@ -1959,7 +1960,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 184.5px 718.5px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 184.5px 818.5px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2008,7 +2009,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C1-293` · rendered **1046×52** · 1 instance look like this · aria-expanded="true"
+`C1-293` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="top5" aria-label="Top 5 in Shotgun">⟨svg.ic⟩TOP 5<i clas
@@ -2018,7 +2019,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 358.984px 544.016px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 358.984px 644.016px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2067,7 +2068,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C1-408` · rendered **1046×52** · 1 instance look like this · aria-expanded="true"
+`C1-408` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every LOCUS build"><span class="cb"></span></span><div class="wg-line"><b>LOCUS</b><small>Sniper<em class="wg-nb">2 builds</em></small><span class="b3-bdgs" style="--ph: 0.298;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl
@@ -2077,7 +2078,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 389.578px 513.422px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 389.578px 613.422px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2126,7 +2127,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C1-478` · rendered **1046×52** · 1 instance look like this · aria-expanded="true"
+`C1-478` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every MACHINE PISTOL build"><span class="cb"></span></span><div class="wg-line"><b>MACHINE PISTOL</b><small>Secondaries<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.877;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Secondarie
@@ -2136,7 +2137,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 442.438px 460.562px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 442.438px 560.562px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2185,7 +2186,7 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C1-518` · rendered **1046×52** · 1 instance look like this · aria-expanded="true"
+`C1-518` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
 <div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every PP19 BIZON build"><span class="cb"></span></span><div class="wg-line"><b>PP19 BIZON</b><small>SMG<em class="wg-nb">3 builds</em></small></div><span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩<b>Build 3
@@ -2195,7 +2196,7 @@ inside `.wg` · 8 on screen · **7 looks**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 187.234px 715.766px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 187.234px 815.766px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -3226,7 +3227,7 @@ inside `.wg` · 18 on screen · **1 look**
 
 #### the one look
 
-`C1-81` · rendered **1046×85** · 18 instances look like this
+`C1-81` · rendered **1146×85** · 18 instances look like this
 
 ```html
 <div class="wg-r" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select BAL-27 build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span cla
@@ -3236,7 +3237,7 @@ inside `.wg` · 18 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-r · app.css:1157 |
 | position | `relative` | `relative` | .wg-r · app.css:1157 |
-| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 605px 28px 144px 113px` | .wg-r · app.css:1157 |
+| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 705px 28px 144px 113px` | .wg-r · app.css:1157 |
 | column-gap | `var(--s3)` | `12px` | .wg-r · app.css:1157 |
 | align-items | `center` | `center` | .wg-r · app.css:1157 |
 | min-height | `58px` | `58px` | html[data-b3-a1="fixed"] .wg-r · gates.css:257 |
@@ -3339,7 +3340,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-85` · rendered **605×84** · 21 instances look like this
+`C1-85` · rendered **705×84** · 21 instances look like this
 
 ```html
 <div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span><span class="wg-at" data-slot="Stock" title="Stock" style="--sl: var(--sl-stock, var(-
@@ -3374,7 +3375,7 @@ inside `.wg-main` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-86` · rendered **605×62** · 21 instances look like this
+`C1-86` · rendered **705×62** · 21 instances look like this
 
 ```html
 <div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span><span class="wg-at" data-slot="Stock" title="Stock" style="--sl: var(--sl-stock, var(--sl-unknown));">Clare
@@ -4534,7 +4535,7 @@ inside `.wg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-317` · rendered **1046×85** · 3 instances look like this
+`C1-317` · rendered **1146×85** · 3 instances look like this
 
 ```html
 <div class="wg-r bad" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select JAK-12 build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Marauder Suppressor</spa
@@ -4544,7 +4545,7 @@ inside `.wg` · 3 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-r · app.css:1157 |
 | position | `relative` | `relative` | .wg-r · app.css:1157 |
-| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 605px 28px 144px 113px` | .wg-r · app.css:1157 |
+| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 705px 28px 144px 113px` | .wg-r · app.css:1157 |
 | column-gap | `var(--s3)` | `12px` | .wg-r · app.css:1157 |
 | align-items | `center` | `center` | .wg-r · app.css:1157 |
 | min-height | `58px` | `58px` | html[data-b3-a1="fixed"] .wg-r · gates.css:257 |

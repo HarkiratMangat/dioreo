@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-1` · rendered **1092×336** · 1 instance look like this
+`C6-1` · rendered **1148×336** · 1 instance look like this
 
 ```html
 <section class="panel g-bpanel g-fixedhead"><div class="ph"><span class="t">Broadcast</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="true">⟨svg.ic⟩Delivery queue</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Airtime</button></div><span class="sp"><span class="g-status warn">⟨svg.ic⟩<span class="b3-nw"><b>1</b>never ends</span></span><sp
@@ -30,14 +30,14 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | `100%` | `1092px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
+| width | `100%` | `1148px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
 | min-width | `0px` | `0px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0` | `` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
 | margin-top | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
-| margin-right | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | margin-bottom | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
-| margin-left | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -61,7 +61,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-2` · rendered **1090×62** · 1 instance look like this
+`C6-2` · rendered **1146×62** · 1 instance look like this
 
 ```html
 <div class="ph"><span class="t">Broadcast</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="true">⟨svg.ic⟩Delivery queue</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Airtime</button></div><span class="sp"><span class="g-status warn">⟨svg.ic⟩<span class="b3-nw"><b>1</b>never ends</span></span><span class="g-status"><span class="cmeter"><i 
@@ -262,7 +262,7 @@ inside `.ph` · 1 on screen · **1 look**
 | row-gap | `8px` | `8px` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `auto` | `436.422px` | .ph .sp · app.css:730 |
+| margin-left | `auto` | `492.422px` | .ph .sp · app.css:730 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .ph .sp · app.css:730 |
 | font-size | `var(--t-xs)` | `10.5px` | .ph .sp · app.css:730 |
 | font-weight | — | `400` | initial |
@@ -519,7 +519,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-17` · rendered **1090×272** · 1 instance look like this
+`C6-17` · rendered **1146×272** · 1 instance look like this
 
 ```html
 <div class="pb-qafter g-queue" data-col="on"><div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>SESSIONB-SEED Season 7 is live — Reckoni…</p><div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" cla
@@ -528,11 +528,11 @@ inside `.panel` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .g-queue · gates.css:364 |
-| grid-template-columns | `minmax(0px, 1fr) 300px` | `740px 300px` | .g-queue · gates.css:364 |
+| grid-template-columns | `minmax(0px, 1fr) 300px` | `796px 300px` | .g-queue · gates.css:364 |
 | gap | `18px` | `` | .g-queue · gates.css:364 |
 | column-gap | `18px` | `18px` | .g-queue · gates.css:364 |
 | row-gap | `18px` | `18px` | .g-queue · gates.css:364 |
-| width | ⚠️ `1148px` | `1090px` | .pb-qafter · b2.css:271 · **a later rule wins — port the computed value and find that rule** |
+| width | ⚠️ `1148px` | `1146px` | .pb-qafter · b2.css:271 · **a later rule wins — port the computed value and find that rule** |
 | max-width | `100%` | `100%` | .pb-qafter · b2.css:271 |
 | box-sizing | `border-box` | `border-box` | .pb-qafter · b2.css:271 |
 | padding | `var(--s4)` | `` | .g-queue · gates.css:364 |
@@ -559,7 +559,7 @@ inside `.pb-qafter` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-18` · rendered **740×240** · 1 instance look like this
+`C6-18` · rendered **796×240** · 1 instance look like this
 
 ```html
 <div class="g-qcards"><div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>SESSIONB-SEED Season 7 is live — Reckoni…</p><div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" class="pb-exp" aria-expanded="false">⟨svg.ic⟩Sho
@@ -586,7 +586,7 @@ inside `.g-qcards` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-19` · rendered **740×240** · 1 instance look like this
+`C6-19` · rendered **796×240** · 1 instance look like this
 
 ```html
 <div class="pb-card g-card g-never" style="--c: #f2c230;"><span class="pb-numr">1</span><div class="pb-body"><div class="pb-enc" data-open="false"><p>SESSIONB-SEED Season 7 is live — Reckoni…</p><div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" class="pb-exp" aria-expanded="false">⟨svg.ic⟩Show all</button></div></
@@ -596,7 +596,7 @@ inside `.g-qcards` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | position | `relative` | `relative` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
-| grid-template-columns | `56px minmax(0px, 1fr) auto` | `56px 618px 0px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:366 |
+| grid-template-columns | `56px minmax(0px, 1fr) auto` | `56px 674px 0px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:366 |
 | gap | `16px` | `` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | column-gap | `16px` | `16px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
 | row-gap | `16px` | `16px` | .pb-card:where(:not(.b1, .b1 *, .b3-nb, .b3-nb *)) · b2.css:217 |
@@ -670,7 +670,7 @@ inside `.pb-card` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-21` · rendered **618×208** · 1 instance look like this
+`C6-21` · rendered **674×208** · 1 instance look like this
 
 ```html
 <div class="pb-body"><div class="pb-enc" data-open="false"><p>SESSIONB-SEED Season 7 is live — Reckoni…</p><div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" class="pb-exp" aria-expanded="false">⟨svg.ic⟩Show all</button></div></div><div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span cla
@@ -698,7 +698,7 @@ inside `.pb-body` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-22` · rendered **618×118** · 1 instance look like this
+`C6-22` · rendered **674×118** · 1 instance look like this
 
 ```html
 <div class="pb-enc" data-open="false"><p>SESSIONB-SEED Season 7 is live — Reckoni…</p><div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" class="pb-exp" aria-expanded="false">⟨svg.ic⟩Show all</button></div></div>
@@ -742,7 +742,7 @@ inside `.pb-enc` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-23` · rendered **616×71** · 1 instance look like this · text “SESSIONB-SEED Season 7 is live — Reckoning drops”
+`C6-23` · rendered **672×71** · 1 instance look like this · text “SESSIONB-SEED Season 7 is live — Reckoning drops”
 
 ```html
 <p>SESSIONB-SEED Season 7 is live — Reckoni…</p>
@@ -783,7 +783,7 @@ inside `.pb-enc` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-24` · rendered **616×45** · 1 instance look like this
+`C6-24` · rendered **672×45** · 1 instance look like this
 
 ```html
 <div class="pb-encf"><span class="g-fact b3-cc" title="126 of the 4,000 characters one paste can carry">⟨svg.ic⟩126 characters</span><button type="button" class="pb-exp" aria-expanded="false">⟨svg.ic⟩Show all</button></div>
@@ -897,7 +897,7 @@ inside `.pb-encf` · 1 on screen · **1 look**
 | margin-top | `0px` | `0px` | .pb-enc .pb-exp · b2.css:371 |
 | margin-right | `0px` | `0px` | .pb-enc .pb-exp · b2.css:371 |
 | margin-bottom | `0px` | `0px` | .pb-enc .pb-exp · b2.css:371 |
-| margin-left | `auto` | `347.078px` | .pb-enc .pb-exp · b2.css:371 |
+| margin-left | `auto` | `403.078px` | .pb-enc .pb-exp · b2.css:371 |
 | border | `0` | `` | .pb-exp · b2.css:224 |
 | border-radius | `var(--rad-2)` | `` | .pb-exp · b2.css:224 |
 | background | `none` | `` | .pb-exp · b2.css:224 |
@@ -986,10 +986,10 @@ inside `.pb-body` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-29` · rendered **618×79** · 1 instance look like this
+`C6-29` · rendered **674×79** · 1 instance look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6486%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7838%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6298%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7901%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1013,16 +1013,16 @@ inside `.pb-life3` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-30` · rendered **618×43** · 1 instance look like this
+`C6-30` · rendered **674×43** · 1 instance look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6486%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7838%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6298%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7901%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-tl · b2.css:374 |
-| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 444px 75px` | .pb-tl · b3/board.css:4350 |
+| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 500px 75px` | .pb-tl · b3/board.css:4350 |
 | gap | `12px` | `` | .pb-tl · b2.css:374 |
 | column-gap | `12px` | `12px` | .pb-tl · b2.css:374 |
 | row-gap | `5px` | `5px` | .pb-tl · b3/board.css:4260 |
@@ -1140,10 +1140,10 @@ inside `.pb-tl` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-35` · rendered **444×20** · 1 instance look like this
+`C6-35` · rendered **500×20** · 1 instance look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6486%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7838%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.6298%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.7901%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1168,7 +1168,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-36` · rendered **444×6** · 1 instance look like this
+`C6-36` · rendered **500×6** · 1 instance look like this
 
 ```html
 <span class="pb-track"></span>
@@ -1204,10 +1204,10 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-37` · rendered **321×6** · 1 instance look like this
+`C6-37` · rendered **362×6** · 1 instance look like this
 
 ```html
-<span class="pb-span g-run" style="left: 27.6486%; right: 0px;"></span>
+<span class="pb-span g-run" style="left: 27.6298%; right: 0px;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1218,7 +1218,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
 | right | `0px` | `0px` | style attribute |
-| left | `27.6486%` | `122.75px` | style attribute |
+| left | `27.6298%` | `138.141px` | style attribute |
 | border-radius | `3px` | `` | .pb-span · b2.css:231 |
 | background | `linear-gradient(90deg, var(--c) 0, var(--c) calc(100% - 96px), color-mix(in srgb, var(--c) 0%, transparent))` | `` | .g-card .pb-span.g-run · gates.css:378 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .g-card .pb-span.g-run · gates.css:378 |
@@ -1240,7 +1240,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 `C6-38` · rendered **2×18** · 1 instance look like this · title="Up 47 days"
 
 ```html
-<span class="pb-now" title="Up 47 days" style="left: 90.7838%;"></span>
+<span class="pb-now" title="Up 47 days" style="left: 90.7901%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1251,7 +1251,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `90.7838%` | `403.078px` | style attribute |
+| left | `90.7901%` | `453.938px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -1340,7 +1340,7 @@ inside `.pb-life3` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-43` · rendered **618×28** · 1 instance look like this
+`C6-43` · rendered **674×28** · 1 instance look like this
 
 ```html
 <div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 47d</span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><button type="button" class="b3-endbtn" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩Set end date</button></span><button type="button" class="pb-ib has-word g-edit">⟨svg.ic⟩Edit</button><i class="pb-vr" aria-hidden="true"></i><button type="button" class="pb-ib pb-del" aria-label="
@@ -1430,7 +1430,7 @@ inside `.pb-dates` · 1 on screen · **1 look**
 | margin-top | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-right | `` | `0px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-bottom | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
-| margin-left | `` | `239.844px` | .pb-dates .pb-cacts · b2.css:511 |
+| margin-left | `` | `295.844px` | .pb-dates .pb-cacts · b2.css:511 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |

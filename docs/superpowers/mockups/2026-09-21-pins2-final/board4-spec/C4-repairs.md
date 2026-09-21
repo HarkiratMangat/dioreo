@@ -12,7 +12,7 @@ status: live
 
 ### C4 stage
 
-67 distinct signatures on screen; 66 not already specced above.
+67 distinct signatures on screen; 67 not already specced above.
 
 
 ### `section.panel`
@@ -21,7 +21,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-1` · rendered **1048×1083** · 1 instance look like this
+`C4-1` · rendered **1148×1083** · 1 instance look like this
 
 ```html
 <section class="panel"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Tier board</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Compare</button></div><button type="button" class="b3-rv on warn" aria-pressed="true"><span class="b3-rv-n">5</span><span class="b3-nw"><span class="b3-rv-w"
@@ -31,14 +31,14 @@ inside `.pb-stage` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
 | justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3692 |
-| width | `auto` | `1048px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3692 |
+| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3692 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `22px` | `22px` | .panel · app.css:723 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `22px` | `22px` | .panel · app.css:723 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -62,7 +62,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-2` · rendered **1046×61** · 1 instance look like this
+`C4-2` · rendered **1146×61** · 1 instance look like this
 
 ```html
 <div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Tier board</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Compare</button></div><button type="button" class="b3-rv on warn" aria-pressed="true"><span class="b3-rv-n">5</span><span class="b3-nw"><span class="b3-rv-w">Repairs</span><span cl
@@ -92,6 +92,31 @@ inside `.panel` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.t`
+
+inside `.ph` · 1 on screen · **1 look**
+
+#### the one look
+
+`C4-3` · rendered **44×14** · 1 instance look like this · text “Armory”
+
+```html
+<span class="t">Armory</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-micro)` | `9.5px` | .ph .t · app.css:2860 |
+| font-weight | `700` | `700` | .ph .t · app.css:727 |
+| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
+| letter-spacing | `var(--tr-micro)` | `0.95px` | .ph .t · app.css:2860 |
+| text-transform | `uppercase` | `uppercase` | .ph .t · app.css:727 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .ph .t · app.css:727 |
 
 
 ### `div.seg[role=tablist]`
@@ -133,9 +158,9 @@ inside `.ph` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.—` · 48 on screen · **12 looks**
+inside `.—` · 48 on screen · **11 looks**
 
-#### look 1 of 12
+#### look 1 of 11
 
 `C4-21` · rendered **16×13** · 4 instances look like this · aria-hidden="true"
 
@@ -179,7 +204,7 @@ inside `.—` · 48 on screen · **12 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 12
+#### look 2 of 11
 
 `C4-43` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
@@ -207,7 +232,7 @@ inside `.—` · 48 on screen · **12 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 3 of 12
+#### look 3 of 11
 
 `C4-57` · rendered **15×15** · 3 instances look like this · aria-hidden="true"
 
@@ -231,31 +256,7 @@ inside `.—` · 48 on screen · **12 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 4 of 12
-
-`C4-63` · rendered **15×15** · 3 instances look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-layers"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3144 |
-| height | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3144 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-tk-ic · b3/board.css:3142 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-
-#### look 5 of 12
+#### look 4 of 11
 
 `C4-75` · rendered **14×14** · 6 instances look like this · aria-hidden="true"
 
@@ -283,7 +284,7 @@ inside `.—` · 48 on screen · **12 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 6 of 12
+#### look 5 of 11
 
 `C4-77` · rendered **14×14** · 10 instances look like this · aria-hidden="true"
 
@@ -315,7 +316,35 @@ inside `.—` · 48 on screen · **12 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-*6 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+#### look 6 of 11
+
+`C4-131` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3643 |
+| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3643 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3641 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-tk-sh[data-sev="thin"] > i · b3/board.css:3645 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+
+*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `button.b3-rv.on.warn`
@@ -346,7 +375,7 @@ inside `.ph` · 1 on screen · **1 look**
 | padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
 | padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
 | padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
-| margin-left | `auto` | `577.578px` | .b3-rv · b3/board.css:1254 |
+| margin-left | `auto` | `677.578px` | .b3-rv · b3/board.css:1254 |
 | border | `0` | `` | .b3-rv · b3/board.css:1254 |
 | border-radius | `var(--rad-pill)` | `` | .b3-rv · b3/board.css:1254 |
 | background | `color-mix(in srgb,var(--warn) 15%,var(--sunk))` | `` | .b3-rv.warn.on · b3/board.css:1274 |
@@ -625,7 +654,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-12` · rendered **1046×1020** · 1 instance look like this
+`C4-12` · rendered **1146×1020** · 1 instance look like this
 
 ```html
 <div class="b3-rp" id="b3-repairs"><div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></butto
@@ -658,7 +687,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-13` · rendered **1010×32** · 1 instance look like this
+`C4-13` · rendered **1110×32** · 1 instance look like this
 
 ```html
 <div class="b3-rp-h"><div class="b3-rp-t"><b>5 of 125 builds need work</b></div><div class="b3-rp-f" role="group" aria-label="Show builds with"><button type="button" class="b3-fc" aria-pressed="true"><span class="b3-nw">All<em>5</em></span></button><button type="button" class="b3-fc warn" aria-pressed="false">⟨svg.ic⟩<span class="b3-nw">2 or fewer attachments<em>1</em></span></button><button type="button" class="b3-f
@@ -782,7 +811,7 @@ inside `.b3-rp-t` · 38 on screen · **9 looks**
 
 #### look 4 of 9
 
-`C4-59` · rendered **407×15** · 6 instances look like this · text “No gunsmith code”
+`C4-59` · rendered **457×15** · 6 instances look like this · text “No gunsmith code”
 
 ```html
 <b>No gunsmith code</b>
@@ -1218,7 +1247,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-36` · rendered **1010×6** · 1 instance look like this · aria-label="3 builds block sharing, 2 are below stan" role="img"
+`C4-36` · rendered **1110×6** · 1 instance look like this · aria-label="3 builds block sharing, 2 are below stan" role="img"
 
 ```html
 <div class="b3-tk-bar" role="img" aria-label="3 builds block sharing, 2 are below standard, 120 pass"><i class="bl" style="flex: 3 1 0%;"></i><i class="th" style="flex: 2 1 0%;"></i><i class="ok" style="flex: 120 1 0%;"></i></div>
@@ -1255,7 +1284,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-37` · rendered **24×6** · 1 instance look like this
+`C4-37` · rendered **27×6** · 1 instance look like this
 
 ```html
 <i class="bl" style="flex: 3 1 0%;"></i>
@@ -1286,7 +1315,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-38` · rendered **16×6** · 1 instance look like this
+`C4-38` · rendered **18×6** · 1 instance look like this
 
 ```html
 <i class="th" style="flex: 2 1 0%;"></i>
@@ -1317,7 +1346,7 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-39` · rendered **966×6** · 1 instance look like this
+`C4-39` · rendered **1062×6** · 1 instance look like this
 
 ```html
 <i class="ok" style="flex: 120 1 0%;"></i>
@@ -1348,7 +1377,7 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-40` · rendered **1010×434** · 1 instance look like this
+`C4-40` · rendered **1110×434** · 1 instance look like this
 
 ```html
 <section class="b3-tk-sec"><h4 class="b3-tk-sh" data-sev="blocks"><i aria-hidden="true">⟨svg.ic⟩</i><b>Blocks sharing</b><em>3 builds</em></h4><div class="b3-tk-list rows"><article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div 
@@ -1368,7 +1397,7 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-128` · rendered **1010×204** · 1 instance look like this
+`C4-128` · rendered **1110×204** · 1 instance look like this
 
 ```html
 <section class="b3-tk-sec"><h4 class="b3-tk-sh" data-sev="thin"><i aria-hidden="true">⟨svg.ic⟩</i><b>Below standard</b><em>2 builds</em></h4><div class="b3-tk-list rows"><article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><d
@@ -1394,7 +1423,7 @@ inside `.b3-tk-sec` · 2 on screen · **1 look**
 
 #### the one look
 
-`C4-41` · rendered **1010×28** · 2 instances look like this
+`C4-41` · rendered **1110×28** · 2 instances look like this
 
 ```html
 <h4 class="b3-tk-sh" data-sev="blocks"><i aria-hidden="true">⟨svg.ic⟩</i><b>Blocks sharing</b><em>3 builds</em></h4>
@@ -1625,7 +1654,7 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-46` · rendered **1010×394** · 1 instance look like this
+`C4-46` · rendered **1110×394** · 1 instance look like this
 
 ```html
 <div class="b3-tk-list rows"><article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No guns
@@ -1634,7 +1663,7 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-list · b3/board.css:3125 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `499px 499px` | .b3-tk-list · b3/board.css:3125 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3125 |
 | gap | `12px` | `` | .b3-tk-list · b3/board.css:3125 |
 | column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3125 |
 | row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3125 |
@@ -1649,7 +1678,7 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-134` · rendered **1010×164** · 1 instance look like this
+`C4-134` · rendered **1110×164** · 1 instance look like this
 
 ```html
 <div class="b3-tk-list rows"><article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="near-duplicate"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t">
@@ -1658,7 +1687,7 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-list · b3/board.css:3125 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `499px 499px` | .b3-tk-list · b3/board.css:3125 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3125 |
 | gap | `12px` | `` | .b3-tk-list · b3/board.css:3125 |
 | column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3125 |
 | row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3125 |
@@ -1678,7 +1707,7 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C4-47` · rendered **499×218** · 2 instances look like this
+`C4-47` · rendered **549×218** · 2 instances look like this
 
 ```html
 <article class="b3-tk" data-sev="blocks" style="--c: #ffd23f;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can
@@ -1710,7 +1739,7 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C4-103` · rendered **499×164** · 1 instance look like this
+`C4-103` · rendered **549×164** · 1 instance look like this
 
 ```html
 <article class="b3-tk" data-sev="blocks" style="--c: #f6a93b;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>JAK-12</b><em>Build 1</em><small>Shotgun</small></span><span class="b3-tk-sev">Blocks sharing</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees wit
@@ -1742,7 +1771,7 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C4-135` · rendered **499×164** · 2 instances look like this
+`C4-135` · rendered **549×164** · 2 instances look like this
 
 ```html
 <article class="b3-tk" data-sev="thin" style="--c: #ff3b5c;"><header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>KILO 141</b><em>Build 2</em><small>Assault</small></span><span class="b3-tk-sev">Below standard</span></header><div class="b3-tk-fs"><div class="b3-tk-f" data-k="near-duplicate"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Same code as AK117 Build 1
@@ -1779,7 +1808,7 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-48` · rendered **497×41** · 5 instances look like this
+`C4-48` · rendered **547×41** · 5 instances look like this
 
 ```html
 <header class="b3-tk-h"><span class="b3-tk-id"><i aria-hidden="true"></i><b>PHARO</b><em>Build 1</em><small>SMG</small></span><span class="b3-tk-sev">Blocks sharing</span></header>
@@ -1816,7 +1845,7 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-310` · rendered **1008×55** · 1 instance look like this
+`C4-310` · rendered **1108×55** · 1 instance look like this
 
 ```html
 <header class="b3-tk-h"><span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>120 builds pass every check</b></span></header>
@@ -2064,7 +2093,7 @@ inside `.b3-tk` · 5 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-54` · rendered **497×117** · 2 instances look like this
+`C4-54` · rendered **547×117** · 2 instances look like this
 
 ```html
 <div class="b3-tk-fs"><div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span></div><div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span>1 of 5 slots filled — the card renders
@@ -2091,7 +2120,7 @@ inside `.b3-tk` · 5 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-110` · rendered **497×63** · 3 instances look like this
+`C4-110` · rendered **547×63** · 3 instances look like this
 
 ```html
 <div class="b3-tk-fs"><div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span>Importing the code fills 4 slots, not th…</span></span><span class="b3-tk-ev pairs" aria-hidden="true"><i class="">1C</i><i class="">2B</i><i class="">6B</i><i class="">9A</i><i class="gap"></i></span></div></div>
@@ -2123,7 +2152,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C4-55` · rendered **477×53** · 4 instances look like this
+`C4-55` · rendered **527×53** · 4 instances look like this
 
 ```html
 <div class="b3-tk-f" data-k="no-code"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span></div>
@@ -2132,7 +2161,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-f · b3/board.css:3140 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 407px 0px` | .b3-tk-f · b3/board.css:3140 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3140 |
 | gap | `12px` | `` | .b3-tk-f · b3/board.css:3140 |
 | column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
 | row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
@@ -2153,7 +2182,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C4-61` · rendered **477×53** · 1 instance look like this
+`C4-61` · rendered **527×53** · 1 instance look like this
 
 ```html
 <div class="b3-tk-f" data-k="few-attachments"><span class="b3-tk-ic" data-sev="thin">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Attachments missing</b><span>1 of 5 slots filled — the card renders 4…</span></span><span class="b3-tk-ev slots" aria-hidden="true"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></span></div>
@@ -2162,7 +2191,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-f · b3/board.css:3140 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 331px 76px` | .b3-tk-f · b3/board.css:3140 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 381px 76px` | .b3-tk-f · b3/board.css:3140 |
 | gap | `12px` | `` | .b3-tk-f · b3/board.css:3140 |
 | column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
 | row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
@@ -2184,7 +2213,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C4-86` · rendered **477×107** · 1 instance look like this
+`C4-86` · rendered **527×107** · 1 instance look like this
 
 ```html
 <div class="b3-tk-f" data-k="code-length-mismatch"><span class="b3-tk-ic" data-sev="blocks">⟨svg.ic⟩</span><span class="b3-tk-t"><b>Code disagrees with the build</b><span>Importing the code fills 5 slots, not th…</span></span><span class="b3-tk-ev pairs" aria-hidden="true"><i class="">1C</i><i class="">6C</i><i class="">7A</i><i class="">8A</i><i class="extra">9A</i></span></div>
@@ -2193,7 +2222,7 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-f · b3/board.css:3140 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 271px 136px` | .b3-tk-f · b3/board.css:3140 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 321px 136px` | .b3-tk-f · b3/board.css:3140 |
 | gap | `12px` | `` | .b3-tk-f · b3/board.css:3140 |
 | column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
 | row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3140 |
@@ -2305,7 +2334,7 @@ inside `.b3-tk-f` · 6 on screen · **1 look**
 
 #### the one look
 
-`C4-58` · rendered **407×33** · 6 instances look like this
+`C4-58` · rendered **457×33** · 6 instances look like this
 
 ```html
 <span class="b3-tk-t"><b>No gunsmith code</b><span>Nobody can import it, and it cannot be s…</span></span>
@@ -2333,7 +2362,7 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C4-60` · rendered **407×15** · 6 instances look like this · text “Nobody can import it, and it cannot be shared”
+`C4-60` · rendered **457×15** · 6 instances look like this · text “Nobody can import it, and it cannot be shared”
 
 ```html
 <span>Nobody can import it, and it cannot be s…</span>
@@ -2473,7 +2502,7 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C4-73` · rendered **497×58** · 5 instances look like this
+`C4-73` · rendered **547×58** · 5 instances look like this
 
 ```html
 <footer class="b3-tk-ft"><span class="pb-pill b3-tk-agec">⟨svg.ic⟩Last edit: 2 months ago</span><button type="button" class="b3-btn2 sm go">⟨svg.ic⟩Repair build</button></footer>
@@ -2502,7 +2531,7 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C4-336` · rendered **1008×56** · 1 instance look like this
+`C4-336` · rendered **1108×56** · 1 instance look like this
 
 ```html
 <footer class="b3-tk-ft"><span class="pb-pill b3-tk-agec">⟨svg.ic⟩106 with no edit in 90 days</span><button type="button" class="b3-btn2 ghost sm">⟨svg.ic⟩<span class="lbl">Show them</span></button></footer>
@@ -2557,7 +2586,7 @@ inside `.b3-tk-ft` · 6 on screen · **1 look**
 | padding-right | `10px` | `10px` | .pb-pill · b2.css:237 |
 | padding-bottom | `0px` | `0px` | .pb-pill · b2.css:237 |
 | padding-left | `10px` | `10px` | .pb-pill · b2.css:237 |
-| margin-right | `auto` | `165.984px` | .b3-tk-agec · b3/board.css:3326 |
+| margin-right | `auto` | `215.984px` | .b3-tk-agec · b3/board.css:3326 |
 | border-radius | `6px` | `` | .pb-pill · b2.css:553 |
 | background | `var(--sunk)` | `` | .pb-pill · b2.css:237 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-pill · b2.css:237 |
@@ -3678,7 +3707,7 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-309` · rendered **1010×187** · 1 instance look like this
+`C4-309` · rendered **1110×187** · 1 instance look like this
 
 ```html
 <article class="b3-tk b3-tk-pass" data-sev="ok"><header class="b3-tk-h"><span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>120 builds pass every check</b></span></header><div class="b3-tk-cks"><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>3 or more at
@@ -3748,7 +3777,7 @@ inside `.b3-tk` · 1 on screen · **1 look**
 
 #### the one look
 
-`C4-315` · rendered **1008×74** · 1 instance look like this
+`C4-315` · rendered **1108×74** · 1 instance look like this
 
 ```html
 <div class="b3-tk-cks"><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>3 or more attachments</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>A code of its own</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Ha
@@ -3782,7 +3811,7 @@ inside `.b3-tk-cks` · 5 on screen · **1 look**
 
 #### the one look
 
-`C4-316` · rendered **152×46** · 5 instances look like this
+`C4-316` · rendered **172×46** · 5 instances look like this
 
 ```html
 <span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span>
@@ -3791,7 +3820,7 @@ inside `.b3-tk-cks` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-tk-ck · b3/board.css:3350 |
-| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 94.7812px` | .b3-tk-ck · b3/board.css:3350 |
+| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 114.781px` | .b3-tk-ck · b3/board.css:3350 |
 | gap | `9px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3699 |
 | column-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3699 |
 | row-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3699 |

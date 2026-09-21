@@ -13,7 +13,7 @@ if (B4) fs.mkdirSync(DIR, { recursive: true });
 const raw = fs.readFileSync(RAW, 'utf8'); const lines = raw.split('\n');
 const NAME = B4 ? [[/^## Tokens/, 'tokens.md'], [/^## @keyframes/, 'motion.md'], [/^## C1 /, 'C1-armory-manifest.md'], [/^## C2 /, 'C2-new-build.md'], [/^## C3 /, 'C3-compare.md'],
   [/^## C4 /, 'C4-repairs.md'], [/^## C5 /, 'C5-export.md'], [/^## C6 /, 'C6-delivery-queue.md'], [/^## C7 /, 'C7-broadcast.md'], [/^## C8 /, 'C8-history.md'],
-  [/^## C9 /, 'C9-command-search.md'], [/^## C10 /, 'C10-admin-traffic.md'], [/^## Reachable states/, 'states.md']] : [[/^## Tokens/, 'tokens.md'], [/^## @keyframes/, 'motion.md'], [/^## L1 /, 'L1-list-lab.md'], [/^## M1 /, 'M1-armory-manifest.md'],
+  [/^## C9 /, 'C9-admin-traffic.md'], [/^## Reachable states/, 'states.md']] : [[/^## Tokens/, 'tokens.md'], [/^## @keyframes/, 'motion.md'], [/^## L1 /, 'L1-list-lab.md'], [/^## M1 /, 'M1-armory-manifest.md'],
   [/^## M2 /, 'M2-repairs.md'], [/^## M3 /, 'M3-export.md'], [/^## B1 /, 'B1-delivery-queue.md'], [/^## H1 /, 'H1-history.md'],
   [/^## Reachable states/, 'states.md'], [/^## P7 /, 'P7-command-search.md']];
 const heads = lines.map((l, i) => [l, i]).filter(([l]) => /^## /.test(l));

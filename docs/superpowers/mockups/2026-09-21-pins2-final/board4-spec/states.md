@@ -33,7 +33,7 @@ inside `.pill` · 102 on screen · **2 looks**
 
 #### look 1 of 2
 
-`manifestPickonebuild-742` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+`manifestt2-742` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-trash-2"></use></svg>
@@ -65,7 +65,7 @@ inside `.pill` · 102 on screen · **2 looks**
 
 #### look 2 of 2
 
-`manifestPickonebuild-744` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+`manifestt2-744` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg>
@@ -102,7 +102,7 @@ inside `.chip` · 12 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-730` · rendered **49×11** · 1 instance look like this · text “Build 1”
+`manifestt2-730` · rendered **49×11** · 1 instance look like this · text “Build 1”
 
 ```html
 <em>Build 1</em>
@@ -132,7 +132,7 @@ inside `.chip` · 16 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-728` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
+`manifestt2-728` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -167,7 +167,7 @@ inside `.wg-heads` · 2 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-740` · rendered **136×40** · 1 instance look like this
+`manifestt2-740` · rendered **136×40** · 1 instance look like this
 
 ```html
 <span class="b3-hint" data-side="top"><button type="button" class="b3-btn2 dang" aria-describedby="b3-del-hint">⟨svg.ic⟩Stage deletion</button></span>
@@ -192,7 +192,7 @@ inside `.wg-cb` · 29 on screen · **2 looks**
 
 #### look 1 of 2
 
-`manifestPickonebuild-55` · rendered **18×18** · 1 instance look like this
+`manifestt2-55` · rendered **18×18** · 1 instance look like this
 
 ```html
 <span class="cb"></span>
@@ -248,7 +248,7 @@ inside `.wg-cb` · 29 on screen · **2 looks**
 
 #### look 2 of 2
 
-`manifestPickonebuild-520` · rendered **18×18** · 1 instance look like this
+`manifestt2-520` · rendered **18×18** · 1 instance look like this
 
 ```html
 <span class="cb"></span>
@@ -305,7 +305,7 @@ inside `.wg-fold` · 10 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-733` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
+`manifestt2-733` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic ic-fold" aria-hidden="true"><use href="#i-b2-unfold"></use></svg>
@@ -342,7 +342,7 @@ inside `.wg` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-532` · rendered **1046×85** · 1 instance look like this
+`manifestt2-532` · rendered **1146×85** · 1 instance look like this
 
 ```html
 <div class="wg-r sel" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="true" aria-label="Select PP19 BIZON build 1"><span class="cb on"></span></span><span class="wg-ix" title="">1</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Monolithic Suppres
@@ -352,7 +352,7 @@ inside `.wg` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-r · app.css:1157 |
 | position | `relative` | `relative` | .wg-r · app.css:1157 |
-| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 605px 28px 144px 113px` | .wg-r · app.css:1157 |
+| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 705px 28px 144px 113px` | .wg-r · app.css:1157 |
 | column-gap | `var(--s3)` | `12px` | .wg-r · app.css:1157 |
 | align-items | `center` | `center` | .wg-r · app.css:1157 |
 | min-height | `58px` | `58px` | html[data-b3-a1="fixed"] .wg-r · gates.css:257 |
@@ -422,7 +422,7 @@ inside `.wg-cb` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-534` · rendered **18×18** · 1 instance look like this
+`manifestt2-534` · rendered **18×18** · 1 instance look like this
 
 ```html
 <span class="cb on"></span>
@@ -479,7 +479,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-722` · rendered **1148×66** · 1 instance look like this · aria-label="Actions for the selected builds" role="region"
+`manifestt2-722` · rendered **1148×66** · 1 instance look like this · aria-label="Actions for the selected builds" role="region"
 
 ```html
 <div class="selbar on b3-selbar" role="region" aria-label="Actions for the selected builds"><div class="b3-sd mesh" style="--m1: #ffd23f; --m2: var(--r-armory);"><div class="b3-sd-bar"><span class="b3-sd-count" aria-label="1 selected">1</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 5px;"><span class="b3-sc" style="--c: #ffd23f;"><i aria-hidden="true"></i><span class="b3-nw">PP19 BIZON<em>Build 1</
@@ -519,7 +519,7 @@ inside `.selbar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-723` · rendered **1100×66** · 1 instance look like this
+`manifestt2-723` · rendered **1100×66** · 1 instance look like this
 
 ```html
 <div class="b3-sd mesh" style="--m1: #ffd23f; --m2: var(--r-armory);"><div class="b3-sd-bar"><span class="b3-sd-count" aria-label="1 selected">1</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 5px;"><span class="b3-sc" style="--c: #ffd23f;"><i aria-hidden="true"></i><span class="b3-nw">PP19 BIZON<em>Build 1</em></span><button type="button" aria-label="Deselect PP19 BIZON">⟨svg.ic⟩</button></span></d
@@ -556,7 +556,7 @@ inside `.b3-sd` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-724` · rendered **1098×64** · 1 instance look like this
+`manifestt2-724` · rendered **1098×64** · 1 instance look like this
 
 ```html
 <div class="b3-sd-bar"><span class="b3-sd-count" aria-label="1 selected">1</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 5px;"><span class="b3-sc" style="--c: #ffd23f;"><i aria-hidden="true"></i><span class="b3-nw">PP19 BIZON<em>Build 1</em></span><button type="button" aria-label="Deselect PP19 BIZON">⟨svg.ic⟩</button></span></div><button type="button" class="b3-btn2 ghost b3-sd-tog" aria-expanded
@@ -590,7 +590,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-725` · rendered **40×40** · 1 instance look like this · text “1” · aria-label="1 selected"
+`manifestt2-725` · rendered **40×40** · 1 instance look like this · text “1” · aria-label="1 selected"
 
 ```html
 <span class="b3-sd-count" aria-label="1 selected">1</span>
@@ -631,7 +631,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-726` · rendered **488×32** · 1 instance look like this
+`manifestt2-726` · rendered **488×32** · 1 instance look like this
 
 ```html
 <div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 5px;"><span class="b3-sc" style="--c: #ffd23f;"><i aria-hidden="true"></i><span class="b3-nw">PP19 BIZON<em>Build 1</em></span><button type="button" aria-label="Deselect PP19 BIZON">⟨svg.ic⟩</button></span></div>
@@ -666,7 +666,7 @@ inside `.b3-sd-chips` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-727` · rendered **181×32** · 1 instance look like this
+`manifestt2-727` · rendered **181×32** · 1 instance look like this
 
 ```html
 <span class="b3-sc" style="--c: #ffd23f;"><i aria-hidden="true"></i><span class="b3-nw">PP19 BIZON<em>Build 1</em></span><button type="button" aria-label="Deselect PP19 BIZON">⟨svg.ic⟩</button></span>
@@ -713,7 +713,7 @@ inside `.b3-sc` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-729` · rendered **121×12** · 1 instance look like this
+`manifestt2-729` · rendered **121×12** · 1 instance look like this
 
 ```html
 <span class="b3-nw">PP19 BIZON<em>Build 1</em></span>
@@ -746,7 +746,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-732` · rendered **68×40** · 1 instance look like this · aria-expanded="false" type="button"
+`manifestt2-732` · rendered **68×40** · 1 instance look like this · aria-expanded="false" type="button"
 
 ```html
 <button type="button" class="b3-btn2 ghost b3-sd-tog" aria-expanded="false">⟨svg.ic.ic-fold⟩List</button>
@@ -833,7 +833,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-734` · rendered **1×28** · 1 instance look like this · aria-hidden="true"
+`manifestt2-734` · rendered **1×28** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i class="b3-vr" aria-hidden="true"></i>
@@ -864,7 +864,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-735` · rendered **437×40** · 1 instance look like this
+`manifestt2-735` · rendered **437×40** · 1 instance look like this
 
 ```html
 <div class="b3-sd-acts"><button type="button" class="b3-btn2">⟨svg.ic⟩Edit build</button><button type="button" class="b3-btn2">⟨svg.ic⟩Export</button><span class="b3-hint" data-side="top"><button type="button" class="b3-btn2 dang" aria-describedby="b3-del-hint">⟨svg.ic⟩Stage deletion</button></span><button type="button" class="b3-btn2 quiet">⟨svg.ic⟩Clear</button></div>
@@ -893,7 +893,7 @@ inside `.b3-hint` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-741` · rendered **136×40** · 1 instance look like this · type="button"
+`manifestt2-741` · rendered **136×40** · 1 instance look like this · type="button"
 
 ```html
 <button type="button" class="b3-btn2 dang" aria-describedby="b3-del-hint">⟨svg.ic⟩Stage deletion</button>
@@ -980,7 +980,7 @@ inside `.b3-sd-acts` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickonebuild-743` · rendered **80×40** · 1 instance look like this · type="button"
+`manifestt2-743` · rendered **80×40** · 1 instance look like this · type="button"
 
 ```html
 <button type="button" class="b3-btn2 quiet">⟨svg.ic⟩Clear</button>
@@ -1071,7 +1071,7 @@ inside `.wg` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickthree-582` · rendered **1046×85** · 1 instance look like this
+`manifestt3-582` · rendered **1146×85** · 1 instance look like this
 
 ```html
 <div class="wg-r bad sel" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="true" aria-label="Select PP19 BIZON build 3"><span class="cb on"></span></span><span class="wg-ix" title="Almost the same as another build">3</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var
@@ -1081,7 +1081,7 @@ inside `.wg` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-r · app.css:1157 |
 | position | `relative` | `relative` | .wg-r · app.css:1157 |
-| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 605px 28px 144px 113px` | .wg-r · app.css:1157 |
+| grid-template-columns | `32px 28px minmax(0px, 1fr) 28px 144px 113px` | `32px 28px 705px 28px 144px 113px` | .wg-r · app.css:1157 |
 | column-gap | `var(--s3)` | `12px` | .wg-r · app.css:1157 |
 | align-items | `center` | `center` | .wg-r · app.css:1157 |
 | min-height | `58px` | `58px` | html[data-b3-a1="fixed"] .wg-r · gates.css:257 |
@@ -1173,7 +1173,7 @@ inside `.chip` · 16 on screen · **4 looks**
 
 #### look 1 of 4
 
-`manifestPickeight-730` · rendered **49×11** · 1 instance look like this · text “Build 5”
+`manifestt4-730` · rendered **49×11** · 1 instance look like this · text “Build 5”
 
 ```html
 <em>Build 5</em>
@@ -1198,7 +1198,7 @@ inside `.chip` · 16 on screen · **4 looks**
 
 #### look 2 of 4
 
-`manifestPickeight-735` · rendered **49×11** · 1 instance look like this · text “Build 1”
+`manifestt4-735` · rendered **49×11** · 1 instance look like this · text “Build 1”
 
 ```html
 <em>Build 1</em>
@@ -1223,7 +1223,7 @@ inside `.chip` · 16 on screen · **4 looks**
 
 #### look 3 of 4
 
-`manifestPickeight-740` · rendered **76×11** · 1 instance look like this · text “Builds 1, 2”
+`manifestt4-740` · rendered **76×11** · 1 instance look like this · text “Builds 1, 2”
 
 ```html
 <em>Builds 1, 2</em>
@@ -1248,7 +1248,7 @@ inside `.chip` · 16 on screen · **4 looks**
 
 #### look 4 of 4
 
-`manifestPickeight-745` · rendered **49×11** · 1 instance look like this · text “Build 1”
+`manifestt4-745` · rendered **49×11** · 1 instance look like this · text “Build 1”
 
 ```html
 <em>Build 1</em>
@@ -1278,7 +1278,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 1 of 4
 
-`manifestPickeight-728` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
+`manifestt4-728` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1308,7 +1308,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 2 of 4
 
-`manifestPickeight-733` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
+`manifestt4-733` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1338,7 +1338,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 3 of 4
 
-`manifestPickeight-738` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
+`manifestt4-738` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1368,7 +1368,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 4 of 4
 
-`manifestPickeight-743` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
+`manifestt4-743` · rendered **7×7** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <i aria-hidden="true"></i>
@@ -1403,7 +1403,7 @@ inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickeight-722` · rendered **1148×91** · 1 instance look like this · aria-label="Actions for the selected builds" role="region"
+`manifestt4-722` · rendered **1148×91** · 1 instance look like this · aria-label="Actions for the selected builds" role="region"
 
 ```html
 <div class="selbar on b3-selbar" role="region" aria-label="Actions for the selected builds"><div class="b3-sd mesh" style="--m1: #ff3b5c; --m2: #f6a93b;"><div class="b3-sd-bar"><span class="b3-sd-count" aria-label="8 selected">8</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="b3-sc" style="--c: #ff3b5c;"><i aria-hidden="true"></i><span class="b3-nw">BAL-27<em>Build 5</em></span><
@@ -1443,7 +1443,7 @@ inside `.selbar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickeight-723` · rendered **1100×91** · 1 instance look like this
+`manifestt4-723` · rendered **1100×91** · 1 instance look like this
 
 ```html
 <div class="b3-sd mesh" style="--m1: #ff3b5c; --m2: #f6a93b;"><div class="b3-sd-bar"><span class="b3-sd-count" aria-label="8 selected">8</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="b3-sc" style="--c: #ff3b5c;"><i aria-hidden="true"></i><span class="b3-nw">BAL-27<em>Build 5</em></span><button type="button" aria-label="Deselect BAL-27">⟨svg.ic⟩</button></span><span class="b3-sc
@@ -1480,7 +1480,7 @@ inside `.b3-sd` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickeight-724` · rendered **1098×89** · 1 instance look like this
+`manifestt4-724` · rendered **1098×89** · 1 instance look like this
 
 ```html
 <div class="b3-sd-bar"><span class="b3-sd-count" aria-label="8 selected">8</span><div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="b3-sc" style="--c: #ff3b5c;"><i aria-hidden="true"></i><span class="b3-nw">BAL-27<em>Build 5</em></span><button type="button" aria-label="Deselect BAL-27">⟨svg.ic⟩</button></span><span class="b3-sc" style="--c: #f6a93b;"><i aria-hidden="true"></i><span class=
@@ -1514,7 +1514,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`manifestPickeight-726` · rendered **482×69** · 1 instance look like this
+`manifestt4-726` · rendered **482×69** · 1 instance look like this
 
 ```html
 <div class="b3-sd-chips" style="--fo: 0px; --ft: 0px; --fb: 15px;"><span class="b3-sc" style="--c: #ff3b5c;"><i aria-hidden="true"></i><span class="b3-nw">BAL-27<em>Build 5</em></span><button type="button" aria-label="Deselect BAL-27">⟨svg.ic⟩</button></span><span class="b3-sc" style="--c: #f6a93b;"><i aria-hidden="true"></i><span class="b3-nw">JAK-12<em>Build 1</em></span><button type="button" aria-label="Deselect J
@@ -1549,244 +1549,21 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 59 distinct signatures on screen; 0 not already specced above.
 
 
-### new-build · Open New build
+### new-build · Bulk create
 
-188 distinct signatures on screen; 58 not already specced above.
-
-
-### `span`
-
-inside `.un` · 76 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4414` · rendered **84×12** · 1 instance look like this · text “Tier in AR”
-
-```html
-<span>Tier in AR</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| min-width | `84px` | `84px` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1 var(--ui)` | `` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| font-size | `` | `12px` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| font-weight | `` | `500` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| font-style | `` | `normal` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| line-height | `` | `12px` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-rank > span · b3/board.css:1136 |
-
-
-### `svg.ic`
-
-inside `.b3-segst` · 555 on screen · **2 looks**
-
-#### look 1 of 2
-
-`new-buildOpenNewbuild-4374` · rendered **15×15** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-copy"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-nb .pb-copy .ic · b3/board.css:1106 |
-| height | `15px` | `15px` | .b3-nb .pb-copy .ic · b3/board.css:1106 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-copy · b3/board.css:1104 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-nb .pb-copy · b3/board.css:1104 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-#### look 2 of 2
-
-`new-buildOpenNewbuild-4409` · rendered **3×3** · 2 instances look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `11px` | `11px` | .b3-nb .pb-tog i .ic · b3/board.css:1130 |
-| height | `11px` | `11px` | .b3-nb .pb-tog i .ic · b3/board.css:1130 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-sm)/1 var(--data)` | `` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-size | ↑ `` | `12px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-weight | ↑ `` | `700` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| line-height | ↑ `` | `12px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| letter-spacing | ↑ `var(--b3-tr-tight)` | `0.72px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| opacity | `0` | `0` | .b3-nb .pb-tog i .ic · b3/board.css:1130 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| transform | `scale(0.3)` | `matrix(0.3, 0, 0, 0.3, 0, 0)` | .b3-nb .pb-tog i .ic · b3/board.css:1130 |
-| transition | `opacity var(--b3-d1),transform var(--b3-d2) cubic-bezier(.22,1,.36,1)` | `` | .b3-nb .pb-tog i .ic · b3/board.css:1130 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-
-### `i`
-
-inside `.rk-clean` · 60 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4408` · rendered **16×16** · 2 instances look like this
-
-```html
-<i>⟨svg.ic⟩</i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| align-items | `center` | `center` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| place-items | `center` | `` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| width | `16px` | `16px` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| height | `16px` | `16px` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-1)` | `` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-tog i · b3/board.css:1129 |
-| font | ↑ `700 var(--t-sm)/1 var(--data)` | `` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-size | ↑ `` | `12px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-weight | ↑ `` | `700` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| line-height | ↑ `` | `12px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| letter-spacing | ↑ `var(--b3-tr-tight)` | `0.72px` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-nb .pb-tog · b3/board.css:1128 |
-
-
-### `div`
-
-inside `.panel` · 6 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4381` · rendered **416×44** · 5 instances look like this
-
-```html
-<div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `small`
-
-inside `.wg-line` · 70 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4367` · rendered **34×10** · 1 instance look like this · text “BUILD”
-
-```html
-<small>BUILD</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| font-size | `` | `9.5px` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| font-weight | `` | `600` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| font-style | `` | `normal` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| line-height | `` | `9.5px` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-nb .pb-bno small · b3/board.css:1097 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-bno small · b3/board.css:1097 |
-
-
-### `div.on.scrim`
-
-inside `.app` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4332` · rendered **1148×920** · 1 instance look like this
-
-```html
-<div class="scrim on"></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `absolute` | `absolute` | .g-stage .scrim · gates.css:164 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .scrim · app.css:1354 |
-| top | `0px` | `0px` | .scrim · app.css:1354 |
-| right | `0px` | `0px` | .scrim · app.css:1354 |
-| bottom | `0px` | `0px` | .scrim · app.css:1354 |
-| left | `0px` | `0px` | .scrim · app.css:1354 |
-| background | `var(--overlay-66)` | `` | .scrim · app.css:1354 |
-| background-color | `` | `rgba(6, 9, 11, 0.66)` | .scrim · app.css:1354 |
-| background-image | `` | `none` | .scrim · app.css:1354 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| opacity | `1` | `1` | .scrim.on · app.css:1356 |
-| transition | `opacity .16s` | `` | .scrim · app.css:1354 |
-| z-index | `44` | `44` | .scrim · app.css:1354 |
-| pointer-events | `auto` | `auto` | .scrim.on · app.css:1356 |
+34 distinct signatures on screen; 19 not already specced above.
 
 
 ### `aside.drawer.open.wide[role=dialog]`
 
-inside `.app` · 1 on screen · **1 look**
+inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildOpenNewbuild-4333` · rendered **980×746** · 1 instance look like this · aria-label="New MP build" role="dialog"
+`new-builds1-2` · rendered **980×642** · 1 instance look like this · aria-label="New MP builds" role="dialog"
 
 ```html
-<aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="New MP build"><header class="dw-h"><div class="dw-ttl"><span class="dw-eye">loadout.add · MP · tier 1</span><h2>New MP build</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="add"><div class="pb-bar
+<aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="New MP builds" style="--m1: var(--patch); --m2: var(--r-armory); --m3: var(--patch); --m4: var(--r-armory);"><header class="dw-h"><div class="dw-ttl"><h2>New MP builds</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-a
 ```
 
 | property | winning declaration | computed | from |
@@ -1797,13 +1574,13 @@ inside `.app` · 1 on screen · **1 look**
 | width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `460px` | .drawer · app.css:1361 |
+| top | `50%` | `450px` | .drawer · app.css:1361 |
 | left | `50%` | `574px` | .drawer · app.css:1361 |
 | border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
 | border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
-| background | `var(--raised)` | `` | .drawer · app.css:1361 |
-| background-color | `` | `rgb(31, 39, 46)` | .drawer · app.css:1361 |
-| background-image | `` | `none` | .drawer · app.css:1361 |
+| background | `radial-gradient(78% 210% at -8% 118%,color-mix(in srgb,var(--m1) 15%,transparent) 0,transparent 68%), radial-gradient(66% 190% at 26% -22%,color-mix(in srgb,var(--m3,var(--patch)) 13%,transparent) 0,transparent 66%), radial-gradient(72% 200% at 68% 132%,color-mix(in srgb,var(--m2) 12%,transparent) 0,transparent 70%), radial-gradient(60% 180% at 112% -16%,color-mix(in srgb,var(--m4,var(--r-armory)) 11%,transparent) 0,transparent 68%), radial-gradient(120% 120% at 50% 50%,transparent 38%,#00000055 100%), linear-gradient(180deg,#ffffff0a 0,transparent 26%), color-mix(in srgb,#0B0F12 42%,var(--raised))` | `` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-color | `` | `color(srgb 0.0886275 0.113412 0.134275)` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-image | `` | `radial-gradient(78% 210% at -8% 118%, color(srgb 0.94902 0.760784 0.188235 / 0.15) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(66% 190% at 26% -22%, color(srgb 0.94902 0.760784 0.188235 / 0.13) 0px, rgba(0, 0, 0, 0) 66%), radial-gradient(72% 200% at 68% 132%, color(srgb 0.937255 0.266667 0.266667 / 0.12) 0px, rgba(0, 0, 0, 0) 70%), radial-gradient(60% 180% at 112% -16%, color(srgb 0.937255 0.266667 0.266667 / 0.11) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(120% 120%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.333) 100%), linear-gradient(rgba(255, 255, 255, 0.04) 0px, rgba(0, 0, 0, 0) 26%), none` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
 | box-shadow | `0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)` | `rgba(0, 0, 0, 0.9) 0px 40px 90px -20px, rgba(255, 255, 255, 0.04) 0px 0px 0px 1px` | .drawer · app.css:1361 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1815,211 +1592,103 @@ inside `.app` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .drawer · app.css:1361 |
 | overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
 | overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -372.953)` | .drawer.open · app.css:1366 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -321)` | .drawer.open · app.css:1366 |
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
 
 
-### `header.dw-h`
+### `b`
 
-inside `.drawer` · 1 on screen · **1 look**
+inside `.x` · 5 on screen · **4 looks**
 
-#### the one look
+#### look 1 of 4
 
-`new-buildOpenNewbuild-4334` · rendered **978×77** · 1 instance look like this
-
-```html
-<header class="dw-h"><div class="dw-ttl"><span class="dw-eye">loadout.add · MP · tier 1</span><h2>New MP build</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-h · app.css:1375 |
-| position | `sticky` | `sticky` | header · app.css:682 |
-| grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `14px` | `` | .dw-h · app.css:1375 |
-| column-gap | `14px` | `14px` | .dw-h · app.css:1375 |
-| row-gap | `14px` | `14px` | .dw-h · app.css:1375 |
-| flex | `none` | `` | .dw-h · app.css:1375 |
-| align-items | `flex-start` | `flex-start` | .dw-h · app.css:1375 |
-| min-width | `0px` | `0px` | header · app.css:1427 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `var(--s4) var(--s5) var(--s3)` | `` | .dw-h · app.css:1375 |
-| padding-top | `` | `16px` | .dw-h · app.css:1375 |
-| padding-right | `` | `24px` | .dw-h · app.css:1375 |
-| padding-bottom | `` | `12px` | .dw-h · app.css:1375 |
-| padding-left | `` | `24px` | .dw-h · app.css:1375 |
-| top | `0px` | `0px` | header · app.css:682 |
-| border-bottom | `1px solid var(--rule)` | `` | .dw-h · app.css:1375 |
-| background | `linear-gradient(180deg,rgba(255,255,255,.03),transparent)` | `` | .dw-h · app.css:1375 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .dw-h · app.css:1375 |
-| background-image | `linear-gradient(rgba(255, 255, 255, 0.03), transparent)` | `linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0))` | .dw-h · app.css:1375 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `40` | `40` | header · app.css:682 |
-
-
-### `div.dw-ttl`
-
-inside `.dw-h` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4335` · rendered **164×48** · 1 instance look like this
+`new-builds1-33` · rendered **86×37** · 1 instance look like this · text “0”
 
 ```html
-<div class="dw-ttl"><span class="dw-eye">loadout.add · MP · tier 1</span><h2>New MP build</h2></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-ttl · app.css:1377 |
-| gap | `6px` | `` | .dw-ttl · app.css:1377 |
-| column-gap | `6px` | `6px` | .dw-ttl · app.css:1377 |
-| row-gap | `6px` | `6px` | .dw-ttl · app.css:1377 |
-| flex-direction | `column` | `column` | .dw-ttl · app.css:1377 |
-| min-width | `0px` | `0px` | .dw-ttl · app.css:1377 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.dw-eye`
-
-inside `.dw-ttl` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4336` · rendered **164×14** · 1 instance look like this · text “loadout.add · MP · tier 1”
-
-```html
-<span class="dw-eye">loadout.add · MP · tier 1</span>
+<b>0</b>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .dw-eye · app.css:1378 |
-| font-size | `var(--t-micro)` | `9.5px` | .dw-eye · app.css:1378 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
-| letter-spacing | `0.09em` | `0.855px` | .dw-eye · app.css:1378 |
-| text-transform | `uppercase` | `uppercase` | .dw-eye · app.css:1378 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dw-eye · app.css:1378 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(123, 219, 99)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
+#### look 2 of 4
 
-### `button.x`
-
-inside `.dw-nav` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4338` · rendered **67×28** · 1 instance look like this · aria-label="Close"
+`new-builds1-36` · rendered **86×37** · 1 instance look like this · text “0”
 
 ```html
-<button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button>
+<b>0</b>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .dw-h .dw-nav .x · gates.css:812 |
-| position | `relative` | `relative` | .dw-h .x · app.css:1383 |
-| gap | `6px` | `` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| column-gap | `6px` | `6px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| row-gap | `6px` | `6px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| flex | `none` | `` | .dw-h .x · app.css:1383 |
-| align-items | `center` | `center` | .dw-h .dw-nav .x · gates.css:812 |
-| justify-content | `center` | `center` | .dw-h .dw-nav .x · gates.css:812 |
-| width | `auto` | `66.6719px` | .dw-h .dw-nav .x · gates.css:812 |
-| min-width | `28px` | `28px` | .dw-h .dw-nav .x · gates.css:812 |
-| height | `28px` | `28px` | .drawer .x · app.css:1398 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 10px 0 7px` | `` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| padding-top | `0px` | `0px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| padding-right | `10px` | `10px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| padding-bottom | `0px` | `0px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| padding-left | `7px` | `7px` | .dw-h .dw-nav .x:hover, .dw-h .dw-nav .x:focus-visible · gates.css:816 |
-| margin-left | `0px` | `0px` | .dw-h .dw-nav .x · gates.css:812 |
-| border | `1px solid var(--rule2)` | `` | .drawer .x · app.css:1398 |
-| border-radius | `var(--rad-2)` | `` | .drawer .x · app.css:1398 |
-| outline | `2px solid var(--patch)` | `` | :where(button, a, input, select, [tabindex]):focus-visible · app.css:2405 |
-| outline-offset | `2px` | `2px` | :where(button, a, input, select, [tabindex]):focus-visible · app.css:2405 |
-| background | `none` | `` | .drawer .x · app.css:1398 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .drawer .x · app.css:1398 |
-| background-image | `none` | `none` | .drawer .x · app.css:1398 |
-| box-shadow | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` | :focus-visible · app.css:1696 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-sm)` | `12px` | .dw-h .x · app.css:1383 |
-| font-weight | `inherit` | `400` | button · app.css:621 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `18px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .drawer .x · app.css:1398 |
-| transition | `gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ease,background 200ms ease,border-color 200ms ease` | `` | .dw-h .dw-nav .x · gates.css:812 |
-| cursor | `pointer` | `pointer` | .dw-h .x · app.css:1383 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(242, 194, 48)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
-**::after**
+#### look 3 of 4
 
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .dw-h .x::after · app.css:1385 |
-| inset | `-8px` | .dw-h .x::after · app.css:1385 |
-| top | `-8px` | .dw-h .x::after · app.css:1385 |
-| right | `-8px` | .dw-h .x::after · app.css:1385 |
-| bottom | `-8px` | .dw-h .x::after · app.css:1385 |
-| left | `-8px` | .dw-h .x::after · app.css:1385 |
-| border-radius | `inherit` | .dw-h .x::after · app.css:1385 |
-| content | `""` | .dw-h .x::after · app.css:1385 |
+`new-builds1-39` · rendered **86×30** · 1 instance look like this · text “0”
 
-**:hover** — changes; parts inside it respond (table below)
+```html
+<b>0</b>
+```
 
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
-| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-
-| part inside | property | at rest | hover |
+| property | winning declaration | computed | from |
 |---|---|---|---|
-| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic.sm | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic.sm | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic.sm | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| svg.ic.sm | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| b | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| b | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| b | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(255, 122, 69)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
-**:focus-visible** — changes nothing on the element itself
+#### look 4 of 4
 
-**:active** — changes
+`new-builds1-42` · rendered **86×37** · 1 instance look like this · text “0”
 
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+```html
+<b>0</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(255, 138, 133)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
 
 ### `div.dw-b`
@@ -2028,10 +1697,10 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildOpenNewbuild-4341` · rendered **978×598** · 1 instance look like this
+`new-builds1-9` · rendered **978×518** · 1 instance look like this
 
 ```html
-<div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="add"><div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div cl
+<div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" a
 ```
 
 | property | winning declaration | computed | from |
@@ -2061,10 +1730,10 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildOpenNewbuild-4342` · rendered **930×1100** · 1 instance look like this
+`new-builds1-10` · rendered **930×502** · 1 instance look like this
 
 ```html
-<div class="b3-nb" data-arm="MP" data-panel="add"><div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " 
+<div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One bui
 ```
 
 | property | winning declaration | computed | from |
@@ -2079,300 +1748,16 @@ inside `.dw-b` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `div.pb-bar`
-
-inside `.b3-nb` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4343` · rendered **978×63** · 1 instance look like this
-
-```html
-<div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One build or many"><span 
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-bar · b3/board.css:1064 |
-| position | `sticky` | `sticky` | .b3-nb .pb-bar · b3/board.css:1064 |
-| gap | `12px` | `` | .b3-nb .pb-bar · b3/board.css:1064 |
-| column-gap | `12px` | `12px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| row-gap | `12px` | `12px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| align-items | `center` | `center` | .b3-nb .pb-bar · b3/board.css:1064 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px var(--s5)` | `` | .b3-nb .pb-bar · b3/board.css:1064 |
-| padding-top | `` | `10px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| padding-right | `` | `24px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| padding-bottom | `` | `10px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| padding-left | `` | `24px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| margin | `calc(-1 * var(--s4)) calc(-1 * var(--s5)) var(--s5)` | `` | .b3-nb .pb-bar · b3/board.css:1064 |
-| margin-top | `` | `-16px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| margin-right | `` | `-24px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| margin-bottom | `` | `24px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| margin-left | `` | `-24px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| top | `calc(-1 * var(--s4))` | `-16px` | .b3-nb .pb-bar · b3/board.css:1064 |
-| border-bottom | `1px solid var(--rule)` | `` | .b3-nb .pb-bar · b3/board.css:1064 |
-| background | `var(--sunk)` | `` | .b3-nb .pb-bar · b3/board.css:1064 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-bar · b3/board.css:1064 |
-| background-image | `` | `none` | .b3-nb .pb-bar · b3/board.css:1064 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `6` | `6` | .b3-nb .pb-bar · b3/board.css:1064 |
-
-
-### `div.pb-mode.pb-seg.seg[role=group]`
-
-inside `.pb-bar` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4344` · rendered **120×42** · 1 instance look like this · aria-label="Which armory" role="group"
-
-```html
-<div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| position | `relative` | `relative` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| gap | `0` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| column-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| row-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `3px` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-top | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-right | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-bottom | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-left | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border | `1px solid var(--rule2)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background | `var(--desk)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-image | `` | `none` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.pb-thumb`
-
-inside `.seg` · 4 on screen · **4 looks**
-
-#### look 1 of 4
-
-`new-buildOpenNewbuild-4345` · rendered **52×34** · 1 instance look like this
-
-```html
-<span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| width | `52px` | `52px` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| bottom | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| left | `0px` | `0px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background | `var(--mode-mp)` | `` | .b3-nb .pb-mode .pb-thumb · b3/board.css:1076 |
-| background-color | `` | `rgb(255, 52, 48)` | .b3-nb .pb-mode .pb-thumb · b3/board.css:1076 |
-| background-image | `` | `none` | .b3-nb .pb-mode .pb-thumb · b3/board.css:1076 |
-| box-shadow | `none` | `none` | .b3-nb .pb-mode .pb-thumb · b3/board.css:1076 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateX(3px)` | `matrix(1, 0, 0, 1, 3, 0)` | style attribute |
-| transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-
-#### look 2 of 4
-
-`new-buildOpenNewbuild-4348` · rendered **105×34** · 1 instance look like this
-
-```html
-<span class="pb-thumb" style="width: 105px; transform: translateX(3px);"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| width | `105px` | `105px` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| bottom | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| left | `0px` | `0px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background | `var(--hi)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background-color | `` | `rgb(35, 44, 52)` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background-image | `` | `none` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateX(3px)` | `matrix(1, 0, 0, 1, 3, 0)` | style attribute |
-| transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-
-#### look 3 of 4
-
-`new-buildOpenNewbuild-4416` · rendered **58×34** · 1 instance look like this
-
-```html
-<span class="pb-thumb" style="width: 58px; transform: translateX(3px);"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| width | `58px` | `58px` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| bottom | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| left | `0px` | `0px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background | `var(--tc,var(--hi))` | `` | .b3-nb .pb-seg[data-tier] .pb-thumb · b3/board.css:1137 |
-| background-color | `` | `rgb(35, 44, 52)` | .b3-nb .pb-seg[data-tier] .pb-thumb · b3/board.css:1137 |
-| background-image | `` | `none` | .b3-nb .pb-seg[data-tier] .pb-thumb · b3/board.css:1137 |
-| box-shadow | `none` | `none` | .b3-nb .pb-seg[data-tier] .pb-thumb · b3/board.css:1137 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateX(3px)` | `matrix(1, 0, 0, 1, 3, 0)` | style attribute |
-| transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-
-#### look 4 of 4
-
-`new-buildOpenNewbuild-4421` · rendered **103×28** · 1 instance look like this
-
-```html
-<span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| width | `103px` | `103px` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| bottom | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| left | `0px` | `0px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background | `var(--hi)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background-color | `` | `rgb(35, 44, 52)` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background-image | `` | `none` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateX(3px)` | `matrix(1, 0, 0, 1, 3, 0)` | style attribute |
-| transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-
-
-### `span.pb-div`
-
-inside `.pb-bar` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4346` · rendered **1×28** · 1 instance look like this · aria-hidden="true"
-
-```html
-<span class="pb-div" aria-hidden="true"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| width | `1px` | `1px` | .b3-nb .pb-div · b3/board.css:1078 |
-| height | `28px` | `28px` | .b3-nb .pb-div · b3/board.css:1078 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 2px` | `` | .b3-nb .pb-div · b3/board.css:1078 |
-| margin-top | `0px` | `0px` | .b3-nb .pb-div · b3/board.css:1078 |
-| margin-right | `2px` | `2px` | .b3-nb .pb-div · b3/board.css:1078 |
-| margin-bottom | `0px` | `0px` | .b3-nb .pb-div · b3/board.css:1078 |
-| margin-left | `2px` | `2px` | .b3-nb .pb-div · b3/board.css:1078 |
-| background | `var(--rule2)` | `` | .b3-nb .pb-div · b3/board.css:1078 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-nb .pb-div · b3/board.css:1078 |
-| background-image | `` | `none` | .b3-nb .pb-div · b3/board.css:1078 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-seg.seg[role=group]`
-
-inside `.pb-bar` · 2 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4347` · rendered **228×42** · 2 instances look like this · aria-label="One build or many" role="group"
-
-```html
-<div class="seg pb-seg " role="group" aria-label="One build or many"><span class="pb-thumb" style="width: 105px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">⟨svg.ic⟩Add build</button><button type="button" aria-pressed="false">⟨svg.ic⟩Bulk create</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| position | `relative` | `relative` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| gap | `0` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| column-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| row-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `3px` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-top | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-right | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-bottom | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-left | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border | `1px solid var(--rule2)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background | `var(--desk)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-image | `` | `none` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
 ### `div.pb-in.pb-view`
 
 inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildOpenNewbuild-4351` · rendered **930×1013** · 1 instance look like this
+`new-builds1-18` · rendered **930×401** · 1 instance look like this
 
 ```html
-<div class="pb-view pb-in"><div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</lab
+<div class="pb-view pb-in"><div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Clo
 ```
 
 | property | winning declaration | computed | from |
@@ -2388,25 +1773,26 @@ inside `.b3-nb` · 1 on screen · **1 look**
 | animation | `pbIn .2s ease both` | `` | .b3-nb .pb-in · b3/board.css:1210 |
 
 
-### `div.bed.bform`
+### `div.pb-bulk`
 
 inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildOpenNewbuild-4352` · rendered **930×1013** · 1 instance look like this
+`new-builds1-19` · rendered **930×401** · 1 instance look like this
 
 ```html
-<div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><opt
+<div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C B
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .bed · app.css:3557 |
-| grid-template-columns | `minmax(0px, 1fr) 320px` | `592px 320px` | .b3-nb .bed · b3/board.css:1081 |
-| gap | `18px` | `` | .drawer.wide .bed · app.css:7080 |
-| column-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
-| row-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
+| display | `grid` | `grid` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `466.094px 443.891px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| gap | `20px` | `` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| column-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| row-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| align-items | `start` | `start` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2414,1828 +1800,18 @@ inside `.pb-view` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.bed-main`
-
-inside `.bed` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4353` · rendered **592×1013** · 1 instance look like this
-
-```html
-<div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Ass
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| min-width | `0px` | `0px` | .bed-main · app.css:6603 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `section.bf-sec`
-
-inside `.bed-main` · 5 on screen · **5 looks**
-
-#### look 1 of 5
-
-`new-buildOpenNewbuild-4354` · rendered **592×190** · 1 instance look like this
-
-```html
-<section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Assault Rifle</option><op
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-bottom | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin | `0 0 26px` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-bottom | `26px` | `26px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border-bottom | `1px solid var(--rule3)` | `` | .bf-sec · app.css:5464 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-#### look 2 of 5
-
-`new-buildOpenNewbuild-4369` · rendered **592×71** · 1 instance look like this
-
-```html
-<section class="bf-sec"><div class="dwfield"><label for="nb-code">Gunsmith code</label><div class="pb-codefield"><input id="nb-code" spellcheck="true" autocomplete="off" placeholder="1C2C4A8A9B"><button type="button" class="pb-copy" aria-label="Copy code" disabled="">⟨svg.ic⟩</button></div></div></section>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-bottom | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin | `0 0 26px` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-bottom | `26px` | `26px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border-bottom | `1px solid var(--rule3)` | `` | .bf-sec · app.css:5464 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-#### look 3 of 5
-
-`new-buildOpenNewbuild-4375` · rendered **592×283** · 1 instance look like this
-
-```html
-<section class="bf-sec"><h4 class="bf-h">Attachments <span class="pb-hfill">Paste a code and the slots fill themselv…</span></h4><div class="pb-atts"><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div><div class="pb-att"><span class="pb-slot pb-s
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-bottom | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin | `0 0 26px` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-bottom | `26px` | `26px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border-bottom | `1px solid var(--rule3)` | `` | .bf-sec · app.css:5464 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-#### look 4 of 5
-
-`new-buildOpenNewbuild-4404` · rendered **592×131** · 1 instance look like this
-
-```html
-<section class="bf-sec"><h4 class="bf-h">Badges </h4><div class="pb-badges"><button type="button" class="pb-tog" aria-pressed="false"><i>⟨svg.ic⟩</i>META</button><button type="button" class="pb-tog pb-tox" aria-pressed="false"><i>⟨svg.ic⟩</i>TOXIC</button></div><div class="pb-rank"><span>Tier in AR</span><div class="seg pb-seg " role="group" aria-label="Tier" data-tier="none"><span class="pb-thumb" style="width: 58px
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-bottom | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin | `0 0 26px` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-bottom | `26px` | `26px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border-bottom | `1px solid var(--rule3)` | `` | .bf-sec · app.css:5464 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-#### look 5 of 5
-
-`new-buildOpenNewbuild-4417` · rendered **592×207** · 1 instance look like this
-
-```html
-<section class="bf-sec"><div class="pb-imghead"><h4 class="bf-h">Image</h4><div class="seg pb-seg pb-small" role="group" aria-label="Image source"><span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">Upload or link</button><button type="button" aria-pressed="false">Existing key</button></div></div><div class="pb-drop"><div class="pb-shot" role="img"
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-bottom | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| padding-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin | `0 0 26px` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-bottom | `26px` | `26px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border | `0` | `` | .b3-nb .bf-sec · b3/board.css:1082 |
-| border-bottom | `none` | `` | .bf-sec:last-child · app.css:5465 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `h4.bf-h`
-
-inside `.bf-sec` · 4 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4355` · rendered **592×17** · 4 instances look like this · text “Build”
-
-```html
-<h4 class="bf-h">Build</h4>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .bf-h · b3/board.css:1083 |
-| gap | `10px` | `` | .b3-nb .bf-h · b3/board.css:1083 |
-| column-gap | `10px` | `10px` | .b3-nb .bf-h · b3/board.css:1083 |
-| row-gap | `10px` | `10px` | .b3-nb .bf-h · b3/board.css:1083 |
-| align-items | `center` | `center` | .b3-nb .bf-h · b3/board.css:1083 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 0 14px` | `` | .b3-nb .bf-h · b3/board.css:1083 |
-| margin-top | `0px` | `0px` | .b3-nb .bf-h · b3/board.css:1083 |
-| margin-right | `0px` | `0px` | .b3-nb .bf-h · b3/board.css:1083 |
-| margin-bottom | `14px` | `14px` | .b3-nb .bf-h · b3/board.css:1083 |
-| margin-left | `0px` | `0px` | .b3-nb .bf-h · b3/board.css:1083 |
-| font | `600 var(--t-md)/1.2 var(--ui)` | `` | .b3-nb .bf-h · b3/board.css:1083 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .bf-h · b3/board.css:1083 |
-| font-size | `` | `14.5px` | .b3-nb .bf-h · b3/board.css:1083 |
-| font-weight | `` | `600` | .b3-nb .bf-h · b3/board.css:1083 |
-| font-style | `` | `normal` | .b3-nb .bf-h · b3/board.css:1083 |
-| font-variant-numeric | `` | `normal` | .b3-nb .bf-h · b3/board.css:1083 |
-| line-height | `` | `17.4px` | .b3-nb .bf-h · b3/board.css:1083 |
-| letter-spacing | `-0.005em` | `-0.0725px` | .b3-nb .bf-h · b3/board.css:1083 |
-| text-transform | `none` | `none` | .b3-nb .bf-h · b3/board.css:1083 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-nb .bf-h · b3/board.css:1083 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| flex | `1` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| height | `1px` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| margin-left | `6px` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| background | `var(--rule2)` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| background-color | `` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| background-image | `` | .b3-nb .bf-h::after · b3/board.css:1084 |
-| content | `""` | .b3-nb .bf-h::after · b3/board.css:1084 |
-
-
-### `div.bed-g2`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4356` · rendered **592×71** · 1 instance look like this
-
-```html
-<div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Assault Rifle</option><option value="SMG">SMG — Submachine Gun</option><opti
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| grid-template-columns | `1fr 1fr` | `288px 288px` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| gap | `16px` | `` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| column-gap | `16px` | `16px` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| row-gap | `16px` | `16px` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| align-items | `end` | `end` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.dwfield`
-
-inside `.bed-g2` · 6 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4357` · rendered **288×71** · 6 instances look like this
-
-```html
-<div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dwfield · app.css:2541 |
-| position | `relative` | `relative` | .dwfield · app.css:1082 |
-| gap | `8px` | `` | .b3-nb .dwfield · b3/board.css:1086 |
-| column-gap | `8px` | `8px` | .b3-nb .dwfield · b3/board.css:1086 |
-| row-gap | `8px` | `8px` | .b3-nb .dwfield · b3/board.css:1086 |
-| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0` | `` | .b3-nb .dwfield · b3/board.css:1086 |
-| margin-top | `0px` | `0px` | .b3-nb .dwfield · b3/board.css:1086 |
-| margin-right | `0px` | `0px` | .b3-nb .dwfield · b3/board.css:1086 |
-| margin-bottom | `0px` | `0px` | .b3-nb .dwfield · b3/board.css:1086 |
-| margin-left | `0px` | `0px` | .b3-nb .dwfield · b3/board.css:1086 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `label`
-
-inside `.dwfield` · 6 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4358` · rendered **288×14** · 6 instances look like this · text “Weapon”
-
-```html
-<label for="nb-w">Weapon</label>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | label · app.css:669 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `5px` | `5px` | label · app.css:669 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| font-size | `` | `12px` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| font-weight | `` | `500` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| font-style | `` | `normal` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| font-variant-numeric | `` | `normal` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| line-height | `` | `14.4px` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| letter-spacing | `0px` | `normal` | .dwfield label · app.css:2544 |
-| text-transform | `none` | `none` | .dwfield label · app.css:2544 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .dwfield > label · b3/board.css:1087 |
-| cursor | `default` | `default` | label · user-agent:? |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `div.pb-combo`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4359` · rendered **288×44** · 1 instance look like this
-
-```html
-<div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-combo · b3/board.css:1091 |
-| position | `relative` | `relative` | .b3-nb .pb-combo · b3/board.css:1091 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-labelf`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4365` · rendered **592×44** · 1 instance look like this
-
-```html
-<div class="pb-labelf"><span class="pb-bno"><small>BUILD</small><b class="pb-num">1</b></span><input id="nb-label" placeholder="Build 1" maxlength="32"></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| grid-template-columns | `auto 1fr` | `80.4062px 511.594px` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| align-items | `stretch` | `stretch` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| min-height | `var(--tap)` | `44px` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| background | `var(--desk)` | `` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| background-image | `` | `none` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| overflow-x | `hidden` | `hidden` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| overflow-y | `hidden` | `hidden` | .b3-nb .pb-labelf · b3/board.css:1094 |
-
-
-### `span.pb-bno`
-
-inside `.pb-labelf` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4366` · rendered **80×44** · 1 instance look like this
-
-```html
-<span class="pb-bno"><small>BUILD</small><b class="pb-num">1</b></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-bno · b3/board.css:1096 |
-| gap | `10px` | `` | .b3-nb .pb-bno · b3/board.css:1096 |
-| column-gap | `10px` | `10px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| row-gap | `10px` | `10px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| align-items | `center` | `center` | .b3-nb .pb-bno · b3/board.css:1096 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 16px 0 14px` | `` | .b3-nb .pb-bno · b3/board.css:1096 |
-| padding-top | `0px` | `0px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| padding-right | `16px` | `16px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| padding-bottom | `0px` | `0px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| padding-left | `14px` | `14px` | .b3-nb .pb-bno · b3/board.css:1096 |
-| background | `color-mix(in srgb,var(--realm-c) 12%,var(--raised))` | `` | .b3-nb .pb-bno · b3/board.css:1096 |
-| background-color | `` | `color(srgb 0.219451 0.166588 0.190745)` | .b3-nb .pb-bno · b3/board.css:1096 |
-| background-image | `` | `none` | .b3-nb .pb-bno · b3/board.css:1096 |
-| box-shadow | `inset -1px 0 0 var(--rule2)` | `rgb(58, 71, 82) -1px 0px 0px 0px inset` | .b3-nb .pb-bno · b3/board.css:1096 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `b.pb-num`
-
-inside `.pb-bno` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4368` · rendered **7×26** · 1 instance look like this · text “1”
-
-```html
-<b class="pb-num">1</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 26px/1 var(--display)` | `` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| font-size | `` | `26px` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| font-weight | `` | `700` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| font-style | `` | `normal` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| line-height | `` | `26px` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| letter-spacing | `0.02em` | `0.52px` | .b3-nb .pb-bno b · b3/board.css:1098 |
-| color | `var(--realm-c)` | `rgb(239, 68, 68)` | .b3-nb .pb-bno b · b3/board.css:1098 |
-
-
-### `div.pb-codefield`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4372` · rendered **592×44** · 1 instance look like this
-
-```html
-<div class="pb-codefield"><input id="nb-code" spellcheck="true" autocomplete="off" placeholder="1C2C4A8A9B"><button type="button" class="pb-copy" aria-label="Copy code" disabled="">⟨svg.ic⟩</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-codefield · b3/board.css:1100 |
-| position | `relative` | `relative` | .b3-nb .pb-codefield · b3/board.css:1100 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `button.pb-copy`
-
-inside `.pb-codefield` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4373` · rendered **38×36** · 1 instance look like this · aria-label="Copy code" type="button"
-
-```html
-<button type="button" class="pb-copy" aria-label="Copy code" disabled="">⟨svg.ic⟩</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-copy · b3/board.css:1104 |
-| position | `absolute` | `absolute` | .b3-nb .pb-copy · b3/board.css:1104 |
-| align-items | `center` | `center` | .b3-nb .pb-copy · b3/board.css:1104 |
-| place-items | `center` | `` | .b3-nb .pb-copy · b3/board.css:1104 |
-| width | `38px` | `38px` | .b3-nb .pb-copy · b3/board.css:1104 |
-| min-height | `var(--ctl-min, 32px)` | `0px` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `var(--ctl-pad, 7px 10px)` | `` | input, select, textarea, button · app.css:388 |
-| padding-top | `` | `1px` | input, select, textarea, button · app.css:388 |
-| padding-right | `` | `6px` | input, select, textarea, button · app.css:388 |
-| padding-bottom | `` | `1px` | input, select, textarea, button · app.css:388 |
-| padding-left | `` | `6px` | input, select, textarea, button · app.css:388 |
-| top | `4px` | `4px` | .b3-nb .pb-copy · b3/board.css:1104 |
-| right | `4px` | `4px` | .b3-nb .pb-copy · b3/board.css:1104 |
-| bottom | `4px` | `4px` | .b3-nb .pb-copy · b3/board.css:1104 |
-| border | `0` | `` | .b3-nb .pb-copy · b3/board.css:1104 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-copy · b3/board.css:1104 |
-| background | `var(--raised)` | `` | .b3-nb .pb-copy · b3/board.css:1104 |
-| background-color | `` | `rgb(31, 39, 46)` | .b3-nb .pb-copy · b3/board.css:1104 |
-| background-image | `` | `none` | .b3-nb .pb-copy · b3/board.css:1104 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-copy · b3/board.css:1104 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `inherit` | `13px` | button · app.css:621 |
-| font-weight | `inherit` | `400` | button · app.css:621 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-copy · b3/board.css:1104 |
-| opacity | `0.45` | `0.45` | input:disabled, select:disabled, textarea:disabled, button:disabled · app.css:455 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-nb .pb-copy · b3/board.css:1104 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `span.pb-hfill`
-
-inside `.bf-h` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4377` · rendered **238×12** · 1 instance look like this · text “Paste a code and the slots fill themselves”
-
-```html
-<span class="pb-hfill">Paste a code and the slots fill themselv…</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| gap | `6px` | `` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| column-gap | `6px` | `6px` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| row-gap | `6px` | `6px` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| align-items | `center` | `center` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1 var(--ui)` | `` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| font-size | `` | `12px` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| font-weight | `` | `500` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| font-style | `` | `normal` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| line-height | `` | `12px` | .b3-nb .pb-hfill · b3/board.css:1107 |
-| letter-spacing | ↑ `-0.005em` | `-0.0725px` | inherited · .b3-nb .bf-h · b3/board.css:1083 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-nb .bf-h · b3/board.css:1083 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-hfill · b3/board.css:1107 |
-
-
-### `div.pb-atts`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4378` · rendered **592×252** · 1 instance look like this
-
-```html
-<div class="pb-atts"><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 2</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 2" autocomplete="off" pla
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-atts · b3/board.css:1109 |
-| gap | `8px` | `` | .b3-nb .pb-atts · b3/board.css:1109 |
-| column-gap | `8px` | `8px` | .b3-nb .pb-atts · b3/board.css:1109 |
-| row-gap | `8px` | `8px` | .b3-nb .pb-atts · b3/board.css:1109 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-att`
-
-inside `.pb-atts` · 5 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4379` · rendered **592×44** · 5 instances look like this
-
-```html
-<div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-att · b3/board.css:1110 |
-| grid-template-columns | `112px minmax(0px, 1fr) 44px` | `112px 416px 44px` | .b3-nb .pb-att · b3/board.css:1110 |
-| gap | `10px` | `` | .b3-nb .pb-att · b3/board.css:1110 |
-| column-gap | `10px` | `10px` | .b3-nb .pb-att · b3/board.css:1110 |
-| row-gap | `10px` | `10px` | .b3-nb .pb-att · b3/board.css:1110 |
-| align-items | `center` | `center` | .b3-nb .pb-att · b3/board.css:1110 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.pb-slot.pb-slot-q`
-
-inside `.pb-att` · 5 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4380` · rendered **112×44** · 5 instances look like this · text “Slot 1”
-
-```html
-<span class="pb-slot pb-slot-q">Slot 1</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-slot · b3/board.css:1111 |
-| align-items | `center` | `center` | .b3-nb .pb-slot · b3/board.css:1111 |
-| height | `var(--tap)` | `44px` | .b3-nb .pb-slot · b3/board.css:1111 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1 var(--ui)` | `` | .b3-nb .pb-slot · b3/board.css:1111 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-slot · b3/board.css:1111 |
-| font-size | `` | `12px` | .b3-nb .pb-slot · b3/board.css:1111 |
-| font-weight | `` | `500` | .b3-nb .pb-slot · b3/board.css:1111 |
-| font-style | `italic` | `italic` | .b3-nb .pb-slot.pb-slot-q · b3/board.css:1112 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-slot · b3/board.css:1111 |
-| line-height | `` | `12px` | .b3-nb .pb-slot · b3/board.css:1111 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-nb .pb-slot.pb-slot-q · b3/board.css:1112 |
-
-
-### `input.ati`
-
-inside `.—` · 5 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4382` · rendered **416×44** · 5 instances look like this · aria-label="Attachment 1"
-
-```html
-<input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search">
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `inline-block` | input, textarea, select, button · user-agent:? |
-| flex | `1` | `` | .ati · app.css:5492 |
-| width | `100%` | `416px` | .b3-nb .pb-att .ati · b3/board.css:1114 |
-| min-width | `0px` | `0px` | .ati · app.css:5492 |
-| min-height | `var(--tap)` | `44px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `8px 10px` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-top | `8px` | `8px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-right | `10px` | `10px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-bottom | `8px` | `8px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-left | `var(--ctl-pl,10px)` | `10px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]) · app.css:654 |
-| border | `1px solid var(--rule2)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| border-radius | `var(--rad-2)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background | `var(--sunk)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background-color | `` | `rgb(11, 15, 18)` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background-image | `` | `none` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| font | `500 var(--t-base)/1 var(--ui)` | `` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-size | `` | `13px` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-weight | `` | `500` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-style | `` | `normal` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-variant-numeric | `` | `normal` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| line-height | `` | `13px` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
-| overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
-| cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4977 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `div.pb-badges`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4406` · rendered **592×44** · 1 instance look like this
-
-```html
-<div class="pb-badges"><button type="button" class="pb-tog" aria-pressed="false"><i>⟨svg.ic⟩</i>META</button><button type="button" class="pb-tog pb-tox" aria-pressed="false"><i>⟨svg.ic⟩</i>TOXIC</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-badges · b3/board.css:1127 |
-| gap | `8px` | `` | .b3-nb .pb-badges · b3/board.css:1127 |
-| column-gap | `8px` | `8px` | .b3-nb .pb-badges · b3/board.css:1127 |
-| row-gap | `8px` | `8px` | .b3-nb .pb-badges · b3/board.css:1127 |
-| align-items | `center` | `center` | .b3-nb .pb-badges · b3/board.css:1127 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `button.pb-tog`
-
-inside `.pb-badges` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4407` · rendered **86×44** · 1 instance look like this · aria-pressed="false" type="button"
-
-```html
-<button type="button" class="pb-tog" aria-pressed="false"><i>⟨svg.ic⟩</i>META</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-tog · b3/board.css:1128 |
-| gap | `10px` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| column-gap | `10px` | `10px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| row-gap | `10px` | `10px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| align-items | `center` | `center` | .b3-nb .pb-tog · b3/board.css:1128 |
-| height | `var(--tap)` | `44px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 16px 0 12px` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-top | `0px` | `0px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-right | `16px` | `16px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-bottom | `0px` | `0px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-left | `12px` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| border | `0` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background | `var(--sunk)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background-image | `` | `none` | .b3-nb .pb-tog · b3/board.css:1128 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font | `700 var(--t-sm)/1 var(--data)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-size | `` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-weight | `` | `700` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-style | `` | `normal` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-tog · b3/board.css:1128 |
-| line-height | `` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| letter-spacing | `var(--b3-tr-tight)` | `0.72px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-tog · b3/board.css:1128 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-nb .pb-tog · b3/board.css:1128 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `button.pb-tog.pb-tox`
-
-inside `.pb-badges` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4410` · rendered **94×44** · 1 instance look like this · aria-pressed="false" type="button"
-
-```html
-<button type="button" class="pb-tog pb-tox" aria-pressed="false"><i>⟨svg.ic⟩</i>TOXIC</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-tog · b3/board.css:1128 |
-| gap | `10px` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| column-gap | `10px` | `10px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| row-gap | `10px` | `10px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| align-items | `center` | `center` | .b3-nb .pb-tog · b3/board.css:1128 |
-| height | `var(--tap)` | `44px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 16px 0 12px` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-top | `0px` | `0px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-right | `16px` | `16px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-bottom | `0px` | `0px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| padding-left | `12px` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| border | `0` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background | `var(--sunk)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-tog · b3/board.css:1128 |
-| background-image | `` | `none` | .b3-nb .pb-tog · b3/board.css:1128 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font | `700 var(--t-sm)/1 var(--data)` | `` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-size | `` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-weight | `` | `700` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-style | `` | `normal` | .b3-nb .pb-tog · b3/board.css:1128 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-tog · b3/board.css:1128 |
-| line-height | `` | `12px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| letter-spacing | `var(--b3-tr-tight)` | `0.72px` | .b3-nb .pb-tog · b3/board.css:1128 |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-tog · b3/board.css:1128 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-nb .pb-tog · b3/board.css:1128 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `div.pb-rank`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4413` · rendered **592×42** · 1 instance look like this
-
-```html
-<div class="pb-rank"><span>Tier in AR</span><div class="seg pb-seg " role="group" aria-label="Tier" data-tier="none"><span class="pb-thumb" style="width: 58px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">None</button><button type="button" aria-pressed="false">Best</button><button type="button" aria-pressed="false">Top 3</button><button type="button" aria-pressed="false">Top 4</button
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-rank · b3/board.css:1135 |
-| gap | `14px` | `` | .b3-nb .pb-rank · b3/board.css:1135 |
-| column-gap | `14px` | `14px` | .b3-nb .pb-rank · b3/board.css:1135 |
-| row-gap | `14px` | `14px` | .b3-nb .pb-rank · b3/board.css:1135 |
-| align-items | `center` | `center` | .b3-nb .pb-rank · b3/board.css:1135 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `14px` | `14px` | .b3-nb .pb-rank · b3/board.css:1135 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-imghead`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4418` · rendered **592×36** · 1 instance look like this
-
-```html
-<div class="pb-imghead"><h4 class="bf-h">Image</h4><div class="seg pb-seg pb-small" role="group" aria-label="Image source"><span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">Upload or link</button><button type="button" aria-pressed="false">Existing key</button></div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| gap | `16px` | `` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| column-gap | `16px` | `16px` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| row-gap | `16px` | `16px` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| align-items | `center` | `center` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `14px` | `14px` | .b3-nb .pb-imghead · b3/board.css:1143 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-seg.pb-small.seg[role=group]`
-
-inside `.pb-imghead` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4420` · rendered **206×36** · 1 instance look like this · aria-label="Image source" role="group"
-
-```html
-<div class="seg pb-seg pb-small" role="group" aria-label="Image source"><span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">Upload or link</button><button type="button" aria-pressed="false">Existing key</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| position | `relative` | `relative` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| gap | `0` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| column-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| row-gap | `0px` | `0px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `3px` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-top | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-right | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-bottom | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| padding-left | `3px` | `3px` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border | `1px solid var(--rule2)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background | `var(--desk)` | `` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| background-image | `` | `none` | .b3-nb .pb-seg.seg · b3/board.css:1065 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-drop`
-
-inside `.bf-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4422` · rendered **592×157** · 1 instance look like this
-
-```html
-<div class="pb-drop"><div class="pb-shot" role="img" aria-label="No screenshot yet"><span class="pb-shot-ui"></span></div><div class="pb-dropcol"><div class="dwfield"><label>Screenshot or link</label><div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div></div><div cl
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-drop · b3/board.css:1146 |
-| grid-template-columns | `200px 1fr` | `200px 376px` | .b3-nb .pb-drop · b3/board.css:1146 |
-| gap | `16px` | `` | .b3-nb .pb-drop · b3/board.css:1146 |
-| column-gap | `16px` | `16px` | .b3-nb .pb-drop · b3/board.css:1146 |
-| row-gap | `16px` | `16px` | .b3-nb .pb-drop · b3/board.css:1146 |
-| align-items | `stretch` | `stretch` | .b3-nb .pb-drop · b3/board.css:1146 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-shot[role=img]`
-
-inside `.pb-drop` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4423` · rendered **200×157** · 1 instance look like this · aria-label="No screenshot yet" role="img"
-
-```html
-<div class="pb-shot" role="img" aria-label="No screenshot yet"><span class="pb-shot-ui"></span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | .b3-nb .pb-shot · b3/board.css:1147 |
-| min-height | `124px` | `124px` | .b3-nb .pb-shot · b3/board.css:1147 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-shot · b3/board.css:1147 |
-| background | `linear-gradient(160deg,#1A2328 0%,#22313A 45%,#2C2320 100%)` | `` | .b3-nb .pb-shot · b3/board.css:1147 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-shot · b3/board.css:1147 |
-| background-image | `linear-gradient(160deg, rgb(26, 35, 40) 0%, rgb(34, 49, 58) 45%, rgb(44, 35, 32) 100%)` | `linear-gradient(160deg, rgb(26, 35, 40) 0%, rgb(34, 49, 58) 45%, rgb(44, 35, 32) 100%)` | .b3-nb .pb-shot · b3/board.css:1147 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-shot · b3/board.css:1147 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-nb .pb-shot · b3/board.css:1147 |
-| overflow-x | `hidden` | `hidden` | .b3-nb .pb-shot · b3/board.css:1147 |
-| overflow-y | `hidden` | `hidden` | .b3-nb .pb-shot · b3/board.css:1147 |
-
-
-### `span.pb-shot-ui`
-
-inside `.pb-shot` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4424` · rendered **168×129** · 1 instance look like this
-
-```html
-<span class="pb-shot-ui"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `14px 16px` | `` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| top | `14px` | `14px` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| right | `16px` | `16px` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| bottom | `14px` | `14px` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| left | `16px` | `16px` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| border-radius | `var(--rad-1)` | `` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| background | `linear-gradient(90deg,rgba(232,237,241,.10) 0 38%,transparent 38%),linear-gradient(rgba(232,237,241,.06),rgba(232,237,241,.06)) 0 70%/60% 6px no-repeat` | `` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| background-image | `linear-gradient(90deg, rgba(232, 237, 241, 0.1) 0px, rgba(232, 237, 241, 0.1) 38%, transparent 38%), linear-gradient(rgba(232, 237, 241, 0.06), rgba(232, 237, 241, 0.06))` | `linear-gradient(90deg, rgba(232, 237, 241, 0.1) 0px, rgba(232, 237, 241, 0.1) 38%, rgba(0, 0, 0, 0) 38%), linear-gradient(rgba(232, 237, 241, 0.06), rgba(232, 237, 241, 0.06))` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| box-shadow | `rgba(232, 237, 241, 0.08) 0px 0px 0px 1px inset` | `rgba(232, 237, 241, 0.08) 0px 0px 0px 1px inset` | .b3-nb .pb-shot-ui · b3/board.css:1149 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-dropcol`
-
-inside `.pb-drop` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4425` · rendered **376×157** · 1 instance look like this
-
-```html
-<div class="pb-dropcol"><div class="dwfield"><label>Screenshot or link</label><div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div></div><div class="dwfield"><label for="nb-key">Key</label><input id="nb-key"></div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-dropcol · b3/board.css:1150 |
-| gap | `14px` | `` | .b3-nb .pb-dropcol · b3/board.css:1150 |
-| column-gap | `14px` | `14px` | .b3-nb .pb-dropcol · b3/board.css:1150 |
-| row-gap | `14px` | `14px` | .b3-nb .pb-dropcol · b3/board.css:1150 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-file`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4428` · rendered **376×44** · 1 instance look like this
-
-```html
-<div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b3-nb .pb-file · b3/board.css:1151 |
-| gap | `10px` | `` | .b3-nb .pb-file · b3/board.css:1151 |
-| column-gap | `10px` | `10px` | .b3-nb .pb-file · b3/board.css:1151 |
-| row-gap | `10px` | `10px` | .b3-nb .pb-file · b3/board.css:1151 |
-| align-items | `center` | `center` | .b3-nb .pb-file · b3/board.css:1151 |
-| min-height | `var(--tap)` | `44px` | .b3-nb .pb-file · b3/board.css:1151 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 5px 0 12px` | `` | .b3-nb .pb-file · b3/board.css:1151 |
-| padding-top | `0px` | `0px` | .b3-nb .pb-file · b3/board.css:1151 |
-| padding-right | `5px` | `5px` | .b3-nb .pb-file · b3/board.css:1151 |
-| padding-bottom | `0px` | `0px` | .b3-nb .pb-file · b3/board.css:1151 |
-| padding-left | `12px` | `12px` | .b3-nb .pb-file · b3/board.css:1151 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-file · b3/board.css:1151 |
-| background | `var(--desk)` | `` | .b3-nb .pb-file · b3/board.css:1151 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-file · b3/board.css:1151 |
-| background-image | `` | `none` | .b3-nb .pb-file · b3/board.css:1151 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-file · b3/board.css:1151 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `input.pb-link`
-
-inside `.pb-file` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4430` · rendered **257×44** · 1 instance look like this
-
-```html
-<input class="pb-link" placeholder="Paste a link, or choose a file">
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
-| flex | `1` | `` | .b3-nb .dwfield .pb-file .pb-link · b3/board.css:1156 |
-| min-height | `var(--tap)` | `44px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `8px 10px` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-top | `8px` | `8px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-right | `10px` | `10px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-bottom | `8px` | `8px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| padding-left | `var(--ctl-pl,10px)` | `10px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]) · app.css:654 |
-| border | `1px solid var(--rule2)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| border-radius | `var(--rad-2)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background | `var(--sunk)` | `` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background-color | `` | `rgb(11, 15, 18)` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| background-image | `` | `none` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| font | `500 var(--t-base)/1 var(--ui)` | `` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-size | `` | `13px` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-weight | `` | `500` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-style | `` | `normal` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| font-variant-numeric | `` | `normal` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| line-height | `` | `13px` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-nb .dwfield input, .b3-nb .dwfield select, .b3-nb .pb-att .ati · b3/board.css:1089 |
-| overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
-| overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
-| cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4977 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `label.chip`
-
-inside `.pb-file` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4431` · rendered **67×32** · 1 instance look like this
-
-```html
-<label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .chip · app.css:1242 |
-| align-items | `center` | `center` | .chip · app.css:1242 |
-| justify-content | `center` | `center` | .chip · app.css:1242 |
-| min-height | `32px` | `32px` | .chip · app.css:1242 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `6px 11px` | `` | .chip · app.css:1242 |
-| padding-top | `6px` | `6px` | .chip · app.css:1242 |
-| padding-right | `11px` | `11px` | .chip · app.css:1242 |
-| padding-bottom | `6px` | `6px` | .chip · app.css:1242 |
-| padding-left | `11px` | `11px` | .chip · app.css:1242 |
-| margin-bottom | `5px` | `5px` | label · app.css:669 |
-| margin-left | `auto` | `0px` | .b3-nb .pb-file .chip · b3/board.css:1155 |
-| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `var(--sunk)` | `` | .chip · app.css:1242 |
-| background-color | `` | `rgb(11, 15, 18)` | .chip · app.css:1242 |
-| background-image | `` | `none` | .chip · app.css:1242 |
-| font | `600 var(--t-sm)/1.2 var(--ui)` | `` | .dwfield label · app.css:2544 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .dwfield label · app.css:2544 |
-| font-size | `` | `12px` | .dwfield label · app.css:2544 |
-| font-weight | `` | `600` | .dwfield label · app.css:2544 |
-| font-style | `` | `normal` | .dwfield label · app.css:2544 |
-| font-variant-numeric | `` | `normal` | .dwfield label · app.css:2544 |
-| line-height | `` | `14.4px` | .dwfield label · app.css:2544 |
-| letter-spacing | `0px` | `normal` | .dwfield label · app.css:2544 |
-| text-transform | `none` | `none` | .dwfield label · app.css:2544 |
-| text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield label · app.css:2544 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-nb .pb-file .chip · b3/board.css:1155 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgb(11, 15, 18)` | `rgb(35, 44, 52)` |
-| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `aside.bed-side`
-
-inside `.bed` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4434` · rendered **320×156** · 1 instance look like this
-
-```html
-<aside class="bed-side"><div class="bed-sec"><h5>In Discord</h5><p class="empty">Pick a weapon and the card builds itself…</p></div></aside>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| position | `sticky` | `sticky` | .bed-side · app.css:6604 |
-| align-self | `start` | `start` | .bed-side · app.css:6604 |
-| min-width | `0px` | `0px` | .bed-side · app.css:6604 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `14px` | `14px` | .bed-side · app.css:6604 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.bed-sec`
-
-inside `.bed-side` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4435` · rendered **320×136** · 1 instance look like this
-
-```html
-<div class="bed-sec"><h5>In Discord</h5><p class="empty">Pick a weapon and the card builds itself…</p></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `20px` | `20px` | .bed-sec · app.css:3567 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `p.empty`
-
-inside `.bed-sec` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4436` · rendered **320×112** · 1 instance look like this · text “Pick a weapon and the card builds itself here.”
-
-```html
-<p class="empty">Pick a weapon and the card builds itself…</p>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | p · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `34px 16px` | `` | .empty · app.css:1299 |
-| padding-top | `34px` | `34px` | .empty · app.css:1299 |
-| padding-right | `16px` | `16px` | .empty · app.css:1299 |
-| padding-bottom | `34px` | `34px` | .empty · app.css:1299 |
-| padding-left | `16px` | `16px` | .empty · app.css:1299 |
-| margin-top | `1em (as margin-block-start)` | `14.5px` | p · user-agent:? |
-| margin-right | `0px (as margin-inline-end)` | `0px` | p · user-agent:? |
-| margin-bottom | `1em (as margin-block-end)` | `14.5px` | p · user-agent:? |
-| margin-left | `0px (as margin-inline-start)` | `0px` | p · user-agent:? |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-md)` | `14.5px` | .empty · app.css:1299 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `21.75px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | `center` | `center` | .empty · app.css:1299 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .empty · app.css:1299 |
-
-
-### `footer.dw-f`
-
-inside `.drawer` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4437` · rendered **978×69** · 1 instance look like this
-
-```html
-<footer class="dw-f"><span class="why blocked" role="status">Still needs a weapon</span><button class="btn no">Cancel</button><button class="btn" disabled="">Stage and add another</button><button class="btn go" disabled="">Stage this MP build</button></footer>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dw-f · app.css:1393 |
-| gap | `var(--s2)` | `` | .dw-f · app.css:1393 |
-| column-gap | `` | `8px` | .dw-f · app.css:1393 |
-| row-gap | `` | `8px` | .dw-f · app.css:1393 |
-| flex | `none` | `` | .dw-f · app.css:1393 |
-| justify-content | `flex-end` | `flex-end` | .dw-f · app.css:1393 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `var(--s3) var(--s5)` | `` | .dw-f · app.css:1393 |
-| padding-top | `` | `12px` | .dw-f · app.css:1393 |
-| padding-right | `` | `24px` | .dw-f · app.css:1393 |
-| padding-bottom | `` | `12px` | .dw-f · app.css:1393 |
-| padding-left | `` | `24px` | .dw-f · app.css:1393 |
-| border-top | `1px solid var(--rule)` | `` | .dw-f · app.css:1393 |
-| background | `var(--sunk)` | `` | .dw-f · app.css:1393 |
-| background-color | `` | `rgb(11, 15, 18)` | .dw-f · app.css:1393 |
-| background-image | `` | `none` | .dw-f · app.css:1393 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.blocked.why[role=status]`
-
-inside `.dw-f` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4438` · rendered **119×16** · 1 instance look like this · text “Still needs a weapon” · role="status"
-
-```html
-<span class="why blocked" role="status">Still needs a weapon</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| align-self | `center` | `center` | .dw-f .why · app.css:6866 |
-| max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `auto` | `320.062px` | .dw-f .why · app.css:6866 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
-| font-weight | — | `400` | initial |
-| line-height | `var(--lh-ui)` | `16.2px` | .dw-f .why · app.css:6866 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .dw-f .why.blocked · app.css:6867 |
-
-
-### `button.btn.no`
-
-inside `.dw-f` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4439` · rendered **132×44** · 1 instance look like this · text “Cancel”
-
-```html
-<button class="btn no">Cancel</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
-| flex | `0 0 auto` | `` | .dw-f .btn · app.css:1392 |
-| min-width | `132px` | `132px` | .dw-f .btn · app.css:1392 |
-| min-height | `44px` | `44px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:261 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `9px` | `` | .btn · app.css:1342 |
-| padding-top | `9px` | `9px` | .btn · app.css:1342 |
-| padding-right | `16px (as padding-inline-end)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-bottom | `9px` | `9px` | .btn · app.css:1342 |
-| padding-left | `16px (as padding-inline-start)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-inline | `16px` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| border | `1px solid var(--rule2)` | `` | .btn.no · app.css:1349 |
-| border-color | `transparent` | `` | html[data-b3-e1] .dw-f .btn.no · b3/board.css:1623 · ⏳ **OPEN — Session 4 owns this switch; see `switches.md`** |
-| border-radius | `var(--rad-box, 8px)` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| background | `none` | `` | .btn.no · app.css:1349 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .btn.no · app.css:1349 |
-| background-image | `none` | `none` | .btn.no · app.css:1349 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn.no · b1.css:266 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-base)` | `13px` | .btn · app.css:1342 |
-| font-weight | `700` | `700` | .btn · app.css:1342 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .btn.no · app.css:1349 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgba(0, 0, 0, 0)` | `rgb(35, 44, 52)` |
-| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `button.btn`
-
-inside `.dw-f` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4440` · rendered **179×44** · 1 instance look like this · text “Stage and add another”
-
-```html
-<button class="btn" disabled="">Stage and add another</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
-| flex | `0 0 auto` | `` | .dw-f .btn · app.css:1392 |
-| min-width | `132px` | `132px` | .dw-f .btn · app.css:1392 |
-| min-height | `44px` | `44px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:261 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `9px` | `` | .btn · app.css:1342 |
-| padding-top | `9px` | `9px` | .btn · app.css:1342 |
-| padding-right | `16px (as padding-inline-end)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-bottom | `9px` | `9px` | .btn · app.css:1342 |
-| padding-left | `16px (as padding-inline-start)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-inline | `16px` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| border | `1px solid var(--rule2)` | `` | .btn · app.css:1342 |
-| border-radius | `var(--rad-box, 8px)` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| background | `var(--raised)` | `` | .btn · app.css:1342 |
-| background-color | `` | `rgb(31, 39, 46)` | .btn · app.css:1342 |
-| background-image | `` | `none` | .btn · app.css:1342 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-base)` | `13px` | .btn · app.css:1342 |
-| font-weight | `700` | `700` | .btn · app.css:1342 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .btn · app.css:1342 |
-| opacity | `0.45` | `0.45` | .dw-f .btn[disabled] · app.css:6868 |
-| filter | `grayscale(0.4)` | `grayscale(0.4)` | .chip:disabled, .btn:disabled, .go:disabled, .bulk button:disabled, .flag button:disabled · app.css:1580 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `not-allowed` | `not-allowed` | .dw-f .btn[disabled] · app.css:6868 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `button.btn.go`
-
-inside `.dw-f` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildOpenNewbuild-4441` · rendered **156×44** · 1 instance look like this · text “Stage this MP build”
-
-```html
-<button class="btn go" disabled="">Stage this MP build</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | input, textarea, select, button · user-agent:? |
-| flex | `0 0 auto` | `` | .dw-f .btn · app.css:1392 |
-| min-width | `132px` | `132px` | .dw-f .btn · app.css:1392 |
-| min-height | `44px` | `44px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:261 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `9px` | `` | .btn · app.css:1342 |
-| padding-top | `9px` | `9px` | .btn · app.css:1342 |
-| padding-right | `16px (as padding-inline-end)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-bottom | `9px` | `9px` | .btn · app.css:1342 |
-| padding-left | `16px (as padding-inline-start)` | `16px` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| padding-inline | `16px` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| border | `1px solid var(--ok)` | `` | .btn.go · app.css:1347 |
-| border-radius | `var(--rad-box, 8px)` | `` | :is(.drawer.b1, .drawer:has(.b3-nb)) .dw-f .btn · b1.css:265 |
-| background | `var(--ok)` | `` | .btn.go · app.css:1347 |
-| background-color | `` | `rgb(123, 219, 99)` | .btn.go · app.css:1347 |
-| background-image | `` | `none` | .btn.go · app.css:1347 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-base)` | `13px` | .btn · app.css:1342 |
-| font-weight | `700` | `700` | .btn · app.css:1342 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `19.5px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--on-ok)` | `rgb(7, 19, 10)` | .btn.go · app.css:1347 |
-| opacity | `0.45` | `0.45` | .dw-f .btn[disabled] · app.css:6868 |
-| filter | `grayscale(0.4)` | `grayscale(0.4)` | .chip:disabled, .btn:disabled, .go:disabled, .bulk button:disabled, .flag button:disabled · app.css:1580 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `not-allowed` | `not-allowed` | .dw-f .btn[disabled] · app.css:6868 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgb(123, 219, 99)` | `color(srgb 0.554824 0.878588 0.473882)` |
-| color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| filter | `grayscale(0.4)` | `none` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| ::before | border-color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| ::before | outline-color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| ::after | color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| ::after | border-color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-| ::after | outline-color | `rgb(7, 19, 10)` | `rgb(157, 170, 180)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### new-build · Bulk create
-
-162 distinct signatures on screen; 17 not already specced above.
-
-
-### `b`
-
-inside `.mk` · 87 on screen · **4 looks**
-
-#### look 1 of 4
-
-`new-buildBulkcreate-4364` · rendered **86×37** · 1 instance look like this · text “0”
-
-```html
-<b>0</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--o,var(--ink))` | `rgb(123, 219, 99)` | .b3-nb .pb-tally b · b3/board.css:1184 |
-
-#### look 2 of 4
-
-`new-buildBulkcreate-4367` · rendered **86×37** · 1 instance look like this · text “0”
-
-```html
-<b>0</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--o,var(--ink))` | `rgb(242, 194, 48)` | .b3-nb .pb-tally b · b3/board.css:1184 |
-
-#### look 3 of 4
-
-`new-buildBulkcreate-4370` · rendered **86×30** · 1 instance look like this · text “0”
-
-```html
-<b>0</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--o,var(--ink))` | `rgb(255, 122, 69)` | .b3-nb .pb-tally b · b3/board.css:1184 |
-
-#### look 4 of 4
-
-`new-buildBulkcreate-4373` · rendered **86×37** · 1 instance look like this · text “0”
-
-```html
-<b>0</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--o,var(--ink))` | `rgb(255, 138, 133)` | .b3-nb .pb-tally b · b3/board.css:1184 |
-
-
-### `span`
-
-inside `.un` · 75 on screen · **3 looks**
-
-#### look 1 of 3
-
-`new-buildBulkcreate-4356` · rendered **130×12** · 1 instance look like this · text “0 builds · 1 lines”
-
-```html
-<span>0 builds · 1 lines</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| font-size | `` | `12px` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| font-weight | `` | `500` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| font-style | `` | `normal` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| line-height | `` | `12px` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-edhead span · b3/board.css:1163 |
-
-#### look 2 of 3
-
-`new-buildBulkcreate-4365` · rendered **86×22** · 3 instances look like this · text “new”
-
-```html
-<span>new</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
-
-#### look 3 of 3
-
-`new-buildBulkcreate-4371` · rendered **86×29** · 1 instance look like this · text “saved with a warning”
-
-```html
-<span>saved with a warning</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
 
 
 ### `div`
 
-inside `.panel` · 7 on screen · **3 looks**
+inside `.pb-bulk` · 6 on screen · **3 looks**
 
 #### look 1 of 3
 
-`new-buildBulkcreate-4353` · rendered **466×67** · 1 instance look like this
+`new-builds1-20` · rendered **466×401** · 1 instance look like this
 
 ```html
-<div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed" aria-hidden="true"><span class="pb-l pb-blank"> </span></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" aria-label="Builds, one block per build, a blank line between blocks" style="height: 42px;"></textarea></div></div>
+<div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - G
 ```
 
 | property | winning declaration | computed | from |
@@ -4251,7 +1827,7 @@ inside `.panel` · 7 on screen · **3 looks**
 
 #### look 2 of 3
 
-`new-buildBulkcreate-4361` · rendered **444×100** · 1 instance look like this
+`new-builds1-30` · rendered **444×100** · 1 instance look like this
 
 ```html
 <div><div class="pb-tally" style="grid-template-columns: repeat(4, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div></div><ol class="pb-rows"></ol></div>
@@ -4270,7 +1846,7 @@ inside `.panel` · 7 on screen · **3 looks**
 
 #### look 3 of 3
 
-`new-buildBulkcreate-4363` · rendered **110×88** · 4 instances look like this
+`new-builds1-32` · rendered **110×88** · 4 instances look like this
 
 ```html
 <div data-o="new"><b>0</b><span>new</span></div>
@@ -4299,168 +1875,13 @@ inside `.panel` · 7 on screen · **3 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `aside.drawer.open.wide[role=dialog]`
-
-inside `.app` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildBulkcreate-4333` · rendered **980×351** · 1 instance look like this · aria-label="New MP builds" role="dialog"
-
-```html
-<aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="New MP builds"><header class="dw-h"><div class="dw-ttl"><span class="dw-eye">loadout.bulkAdd · MP · tier 1</span><h2>New MP builds</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="bulk"><div class=
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .drawer · app.css:1361 |
-| position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
-| flex-direction | `column` | `column` | .drawer · app.css:1361 |
-| width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
-| max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `460px` | .drawer · app.css:1361 |
-| left | `50%` | `574px` | .drawer · app.css:1361 |
-| border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
-| border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
-| background | `var(--raised)` | `` | .drawer · app.css:1361 |
-| background-color | `` | `rgb(31, 39, 46)` | .drawer · app.css:1361 |
-| background-image | `` | `none` | .drawer · app.css:1361 |
-| box-shadow | `0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)` | `rgba(0, 0, 0, 0.9) 0px 40px 90px -20px, rgba(255, 255, 255, 0.04) 0px 0px 0px 1px` | .drawer · app.css:1361 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| opacity | `1` | `1` | .drawer.open · app.css:1366 |
-| overflow | `hidden` | `` | .drawer · app.css:1361 |
-| overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
-| overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -175.266)` | .drawer.open · app.css:1366 |
-| transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
-| z-index | `45` | `45` | .drawer · app.css:1361 |
-| pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
-
-
-### `div.dw-b`
-
-inside `.drawer` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildBulkcreate-4341` · rendered **978×203** · 1 instance look like this
-
-```html
-<div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div c
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| flex | `1 1 auto` | `` | .dw-b · app.css:1387 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `var(--s4) var(--s5)` | `` | .dw-b · app.css:1387 |
-| padding-top | `` | `16px` | .dw-b · app.css:1387 |
-| padding-right | `` | `24px` | .dw-b · app.css:1387 |
-| padding-bottom | `` | `16px` | .dw-b · app.css:1387 |
-| padding-left | `` | `24px` | .dw-b · app.css:1387 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `auto` | `` | .dw-b · app.css:1387 |
-| overflow-x | `auto` | `auto` | .dw-b · app.css:1387 |
-| overflow-y | `auto` | `auto` | .dw-b · app.css:1387 |
-
-
-### `div.b3-nb`
-
-inside `.dw-b` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildBulkcreate-4342` · rendered **930×187** · 1 instance look like this
-
-```html
-<div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="MP"><span class="pb-thumb" style="width: 52px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">MP</button><button type="button" aria-pressed="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg "
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-in.pb-view`
-
-inside `.b3-nb` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildBulkcreate-4351` · rendered **930×100** · 1 instance look like this
-
-```html
-<div class="pb-view pb-in"><div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed" aria-hidden="true"><span class="pb-l pb-blank"> </span></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" aria-label="Builds, one block per build, a blank line between blocks" style="height: 42px;"></textarea></di
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| animation | `pbIn .2s ease both` | `` | .b3-nb .pb-in · b3/board.css:1210 |
-
-
-### `div.pb-bulk`
-
-inside `.pb-view` · 1 on screen · **1 look**
-
-#### the one look
-
-`new-buildBulkcreate-4352` · rendered **930×100** · 1 instance look like this
-
-```html
-<div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed" aria-hidden="true"><span class="pb-l pb-blank"> </span></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" aria-label="Builds, one block per build, a blank line between blocks" style="height: 42px;"></textarea></div></div><div><div class="pb
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `466.094px 443.891px` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| gap | `20px` | `` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| column-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| row-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| align-items | `start` | `start` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
 ### `div.pb-edhead`
 
 inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4354` · rendered **466×17** · 1 instance look like this
+`new-builds1-21` · rendered **466×17** · 1 instance look like this
 
 ```html
 <div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div>
@@ -4487,7 +1908,7 @@ inside `.pb-edhead` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4355` · rendered **36×12** · 1 instance look like this · text “Builds”
+`new-builds1-22` · rendered **36×12** · 1 instance look like this · text “Builds”
 
 ```html
 <label for="pb-ta">Builds</label>
@@ -4521,60 +1942,144 @@ inside `.pb-edhead` · 1 on screen · **1 look**
 **:active** — changes nothing on the element itself
 
 
+### `span`
+
+inside `.pb-edhead` · 5 on screen · **3 looks**
+
+#### look 1 of 3
+
+`new-builds1-23` · rendered **130×12** · 1 instance look like this · text “0 builds · 1 lines”
+
+```html
+<span>0 builds · 1 lines</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| font-size | `` | `12px` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| font-weight | `` | `500` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| font-style | `` | `normal` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| line-height | `` | `12px` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-edhead span · b3/board.css:1163 |
+
+#### look 2 of 3
+
+`new-builds1-34` · rendered **86×22** · 3 instances look like this · text “new”
+
+```html
+<span>new</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
+
+#### look 3 of 3
+
+`new-builds1-40` · rendered **86×29** · 1 instance look like this · text “saved with a warning”
+
+```html
+<span>saved with a warning</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
+
+
 ### `div.pb-edwrap`
 
 inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4357` · rendered **466×42** · 1 instance look like this
+`new-builds1-24` · rendered **466×376** · 1 instance look like this
 
 ```html
-<div class="pb-edwrap"><div class="pb-ed" aria-hidden="true"><span class="pb-l pb-blank"> </span></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" aria-label="Builds, one block per build, a blank line between blocks" style="height: 42px;"></textarea></div>
+<div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between block
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | .b3-nb .pb-edwrap · b3/board.css:1164 |
+| position | `relative` | `relative` | .b3-nb .pb-edwrap · b4.css:58 |
+| min-height | `376px` | `376px` | .b3-nb .pb-edwrap · b4.css:58 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| background | `var(--desk)` | `` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| background-color | `` | `rgb(15, 20, 24)` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| background-image | `` | `none` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-edwrap · b3/board.css:1164 |
+| border-radius | `var(--rad-3)` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| background | `var(--sunk)` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-edwrap · b4.css:58 |
+| background-image | `` | `none` | .b3-nb .pb-edwrap · b4.css:58 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-edwrap · b4.css:58 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| overflow-x | `hidden` | `hidden` | .b3-nb .pb-edwrap · b3/board.css:1164 |
-| overflow-y | `hidden` | `hidden` | .b3-nb .pb-edwrap · b3/board.css:1164 |
+| overflow | `auto` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| overflow-x | `auto` | `auto` | .b3-nb .pb-edwrap · b4.css:58 |
+| overflow-y | `auto` | `auto` | .b3-nb .pb-edwrap · b4.css:58 |
 
 
-### `div.pb-ed`
+### `div.b3-xt-bin.pb-ed`
 
 inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4358` · rendered **466×42** · 1 instance look like this · aria-hidden="true"
+`new-builds1-25` · rendered **466×46** · 1 instance look like this · aria-hidden="true"
 
 ```html
-<div class="pb-ed" aria-hidden="true"><span class="pb-l pb-blank"> </span></div>
+<div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
+| display | `block` | `block` | .b3-nb .pb-ed · b4.css:59 |
+| position | `relative` | `relative` | .b3-nb .pb-ed · b4.css:59 |
+| min-height | `0px` | `0px` | .b3-xt-bin · b3/board.css:3079 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 0` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
-| padding-top | `10px` | `10px` | .b3-nb .pb-ed · b3/board.css:1166 |
-| padding-right | `0px` | `0px` | .b3-nb .pb-ed · b3/board.css:1166 |
-| padding-bottom | `10px` | `10px` | .b3-nb .pb-ed · b3/board.css:1166 |
-| padding-left | `0px` | `0px` | .b3-nb .pb-ed · b3/board.css:1166 |
+| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| background | `none` | `` | .b3-nb .pb-ed · b4.css:59 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ed · b4.css:59 |
+| background-image | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
+| box-shadow | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
 | font | `500 13px/22px var(--data)` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed · b3/board.css:1166 |
 | font-size | `` | `13px` | .b3-nb .pb-ed · b3/board.css:1166 |
@@ -4588,28 +2093,54 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
 | overflow-x | `hidden` | `hidden` | .b3-nb .pb-ed · b3/board.css:1166 |
 | overflow-y | `hidden` | `hidden` | .b3-nb .pb-ed · b3/board.css:1166 |
+| transition | `background 200ms ease-out` | `` | .b3-xt-bin · b3/board.css:3079 |
+| pointer-events | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-xt-bin::before · b3/board.css:3080 |
+| width | `2px` | .b3-xt-bin::before · b3/board.css:3080 |
+| top | `3px` | .b3-xt-bin::before · b3/board.css:3080 |
+| bottom | `3px` | .b3-xt-bin::before · b3/board.css:3080 |
+| left | `46px` | .b3-xt-bin::before · b3/board.css:3080 |
+| border-radius | `1px` | .b3-xt-bin::before · b3/board.css:3080 |
+| background | `color-mix(in srgb,var(--c) 75%,transparent)` | .b3-xt-bin::before · b3/board.css:3080 |
+| background-color | `` | .b3-xt-bin::before · b3/board.css:3080 |
+| background-image | `` | .b3-xt-bin::before · b3/board.css:3080 |
+| content | `""` | .b3-xt-bin::before · b3/board.css:3080 |
 
 
-### `span.pb-blank.pb-l`
+### `div.b3-xt-ln.x-blank`
 
 inside `.pb-ed` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4359` · rendered **452×22** · 1 instance look like this
+`new-builds1-26` · rendered **466×22** · 1 instance look like this
 
 ```html
-<span class="pb-l pb-blank"> </span>
+<div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | .b3-nb .pb-l · b3/board.css:1173 |
-| position | `relative` | `relative` | .b3-nb .pb-l · b3/board.css:1173 |
-| height | `22px` | `22px` | .b3-nb .pb-l · b3/board.css:1173 |
+| display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-left | `30px` | `30px` | .b3-nb .pb-l · b3/board.css:1173 |
-| margin-left | `14px` | `14px` | .b3-nb .pb-l.pb-blank · b3/board.css:1175 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | font | ↑ `500 13px/22px var(--data)` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 | font-size | ↑ `` | `13px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
@@ -4621,17 +2152,76 @@ inside `.pb-ed` · 1 on screen · **1 look**
 | white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 
-**::before**
 
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| width | `20px` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| left | `0px` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| font-size | `11px` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| text-align | `right` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| color | `var(--ink4)` | .b3-nb .pb-l::before · b3/board.css:1174 |
-| content | `attr(data-n)` | .b3-nb .pb-l::before · b3/board.css:1174 |
+### `span.b3-xt-no`
+
+inside `.b3-xt-ln` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds1-27` · rendered **36×22** · 1 instance look like this · text “1”
+
+```html
+<span class="b3-xt-no">1</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 10px 0 0` | `` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| padding-right | `10px` | `10px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font | `500 11px/22px var(--data)` | `` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font-size | `` | `11px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font-weight | `` | `500` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font-style | `` | `normal` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| line-height | `` | `22px` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| letter-spacing | — | `normal` | initial |
+| text-align | `right` | `right` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-nb .pb-ed .b3-xt-no · b4.css:62 |
+| user-select | `none` | `none` | .b3-xt-no · b3/board.css:3083 |
+
+
+### `span.b3-xt-tx`
+
+inside `.b3-xt-ln` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds1-28` · rendered **430×22** · 1 instance look like this
+
+```html
+<span class="b3-xt-tx"> </span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| font | `500 12.5px/22px var(--data)` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-size | `` | `12.5px` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-weight | `` | `500` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-style | `` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| line-height | `` | `22px` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| letter-spacing | `0px` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-xt-tx · b3/board.css:3084 |
+| overflow | `visible` | `` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| overflow-x | `visible` | `visible` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| overflow-y | `visible` | `visible` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
 
 
 ### `textarea.pb-ta`
@@ -4640,56 +2230,57 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4360` · rendered **466×44** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
+`new-builds1-29` · rendered **466×376** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
 
 ```html
-<textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" aria-label="Builds, one block per build, a blank line between blocks" style="height: 42px;"></textarea>
+<textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between blocks" style="height: 376px;"></textarea>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | .b3-nb .pb-ta · b3/board.css:1167 |
-| position | `absolute` | `absolute` | .b3-nb .pb-ta · b3/board.css:1167 |
-| width | `100%` | `466.094px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| height | ⚠️ `42px` | `44px` | style attribute · **a later rule wins — port the computed value and find that rule** |
-| min-height | `var(--tap)` | `44px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `10px 12px 10px 44px!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| padding-top | `10px !important !important` | `10px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| padding-right | `12px !important !important` | `12px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| padding-bottom | `10px !important !important` | `10px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| padding-left | `44px !important !important` | `44px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| margin | `0` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| margin-top | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| margin-right | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| margin-bottom | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| margin-left | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| inset | `0` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| top | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| right | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| bottom | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| left | `0px` | `0px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| border | `0!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
+| position | `absolute` | `absolute` | .b3-nb .pb-ta · b4.css:68 |
+| width | `100%` | `466.094px` | .b3-nb .pb-ta · b4.css:68 |
+| min-width | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| height | `376px` | `376px` | style attribute |
+| min-height | `100%` | `100%` | .b3-nb .pb-ta · b4.css:68 |
+| box-sizing | `border-box` | `border-box` | .b3-nb .pb-ta · b4.css:68 |
+| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| inset | `0` | `` | .b3-nb .pb-ta · b4.css:68 |
+| top | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| right | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| bottom | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| left | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
 | border-radius | `0!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| outline | `none` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
+| outline | `none` | `` | .b3-nb .pb-ta · b4.css:68 |
 | background | `transparent!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-image | `initial !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
 | box-shadow | `none !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font | `500 13px/22px var(--data)!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font-size | `!important !important` | `13px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font-weight | `!important !important` | `500` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font-style | `!important !important` | `normal` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font-variant-numeric | `!important !important` | `normal` | .b3-nb .pb-ta · b3/board.css:1167 |
-| line-height | `!important !important` | `22px` | .b3-nb .pb-ta · b3/board.css:1167 |
-| letter-spacing | `0px` | `normal` | .b3-nb .pb-ta · b3/board.css:1167 |
+| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
 | text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
-| white-space | `pre` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
+| white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
 | color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
-| overflow | `hidden` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
-| overflow-x | `hidden` | `hidden` | .b3-nb .pb-ta · b3/board.css:1167 |
-| overflow-y | `hidden` | `hidden` | .b3-nb .pb-ta · b3/board.css:1167 |
+| overflow | `hidden` | `` | .b3-nb .pb-ta · b4.css:68 |
+| overflow-x | `hidden` | `hidden` | .b3-nb .pb-ta · b4.css:68 |
+| overflow-y | `hidden` | `hidden` | .b3-nb .pb-ta · b4.css:68 |
 | cursor | `text` | `text` | textarea · user-agent:? |
 | user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4977 |
 
@@ -4710,7 +2301,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4362` · rendered **444×88** · 1 instance look like this
+`new-builds1-31` · rendered **444×88** · 1 instance look like this
 
 ```html
 <div class="pb-tally" style="grid-template-columns: repeat(4, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div></div>
@@ -4746,7 +2337,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4375` · rendered **444×0** · 1 instance look like this
+`new-builds1-44` · rendered **444×0** · 1 instance look like this
 
 ```html
 <ol class="pb-rows"></ol>
@@ -4783,7 +2374,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildBulkcreate-4377` · rendered **0×0** · 1 instance look like this · role="status"
+`new-builds1-46` · rendered **0×0** · 1 instance look like this · role="status"
 
 ```html
 <span class="why" role="status"></span>
@@ -4795,7 +2386,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | align-self | `center` | `center` | .dw-f .why · app.css:6866 |
 | max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `auto` | `635.031px` | .dw-f .why · app.css:6866 |
+| margin-right | `auto` | `714.609px` | .dw-f .why · app.css:6866 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
 | font-weight | — | `400` | initial |
@@ -4806,7 +2397,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 ### new-build · DMZ
 
-186 distinct signatures on screen; 10 not already specced above.
+57 distinct signatures on screen; 9 not already specced above.
 
 
 ### `div.b3-nb`
@@ -4815,10 +2406,10 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4342` · rendered **930×1215** · 1 instance look like this
+`new-builds2-10` · rendered **930×1229** · 1 instance look like this
 
 ```html
-<div class="b3-nb" data-arm="DMZ" data-panel="add"><div class="pb-bar"><div class="seg pb-seg pb-mode" role="group" aria-label="Which armory" data-arm="DMZ"><span class="pb-thumb" style="width: 60px; transform: translateX(55px);"></span><button type="button" aria-pressed="false">MP</button><button type="button" aria-pressed="true">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg
+<div class="b3-nb" data-arm="DMZ" data-panel="add"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="false">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="true">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One bui
 ```
 
 | property | winning declaration | computed | from |
@@ -4833,49 +2424,13 @@ inside `.dw-b` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span.pb-thumb`
-
-inside `.seg` · 4 on screen · **1 look**
-
-#### the one look
-
-`new-buildDMZ-4345` · rendered **60×34** · 1 instance look like this
-
-```html
-<span class="pb-thumb" style="width: 60px; transform: translateX(55px);"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| width | `60px` | `60px` | style attribute |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| bottom | `3px` | `3px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| left | `0px` | `0px` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| border-radius | `var(--rad-pill)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-| background | `var(--mode-dmz)` | `` | .b3-nb .pb-mode[data-arm="DMZ"] .pb-thumb · b3/board.css:1077 |
-| background-color | `` | `rgb(61, 165, 245)` | .b3-nb .pb-mode[data-arm="DMZ"] .pb-thumb · b3/board.css:1077 |
-| background-image | `` | `none` | .b3-nb .pb-mode[data-arm="DMZ"] .pb-thumb · b3/board.css:1077 |
-| box-shadow | `none` | `none` | .b3-nb .pb-mode .pb-thumb · b3/board.css:1076 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateX(55px)` | `matrix(1, 0, 0, 1, 55, 0)` | style attribute |
-| transition | `transform var(--b3-d2) cubic-bezier(.3,.7,.2,1),background var(--b3-d2)` | `` | .b3-nb .pb-thumb · b3/board.css:1070 |
-
-
 ### `div.pb-in.pb-view`
 
 inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4351` · rendered **930×1128** · 1 instance look like this
+`new-builds2-18` · rendered **930×1128** · 1 instance look like this
 
 ```html
 <div class="pb-view pb-in"><div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</lab
@@ -4900,7 +2455,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4352` · rendered **930×1128** · 1 instance look like this
+`new-builds2-19` · rendered **930×1128** · 1 instance look like this
 
 ```html
 <div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><opt
@@ -4928,7 +2483,7 @@ inside `.bed` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4353` · rendered **592×1128** · 1 instance look like this
+`new-builds2-20` · rendered **592×1128** · 1 instance look like this
 
 ```html
 <div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Ass
@@ -4953,7 +2508,7 @@ inside `.bed-main` · 4 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4369` · rendered **592×496** · 1 instance look like this
+`new-builds2-36` · rendered **592×496** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><h4 class="bf-h">Attachments <span class="bf-n">0 of 9</span></h4><div class="pb-atts"><div class="pb-att"><span class="pb-slot">Optic</span><div class="" style="position: relative;"><input class="ati" aria-label="Optic attachment" autocomplete="off" placeholder="Search optic"></div><span></span></div><div class="pb-att"><span class="pb-slot">Muzzle</span><div class="" style="position: relativ
@@ -4990,7 +2545,7 @@ inside `.bf-sec` · 4 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4370` · rendered **592×22** · 1 instance look like this
+`new-builds2-37` · rendered **592×22** · 1 instance look like this
 
 ```html
 <h4 class="bf-h">Attachments <span class="bf-n">0 of 9</span></h4>
@@ -5039,7 +2594,7 @@ inside `.bf-h` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4371` · rendered **63×22** · 1 instance look like this · text “0 of 9”
+`new-builds2-38` · rendered **63×22** · 1 instance look like this · text “0 of 9”
 
 ```html
 <span class="bf-n">0 of 9</span>
@@ -5077,7 +2632,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4372` · rendered **592×460** · 1 instance look like this
+`new-builds2-39` · rendered **592×460** · 1 instance look like this
 
 ```html
 <div class="pb-atts"><div class="pb-att"><span class="pb-slot">Optic</span><div class="" style="position: relative;"><input class="ati" aria-label="Optic attachment" autocomplete="off" placeholder="Search optic"></div><span></span></div><div class="pb-att"><span class="pb-slot">Muzzle</span><div class="" style="position: relative;"><input class="ati" aria-label="Muzzle attachment" autocomplete="off" placeholder="Sear
@@ -5104,7 +2659,7 @@ inside `.pb-att` · 9 on screen · **1 look**
 
 #### the one look
 
-`new-buildDMZ-4374` · rendered **112×44** · 9 instances look like this · text “Optic”
+`new-builds2-41` · rendered **112×44** · 9 instances look like this · text “Optic”
 
 ```html
 <span class="pb-slot">Optic</span>
@@ -5127,581 +2682,21 @@ inside `.pb-att` · 9 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-slot · b3/board.css:1111 |
 
 
-### compare · Open Compare
+### new-build · Edit 3 builds
 
-129 distinct signatures on screen; 10 not already specced above.
-
-
-### `b`
-
-inside `.mk` · 76 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-98` · rendered **926×25** · 1 instance look like this · text “Pick a weapon”
-
-```html
-<b>Pick a weapon</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .empty b · app.css:1300 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `6px` | `6px` | .empty b · app.css:1300 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-lg)` | `16.5px` | .empty b · app.css:1300 |
-| font-weight | `bolder` | `700` | strong, b · user-agent:? |
-| line-height | ↑ `1.5` | `24.75px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `center` | `center` | inherited · #compare.b1 .empty · b1.css:275 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .empty b · app.css:1300 |
+45 distinct signatures on screen; 27 not already specced above.
 
 
-### `section.panel`
+### `aside.drawer.open.wide[role=dialog]`
 
-inside `.—` · 2 on screen · **1 look**
+inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`compareOpenCompare-78` · rendered **960×301** · 1 instance look like this · aria-label="Armory view"
+`new-builds3-2` · rendered **980×746** · 1 instance look like this · aria-label="Edit 3 MP builds" role="dialog"
 
 ```html
-<section class="panel" aria-label="Armory view"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button role="tab" aria-selected="false">Tier board <em class="segn">64/125</em></button><button role="tab" aria-selected="false">Repairs <em class="b3-segst warn">⟨svg.ic⟩5 need work</em></button><button role="tab" aria-selected="true">Compare</button></div><span class="key r
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 22px` | `` | .panel · app.css:723 |
-| margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `22px` | `22px` | .panel · app.css:723 |
-| margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `22px` | `22px` | .panel · app.css:723 |
-| border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
-| border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
-| background | `var(--paper)` | `` | .panel · app.css:723 |
-| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:723 |
-| background-image | `` | `none` | .panel · app.css:723 |
-| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1631 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .panel · app.css:723 |
-| overflow-x | `hidden` | `hidden` | .panel · app.css:723 |
-| overflow-y | `hidden` | `hidden` | .panel · app.css:723 |
-
-
-### `div.b1`
-
-inside `.panel` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-92` · rendered **958×237** · 1 instance look like this
-
-```html
-<div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div></div><div class="empty"><b>Pick a weapon</b>Its builds line up slot by slot<div cl
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.cmpbar`
-
-inside `.b1` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-93` · rendered **958×57** · 1 instance look like this
-
-```html
-<div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .cmpbar · app.css:2615 |
-| gap | `9px` | `` | .cmpbar · app.css:7047 |
-| column-gap | `9px` | `9px` | .cmpbar · app.css:7047 |
-| row-gap | `9px` | `9px` | .cmpbar · app.css:7047 |
-| flex-wrap | `wrap` | `wrap` | .cmpbar · app.css:2615 |
-| align-items | `flex-end` | `flex-end` | .cmpbar · app.css:7047 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `13px 16px 0` | `` | .cmpbar · app.css:2615 |
-| padding-top | `13px` | `13px` | .cmpbar · app.css:2615 |
-| padding-right | `16px` | `16px` | .cmpbar · app.css:2615 |
-| padding-bottom | `0px` | `0px` | .cmpbar · app.css:2615 |
-| padding-left | `16px` | `16px` | .cmpbar · app.css:2615 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.wsrch`
-
-inside `.cmpbar` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-94` · rendered **340×44** · 1 instance look like this
-
-```html
-<div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `relative` | `relative` | .wsrch · app.css:7031 |
-| flex | `1` | `` | .b1 .cmpbar .wsrch · b1.css:276 |
-| max-width | `340px` | `340px` | .b1 .cmpbar .wsrch · b1.css:276 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `label.dwfield`
-
-inside `.wsrch` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-95` · rendered **340×44** · 1 instance look like this
-
-```html
-<label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dwfield · app.css:2541 |
-| position | `relative` | `relative` | .dwfield · app.css:1082 |
-| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
-| column-gap | `` | `8px` | .dwfield · app.css:2541 |
-| row-gap | `` | `8px` | .dwfield · app.css:2541 |
-| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `0px` | `0px` | .wsrch .dwfield · app.css:7032 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-sm)` | `12px` | label · app.css:669 |
-| font-weight | `600` | `600` | label · app.css:669 |
-| line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | label · app.css:669 |
-| cursor | `default` | `default` | label · user-agent:? |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `span.sr`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-96` · rendered **1×1** · 1 instance look like this · text “Add a weapon”
-
-```html
-<span class="sr">Add a weapon</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · label · app.css:669 |
-| font-weight | ↑ `600` | `600` | inherited · label · app.css:669 |
-| line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · label · app.css:669 |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-| cursor | ↑ `default` | `default` | inherited · label · user-agent:? |
-
-
-### `div.empty`
-
-inside `.b1` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-97` · rendered **958×180** · 1 instance look like this
-
-```html
-<div class="empty"><b>Pick a weapon</b>Its builds line up slot by slot<div class="pb-sugg"><button class="pill">BAL-27 · 5 builds</button><button class="pill">FFAR 1 · 3 builds</button></div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| max-width | `none` | `none` | #compare.b1 .empty · b1.css:275 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `34px 16px` | `` | #compare.b1 .empty · b1.css:275 |
-| padding-top | `34px` | `34px` | #compare.b1 .empty · b1.css:275 |
-| padding-right | `16px` | `16px` | #compare.b1 .empty · b1.css:275 |
-| padding-bottom | `34px` | `34px` | #compare.b1 .empty · b1.css:275 |
-| padding-left | `16px` | `16px` | #compare.b1 .empty · b1.css:275 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-md)` | `14.5px` | #compare.b1 .empty · b1.css:275 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `21.75px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | `center` | `center` | #compare.b1 .empty · b1.css:275 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .empty · app.css:1299 |
-
-
-### `div.pb-sugg`
-
-inside `.empty` · 1 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-99` · rendered **926×43** · 1 instance look like this
-
-```html
-<div class="pb-sugg"><button class="pill">BAL-27 · 5 builds</button><button class="pill">FFAR 1 · 3 builds</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-sugg · b1.css:271 |
-| gap | `8px` | `` | .b1 .pb-sugg · b1.css:271 |
-| column-gap | `8px` | `8px` | .b1 .pb-sugg · b1.css:271 |
-| row-gap | `8px` | `8px` | .b1 .pb-sugg · b1.css:271 |
-| flex-wrap | `wrap` | `wrap` | .b1 .pb-sugg · b1.css:271 |
-| justify-content | `center` | `center` | .b1 .pb-sugg · b1.css:271 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `16px` | `16px` | .b1 .pb-sugg · b1.css:271 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · #compare.b1 .empty · b1.css:275 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `21.75px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| text-align | ↑ `center` | `center` | inherited · #compare.b1 .empty · b1.css:275 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .empty · app.css:1299 |
-
-
-### `button.pill`
-
-inside `.pb-sugg` · 2 on screen · **1 look**
-
-#### the one look
-
-`compareOpenCompare-100` · rendered **131×31** · 2 instances look like this · text “BAL-27 · 5 builds”
-
-```html
-<button class="pill">BAL-27 · 5 builds</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .pill · app.css:4527 |
-| gap | `7px` | `` | .pill · app.css:4527 |
-| column-gap | `7px` | `7px` | .pill · app.css:4527 |
-| row-gap | `7px` | `7px` | .pill · app.css:4527 |
-| align-items | `center` | `center` | .pill · app.css:4527 |
-| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `8px 13px` | `` | .pill · app.css:4527 |
-| padding-top | `8px` | `8px` | .pill · app.css:4527 |
-| padding-right | `13px` | `13px` | .pill · app.css:4527 |
-| padding-bottom | `8px` | `8px` | .pill · app.css:4527 |
-| padding-left | `13px` | `13px` | .pill · app.css:4527 |
-| margin-top | `var(--s3)` | `12px` | .empty .pill · app.css:1302 |
-| border | `1px solid var(--rule)` | `` | .pill · app.css:4527 |
-| border-radius | `var(--rad-pill)` | `` | .pill · app.css:4527 |
-| background | `var(--sunk)` | `` | .pill · app.css:4527 |
-| background-color | `` | `rgb(11, 15, 18)` | .pill · app.css:4527 |
-| background-image | `` | `none` | .pill · app.css:4527 |
-| font | `500 var(--t-base)/1 var(--ui)` | `` | .pill · app.css:4527 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pill · app.css:4527 |
-| font-size | `` | `13px` | .pill · app.css:4527 |
-| font-weight | `` | `500` | .pill · app.css:4527 |
-| font-style | `` | `normal` | .pill · app.css:4527 |
-| font-variant-numeric | `` | `normal` | .pill · app.css:4527 |
-| line-height | `` | `13px` | .pill · app.css:4527 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .pill · app.css:4527 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .pill · app.css:4527 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .pill · app.css:4527 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### broadcast · Post announcement
-
-166 distinct signatures on screen; 25 not already specced above.
-
-
-### `b`
-
-inside `.mk` · 11 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-281` · rendered **36×16** · 1 instance look like this · text “5,874”
-
-```html
-<b>5,874</b>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `inline` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-weight | `600` | `600` | .b1 .pb-meter2 span b · b1.css:233 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| letter-spacing | — | `normal` | initial |
-| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b1 .pb-meter2 span b · b1.css:233 |
-
-
-### `i`
-
-inside `.l` · 10 on screen · **3 looks**
-
-#### look 1 of 3
-
-`broadcastPostannouncement-278` · rendered **7×4** · 1 instance look like this
-
-```html
-<i style="width: 2.1%;"></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .cmeter i · app.css:2480 |
-| width | `2.1%` | `7.15625px` | style attribute |
-| height | `100%` | `4px` | .cmeter i · app.css:2480 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-1) 0 0 var(--rad-1)` | `` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
-| background | `color-mix(in srgb,var(--r-broadcast) 38%,var(--raised))` | `` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
-| background-color | `` | `color(srgb 0.427059 0.202118 0.339843)` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
-| background-image | `` | `none` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
-| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
-| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
-| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
-| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
-
-#### look 2 of 3
-
-`broadcastPostannouncement-279` · rendered **0×4** · 1 instance look like this
-
-```html
-<i style="width: 0%;"></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .cmeter i · app.css:2480 |
-| width | `0%` | `0px` | style attribute |
-| height | `100%` | `4px` | .cmeter i · app.css:2480 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `0 var(--rad-1) var(--rad-1) 0` | `` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
-| background | `var(--r-broadcast)` | `` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
-| background-color | `` | `rgb(236, 72, 153)` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
-| background-image | `` | `none` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
-| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
-| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
-| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
-| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
-
-#### look 3 of 3
-
-`broadcastPostannouncement-295` · rendered **16×16** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b1 .pb-swt i · b1.css:181 |
-| width | `16px` | `16px` | .b1 .pb-swt i · b1.css:181 |
-| height | `16px` | `16px` | .b1 .pb-swt i · b1.css:181 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `3px` | `3px` | .b1 .pb-swt i · b1.css:181 |
-| left | `3px` | `3px` | .b1 .pb-swt i · b1.css:181 |
-| border-radius | `var(--rad-round)` | `` | .b1 .pb-swt i · b1.css:181 |
-| background | `var(--ink3)` | `` | .b1 .pb-swt i · b1.css:181 |
-| background-color | `` | `rgb(133, 147, 159)` | .b1 .pb-swt i · b1.css:181 |
-| background-image | `` | `none` | .b1 .pb-swt i · b1.css:181 |
-| font | ↑ `500 var(--t-sm)/1 var(--ui)` | `` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
-| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
-| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
-| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
-| transition | `transform .24s cubic-bezier(.3,.7,.2,1),background .2s` | `` | .b1 .pb-swt i · b1.css:181 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-sw · b1.css:179 |
-
-
-### `svg.ic`
-
-inside `.b3-never` · 18 on screen · **2 looks**
-
-#### look 1 of 2
-
-`broadcastPostannouncement-301` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-minus"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `13px` | `13px` | .drawer.b1 .pb-step .ic · b1.css:262 |
-| height | `13px` | `13px` | .drawer.b1 .pb-step .ic · b1.css:262 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
-| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b1 .pb-step button · b1.css:89 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-step button · b1.css:89 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-#### look 2 of 2
-
-`broadcastPostannouncement-306` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `14px` | `14px` | .b1 .pb-gapday .ic · b1.css:242 |
-| height | `14px` | `14px` | .b1 .pb-gapday .ic · b1.css:242 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-gapday · b1.css:241 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-gapday · b1.css:241 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-gapday · b1.css:241 |
-| font-weight | ↑ `` | `600` | inherited · .b1 .pb-gapday · b1.css:241 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-gapday · b1.css:241 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-gapday · b1.css:241 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-gapday · b1.css:241 |
-| letter-spacing | — | `normal` | initial |
-| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-gapday · b1.css:241 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-gapday .ic · b1.css:242 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-
-
-### `aside.b1.drawer.open.wide[role=dialog]`
-
-inside `.app` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-263` · rendered **880×704** · 1 instance look like this · aria-label="Post an announcement" role="dialog"
-
-```html
-<aside class="drawer open wide b1" role="dialog" aria-modal="true" aria-label="Post an announcement"><header class="dw-h"><div class="dw-ttl"><span class="dw-eye">announcement.post · tier 1</span><h2>Post an announcement</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="bed"><div class="pb-col"><div class=
+<aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="Edit 3 MP builds" style="--m1: #ff3b5c; --m2: var(--r-armory); --m3: var(--patch); --m4: var(--r-armory);"><header class="dw-h"><div class="dw-ttl"><h2>Edit 3 MP builds</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-
 ```
 
 | property | winning declaration | computed | from |
@@ -5709,16 +2704,16 @@ inside `.app` · 1 on screen · **1 look**
 | display | `flex` | `flex` | .drawer · app.css:1361 |
 | position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
 | flex-direction | `column` | `column` | .drawer · app.css:1361 |
-| width | `min(880px, -40px + 100vw)` | `880px` | .drawer.wide · app.css:1367 |
+| width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `460px` | .drawer · app.css:1361 |
+| top | `50%` | `450px` | .drawer · app.css:1361 |
 | left | `50%` | `574px` | .drawer · app.css:1361 |
 | border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
 | border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
-| background | `var(--raised)` | `` | .drawer · app.css:1361 |
-| background-color | `` | `rgb(31, 39, 46)` | .drawer · app.css:1361 |
-| background-image | `` | `none` | .drawer · app.css:1361 |
+| background | `radial-gradient(78% 210% at -8% 118%,color-mix(in srgb,var(--m1) 15%,transparent) 0,transparent 68%), radial-gradient(66% 190% at 26% -22%,color-mix(in srgb,var(--m3,var(--patch)) 13%,transparent) 0,transparent 66%), radial-gradient(72% 200% at 68% 132%,color-mix(in srgb,var(--m2) 12%,transparent) 0,transparent 70%), radial-gradient(60% 180% at 112% -16%,color-mix(in srgb,var(--m4,var(--r-armory)) 11%,transparent) 0,transparent 68%), radial-gradient(120% 120% at 50% 50%,transparent 38%,#00000055 100%), linear-gradient(180deg,#ffffff0a 0,transparent 26%), color-mix(in srgb,#0B0F12 42%,var(--raised))` | `` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-color | `` | `color(srgb 0.0886275 0.113412 0.134275)` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-image | `` | `radial-gradient(78% 210% at -8% 118%, color(srgb 1 0.231373 0.360784 / 0.15) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(66% 190% at 26% -22%, color(srgb 0.94902 0.760784 0.188235 / 0.13) 0px, rgba(0, 0, 0, 0) 66%), radial-gradient(72% 200% at 68% 132%, color(srgb 0.937255 0.266667 0.266667 / 0.12) 0px, rgba(0, 0, 0, 0) 70%), radial-gradient(60% 180% at 112% -16%, color(srgb 0.937255 0.266667 0.266667 / 0.11) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(120% 120%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.333) 100%), linear-gradient(rgba(255, 255, 255, 0.04) 0px, rgba(0, 0, 0, 0) 26%), none` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
 | box-shadow | `0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)` | `rgba(0, 0, 0, 0.9) 0px 40px 90px -20px, rgba(255, 255, 255, 0.04) 0px 0px 0px 1px` | .drawer · app.css:1361 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -5730,64 +2725,99 @@ inside `.app` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .drawer · app.css:1361 |
 | overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
 | overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -440, -351.961)` | .drawer.open · app.css:1366 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -372.953)` | .drawer.open · app.css:1366 |
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
 
 
-### `div.dw-b`
+### `b`
 
-inside `.drawer` · 1 on screen · **1 look**
+inside `.x` · 9 on screen · **3 looks**
 
-#### the one look
+#### look 1 of 3
 
-`broadcastPostannouncement-271` · rendered **878×556** · 1 instance look like this
+`new-builds3-28` · rendered **53×17** · 3 instances look like this · text “BAL-27”
 
 ```html
-<div class="dw-b"><div class="bed"><div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="d
+<b>BAL-27 </b>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| flex | `1 1 auto` | `` | .dw-b · app.css:1387 |
+| display | — | `inline` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `var(--s4) var(--s5)` | `` | .dw-b · app.css:1387 |
-| padding-top | `` | `16px` | .dw-b · app.css:1387 |
-| padding-right | `` | `24px` | .dw-b · app.css:1387 |
-| padding-bottom | `` | `16px` | .dw-b · app.css:1387 |
-| padding-left | `` | `24px` | .dw-b · app.css:1387 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| font | `inherit` | `` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-size | `inherit` | `12.5px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-weight | `600` | `600` | .b3-xt-ln.x-hd .b3-xt-tx b · b3/board.css:3085 |
+| font-style | `normal` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-variant-numeric | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| line-height | `inherit` | `22px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| letter-spacing | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `color-mix(in srgb,var(--c) 42%,white)` | `color(srgb 1 0.677176 0.731529)` | .b3-xt-ln.x-hd .b3-xt-tx b · b3/board.css:3085 |
+
+#### look 2 of 3
+
+`new-builds3-154` · rendered **64×30** · 1 instance look like this · text “0”
+
+```html
+<b>0</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `auto` | `` | .dw-b · app.css:1387 |
-| overflow-x | `auto` | `auto` | .dw-b · app.css:1387 |
-| overflow-y | `auto` | `auto` | .dw-b · app.css:1387 |
+| color | `var(--o,var(--ink))` | `rgb(255, 138, 133)` | .b3-nb .pb-tally b · b3/board.css:1184 |
+
+#### look 3 of 3
+
+`new-builds3-157` · rendered **66×37** · 1 instance look like this · text “3”
+
+```html
+<b>3</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(92, 106, 117)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
 
-### `div.bed`
+### `div.b3-nb`
 
 inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-272` · rendered **830×524** · 1 instance look like this
+`new-builds3-10` · rendered **930×854** · 1 instance look like this
 
 ```html
-<div class="bed"><div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="dwfield"><label for
+<div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false" disabled="">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><span class="pb-editing">⟨svg.ic⟩Editing BAL-
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .bed · app.css:3557 |
-| grid-template-columns | `minmax(0px, 1fr) 320px` | `492px 320px` | .drawer.b1 .bed · b1.css:259 |
-| gap | `18px` | `` | .drawer.wide .bed · app.css:7080 |
-| column-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
-| row-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
+| display | `block` | `block` | div · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -5797,25 +2827,114 @@ inside `.dw-b` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `div.pb-col`
+### `span.pb-editing`
 
-inside `.bed` · 1 on screen · **1 look**
+inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-273` · rendered **492×524** · 1 instance look like this
+`new-builds3-14` · rendered **107×14** · 1 instance look like this
 
 ```html
-<div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="dwfield"><label for="post-banner">Ba
+<span class="pb-editing">⟨svg.ic⟩Editing BAL-27</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b1 .pb-col · b1.css:99 |
-| gap | `18px` | `` | .b1 .pb-col · b1.css:99 |
-| column-gap | `18px` | `18px` | .b1 .pb-col · b1.css:99 |
-| row-gap | `18px` | `18px` | .b1 .pb-col · b1.css:99 |
-| min-width | `0px` | `0px` | .b1 .pb-col · b1.css:246 |
+| display | `inline-flex` | `flex` | .b3-nb .pb-editing · b3/board.css:1079 |
+| gap | `8px` | `` | .b3-nb .pb-editing · b3/board.css:1079 |
+| column-gap | `8px` | `8px` | .b3-nb .pb-editing · b3/board.css:1079 |
+| row-gap | `8px` | `8px` | .b3-nb .pb-editing · b3/board.css:1079 |
+| align-items | `center` | `center` | .b3-nb .pb-editing · b3/board.css:1079 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-nb .pb-editing · b3/board.css:1079 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-editing · b3/board.css:1079 |
+| font-size | `` | `12px` | .b3-nb .pb-editing · b3/board.css:1079 |
+| font-weight | `` | `600` | .b3-nb .pb-editing · b3/board.css:1079 |
+| font-style | `` | `normal` | .b3-nb .pb-editing · b3/board.css:1079 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-editing · b3/board.css:1079 |
+| line-height | `` | `12px` | .b3-nb .pb-editing · b3/board.css:1079 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-nb .pb-editing · b3/board.css:1079 |
+
+
+### `svg.ic`
+
+inside `.pb-editing` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-15` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-square-pen"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `14px` | `14px` | .b3-nb .pb-editing .ic · b3/board.css:1080 |
+| height | `14px` | `14px` | .b3-nb .pb-editing .ic · b3/board.css:1080 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| font-size | ↑ `` | `12px` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| font-weight | ↑ `` | `600` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| line-height | ↑ `` | `12px` | inherited · .b3-nb .pb-editing · b3/board.css:1079 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--patch)` | `rgb(242, 194, 48)` | .b3-nb .pb-editing .ic · b3/board.css:1080 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+
+
+### `div.pb-in.pb-view`
+
+inside `.b3-nb` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-16` · rendered **930×753** · 1 instance look like this
+
+```html
+<div class="pb-view pb-in"><div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv">
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| animation | `pbIn .2s ease both` | `` | .b3-nb .pb-in · b3/board.css:1210 |
+
+
+### `div.pb-bulk`
+
+inside `.pb-view` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-17` · rendered **930×753** · 1 instance look like this
+
+```html
+<div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</s
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `466.094px 443.891px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| gap | `20px` | `` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| column-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| row-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| align-items | `start` | `start` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -5825,28 +2944,22 @@ inside `.bed` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `div.dwfield`
+### `div`
 
-inside `.pb-col` · 4 on screen · **2 looks**
+inside `.pb-bulk` · 7 on screen · **2 looks**
 
 #### look 1 of 2
 
-`broadcastPostannouncement-274` · rendered **492×147** · 1 instance look like this
+`new-builds3-18` · rendered **466×753** · 1 instance look like this
 
 ```html
-<div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div>
+<div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-x
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .dwfield · app.css:2541 |
-| position | `relative` | `relative` | .dwfield · app.css:1082 |
-| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
-| column-gap | `` | `8px` | .dwfield · app.css:2541 |
-| row-gap | `` | `8px` | .dwfield · app.css:2541 |
-| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
+| display | `block` | `block` | div · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -5856,157 +2969,15 @@ inside `.pb-col` · 4 on screen · **2 looks**
 
 #### look 2 of 2
 
-`broadcastPostannouncement-287` · rendered **238×116** · 1 instance look like this
+`new-builds3-142` · rendered **444×305** · 1 instance look like this
 
 ```html
-<div class="dwfield" data-never="false"><div class="pb-lrow"><label for="post-starts">Starts</label></div><input id="post-starts" type="text" autocomplete="off" spellcheck="true" placeholder="in 3 days"></div>
+<div><div class="pb-tally" style="grid-template-columns: repeat(5, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div><div data-o="same"><b>3</b><span>unchanged</span></div></div><ol class="pb-rows"><li class="pb-row" data-o="same"><div cla
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .dwfield · app.css:2541 |
-| position | `relative` | `relative` | .dwfield · app.css:1082 |
-| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
-| column-gap | `` | `8px` | .dwfield · app.css:2541 |
-| row-gap | `` | `8px` | .dwfield · app.css:2541 |
-| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `label`
-
-inside `.dwfield` · 5 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-275` · rendered **492×14** · 5 instances look like this · text “Text”
-
-```html
-<label for="post-text">Text</label>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | label · app.css:669 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `5px` | `5px` | label · app.css:669 |
-| font | `600 var(--t-sm)/1.2 var(--ui)` | `` | .dwfield label · app.css:2544 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .dwfield label · app.css:2544 |
-| font-size | `` | `12px` | .dwfield label · app.css:2544 |
-| font-weight | `` | `600` | .dwfield label · app.css:2544 |
-| font-style | `` | `normal` | .dwfield label · app.css:2544 |
-| font-variant-numeric | `` | `normal` | .dwfield label · app.css:2544 |
-| line-height | `` | `14.4px` | .dwfield label · app.css:2544 |
-| letter-spacing | `0px` | `normal` | .dwfield label · app.css:2544 |
-| text-transform | `none` | `none` | .dwfield label · app.css:2544 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield label · app.css:2544 |
-| cursor | `default` | `default` | label · user-agent:? |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes nothing on the element itself
-
-
-### `div.pb-meter2`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-276` · rendered **492×12** · 1 instance look like this · aria-label="Delivery budget"
-
-```html
-<div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-meter2 · b1.css:227 |
-| gap | `14px` | `` | .b1 .pb-meter2 · b1.css:227 |
-| column-gap | `14px` | `14px` | .b1 .pb-meter2 · b1.css:227 |
-| row-gap | `14px` | `14px` | .b1 .pb-meter2 · b1.css:227 |
-| align-items | `center` | `center` | .b1 .pb-meter2 · b1.css:227 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `10px` | `10px` | .b1 .pb-meter2 · b1.css:227 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.cmeter`
-
-inside `.pb-meter2` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-277` · rendered **341×4** · 1 instance look like this
-
-```html
-<span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-meter2 .cmeter · b1.css:228 |
-| flex | `1` | `` | .b1 .pb-meter2 .cmeter · b1.css:228 |
-| height | `4px` | `4px` | .b1 .pb-meter2 .cmeter · b1.css:228 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-1)` | `` | .cmeter · app.css:2472 |
-| background | `var(--rule)` | `` | .cmeter · app.css:2472 |
-| background-color | `` | `rgb(42, 52, 61)` | .cmeter · app.css:2472 |
-| background-image | `` | `none` | .cmeter · app.css:2472 |
-| font | `500 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-meter2 span · b1.css:232 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-meter2 span · b1.css:232 |
-| font-size | `` | `12px` | .b1 .pb-meter2 span · b1.css:232 |
-| font-weight | `` | `500` | .b1 .pb-meter2 span · b1.css:232 |
-| font-style | `` | `normal` | .b1 .pb-meter2 span · b1.css:232 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-meter2 span · b1.css:232 |
-| line-height | `` | `12px` | .b1 .pb-meter2 span · b1.css:232 |
-| letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b1 .pb-meter2 span · b1.css:232 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-meter2 span · b1.css:232 |
-| overflow | `hidden` | `` | .cmeter · app.css:2472 |
-| overflow-x | `hidden` | `hidden` | .cmeter · app.css:2472 |
-| overflow-y | `hidden` | `hidden` | .cmeter · app.css:2472 |
-
-
-### `div.pb-banner`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-284` · rendered **492×44** · 1 instance look like this
-
-```html
-<div class="pb-banner"><span class="pb-th"></span><input id="post-banner" placeholder="https://…" autocomplete="off" spellcheck="true"></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b1 .pb-banner · b1.css:83 |
-| grid-template-columns | `80px 1fr` | `80px 400px` | .b1 .pb-banner · b1.css:83 |
-| gap | `12px` | `` | .b1 .pb-banner · b1.css:83 |
-| column-gap | `12px` | `12px` | .b1 .pb-banner · b1.css:83 |
-| row-gap | `12px` | `12px` | .b1 .pb-banner · b1.css:83 |
-| align-items | `end` | `end` | .b1 .pb-banner · b1.css:83 |
+| display | `block` | `block` | div · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -6016,1807 +2987,592 @@ inside `.dwfield` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span.pb-th`
+### `span`
 
-inside `.pb-banner` · 1 on screen · **1 look**
+inside `.pb-edhead` · 12 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-285` · rendered **80×44** · 1 instance look like this
+`new-builds3-167` · rendered **128×16** · 3 instances look like this · text “Matches the live build”
 
 ```html
-<span class="pb-th"></span>
+<span>Matches the live build</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| height | `var(--tap)` | `44px` | .b1 .pb-banner .pb-th · b1.css:84 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-2)` | `` | .b1 .pb-banner .pb-th · b1.css:84 |
-| background | `linear-gradient(115deg,#3b0d24,#7a1846 40%,#ec4899 70%,#ffc36b)` | `` | .b1 .pb-banner .pb-th · b1.css:84 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-banner .pb-th · b1.css:84 |
-| background-image | `linear-gradient(115deg, rgb(59, 13, 36), rgb(122, 24, 70) 40%, rgb(236, 72, 153) 70%, rgb(255, 195, 107))` | `linear-gradient(115deg, rgb(59, 13, 36), rgb(122, 24, 70) 40%, rgb(236, 72, 153) 70%, rgb(255, 195, 107))` | .b1 .pb-banner .pb-th · b1.css:84 |
-| box-shadow | `rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset` | `rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset` | .b1 .pb-banner .pb-th · b1.css:84 |
+| font | ↑ `500 var(--t-sm)/1.3 var(--ui)` | `` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| font-size | ↑ `` | `12px` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| font-weight | ↑ `` | `500` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| line-height | ↑ `` | `15.6px` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-nb .pb-rd · b3/board.css:1197 |
+
+
+### `div.pb-edwrap`
+
+inside `.—` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-22` · rendered **466×728** · 1 instance look like this
+
+```html
+<div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| position | `relative` | `relative` | .b3-nb .pb-edwrap · b4.css:58 |
+| min-height | `376px` | `376px` | .b3-nb .pb-edwrap · b4.css:58 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-3)` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| background | `var(--sunk)` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-edwrap · b4.css:58 |
+| background-image | `` | `none` | .b3-nb .pb-edwrap · b4.css:58 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-nb .pb-edwrap · b4.css:58 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `auto` | `` | .b3-nb .pb-edwrap · b4.css:58 |
+| overflow-x | `auto` | `auto` | .b3-nb .pb-edwrap · b4.css:58 |
+| overflow-y | `auto` | `auto` | .b3-nb .pb-edwrap · b4.css:58 |
 
 
-### `div.dw-grid2`
+### `div.b3-xt-bin.pb-ed`
 
-inside `.pb-col` · 1 on screen · **1 look**
+inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-286` · rendered **492×132** · 1 instance look like this
+`new-builds3-23` · rendered **466×728** · 1 instance look like this · aria-hidden="true"
 
 ```html
-<div class="dw-grid2" style="gap: 0px 16px;"><div class="dwfield" data-never="false"><div class="pb-lrow"><label for="post-starts">Starts</label></div><input id="post-starts" type="text" autocomplete="off" spellcheck="true" placeholder="in 3 days"></div><div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label for="post-expires">Ends</label><button type="button" class="pb-sw" role="switch" aria-chec
+<div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span><span class="b3-xt-tx"
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .dw-grid2 · app.css:6864 |
-| grid-template-columns | `1fr 1fr` | `238px 238px` | .dw-grid2 · app.css:6864 |
-| gap | `0px 16px` | `` | style attribute |
-| column-gap | `16px` | `16px` | style attribute |
-| row-gap | `0px` | `0px` | style attribute |
+| display | `block` | `block` | .b3-nb .pb-ed · b4.css:59 |
+| position | `relative` | `relative` | .b3-nb .pb-ed · b4.css:59 |
+| min-height | `0px` | `0px` | .b3-xt-bin · b3/board.css:3079 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| background | `none` | `` | .b3-nb .pb-ed · b4.css:59 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ed · b4.css:59 |
+| background-image | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
+| box-shadow | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
+| font | `500 13px/22px var(--data)` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed · b3/board.css:1166 |
+| font-size | `` | `13px` | .b3-nb .pb-ed · b3/board.css:1166 |
+| font-weight | `` | `500` | .b3-nb .pb-ed · b3/board.css:1166 |
+| font-style | `` | `normal` | .b3-nb .pb-ed · b3/board.css:1166 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-ed · b3/board.css:1166 |
+| line-height | `` | `22px` | .b3-nb .pb-ed · b3/board.css:1166 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-lrow`
-
-inside `.dwfield` · 2 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-288` · rendered **238×32** · 2 instances look like this
-
-```html
-<div class="pb-lrow"><label for="post-starts">Starts</label></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-lrow · b1.css:177 |
-| align-items | `center` | `center` | .b1 .pb-lrow · b1.css:177 |
-| justify-content | `space-between` | `space-between` | .b1 .pb-lrow · b1.css:177 |
-| min-height | `32px` | `32px` | .b1 .pb-lrow · b1.css:177 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `6px` | `6px` | .b1 .pb-lrow · b1.css:177 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.dwfield.pb-endf`
-
-inside `.dw-grid2` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-290` · rendered **238×116** · 1 instance look like this
-
-```html
-<div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label for="post-expires">Ends</label><button type="button" class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button></div><input id="post-expires" type="text" autocomplete="off" spellcheck="true" placeholder="Blank"><span class="pb-echo pb-dim">default</span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .dwfield · app.css:2541 |
-| position | `relative` | `relative` | .dwfield · app.css:1082 |
-| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
-| column-gap | `` | `8px` | .dwfield · app.css:2541 |
-| row-gap | `` | `8px` | .dwfield · app.css:2541 |
-| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `button.pb-sw[role=switch]`
-
-inside `.pb-lrow` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-293` · rendered **116×32** · 1 instance look like this · role="switch" type="button"
-
-```html
-<button type="button" class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b1 .pb-sw · b1.css:179 |
-| gap | `10px` | `` | .b1 .pb-sw · b1.css:179 |
-| column-gap | `10px` | `10px` | .b1 .pb-sw · b1.css:179 |
-| row-gap | `10px` | `10px` | .b1 .pb-sw · b1.css:179 |
-| align-items | `center` | `center` | .b1 .pb-sw · b1.css:179 |
-| min-height | `32px` | `32px` | .b1 .pb-sw · b1.css:179 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 2px` | `` | .b1 .pb-sw · b1.css:179 |
-| padding-top | `0px` | `0px` | .b1 .pb-sw · b1.css:179 |
-| padding-right | `2px` | `2px` | .b1 .pb-sw · b1.css:179 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-sw · b1.css:179 |
-| padding-left | `2px` | `2px` | .b1 .pb-sw · b1.css:179 |
-| border | `0` | `` | .b1 .pb-sw · b1.css:179 |
-| border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:388 |
-| background | `none` | `` | .b1 .pb-sw · b1.css:179 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-sw · b1.css:179 |
-| background-image | `none` | `none` | .b1 .pb-sw · b1.css:179 |
-| font | `500 var(--t-sm)/1 var(--ui)` | `` | .b1 .pb-sw · b1.css:179 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-sw · b1.css:179 |
-| font-size | `` | `12px` | .b1 .pb-sw · b1.css:179 |
-| font-weight | `` | `500` | .b1 .pb-sw · b1.css:179 |
-| font-style | `` | `normal` | .b1 .pb-sw · b1.css:179 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-sw · b1.css:179 |
-| line-height | `` | `12px` | .b1 .pb-sw · b1.css:179 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-sw · b1.css:179 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b1 .pb-sw · b1.css:179 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes nothing on the element itself
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `3px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `span.pb-swt`
-
-inside `.pb-sw` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-294` · rendered **38×22** · 1 instance look like this
-
-```html
-<span class="pb-swt"><i></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `relative` | `relative` | .b1 .pb-swt · b1.css:180 |
-| width | `38px` | `38px` | .b1 .pb-swt · b1.css:180 |
-| height | `22px` | `22px` | .b1 .pb-swt · b1.css:180 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-pill)` | `` | .b1 .pb-swt · b1.css:180 |
-| background | `var(--sunk)` | `` | .b1 .pb-swt · b1.css:180 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-swt · b1.css:180 |
-| background-image | `` | `none` | .b1 .pb-swt · b1.css:180 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-swt · b1.css:180 |
-| font | ↑ `500 var(--t-sm)/1 var(--ui)` | `` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-weight | ↑ `` | `500` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b1 .pb-sw · b1.css:179 |
-| transition | `background .2s,box-shadow .2s` | `` | .b1 .pb-swt · b1.css:180 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-sw · b1.css:179 |
-
-
-### `span.pb-dim.pb-echo`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-296` · rendered **238×12** · 1 instance look like this · text “default”
-
-```html
-<span class="pb-echo pb-dim">default</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b1 .pb-echo · b1.css:34 |
-| gap | `6px` | `` | .b1 .pb-echo · b1.css:34 |
-| column-gap | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
-| row-gap | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
-| align-items | `center` | `center` | .b1 .pb-echo · b1.css:34 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
-| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-echo · b1.css:34 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-echo · b1.css:34 |
-| font-size | `` | `12px` | .b1 .pb-echo · b1.css:34 |
-| font-weight | `` | `600` | .b1 .pb-echo · b1.css:34 |
-| font-style | `` | `normal` | .b1 .pb-echo · b1.css:34 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-echo · b1.css:34 |
-| line-height | `` | `12px` | .b1 .pb-echo · b1.css:34 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-echo.pb-dim · b1.css:35 |
-
-
-### `div.pb-rep`
-
-inside `.dwfield` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-299` · rendered **492×44** · 1 instance look like this
-
-```html
-<div class="pb-rep"><div class="pb-step"><button type="button" aria-label="Fewer" disabled="">⟨svg.ic⟩</button><output>1</output><button type="button" aria-label="More">⟨svg.ic⟩</button></div><div class="pb-cards" role="img" aria-label="Shown to each player up to 1 times, at most once a day"><span class="pb-mini"></span><span class="pb-gapday">⟨svg.ic⟩1 a day max</span></div></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-rep · b1.css:190 |
-| grid-template-columns | `auto 1fr` | `auto 1fr` | .b1 .pb-rep · b1.css:87 |
-| gap | `20px` | `` | .b1 .pb-rep · b1.css:190 |
-| column-gap | `20px` | `20px` | .b1 .pb-rep · b1.css:190 |
-| row-gap | `20px` | `20px` | .b1 .pb-rep · b1.css:190 |
-| align-items | `center` | `center` | .b1 .pb-rep · b1.css:190 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-step`
-
-inside `.pb-rep` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-300` · rendered **132×44** · 1 instance look like this
-
-```html
-<div class="pb-step"><button type="button" aria-label="Fewer" disabled="">⟨svg.ic⟩</button><output>1</output><button type="button" aria-label="More">⟨svg.ic⟩</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b1 .pb-step · b1.css:88 |
-| align-items | `center` | `center` | .b1 .pb-step · b1.css:88 |
-| height | `var(--tap)` | `44px` | .b1 .pb-step · b1.css:88 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-2)` | `` | .b1 .pb-step · b1.css:88 |
-| background | `var(--sunk)` | `` | .b1 .pb-step · b1.css:88 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-step · b1.css:88 |
-| background-image | `` | `none` | .b1 .pb-step · b1.css:88 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-step · b1.css:88 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b1 .pb-step · b1.css:88 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-step · b1.css:88 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-step · b1.css:88 |
-
-
-### `div.pb-cards[role=img]`
-
-inside `.pb-rep` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-303` · rendered **169×44** · 1 instance look like this · aria-label="Shown to each player up to 1 times, at m" role="img"
-
-```html
-<div class="pb-cards" role="img" aria-label="Shown to each player up to 1 times, at most once a day"><span class="pb-mini"></span><span class="pb-gapday">⟨svg.ic⟩1 a day max</span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-cards · b1.css:234 |
-| gap | `8px` | `` | .b1 .pb-cards · b1.css:234 |
-| column-gap | `8px` | `8px` | .b1 .pb-cards · b1.css:234 |
-| row-gap | `8px` | `8px` | .b1 .pb-cards · b1.css:234 |
-| align-items | `center` | `center` | .b1 .pb-cards · b1.css:234 |
-| height | `var(--tap)` | `44px` | .b1 .pb-cards · b1.css:234 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.pb-mini`
-
-inside `.pb-cards` · 1 on screen · **1 look**
-
-#### the one look
-
-`broadcastPostannouncement-304` · rendered **34×26** · 1 instance look like this
-
-```html
-<span class="pb-mini"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `relative` | `relative` | .b1 .pb-mini · b1.css:235 |
-| flex | `none` | `` | .b1 .pb-mini · b1.css:235 |
-| width | `34px` | `34px` | .b1 .pb-mini · b1.css:235 |
-| height | `26px` | `26px` | .b1 .pb-mini · b1.css:235 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-mini · b1.css:235 |
-| background | `var(--raised)` | `` | .b1 .pb-mini · b1.css:235 |
-| background-color | `` | `rgb(31, 39, 46)` | .b1 .pb-mini · b1.css:235 |
-| background-image | `` | `none` | .b1 .pb-mini · b1.css:235 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-mini · b1.css:235 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b1 .pb-mini · b1.css:235 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-mini · b1.css:235 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-mini · b1.css:235 |
+| white-space | `pre` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-ed · b3/board.css:1166 |
+| overflow | `hidden` | `` | .b3-nb .pb-ed · b3/board.css:1166 |
+| overflow-x | `hidden` | `hidden` | .b3-nb .pb-ed · b3/board.css:1166 |
+| overflow-y | `hidden` | `hidden` | .b3-nb .pb-ed · b3/board.css:1166 |
+| transition | `background 200ms ease-out` | `` | .b3-xt-bin · b3/board.css:3079 |
+| pointer-events | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b1 .pb-mini::before · b1.css:236 |
-| width | `3px` | .b1 .pb-mini::before · b1.css:236 |
-| top | `0px` | .b1 .pb-mini::before · b1.css:236 |
-| bottom | `0px` | .b1 .pb-mini::before · b1.css:236 |
-| left | `0px` | .b1 .pb-mini::before · b1.css:236 |
-| background | `var(--r-broadcast)` | .b1 .pb-mini::before · b1.css:236 |
-| background-color | `` | .b1 .pb-mini::before · b1.css:236 |
-| background-image | `` | .b1 .pb-mini::before · b1.css:236 |
-| content | `""` | .b1 .pb-mini::before · b1.css:236 |
+| position | `absolute` | .b3-xt-bin::before · b3/board.css:3080 |
+| width | `2px` | .b3-xt-bin::before · b3/board.css:3080 |
+| top | `3px` | .b3-xt-bin::before · b3/board.css:3080 |
+| bottom | `3px` | .b3-xt-bin::before · b3/board.css:3080 |
+| left | `46px` | .b3-xt-bin::before · b3/board.css:3080 |
+| border-radius | `1px` | .b3-xt-bin::before · b3/board.css:3080 |
+| background | `color-mix(in srgb,var(--c) 75%,transparent)` | .b3-xt-bin::before · b3/board.css:3080 |
+| background-color | `` | .b3-xt-bin::before · b3/board.css:3080 |
+| background-image | `` | .b3-xt-bin::before · b3/board.css:3080 |
+| content | `""` | .b3-xt-bin::before · b3/board.css:3080 |
 
-**::after**
+
+### `div.pb-blk`
+
+inside `.pb-ed` · 3 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-24` · rendered **466×220** · 3 instances look like this
+
+```html
+<div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span><span class="b3-xt-tx"><em>Image:</em> BAL-27-2</span></div><div class
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| position | `relative` | `relative` | .b3-nb .pb-blk · b3/board.css:1169 |
+| grid-template-columns | `14px minmax(0px, 1fr)` | `14px minmax(0px, 1fr)` | .b3-nb .pb-blk · b3/board.css:1169 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0` | `` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| margin | `0` | `` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| margin-top | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| border | `0` | `` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| background | `none` | `` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| background-image | `none` | `none` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| box-shadow | `inset 3px 0 0 var(--o,transparent)` | `rgb(92, 106, 117) 3px 0px 0px 0px inset` | .b3-nb .pb-ed .pb-blk · b4.css:60 |
+| font | ↑ `500 13px/22px var(--data)` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-size | ↑ `` | `13px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-weight | ↑ `` | `500` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| line-height | ↑ `` | `22px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+
+**::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b1 .pb-mini::after · b1.css:237 |
-| height | `3px` | .b1 .pb-mini::after · b1.css:237 |
-| top | `8px` | .b1 .pb-mini::after · b1.css:237 |
-| right | `7px` | .b1 .pb-mini::after · b1.css:237 |
-| left | `8px` | .b1 .pb-mini::after · b1.css:237 |
-| border-radius | `2px` | .b1 .pb-mini::after · b1.css:237 |
-| background | `var(--ink3)` | .b1 .pb-mini::after · b1.css:237 |
-| background-color | `` | .b1 .pb-mini::after · b1.css:237 |
-| background-image | `` | .b1 .pb-mini::after · b1.css:237 |
-| box-shadow | `0 6px 0 0 color-mix(in srgb,var(--ink3) 55%,transparent)` | .b1 .pb-mini::after · b1.css:237 |
-| content | `""` | .b1 .pb-mini::after · b1.css:237 |
+| position | `absolute` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| width | `3px` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| top | `0px` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| bottom | `0px` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| left | `0px` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| border-radius | `0 2px 2px 0` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| background | `var(--o)` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| background-color | `` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| background-image | `` | .b3-nb .pb-blk::before · b3/board.css:1170 |
+| content | `""` | .b3-nb .pb-blk::before · b3/board.css:1170 |
 
 
-### `span.pb-gapday`
+### `div.b3-xt-ln.x-hd`
 
-inside `.pb-cards` · 1 on screen · **1 look**
+inside `.pb-blk` · 3 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-305` · rendered **119×28** · 1 instance look like this
+`new-builds3-25` · rendered **466×22** · 3 instances look like this
 
 ```html
-<span class="pb-gapday">⟨svg.ic⟩1 a day max</span>
+<div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b1 .pb-gapday · b1.css:241 |
-| gap | `6px` | `` | .b1 .pb-gapday · b1.css:241 |
-| column-gap | `6px` | `6px` | .b1 .pb-gapday · b1.css:241 |
-| row-gap | `6px` | `6px` | .b1 .pb-gapday · b1.css:241 |
-| align-items | `center` | `center` | .b1 .pb-gapday · b1.css:241 |
-| height | `28px` | `28px` | .b1 .pb-gapday · b1.css:241 |
+| display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-gapday · b1.css:241 |
-| padding-top | `0px` | `0px` | .b1 .pb-gapday · b1.css:241 |
-| padding-right | `10px` | `10px` | .b1 .pb-gapday · b1.css:241 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-gapday · b1.css:241 |
-| padding-left | `10px` | `10px` | .b1 .pb-gapday · b1.css:241 |
-| margin-left | `8px` | `8px` | .b1 .pb-gapday · b1.css:241 |
-| border-radius | `var(--rad-pill)` | `` | .b1 .pb-gapday · b1.css:241 |
-| background | `var(--sunk)` | `` | .b1 .pb-gapday · b1.css:241 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-gapday · b1.css:241 |
-| background-image | `` | `none` | .b1 .pb-gapday · b1.css:241 |
-| box-shadow | `inset 0 0 0 1px var(--rule)` | `rgb(42, 52, 61) 0px 0px 0px 1px inset` | .b1 .pb-gapday · b1.css:241 |
-| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-gapday · b1.css:241 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-gapday · b1.css:241 |
-| font-size | `` | `12px` | .b1 .pb-gapday · b1.css:241 |
-| font-weight | `` | `600` | .b1 .pb-gapday · b1.css:241 |
-| font-style | `` | `normal` | .b1 .pb-gapday · b1.css:241 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-gapday · b1.css:241 |
-| line-height | `` | `12px` | .b1 .pb-gapday · b1.css:241 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| font | ↑ `500 13px/22px var(--data)` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-size | ↑ `` | `13px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-weight | ↑ `` | `500` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| line-height | ↑ `` | `22px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b1 .pb-gapday · b1.css:241 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-gapday · b1.css:241 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 
 
-### `aside.bed-side.pb-card`
+### `span.b3-xt-tx`
 
-inside `.bed` · 1 on screen · **1 look**
+inside `.b3-xt-ln` · 32 on screen · **1 look**
 
 #### the one look
 
-`broadcastPostannouncement-307` · rendered **320×156** · 1 instance look like this
+`new-builds3-48` · rendered **430×22** · 15 instances look like this · text “- Gauge-9 Mono”
 
 ```html
-<aside class="bed-side pb-card"><div class="bed-sec"><h5>In Discord</h5><p class="empty">Type the announcement and the card build…</p></div></aside>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| position | `sticky` | `sticky` | .bed-side · app.css:6604 |
-| grid-template-columns | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| gap | `normal` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| column-gap | `normal` | `normal` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| row-gap | `normal` | `normal` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| align-self | `start` | `start` | .bed-side · app.css:6604 |
-| min-width | `0px` | `0px` | .bed-side · app.css:6604 |
-| height | `auto` | `155.5px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| padding-top | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| padding-right | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| padding-bottom | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| padding-left | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| top | `14px` | `14px` | .bed-side · app.css:6604 |
-| border-radius | `0` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| background | `none` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| background-image | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| box-shadow | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### C3 · one weapon
-
-150 distinct signatures on screen; 32 not already specced above.
-
-
-### `b`
-
-inside `.mk` · 80 on screen · **1 look**
-
-#### the one look
-
-`C3one-110` · rendered **8×20** · 3 instances look like this · text “5”
-
-```html
-<b>5</b>
+<span class="b3-xt-tx">- Gauge-9 Mono</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .cmpstat b · app.css:7067 |
-| font-size | `var(--t-base)` | `13px` | .cmpstat b · app.css:7067 |
-| font-weight | `600` | `600` | .cmpstat b · app.css:7067 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .cmpstat b · app.css:7067 |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .cmpstat b · app.css:7067 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| font | `500 12.5px/22px var(--data)` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-size | `` | `12.5px` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-weight | `` | `500` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-style | `` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| line-height | `` | `22px` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| letter-spacing | `0px` | `normal` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-xt-ln.x-at .b3-xt-tx · b3/board.css:3088 |
+| overflow | `visible` | `` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| overflow-x | `visible` | `visible` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
+| overflow-y | `visible` | `visible` | .b3-nb .pb-ed .b3-xt-tx · b4.css:65 |
 
 
-### `span.sp`
+### `i`
 
-inside `.—` · 3 on screen · **1 look**
-
-#### the one look
-
-`C3one-92` · rendered **107×16** · 1 instance look like this · text “BAL-27 — 5 builds”
-
-```html
-<span class="sp">BAL-27 — 5 builds</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `auto` | `124.953px` | .ph .sp · app.css:730 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .ph .sp · app.css:730 |
-| font-size | `var(--t-xs)` | `10.5px` | .ph .sp · app.css:730 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `15.75px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .ph .sp · app.css:730 |
-
-
-### `section.panel`
-
-inside `.—` · 2 on screen · **1 look**
+inside `.b3-xt-tx` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3one-78` · rendered **960×701** · 1 instance look like this · aria-label="Armory view"
+`new-builds3-29` · rendered **8×17** · 3 instances look like this · text “\|”
 
 ```html
-<section class="panel" aria-label="Armory view"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button role="tab" aria-selected="false">Tier board <em class="segn">64/125</em></button><button role="tab" aria-selected="false">Repairs <em class="b3-segst warn">⟨svg.ic⟩5 need work</em></button><button role="tab" aria-selected="true">Compare</button></div><span class="key r
+<i>|</i>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
+| display | — | `inline` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 22px` | `` | .panel · app.css:723 |
-| margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `22px` | `22px` | .panel · app.css:723 |
-| margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `22px` | `22px` | .panel · app.css:723 |
-| border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
-| border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
-| background | `var(--paper)` | `` | .panel · app.css:723 |
-| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:723 |
-| background-image | `` | `none` | .panel · app.css:723 |
-| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1631 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .panel · app.css:723 |
-| overflow-x | `hidden` | `hidden` | .panel · app.css:723 |
-| overflow-y | `hidden` | `hidden` | .panel · app.css:723 |
+| font | `inherit` | `` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-size | `inherit` | `12.5px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-weight | `inherit` | `500` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-style | `normal` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-variant-numeric | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| line-height | `inherit` | `22px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| letter-spacing | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-xt-tx i · b3/board.css:3086 |
 
 
-### `div.b1`
+### `div.b3-xt-ln.x-kv`
 
-inside `.panel` · 1 on screen · **1 look**
+inside `.pb-blk` · 12 on screen · **1 look**
 
 #### the one look
 
-`C3one-93` · rendered **958×636** · 1 instance look like this
+`new-builds3-30` · rendered **466×22** · 12 instances look like this
 
 ```html
-<div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div><span class="cmppick" role="group" aria-label="BAL-27"><button class="chip on" aria
+<div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
+| display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| font | ↑ `500 13px/22px var(--data)` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-size | ↑ `` | `13px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-weight | ↑ `` | `500` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| line-height | ↑ `` | `22px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 
 
-### `span.sr`
+### `em`
 
-inside `.dwfield` · 14 on screen · **3 looks**
-
-#### look 1 of 3
-
-`C3one-123` · rendered **1×1** · 2 instances look like this · text “Slot”
-
-```html
-<span class="sr">Slot</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `500 var(--t-sm)/1.2 var(--ui)` | `` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-weight | ↑ `` | `500` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| line-height | ↑ `` | `14.4px` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b1 .pb-tbl .pb-k · b1.css:62 |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-
-#### look 2 of 3
-
-`C3one-130` · rendered **1×1** · 7 instances look like this · text “differs”
-
-```html
-<span class="sr"> differs</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `500 var(--t-sm)/1.2 var(--ui)` | `` | inherited · .b1 .pb-v · b1.css:68 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-v · b1.css:68 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-v · b1.css:68 |
-| font-weight | ↑ `600` | `600` | inherited · .b1 .pb-v.pb-d · b1.css:69 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-v · b1.css:68 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-v · b1.css:68 |
-| line-height | ↑ `` | `14.4px` | inherited · .b1 .pb-v · b1.css:68 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b1 .pb-v.pb-d · b1.css:69 |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-#### look 3 of 3
-
-`C3one-174` · rendered **1×1** · 4 instances look like this · text “differs”
-
-```html
-<span class="sr"> differs</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| font-size | ↑ `` | `12px` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| font-weight | ↑ `` | `600` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| font-style | ↑ `` | `normal` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| line-height | ↑ `` | `12px` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| letter-spacing | ↑ `0.04em` | `0.48px` | inherited · .b1 .pb-v.pb-m · b1.css:72 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b1 .pb-v.pb-d · b1.css:69 |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `span.cmppick[role=group]`
-
-inside `.cmpbar` · 1 on screen · **1 look**
+inside `.b3-xt-tx` · 12 on screen · **1 look**
 
 #### the one look
 
-`C3one-98` · rendered **273×42** · 1 instance look like this · aria-label="BAL-27" role="group"
+`new-builds3-33` · rendered **45×17** · 12 instances look like this · text “Build:”
 
 ```html
-<span class="cmppick" role="group" aria-label="BAL-27"><button class="chip on" aria-label="Remove BAL-27 from the comparison">BAL-27⟨svg.ic.sm⟩</button><span class="cmpbrow"><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 1">1</button><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 2">2</button><button type="button" class="chip" aria-pr
+<em>Build:</em>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .cmppick · app.css:7055 |
-| gap | `6px` | `` | .cmppick · app.css:7055 |
-| column-gap | `6px` | `6px` | .cmppick · app.css:7055 |
-| row-gap | `6px` | `6px` | .cmppick · app.css:7055 |
-| flex-wrap | `wrap` | `wrap` | .cmppick · app.css:7055 |
-| align-items | `center` | `center` | .cmppick · app.css:7055 |
+| display | — | `inline` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `4px 6px 4px 4px` | `` | .cmppick · app.css:7055 |
-| padding-top | `4px` | `4px` | .cmppick · app.css:7055 |
-| padding-right | `6px` | `6px` | .cmppick · app.css:7055 |
-| padding-bottom | `4px` | `4px` | .cmppick · app.css:7055 |
-| padding-left | `4px` | `4px` | .cmppick · app.css:7055 |
-| border | `1px solid var(--rule2)` | `` | .cmppick · app.css:7055 |
-| border-radius | `var(--rad-pill)` | `` | .cmppick · app.css:7055 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| font | `inherit` | `` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-family | `inherit` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-size | `inherit` | `12.5px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-weight | `inherit` | `500` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-style | `normal` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| font-variant-numeric | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| line-height | `inherit` | `22px` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| letter-spacing | `inherit` | `normal` | .b3-nb .pb-ed .b3-xt-tx * · b4.css:64 |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-xt-tx em · b3/board.css:3087 |
 
 
-### `button.chip.on`
+### `div.b3-xt-ln.x-at`
 
-inside `.cmppick` · 1 on screen · **1 look**
+inside `.pb-blk` · 15 on screen · **1 look**
 
 #### the one look
 
-`C3one-99` · rendered **81×32** · 1 instance look like this · aria-label="Remove BAL-27 from the comparison"
+`new-builds3-46` · rendered **466×22** · 15 instances look like this
 
 ```html
-<button class="chip on" aria-label="Remove BAL-27 from the comparison">BAL-27⟨svg.ic.sm⟩</button>
+<div class="b3-xt-ln x-at"><span class="b3-xt-no">6</span><span class="b3-xt-tx">- Gauge-9 Mono</span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .cmpbar .chip.on · app.css:7070 |
-| gap | `6px` | `` | .cmpbar .chip.on · app.css:7070 |
-| column-gap | `6px` | `6px` | .cmpbar .chip.on · app.css:7070 |
-| row-gap | `6px` | `6px` | .cmpbar .chip.on · app.css:7070 |
-| align-items | `center` | `center` | .cmpbar .chip.on · app.css:7070 |
-| justify-content | `center` | `center` | .chip · app.css:1242 |
-| min-height | `32px` | `32px` | .chip · app.css:1242 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `6px 11px` | `` | .chip · app.css:1242 |
-| padding-top | `6px` | `6px` | .chip · app.css:1242 |
-| padding-right | `11px` | `11px` | .chip · app.css:1242 |
-| padding-bottom | `6px` | `6px` | .chip · app.css:1242 |
-| padding-left | `11px` | `11px` | .chip · app.css:1242 |
-| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-color | `transparent` | `` | .cmppick .chip.on · app.css:7057 |
-| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `var(--hi)` | `` | .cmpbar .chip.on · app.css:2617 |
-| background-color | `` | `rgb(35, 44, 52)` | .cmpbar .chip.on · app.css:2617 |
-| background-image | `` | `none` | .cmpbar .chip.on · app.css:2617 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
-| font-weight | `600` | `600` | .chip · app.css:1242 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `18px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .cmpbar .chip.on · app.css:2617 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin | `0` | `` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-top | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| font | ↑ `500 13px/22px var(--data)` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-size | ↑ `` | `13px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-weight | ↑ `` | `500` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-style | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| line-height | ↑ `` | `22px` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-nb .pb-ed · b3/board.css:1166 |
 
-**:hover** — changes
 
-| property | at rest | hover |
-|---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
+### `textarea.pb-ta`
+
+inside `.pb-edwrap` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-141` · rendered **466×728** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
+
+```html
+<textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between blocks" style="height: 728px;"></textarea>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .b3-nb .pb-ta · b3/board.css:1167 |
+| position | `absolute` | `absolute` | .b3-nb .pb-ta · b4.css:68 |
+| width | `100%` | `466.094px` | .b3-nb .pb-ta · b4.css:68 |
+| min-width | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| height | `728px` | `728px` | style attribute |
+| min-height | `100%` | `100%` | .b3-nb .pb-ta · b4.css:68 |
+| box-sizing | `border-box` | `border-box` | .b3-nb .pb-ta · b4.css:68 |
+| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| inset | `0` | `` | .b3-nb .pb-ta · b4.css:68 |
+| top | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| right | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| bottom | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| left | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| border-radius | `0!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
+| outline | `none` | `` | .b3-nb .pb-ta · b4.css:68 |
+| background | `transparent!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
+| background-color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
+| background-image | `initial !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
+| box-shadow | `none !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
+| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
+| white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
+| color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
+| overflow | `hidden` | `` | .b3-nb .pb-ta · b4.css:68 |
+| overflow-x | `hidden` | `hidden` | .b3-nb .pb-ta · b4.css:68 |
+| overflow-y | `hidden` | `hidden` | .b3-nb .pb-ta · b4.css:68 |
+| cursor | `text` | `text` | textarea · user-agent:? |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4977 |
+
+**:hover** — changes nothing on the element itself
 
 **:focus-visible** — changes
 
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
-**:active** — changes
+**:active** — changes nothing on the element itself
 
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
-
-### `svg.ic.sm`
-
-inside `.chip` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-100` · rendered **10×10** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic sm" aria-hidden="true"><use href="#i-x"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `0.85em` | `10.1875px` | .ic.sm · app.css:6461 |
-| height | `0.85em` | `10.1875px` | .ic.sm · app.css:6461 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .cmpbar .chip.on · app.css:2617 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-
-### `span.cmpbrow`
-
-inside `.cmppick` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-101` · rendered **175×32** · 1 instance look like this
-
-```html
-<span class="cmpbrow"><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 1">1</button><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 2">2</button><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 3">3</button><button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 4">
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .cmpbrow · app.css:7058 |
-| gap | `5px` | `` | .cmpbrow · app.css:7058 |
-| column-gap | `5px` | `5px` | .cmpbrow · app.css:7058 |
-| row-gap | `5px` | `5px` | .cmpbrow · app.css:7058 |
-| flex-wrap | `wrap` | `wrap` | .cmpbrow · app.css:7058 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `button.chip`
-
-inside `.cmpbrow` · 7 on screen · **2 looks**
-
-#### look 1 of 2
-
-`C3one-102` · rendered **29×32** · 5 instances look like this · text “1” · aria-label="BAL-27 build 1" aria-pressed="true" title="" type="button"
-
-```html
-<button type="button" class="chip" aria-pressed="true" title="" aria-label="BAL-27 build 1">1</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .chip · app.css:1242 |
-| align-items | `center` | `center` | .chip · app.css:1242 |
-| justify-content | `center` | `center` | .chip · app.css:1242 |
-| min-height | `32px` | `32px` | .chip · app.css:1242 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `6px 11px` | `` | .chip · app.css:1242 |
-| padding-top | `6px` | `6px` | .chip · app.css:1242 |
-| padding-right | `11px` | `11px` | .chip · app.css:1242 |
-| padding-bottom | `6px` | `6px` | .chip · app.css:1242 |
-| padding-left | `11px` | `11px` | .chip · app.css:1242 |
-| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-color | `var(--ink4)` | `` | .chip[aria-pressed="true"] · app.css:1245 |
-| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `var(--hi)` | `` | .chip[aria-pressed="true"] · app.css:1245 |
-| background-color | `` | `rgb(35, 44, 52)` | .chip[aria-pressed="true"] · app.css:1245 |
-| background-image | `` | `none` | .chip[aria-pressed="true"] · app.css:1245 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
-| font-weight | `600` | `600` | .chip · app.css:1242 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `18px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .chip[aria-pressed="true"] · app.css:1245 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes
-
-| property | at rest | hover |
-|---|---|---|
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-#### look 2 of 2
-
-`C3one-188` · rendered **115×32** · 1 instance look like this · aria-expanded="false" type="button"
-
-```html
-<button type="button" class="chip" aria-expanded="false">⟨svg.ic.ic-fold⟩Show cards</button>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .chip · app.css:1242 |
-| gap | `8px` | `` | .b1 .pb-fold .chip · b1.css:78 |
-| column-gap | `8px` | `8px` | .b1 .pb-fold .chip · b1.css:78 |
-| row-gap | `8px` | `8px` | .b1 .pb-fold .chip · b1.css:78 |
-| align-items | `center` | `center` | .chip · app.css:1242 |
-| justify-content | `center` | `center` | .chip · app.css:1242 |
-| min-height | `32px` | `32px` | .chip · app.css:1242 |
-| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `6px 11px` | `` | .chip · app.css:1242 |
-| padding-top | `6px` | `6px` | .chip · app.css:1242 |
-| padding-right | `11px` | `11px` | .chip · app.css:1242 |
-| padding-bottom | `6px` | `6px` | .chip · app.css:1242 |
-| padding-left | `11px` | `11px` | .chip · app.css:1242 |
-| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `var(--sunk)` | `` | .chip · app.css:1242 |
-| background-color | `` | `rgb(11, 15, 18)` | .chip · app.css:1242 |
-| background-image | `` | `none` | .chip · app.css:1242 |
-| font | `inherit` | `` | button · app.css:621 |
-| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
-| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
-| font-weight | `600` | `600` | .chip · app.css:1242 |
-| font-style | `inherit` | `normal` | button · app.css:621 |
-| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
-| line-height | `inherit` | `18px` | button · app.css:621 |
-| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
-| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .chip · app.css:1242 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-**:hover** — changes; parts inside it respond (table below)
-
-| property | at rest | hover |
-|---|---|---|
-| background-color | `rgb(11, 15, 18)` | `rgb(35, 44, 52)` |
-| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
-
-| part inside | property | at rest | hover |
-|---|---|---|---|
-| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic.ic-fold | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic.ic-fold | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic.ic-fold | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| svg.ic.ic-fold | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-| use | stroke | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
-
-**:focus-visible** — changes
-
-| property | at rest | focus-visible |
-|---|---|---|
-| outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
-
-**:active** — changes
-
-| property | at rest | active |
-|---|---|---|
-| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `div.sr`
-
-inside `.b1` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-107` · rendered **1×1** · 1 instance look like this · text “5 builds · 6 slots used · 6 differ”
-
-```html
-<div class="sr" aria-live="polite">5 builds · 6 slots used · 6 differ</div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-
-
-### `div.cmpstats`
-
-inside `.b1` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-108` · rendered **926×36** · 1 instance look like this · aria-hidden="true"
-
-```html
-<div class="cmpstats" aria-hidden="true"><span class="cmpstat"><b>5</b><span>builds</span></span><span class="cmpstat"><b>6</b><span>slots used</span></span><span class="cmpstat"><b>6</b><span>differ</span></span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .cmpstats · app.css:7064 |
-| gap | `8px` | `` | .cmpstats · app.css:7064 |
-| column-gap | `8px` | `8px` | .cmpstats · app.css:7064 |
-| row-gap | `8px` | `8px` | .cmpstats · app.css:7064 |
-| flex-wrap | `wrap` | `wrap` | .cmpstats · app.css:7064 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `12px 16px 16px` | `` | .cmpstats · app.css:7064 |
-| margin-top | `12px` | `12px` | .cmpstats · app.css:7064 |
-| margin-right | `16px` | `16px` | .cmpstats · app.css:7064 |
-| margin-bottom | `16px` | `16px` | .cmpstats · app.css:7064 |
-| margin-left | `16px` | `16px` | .cmpstats · app.css:7064 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `span.cmpstat`
-
-inside `.cmpstats` · 3 on screen · **1 look**
-
-#### the one look
-
-`C3one-109` · rendered **77×36** · 3 instances look like this
-
-```html
-<span class="cmpstat"><b>5</b><span>builds</span></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .cmpstat · app.css:7065 |
-| gap | `6px` | `` | .cmpstat · app.css:7065 |
-| column-gap | `6px` | `6px` | .cmpstat · app.css:7065 |
-| row-gap | `6px` | `6px` | .cmpstat · app.css:7065 |
-| align-items | `baseline` | `baseline` | .cmpstat · app.css:7065 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `7px 13px` | `` | .cmpstat · app.css:7065 |
-| padding-top | `7px` | `7px` | .cmpstat · app.css:7065 |
-| padding-right | `13px` | `13px` | .cmpstat · app.css:7065 |
-| padding-bottom | `7px` | `7px` | .cmpstat · app.css:7065 |
-| padding-left | `13px` | `13px` | .cmpstat · app.css:7065 |
-| border | `1px solid var(--rule)` | `` | .cmpstat · app.css:7065 |
-| border-radius | `var(--rad-pill)` | `` | .cmpstat · app.css:7065 |
-| background | `var(--sunk)` | `` | .cmpstat · app.css:7065 |
-| background-color | `` | `rgb(11, 15, 18)` | .cmpstat · app.css:7065 |
-| background-image | `` | `none` | .cmpstat · app.css:7065 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-cmp`
-
-inside `.b1` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-118` · rendered **958×516** · 1 instance look like this
-
-```html
-<div class="pb-cmp"><div class="pb-scroll"><table class="pb-tbl"><caption class="sr">BAL-27 builds, compared slot by slot aga…</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">Build 1<small>baseline</small></th><th scope="col" class="">Build 2</th><th scope="col" class="">Build 3</th><th scope="col" class="">Build 4</th><th scope="col" class="">Build 5<
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b1 .pb-cmp · b1.css:57 |
-| gap | `16px` | `` | .b1 .pb-cmp · b1.css:57 |
-| column-gap | `16px` | `16px` | .b1 .pb-cmp · b1.css:57 |
-| row-gap | `16px` | `16px` | .b1 .pb-cmp · b1.css:57 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `4px 16px 16px` | `` | .b1 .pb-cmp · b1.css:57 |
-| padding-top | `4px` | `4px` | .b1 .pb-cmp · b1.css:57 |
-| padding-right | `16px` | `16px` | .b1 .pb-cmp · b1.css:57 |
-| padding-bottom | `16px` | `16px` | .b1 .pb-cmp · b1.css:57 |
-| padding-left | `16px` | `16px` | .b1 .pb-cmp · b1.css:57 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `div.pb-scroll`
-
-inside `.pb-cmp` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-119` · rendered **926×391** · 1 instance look like this
-
-```html
-<div class="pb-scroll"><table class="pb-tbl"><caption class="sr">BAL-27 builds, compared slot by slot aga…</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">Build 1<small>baseline</small></th><th scope="col" class="">Build 2</th><th scope="col" class="">Build 3</th><th scope="col" class="">Build 4</th><th scope="col" class="">Build 5</th></tr></thead><tb
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow-x | `auto` | `auto` | .b1 .pb-scroll · b1.css:82 |
-
-
-### `table.pb-tbl`
-
-inside `.pb-scroll` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-120` · rendered **926×391** · 1 instance look like this
-
-```html
-<table class="pb-tbl"><caption class="sr">BAL-27 builds, compared slot by slot aga…</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">Build 1<small>baseline</small></th><th scope="col" class="">Build 2</th><th scope="col" class="">Build 3</th><th scope="col" class="">Build 4</th><th scope="col" class="">Build 5</th></tr></thead><tbody><tr><th class="pb-k
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table` | `table` | table · user-agent:? |
-| width | `100%` | `926px` | .b1 .pb-tbl · b1.css:58 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-md)` | `14.5px` | table · app.css:1247 |
-| font-weight | `normal` | `400` | table · user-agent:? |
-| line-height | `normal` | `normal` | table · user-agent:? |
-| letter-spacing | — | `normal` | initial |
-| text-align | `start` | `start` | table · user-agent:? |
-| color | `-internal-quirk-inherit` | `rgb(232, 237, 241)` | table · user-agent:? |
-
-
-### `caption.sr`
-
-inside `.pb-tbl` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-121` · rendered **1×1** · 1 instance look like this · text “BAL-27 builds, compared slot by slot against Bui”
-
-```html
-<caption class="sr">BAL-27 builds, compared slot by slot aga…</caption>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-caption` | `block` | caption · user-agent:? |
-| position | `absolute` | `absolute` | .sr · app.css:628 |
-| width | `1px` | `1px` | .sr · app.css:628 |
-| height | `1px` | `1px` | .sr · app.css:628 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | — | `normal` | initial |
-| text-align | `-webkit-center` | `-webkit-center` | caption · user-agent:? |
-| white-space | `nowrap` | `` | .sr · app.css:628 |
-| color | ↑ `-internal-quirk-inherit` | `rgb(232, 237, 241)` | inherited · table · user-agent:? |
-| overflow | `hidden` | `` | .sr · app.css:628 |
-| overflow-x | `hidden` | `hidden` | .sr · app.css:628 |
-| overflow-y | `hidden` | `hidden` | .sr · app.css:628 |
-
-
-### `th.pb-k`
-
-inside `.—` · 7 on screen · **2 looks**
-
-#### look 1 of 2
-
-`C3one-122` · rendered **104×51** · 1 instance look like this
-
-```html
-<th class="pb-k" scope="col"><span class="sr">Slot</span></th>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| position | `sticky` | `sticky` | th · app.css:1248 |
-| width | `104px` | `104px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 12px 8px` | `` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-top | `10px` | `10px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-right | `12px` | `12px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-bottom | `8px` | `8px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-left | `0px` | `0px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| top | `0px` | `0px` | th · app.css:1248 |
-| border | `0` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| border-bottom | `1px solid var(--rule)` | `` | th · app.css:1248 |
-| background | `none` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| background-image | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-size | `` | `12px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-weight | `` | `500` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-style | `` | `normal` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| line-height | `` | `14.4px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| letter-spacing | `0px` | `normal` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | `left` | `left` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | th · app.css:1248 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-tbl .pb-k · b1.css:62 |
-
-#### look 2 of 2
-
-`C3one-126` · rendered **104×42** · 6 instances look like this · text “Muzzle”
-
-```html
-<th class="pb-k" scope="row">Muzzle</th>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| position | `sticky` | `sticky` | th · app.css:1248 |
-| width | `104px` | `104px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-top | `0px` | `0px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-right | `4px` | `4px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-left | `0px` | `0px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| top | `0px` | `0px` | th · app.css:1248 |
-| border | `0` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| border-bottom | `1px solid var(--rule)` | `` | th · app.css:1248 |
-| background | `none` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| background-image | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-size | `` | `12px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-weight | `` | `500` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-style | `` | `normal` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| line-height | `` | `14.4px` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| letter-spacing | `0px` | `normal` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | `left` | `left` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | th · app.css:1248 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-tbl .pb-k · b1.css:62 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `th.pb-base`
+### `ol.pb-rows`
 
 inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3one-124` · rendered **164×51** · 1 instance look like this
+`new-builds3-159` · rendered **444×206** · 1 instance look like this
 
 ```html
-<th scope="col" class="pb-base">Build 1<small>baseline</small></th>
+<ol class="pb-rows"><li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div><span class="pb-oc">Unchanged</span><div class="pb-rd"><span>Matches the live build</span></div></li><li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 2</span><span class="pb-ln">lines 12–21</span></div><span class="pb-oc">Un
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| position | `sticky` | `sticky` | th · app.css:1248 |
+| display | `grid` | `grid` | .b3-nb .pb-rows · b3/board.css:1186 |
+| gap | `8px` | `` | .b3-nb .pb-rows · b3/board.css:1186 |
+| column-gap | `8px` | `8px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| row-gap | `8px` | `8px` | .b3-nb .pb-rows · b3/board.css:1186 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 12px 8px` | `` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-top | `10px` | `10px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-right | `12px` | `12px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-bottom | `8px` | `8px` | .b1 .pb-tbl thead th · b1.css:60 |
-| padding-left | `12px` | `12px` | .b1 .pb-tbl thead th · b1.css:60 |
-| top | `0px` | `0px` | th · app.css:1248 |
-| border | `0` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| border-bottom | `1px solid var(--rule)` | `` | th · app.css:1248 |
-| border-radius | `var(--rad-2) var(--rad-2) 0 0` | `` | .b1 .pb-tbl thead .pb-base · b1.css:64 |
-| background | `var(--sunk)` | `` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-image | `` | `none` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| box-shadow | `inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)` | `rgb(42, 52, 61) 1px 0px 0px 0px inset, rgb(42, 52, 61) -1px 0px 0px 0px inset` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| font | `600 var(--t-base)/1.2 var(--ui)` | `` | .b1 .pb-tbl thead th · b1.css:60 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-tbl thead th · b1.css:60 |
-| font-size | `` | `13px` | .b1 .pb-tbl thead th · b1.css:60 |
-| font-weight | `` | `600` | .b1 .pb-tbl thead th · b1.css:60 |
-| font-style | `` | `normal` | .b1 .pb-tbl thead th · b1.css:60 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-tbl thead th · b1.css:60 |
-| line-height | `` | `15.6px` | .b1 .pb-tbl thead th · b1.css:60 |
-| letter-spacing | `0px` | `normal` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | `left` | `left` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | `nowrap` | `` | th · app.css:1248 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b1 .pb-tbl thead th · b1.css:60 |
-
-
-### `small`
-
-inside `.pb-base` · 70 on screen · **1 look**
-
-#### the one look
-
-`C3one-125` · rendered **140×14** · 1 instance look like this · text “baseline”
-
-```html
-<small>baseline</small>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | .b1 .pb-tbl thead th small · b1.css:61 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `3px` | `3px` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font | `500 var(--t-sm)/1.2 var(--data)` | `` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font-size | `` | `12px` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font-weight | `` | `500` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font-style | `` | `normal` | .b1 .pb-tbl thead th small · b1.css:61 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-tbl thead th small · b1.css:61 |
-| line-height | `` | `14.4px` | .b1 .pb-tbl thead th small · b1.css:61 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| white-space | ↑ `nowrap` | `` | inherited · th · app.css:1248 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-tbl thead th small · b1.css:61 |
-
-
-### `td.pb-base`
-
-inside `.—` · 6 on screen · **2 looks**
-
-#### look 1 of 2
-
-`C3one-127` · rendered **164×42** · 5 instances look like this
-
-```html
-<td class="pb-base"><span class="pb-v">Gauge-9 Mono</span></td>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-top | `3px (as padding-block-start)` | `3px` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| padding-right | `4px` | `4px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-bottom | `3px (as padding-block-end)` | `3px` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| padding-left | `4px` | `4px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-block | `3px` | `` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| border | `0` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| border-bottom | `1px solid var(--rule3)` | `` | td · app.css:1273 |
-| background | `var(--sunk)` | `` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-image | `` | `none` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| box-shadow | `inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)` | `rgb(42, 52, 61) 1px 0px 0px 0px inset, rgb(42, 52, 61) -1px 0px 0px 0px inset` | .b1 .pb-tbl .pb-base · b1.css:63 |
+| padding | `0` | `` | .b3-nb .pb-rows · b3/board.css:1186 |
+| padding-top | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| padding-right | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| padding-bottom | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| padding-left | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| margin | `12px 0 0` | `` | .b3-nb .pb-rows · b3/board.css:1186 |
+| margin-top | `12px` | `12px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| margin-right | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| margin-bottom | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
+| margin-left | `0px` | `0px` | .b3-nb .pb-rows · b3/board.css:1186 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `0px` | `normal` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | `left` | `left` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-#### look 2 of 2
-
-`C3one-171` · rendered **164×42** · 1 instance look like this
-
-```html
-<td class="pb-base"><span class="pb-v pb-m">1I2C4A8A9D</span></td>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-cell` | `table-cell` | td, th · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-top | `3px (as padding-block-start)` | `3px` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| padding-right | `4px` | `4px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-bottom | `3px (as padding-block-end)` | `3px` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| padding-left | `4px` | `4px` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| padding-block | `3px` | `` | .b1 .pb-tbl tbody td.pb-base · b1.css:66 |
-| border | `0` | `` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| border-bottom | `1px solid var(--rule3)` | `` | td · app.css:1273 |
-| border-radius | `0 0 var(--rad-2) var(--rad-2)` | `` | .b1 .pb-tbl tbody tr:last-child .pb-base · b1.css:65 |
-| background | `var(--sunk)` | `` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| background-image | `` | `none` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| box-shadow | `inset 1px 0 0 var(--rule),inset -1px 0 0 var(--rule)` | `rgb(42, 52, 61) 1px 0px 0px 0px inset, rgb(42, 52, 61) -1px 0px 0px 0px inset` | .b1 .pb-tbl .pb-base · b1.css:63 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| letter-spacing | `0px` | `normal` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | `none` | `none` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | `left` | `left` | .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `span.pb-v`
-
-inside `.pb-base` · 13 on screen · **1 look**
-
-#### the one look
-
-`C3one-128` · rendered **156×36** · 13 instances look like this · text “Gauge-9 Mono”
-
-```html
-<span class="pb-v">Gauge-9 Mono</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-v · b1.css:68 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-v · b1.css:68 |
-| font-size | `` | `12px` | .b1 .pb-v · b1.css:68 |
-| font-weight | `` | `500` | .b1 .pb-v · b1.css:68 |
-| font-style | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| line-height | `` | `14.4px` | .b1 .pb-v · b1.css:68 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-v · b1.css:68 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `span.pb-d.pb-v`
-
-inside `.—` · 7 on screen · **1 look**
-
-#### the one look
-
-`C3one-129` · rendered **156×36** · 7 instances look like this
-
-```html
-<span class="pb-v pb-d">Polarfire-S<span class="sr"> differs</span></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| background | `var(--raised)` | `` | .b1 .pb-v.pb-d · b1.css:69 |
-| background-color | `` | `rgb(31, 39, 46)` | .b1 .pb-v.pb-d · b1.css:69 |
-| background-image | `` | `none` | .b1 .pb-v.pb-d · b1.css:69 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--patch) 65%,transparent)` | `color(srgb 0.94902 0.760784 0.188235 / 0.65) 0px 0px 0px 1px inset` | .b1 .pb-v.pb-d · b1.css:69 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-v · b1.css:68 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-v · b1.css:68 |
-| font-size | `` | `12px` | .b1 .pb-v · b1.css:68 |
-| font-weight | `600` | `600` | .b1 .pb-v.pb-d · b1.css:69 |
-| font-style | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| line-height | `` | `14.4px` | .b1 .pb-v · b1.css:68 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b1 .pb-v.pb-d · b1.css:69 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `span.pb-rm.pb-v`
-
-inside `.—` · 2 on screen · **1 look**
-
-#### the one look
-
-`C3one-150` · rendered **156×36** · 2 instances look like this · text “Not equipped”
-
-```html
-<span class="pb-v pb-rm">Not equipped</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| outline | `1px dashed color-mix(in srgb,var(--warn) 60%,transparent)` | `` | .b1 .pb-v.pb-rm · b1.css:173 |
-| outline-offset | `-1px` | `-1px` | .b1 .pb-v.pb-rm · b1.css:173 |
-| background | `none` | `` | .b1 .pb-v.pb-rm · b1.css:173 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-v.pb-rm · b1.css:173 |
-| background-image | `none` | `none` | .b1 .pb-v.pb-rm · b1.css:173 |
-| box-shadow | `none` | `none` | .b1 .pb-v.pb-rm · b1.css:173 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-v · b1.css:68 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-v · b1.css:68 |
-| font-size | `` | `12px` | .b1 .pb-v · b1.css:68 |
-| font-weight | `` | `500` | .b1 .pb-v · b1.css:68 |
-| font-style | `normal` | `normal` | .b1 .pb-v.pb-rm · b1.css:173 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| line-height | `` | `14.4px` | .b1 .pb-v · b1.css:68 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-decoration | `none` | `` | .b1 .pb-v.pb-rm · b1.css:173 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b1 .pb-v.pb-rm · b1.css:173 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `span.pb-v.pb-x`
-
-inside `.pb-base` · 3 on screen · **1 look**
-
-#### the one look
-
-`C3one-153` · rendered **156×36** · 3 instances look like this · text “—”
-
-```html
-<span class="pb-v pb-x">—</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b1 .pb-v · b1.css:68 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-v · b1.css:68 |
-| font-size | `` | `12px` | .b1 .pb-v · b1.css:68 |
-| font-weight | `` | `500` | .b1 .pb-v · b1.css:68 |
-| font-style | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v · b1.css:68 |
-| line-height | `` | `14.4px` | .b1 .pb-v · b1.css:68 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b1 .pb-v.pb-x · b1.css:70 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `tr.pb-gap`
-
-inside `.—` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-168` · rendered **926×28** · 1 instance look like this
-
-```html
-<tr class="pb-gap"><th colspan="6" scope="rowgroup">Code</th></tr>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `table-row` | `table-row` | tr · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · table · app.css:1247 |
-| font-weight | ↑ `normal` | `400` | inherited · table · user-agent:? |
-| font-style | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| font-variant-numeric | ↑ `normal` | `normal` | inherited · table · user-agent:? |
-| line-height | ↑ `normal` | `normal` | inherited · table · user-agent:? |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
-| color | ↑ `-internal-quirk-inherit` | `rgb(232, 237, 241)` | inherited · table · user-agent:? |
-| transition | `transform var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease), background var(--dur-1) var(--ease)` | `` | tbody tr · app.css:6016 |
-| cursor | `pointer` | `pointer` | tbody tr · app.css:1274 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span.pb-m.pb-v`
+### `li.pb-row`
 
-inside `.pb-base` · 1 on screen · **1 look**
+inside `.pb-rows` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3one-172` · rendered **156×36** · 1 instance look like this · text “1I2C4A8A9D”
+`new-builds3-160` · rendered **444×63** · 3 instances look like this
 
 ```html
-<span class="pb-v pb-m">1I2C4A8A9D</span>
+<li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div><span class="pb-oc">Unchanged</span><div class="pb-rd"><span>Matches the live build</span></div></li>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
+| display | `grid` | `grid` | .b3-nb .pb-row · b3/board.css:1187 |
+| position | `relative` | `relative` | .b3-nb .pb-row · b3/board.css:1187 |
+| grid-template-columns | `minmax(0px, 1fr) auto` | `333.375px 66.5156px` | .b3-nb .pb-row · b3/board.css:1187 |
+| gap | `8px 12px` | `` | .b3-nb .pb-row · b3/board.css:1187 |
+| column-gap | `12px` | `12px` | .b3-nb .pb-row · b3/board.css:1187 |
+| row-gap | `8px` | `8px` | .b3-nb .pb-row · b3/board.css:1187 |
+| align-items | `center` | `center` | .b3-nb .pb-row · b3/board.css:1187 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-size | `` | `12px` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-weight | `` | `600` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-style | `` | `normal` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v.pb-m · b1.css:72 |
-| line-height | `` | `12px` | .b1 .pb-v.pb-m · b1.css:72 |
-| letter-spacing | `0.04em` | `0.48px` | .b1 .pb-v.pb-m · b1.css:72 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-v · b1.css:68 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| padding | `12px 14px 12px 18px` | `` | .b3-nb .pb-row · b3/board.css:1187 |
+| padding-top | `12px` | `12px` | .b3-nb .pb-row · b3/board.css:1187 |
+| padding-right | `14px` | `14px` | .b3-nb .pb-row · b3/board.css:1187 |
+| padding-bottom | `12px` | `12px` | .b3-nb .pb-row · b3/board.css:1187 |
+| padding-left | `18px` | `18px` | .b3-nb .pb-row · b3/board.css:1187 |
+| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-row · b3/board.css:1187 |
+| background | `var(--raised)` | `` | .b3-nb .pb-row · b3/board.css:1187 |
+| background-color | `` | `rgb(31, 39, 46)` | .b3-nb .pb-row · b3/board.css:1187 |
+| background-image | `` | `none` | .b3-nb .pb-row · b3/board.css:1187 |
+| box-shadow | `inset 0 0 0 1px var(--rule)` | `rgb(42, 52, 61) 0px 0px 0px 1px inset` | .b3-nb .pb-row · b3/board.css:1187 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .b3-nb .pb-row · b3/board.css:1187 |
+| overflow-x | `hidden` | `hidden` | .b3-nb .pb-row · b3/board.css:1187 |
+| overflow-y | `hidden` | `hidden` | .b3-nb .pb-row · b3/board.css:1187 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| width | `3px` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| top | `0px` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| bottom | `0px` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| left | `0px` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| background | `var(--o)` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| background-color | `` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| background-image | `` | .b3-nb .pb-row::before · b3/board.css:1188 |
+| content | `""` | .b3-nb .pb-row::before · b3/board.css:1188 |
 
 
-### `span.pb-d.pb-m.pb-v`
+### `div.pb-rt`
 
-inside `.—` · 4 on screen · **1 look**
+inside `.pb-row` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3one-173` · rendered **156×36** · 4 instances look like this
+`new-builds3-161` · rendered **333×16** · 3 instances look like this
 
 ```html
-<span class="pb-v pb-m pb-d">1C2C4A6A8A<span class="sr"> differs</span></span>
+<div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-v · b1.css:68 |
-| align-items | `center` | `center` | .b1 .pb-v · b1.css:68 |
-| height | `36px` | `36px` | .b1 .pb-v · b1.css:68 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px` | `` | .b1 .pb-v · b1.css:68 |
-| padding-top | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-right | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| padding-bottom | `0px` | `0px` | .b1 .pb-v · b1.css:68 |
-| padding-left | `10px` | `10px` | .b1 .pb-v · b1.css:68 |
-| border-radius | `var(--rad-1)` | `` | .b1 .pb-v · b1.css:68 |
-| background | `var(--raised)` | `` | .b1 .pb-v.pb-d · b1.css:69 |
-| background-color | `` | `rgb(31, 39, 46)` | .b1 .pb-v.pb-d · b1.css:69 |
-| background-image | `` | `none` | .b1 .pb-v.pb-d · b1.css:69 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--patch) 65%,transparent)` | `color(srgb 0.94902 0.760784 0.188235 / 0.65) 0px 0px 0px 1px inset` | .b1 .pb-v.pb-d · b1.css:69 |
-| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-size | `` | `12px` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-weight | `` | `600` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-style | `` | `normal` | .b1 .pb-v.pb-m · b1.css:72 |
-| font-variant-numeric | `` | `normal` | .b1 .pb-v.pb-m · b1.css:72 |
-| line-height | `` | `12px` | .b1 .pb-v.pb-m · b1.css:72 |
-| letter-spacing | `0.04em` | `0.48px` | .b1 .pb-v.pb-m · b1.css:72 |
-| text-transform | ↑ `none` | `none` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-align | ↑ `left` | `left` | inherited · .b1 .pb-tbl th, .b1 .pb-tbl td · b1.css:59 |
-| text-overflow | `ellipsis` | `ellipsis` | .b1 .pb-v · b1.css:68 |
-| white-space | `nowrap` | `` | .b1 .pb-v · b1.css:68 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b1 .pb-v.pb-d · b1.css:69 |
-| overflow | `hidden` | `` | .b1 .pb-v · b1.css:68 |
-| overflow-x | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| overflow-y | `hidden` | `hidden` | .b1 .pb-v · b1.css:68 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
-
-
-### `div.pb-same`
-
-inside `.pb-cmp` · 1 on screen · **1 look**
-
-#### the one look
-
-`C3one-181` · rendered **926×26** · 1 instance look like this
-
-```html
-<div class="pb-same"><span>Same on all 5</span><span class="pill">Ammunition<b>60 Round Reload</b></span><span class="pill">Rank<b>Best</b></span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .b1 .pb-same · b1.css:73 |
-| gap | `8px` | `` | .b1 .pb-same · b1.css:73 |
-| column-gap | `8px` | `8px` | .b1 .pb-same · b1.css:73 |
-| row-gap | `8px` | `8px` | .b1 .pb-same · b1.css:73 |
-| flex-wrap | `wrap` | `wrap` | .b1 .pb-same · b1.css:73 |
-| align-items | `center` | `center` | .b1 .pb-same · b1.css:73 |
+| display | `flex` | `flex` | .b3-nb .pb-rt · b3/board.css:1191 |
+| gap | `8px` | `` | .b3-nb .pb-rt · b3/board.css:1191 |
+| column-gap | `8px` | `8px` | .b3-nb .pb-rt · b3/board.css:1191 |
+| row-gap | `8px` | `8px` | .b3-nb .pb-rt · b3/board.css:1191 |
+| align-items | `baseline` | `baseline` | .b3-nb .pb-rt · b3/board.css:1191 |
+| min-width | `0px` | `0px` | .b3-nb .pb-rt · b3/board.css:1191 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -7826,214 +3582,204 @@ inside `.pb-cmp` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `span.pill`
+### `strong`
 
-inside `.pb-same` · 2 on screen · **1 look**
-
-#### the one look
-
-`C3one-183` · rendered **206×26** · 2 instances look like this
-
-```html
-<span class="pill">Ammunition<b>60 Round Reload</b></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .pill · app.css:4527 |
-| gap | `7px` | `` | .pill · app.css:4527 |
-| column-gap | `7px` | `7px` | .pill · app.css:4527 |
-| row-gap | `7px` | `7px` | .pill · app.css:4527 |
-| align-items | `center` | `center` | .pill · app.css:4527 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `6px 12px` | `` | .b1 .pb-same .pill · b1.css:75 |
-| padding-top | `6px` | `6px` | .b1 .pb-same .pill · b1.css:75 |
-| padding-right | `12px` | `12px` | .b1 .pb-same .pill · b1.css:75 |
-| padding-bottom | `6px` | `6px` | .b1 .pb-same .pill · b1.css:75 |
-| padding-left | `12px` | `12px` | .b1 .pb-same .pill · b1.css:75 |
-| margin-right | `4px` | `4px` | .b1 .pb-same > span · b1.css:74 |
-| border | `1px solid var(--rule)` | `` | .pill · app.css:4527 |
-| border-radius | `var(--rad-pill)` | `` | .pill · app.css:4527 |
-| background | `var(--sunk)` | `` | .pill · app.css:4527 |
-| background-color | `` | `rgb(11, 15, 18)` | .pill · app.css:4527 |
-| background-image | `` | `none` | .pill · app.css:4527 |
-| font | `500 var(--t-base)/1 var(--ui)` | `` | .pill · app.css:4527 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pill · app.css:4527 |
-| font-size | `var(--t-sm)` | `12px` | .b1 .pb-same .pill · b1.css:75 |
-| font-weight | `` | `500` | .pill · app.css:4527 |
-| font-style | `` | `normal` | .pill · app.css:4527 |
-| font-variant-numeric | `` | `normal` | .pill · app.css:4527 |
-| line-height | `` | `12px` | .pill · app.css:4527 |
-| letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .pill · app.css:4527 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-same > span · b1.css:74 |
-| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .pill · app.css:4527 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
-
-
-### `div.pb-fold`
-
-inside `.pb-cmp` · 1 on screen · **1 look**
+inside `.pb-rt` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3one-187` · rendered **926×47** · 1 instance look like this
+`new-builds3-162` · rendered **44×16** · 3 instances look like this · text “BAL-27”
 
 ```html
-<div class="pb-fold"><button type="button" class="chip" aria-expanded="false">⟨svg.ic.ic-fold⟩Show cards</button></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-top | `14px` | `14px` | .b1 .pb-fold · b1.css:77 |
-| border-top | `1px solid var(--rule3)` | `` | .b1 .pb-fold · b1.css:77 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-
-
-### `svg.ic.ic-fold`
-
-inside `.chip` · 70 on screen · **1 look**
-
-#### the one look
-
-`C3one-189` · rendered **16×16** · 1 instance look like this · aria-hidden="true"
-
-```html
-<svg class="ic ic-fold" aria-hidden="true"><use href="#i-b2-unfold"></use></svg>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .ic · b2.css:10 |
-| width | `16px` | `16px` | .ic · b2.css:10 |
-| height | `16px` | `16px` | .ic · b2.css:10 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
-| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
-| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-
-### C3 · two weapons
-
-149 distinct signatures on screen; 9 not already specced above.
-
-
-### `b`
-
-inside `.mk` · 79 on screen · **1 look**
-
-#### the one look
-
-`C3two-123` · rendered **8×20** · 1 instance look like this · text “2”
-
-```html
-<b>2</b>
+<strong>BAL-27</strong>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .cmpstat b · app.css:7067 |
-| font-size | `var(--t-base)` | `13px` | .cmpstat b · app.css:7067 |
-| font-weight | `600` | `600` | .cmpstat b · app.css:7067 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .cmpstat b · app.css:7067 |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| font | `600 var(--t-base)/1.2 var(--ui)` | `` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| font-size | `` | `13px` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| font-weight | `` | `600` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| font-style | `` | `normal` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-rt strong · b3/board.css:1193 |
+| line-height | `` | `15.6px` | .b3-nb .pb-rt strong · b3/board.css:1193 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b1 .cmpstat.pb-over b, .b1 .cmpstat.pb-over span · b1.css:81 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-nb .pb-rt strong · b3/board.css:1193 |
 
 
-### `span`
+### `span.pb-ln`
 
-inside `.un` · 74 on screen · **1 look**
+inside `.pb-rt` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3two-124` · rendered **61×18** · 1 instance look like this · text “not shown”
+`new-builds3-164` · rendered **72×12** · 3 instances look like this · text “lines 1–10”
 
 ```html
-<span>not shown</span>
+<span class="pb-ln">lines 1–10</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | `var(--t-sm)` | `12px` | .cmpstat span · app.css:7069 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
+| font | `500 var(--t-sm)/1 var(--data)!important !important` | `` | .b3-nb .pb-ln · b3/board.css:1195 |
+| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-ln · b3/board.css:1195 |
+| font-size | `!important !important` | `12px` | .b3-nb .pb-ln · b3/board.css:1195 |
+| font-weight | `!important !important` | `500` | .b3-nb .pb-ln · b3/board.css:1195 |
+| font-style | `!important !important` | `normal` | .b3-nb .pb-ln · b3/board.css:1195 |
+| font-variant-numeric | `!important !important` | `normal` | .b3-nb .pb-ln · b3/board.css:1195 |
+| line-height | `!important !important` | `12px` | .b3-nb .pb-ln · b3/board.css:1195 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b1 .cmpstat.pb-over b, .b1 .cmpstat.pb-over span · b1.css:81 |
+| color | `var(--ink4) !important !important` | `rgb(92, 106, 117)` | .b3-nb .pb-ln · b3/board.css:1195 |
 
 
-### `section.panel`
+### `span.pb-oc`
 
-inside `.—` · 2 on screen · **1 look**
+inside `.pb-row` · 3 on screen · **1 look**
 
 #### the one look
 
-`C3two-78` · rendered **960×715** · 1 instance look like this · aria-label="Armory view"
+`new-builds3-165` · rendered **67×12** · 3 instances look like this · text “Unchanged”
 
 ```html
-<section class="panel" aria-label="Armory view"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button role="tab" aria-selected="false">Tier board <em class="segn">64/125</em></button><button role="tab" aria-selected="false">Repairs <em class="b3-segst warn">⟨svg.ic⟩5 need work</em></button><button role="tab" aria-selected="true">Compare</button></div><span class="key r
+<span class="pb-oc">Unchanged</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-nb .pb-oc · b3/board.css:1196 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-oc · b3/board.css:1196 |
+| font-size | `` | `12px` | .b3-nb .pb-oc · b3/board.css:1196 |
+| font-weight | `` | `600` | .b3-nb .pb-oc · b3/board.css:1196 |
+| font-style | `` | `normal` | .b3-nb .pb-oc · b3/board.css:1196 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-oc · b3/board.css:1196 |
+| line-height | `` | `12px` | .b3-nb .pb-oc · b3/board.css:1196 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o)` | `rgb(92, 106, 117)` | .b3-nb .pb-oc · b3/board.css:1196 |
+
+
+### `div.pb-rd`
+
+inside `.pb-row` · 3 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-166` · rendered **412×16** · 3 instances look like this
+
+```html
+<div class="pb-rd"><span>Matches the live build</span></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b3-nb .pb-rd · b3/board.css:1197 |
+| grid-column | `1 / -1` | `` | .b3-nb .pb-rd · b3/board.css:1197 |
+| gap | `6px 10px` | `` | .b3-nb .pb-rd · b3/board.css:1197 |
+| column-gap | `10px` | `10px` | .b3-nb .pb-rd · b3/board.css:1197 |
+| row-gap | `6px` | `6px` | .b3-nb .pb-rd · b3/board.css:1197 |
+| flex-wrap | `wrap` | `wrap` | .b3-nb .pb-rd · b3/board.css:1197 |
+| align-items | `center` | `center` | .b3-nb .pb-rd · b3/board.css:1197 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1.3 var(--ui)` | `` | .b3-nb .pb-rd · b3/board.css:1197 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-rd · b3/board.css:1197 |
+| font-size | `` | `12px` | .b3-nb .pb-rd · b3/board.css:1197 |
+| font-weight | `` | `500` | .b3-nb .pb-rd · b3/board.css:1197 |
+| font-style | `` | `normal` | .b3-nb .pb-rd · b3/board.css:1197 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-rd · b3/board.css:1197 |
+| line-height | `` | `15.6px` | .b3-nb .pb-rd · b3/board.css:1197 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-nb .pb-rd · b3/board.css:1197 |
+
+
+### `span.why[role=status]`
+
+inside `.dw-f` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-185` · rendered **147×16** · 1 instance look like this · text “Nothing has changed yet” · role="status"
+
+```html
+<span class="why" role="status">Nothing has changed yet</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| align-self | `center` | `center` | .dw-f .why · app.css:6866 |
+| max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-right | `auto` | `574.141px` | .dw-f .why · app.css:6866 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
+| font-weight | — | `400` | initial |
+| line-height | `var(--lh-ui)` | `16.2px` | .dw-f .why · app.css:6866 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dw-f .why · app.css:6866 |
+
+
+### compare · Two weapons
+
+34 distinct signatures on screen; 9 not already specced above.
+
+
+### `section.pb-panel`
+
+inside `.b1` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares1-1` · rendered **1148×682** · 1 instance look like this
+
+```html
+<section class="pb-panel"><div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="6 of 6 columns" disabled=""></label></div><span class="cmppick" role="group" aria-lab
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
+| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
+| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:96 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 22px` | `` | .panel · app.css:723 |
-| margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `22px` | `22px` | .panel · app.css:723 |
-| margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `22px` | `22px` | .panel · app.css:723 |
-| border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
-| border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
-| background | `var(--paper)` | `` | .panel · app.css:723 |
-| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:723 |
-| background-image | `` | `none` | .panel · app.css:723 |
-| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1631 |
+| padding | `16px` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-top | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-right | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-bottom | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-left | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| border-radius | `var(--rad-3)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background | `var(--paper)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background-color | `` | `rgb(23, 30, 36)` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background-image | `` | `none` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .panel · app.css:723 |
-| overflow-x | `hidden` | `hidden` | .panel · app.css:723 |
-| overflow-y | `hidden` | `hidden` | .panel · app.css:723 |
+| overflow | `hidden` | `` | .b1 .pb-panel · b1.css:56 |
+| overflow-x | `hidden` | `hidden` | .b1 .pb-panel · b1.css:56 |
+| overflow-y | `hidden` | `hidden` | .b1 .pb-panel · b1.css:56 |
 
 
 ### `div.b1`
 
-inside `.panel` · 1 on screen · **1 look**
+inside `.pb-panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3two-93` · rendered **958×650** · 1 instance look like this
+`compares1-2` · rendered **1116×650** · 1 instance look like this
 
 ```html
 <div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="6 of 6 columns" disabled=""></label></div><span class="cmppick" role="group" aria-label="BAL-27"><button class=
@@ -8057,7 +3803,7 @@ inside `.cmpbrow` · 2 on screen · **1 look**
 
 #### the one look
 
-`C3two-105` · rendered **24×32** · 2 instances look like this · text “4” · aria-label="BAL-27 build 4, not shown" aria-pressed="true" title="Selected, but past the six columns this " type="button"
+`compares1-14` · rendered **24×32** · 2 instances look like this · text “4” · aria-label="BAL-27 build 4, not shown" aria-pressed="true" title="Selected, but past the six columns this " type="button"
 
 ```html
 <button type="button" class="chip pb-cut" aria-pressed="true" title="Selected, but past the six columns this table shows" aria-label="BAL-27 build 4, not shown">4</button>
@@ -8131,13 +3877,62 @@ inside `.cmpbrow` · 2 on screen · **1 look**
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
+### `b`
+
+inside `.cmpstat` · 4 on screen · **1 look**
+
+#### the one look
+
+`compares1-32` · rendered **8×20** · 1 instance look like this · text “2”
+
+```html
+<b>2</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .cmpstat b · app.css:7067 |
+| font-size | `var(--t-base)` | `13px` | .cmpstat b · app.css:7067 |
+| font-weight | `600` | `600` | .cmpstat b · app.css:7067 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .cmpstat b · app.css:7067 |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b1 .cmpstat.pb-over b, .b1 .cmpstat.pb-over span · b1.css:81 |
+
+
+### `span`
+
+inside `.cmpstat` · 4 on screen · **1 look**
+
+#### the one look
+
+`compares1-33` · rendered **61×18** · 1 instance look like this · text “not shown”
+
+```html
+<span>not shown</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-sm)` | `12px` | .cmpstat span · app.css:7069 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `18px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b1 .cmpstat.pb-over b, .b1 .cmpstat.pb-over span · b1.css:81 |
+
+
 ### `span.cmpstat.pb-over`
 
 inside `.cmpstats` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3two-122` · rendered **103×36** · 1 instance look like this
+`compares1-31` · rendered **103×36** · 1 instance look like this
 
 ```html
 <span class="cmpstat pb-over"><b>2</b><span>not shown</span></span>
@@ -8176,7 +3971,7 @@ inside `.b1` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3two-125` · rendered **958×530** · 1 instance look like this
+`compares1-34` · rendered **1116×530** · 1 instance look like this
 
 ```html
 <div class="pb-cmp"><div class="pb-scroll"><table class="pb-tbl"><caption class="sr">BAL-27 and FFAR 1 builds, compared slot …</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">BAL-27 · 1<small>baseline</small></th><th scope="col" class="">BAL-27 · 2</th><th scope="col" class="">BAL-27 · 3</th><th scope="col" class="">FFAR 1 · 1</th><th scope="col" class
@@ -8208,7 +4003,7 @@ inside `.pb-cmp` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3two-126` · rendered **926×405** · 1 instance look like this
+`compares1-35` · rendered **1084×405** · 1 instance look like this
 
 ```html
 <div class="pb-scroll"><table class="pb-tbl"><caption class="sr">BAL-27 and FFAR 1 builds, compared slot …</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">BAL-27 · 1<small>baseline</small></th><th scope="col" class="">BAL-27 · 2</th><th scope="col" class="">BAL-27 · 3</th><th scope="col" class="">FFAR 1 · 1</th><th scope="col" class="">FFAR 1 · 2</th><
@@ -8233,7 +4028,7 @@ inside `.pb-scroll` · 1 on screen · **1 look**
 
 #### the one look
 
-`C3two-127` · rendered **926×405** · 1 instance look like this
+`compares1-36` · rendered **1084×405** · 1 instance look like this
 
 ```html
 <table class="pb-tbl"><caption class="sr">BAL-27 and FFAR 1 builds, compared slot …</caption><thead><tr><th class="pb-k" scope="col"><span class="sr">Slot</span></th><th scope="col" class="pb-base">BAL-27 · 1<small>baseline</small></th><th scope="col" class="">BAL-27 · 2</th><th scope="col" class="">BAL-27 · 3</th><th scope="col" class="">FFAR 1 · 1</th><th scope="col" class="">FFAR 1 · 2</th><th scope="col" class=""
@@ -8242,7 +4037,7 @@ inside `.pb-scroll` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `table` | `table` | table · user-agent:? |
-| width | `100%` | `926px` | .b1 .pb-tbl · b1.css:58 |
+| width | `100%` | `1084px` | .b1 .pb-tbl · b1.css:58 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-md)` | `14.5px` | table · app.css:1247 |
@@ -8251,3 +4046,1751 @@ inside `.pb-scroll` · 1 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | text-align | `start` | `start` | table · user-agent:? |
 | color | `-internal-quirk-inherit` | `rgb(232, 237, 241)` | table · user-agent:? |
+
+
+### compare · One build
+
+13 distinct signatures on screen; 6 not already specced above.
+
+
+### `section.pb-panel`
+
+inside `.b1` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-1` · rendered **1148×269** · 1 instance look like this
+
+```html
+<section class="pb-panel"><div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div><span class="cmppick" role="group" aria-label="DL Q33"><b
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
+| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
+| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `16px` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-top | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-right | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-bottom | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| padding-left | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| border-radius | `var(--rad-3)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background | `var(--paper)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background-color | `` | `rgb(23, 30, 36)` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| background-image | `` | `none` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b4 .b4-cmp .pb-panel · b4.css:31 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .b1 .pb-panel · b1.css:56 |
+| overflow-x | `hidden` | `hidden` | .b1 .pb-panel · b1.css:56 |
+| overflow-y | `hidden` | `hidden` | .b1 .pb-panel · b1.css:56 |
+
+
+### `div.b1`
+
+inside `.pb-panel` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-2` · rendered **1116×237** · 1 instance look like this
+
+```html
+<div id="compare" class="b1"><div class="cmpbar"><div class="wsrch"><label class="dwfield"><span class="sr">Add a weapon</span><input id="cmp-weapon" type="search" autocomplete="off" spellcheck="true" role="combobox" aria-expanded="false" aria-controls="cmp-weapon-list" aria-activedescendant="" placeholder="Add a weapon"></label></div><span class="cmppick" role="group" aria-label="DL Q33"><button class="chip on" aria
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.empty`
+
+inside `.b1` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-10` · rendered **1116×180** · 1 instance look like this
+
+```html
+<div class="empty"><b>DL Q33 has one build</b>Add another sniper to line them up<div class="pb-sugg"><button class="pill">+ LW3-TUNDRA</button><button class="pill">+ M21 EBR</button><button class="pill">+ 3-LINE RIFLE</button></div></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| max-width | `none` | `none` | #compare.b1 .empty · b1.css:275 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `34px 16px` | `` | #compare.b1 .empty · b1.css:275 |
+| padding-top | `34px` | `34px` | #compare.b1 .empty · b1.css:275 |
+| padding-right | `16px` | `16px` | #compare.b1 .empty · b1.css:275 |
+| padding-bottom | `34px` | `34px` | #compare.b1 .empty · b1.css:275 |
+| padding-left | `16px` | `16px` | #compare.b1 .empty · b1.css:275 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-md)` | `14.5px` | #compare.b1 .empty · b1.css:275 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `21.75px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | `center` | `center` | #compare.b1 .empty · b1.css:275 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .empty · app.css:1299 |
+
+
+### `b`
+
+inside `.empty` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-11` · rendered **1084×25** · 1 instance look like this · text “DL Q33 has one build”
+
+```html
+<b>DL Q33 has one build</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .empty b · app.css:1300 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `6px` | `6px` | .empty b · app.css:1300 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | `var(--t-lg)` | `16.5px` | .empty b · app.css:1300 |
+| font-weight | `bolder` | `700` | strong, b · user-agent:? |
+| line-height | ↑ `1.5` | `24.75px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `center` | `center` | inherited · #compare.b1 .empty · b1.css:275 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .empty b · app.css:1300 |
+
+
+### `div.pb-sugg`
+
+inside `.empty` · 1 on screen · **1 look**
+
+#### the one look
+
+`compares2-12` · rendered **1084×43** · 1 instance look like this
+
+```html
+<div class="pb-sugg"><button class="pill">+ LW3-TUNDRA</button><button class="pill">+ M21 EBR</button><button class="pill">+ 3-LINE RIFLE</button></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-sugg · b1.css:271 |
+| gap | `8px` | `` | .b1 .pb-sugg · b1.css:271 |
+| column-gap | `8px` | `8px` | .b1 .pb-sugg · b1.css:271 |
+| row-gap | `8px` | `8px` | .b1 .pb-sugg · b1.css:271 |
+| flex-wrap | `wrap` | `wrap` | .b1 .pb-sugg · b1.css:271 |
+| justify-content | `center` | `center` | .b1 .pb-sugg · b1.css:271 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-top | `16px` | `16px` | .b1 .pb-sugg · b1.css:271 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-md)` | `14.5px` | inherited · #compare.b1 .empty · b1.css:275 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `21.75px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `center` | `center` | inherited · #compare.b1 .empty · b1.css:275 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .empty · app.css:1299 |
+
+
+### `button.pill`
+
+inside `.pb-sugg` · 3 on screen · **1 look**
+
+#### the one look
+
+`compares2-13` · rendered **120×31** · 3 instances look like this · text “+ LW3-TUNDRA”
+
+```html
+<button class="pill">+ LW3-TUNDRA</button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .pill · app.css:4527 |
+| gap | `7px` | `` | .pill · app.css:4527 |
+| column-gap | `7px` | `7px` | .pill · app.css:4527 |
+| row-gap | `7px` | `7px` | .pill · app.css:4527 |
+| align-items | `center` | `center` | .pill · app.css:4527 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `8px 13px` | `` | .pill · app.css:4527 |
+| padding-top | `8px` | `8px` | .pill · app.css:4527 |
+| padding-right | `13px` | `13px` | .pill · app.css:4527 |
+| padding-bottom | `8px` | `8px` | .pill · app.css:4527 |
+| padding-left | `13px` | `13px` | .pill · app.css:4527 |
+| margin-top | `var(--s3)` | `12px` | .empty .pill · app.css:1302 |
+| border | `1px solid var(--rule)` | `` | .pill · app.css:4527 |
+| border-radius | `var(--rad-pill)` | `` | .pill · app.css:4527 |
+| background | `var(--sunk)` | `` | .pill · app.css:4527 |
+| background-color | `` | `rgb(11, 15, 18)` | .pill · app.css:4527 |
+| background-image | `` | `none` | .pill · app.css:4527 |
+| font | `500 var(--t-base)/1 var(--ui)` | `` | .pill · app.css:4527 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pill · app.css:4527 |
+| font-size | `` | `13px` | .pill · app.css:4527 |
+| font-weight | `` | `500` | .pill · app.css:4527 |
+| font-style | `` | `normal` | .pill · app.css:4527 |
+| font-variant-numeric | `` | `normal` | .pill · app.css:4527 |
+| line-height | `` | `13px` | .pill · app.css:4527 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| white-space | `nowrap` | `` | .pill · app.css:4527 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .pill · app.css:4527 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| cursor | `pointer` | `pointer` | .pill · app.css:4527 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+
+
+### compare · Empty
+
+10 distinct signatures on screen; 0 not already specced above.
+
+
+### repairs · A clean day
+
+23 distinct signatures on screen; 7 not already specced above.
+
+
+### `section.panel`
+
+inside `.pb-stage` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-1` · rendered **1148×293** · 1 instance look like this
+
+```html
+<section class="panel"><div class="ph"><span class="t">Armory</span><div class="seg" role="tablist" aria-label="View"><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Tier board</button><button type="button" role="tab" aria-selected="false">⟨svg.ic⟩Compare</button></div><button type="button" class="b3-rv on ok" aria-pressed="true"><span class="b3-rv-ok">⟨svg.ic⟩</span><span class="b3-nw"><span class="b3
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
+| justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3692 |
+| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3692 |
+| min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin | `0 22px` | `` | .panel · app.css:723 |
+| margin-top | `0px` | `0px` | .panel · app.css:723 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| margin-bottom | `0px` | `0px` | .panel · app.css:723 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
+| border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
+| background | `var(--paper)` | `` | .panel · app.css:723 |
+| background-color | `` | `rgb(23, 30, 36)` | .panel · app.css:723 |
+| background-image | `` | `none` | .panel · app.css:723 |
+| box-shadow | `0 1px 0 rgba(255,255,255,.03) inset,0 18px 42px -30px var(--scrim-90)` | `rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.9) 0px 18px 42px -30px` | .panel, .identity · app.css:1631 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .panel · app.css:723 |
+| overflow-x | `hidden` | `hidden` | .panel · app.css:723 |
+| overflow-y | `hidden` | `hidden` | .panel · app.css:723 |
+
+
+### `svg.ic`
+
+inside `.—` · 11 on screen · **1 look**
+
+#### the one look
+
+`repairss1-9` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-shield-check"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `13px` | `13px` | .b3-rv-ok .ic · b3/board.css:4177 |
+| height | `13px` | `13px` | .b3-rv-ok .ic · b3/board.css:4177 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `var(--ok)` | `rgb(123, 219, 99)` | inherited · .b3-rv-ok · b3/board.css:4175 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-rv · b3/board.css:1254 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+
+### `button.b3-rv.ok.on`
+
+inside `.ph` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-7` · rendered **155×34** · 1 instance look like this · aria-pressed="true" type="button"
+
+```html
+<button type="button" class="b3-rv on ok" aria-pressed="true"><span class="b3-rv-ok">⟨svg.ic⟩</span><span class="b3-nw"><span class="b3-rv-w">Repairs</span><span class="b3-rv-s">all pass</span></span></button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-rv · b3/board.css:1254 |
+| gap | `10px` | `` | .b3-rv · b3/board.css:1254 |
+| column-gap | `10px` | `10px` | .b3-rv · b3/board.css:1254 |
+| row-gap | `10px` | `10px` | .b3-rv · b3/board.css:1254 |
+| align-items | `center` | `center` | .b3-rv · b3/board.css:1254 |
+| height | `34px` | `34px` | .b3-rv · b3/board.css:1254 |
+| min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0 14px 0 6px` | `` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
+| padding-top | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
+| padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
+| padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
+| padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4173 |
+| margin-left | `auto` | `684.328px` | .b3-rv · b3/board.css:1254 |
+| border | `0` | `` | .b3-rv · b3/board.css:1254 |
+| border-radius | `var(--rad-pill)` | `` | .b3-rv · b3/board.css:1254 |
+| background | `color-mix(in srgb,var(--ok) 15%,var(--sunk))` | `` | .b3-rv.ok:hover, .b3-rv.ok.on · b3/board.css:4179 |
+| background-color | `` | `color(srgb 0.10902 0.178824 0.118235)` | .b3-rv.ok:hover, .b3-rv.ok.on · b3/board.css:4179 |
+| background-image | `` | `none` | .b3-rv.ok:hover, .b3-rv.ok.on · b3/board.css:4179 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 62%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.62) 0px 0px 0px 1px inset` | .b3-rv.ok:hover, .b3-rv.ok.on · b3/board.css:4179 |
+| font | `inherit` | `` | button · app.css:621 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
+| font-size | `inherit` | `13px` | button · app.css:621 |
+| font-weight | `inherit` | `400` | button · app.css:621 |
+| font-style | `inherit` | `normal` | button · app.css:621 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
+| line-height | `inherit` | `19.5px` | button · app.css:621 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-rv.ok · b3/board.css:4178 |
+| transition | `background var(--b3-d1),box-shadow var(--b3-d1)` | `` | .b3-rv · b3/board.css:1254 |
+| cursor | `pointer` | `pointer` | .b3-rv · b3/board.css:1254 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+
+**:hover** — changes
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `color(srgb 0.10902 0.178824 0.118235)` | `color(srgb 0.139765 0.234824 0.140471)` |
+| box-shadow | `color(srgb 0.482353 0.858824 0.388235 / 0.62) 0px 0px 0px 1px inset` | `color(srgb 0.482353 0.858823 0.388235 / 0.72) 0px 0px 0px 1px inset` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+
+
+### `span.b3-rv-ok`
+
+inside `.b3-rv` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-8` · rendered **22×22** · 1 instance look like this
+
+```html
+<span class="b3-rv-ok">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-rv-ok · b3/board.css:1262 |
+| align-items | `center` | `center` | .b3-rv-ok · b3/board.css:1262 |
+| place-items | `center` | `` | .b3-rv-ok · b3/board.css:1262 |
+| width | `22px` | `22px` | .b3-rv-ok · b3/board.css:4175 |
+| height | `22px` | `22px` | .b3-rv-ok · b3/board.css:4175 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-pill)` | `` | .b3-rv-ok · b3/board.css:4175 |
+| background | `color-mix(in srgb,var(--ok) 22%,transparent)` | `` | .b3-rv.ok:hover .b3-rv-ok, .b3-rv.ok.on .b3-rv-ok · b3/board.css:4180 |
+| background-color | `` | `color(srgb 0.482353 0.858823 0.388235 / 0.22)` | .b3-rv.ok:hover .b3-rv-ok, .b3-rv.ok.on .b3-rv-ok · b3/board.css:4180 |
+| background-image | `` | `none` | .b3-rv.ok:hover .b3-rv-ok, .b3-rv.ok.on .b3-rv-ok · b3/board.css:4180 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 46%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.46) 0px 0px 0px 1px inset` | .b3-rv.ok:hover .b3-rv-ok, .b3-rv.ok.on .b3-rv-ok · b3/board.css:4180 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-rv-ok · b3/board.css:4175 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-rv · b3/board.css:1254 |
+
+
+### `span.b3-nw`
+
+inside `.b3-rv` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-10` · rendered **103×12** · 1 instance look like this
+
+```html
+<span class="b3-nw"><span class="b3-rv-w">Repairs</span><span class="b3-rv-s">all pass</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
+| gap | `7px` | `` | .b3-rv .b3-nw · b3/board.css:4174 |
+| column-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4174 |
+| row-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4174 |
+| align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
+| min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `inherit` | `` | .b3-nw · b3/board.css:950 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nw · b3/board.css:950 |
+| font-size | `inherit` | `13px` | .b3-nw · b3/board.css:950 |
+| font-weight | `inherit` | `400` | .b3-nw · b3/board.css:950 |
+| font-style | `inherit` | `normal` | .b3-nw · b3/board.css:950 |
+| font-variant-numeric | `inherit` | `normal` | .b3-nw · b3/board.css:950 |
+| line-height | `inherit` | `19.5px` | .b3-nw · b3/board.css:950 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `inherit` | `rgb(123, 219, 99)` | .b3-nw · b3/board.css:950 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-rv · b3/board.css:1254 |
+
+
+### `span.b3-rv-s`
+
+inside `.b3-nw` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-12` · rendered **54×10** · 1 instance look like this · text “all pass”
+
+```html
+<span class="b3-rv-s">all pass</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-right | `calc(var(--b3-tr) * -1)` | `-1.045px` | .b3-rv-s · b3/board.css:1258 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-rv-s · b3/board.css:1258 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-rv-s · b3/board.css:1258 |
+| font-size | `` | `9.5px` | .b3-rv-s · b3/board.css:1258 |
+| font-weight | `` | `600` | .b3-rv-s · b3/board.css:1258 |
+| font-style | `` | `normal` | .b3-rv-s · b3/board.css:1258 |
+| font-variant-numeric | `` | `normal` | .b3-rv-s · b3/board.css:1258 |
+| line-height | `` | `9.5px` | .b3-rv-s · b3/board.css:1258 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-rv-s · b3/board.css:1258 |
+| text-transform | `uppercase` | `uppercase` | .b3-rv-s · b3/board.css:1258 |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `color-mix(in srgb,var(--ok) 70%,var(--ink3))` | `color(srgb 0.494118 0.774118 0.458824)` | .b3-rv.ok .b3-rv-s · b3/board.css:1278 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-rv · b3/board.css:1254 |
+
+
+### `div.b3-rp`
+
+inside `.panel` · 1 on screen · **1 look**
+
+#### the one look
+
+`repairss1-13` · rendered **1146×230** · 1 instance look like this
+
+```html
+<div class="b3-rp" id="b3-repairs"><article class="b3-tk b3-tk-pass" data-sev="ok"><header class="b3-tk-h"><span class="b3-tk-id"><span class="b3-tk-shield" aria-hidden="true">⟨svg.ic⟩</span><b>All 125 builds pass every check</b></span></header><div class="b3-tk-cks"><span class="b3-tk-ck"><span class="b3-tk-ic" data-sev="ok">⟨svg.ic⟩</span><b>Has an image</b></span><span class="b3-tk-ck"><span class="b3-tk-ic" data-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-rp · b3/board.css:1219 |
+| gap | `16px` | `` | .b3-rp · b3/board.css:1219 |
+| column-gap | `16px` | `16px` | .b3-rp · b3/board.css:1219 |
+| row-gap | `16px` | `16px` | .b3-rp · b3/board.css:1219 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `20px 18px 22px` | `` | .b3-rp · b3/board.css:1219 |
+| padding-top | `20px` | `20px` | .b3-rp · b3/board.css:1219 |
+| padding-right | `18px` | `18px` | .b3-rp · b3/board.css:1219 |
+| padding-bottom | `22px` | `22px` | .b3-rp · b3/board.css:1219 |
+| padding-left | `18px` | `18px` | .b3-rp · b3/board.css:1219 |
+| border-top | `1px solid var(--rule)` | `` | .b3-rp · b3/board.css:1219 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### broadcast · One staged
+
+41 distinct signatures on screen; 1 not already specced above.
+
+
+### `span.btab.staged`
+
+inside `.—` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts1-84` · rendered **94×28** · 1 instance look like this
+
+```html
+<span class="btab staged" style="--lc: var(--ok);">⟨svg.ic⟩Live now</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `inline-flex` | .btab · app.css:980 |
+| gap | `7px` | `` | .btab · app.css:980 |
+| column-gap | `7px` | `7px` | .btab · app.css:980 |
+| row-gap | `7px` | `7px` | .btab · app.css:980 |
+| align-items | `center` | `center` | .btab · app.css:980 |
+| height | `28px` | `28px` | .btab · app.css:980 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 11px 0 12px` | `` | .btab · app.css:980 |
+| padding-top | `0px` | `0px` | .btab · app.css:980 |
+| padding-right | `11px` | `11px` | .btab · app.css:980 |
+| padding-bottom | `0px` | `0px` | .btab · app.css:980 |
+| padding-left | `12px` | `12px` | .btab · app.css:980 |
+| border-radius | `var(--rad-1)` | `` | .btab · app.css:980 |
+| outline | `1.5px dashed var(--lc)` | `` | .btab.staged · app.css:981 |
+| outline-offset | ⚠️ `-1.5px` | `-1px` | .btab.staged · app.css:981 · **a later rule wins — port the computed value and find that rule** |
+| background | `none` | `` | .btab.staged · app.css:981 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .btab.staged · app.css:981 |
+| background-image | `none` | `none` | .btab.staged · app.css:981 |
+| box-shadow | `inset 3px 0 0 color-mix(in srgb,var(--lc) 55%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.55) 3px 0px 0px 0px inset` | .btab.staged · app.css:981 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .btab · app.css:980 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .btab · app.css:980 |
+| font-size | `` | `12px` | .btab · app.css:980 |
+| font-weight | `` | `600` | .btab · app.css:980 |
+| font-style | `` | `normal` | .btab · app.css:980 |
+| font-variant-numeric | `` | `normal` | .btab · app.css:980 |
+| line-height | `` | `12px` | .btab · app.css:980 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | `nowrap` | `` | .btab · app.css:980 |
+| color | `var(--lc)` | `rgb(123, 219, 99)` | .btab · app.css:980 |
+| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+
+
+### broadcast · Posting
+
+73 distinct signatures on screen; 27 not already specced above.
+
+
+### `div.b4-panel`
+
+inside `.pb-stage` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-1` · rendered **1148×920** · 1 instance look like this
+
+```html
+<div class="b4-panel"><section class="panel" id="manifest"><div class="mtools"><div class="mt-r1"><span class="mlabel"><span>Manifest</span></span><span class="srch">⟨svg⟩<label class="sr" for="manifest-search">Search announcements</label><input id="manifest-search" class="" placeholder="Search the text…"></span><button class="pill lead madd">⟨svg.ic⟩Post announcement</button></div><div class="mt-r2"><span class="mt-
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .b4 .b4-panel · b4.css:24 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `svg.ic`
+
+inside `.pill` · 9 on screen · **2 looks**
+
+#### look 1 of 2
+
+`broadcasts2-158` · rendered **13×13** · 2 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-minus"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `13px` | `13px` | .drawer.b1 .pb-step .ic · b1.css:262 |
+| height | `13px` | `13px` | .drawer.b1 .pb-step .ic · b1.css:262 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b1 .pb-step button · b1.css:89 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-step button · b1.css:89 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 2 of 2
+
+`broadcasts2-163` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `14px` | `14px` | .b1 .pb-gapday .ic · b1.css:242 |
+| height | `14px` | `14px` | .b1 .pb-gapday .ic · b1.css:242 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-gapday · b1.css:241 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-gapday · b1.css:241 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-gapday · b1.css:241 |
+| font-weight | ↑ `` | `600` | inherited · .b1 .pb-gapday · b1.css:241 |
+| font-style | ↑ `` | `normal` | inherited · .b1 .pb-gapday · b1.css:241 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-gapday · b1.css:241 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-gapday · b1.css:241 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-gapday · b1.css:241 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-gapday .ic · b1.css:242 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+
+
+### `i`
+
+inside `.chip` · 6 on screen · **3 looks**
+
+#### look 1 of 3
+
+`broadcasts2-135` · rendered **7×4** · 1 instance look like this
+
+```html
+<i style="width: 2.1%;"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .cmeter i · app.css:2480 |
+| width | `2.1%` | `7.15625px` | style attribute |
+| height | `100%` | `4px` | .cmeter i · app.css:2480 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-1) 0 0 var(--rad-1)` | `` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
+| background | `color-mix(in srgb,var(--r-broadcast) 38%,var(--raised))` | `` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
+| background-color | `` | `color(srgb 0.427059 0.202118 0.339843)` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
+| background-image | `` | `none` | .b1 .pb-meter2 .cmeter i:first-child · b1.css:230 |
+| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
+| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
+| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
+| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
+
+#### look 2 of 3
+
+`broadcasts2-136` · rendered **0×4** · 1 instance look like this
+
+```html
+<i style="width: 0%;"></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .cmeter i · app.css:2480 |
+| width | `0%` | `0px` | style attribute |
+| height | `100%` | `4px` | .cmeter i · app.css:2480 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `0 var(--rad-1) var(--rad-1) 0` | `` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
+| background | `var(--r-broadcast)` | `` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
+| background-color | `` | `rgb(236, 72, 153)` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
+| background-image | `` | `none` | .b1 .pb-meter2 .cmeter i + i · b1.css:231 |
+| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
+| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
+| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
+| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
+
+#### look 3 of 3
+
+`broadcasts2-152` · rendered **16×16** · 1 instance look like this
+
+```html
+<i></i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b1 .pb-swt i · b1.css:181 |
+| width | `16px` | `16px` | .b1 .pb-swt i · b1.css:181 |
+| height | `16px` | `16px` | .b1 .pb-swt i · b1.css:181 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `3px` | `3px` | .b1 .pb-swt i · b1.css:181 |
+| left | `3px` | `3px` | .b1 .pb-swt i · b1.css:181 |
+| border-radius | `var(--rad-round)` | `` | .b1 .pb-swt i · b1.css:181 |
+| background | `var(--ink3)` | `` | .b1 .pb-swt i · b1.css:181 |
+| background-color | `` | `rgb(133, 147, 159)` | .b1 .pb-swt i · b1.css:181 |
+| background-image | `` | `none` | .b1 .pb-swt i · b1.css:181 |
+| font | ↑ `500 var(--t-sm)/1 var(--ui)` | `` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-weight | `400` | `400` | .dwfield span i · app.css:3575 |
+| font-style | `normal` | `normal` | .dwfield span i · app.css:3575 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
+| letter-spacing | `0px` | `normal` | .dwfield span i · app.css:3575 |
+| text-transform | `none` | `none` | .dwfield span i · app.css:3575 |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield span i · app.css:3575 |
+| transition | `transform .24s cubic-bezier(.3,.7,.2,1),background .2s` | `` | .b1 .pb-swt i · b1.css:181 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-sw · b1.css:179 |
+
+
+### `b`
+
+inside `.—` · 6 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-138` · rendered **36×16** · 1 instance look like this · text “5,874”
+
+```html
+<b>5,874</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `inline` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-weight | `600` | `600` | .b1 .pb-meter2 span b · b1.css:233 |
+| font-style | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `nowrap` | `` | inherited · .b1 .pb-meter2 span · b1.css:232 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b1 .pb-meter2 span b · b1.css:233 |
+
+
+### `div.on.scrim`
+
+inside `.pb-stage` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-120` · rendered **1148×920** · 1 instance look like this
+
+```html
+<div class="scrim on"></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| position | `absolute` | `absolute` | .g-stage .scrim · gates.css:164 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .scrim · app.css:1354 |
+| top | `0px` | `0px` | .scrim · app.css:1354 |
+| right | `0px` | `0px` | .scrim · app.css:1354 |
+| bottom | `0px` | `0px` | .scrim · app.css:1354 |
+| left | `0px` | `0px` | .scrim · app.css:1354 |
+| background | `var(--overlay-66)` | `` | .scrim · app.css:1354 |
+| background-color | `` | `rgba(6, 9, 11, 0.66)` | .scrim · app.css:1354 |
+| background-image | `` | `none` | .scrim · app.css:1354 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| opacity | `1` | `1` | .scrim.on · app.css:1356 |
+| transition | `opacity .16s` | `` | .scrim · app.css:1354 |
+| z-index | `44` | `44` | .scrim · app.css:1354 |
+| pointer-events | `auto` | `auto` | .scrim.on · app.css:1356 |
+
+
+### `aside.b1.drawer.open.wide[role=dialog]`
+
+inside `.pb-stage` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-121` · rendered **880×680** · 1 instance look like this · aria-label="Post an announcement" role="dialog"
+
+```html
+<aside class="drawer open wide b1" role="dialog" aria-modal="true" aria-label="Post an announcement"><header class="dw-h"><div class="dw-ttl"><h2>Post an announcement</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="bed"><div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .drawer · app.css:1361 |
+| position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
+| flex-direction | `column` | `column` | .drawer · app.css:1361 |
+| width | `min(880px, -40px + 100vw)` | `880px` | .drawer.wide · app.css:1367 |
+| max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| top | `50%` | `460px` | .drawer · app.css:1361 |
+| left | `50%` | `574px` | .drawer · app.css:1361 |
+| border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
+| border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
+| background | `radial-gradient(78% 210% at -8% 118%,color-mix(in srgb,var(--m1) 15%,transparent) 0,transparent 68%), radial-gradient(66% 190% at 26% -22%,color-mix(in srgb,var(--m3,var(--patch)) 13%,transparent) 0,transparent 66%), radial-gradient(72% 200% at 68% 132%,color-mix(in srgb,var(--m2) 12%,transparent) 0,transparent 70%), radial-gradient(60% 180% at 112% -16%,color-mix(in srgb,var(--m4,var(--r-armory)) 11%,transparent) 0,transparent 68%), radial-gradient(120% 120% at 50% 50%,transparent 38%,#00000055 100%), linear-gradient(180deg,#ffffff0a 0,transparent 26%), color-mix(in srgb,#0B0F12 42%,var(--raised))` | `` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-color | `` | `color(srgb 0.0886275 0.113412 0.134275)` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| background-image | `` | `radial-gradient(78% 210% at -8% 118%, color(srgb 1 0.231373 0.360784 / 0.15) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(66% 190% at 26% -22%, color(srgb 0.94902 0.760784 0.188235 / 0.13) 0px, rgba(0, 0, 0, 0) 66%), radial-gradient(72% 200% at 68% 132%, color(srgb 0.964706 0.662745 0.231373 / 0.12) 0px, rgba(0, 0, 0, 0) 70%), radial-gradient(60% 180% at 112% -16%, color(srgb 0.937255 0.266667 0.266667 / 0.11) 0px, rgba(0, 0, 0, 0) 68%), radial-gradient(120% 120%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.333) 100%), linear-gradient(rgba(255, 255, 255, 0.04) 0px, rgba(0, 0, 0, 0) 26%), none` | html:is([data-b3-xbg="mesh"], [data-b3-xbg="ground"]) :is(.drawer:has(.b3-nb), .drawer.b1) · b4.css:34 |
+| box-shadow | `0 40px 90px -20px var(--scrim-90),0 0 0 1px rgba(255,255,255,.04)` | `rgba(0, 0, 0, 0.9) 0px 40px 90px -20px, rgba(255, 255, 255, 0.04) 0px 0px 0px 1px` | .drawer · app.css:1361 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| opacity | `1` | `1` | .drawer.open · app.css:1366 |
+| overflow | `hidden` | `` | .drawer · app.css:1361 |
+| overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
+| overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -440, -340.086)` | .drawer.open · app.css:1366 |
+| transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
+| z-index | `45` | `45` | .drawer · app.css:1361 |
+| pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
+
+
+### `div.dw-b`
+
+inside `.drawer` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-128` · rendered **878×556** · 1 instance look like this
+
+```html
+<div class="dw-b"><div class="bed"><div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="d
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| flex | `1 1 auto` | `` | .dw-b · app.css:1387 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `var(--s4) var(--s5)` | `` | .dw-b · app.css:1387 |
+| padding-top | `` | `16px` | .dw-b · app.css:1387 |
+| padding-right | `` | `24px` | .dw-b · app.css:1387 |
+| padding-bottom | `` | `16px` | .dw-b · app.css:1387 |
+| padding-left | `` | `24px` | .dw-b · app.css:1387 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `auto` | `` | .dw-b · app.css:1387 |
+| overflow-x | `auto` | `auto` | .dw-b · app.css:1387 |
+| overflow-y | `auto` | `auto` | .dw-b · app.css:1387 |
+
+
+### `div.bed`
+
+inside `.dw-b` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-129` · rendered **830×524** · 1 instance look like this
+
+```html
+<div class="bed"><div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="dwfield"><label for
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .bed · app.css:3557 |
+| grid-template-columns | `minmax(0px, 1fr) 320px` | `492px 320px` | .drawer.b1 .bed · b1.css:259 |
+| gap | `18px` | `` | .drawer.wide .bed · app.css:7080 |
+| column-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
+| row-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.pb-col`
+
+inside `.bed` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-130` · rendered **492×524** · 1 instance look like this
+
+```html
+<div class="pb-col"><div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div><div class="dwfield"><label for="post-banner">Ba
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b1 .pb-col · b1.css:99 |
+| gap | `18px` | `` | .b1 .pb-col · b1.css:99 |
+| column-gap | `18px` | `18px` | .b1 .pb-col · b1.css:99 |
+| row-gap | `18px` | `18px` | .b1 .pb-col · b1.css:99 |
+| min-width | `0px` | `0px` | .b1 .pb-col · b1.css:246 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.dwfield`
+
+inside `.pb-col` · 4 on screen · **2 looks**
+
+#### look 1 of 2
+
+`broadcasts2-131` · rendered **492×147** · 1 instance look like this
+
+```html
+<div class="dwfield"><label for="post-text">Text</label><textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."></textarea><div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .dwfield · app.css:2541 |
+| position | `relative` | `relative` | .dwfield · app.css:1082 |
+| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
+| column-gap | `` | `8px` | .dwfield · app.css:2541 |
+| row-gap | `` | `8px` | .dwfield · app.css:2541 |
+| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+#### look 2 of 2
+
+`broadcasts2-144` · rendered **238×116** · 1 instance look like this
+
+```html
+<div class="dwfield" data-never="false"><div class="pb-lrow"><label for="post-starts">Starts</label></div><input id="post-starts" type="text" autocomplete="off" spellcheck="true" placeholder="in 3 days"></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .dwfield · app.css:2541 |
+| position | `relative` | `relative` | .dwfield · app.css:1082 |
+| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
+| column-gap | `` | `8px` | .dwfield · app.css:2541 |
+| row-gap | `` | `8px` | .dwfield · app.css:2541 |
+| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `label`
+
+inside `.dwfield` · 5 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-132` · rendered **492×14** · 5 instances look like this · text “Text”
+
+```html
+<label for="post-text">Text</label>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | label · app.css:669 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `5px` | `5px` | label · app.css:669 |
+| font | `600 var(--t-sm)/1.2 var(--ui)` | `` | .dwfield label · app.css:2544 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .dwfield label · app.css:2544 |
+| font-size | `` | `12px` | .dwfield label · app.css:2544 |
+| font-weight | `` | `600` | .dwfield label · app.css:2544 |
+| font-style | `` | `normal` | .dwfield label · app.css:2544 |
+| font-variant-numeric | `` | `normal` | .dwfield label · app.css:2544 |
+| line-height | `` | `14.4px` | .dwfield label · app.css:2544 |
+| letter-spacing | `0px` | `normal` | .dwfield label · app.css:2544 |
+| text-transform | `none` | `none` | .dwfield label · app.css:2544 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .dwfield label · app.css:2544 |
+| cursor | `default` | `default` | label · user-agent:? |
+
+**:hover** — changes nothing on the element itself
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes nothing on the element itself
+
+
+### `div.pb-meter2`
+
+inside `.dwfield` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-133` · rendered **492×12** · 1 instance look like this · aria-label="Delivery budget"
+
+```html
+<div class="pb-meter2" aria-label="Delivery budget"><span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span><span><b>5,874</b> of 6,000 left</span></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-meter2 · b1.css:227 |
+| gap | `14px` | `` | .b1 .pb-meter2 · b1.css:227 |
+| column-gap | `14px` | `14px` | .b1 .pb-meter2 · b1.css:227 |
+| row-gap | `14px` | `14px` | .b1 .pb-meter2 · b1.css:227 |
+| align-items | `center` | `center` | .b1 .pb-meter2 · b1.css:227 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-top | `10px` | `10px` | .b1 .pb-meter2 · b1.css:227 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.cmeter`
+
+inside `.pb-meter2` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-134` · rendered **341×4** · 1 instance look like this
+
+```html
+<span class="cmeter"><i style="width: 2.1%;"></i><i style="width: 0%;"></i></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-meter2 .cmeter · b1.css:228 |
+| flex | `1` | `` | .b1 .pb-meter2 .cmeter · b1.css:228 |
+| height | `4px` | `4px` | .b1 .pb-meter2 .cmeter · b1.css:228 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-1)` | `` | .cmeter · app.css:2472 |
+| background | `var(--rule)` | `` | .cmeter · app.css:2472 |
+| background-color | `` | `rgb(42, 52, 61)` | .cmeter · app.css:2472 |
+| background-image | `` | `none` | .cmeter · app.css:2472 |
+| font | `500 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-meter2 span · b1.css:232 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-meter2 span · b1.css:232 |
+| font-size | `` | `12px` | .b1 .pb-meter2 span · b1.css:232 |
+| font-weight | `` | `500` | .b1 .pb-meter2 span · b1.css:232 |
+| font-style | `` | `normal` | .b1 .pb-meter2 span · b1.css:232 |
+| font-variant-numeric | `` | `normal` | .b1 .pb-meter2 span · b1.css:232 |
+| line-height | `` | `12px` | .b1 .pb-meter2 span · b1.css:232 |
+| letter-spacing | — | `normal` | initial |
+| white-space | `nowrap` | `` | .b1 .pb-meter2 span · b1.css:232 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-meter2 span · b1.css:232 |
+| overflow | `hidden` | `` | .cmeter · app.css:2472 |
+| overflow-x | `hidden` | `hidden` | .cmeter · app.css:2472 |
+| overflow-y | `hidden` | `hidden` | .cmeter · app.css:2472 |
+
+
+### `div.pb-banner`
+
+inside `.dwfield` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-141` · rendered **492×44** · 1 instance look like this
+
+```html
+<div class="pb-banner"><span class="pb-th"></span><input id="post-banner" placeholder="https://…" autocomplete="off" spellcheck="true"></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b1 .pb-banner · b1.css:83 |
+| grid-template-columns | `80px 1fr` | `80px 400px` | .b1 .pb-banner · b1.css:83 |
+| gap | `12px` | `` | .b1 .pb-banner · b1.css:83 |
+| column-gap | `12px` | `12px` | .b1 .pb-banner · b1.css:83 |
+| row-gap | `12px` | `12px` | .b1 .pb-banner · b1.css:83 |
+| align-items | `end` | `end` | .b1 .pb-banner · b1.css:83 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.pb-th`
+
+inside `.pb-banner` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-142` · rendered **80×44** · 1 instance look like this
+
+```html
+<span class="pb-th"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| height | `var(--tap)` | `44px` | .b1 .pb-banner .pb-th · b1.css:84 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-2)` | `` | .b1 .pb-banner .pb-th · b1.css:84 |
+| background | `linear-gradient(115deg,#3b0d24,#7a1846 40%,#ec4899 70%,#ffc36b)` | `` | .b1 .pb-banner .pb-th · b1.css:84 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-banner .pb-th · b1.css:84 |
+| background-image | `linear-gradient(115deg, rgb(59, 13, 36), rgb(122, 24, 70) 40%, rgb(236, 72, 153) 70%, rgb(255, 195, 107))` | `linear-gradient(115deg, rgb(59, 13, 36), rgb(122, 24, 70) 40%, rgb(236, 72, 153) 70%, rgb(255, 195, 107))` | .b1 .pb-banner .pb-th · b1.css:84 |
+| box-shadow | `rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset` | `rgba(255, 255, 255, 0.08) 0px 0px 0px 1px inset` | .b1 .pb-banner .pb-th · b1.css:84 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.dw-grid2`
+
+inside `.pb-col` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-143` · rendered **492×132** · 1 instance look like this
+
+```html
+<div class="dw-grid2" style="gap: 0px 16px;"><div class="dwfield" data-never="false"><div class="pb-lrow"><label for="post-starts">Starts</label></div><input id="post-starts" type="text" autocomplete="off" spellcheck="true" placeholder="in 3 days"></div><div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label for="post-expires">Ends</label><button type="button" class="pb-sw" role="switch" aria-chec
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .dw-grid2 · app.css:6864 |
+| grid-template-columns | `1fr 1fr` | `238px 238px` | .dw-grid2 · app.css:6864 |
+| gap | `0px 16px` | `` | style attribute |
+| column-gap | `16px` | `16px` | style attribute |
+| row-gap | `0px` | `0px` | style attribute |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.pb-lrow`
+
+inside `.dwfield` · 2 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-145` · rendered **238×32** · 2 instances look like this
+
+```html
+<div class="pb-lrow"><label for="post-starts">Starts</label></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-lrow · b1.css:177 |
+| align-items | `center` | `center` | .b1 .pb-lrow · b1.css:177 |
+| justify-content | `space-between` | `space-between` | .b1 .pb-lrow · b1.css:177 |
+| min-height | `32px` | `32px` | .b1 .pb-lrow · b1.css:177 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `6px` | `6px` | .b1 .pb-lrow · b1.css:177 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.dwfield.pb-endf`
+
+inside `.dw-grid2` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-147` · rendered **238×116** · 1 instance look like this
+
+```html
+<div class="dwfield pb-endf" data-never="false"><div class="pb-lrow"><label for="post-expires">Ends</label><button type="button" class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button></div><input id="post-expires" type="text" autocomplete="off" spellcheck="true" placeholder="Blank"><span class="pb-echo pb-dim">default</span></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .dwfield · app.css:2541 |
+| position | `relative` | `relative` | .dwfield · app.css:1082 |
+| gap | `var(--s2)` | `` | .dwfield · app.css:2541 |
+| column-gap | `` | `8px` | .dwfield · app.css:2541 |
+| row-gap | `` | `8px` | .dwfield · app.css:2541 |
+| flex-direction | `column` | `column` | .dwfield · app.css:2541 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-bottom | `var(--s4)` | `16px` | .dwfield · app.css:2541 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `button.pb-sw[role=switch]`
+
+inside `.pb-lrow` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-150` · rendered **116×32** · 1 instance look like this · role="switch" type="button"
+
+```html
+<button type="button" class="pb-sw" role="switch" aria-checked="false"><span class="pb-swt"><i></i></span>Never ends</button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b1 .pb-sw · b1.css:179 |
+| gap | `10px` | `` | .b1 .pb-sw · b1.css:179 |
+| column-gap | `10px` | `10px` | .b1 .pb-sw · b1.css:179 |
+| row-gap | `10px` | `10px` | .b1 .pb-sw · b1.css:179 |
+| align-items | `center` | `center` | .b1 .pb-sw · b1.css:179 |
+| min-height | `32px` | `32px` | .b1 .pb-sw · b1.css:179 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0 2px` | `` | .b1 .pb-sw · b1.css:179 |
+| padding-top | `0px` | `0px` | .b1 .pb-sw · b1.css:179 |
+| padding-right | `2px` | `2px` | .b1 .pb-sw · b1.css:179 |
+| padding-bottom | `0px` | `0px` | .b1 .pb-sw · b1.css:179 |
+| padding-left | `2px` | `2px` | .b1 .pb-sw · b1.css:179 |
+| border | `0` | `` | .b1 .pb-sw · b1.css:179 |
+| border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:388 |
+| background | `none` | `` | .b1 .pb-sw · b1.css:179 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b1 .pb-sw · b1.css:179 |
+| background-image | `none` | `none` | .b1 .pb-sw · b1.css:179 |
+| font | `500 var(--t-sm)/1 var(--ui)` | `` | .b1 .pb-sw · b1.css:179 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b1 .pb-sw · b1.css:179 |
+| font-size | `` | `12px` | .b1 .pb-sw · b1.css:179 |
+| font-weight | `` | `500` | .b1 .pb-sw · b1.css:179 |
+| font-style | `` | `normal` | .b1 .pb-sw · b1.css:179 |
+| font-variant-numeric | `` | `normal` | .b1 .pb-sw · b1.css:179 |
+| line-height | `` | `12px` | .b1 .pb-sw · b1.css:179 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-sw · b1.css:179 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| cursor | `pointer` | `pointer` | .b1 .pb-sw · b1.css:179 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+
+**:hover** — changes nothing on the element itself
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `3px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+
+
+### `span.pb-swt`
+
+inside `.pb-sw` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-151` · rendered **38×22** · 1 instance look like this
+
+```html
+<span class="pb-swt"><i></i></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `relative` | `relative` | .b1 .pb-swt · b1.css:180 |
+| width | `38px` | `38px` | .b1 .pb-swt · b1.css:180 |
+| height | `22px` | `22px` | .b1 .pb-swt · b1.css:180 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-pill)` | `` | .b1 .pb-swt · b1.css:180 |
+| background | `var(--sunk)` | `` | .b1 .pb-swt · b1.css:180 |
+| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-swt · b1.css:180 |
+| background-image | `` | `none` | .b1 .pb-swt · b1.css:180 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-swt · b1.css:180 |
+| font | ↑ `500 var(--t-sm)/1 var(--ui)` | `` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-size | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-weight | ↑ `` | `500` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-style | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b1 .pb-sw · b1.css:179 |
+| line-height | ↑ `` | `12px` | inherited · .b1 .pb-sw · b1.css:179 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b1 .pb-sw · b1.css:179 |
+| transition | `background .2s,box-shadow .2s` | `` | .b1 .pb-swt · b1.css:180 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b1 .pb-sw · b1.css:179 |
+
+
+### `span.pb-dim.pb-echo`
+
+inside `.dwfield` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-153` · rendered **238×12** · 1 instance look like this · text “default”
+
+```html
+<span class="pb-echo pb-dim">default</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b1 .pb-echo · b1.css:34 |
+| gap | `6px` | `` | .b1 .pb-echo · b1.css:34 |
+| column-gap | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
+| row-gap | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
+| align-items | `center` | `center` | .b1 .pb-echo · b1.css:34 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-top | `6px` | `6px` | .b1 .pb-echo · b1.css:34 |
+| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-echo · b1.css:34 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-echo · b1.css:34 |
+| font-size | `` | `12px` | .b1 .pb-echo · b1.css:34 |
+| font-weight | `` | `600` | .b1 .pb-echo · b1.css:34 |
+| font-style | `` | `normal` | .b1 .pb-echo · b1.css:34 |
+| font-variant-numeric | `` | `normal` | .b1 .pb-echo · b1.css:34 |
+| line-height | `` | `12px` | .b1 .pb-echo · b1.css:34 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b1 .pb-echo.pb-dim · b1.css:35 |
+
+
+### `div.pb-rep`
+
+inside `.dwfield` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-156` · rendered **492×44** · 1 instance look like this
+
+```html
+<div class="pb-rep"><div class="pb-step"><button type="button" aria-label="Fewer" disabled="">⟨svg.ic⟩</button><output>1</output><button type="button" aria-label="More">⟨svg.ic⟩</button></div><div class="pb-cards" role="img" aria-label="Shown to each player up to 1 times, at most once a day"><span class="pb-mini"></span><span class="pb-gapday">⟨svg.ic⟩1 a day max</span></div></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-rep · b1.css:190 |
+| grid-template-columns | `auto 1fr` | `auto 1fr` | .b1 .pb-rep · b1.css:87 |
+| gap | `20px` | `` | .b1 .pb-rep · b1.css:190 |
+| column-gap | `20px` | `20px` | .b1 .pb-rep · b1.css:190 |
+| row-gap | `20px` | `20px` | .b1 .pb-rep · b1.css:190 |
+| align-items | `center` | `center` | .b1 .pb-rep · b1.css:190 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `div.pb-step`
+
+inside `.pb-rep` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-157` · rendered **132×44** · 1 instance look like this
+
+```html
+<div class="pb-step"><button type="button" aria-label="Fewer" disabled="">⟨svg.ic⟩</button><output>1</output><button type="button" aria-label="More">⟨svg.ic⟩</button></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b1 .pb-step · b1.css:88 |
+| align-items | `center` | `center` | .b1 .pb-step · b1.css:88 |
+| height | `var(--tap)` | `44px` | .b1 .pb-step · b1.css:88 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-2)` | `` | .b1 .pb-step · b1.css:88 |
+| background | `var(--sunk)` | `` | .b1 .pb-step · b1.css:88 |
+| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-step · b1.css:88 |
+| background-image | `` | `none` | .b1 .pb-step · b1.css:88 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-step · b1.css:88 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .b1 .pb-step · b1.css:88 |
+| overflow-x | `hidden` | `hidden` | .b1 .pb-step · b1.css:88 |
+| overflow-y | `hidden` | `hidden` | .b1 .pb-step · b1.css:88 |
+
+
+### `div.pb-cards[role=img]`
+
+inside `.pb-rep` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-160` · rendered **169×44** · 1 instance look like this · aria-label="Shown to each player up to 1 times, at m" role="img"
+
+```html
+<div class="pb-cards" role="img" aria-label="Shown to each player up to 1 times, at most once a day"><span class="pb-mini"></span><span class="pb-gapday">⟨svg.ic⟩1 a day max</span></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `flex` | `flex` | .b1 .pb-cards · b1.css:234 |
+| gap | `8px` | `` | .b1 .pb-cards · b1.css:234 |
+| column-gap | `8px` | `8px` | .b1 .pb-cards · b1.css:234 |
+| row-gap | `8px` | `8px` | .b1 .pb-cards · b1.css:234 |
+| align-items | `center` | `center` | .b1 .pb-cards · b1.css:234 |
+| height | `var(--tap)` | `44px` | .b1 .pb-cards · b1.css:234 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### `span.pb-mini`
+
+inside `.pb-cards` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-161` · rendered **34×26** · 1 instance look like this
+
+```html
+<span class="pb-mini"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `relative` | `relative` | .b1 .pb-mini · b1.css:235 |
+| flex | `none` | `` | .b1 .pb-mini · b1.css:235 |
+| width | `34px` | `34px` | .b1 .pb-mini · b1.css:235 |
+| height | `26px` | `26px` | .b1 .pb-mini · b1.css:235 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-1)` | `` | .b1 .pb-mini · b1.css:235 |
+| background | `var(--raised)` | `` | .b1 .pb-mini · b1.css:235 |
+| background-color | `` | `rgb(31, 39, 46)` | .b1 .pb-mini · b1.css:235 |
+| background-image | `` | `none` | .b1 .pb-mini · b1.css:235 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b1 .pb-mini · b1.css:235 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .b1 .pb-mini · b1.css:235 |
+| overflow-x | `hidden` | `hidden` | .b1 .pb-mini · b1.css:235 |
+| overflow-y | `hidden` | `hidden` | .b1 .pb-mini · b1.css:235 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b1 .pb-mini::before · b1.css:236 |
+| width | `3px` | .b1 .pb-mini::before · b1.css:236 |
+| top | `0px` | .b1 .pb-mini::before · b1.css:236 |
+| bottom | `0px` | .b1 .pb-mini::before · b1.css:236 |
+| left | `0px` | .b1 .pb-mini::before · b1.css:236 |
+| background | `var(--r-broadcast)` | .b1 .pb-mini::before · b1.css:236 |
+| background-color | `` | .b1 .pb-mini::before · b1.css:236 |
+| background-image | `` | .b1 .pb-mini::before · b1.css:236 |
+| content | `""` | .b1 .pb-mini::before · b1.css:236 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b1 .pb-mini::after · b1.css:237 |
+| height | `3px` | .b1 .pb-mini::after · b1.css:237 |
+| top | `8px` | .b1 .pb-mini::after · b1.css:237 |
+| right | `7px` | .b1 .pb-mini::after · b1.css:237 |
+| left | `8px` | .b1 .pb-mini::after · b1.css:237 |
+| border-radius | `2px` | .b1 .pb-mini::after · b1.css:237 |
+| background | `var(--ink3)` | .b1 .pb-mini::after · b1.css:237 |
+| background-color | `` | .b1 .pb-mini::after · b1.css:237 |
+| background-image | `` | .b1 .pb-mini::after · b1.css:237 |
+| box-shadow | `0 6px 0 0 color-mix(in srgb,var(--ink3) 55%,transparent)` | .b1 .pb-mini::after · b1.css:237 |
+| content | `""` | .b1 .pb-mini::after · b1.css:237 |
+
+
+### `span.pb-gapday`
+
+inside `.pb-cards` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-162` · rendered **119×28** · 1 instance look like this
+
+```html
+<span class="pb-gapday">⟨svg.ic⟩1 a day max</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b1 .pb-gapday · b1.css:241 |
+| gap | `6px` | `` | .b1 .pb-gapday · b1.css:241 |
+| column-gap | `6px` | `6px` | .b1 .pb-gapday · b1.css:241 |
+| row-gap | `6px` | `6px` | .b1 .pb-gapday · b1.css:241 |
+| align-items | `center` | `center` | .b1 .pb-gapday · b1.css:241 |
+| height | `28px` | `28px` | .b1 .pb-gapday · b1.css:241 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 10px` | `` | .b1 .pb-gapday · b1.css:241 |
+| padding-top | `0px` | `0px` | .b1 .pb-gapday · b1.css:241 |
+| padding-right | `10px` | `10px` | .b1 .pb-gapday · b1.css:241 |
+| padding-bottom | `0px` | `0px` | .b1 .pb-gapday · b1.css:241 |
+| padding-left | `10px` | `10px` | .b1 .pb-gapday · b1.css:241 |
+| margin-left | `8px` | `8px` | .b1 .pb-gapday · b1.css:241 |
+| border-radius | `var(--rad-pill)` | `` | .b1 .pb-gapday · b1.css:241 |
+| background | `var(--sunk)` | `` | .b1 .pb-gapday · b1.css:241 |
+| background-color | `` | `rgb(11, 15, 18)` | .b1 .pb-gapday · b1.css:241 |
+| background-image | `` | `none` | .b1 .pb-gapday · b1.css:241 |
+| box-shadow | `inset 0 0 0 1px var(--rule)` | `rgb(42, 52, 61) 0px 0px 0px 1px inset` | .b1 .pb-gapday · b1.css:241 |
+| font | `600 var(--t-sm)/1 var(--data)` | `` | .b1 .pb-gapday · b1.css:241 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b1 .pb-gapday · b1.css:241 |
+| font-size | `` | `12px` | .b1 .pb-gapday · b1.css:241 |
+| font-weight | `` | `600` | .b1 .pb-gapday · b1.css:241 |
+| font-style | `` | `normal` | .b1 .pb-gapday · b1.css:241 |
+| font-variant-numeric | `` | `normal` | .b1 .pb-gapday · b1.css:241 |
+| line-height | `` | `12px` | .b1 .pb-gapday · b1.css:241 |
+| letter-spacing | — | `normal` | initial |
+| white-space | `nowrap` | `` | .b1 .pb-gapday · b1.css:241 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b1 .pb-gapday · b1.css:241 |
+
+
+### `aside.bed-side.pb-card`
+
+inside `.bed` · 1 on screen · **1 look**
+
+#### the one look
+
+`broadcasts2-164` · rendered **320×156** · 1 instance look like this
+
+```html
+<aside class="bed-side pb-card"><div class="bed-sec"><h5>In Discord</h5><p class="empty">Type the announcement and the card build…</p></div></aside>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| position | `sticky` | `sticky` | .bed-side · app.css:6604 |
+| grid-template-columns | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| gap | `normal` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| column-gap | `normal` | `normal` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| row-gap | `normal` | `normal` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| align-self | `start` | `start` | .bed-side · app.css:6604 |
+| min-width | `0px` | `0px` | .bed-side · app.css:6604 |
+| height | `auto` | `155.5px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| padding-top | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| padding-right | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| padding-bottom | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| padding-left | `0px` | `0px` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| top | `14px` | `14px` | .bed-side · app.css:6604 |
+| border-radius | `0` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| background | `none` | `` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| background-image | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| box-shadow | `none` | `none` | .drawer.b1 .bed-side.pb-card · b1.css:260 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
+
+### history · Only alerts
+
+46 distinct signatures on screen; 0 not already specced above.
+
+
+### history · Only what can be undone
+
+46 distinct signatures on screen; 0 not already specced above.
+
+
+### history · Only the probes
+
+46 distinct signatures on screen; 0 not already specced above.
+
+
+### admin · Admin included
+
+7 distinct signatures on screen; 1 not already specced above.
+
+
+### `button.chip.incchip`
+
+inside `.incg` · 1 on screen · **1 look**
+
+#### the one look
+
+`admins1-6` · rendered **132×44** · 1 instance look like this · aria-pressed="true" type="button"
+
+```html
+<button type="button" class="chip incchip" aria-pressed="true">⟨svg.ic⟩Admin traffic</button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .chip · app.css:1242 |
+| gap | `var(--s2)` | `` | .chip.incchip · app.css:1044 |
+| column-gap | `` | `8px` | .chip.incchip · app.css:1044 |
+| row-gap | `` | `8px` | .chip.incchip · app.css:1044 |
+| align-items | `center` | `center` | .chip · app.css:1242 |
+| justify-content | `center` | `center` | .chip · app.css:1242 |
+| min-height | `var(--tap)` | `44px` | .chip.incchip · app.css:1044 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0 var(--s4)` | `` | .chip.incchip · app.css:1044 |
+| padding-top | `` | `0px` | .chip.incchip · app.css:1044 |
+| padding-right | `` | `16px` | .chip.incchip · app.css:1044 |
+| padding-bottom | `` | `0px` | .chip.incchip · app.css:1044 |
+| padding-left | `` | `16px` | .chip.incchip · app.css:1044 |
+| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
+| border-color | `color-mix(in srgb,var(--r-analytics) 45%,transparent)` | `` | .chip.incchip[aria-pressed="true"] · app.css:1046 |
+| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
+| background | `color-mix(in srgb,var(--r-analytics) 14%,transparent)` | `` | .chip.incchip[aria-pressed="true"] · app.css:1046 |
+| background-color | `` | `color(srgb 0.611765 0.784314 0.352941 / 0.14)` | .chip.incchip[aria-pressed="true"] · app.css:1046 |
+| background-image | `` | `none` | .chip.incchip[aria-pressed="true"] · app.css:1046 |
+| font | `inherit` | `` | button · app.css:621 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
+| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
+| font-weight | `600` | `600` | .chip · app.css:1242 |
+| font-style | `inherit` | `normal` | button · app.css:621 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
+| line-height | `inherit` | `18px` | button · app.css:621 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| text-decoration | `none` | `` | .chip · app.css:1242 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .chip.incchip[aria-pressed="true"] · app.css:1046 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| cursor | `pointer` | `pointer` | button · app.css:621 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+
+**:hover** — changes
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `color(srgb 0.611765 0.784314 0.352941 / 0.14)` | `rgb(35, 44, 52)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |

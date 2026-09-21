@@ -42,11 +42,11 @@ const CFG = {
     gates: [['G4', 'gate-g4', 'Armory manifest'], ['G6', 'gate-g6', 'Build name'], ['G11', 'gate-g11', 'Broadcast and History manifests'], ['G3', 'gate-g3', 'Announcement card'], ['G2', 'gate-g2', 'Admin traffic'], ['G1', 'gate-g1', 'Small text']] },
   // 🔴 BOARD 4: COLLECTIVE (2026-09-21 13:33 EDT). Every finished surface of boards 1–3 on one page in the kit's portal code — the one board Session 4
   // standardizes from and Session 5 ports once Board 4: Final supersedes it. Sections are `#c-<id>`; each stage is its `.g-stage`.
-  '4': { url: 'http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', wait: '#c-admin .g-stage *', title: 'Board 4: Collective', out: 'b4-spec.md', stageAll: '.g-stage',
-    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css'].map((f) => path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f)),
+  '4': { url: 'http://127.0.0.1:8900/local/pins2-board-3/redo/board4.html', wait: '#c-admin .b4-vb .incchip', title: 'Board 4: Collective', out: 'b4-spec.md', stageAll: '.b4g',
+    css: ['b3/board.css', 'gates.css', 'app.css', 'b2.css', 'b1.css', 'b4.css'].map((f) => path.resolve(__dirname, '../../../../../local/pins2-board-3/redo', f)),
     gates: [['C1', 'c-manifest', 'The Armory manifest'], ['C2', 'c-new-build', 'New build'], ['C3', 'c-compare', 'Compare'], ['C4', 'c-repairs', 'Repairs'],
       ['C5', 'c-export', 'Export'], ['C6', 'c-queue', 'The delivery queue'], ['C7', 'c-broadcast', 'The Broadcast manifest, and posting'], ['C8', 'c-history', 'History'],
-      ['C9', 'c-command', 'Command search'], ['C10', 'c-admin', 'Admin traffic']] },
+      ['C9', 'c-admin', 'Admin traffic']] },
 }[MODE];
 if (!CFG) throw new Error(`BOARD=${MODE}: expected 3e, 1, 2 or 4`);
 const URL_ = process.argv[2] || CFG.url;
@@ -224,7 +224,7 @@ const GATES = [
 
   // ── Every gate, resting ──
   if (MODE === '3e') for (const [gid, id, title, note] of GATES) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#g-${id} .g-stage`, `${gid}-`, note); }
-  else for (const [gid, id, title] of CFG.gates) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, `#${id} ${MODE === '1' ? '.pb-stage' : MODE === '4' ? '.g-stage' : ''}`.trim(), `${gid}-`); }
+  else for (const [gid, id, title] of CFG.gates) { out.push(`\n## ${gid} · ${title} — resting\n`); await dumpStage(`${gid} stage`, MODE === '4' ? `#${id} .pb-head ~ :not(.pb-new):not(.b4-try)` : `#${id} ${MODE === '1' ? '.pb-stage' : ''}`.trim(), `${gid}-`); }
 
   // ── Reachable states, each re-censused so only what is NEW is specced ──
   const click = async (sel) => { const ok = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; e.scrollIntoView({ block: 'center' }); e.click(); return true; }, sel); await new Promise((r) => setTimeout(r, 700)); return ok; };
@@ -244,21 +244,14 @@ const GATES = [
     if (await click('.chip.pb-adm')) await dumpStage('G2 · Admin traffic, toggled', '#gate-g2', 'G2a-');
   }
   if (MODE === '4') {
-    // Every Try button above a stage (the drawers: New build, Bulk create, DMZ, Post announcement; Compare; the manifest's selections),
-    // then Compare's own states the way he reaches them: board 1's weapon pill, then a second weapon through the search.
-    const tries = await p.evaluate(() => [...document.querySelectorAll('.g-gate')].flatMap((g) => [...g.querySelectorAll('.g-tries button')].map((b) => [g.id, b.textContent.trim()])));
-    for (const [gid, label] of tries) {
-      const ok = await p.evaluate((gid, label) => { const b = [...document.querySelectorAll(`#${gid} .g-tries button`)].find((x) => x.textContent.trim() === label); if (!b) return false; b.click(); return true; }, gid, label);
+    // (2026-09-21 14:47 EDT) Every section's STATE switch (its head's segmented control) and every Try button above a stage, each walked in turn.
+    const acts = await p.evaluate(() => [...document.querySelectorAll('.b4g')].flatMap((g) => [
+        ...[...g.querySelectorAll('.pb-ctl button')].slice(1).map((b, i) => [g.id, 'state', i + 1, b.textContent.trim()]),
+        ...[...g.querySelectorAll('.b4-try button')].map((b, i) => [g.id, 'try', i, b.textContent.trim()])]));
+    for (const [gid, kind, i, label] of acts) {
+      const ok = await p.evaluate((gid, kind, i) => { const g = document.getElementById(gid); const b = kind === 'state' ? g.querySelectorAll('.pb-ctl button')[i] : g.querySelectorAll('.b4-try button')[i]; if (!b) return false; b.click(); return true; }, gid, kind, i);
       await new Promise((r) => setTimeout(r, 1600));
-      if (ok) await dumpStage(`${gid.slice(2)} · ${label}`, `#${gid} .g-stage`, `${gid.slice(2)}${label.replace(/\W/g, '')}-`);
-      await p.keyboard.press('Escape'); await new Promise((r) => setTimeout(r, 400));
-    }
-    if (await click('#c-compare #compare .pb-sugg button')) {
-      await dumpStage('C3 · one weapon', '#c-compare .g-stage', 'C3one-');
-      const added = await p.evaluate(async () => { const i = document.querySelector('#cmp-weapon'); if (!i) return false; const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-        d.call(i, 'FFAR 1'); i.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 600));
-        const o = [...document.querySelectorAll('#cmp-weapon-list li')].find((x) => x.querySelector('b').textContent === 'FFAR 1'); if (!o) return false; o.click(); return true; });
-      if (added) { await new Promise((r) => setTimeout(r, 900)); await dumpStage('C3 · two weapons', '#c-compare .g-stage', 'C3two-'); }
+      if (ok) await dumpStage(`${gid.slice(2)} · ${label}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try)`, `${gid.slice(2)}${kind[0]}${i}-`);
     }
   }
   if (MODE === '3e') {
