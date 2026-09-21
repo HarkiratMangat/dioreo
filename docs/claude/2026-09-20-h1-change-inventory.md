@@ -19,9 +19,9 @@ status: live
 
 ## ✅ REVERTED at 2026-09-20 16:18 EDT, on his instruction — *"revert the stupid changes you made to the 'day grouped' variant"*
 
-**ROUND 13 is gone** (84 lines of CSS, the `k-` row classes, the three row heights, the kind tab's stripped fill and ring, the filter chips' stripped chrome, the entity's typeface, the day header's type and span). **ROUND 14/14B–14E is gone** with it, including `b3/river.js`, its gate branch and its CSS — the option that reached it no longer exists, and dead code on a board whose next session is a bug hunt is a trap.
+**ROUND 13 is gone** (84 lines of CSS, the `k-` row classes, the three row heights, the kind tab's stripped fill and ring, the filter chips' stripped chrome, the entity's typeface, the day header's type and span). **ROUND 14/14B–14E is gone** with it, including `the river gate’s file, under its working name at the time — it is local/pins2-board-3/redo/b3/history.js now`, its gate branch and its CSS — the option that reached it no longer exists, and dead code on a board whose next session is a bug hunt is a trap.
 
-**`p9`'s five options are restored verbatim** (A · Day groups · B · Time rail · C · Day blocks · D · Bursts · E · Date gutter), the burst rendering that option D needs is back in `b3/history.js`, and **the migration that discarded his stored `p9` is deleted** so a choice he made on this machine survives again.
+**`p9`'s five options are restored verbatim** (A · Day groups · B · Time rail · C · Day blocks · D · Bursts · E · Date gutter), the burst rendering that option D needs is back in `local/pins2-board-3/redo/b3/history.js`, and **the migration that discarded his stored `p9` is deleted** so a choice he made on this machine survives again.
 
 Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab back to its 8% fill and its ring, the entity back in JetBrains Mono, the filter chips back to their ring, and no river panel in the document.
 
@@ -39,7 +39,7 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 ### `local/pins2-board-3/redo/gates/history.js` — ✅ REVERTED
 - A third branch renders `B3River` when `p9 === 'r'`. The `now` and default branches are untouched.
 
-### `local/pins2-board-3/redo/b3/river.js` — ✅ DELETED. ⚠️ Its `b3-hlog` namespace no longer exists anywhere; do not go looking for it
+### `the river gate’s file, under its working name at the time — it is local/pins2-board-3/redo/b3/history.js now` — ✅ DELETED. ⚠️ Its `b3-hlog` namespace no longer exists anywhere; do not go looking for it
 - The whole "By form" view: change entries, an alert table grouped by message, a restart strip, a masthead figure row, a sparkline, two filter groups.
 - ⚠️ **It shipped under the class `b3-rv`, WHICH ALREADY EXISTED** as a pill component (`.b3-rv{border-radius:var(--rad-pill)}`), so the panel clipped itself into a circle. Renamed to `b3-hlog` by a blanket string replace over the ROUND 14 CSS block and this file — **if anything else on the board lost a `rv-` class, that replace is the cause.**
 - Known unfinished: the sparkline is clipped at the panel's right edge; `Season owner` repeats on every entry; entries are a uniform stack.
@@ -52,7 +52,7 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 - The day header went to `--t-lg`, gained its time span, and gained 16px above each group.
 - Undo gained `--raised` ground and `--ink` text.
 
-### `local/pins2-board-3/redo/b3/board.css` + `b3/history.js` — ROUNDS 12–12H (PUBLISHED in v68)
+### `local/pins2-board-3/redo/b3/board.css` + `local/pins2-board-3/redo/b3/history.js` — ROUNDS 12–12H (PUBLISHED in v68)
 | Round | What moved | What to suspect |
 |---|---|---|
 | 12 | The **list** became the scroller; the column head sticks; `.panel.b3-hi` is a flex column | Anything about scrolling, a stuck header, or the panel's height |
@@ -76,8 +76,8 @@ Verified on the rendered board: 100 rows at 46px, no `k-` class, the kind tab ba
 | 1 | three export tiles, three designs | I invented a lead/secondary/strip composition and recorded it as unattributed, then shipped it | `gates.css` 15C — one tile, one ring, one button; `.exs-pick` stays a door |
 | 2 | the horizontal lines still cut the outer border | Yesterday's fix was `outline` + `--b3-edge` on **four enumerated selectors**; `.dk.settled` kept its own green inset ring at higher specificity | `gates.css` 15A — 153 crossings, 24 pairs |
 | 3 | the title tints only on the title | `.b3-xt-wn:hover b` — the part owned a state the tile owns; the tile's hover already drove the chips and the marquee | `gates.css` 15H |
-| 4 | both options still on the board after I chose | The `p9` fork had no `decided`, so `segOpts` kept offering five | `gates/picks.js` — `decided: b` |
-| 5 · 7c · 7d | spacing, then spacing as knobs | 58 hard-coded declarations, four of them setting one row's padding | `gates.css` 15I, `b3/state.js`, `gates/picks.js` `Knobs` |
+| 4 | both options still on the board after I chose | The `p9` fork had no `decided`, so `segOpts` kept offering five | `local/pins2-board-3/redo/gates/picks.js` — `decided: b` |
+| 5 · 7c · 7d | spacing, then spacing as knobs | 58 hard-coded declarations, four of them setting one row's padding | `gates.css` 15I, `local/pins2-board-3/redo/b3/state.js`, `local/pins2-board-3/redo/gates/picks.js` `Knobs` |
 | 6 | H1's glow is not the Armory's | The mesh was byte-identical. Its middle radial is hard-coded `--warn`, which screens to grey against `--info` | `gates.css` 15D |
 | 7a·7b·7e | circles, kind chip, day row | The dots were a second kind signal; the ring had replaced pin 53's left bar; the day chip was bare text | `gates.css` 15E/15F/15G |
 | 7f | a divider floating in the header | `.b3-hi-f` is a max-content grid, so its `border-bottom` was 1052px in a 1092px panel | `gates.css` 15B |
@@ -103,7 +103,7 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 *"set up a local git for the kit, i dont want it in the online github for the dioreo repo."*
 
-`local/pins2-board-3/redo/` is now a standalone git repo. **No remote, and two independent layers refuse one:** this repo's `.gitignore:25` makes the directory invisible to it, and the kit's own `.git/hooks/pre-push` exits 1 — **tested by running the hook directly**, not assumed. 107 files, 1.7 MB of `.git`; `shots/` is excluded because it is 277 MB of the kit's 281 MB and every frame is reproducible from `sweep-screens.cjs`, `shot-el.cjs` or `verify.cjs`. Its own README is `redo/KIT-GIT.md`.
+`local/pins2-board-3/redo/` is now a standalone git repo. **No remote, and two independent layers refuse one:** this repo's `.gitignore:25` makes the directory invisible to it, and the kit's own `.git/hooks/pre-push` exits 1 — **tested by running the hook directly**, not assumed. 107 files, 1.7 MB of `.git`; `shots/` is excluded because it is 277 MB of the kit's 281 MB and every frame is reproducible from `sweep-screens.cjs`, `shot-el.cjs` or `verify.cjs`. Its own README is `local/pins2-board-3/redo/KIT-GIT.md`.
 
 **Commit at the end of each round, named for the round.** Then "revert that to the version before" is `git show <sha>:gates/armory.js`.
 
@@ -141,7 +141,7 @@ What does NOT hold history, tested rather than assumed: **codebase-memory** keep
 
 ## ROUND 16B — two findings from "you call this fixed???" (2026-09-20 20:23 EDT)
 
-**1 · EVERY DATE THIS BOARD RENDERS WAS TOMORROW'S.** He screenshotted the export panel at 20:22 EDT and its filenames read `2026-09-21`. `new Date().toISOString().slice(0,10)` is UTC, so from 20:00 EDT onward the board shows the next day — and it is not one filename: **eight sites board-side, thirty-six across the kit** (`codebase-memory search_code`). A stored instant wants UTC; a date a person reads wants the day they are living in. `isoLocal` now lives in `b3/state.js` and the eight board-side sites use it. ⚠️ **The remaining 28 are portal code that Session 5 ships and they need triage, not a blanket replace** — some of those slices are storage keys and diff values where UTC is correct. Filed.
+**1 · EVERY DATE THIS BOARD RENDERS WAS TOMORROW'S.** He screenshotted the export panel at 20:22 EDT and its filenames read `2026-09-21`. `new Date().toISOString().slice(0,10)` is UTC, so from 20:00 EDT onward the board shows the next day — and it is not one filename: **eight sites board-side, thirty-six across the kit** (`codebase-memory search_code`). A stored instant wants UTC; a date a person reads wants the day they are living in. `isoLocal` now lives in `local/pins2-board-3/redo/b3/state.js` and the eight board-side sites use it. ⚠️ **The remaining 28 are portal code that Session 5 ships and they need triage, not a blanket replace** — some of those slices are storage keys and diff values where UTC is correct. Filed.
 
 **2 · I HAD BEEN BENCHMARKING THE GLOW AGAINST AN ELEMENT THAT IS NOT ON SCREEN.** For three rounds I ported `.b3-wr:hover` because its name matched the words "armory manifest row". **Five `.b3-wr` exist on this board and every one measures zero pixels high** — it is a collapsed weapon-group header. The row he means is `.wg-r`, twenty-two of them, and its hover (`app.css:1160`) is a different recipe: **three fixed-pixel ellipses placed INSIDE the row** (360×80 at 14% 40%), all in the row's own hue with a `--realm-c` layer, **no blend modes**, over the row's ground. Percentage-of-box ellipses anchored outside the corners wash the whole band; fixed ellipses pool the light where the eye is. That is why two attempts at "the same mesh" both came back looking unchanged — the mesh was never what he was comparing against. H1 takes `.wg-r`'s recipe now, with `--c` lifted to `max(l,.72)` because a state hue sits near L .58 where a weapon accent sits near .85.
 

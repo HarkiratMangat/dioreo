@@ -925,7 +925,31 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 
 ### 10.5 · Board 3 — Session 3's answers and the port table
 
-*Written by Session 3 when Harkirat closes board 3 (§5b Steps 5 and 6).*
+*Written 2026-09-21 00:03 EDT, when Harkirat closed board 3-E: "the board is more or less done now."*
+
+🔴 **THE FULL HANDOFF IS `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md`.** Session 5 reads that file, not this section. It carries: the 18 live forks with his answer and where each is recorded; the forks that were answered and REMOVED and are therefore invisible in today's board (`p1`, `p5list`, `e1`–`e6`, `xtile`'s four withdrawn branches, `xbg`'s "Bar's light"); the three surfaces that left the board and where their pins went; three PORTAL defects the board exposed; H1's eighteen spacing tokens at his own values; the export drawer landing in full; and the v70–v77 span that `README.md`'s round log does not reach.
+
+**Two pointers it depends on, and neither is optional:**
+
+- `docs/superpowers/mockups/2026-09-15-pins2-board-3/README.md` § *"Session 5 port list"* (line 2024) — the file-by-file record of every `ui/` change made in the kit, with per-version notes for v19 and v30–v43. **Read before the handoff.**
+- `local/pins2-board-3/redo/.git` — the kit is gitignored, so this repo is the only other copy of the board's code. First commit `64b7a57`; no remote, and a `pre-push` hook that refuses one.
+
+**The answers, in one table** (detail, wording and provenance in the handoff):
+
+| Fork | Answer | | Fork | Answer |
+|---|---|---|---|---|
+| `p2pal` | Final | | `sdgh` | **44px** — ⚠️ the db row says 48 and is nine hours older; build 44 |
+| `p2lab` | Key | | `e2spd` | Smooth · 260ms |
+| `p2sty` | Laid on — Outline KEPT in the files | | `p6` | C · Tickets |
+| `p3` | A | | `p6lay` | By severity |
+| `p3tbl` | Bare mark | | `exp` | B · its own step |
+| `p4` | B · Soft well | | `expl` | Tiles + file |
+| `p5bg` | Mesh — Solid KEPT as a future setting | | `xbg` | Ground |
+| `p5hint` | Hover card | | `p8` | A · On the card |
+| `hzf` | C · taper + plume, on the LEFT border | | `p9` | B · Time rail — the redesign is DEFERRED |
+| | | | `p10` | 🔴 **OPEN — Session 4's G1** |
+
+⚠️ **Board 3-E is published at https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo, version 77.** Where the board and any written value disagree, the board wins.
 
 ### 10.6 · Session 4 — the standardization table
 
