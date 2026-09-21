@@ -3,36 +3,196 @@ kind: reference
 status: live
 ---
 
-# Board 3-E → Session 5 · the handoff
+# Board 3-E → Sessions 4 and 5 · the handoff
 
-*Written 2026-09-21 00:00 EDT, when Harkirat closed board 3-E: "the board is more or less done now." This is the §10.5 artifact the batch-2 plan reserves, in full; §10.5 carries the answer table and points here.*
+*Rewritten 2026-09-21 09:43 EDT, when Harkirat asked for a spec that ports **100%** of the board with *"no mistakes"* — board 2's reached ~95%. The first version of this file (2026-09-21 00:02 EDT) was a narrative of decisions; this one is a specification. Plan: `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.5.*
 
-> 🔴 **THE BOARD ITSELF IS GITIGNORED.** The kit lives at `local/pins2-board-3/redo/` and `local/` is excluded, so **nothing in this handoff can be recovered from the repo.** Two things carry it: this file, and the kit's OWN git repository (`local/pins2-board-3/redo/.git`, first commit `64b7a57`, one commit per round, no remote and a `pre-push` hook that refuses one). Published board: **https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo**, version 77.
+**Board 3 closed by Harkirat 2026-09-20 23:55 EDT** — *"the board is more or less done now."* Published at https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo, **version 77**.
 
 ---
 
-## 0 · What the board is, and what closing it means
+## 0 · Why this is five artifacts, and which one to open first
 
-Six surfaces, each the portal's OWN component running against the dev database — not a mockup of it. What Harkirat clicked is what Session 5 ships.
+**The rule an earlier session already wrote down**, in `../2026-09-14-pins2-board/handoff-g9-g8.md`: *"a value spec is enough when the two implementations already agree structurally, and is worth nothing when they do not. Check which case you are in before writing one."* Board 2's manifest ported ~95% because `pb-*` → `wg-*` was close to a 1:1 rename. Board 1's drawers failed because the portal's structure differed, and a value table cannot say *"this should be a combobox, not a datalist"*.
 
-| Gate | id | Surface | Review pins it answers |
+**Board 3-E sits on both sides of that line at once**, and it adds a case board 2 never had: **the board IS the portal's own code, running and modified.** A complete port therefore needs five things, in this order of authority:
+
+| # | Artifact | What it is | Use it for |
 |---|---|---|---|
-| **L1** | `list-lab` | Selection-list spacing lab | — (instrument, not a surface) |
-| **M1** | `armory-manifest` | The Armory manifest | 3–22 |
-| **M2** | `repairs` | Repairs | 23 |
-| **M3** | `export` | Export | 26 |
-| **B1** | `queue` | The delivery queue | 32, 33, 36, 37, 39, 40, 43, 46, 47, 49 |
-| **H1** | `history` | The history manifest | 51–57 |
+| 1 | [`3e/portal-diff.md`](3e/portal-diff.md) | Unified diffs of the **11 portal files** the kit modified, plus the `app.css` change re-located in its SOURCE by content | Apply first. It IS the change, not a description of it |
+| 2 | **This file** | Per surface: every element, its kit source `file:line`, its portal counterpart `file:line`, behaviour, states and status | The STRUCTURAL half — what to build |
+| 3 | [`3e/resolved-spec/`](3e/resolved-spec/README.md) | Generated from the running board: **596 looks across 307 signatures** — every property's winning declaration, computed value and `file:line`, inherited provenance, `:hover` / `:focus-visible` / `:active` deltas, markup skeletons, `@keyframes`, the reachable states, and Command search | The VALUE half — what it looks like |
+| 4 | [`3e/token-map.md`](3e/token-map.md) · [`3e/class-map.md`](3e/class-map.md) · [`3e/file-map.md`](3e/file-map.md) | 355 custom properties against the portal · the 204 classes the portal does not have · every kit file labelled PORTAL-COPY / DESIGN-CODE / MIXED / CHROME | Read before porting a single declaration |
+| 5 | [`3e/measure.cjs`](3e/measure.cjs) | The refinement contract: **13 relations, 13 passing** on the board, button centring measured on PIXELS | Re-measure on the portal before a surface closes |
+| 6 | `scripts/portalProbe.mjs` pointed at THIS board | The comparator — board and portal side by side, per element, with the declaring ancestor (`--chain`) | **Close every element row with it.** See below |
 
-**"Closed" means every LIVE fork is ruled except one.** 18 live forks, 17 answered; the open one is `p10` · **Small text**, open *on purpose* because small text is Session 4's G1.
+🔴 **WHY BOARD 2 STOPPED AT 95% — its own deferred list says it, and it is not the spec.** `docs/db-deferred-list.md` § *Point the conformance instruments at the board that holds the live design*: *"A resolved spec alone does not close it; board 2 shipped a 3,316-line one on 2026-09-14 and the port diverged anyway."* Nothing compared the PORTAL against the board after the build. `portalProbe` now can, and it reaches 3-E — proven 2026-09-21 09:46 EDT with its own falsifier, the board against itself, *"every property agrees"*:
 
-🔴 **AND THE LIVE LIST IS NOT THE WHOLE ANSWER SET.** This board ran from 2026-09-15 to 2026-09-21. Forks were answered and REMOVED, options were withdrawn, and three surfaces left the board entirely — none of which is visible in today's `FORKS` array. §1b and §1c carry them. A Session 5 that reads only the live list will rebuild two things he rejected and port CSS that is dead.
+```bash
+node scripts/portalProbe.mjs --realm armory --mockup local/pins2-board-3/redo --mk-page board3e.html --mk-sel '#g-export .exs-i .b3-btn2.stage' --sel '<the portal selector>' --chain --no-seed
+```
 
-⚠️ **THE PORT LIST ALREADY EXISTS AND THIS FILE DOES NOT REPLACE IT.** `README.md` § *"Session 5 port list — portal code changed in the board's kit this session"* (2026-09-19 00:31 EDT, line 2024) is the file-by-file record of every `ui/` change made in the kit, plus per-version notes for v19 and v30–v43. **Read it first.** This file carries what it does not: the decisions, the retired forks, H1's numbers, and everything after 2026-09-20.
+The board side is scoped by gate (`#g-export`, `#g-history`, `#g-armory-manifest`, `#g-repairs`, `#g-queue`); the portal side by its own class. A difference is a defect unless a ledger row cites it.
+
+🔴 **THE TRAP BOARD 2's METHOD WALKS INTO HERE.** Board 2 told its builder *"port the winning expression, tokens intact"* — right for a board built on portal tokens. Board 3-E's declarations read **35 `--b3-*` tokens and 18 `--h1-*` tokens that do not exist in the portal**. `.b3-btn2.stage` ported verbatim writes `var(--b3-fill)` and `var(--b3-under)` into a stylesheet where both resolve to nothing: the Pick button renders transparent, and nothing errors. `token-map.md` is what makes a verbatim port safe.
+
+⚠️ **Three things are Session 4's, not Session 5's:** naming the 204 board-only classes and the new tokens for the portal (§5c owns the element system and its names); the three portal defects in §5; and the control family already deferred to §5c.3b. Session 5 builds from what Session 4 names.
+
+⚠️ **The kit itself stays local**, at Harkirat's instruction (*"i dont want it in the online github"*): `local/pins2-board-3/redo/`, with its own git described in `3e/KIT-GIT.md`, head `b5e3f68`. Everything a builder needs from it is DERIVED into this folder, and the DESIGN-CODE files are read from the kit on this machine. A session in a fresh clone or a worktree without `local/` must stop and say so rather than rebuild from the values alone.
 
 ---
 
-## 1 · The eighteen forks, as he ruled them
+## 1 · The surfaces — structure first
+
+*Status, per element: **RULED** — he decided it, and the record is named · **BUILT** — built to his words and never overturned, but never explicitly confirmed · **OPEN** — not decided. "100% of the design" means 100% of what he ruled: a BUILT element ported at full fidelity carries my reading of his words, so it is marked rather than presented as his.*
+
+### M3 · Export — the drawer landing, the picker and the file stack
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | `gates/armory.js` `ExportPicker` 237–963 · `fileCard` 609–679 · `roster` 699–735 | `portal/ui/exportPanel.js` `ExportBody` 28–79 · `ExportDrawer` 82–91 · `ExportStrip` 94–114 |
+| Diff | — board-only code, ~700 lines | `ui/exportPanel.js` differs by **4 lines**: the design is NOT in the diff. This is a code port |
+| Values | `3e/resolved-spec/M3-export.md` · `3e/resolved-spec/states.md` § M3 | |
+
+**The landing, element by element**, top to bottom. Every row is **RULED** — steps 1–5 of 2026-09-20 22:16 → 23:44 EDT, each given by him and approved in chat.
+
+| Element | Markup on the board | Portal today | Notes |
+|---|---|---|---|
+| Lead | `p.dw-lead.exs-lead` — *"Download a copy of what's live — one file per set."* | `p.dw-p` — *"Each of these is the exact format the bot reads back…"* (`exportPanel.js:88`) | `.dw-lead` is the portal's own, in use on Access's grant form. It says WHAT the drawer is, which nothing did before (23:40 EDT) |
+| Fact marks | `ul.exs-facts > li` ×2 — ↺ *"Import it back to undo"* · ⚠ `.exs-fact-w` *"Download one before anything permanent"* | none | The second in `--warn-ink`, the `.b3-sd-note` pairing. Each survives its icon removed (`/impeccable clarify`, 23:44 EDT). *"Bulk"* and *"one-way"* were removed as non-generic and as jargon |
+| Row | `li.exs-i` ×3 — a GRID `64px minmax(0,1fr) max-content`, padding **`13px 18px 14px 6px`** | `.exs-i` is a FLEX row (app.css) | ⚠️ The structures differ. The inset is one relation, not three offsets (step 3, 23:00 EDT) |
+| Count | `.exs-n > i.b3-xf-sq` — 40×40, 10px corners, fill `var(--m)`, **Big Shoulders 700 / 19px**, `--tr-fig` | a `<b>` numeral over `<em>BUILDS</em>` | `--m` is `MODE_HEX` — MP `#FF3B5C`, DMZ `#3DA5F5` — set on the row. ⚠️ NOT `.b3-xf-h0 .b3-xf-sq`, the EMPTY state. The square is the SAME object as the file card's header; 19px moved into the component (22:55 EDT) |
+| Title | `.exs-t b` at **`--t-lg`**; on rows with a file chip, `position:relative; top:-3px` | `.exs-t b` at `--t-base` | The 3px nudge is his eye, not a measurement (22:43, 22:46 EDT) |
+| Filename | `.b3-xf-fid > .b3-xf-fn` — the picker's rename chip, whole | a bare `span.exs-f` | Its rules were widened to `:is(.b3-xf,.exs-i)` — 46 selectors, the same (0,1,0) weight, one set of declarations for two callers |
+| Rename field | `label.b3-xf-fn.editing > input` and a fixed `.txt` | none | `field-sizing:content`; both states `height:24px; min-height:24px; flex:0 0 auto` — a bare height is a request a flex parent may shrink (measured 19px before). The glow — inset `--focus` + `0 0 0 3px` of `--ok` at 26% + `0 0 16px -2px` of `--ok` at 40% — is on BOTH callers |
+| Download | `.b3-btn2.sm.go` | a `.btn` in the drawer footer | `min-width:102px` and **no `width`**: its natural width IS the panel's Download. 34px tall, `padding-inline:12px` |
+| Pick row | `li.exs-i.g-pick-open` — `list-checks` in **`--staged`**, *"Pick builds…"* and its subtitle, `.b3-btn2.sm.stage` *"Pick ›"* | none | `.stage` is `.pill.lead`'s recipe: a full-hue edge over a 14% → 24% → 30% tint, **mixed against `--b3-under`, never `transparent`** — a transparent wash lets the drawer's mesh ground through (he saw it, 23:13 EDT). The trailing chevron takes `margin-right:-5px`: its box carries ~5px of transparent bearing. Ink measured **31 / 31** after, his 28 / 33 before |
+
+**The picker and the file stack** — **BUILT** across v28–v56 to his words (README §§ *3-E version 28* → *versions 50–56*; the README's *"Session 5 port list"* at line 2024 carries the per-version notes):
+
+- Whole-tile picking · **Pick all** · one open file at a time · files split where the next pick would pass the **4,000-character** paste cap (`PASTE_MAX`), with `CharCount` warning from **3,600** (`PASTE_WARN`) — ONE character chip, shared with the Broadcast card (`gates/lib.js`).
+- The file card's header is ONE line — `## MP builds [clear] | [expand]` — the count square, the words 16px after its border, both marks carrying their words at rest (*"always present text variants"*, 2026-09-20 00:18 EDT).
+- The fold: **420ms `cubic-bezier(.32,.72,0,1)`, on `flex-grow` ALONE.** Transitioning `min-height` as well measured 33.3ms per frame against 16.7. The original numbers were restored verbatim and must not be "improved".
+- The empty file is a STATE, not a file: `.b3-xf-h0`, the square unlit (sunk, `--ink4`, a rule ring), no name, no count, no fold.
+- The scrollspy `spy()` / `jump()`; `toggleShut()` scrolls an opened file into view; `data-fk` on each card.
+- ⛔ **Dead — do not port:** board.css **ROUNDS 5T and 5V** (the withdrawn `xtile` branches), and v31's `.pb-exp` widenings in b2.css and gates.css (reverted at v32).
+
+### H1 · History — the time rail
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | `b3/history.js` `B3History` 45–238 | `portal/ui/history.js` `HistoryRealm` 151–252 · `EventDrawer` 131–149 |
+| Diff | `ui/history.js` differs by **19 lines**; the rail itself is DESIGN-CODE | |
+| Values | `3e/resolved-spec/H1-history.md` · `states.md` § H1 · §6 for his spacing | |
+| Governs | `docs/claude/2026-09-20-h1-constraint-table.md` — **no H1 element changes without its row** (linksee anchor #41): a row naming a pin, a ledger decision or a round is a constraint, and changing it is a proposal to show, never a fix to ship | |
+
+| Element | Markup | Status |
+|---|---|---|
+| Toolbar, row 1 | `.mtools.b3-hi-tools > .mt-r1` — `.mlabel` EVENTS, `.srch` (with `.mhits` *"N matches"* once typed), Clear | **BUILT** — the portal's own manifest toolbar, markup for markup (round 10B) |
+| Toolbar, row 2 | `.mt-r2.b3-hi-f` — a 2-column grid of six `.b3-fg`: Kind · Level · Who · Realm · When · Undo | **BUILT** |
+| Labels | `.b3-fgl` and EVENTS' `.mlabel`, **right-aligned** in one shared column (`--h1-labw` 56) with one gap (`--h1-lab` 16) | **RULED** 2026-09-20 21:54 and 22:04 EDT; contract R1–R4 |
+| Search | `max-width: --h1-srchw` (**340**), `height: --h1-srchh` (44) | **RULED** — his saved value |
+| Timeline | `html[data-b3-p9=b]` — the time rail | **RULED** `p9` = B, 2026-09-20 17:41 EDT. ⚠️ The drastic redesign is DEFERRED, not rejected |
+| Row | `.b3-hi-r` on the list's subgrid, min-height `--h1-rowh` (**44**) | **BUILT** |
+| Row accent | the Armory manifest row's left accent border, full `--c` | intake 7a — ⚠️ **UNRULED** after the fix |
+| Kind chip | the side-bar style he decided earlier | intake 7b — **RULED** (*"fixed"*) |
+| Date row | `.b3-hi-day`, min-height `--h1-day` (**52**), chips centred | intake 7e — ⚠️ **UNRULED** after the fix |
+| Row glow | `.wg-r:hover`'s recipe — three fixed-pixel ellipses in `--c` plus a `--realm-c` layer — NOT `.b3-wr`'s | **RULED** — *"the glow's correct now in the actual browser"* |
+| Container edge | a real `border`, not an outline or an overlay | intake 2 — ⚠️ **UNRULED** |
+
+### M1 · The Armory manifest
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | the portal's own `wg-*` manifest, plus `b3/armory-parts.js` — `B3Badges` 439–492 · `ProblemChip` 226–435 · `Hint` 33–87 · `SelectAllBox` 495–509 — and `b3/volt.js` | `portal/ui/manifest.js` `Manifest` 89–371 · `FilterChips` 32–49 · `SelectionBar` 54–84 · `portal/ui/armory.js` `WeaponGroup` 253–272 · `FilterBar` 1073–1084 |
+| Diff | `ui/manifest.js` **26 lines** · `ui/armory.js` **95** · `ui/icons.js` **49** | |
+| Values | `3e/resolved-spec/M1-armory-manifest.md` · `L1-list-lab.md` for his tuned selection-list values | |
+
+**The structure agrees** — the manifest is `wg-*` on both sides, which is why board 2's G4 ported at ~95%: values and the diff suffice here. **Board-only, needing the structural half:** the badges (META's discharge, from his own settings, round 4g), the problem card (`pcPath`, and a pointer that reaches its mark), the select-all checkbox and its one-line hint, the selection bar (`.b3-sd-*`, its weapon header 44px per `sdgh`), the slot palette (`p2pal` final), the tag style (`p2sty` Laid on), the hazard edge (`hzf` C, on the left border). Each is a fork in §4. The thirteen comment threads landed here — §3.
+
+### M2 · Repairs
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | `b3/repairs.js` | the Repairs view inside `portal/ui/armory.js` `ArmoryRealm` 1340–1635 |
+| Values | `3e/resolved-spec/M2-repairs.md` | |
+
+⚠️ **`portal/ui/track.js:362` also exports a `Repairs`, and it is SEASON's** — a different component with the same name. Do not port into it.
+
+**RULED:** `p6` C · Tickets · `p6lay` By severity — *Blocks sharing*, then *Below standard*, each under its own heading. **BUILT to threads `846eb917`, `1f502de1` and `96b7a5b1`:** every button 16px from the ring · `.b3-btn2` soft rectangles (8px) board-wide · age as Broadcast's `.pb-pill` (*"touched 5mo"*) · *"Repair build"* everywhere, *"Show build"* gone · the pass card as a full-width ticket in the ok hue naming the five checks · `shield-check` as the all-pass mark.
+
+### B1 · The delivery queue
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | `b3/broadcast.js` and b2.css `pb-*` | `portal/ui/broadcast.js` `BroadcastRealm` 429–568 — `.qcard`, `.qbar` (the ledger forbids `.bcard` / `.bbar`) |
+| Diff | `ui/broadcast.js` **46 lines** | |
+| Values | `3e/resolved-spec/B1-delivery-queue.md` | board 2's `port-g4-g3-g11.md` § G3 maps `pb-*` → `b*` one to one |
+
+**RULED:** `p8` A — the never-ends warning ON the card. Board 2's G3 answers stand underneath: the enclosure, Show all, the lifespan bar, the Changes-ahead column.
+
+### P7 · Command search — settled "as shown"
+
+| | Kit (the design) | Portal (today) |
+|---|---|---|
+| Component | `b3/palette.js` `B3CommandBar` 83–145 | `portal/ui/palette.js` `CommandBar` 26–111 |
+| Values | `3e/resolved-spec/P7-command-search.md` — **mounted by the extractor**, since no gate renders it now | |
+
+He settled it — *"Build it properly, and exactly as shown"* — and it is no longer a gate, so this board is still its **only specification**. **Structure:** `.cmdbar.b3-cmdbar` (a search glyph · the input · `⌘/`) → once typed, a `.b3-cmd` listbox: an optional **compose row** (`Set badge` · BADGE · *on* · WEAPON *n builds*, then a go-line ending `↵`), then the groups **Do · Find · Go** (`.b3-cmds` headings; `.b3-cmdr` rows of icon · title and sub · tag), the empty state *"Nothing named "…". Try an action (edit, new, badge), a weapon (cx9), a badge (meta) or a view (repairs)."*, and the footer `↑ ↓ move · ↵ open · esc close`. **Behaviour:** `⌘/` focuses · `↑`/`↓` move · `↵` runs · `esc` clears · blur closes after 140ms · hover selects · `mousedown` is prevented so a click does not blur first.
+
+⛔ **The LOOK ships with this plan; the RANKING does not.** `gates/main.js` records it as its own session: *"badge cx9" returns what "badge" alone returns, and the ranking needs rebuilding.* Pin 25's search behaviour is not Session 5's.
+
+### L1 · The selection-list spacing lab
+
+An INSTRUMENT, not a surface. Its output — the values he tuned (v27: *"his L1 spacing is the default"*) — is baked into the selection list's rules and is in `3e/resolved-spec/M1-armory-manifest.md`. The lab itself is chrome.
+
+---
+
+## 2 · The refinement contract — close conditions for every surface above
+
+Each rule is a RELATION he corrected by hand, which is why no per-element table catches it. `3e/measure.cjs` proves them on the board — **13 of 13 pass** — and Session 5 re-measures each on the portal with `chrome-devtools evaluate_script` before a surface closes. Board 2's C1–C14 (plan §10.4) still bind every shared part.
+
+| # | Relation | His words, and when |
+|---|---|---|
+| R0 | No page errors | — |
+| R1 | Every filter label in a column ENDS on one x | *"The labels should be right aligned"* — 2026-09-20 21:54 EDT |
+| R2 | EVENTS ends where the first column's labels end | *"the events label isn't aligned with the other labels"* — 22:04 EDT |
+| R3 | The search field starts where the first chips start | the same message: the field and the chips are one column |
+| R4 | Label → first chip is one distance in every group, 16px | the knob he named *"Label → chips"* |
+| R5 | The three export buttons are one height, 34px | *"increase all 3 of the buttons by 1px to the top and 1px downwards"* — 23:26 EDT |
+| R6 | Pick is as wide as Download, within 0.5px | *"so it doesn't feel staggered"* — 23:10 EDT |
+| R7 | Each button's drawn **ink** is centred within 1.5px — measured on **pixels**, not boxes | *"28px on left side, 33 px on right side"* — 23:26 EDT |
+| R8 | Each export title starts on the same x as its rename chip | *"left aligned with the MP builds / DMZ builds text"* — 22:16 EDT |
+| R9 | The count squares share one centre line | — |
+| R10 | The count square is 40×40 | *"the same 40x40 and same 10px corners"* — 22:53 EDT |
+| R11 | The rename chip is 24px in every row and in both states | *"the chip itself still shrinks in height when clicked"* — 22:35 EDT |
+| R12 | The hint marks sit on one line | the height constraint at `exportPanel.js:77` |
+
+🔴 **R7 is the rule a box check cannot pass honestly.** A Lucide glyph sits inside its 14px box with transparent bearing, so child boxes read even while the eye reads 28 / 33. Anchor #30: an alignment claim is measured on the drawn ink.
+
+---
+
+## 3 · His thirteen comment threads — where each landed
+
+All thirteen were left 2026-09-18 22:14–22:41 EDT and are still **open and not activated for Claude**, so no session can answer or resolve them; he can resolve them in the artifact view. Each landed in version 14 (2026-09-18 23:38 EDT) and was refined in 15–17. The per-thread cause, fix and the "unasked" question each raised are in [`threads/2026-09-18-m1m2-thread-dissection.md`](threads/2026-09-18-m1m2-thread-dissection.md).
+
+| Thread | His ask | Landed | Status |
+|---|---|---|---|
+| `2aed701d` | the `[-]` selects instead of clearing · the blank yellow box · the hint | mixed clears the SHOWN builds only (also `ui/manifest.js` `toggleAll`) · the dash survives hover · a one-line hint on `pcPath` | BUILT |
+| `835f9aa3` | the pill counts | count in the pill's hue, weight 700, no fill, cap-trimmed · hover shows the ring · **All 21** | BUILT |
+| `9ac5e9ae` | the toggles | VIEW at 9.5px · the lit ring on every pressed segment · icons on List / By slot | BUILT — ⚠️ the control FAMILY is Session 4's (§5c.3b) |
+| `28dca303` | "7builds" | 8px between count and word | BUILT |
+| `7e265e57` · `ae7b2bbb` · `d3120fb3` | the row gaps | one grid per list, rows as subgrids | BUILT |
+| `846eb917` · `1f502de1` · `96b7a5b1` | Repairs' footers, layout and pass card | see M2 | RULED through `p6` / `p6lay` |
+| `444d806a` | the slot palette | his nine hexes and six mappings | **RULED** `p2pal` final |
+| `23900247` | the tag style | Laid on takes Outline's ring | **RULED** `p2sty` Laid on |
+| `3300d186` | a `/design-critique` of the weapon row | superseded by v16's nine fixes | BUILT |
+
+**The "unasked" behaviours the dissection raised and never put to him** — open questions, not defects: counts ignore the search query and the other filter group, so *"kilo"* leaves *"Assault 7"* beside two rows · the green image mark on nearly every row reports one absence twenty times. Filed for Session 4 in `docs/db-deferred-list.md`.
+
+---
+
+## 4 · The eighteen forks, as he ruled them
 
 Two records exist and they do not always agree in FORM: a `decided` block hand-written into `gates/picks.js`, and a row he ticked in the board's own Decide panel, stored in the artifact database under `decisions/<forkId>`. **The database is the authority.** `picks.js:213` already resolves it that way — `const ruled = (f.decided && f.decided.choice) || (store.picks[f.id] && store.picks[f.id].choice) || null` — so a ticked fork rules whether or not anyone transcribed it.
 
@@ -58,11 +218,11 @@ Two records exist and they do not always agree in FORM: a `decided` block hand-w
 | `p8` | B1 | The never-ends warning | **A · On the card** | **db** + picks.js |
 | `p9` | H1 | The timeline | **B · Time rail** — ⚠️ the drastic redesign is DEFERRED, not rejected | **db** + picks.js |
 
-🔴 **ONE CONFLICT, AND IT IS REAL.** `sdgh` reads **48** in the database (2026-09-19 00:21 EDT) and **44** in `picks.js` (2026-09-19 10:03 EDT, quoting him: *"shrink its height from 48px to 44px"*). The picks.js record is nine hours LATER and carries his words. **Build 44.** The db row is a stale tick he never re-recorded; do not let the "database is the authority" rule override a dated quotation.
+✅ **`sdgh` IS 44 — CONFIRMED BY HIM, 2026-09-21 09:22 EDT: *"44 is correct."*** The artifact database still reads 48 (a tick from 2026-09-19 00:21 EDT, superseded at 10:03 EDT by *"shrink its height from 48px to 44px"*). The database is the authority for every OTHER fork; for this one his dated words and his confirmation outrank a stale row.
 
 ---
 
-## 1b · Forks that were answered and then REMOVED — invisible in today's board
+## 4b · Forks that were answered and then REMOVED — invisible in today's board
 
 | Fork | What it asked | What happened |
 |---|---|---|
@@ -79,7 +239,7 @@ Two records exist and they do not always agree in FORM: a `decided` block hand-w
 
 ---
 
-## 1c · Surfaces that left the board, and where their pins went
+## 4c · Surfaces that left the board, and where their pins went
 
 *A surface earns a place on this board only by asking him something.* Three showed the portal beside a design an earlier board had already settled — a comparison he had already judged.
 
@@ -89,15 +249,17 @@ Two records exist and they do not always agree in FORM: a `decided` block hand-w
 | **B2 · The broadcast manifest** | 44 · 45 · 50 | `../2026-09-14-pins2-board-2/port-g4-g3-g11.md` — board 2 · G11 |
 | **B3 · The announcement drawer** | 48 | `../2026-09-14-pins2-board/handoff-g9-g8.md` — board 1 · G8, 9 element rows |
 
-🔴 **AND ONE MORE, WHICH IS A RISK RATHER THAN A TIDY REHOMING.** **M3 · Command search** (pin 25) carried no fork and was kept *because this board was its only specification* — he settled it with *"build it properly, and exactly as shown"*, and "as shown" made the board the spec. **It is no longer on the board**: `gates/main.js` now says outright that command search is not among the surfaces. Session 5 must recover that design from an earlier board version (the artifact's own history, or a kit commit) before building pin 25 — **it cannot be recovered from the live board.**
+✅ **Command search (pin 25) left the board as a gate but NOT as a design.** Its code is still in the kit (`b3/palette.js`), and the extractor mounts it — see §1 P7 and `3e/resolved-spec/P7-command-search.md`. It is fully specified.
 
 Pins **24** (account-menu tint — Session 5 reproduces it first) and **30** (the standardization session itself) are answered in the plan's settled log, not here.
 
 ---
 
-## 1d · Three PORTAL defects the board exposed — these belong in the port table
+## 5 · Three PORTAL defects the board exposed — SESSION 4's work, not Session 5's
 
-Found by the class sweep, not by the board's own design work. If Session 5 ports the board's look without these, it rebuilds that look on top of the broken rules.
+🔴 **Routed by Harkirat, 2026-09-21 09:22 EDT:** *"the 3 portal defects would be session 4's work, right? make sure it's aware in the plan."* They are portal-wide, and they are the element-system class §5c owns: a hover that paints the wrong shape is a control-family rule, not a surface fix. Plan §5c.3b carries them as **Step 4c**.
+
+Found by the class sweep, not by the board's own design work. Session 4 fixes them at the source; Session 5 then ports the board's look onto a portal where they are already gone.
 
 | Site | Defect |
 |---|---|
@@ -109,7 +271,7 @@ Found by the class sweep, not by the board's own design work. If Session 5 ports
 
 ---
 
-## 2 · H1's spacing — his numbers, not mine
+## 6 · H1's spacing — his numbers, not mine
 
 Thirteen hard-coded spacing declarations across H1 became named relationships, each stamped by `b3/state.js` as a `--h1-*` custom property on `:root`. He tuned them in the board's own lab and pressed **Save for Claude**, which wrote `spacing/h1` to the artifact database at **2026-09-21 03:54 UTC (23:54 EDT)**. These are read back from that record, not transcribed from chat.
 
@@ -140,87 +302,7 @@ Thirteen hard-coded spacing declarations across H1 became named relationships, e
 
 ---
 
-## 3 · The export drawer landing — M3, and the one he spoon-fed
-
-This surface went through v1 → v2 → v3, and **v3 was scrapped**: *"revert back to v2 entirely."* v2 was then recovered from the session transcript, not rewritten from a screenshot. Everything below is v2 plus the five refinements he named, applied one step at a time.
-
-### 3.1 What ships
-
-```
-Download a copy of what's live — one file per set.
-[↺ Import it back to undo]   [⚠ Download one before anything permanent]
-
- ┌──────┐  MP builds                                      ┌────────────┐
- │ 125  │  [dioreo-mp-builds-2026-09-20.txt  ✎]           │ ⤓ Download │
- └──────┘                                                  └────────────┘
- ┌──────┐  DMZ builds                                     ┌────────────┐
- │   8  │  [dioreo-dmz-builds-2026-09-20.txt ✎]           │ ⤓ Download │
- └──────┘                                                  └────────────┘
-   ☑≡     Pick builds…                                    ┌────────────┐
-          Search and tick exactly what you want            │  Pick   ›  │
-                                                           └────────────┘
-```
-
-### 3.2 Components — every one is PORTED, none is new
-
-| Element | Component | Rule |
-|---|---|---|
-| Count square | `.b3-xf-sq` | The export file card's own square, which is itself the selection bar's `.b3-sd-count`. 40×40, 10px corners, fill from `--m`. ⚠️ **NOT `.b3-xf-h0 .b3-xf-sq`** — that is the EMPTY-state variant, sunk and unlit |
-| Square figures | `--display` + `--tr-fig` | Big Shoulders at **700 / 19px**. One declaration serves the landing AND the card; they are the same chip |
-| Mode accent | `MODE_HEX` | MP `#FF3B5C`, DMZ `#3DA5F5` — the masthead's own pair, set as `--m` on the row |
-| Filename | `.b3-xf-fn` + `.b3-xf-fid` | The picker's rename chip, whole: the `--ok` tint, the pencil, the `.txt` held out of the field, click-to-rename |
-| Download | `.b3-btn2.sm.go` | Unchanged — `--ok` fill, `--on-ok` ink |
-| Pick | `.b3-btn2.sm.stage` | **New modifier**, built the way `.go` is: sets `--b3-fill` and takes its states from that |
-| Hint marks | `.exs-facts` | New, and the only genuinely new markup on this surface |
-
-### 3.3 The `.stage` modifier — the one thing Session 5 must not hand-copy
-
-```css
-.b3-btn2.stage{--b3-fill:var(--staged);--b3-under:var(--sunk);color:var(--ink);
-  background:color-mix(in srgb,var(--b3-fill) 14%,var(--b3-under));
-  box-shadow:inset 0 0 0 1px var(--b3-fill)}
-.b3-btn2.stage:hover:not(:disabled){background:color-mix(in srgb,var(--b3-fill) 24%,var(--b3-under))}
-.b3-btn2.stage:active:not(:disabled){background:color-mix(in srgb,var(--b3-fill) 30%,var(--b3-under))}
-```
-
-Three things about it are load-bearing:
-
-1. **The recipe is `.pill.lead`'s** — a full-hue edge over a 14% tint of the same hue, `--ink` label, 24% on hover (app.css:4543, board.css:1604). `.b3-btn2` draws its edge with an inset shadow rather than a border, so that is the edge it gets.
-2. **It CANNOT share `.go`'s state rules.** Those mix `--b3-fill` **74% toward white**, which is right for a solid and turns a 14% wash nearly white.
-3. 🔴 **The tint mixes against `--b3-under`, never `transparent`.** Measured: the manifest's create verb sits on a flat `.panel rgb(23,30,36)`; this one sits over `.drawer.open`, which carries a background IMAGE — the mesh ground. A 14% mix toward `transparent` is 86% of whatever is behind it, so the same declaration is a different colour on the two surfaces. He saw it before I did.
-
-### 3.4 Copy — three rewrites, and why each failed
-
-| Version | Why it failed |
-|---|---|
-| *"One file per set, in the bot's own block format — paste it back into Bulk to restore. Take one before any one-way change."* | Three facts welded into one sentence, so it is an all-or-nothing read. **And "Bulk" is an Armory concept** — this landing is the SHARED panel, rendered by four drawers |
-| *"The bot reads this exact file back" / "Take one before a one-way change"* | Both describe the system. "Reads back" is our word; **"Take one" has no object** |
-| *"Imports straight back" / "Before one-way changes"* | Prepositional **fragments** — the warning was carried entirely by the icon beside it, which `/impeccable clarify` bans outright. "one-way" is a tier named in `ui/oneway.js` and nowhere the reader has been |
-
-**Shipping copy**, all three parts non-overlapping — the lead says *what it is*, mark one *what it buys you*, mark two *when*:
-
-- Lead (`.dw-lead.exs-lead`): **"Download a copy of what's live — one file per set."**
-- Mark 1 (`rotate-ccw`): **"Import it back to undo"**
-- Mark 2 (`triangle-alert`, `--warn-ink`): **"Download one before anything permanent"**
-
-Each mark survives having its icon removed. "Download" is the word on the buttons, so lead, mark and control name the action identically.
-
-⚠️ `exportPanel.js:77` records a hard constraint: *"one sentence, because a three-line paragraph makes the drawer 25px taller and moves everything in it."* The strip is **26px**. The lead adds a line — if that shifts the rows more than Session 5 wants, drop the lead to `--t-sm`.
-
-### 3.5 Measured geometry
-
-| | Value |
-|---|---|
-| Row inset | `padding: 13px 18px 14px 6px` — one relation, not three offsets; column 1 is fixed 64px so the left inset carries the square AND the text column |
-| Buttons | **102.1px** natural (Download, no `width` at all — exactly as the panel draws it) · **102px** floor (Pick) · **34px** tall · `padding-inline: 12px` |
-| Trailing chevron | `margin-right: -5px` — its 14px box carries ~5px of transparent bearing, so the ink sat 2.5px left of centre |
-| Titles | `.exs-t b` at `--t-lg`; rows with a file chip get `position:relative; top:-3px` |
-| Rename chip | 24px, both states, `flex:0 0 auto` + `min-height` — a bare `height` is a request a flex parent may shrink |
-| Field width | `field-sizing: content` — the card's grid footer gave the editing label its width; a flex column does not |
-
----
-
-## 3b · v70 → v77 — the span the README does not cover
+## 7 · v70 → v77 — the span the README does not cover
 
 🔴 **`README.md`'s round log stops at version 70** (*"the intake round"*, 2026-09-20 17:46 EDT). Everything below happened after it and exists nowhere else but this file and the kit's git.
 
@@ -263,64 +345,44 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 ---
 
-## 4 · The class-level fixes — these are the reason the board took the rounds it did
+## 8 · Where board 3-E overrides board 2 — check before porting either
 
-Every one was found because a symptom was an *instance* of something larger.
+A pins-2 answer is newer than board 2's spec. Board 2's port sheet already carries three overrides (the copy segment's tint, the enclosure footer's dashed border, the secondaries accent). Board 3-E adds these:
 
-| Fix | Class |
-|---|---|
-| **Container edges are a real `border`** | `outline` paints above descendants only within one stacking context, and an `::after` overlay only covers containers you remember to list — `search_code` found **361** `inset 0 0 0 1px` declarations. A border sits outside the padding box, so a child's box can never reach it. `.panel` never appeared in a screenshot for exactly this reason |
-| **`isoLocal`** | `new Date().toISOString().slice(0,10)` is UTC, so from 20:00 EDT every rendered date was tomorrow's. 8 sites board-side, 36 across the kit |
-| **`.exs-t span` → `.exs-t > span`** | A descendant selector reaching inside a component it knows nothing about, restyling the rename chip's spans |
-| **`label{}` neutralised inside `.b3-xf-fid`** | app.css:669 styles every bare `<label>` as a form caption — `margin-bottom:5px` at (0,0,1), and it won because nothing on the chip said otherwise |
-| **The file chip is `:is(.b3-xf,.exs-i)`** | 46 selectors widened. Same (0,1,0) weight, one set of declarations, two callers |
-| **H1 toolbar gaps** | `html[data-b3-a1=fixed] .mt-r2` at **(0,2,1)** beat `.b3-hi .b3-hi-f` at (0,2,0), so two spacing knobs were dead while the lab reported values the page never used |
-| **EVENTS joins the label column** | It is `.mlabel`, not `.b3-fgl`; `gates.css:237`'s `min-width:64px` at (0,3,1) beat the rule meant to size it |
-
-🔴 **THE ONE HABIT THIS BOARD SHOULD TEACH SESSION 5:** four separate defects tonight were *"the declaration says X"* when the page said otherwise. **Ask the page which rule wins.** Iterate the sheets, iterate rules by index, skip `r.type !== 1` (a plain `CSSStyleRule` has an empty `.cssRules` in Chrome, so naive recursion swallows every rule), guard `matches()` in try/catch, and count a rule you already know matches so an empty result is distinguishable from a broken walk.
-
-And: **measure the drawn ink, not the element box.** His rulers read 28/33 on the Pick button where the DOM read 28.4/28.4. Both were right about different things; only one of them was about what he sees.
+| Element | Board 2 says | Board 3-E ships | Why |
+|---|---|---|---|
+| `.b3-btn2` shape | a pill | a soft rectangle, `var(--rad-box)`; 8px in the Export footer | thread `846eb917` — *"soft cornered rectangles instead of pills"*, his call for *"the whole control family now"* |
+| Ghost buttons | no ring | ringed | round 5J — a ghost read as text |
+| A pressed segment | no ring | the lit ring, on every rail toggle | thread `9ac5e9ae` |
+| The All chip | no count | the sum of the chips' counts | thread `835f9aa3` |
+| The selection list's weapon header | 48px | **44px** | `sdgh`, confirmed 2026-09-21 09:22 EDT |
+| A count in a chip | grey | the pill's hue, weight 700 | thread `835f9aa3` |
 
 ---
 
-## 5 · States, motion and accessibility
+## 9 · What is NOT answered
 
-| Element | State | Behaviour |
+| Open | Owner |
+|---|---|
+| `p10` · Small text | **Session 4 · G1** |
+| The 204 board-only class names and the new tokens | **Session 4** (§5c) — `3e/class-map.md`, `3e/token-map.md` |
+| The three portal defects (§5) | **Session 4** — §5c.3b Step 4c |
+| The control family — toggle label, filter chip, segmented switch, readout pill | **Session 4** — §5c.3b, deferred there 2026-09-17 |
+| Intake items 2, 5/7d, 7a and 7e | ⚠️ built, never ruled by him (§7) |
+| The two "unasked" behaviours (§3) | Session 4 — filed |
+| Command search's ranking | its own session |
+| The H1 drastic redesign | deferred by him, not rejected |
+| Outline tags · the Solid ground | kept in the files as future switches, at his request |
+| gates.css:813 / 815 `transition: padding` / `max-width` · the `.b3-byp-c` side-tab stripe | flagged by `impeccable detect`, pre-existing |
+| **H1 — three of my changes against his record, awaiting his word** | he keeps or strikes each: the panel titled **EVENTS** where the ledger says to title a panel with what it is FOR · the **count line deleted** (the ledger's History section carries the count as OPEN and explicitly not adjudicated) · the **whole portal toolbar ported** when he asked for the header reworked and the search unified. `docs/db-deferred-list.md` § *H1 History manifest* row 7 |
+| **H1 — a product question, not a layout one** | every restart is followed by a *"Bot online"* alert in the same minute: **is Alert a kind, or a property of the restart?** Merged, 47 alerts and 26 restarts become 26 restarts plus ~21 real alerts. Same row 5 |
+| **H1 — the burst head** | variant D states a rate (*"25 in 1h"*) and then draws all 25 rows. Same row 4 |
+| **Every interactive mark in the H1 panel is under the 44px touch floor** | `.b3-htab` 24 · `.b3-undo` 28 · `.b3-fc` 32 — the row is the hit area on a pointer surface. Same row 6 |
+
+### Board artefacts that are NOT design — do not port
+
+| Artefact | Why it exists | Source |
 |---|---|---|
-| Rename chip | rest | `.b3-xf-fn:not(.editing)` — `--ok` tint, pencil at `--ink4` |
-| Rename chip | hover | ink to `--ink2`, ground to `--sunk`, ring to `--ink4` |
-| Rename chip | editing | `--focus` inset edge **plus** `0 0 0 3px` of `--ok` at 26% and a `16px -2px` fade at 40%; both callers |
-| Rename chip | empty field | falls back to the generated name — the chip can never be blank |
-| Download | hover / press | `.go`'s own ladder off `--b3-fill` |
-| Pick | hover / press | 14% → 24% → 30% of `--staged`, mixed against `--b3-under` |
-| Row glow (M1/H1) | hover | `.wg-r:hover`'s recipe, not `.b3-wr`'s — three fixed-pixel ellipses inside the row, all in `--c` plus a `--realm-c` layer, no blend modes |
-| Export file card | fold | 420ms `cubic-bezier(.32,.72,0,1)`, flex-grow ALONE — transitioning `min-height` too measured 33.3ms/frame against 16.7 |
-
-- Every count cell carries `aria-label="<n> <unit>"`; the square itself is `aria-hidden`.
-- The rename chip keeps its accessible name across both states (`Rename <file>` / `File name for <set>`).
-- Reduced motion drops the chip's glow transition and the fold's easing.
-- ⚠️ **The phone is not a review surface for these boards** — settled 2026-09-20 12:02 EDT. Do not spec mobile from board 3-E.
-
----
-
-## 6 · What is NOT answered
-
-| Open | Where it goes |
-|---|---|
-| `p10` · Small text | **Session 4 · G1** — the rewrite, the apply map and the exemptions |
-| The H1 "drastic redesign" | Deferred by him, not rejected. Time rail ships |
-| Outline tag style (`p2sty`) | Kept in the files, documented, as a possible future switch |
-| Solid export ground (`p5bg`, `xbg`) | Kept in the files as a future portal **setting**, per thread `bd09c832` |
-| The lab's three columns | Two-line labels put the columns out of step and leave a void beside "The columns". Cosmetic, on the instrument, not on a shipping surface |
-| gates.css:813/815, :352 | `transition: padding` / `max-width`, and a `side-tab` accent stripe on `.b3-byp-c` — flagged by `impeccable detect`, pre-existing, untouched |
-
----
-
-## 7 · How Session 5 closes a surface
-
-Per §5d.2, unchanged — a side-by-side against the board at 1282×888, every value in this file read back with `getComputedStyle` and written beside the board's. A differing value is a defect unless a ledger row cites it.
-
-Two additions this board earned:
-
-1. **Read the value off the PAGE, not off this file's table.** Every number here was measured, but a number in prose is a copy of state that nothing updates.
-2. **The board is at artifact v77 and the kit's git is the only other copy.** If a value here and the board disagree, the board wins and this file is the defect.
+| A stage's panel sitting 60px down with 28 below | the portal's `#manifest { margin-top: var(--s6) }` makes room for a realm header that does not exist inside a board stage. Fixed for History in `gates.css`; **the Armory manifest still measures 60 / 28 on the board** — it is the stage, not the design | `docs/db-deferred-list.md` § *Five class faults*, row 4 |
+| `--pb-inset: 5px` on a control squeezed below 44px | the inset was fitted to a 44px `--tap` control; smaller callers get a visible box 10px short | same, row 1 |
+| M2's `.b3-fc` counts in `--patch` at 700 | a class fix for History's toggles that reached Repairs without being looked at — **his call whether M2 keeps it** | same, row 5 |

@@ -26,7 +26,7 @@ The real cost is not duplicated effort. **Working without the decisions loaded m
 
 ### 2. The port table was my own objective and it does not exist
 
-`local/pins2/s3-triage.md`, written **14:33 EDT — the start of this session** — defines a destination and assigns **13 of the 57 pins** to it:
+`docs/superpowers/mockups/2026-09-15-pins2-board-3/triage/2026-09-15-s3-triage.md`, written **14:33 EDT — the start of this session** — defines a destination and assigns **13 of the 57 pins** to it:
 
 > **S3 port table → S5** — "Session 3 lists each element the portal lost against its board, value beside value; Session 5 builds from that table"
 

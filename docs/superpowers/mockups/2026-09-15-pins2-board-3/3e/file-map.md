@@ -1,0 +1,115 @@
+---
+kind: reference
+status: live
+---
+
+# Board 3-E — every kit file, and whether it ships
+
+*Generated 2026-09-21 09:37 EDT from `local/pins2-board-3/redo/` at kit commit `b5e3f68`. The kit is GITIGNORED and lives only on this machine, with its own local git (`KIT-GIT.md` beside this file) — so a Session 5 that builds from it must run where `local/` exists.*
+
+**Why this file exists.** Board 3-E is the portal's own code running, so "port the board" means three different operations depending on the file, and nothing in the kit says which. Board 2 was one static page; this is not.
+
+| Label | Count | What Session 5 does with it |
+|---|---|---|
+| **PORTAL-COPY** | 47 | Apply the hunk in `portal-diff.md` to the portal's own file |
+| **DESIGN-CODE** | 10 | Board-only code that IS the design. Port its behaviour into the named portal file; its values are in `resolved-spec/` |
+| **MIXED** | 6 | Part design, part board machinery. Split by the rule given in the row |
+| **CHROME** | 30 | The board's own machinery. Never ships |
+
+| File | Label | Ships into | Note |
+|---|---|---|---|
+| `KIT-GIT.md` | **CHROME** | — | kit documentation |
+| `app.css` | **PORTAL-COPY** | `portal/ui/app.css` (source) → `portal/public/app.css` (built) | `portal-diff.md` re-locates each changed line in the SOURCE by content |
+| `b2.css` | **MIXED** | board 2's `pb-*` card and queue rules the delivery queue still wears | Board 2's port sheet already maps `pb-*` → `b*` for the queue card |
+| `b3/armory-parts.js` | **DESIGN-CODE** | `portal/ui/armory.js` and `portal/ui/manifest.js` | Badges, `SelectAllBox`, the problem card (`pcPath`), the selection bar, the hint card |
+| `b3/board.css` | **MIXED** | mostly `portal/ui/app.css`; `.b3dock*`, `.dk-*`, `.g-*`, `.lab-*`, `.pidx*` are chrome | Split by selector, not by file |
+| `b3/bolt-raw.svg` | **DESIGN-CODE** | the META badge art |  |
+| `b3/bolt.svg` | **DESIGN-CODE** | the META badge art |  |
+| `b3/broadcast.js` | **DESIGN-CODE** | `portal/ui/broadcast.js` | The delivery-queue card and the never-ends warning on the card (p8 = A) |
+| `b3/dock.js` | **CHROME** | — | The board dock |
+| `b3/drawer.js` | **DESIGN-CODE** | the build drawer in `portal/ui/armory.js` | Board 1 G9's drawer as board 3 carries it; its structural spec is `../2026-09-14-pins2-board/handoff-g9-g8.md` |
+| `b3/fady.js` | **DESIGN-CODE** | a shared scroll-edge utility in `portal/ui/` | The edge fade on every horizontally-scrolling run |
+| `b3/history.js` | **DESIGN-CODE** | `portal/ui/history.js` | The time rail (p9 = B), the toolbar, the filter groups, the row glow. 19-line diff on `ui/history.js` alone; the rest lives here |
+| `b3/palette.js` | **DESIGN-CODE** | `portal/ui/palette.js` | Command search, settled "as shown". ⚠️ The LOOK ships; the RANKING is its own session |
+| `b3/ref-band.svg` | **CHROME** | — |  |
+| `b3/ref-strip.svg` | **CHROME** | — |  |
+| `b3/repairs.js` | **DESIGN-CODE** | Repairs, rendered from `portal/ui/armory.js` | Tickets by severity, the pass card, `agoShort`, the `.pb-pill` age chip |
+| `b3/state.js` | **CHROME** | — | Fork switches and the `--h1-*` stamp. ⚠️ The stamp is the ONLY place `--h1-*` exist; see `token-map.md` |
+| `b3/volt.js` | **DESIGN-CODE** | the META badge in `portal/ui/armory.js` | META's discharge, drawn from his own settings (round 4g) |
+| `badge-lab.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `badge-playground.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `badges-compare.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `board3.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `board3c.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `board3d.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `board3e.html` | **CHROME** | — | The page |
+| `cmp/badges.js` | **CHROME** | — | A badge comparison page from round 4a |
+| `data/analytics.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/analytics300.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/armory.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/broadcast.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/changeset.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/csrf.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/previews.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `data/review.js` | **CHROME** | — | The dev-database fixture the board renders. Never ships; the portal reads the API |
+| `gates/armory.js` | **MIXED** | `ExportPicker` + the landing → `portal/ui/exportPanel.js`; `PaletteSpecimen`/`SlotSpecimen` and the gate sections are chrome | The export design is ~700 lines of BOARD-ONLY code with a 4-line diff against the portal. It is a code port, not a CSS port |
+| `gates/broadcast.js` | **MIXED** | the queue gate wraps `b3/broadcast.js` → `portal/ui/broadcast.js` |  |
+| `gates/history.js` | **CHROME** | — | The H1 gate wrapper; the design is `b3/history.js` |
+| `gates/lib.js` | **MIXED** | `CharCount` → `portal/ui/broadcast.js` + `portal/ui/exportPanel.js`; `Stage`/`Gate` are chrome | README port list, v28: ONE character chip for the Broadcast card and the Export file |
+| `gates/main.js` | **CHROME** | — | Mounts the six gates, the index and the coverage banner |
+| `gates/picks.js` | **CHROME** | — | The Decide panel, the fork records and the H1 spacing lab. Its OUTPUT — the ruled answers and his spacing values — is the design; `handoff-3e.md` §1–§2 carry it |
+| `gates/shared.js` | **CHROME** | — | Gate controls (`Seg`, `segOpts`) and the E4 type roles, which went to Session 4 |
+| `gates.css` | **MIXED** | the export landing, the H1 toolbar and the edge rule → `portal/ui/app.css`; the gate frame is chrome | Its own header says "the board's chrome AND this round's fixes" — tonight's export landing rules live here and ARE the design |
+| `hdr.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `index.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `ref/board1-g8.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `ref/board1-g9.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `retitle-a.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `retitle-b.html` | **CHROME** | — | An earlier board version, a lab or a comparison page |
+| `ui/access.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/access.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/analytics.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/app.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/armory.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/armory.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/async.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/async.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/avatarTint.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/board.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/board.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/broadcast.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/broadcast.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/composeClient.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/composer.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/composer.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/conform.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/download.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/exportPanel.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/exportPanel.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/history.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/home.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/httpClient.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/icons.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/manifest.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/manifest.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/oneway.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/oneway.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/overlay.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/overlay.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/palette.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/palette.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/review.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/review.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/season.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/season.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/shell.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/timeline.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/tips.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/tips.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/track.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/track.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/tray.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/useMeasured.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/v2Render.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+| `ui/v2Render.logic.js` | **PORTAL-COPY** | the same file in `portal/ui/` | Apply its hunk in `portal-diff.md`. Never copy the whole file: the kit's copy is older than the portal in places |
+

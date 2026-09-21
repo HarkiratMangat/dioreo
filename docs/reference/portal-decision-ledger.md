@@ -694,6 +694,32 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | G1 small text | ✅ **Session 2 applies the rewritten table** | Popup 15:59 EDT | He rejects a treatment on the built surface |
 | The refinement contract | ✅ **C1–C14 in plan §10.4 are close conditions**, measured by `measure.cjs` on the board and re-measured on the portal | 15:22 EDT: *"THIS IS WHAT REFINEMENT IS"* | A rule is shown to be wrong on a real surface |
 
+## Decided 2026-09-20 — portal pins batch 2, board 3
+
+*Harkirat's answers on Design Board 3-E, closed at version 77 (2026-09-20 23:55 EDT). Every row is his call made against the rendered board; the build rows are plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.5, and the spec — `handoff-3e.md`, the generated `3e/resolved-spec/`, the three maps and `3e/measure.cjs` — is in `docs/superpowers/mockups/2026-09-15-pins2-board-3/`. Written 2026-09-21 09:46 EDT.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Slot palette | ✅ **His nine hexes, six mappings**, a cool grey for unknown slots (`p2pal` final) | thread `444d806a`, 2026-09-18 21:54 and 22:05 EDT; grey by popup 22:57 | a build carries one of the six extra slots and two paired slots collide |
+| Slot label | ✅ **Key** — a micro uppercase field key, separated by air | popup 2026-09-18 10:41 EDT | — |
+| Tag style | ✅ **Laid on**; Outline's rules KEPT in the files, documented | 2026-09-19 11:01 EDT: *"keep and document the code for the Outline style in case I change my mind"* | he switches it on |
+| Problem card · table mark | ✅ **A** · **Bare mark** (the triangle; hover or click opens the card) | 2026-09-17 · popup 2026-09-18 10:41 EDT | — |
+| Checkbox | ✅ **B · Soft well** | recorded on the board 2026-09-18 23:22 EDT | — |
+| Selection bar ground | ✅ **Mesh**; Solid KEPT as a future portal setting | thread `bd09c832`, 2026-09-17 18:59 EDT | the setting is built |
+| Stage-deletion hint | ✅ **Hover card** | recorded 2026-09-18 23:22 EDT | — |
+| Row hazard edge | ✅ **C · taper + plume, on the LEFT border**, replacing the row's hover accent | 2026-09-18 20:20 EDT | — |
+| Selection list weapon header | ✅ **44px** — the database's 48 is a stale tick | 2026-09-19 10:03 EDT; **confirmed 2026-09-21 09:22 EDT: *"44 is correct"*** | — |
+| The reveal | ✅ **Smooth · 260ms** | recorded 2026-09-20 23:54 EDT | — |
+| Repairs | ✅ **C · Tickets**, **By severity** | 2026-09-18 22:42 · 2026-09-19 10:43 EDT | — |
+| Export | ✅ **B · its own step**, **Tiles + file**, **Ground** | 2026-09-17 · 2026-09-19 10:47 · 2026-09-20 00:33 EDT | — |
+| Export landing | ✅ **The count in the file card's own square**, the filename as the picker's rename chip, Pick as the washed `--staged` tier, a lead line and two fact marks | his five steps, 2026-09-20 22:16 → 23:44 EDT | — |
+| Never-ends warning | ✅ **A · on the card** | recorded 2026-09-20 00:59 EDT | — |
+| History timeline | ✅ **B · Time rail**; the drastic redesign **deferred, not rejected** | 2026-09-20 17:41 EDT | he reopens the redesign |
+| History spacing | ✅ **His eighteen values** from the board's own lab — the toolbar, the search, the list and the columns | saved to the board 2026-09-20 23:54 EDT | — |
+| Small text (`p10`) | ⏳ **OPEN — Session 4's G1** | — | — |
+| Command search | ✅ **As shown**; the ranking is its own session | 2026-09-15 20:31 EDT: *"build it properly, and exactly as shown"* | — |
+| Three portal defects | ➡️ **Session 4's** (§5c.3b Step 4c) | routed 2026-09-21 09:22 EDT | — |
+
 ## Decided 2026-09-15 00:07 EDT — portal pins batch 2, Session 2
 
 *Built from plan `docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md` §10.4 and design board 2; each row cites the board answer it ports. Measured on the harness at 1282×888 before a row is closed.*
