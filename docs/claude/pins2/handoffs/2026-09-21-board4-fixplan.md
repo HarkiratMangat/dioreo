@@ -42,14 +42,33 @@ Scope: CSS under `.b4`, and behaviour behind `window.B4_COLLECTIVE`, so Board 3-
 
 ## Facts established before building (so they are not re-derived)
 
-- `p10` (small text) is ruled **`state`** in `b3/state.js` DEFAULTS. The hint treatment for K3 hints comes from it; hint COPY stays Session 4's.
+- `p10` (small text) is ruled **`state`** in `local/pins2-board-3/redo/b3/state.js` DEFAULTS. The hint treatment for K3 hints comes from it; hint COPY stays Session 4's.
 - Board 2 G11 ruled the staged tab as a **dashed outline** and the State filter chips **with colour dots** (13:06 EDT popup). His intake items C7-6 and C7-7 supersede both; the plan carries both rulings so the change is deliberate.
 - The Ends default: board 1 drew "default · Sun Nov 15", and nothing rules how it is computed. K3 designs the field; the date rule stays his open question.
-- Selection bar actions: Edit `.b3-btn2`, Export `.b3-btn2`, Stage deletion `.b3-btn2.dang`, Clear `.b3-btn2.quiet` (`b3/armory-parts.js` SelectionDock).
+- Selection bar actions: Edit `.b3-btn2`, Export `.b3-btn2`, Stage deletion `.b3-btn2.dang`, Clear `.b3-btn2.quiet` (`local/pins2-board-3/redo/b3/armory-parts.js` SelectionDock).
 
-## Cost
+## Turn budget — his ruling (2026-09-21 19:55 EDT): "60+ is unacceptable … scope that correctly and mega batch it"
 
-Roughly 60–120 turns across `b4.css`, `b1.css`, `b3/drawer.js`, `b3/armory-parts.js`, `ui/armory.js` (Compare), `ui/broadcast.js` (PostForm, columns), `ui/manifest.js` (inline edit), the Export picker code, and `gates4/*`. One interim publish for the shell ruling.
+Pass 2 (K8, K7, K6, K12, then the K2 options) is **≤ 12 turns**, and pass 3 (the C2 rebuild, K3–K5) is **≤ 12 more**. Each pass has one shape:
+
+| Turn | One message holds |
+|---|---|
+| 1 | The thinking pass, plus ONE evidence batch: every code and CSS fact the pass needs, pulled in parallel (codebase-memory snippets, one `ctx_batch_execute` for CSS line ranges) |
+| 2 | ONE heredoc for every edit in the pass, across all files: an assert per anchor, a print per edit, `node --check` chained |
+| 3 | `b4states` plus `shots.cjs` for every affected scenario, in one call, composited into ONE image |
+| 4 | Look at that one image |
+| 5–6 | One corrective heredoc, then one re-verify call |
+| 7 | Commit both repos and update the plan's Progress table, in one call; then the popup |
+
+Anything that does not fit this shape is a sign the evidence batch in turn 1 was incomplete, not a reason to add turns.
+
+## What pass 1 cost, for the record
+
+Roughly 60 turns: about a third went on discovery calls that one evidence batch would have covered, and a quarter on an instrument bug (the probe) found by checking it against a known case.
+
+## Cost (original estimate, superseded above)
+
+Roughly 60–120 turns across `b4.css`, `b1.css`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/ui/armory.js` (Compare), `local/pins2-board-3/redo/ui/broadcast.js` (PostForm, columns), `local/pins2-board-3/redo/ui/manifest.js` (inline edit), the Export picker code, and `gates4/*`. One interim publish for the shell ruling.
 
 ## Progress — pass 1, 2026-09-21 19:27 EDT (local only, not published)
 
@@ -73,6 +92,6 @@ Roughly 60–120 turns across `b4.css`, `b1.css`, `b3/drawer.js`, `b3/armory-par
 
 ```text
 /rename Opus5-High · Pins2 S3 Board 4 intake fix pass 2 · Sep 21
-Continue the Board 4 intake fix pass. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md and 2026-09-21-board4-intake.md in full before the first tool call. Run a real sequential-thinking pass first (harsh questions, not sorting), then build K8 (C5 hover card), K7 (Compare: toggles, 1–6 card layout, fonts, landing), K6, K12 — each verified with b4states and shots across every section — then put the C2 header/footer options on the board as switches and ask me. Do not publish until I say.
+Continue the Board 4 intake fix pass, in the turn budget the plan sets (≤ 12 turns per pass). read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md and 2026-09-21-board4-intake.md in full before the first tool call. Run a real sequential-thinking pass first (harsh questions, not sorting), then build K8 (C5 hover card), K7 (Compare: toggles, 1–6 card layout, fonts, landing), K6, K12 — each verified with b4states and shots across every section — then put the C2 header/footer options on the board as switches and ask me. Do not publish until I say.
 Silent mode. Questions in popups. Tool routing by the question. Mega-batch. One heredoc per Bash call.
 ```
