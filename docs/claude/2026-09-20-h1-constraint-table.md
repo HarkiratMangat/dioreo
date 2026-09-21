@@ -116,3 +116,18 @@ Mode is **Operate**. Colour carries topic; shape carries state.
 ## Also unattributed, introduced by me today
 
 `--fc` as the chip hue contract · the chip's four-state percentages · the burst sub-head's "6 in 9 min" wording · the export landing's lead/secondary/strip composition · `exs-pick` · the story binding's own rule (consecutive, same entity, same actor, within a day) · the row separator's weight · the 440px filter column. Each may be fine; none was shown as a choice.
+
+## Ruled on Board 4 — 2026-09-21 16:12 EDT
+
+*Harkirat's popup answers, shown each option as a capture from Board 4 first (`local/b4-nitpick/C8-*.png`).*
+
+| Element | Ruling | Built |
+|---|---|---|
+| Toolbar label | **EVENTS** stays (MANIFEST offered and declined) | unchanged |
+| Count line at the toolbar's right | **Left out** | unchanged — the ledger's OPEN count-line row is now ruled |
+| Is Alert a kind? | **No — a "Bot online" alert in the same minute as a restart is how that restart ended.** The pair folds into the restart row | Board 4 only (`window.B4_COLLECTIVE` in `b3/history.js`): 26 folds, Alerts 47 → 21 |
+| The folded row's mark | Direction A, a tag — then *"that design is ass"*; rebuilt as a **Back online** chip in the row's own kind-chip family (`.b3-htab`, `--c: var(--ok)`) | `b3/history.js`, `b4.css` |
+| Row accent (intake 7a) | **Right** — full `--c` | ruled |
+| Container edge (intake item 2) | **Right** — the edge drawn on top | ruled |
+| Day-row chip (intake 7e) | **Not right:** *"look at the chips in the rows below it."* Now the kind chip's size and type (24px, t-sm, 13px icon), its colours unchanged; measured identical on every property, centred to 0px | `b4.css` |
+| Row hover glow | Must equal the Armory manifest's — now `.wg-r:hover`'s recipe exactly, `var(--paper)` base included | `b4.css` |

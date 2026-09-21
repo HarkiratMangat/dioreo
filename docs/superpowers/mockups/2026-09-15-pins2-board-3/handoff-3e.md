@@ -333,6 +333,8 @@ He gave seven items, I fixed them, then he validated each one and **overturned m
 
 ⚠️ **Four items are UNRULED** — he never gave a verdict on the fix. Session 5 should treat 2, 5/7d, 7a and 7e as *built but unconfirmed*.
 
+✅ **Ruled 2026-09-21 16:12 EDT on Board 4:** 2 and 7a are right; 7e was not (rebuilt at the kind chip's size); 5/7d is still unruled. Full rows: `docs/claude/2026-09-20-h1-constraint-table.md` § Ruled on Board 4.
+
 ### Rounds 15–18 (2026-09-20 21:35 → 2026-09-21 00:02 EDT)
 
 | Round | What landed |

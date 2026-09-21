@@ -35,6 +35,10 @@ It is the design Session 5 ports once he signs it off; Session 4 standardizes in
 - Never apply a design kit's diff verbatim [memory:61672]; never publish mid-review [memory:61651]; freeze a board on the stylesheet it was approved on [memory:61671].
 - Read the handoff, the instruments README and the pre-compact reasoning before planning after a compact [memory:61678].
 
+## Ruled 2026-09-21 16:12 EDT
+
+C2 880px · C4 counts stay (already decided; the question should never have been asked) · C8 EVENTS, no count line, Alert folds into its restart with a Back online chip, 7a and item 2 right, 7e rebuilt · C7 and C8 row glows now equal board 2 G11's and the Armory's. C7 is held for his comments.
+
 ## Open questions — his to rule
 
 - C2: the drawer is 980 wide (board 3); board 1 drew 880.
