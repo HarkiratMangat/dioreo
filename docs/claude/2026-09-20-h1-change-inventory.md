@@ -99,6 +99,22 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
+## ROUND 17 — v3 scrapped, v2 restored, his five applied to THAT (2026-09-20 20:56 EDT)
+
+*"scrap your v3 version entirely, i don't want you making patches on top of it. revert back to v2 and then fix it with my feedback."*
+
+**Three versions of this landing exist and I had been treating mine as the baseline.** v1 carried amber buttons and a paragraph per row; v2 tightened it — a count over a `BUILDS` label, the name, the filename beneath, a green Download, and a Pick row with a tick icon, a subtitle and an outlined `Pick >`. He called v2 the most correct direction and gave five refinements on it. **I never touched v2. I refined v3, which was my own regression of it.**
+
+| His point | Applied to v2 |
+|---|---|
+| Align the three titles | One column set for all three rows, so the tick icon sits in the count's column and every title starts at one x — in v2 the files began at 227 and the door at 185 |
+| Improve the hint, it looks skippable | **Made a readout, not nicer prose.** A caption reads identically every visit and is zero information by the second one. It names the format, says where it pastes back, and carries a live count that moves with the data |
+| Drop "BUILDS", count in the picker's square | The picker's live square, filled in the mode's own hue |
+| `Pick` filled, in the staging accent | Filled `--staged`, and it keeps its word — v3 had removed the label and left a bare chevron |
+| Filename uses the picker's chip | The chip, renaming in place |
+
+**What v3 had cost, listed so the shape is visible:** the filename stacked onto a second 40px line (+50% row height), the hint deleted rather than designed, the door's word removed, and four hues on a panel that had one accent. **Every one of those came from fetching a part and re-tuning it, never from drawing the panel.**
+
 ## ROUND 16C — the export square was the EMPTY-state variant (2026-09-20 20:31 EDT)
 
 *"that export drawer is literally SO fucking bad!"* — and the wrong date was not what he meant.
