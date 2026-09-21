@@ -134,8 +134,8 @@ inside `.cmpbar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
 | position | `relative` | `relative` | .wsrch · app.css:7031 |
-| flex | `1` | `` | .b1 .cmpbar .wsrch · b1.css:276 |
-| max-width | `340px` | `340px` | .b1 .cmpbar .wsrch · b1.css:276 |
+| flex | `1` | `` | .b1 .cmpbar .wsrch · b1.css:278 |
+| max-width | `340px` | `340px` | .b1 .cmpbar .wsrch · b1.css:278 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |

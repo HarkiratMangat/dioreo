@@ -29,7 +29,8 @@ const gate = (i, v) => `(() => { const g = document.querySelectorAll('section.pb
 const cmpOpen = (then) => `(async () => {
   const s = document.getElementById('c-compare');
   const f = (w) => [...s.querySelectorAll('button,[role=tab]')].filter((x) => !x.closest('.g-tries')).find((x) => x.textContent.trim().toLowerCase().includes(w));
-  const t = f('compare'); t && t.click(); await new Promise((r) => setTimeout(r, 1200)); ${then}
+  // Board 4 round 1: Compare is the panel alone; its head's Empty state offers board 1's weapon pills.
+  const e = [...document.querySelectorAll('#c-compare .pb-ctl button')].find((b) => b.textContent === 'Empty'); e && e.click(); await new Promise((r) => setTimeout(r, 1200)); ${then}
 })()`;
 const SURFACES = {
   g8: {
@@ -45,7 +46,8 @@ const SURFACES = {
   },
   g9: {
     ref: [B1, 'aside.drawer', '', 'aside.drawer[aria-label="New build"]'],
-    b4: [`(async () => { const t = [...document.querySelectorAll('#c-new-build .g-tries button')].find((b) => /open new build/i.test(b.textContent)); t && t.click(); })()`, '#c-new-build .drawer.open'],
+    // Board 4 round 1 (2026-09-21 15:10 EDT): the drawer is open on the section's own 'Add build' state; no Try opens it any more.
+    b4: [`(async () => { const t = [...document.querySelectorAll('#c-new-build .pb-ctl button')].find((b) => b.textContent === 'Add build'); t && t.click(); await new Promise((r) => setTimeout(r, 900)); })()`, '#c-new-build .drawer.open'],
   },
   // Board 4's empty Compare offers board 1's weapon pills; the one-weapon state is the first pill, two weapons adds FFAR 1 through the search.
   g10v0: { ref: [B1, 'aside.drawer', gate(1, 0), '#gate1 .pb-view[data-view="0"]'], b4: [cmpOpen(`const w = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -12,7 +12,85 @@ status: live
 
 ### C5 stage
 
-27 distinct signatures on screen; 22 not already specced above.
+28 distinct signatures on screen; 24 not already specced above.
+
+
+### `div.g-fixed.g-stage.pb-stage`
+
+inside `.b4-exp` · 1 on screen · **1 look**
+
+#### the one look
+
+`C5-1` · rendered **1148×560** · 1 instance look like this
+
+```html
+<div class="pb-stage g-stage g-fixed" style="--stage-h: 900px;"><div class="scrim on"></div><aside class="drawer open" role="dialog" aria-modal="true" aria-label="Export"><header class="dw-h"><div class="dw-ttl"><h2>Export</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><p class="dw-lead exs-lead">Download a copy of
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .pb-stage · b2.css:38 |
+| position | `relative` | `relative` | .g-stage · gates.css:90 |
+| height | `560px !important !important` | `560px` | #c-export[data-st="landing"] .g-stage · b4.css:107 |
+| min-height | `0px !important !important` | `0px` | #c-export[data-st="landing"] .g-stage · b4.css:107 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `28px` | `` | .b4 #c-export .g-stage · b4.css:90 |
+| padding-top | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
+| padding-right | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
+| padding-bottom | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
+| padding-left | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
+| border | `0` | `` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
+| border-radius | `var(--rad-3)` | `` | .b4 #c-export .g-stage · b4.css:90 |
+| background | `radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)` | `` | .b4 #c-export .g-stage · b4.css:90 |
+| background-color | `` | `rgb(11, 15, 18)` | .b4 #c-export .g-stage · b4.css:90 |
+| background-image | `` | `radial-gradient(900px 320px at 30% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.07), rgba(0, 0, 0, 0) 70%), none` | .b4 #c-export .g-stage · b4.css:90 |
+| box-shadow | `none` | `none` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .g-stage.g-fixed · gates.css:145 |
+| overflow-x | `hidden` | `hidden` | .g-stage.g-fixed · gates.css:145 |
+| overflow-y | `hidden` | `hidden` | .g-stage.g-fixed · gates.css:145 |
+
+
+### `div.on.scrim`
+
+inside `.pb-stage` · 1 on screen · **1 look**
+
+#### the one look
+
+`C5-2` · rendered **1148×560** · 1 instance look like this
+
+```html
+<div class="scrim on"></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| position | `absolute` | `absolute` | .g-stage .scrim · gates.css:164 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .scrim · app.css:1354 |
+| top | `0px` | `0px` | .scrim · app.css:1354 |
+| right | `0px` | `0px` | .scrim · app.css:1354 |
+| bottom | `0px` | `0px` | .scrim · app.css:1354 |
+| left | `0px` | `0px` | .scrim · app.css:1354 |
+| background | `var(--overlay-66)` | `` | .scrim · app.css:1354 |
+| background-color | `` | `rgba(6, 9, 11, 0.66)` | .scrim · app.css:1354 |
+| background-image | `` | `none` | .scrim · app.css:1354 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| opacity | `1` | `1` | .scrim.on · app.css:1356 |
+| transition | `opacity .16s` | `` | .scrim · app.css:1354 |
+| z-index | `44` | `44` | .scrim · app.css:1354 |
+| pointer-events | `auto` | `auto` | .scrim.on · app.css:1356 |
 
 
 ### `aside.drawer.open[role=dialog]`
@@ -21,7 +99,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-2` · rendered **560×396** · 1 instance look like this · aria-label="Export" role="dialog"
+`C5-3` · rendered **560×396** · 1 instance look like this · aria-label="Export" role="dialog"
 
 ```html
 <aside class="drawer open" role="dialog" aria-modal="true" aria-label="Export"><header class="dw-h"><div class="dw-ttl"><h2>Export</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><p class="dw-lead exs-lead">Download a copy of what’s live — one fil…</p><ul class="exs-facts"><li>⟨svg.ic⟩Import it back to undo</li><li 
@@ -35,7 +113,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | width | `min(560px, -40px + 100vw)` | `560px` | .drawer · app.css:1361 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| top | `50%` | `450px` | .drawer · app.css:1361 |
+| top | `50%` | `280px` | .drawer · app.css:1361 |
 | left | `50%` | `574px` | .drawer · app.css:1361 |
 | border | `1px solid var(--rule2)` | `` | .drawer · app.css:1361 |
 | border-radius | `var(--rad-3)` | `` | .drawer · app.css:1361 |
@@ -65,7 +143,7 @@ inside `.dw-nav` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-6` · rendered **67×28** · 1 instance look like this · aria-label="Close"
+`C5-7` · rendered **67×28** · 1 instance look like this · aria-label="Close"
 
 ```html
 <button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button>
@@ -169,7 +247,7 @@ inside `.x` · 4 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C5-8` · rendered **31×12** · 1 instance look like this · text “Close” · aria-hidden="true"
+`C5-9` · rendered **31×12** · 1 instance look like this · text “Close” · aria-hidden="true"
 
 ```html
 <b aria-hidden="true">Close</b>
@@ -202,7 +280,7 @@ inside `.x` · 4 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C5-21` · rendered **286×22** · 3 instances look like this · text “MP builds”
+`C5-22` · rendered **286×22** · 3 instances look like this · text “MP builds”
 
 ```html
 <b>MP builds</b>
@@ -231,7 +309,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-9` · rendered **558×337** · 1 instance look like this
+`C5-10` · rendered **558×337** · 1 instance look like this
 
 ```html
 <div class="dw-b"><p class="dw-lead exs-lead">Download a copy of what’s live — one fil…</p><ul class="exs-facts"><li>⟨svg.ic⟩Import it back to undo</li><li class="exs-fact-w">⟨svg.ic⟩Download one before anything per…</li></ul><ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><d
@@ -264,7 +342,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-10` · rendered **510×21** · 1 instance look like this · text “Download a copy of what’s live — one file per se”
+`C5-11` · rendered **510×21** · 1 instance look like this · text “Download a copy of what’s live — one file per se”
 
 ```html
 <p class="dw-lead exs-lead">Download a copy of what’s live — one fil…</p>
@@ -296,7 +374,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-11` · rendered **510×26** · 1 instance look like this
+`C5-12` · rendered **510×26** · 1 instance look like this
 
 ```html
 <ul class="exs-facts"><li>⟨svg.ic⟩Import it back to undo</li><li class="exs-fact-w">⟨svg.ic⟩Download one before anything per…</li></ul>
@@ -335,7 +413,7 @@ inside `.exs-facts` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-12` · rendered **154×26** · 1 instance look like this
+`C5-13` · rendered **154×26** · 1 instance look like this
 
 ```html
 <li>⟨svg.ic⟩Import it back to undo</li>
@@ -377,7 +455,7 @@ inside `.—` · 8 on screen · **4 looks**
 
 #### look 1 of 4
 
-`C5-13` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+`C5-14` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-rotate-ccw"></use></svg>
@@ -404,7 +482,7 @@ inside `.—` · 8 on screen · **4 looks**
 
 #### look 2 of 4
 
-`C5-15` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+`C5-16` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"></use></svg>
@@ -431,7 +509,7 @@ inside `.—` · 8 on screen · **4 looks**
 
 #### look 3 of 4
 
-`C5-26` · rendered **12×12** · 2 instances look like this · aria-hidden="true"
+`C5-27` · rendered **12×12** · 2 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-pencil"></use></svg>
@@ -466,7 +544,7 @@ inside `.—` · 8 on screen · **4 looks**
 
 #### look 4 of 4
 
-`C5-43` · rendered **20×20** · 1 instance look like this · aria-hidden="true"
+`C5-44` · rendered **20×20** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-list-checks"></use></svg>
@@ -495,7 +573,7 @@ inside `.exs-facts` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-14` · rendered **255×26** · 1 instance look like this
+`C5-15` · rendered **255×26** · 1 instance look like this
 
 ```html
 <li class="exs-fact-w">⟨svg.ic⟩Download one before anything per…</li>
@@ -537,7 +615,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-16` · rendered **510×240** · 1 instance look like this
+`C5-17` · rendered **510×240** · 1 instance look like this
 
 ```html
 <ul class="exs g-exs"><li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-21.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span><span class="b3-xf-ext">.txt</spa
@@ -575,7 +653,7 @@ inside `.exs` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-17` · rendered **510×75** · 2 instances look like this
+`C5-18` · rendered **510×75** · 2 instances look like this
 
 ```html
 <li class="exs-i" style="--m: #FF3B5C;"><div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div><div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-21.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></d
@@ -619,7 +697,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C5-18` · rendered **64×40** · 2 instances look like this · aria-label="125 builds"
+`C5-19` · rendered **64×40** · 2 instances look like this · aria-label="125 builds"
 
 ```html
 <div class="exs-n" aria-label="125 builds"><i class="b3-xf-sq" aria-hidden="true">125</i></div>
@@ -641,7 +719,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C5-42` · rendered **64×20** · 1 instance look like this
+`C5-43` · rendered **64×20** · 1 instance look like this
 
 ```html
 <div class="exs-n">⟨svg.ic⟩</div>
@@ -668,7 +746,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C5-19` · rendered **40×40** · 1 instance look like this · text “125” · aria-hidden="true"
+`C5-20` · rendered **40×40** · 1 instance look like this · text “125” · aria-hidden="true"
 
 ```html
 <i class="b3-xf-sq" aria-hidden="true">125</i>
@@ -699,7 +777,7 @@ inside `.exs-n` · 2 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C5-31` · rendered **40×40** · 1 instance look like this · text “8” · aria-hidden="true"
+`C5-32` · rendered **40×40** · 1 instance look like this · text “8” · aria-hidden="true"
 
 ```html
 <i class="b3-xf-sq" aria-hidden="true">8</i>
@@ -735,7 +813,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C5-20` · rendered **286×46** · 2 instances look like this
+`C5-21` · rendered **286×46** · 2 instances look like this
 
 ```html
 <div class="exs-t"><b>MP builds</b><div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-21.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div></div>
@@ -756,7 +834,7 @@ inside `.exs-i` · 3 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C5-44` · rendered **286×40** · 1 instance look like this
+`C5-45` · rendered **286×40** · 1 instance look like this
 
 ```html
 <div class="exs-t"><b>Pick builds…</b><span>Search and tick exactly what you want</span></div>
@@ -782,7 +860,7 @@ inside `.exs-t` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-22` · rendered **228×24** · 2 instances look like this
+`C5-23` · rendered **228×24** · 2 instances look like this
 
 ```html
 <div class="b3-xf-fid"><button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-21.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button></div>
@@ -816,7 +894,7 @@ inside `.b3-xf-fid` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-23` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-09-21.txt" title="Rename the file" type="button"
+`C5-24` · rendered **228×24** · 2 instances look like this · aria-label="Rename dioreo-mp-builds-2026-09-21.txt" title="Rename the file" type="button"
 
 ```html
 <button type="button" class="b3-xf-fn" title="Rename the file" aria-label="Rename dioreo-mp-builds-2026-09-21.txt"><span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span><span class="b3-xf-ext">.txt</span>⟨svg.ic⟩</button>
@@ -916,7 +994,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-24` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-09-21”
+`C5-25` · rendered **170×11** · 2 instances look like this · text “dioreo-mp-builds-2026-09-21”
 
 ```html
 <span class="b3-xf-nm">dioreo-mp-builds-2026-09-21</span>
@@ -952,7 +1030,7 @@ inside `.b3-xf-fn` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-25` · rendered **25×11** · 2 instances look like this · text “.txt”
+`C5-26` · rendered **25×11** · 2 instances look like this · text “.txt”
 
 ```html
 <span class="b3-xf-ext">.txt</span>
@@ -983,7 +1061,7 @@ inside `.exs-i` · 2 on screen · **1 look**
 
 #### the one look
 
-`C5-27` · rendered **102×34** · 2 instances look like this
+`C5-28` · rendered **102×34** · 2 instances look like this
 
 ```html
 <button class="b3-btn2 sm go">⟨svg.ic⟩Download</button>
@@ -1059,7 +1137,7 @@ inside `.exs` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-41` · rendered **510×69** · 1 instance look like this
+`C5-42` · rendered **510×69** · 1 instance look like this
 
 ```html
 <li class="exs-i g-pick-open"><div class="exs-n">⟨svg.ic⟩</div><div class="exs-t"><b>Pick builds…</b><span>Search and tick exactly what you want</span></div><button class="b3-btn2 sm stage">Pick⟨svg.ic⟩</button></li>
@@ -1103,7 +1181,7 @@ inside `.exs-t` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-46` · rendered **226×16** · 1 instance look like this · text “Search and tick exactly what you want”
+`C5-47` · rendered **226×16** · 1 instance look like this · text “Search and tick exactly what you want”
 
 ```html
 <span>Search and tick exactly what you want</span>
@@ -1132,7 +1210,7 @@ inside `.exs-i` · 1 on screen · **1 look**
 
 #### the one look
 
-`C5-47` · rendered **102×34** · 1 instance look like this
+`C5-48` · rendered **102×34** · 1 instance look like this
 
 ```html
 <button class="b3-btn2 sm stage">Pick⟨svg.ic⟩</button>

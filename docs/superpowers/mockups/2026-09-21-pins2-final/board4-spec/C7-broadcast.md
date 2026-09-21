@@ -117,10 +117,10 @@ inside `.mlabel` · 6 on screen · **1 look**
 
 #### the one look
 
-`C7-58` · rendered **368×18** · 4 instances look like this
+`C7-58` · rendered **268×18** · 4 instances look like this
 
 ```html
-<span><b title="SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">SESSIONB-SEED S6 wrap-up — thanks for pl…</b></span>
+<span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -940,7 +940,7 @@ inside `.—` · 4 on screen · **1 look**
 `C7-55` · rendered **582×64** · 4 instances look like this
 
 ```html
-<td class="n" style="cursor: text;"><span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">SESSIONB-SEED S6 wrap-up — thanks for pl…</b></span></span></td>
+<td class="n" style="cursor: text;"><span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -976,7 +976,7 @@ inside `.n` · 4 on screen · **1 look**
 `C7-56` · rendered **540×18** · 4 instances look like this
 
 ```html
-<span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">SESSIONB-SEED S6 wrap-up — thanks for pl…</b></span></span>
+<span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1143,10 +1143,10 @@ inside `.—` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-59` · rendered **368×18** · 4 instances look like this · text “SESSIONB-SEED S6 wrap-up — thanks for playing se” · title="SESSIONB-SEED S6 wrap-up — thanks for pl"
+`C7-59` · rendered **268×18** · 4 instances look like this · text “S6 wrap-up — thanks for playing season 6.” · title="S6 wrap-up — thanks for playing season 6"
 
 ```html
-<b title="SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">SESSIONB-SEED S6 wrap-up — thanks for pl…</b>
+<b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b>
 ```
 
 | property | winning declaration | computed | from |
@@ -1425,7 +1425,7 @@ inside `.—` · 4 on screen · **1 look**
 `C7-69` · rendered **64×64** · 4 instances look like this
 
 ```html
-<td class="ra"><button class="rmv" data-tip="Remove" aria-label="Remove SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button></td>
+<td class="ra"><button class="rmv" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1458,10 +1458,10 @@ inside `.ra` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-70` · rendered **44×44** · 4 instances look like this · aria-label="Remove SESSIONB-SEED S6 wrap-up — thanks"
+`C7-70` · rendered **44×44** · 4 instances look like this · aria-label="Remove S6 wrap-up — thanks for playing s"
 
 ```html
-<button class="rmv" data-tip="Remove" aria-label="Remove SESSIONB-SEED S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button>
+<button class="rmv" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button>
 ```
 
 | property | winning declaration | computed | from |

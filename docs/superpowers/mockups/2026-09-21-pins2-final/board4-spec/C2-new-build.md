@@ -1801,7 +1801,32 @@ inside `.pb-badges` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-nb .pb-tog · b3/board.css:1128 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element itself
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `rgb(11, 15, 18)` | `color(srgb 0.137255 0.172549 0.203922 / 0.75)` |
+| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 
 **:focus-visible** — changes
 
@@ -1899,7 +1924,32 @@ inside `.pb-badges` · 1 on screen · **1 look**
 | cursor | `pointer` | `pointer` | .b3-nb .pb-tog · b3/board.css:1128 |
 | user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
 
-**:hover** — changes nothing on the element itself
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `rgb(11, 15, 18)` | `color(srgb 0.137255 0.172549 0.203922 / 0.75)` |
+| color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+
+| part inside | property | at rest | hover |
+|---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| i | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 
 **:focus-visible** — changes
 
