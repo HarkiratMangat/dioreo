@@ -7,6 +7,10 @@ status: live
 
 *Compiled 2026-09-21 10:59 EDT, at the end of Session 3, after Harkirat asked: "what did board 1 redesign or tweak or fix? what did board 2 …? and what did board 3 …? because they're compounding changing, right?" **Sessions 4 and 5 open this file first.** Every other spec is an appendix it points into.*
 
+## ★ Board 4: Collective supersedes the three-board reading below — 2026-09-21 12:27 EDT
+
+Harkirat's direction: compile every finished surface of boards 1, 2 and 3 onto **one board he checks and clicks through**, and port from that. It lives in the kit as `local/pins2-board-3/redo/board4.html` (`gates4/main.js`): ten surfaces, no switches, no picks, each naming the boards that shaped it and listing anything still open. **Once he signs it off, it is the design; the tables below become the record of how it was assembled.** Then Session 4 standardizes in its own artifact and **Board 4: Final** (a new artifact) supersedes the Collective, with the standard tokens applied — Session 5 ports that one board. Every element the portal renders is accounted for by `npm run portal:census` and `portal:census:check` (plan §5c Step 4f), so a hand-written copy cannot be skipped.
+
 ## 0 · What "done" means
 
 > *"What i see in these boards is what i expect to see exactly in the portal."*
