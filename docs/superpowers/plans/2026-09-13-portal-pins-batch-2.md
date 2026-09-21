@@ -548,7 +548,7 @@ status: live
 
 > ⟦ONE MESSAGE⟧ Step 1.
 
-- [ ] **Step 1:** `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | rg -c 'Board 3 closed by Harkir[a]t'` prints 1 — stop otherwise · `npm run portal:status` · `npm run index:health` (exit 4 → stop) · `node scripts/summaryShape.mjs --session latest` · the ledger's board-3 section (`ctx_search` — *Decided 2026-09-20 — portal pins batch 2, board 3*) · `DESIGN.md` · `portal/ui/tokens.css` · board 3's `handoff-3e.md` (read §0 first), `resolved-spec.md` → `3e/resolved-spec/`, `3e/token-map.md`, `3e/class-map.md`, `3e/file-map.md` and `census.json`. 🔴 *(amended 2026-09-21 09:44 EDT)* **The board-3 `index.html` beside them is VERSION ONE — the board he had wiped and rebuilt on 2026-09-15** (*"wipe the entire design board 3 and build up correctly this time"*). Board 3-E is the answered board, and it lives only in gitignored `local/pins2-board-3/redo/` by his instruction; everything Session 4 needs from it is derived into `3e/`. Do not measure `index.html` as the design.
+- [ ] **Step 1:** `git show origin/v3-pre-release:docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md | rg -c 'Board 3 closed by Harkir[a]t'` prints 1 — stop otherwise · `npm run portal:status` · `npm run index:health` (exit 4 → stop) · `node scripts/summaryShape.mjs --session latest` · the ledger's board-3 section (`ctx_search` — *Decided 2026-09-20 — portal pins batch 2, board 3*) · `DESIGN.md` · `portal/ui/tokens.css` · `docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md` (first) · board 3's `handoff-3e.md` (read §0 first), `resolved-spec.md` → `3e/resolved-spec/`, `3e/token-map.md`, `3e/class-map.md`, `3e/file-map.md` and `census.json`. 🔴 *(amended 2026-09-21 09:44 EDT)* **The board-3 `index.html` beside them is VERSION ONE — the board he had wiped and rebuilt on 2026-09-15** (*"wipe the entire design board 3 and build up correctly this time"*). Board 3-E is the answered board, and it lives only in gitignored `local/pins2-board-3/redo/` by his instruction; everything Session 4 needs from it is derived into `3e/`. Do not measure `index.html` as the design.
 
 ### 5c.1 · The apply map
 
@@ -614,6 +614,7 @@ status: live
 
 **The order — tokens first, so nothing after them hardcodes a value:**
 
+0. 🔴 **`docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md` governs this order** *(added 2026-09-21 11:00 EDT)* — every surface boards 1, 2 and 3 drew, the board that owns it, and the rule that **Session 2's port is never an authority**: board-1 surfaces are rebuilt from board 1, and on board-3 surfaces the port's leftover losses are restored from board 2 (`lineage.md` beside it). Its §3 is the detail of this list.
 1. §10.6 — the shared elements and tokens (`portal/ui/tokens.css`, `portal/ui/app.css`, `DESIGN.md`), then every site in the apply map.
 2. §10.5's port table — the New Build drawer, Post and Edit announcement, the delivery-queue card, Broadcast's manifest, the gunsmith code field and the fold icons.
 3. Board 3-E, per §10.5: `handoff-3e.md` (structure, §0 first) + `3e/portal-diff.md` applied by its *How to apply* section + `3e/switches.md` + `3e/resolved-spec/` + `3e/token-map.md` / `class-map.md` / `file-map.md` — **plus `handoff-3e.md` §10, Session 4's amendments, which win on any conflict.** Close each element with `portalProbe` against the board and each surface with `3e/measure.cjs` re-pointed at the portal.
@@ -930,7 +931,9 @@ G1–G4, G6 and G11 are answered by the §4b board session, in comment rounds on
 
 **Board 3 closed by Harkirat 2026-09-20 23:55 EDT** — *"the board is more or less done now"* — at version 77 of Design Board 3-E (https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo). *Written 2026-09-21 09:44 EDT; replaces the 2026-09-21 00:03 EDT version, which was a narrative of decisions and not a spec.*
 
-🔴 **THE SPEC IS `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md` AND THE `3e/` FOLDER BESIDE IT. Session 4 and Session 5 read §0 of that file first.** It is five artifacts, because board 3-E is the portal's own code running and modified — a case board 2 never had:
+🔴 **READ `docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md` BEFORE ANYTHING BELOW** *(added 2026-09-21 11:00 EDT)*. The three boards compound — each built on what the one before shipped — and that file puts every surface of all three in one table with its owner, its structure and its values, and the rule Harkirat set: *"the final product in the portal should be the CORRECT, non-buggy versions of the finalized designs."*
+
+🔴 **THE BOARD-3 SPEC IS `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md` AND THE `3e/` FOLDER BESIDE IT. Session 4 and Session 5 read §0 of that file first.** It is five artifacts, because board 3-E is the portal's own code running and modified — a case board 2 never had:
 
 | # | Artifact | Why it exists |
 |---|---|---|
@@ -1037,6 +1040,7 @@ The prod slot write and the FSS metadata re-sync each need my approval restated.
 Premise High · Delib Very high -> Opus5-Max
 
 You are Session 4 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 3 must be on v3-pre-release with board 3 closed; §5c Step 1 proves it.
+FIRST read docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md: every surface of boards 1, 2 and 3, which board owns it, and the rule that Session 2's port is never an authority. Your standardization lands on all of those surfaces, not only board 3's.
 Read in full: the plan's §0, §1, §2b, §9, §10.5 and §13, then §5c; board 3's handoff docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md (its §0 first — it is the spec, in five artifacts), then 3e/token-map.md, 3e/class-map.md and 3e/file-map.md beside it, and census.json; DESIGN.md; the decision ledger's section "Decided 2026-09-20 — portal pins batch 2, board 3" (ctx_search, source project:dioreo-docs).
 board 3's index.html is VERSION ONE, which I wiped — never measure it. Board 3-E is local-only at local/pins2-board-3/redo/ and everything you need is derived into 3e/.
 You own three things board 3 routed to you: the three portal defects (§5c.3b Step 4c), portal names for the 204 board-only classes and the 53 board tokens (Step 4d), and the two unasked behaviours (Step 4d). And you keep the board-3 spec TRUE (Step 4e): every decision that changes what board 3 shows is a row in handoff-3e.md §10 and, if it changes the kit, a regenerated 3e/ (switches.cjs → extract-spec.cjs → split-spec.cjs → measure.cjs). Session 5 builds from 3e/ plus §10.
@@ -1051,7 +1055,8 @@ Close by §13; push, PR and merge each need my approval restated.
 Premise Med · Delib Very high -> Opus5-High
 
 You are Session 5 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Session 4 must be on v3-pre-release with board 4 closed; §5d Step 1 proves it.
-Read in full: the plan's §0, §1, §2b, §7, §10.4, §10.5, §10.6 and §13, then §5d; board 2's resolved-spec.md; board 3's docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md (§0 first), then 3e/portal-diff.md — apply it before anything — 3e/resolved-spec/, the three maps with §10.6's portal names, and 3e/measure.cjs; the decision ledger's board-3 and Session 4 sections (ctx_search, source project:dioreo-docs).
+FIRST read docs/superpowers/mockups/2026-09-21-pins2-final/FINAL.md and lineage.md beside it: every surface of boards 1, 2 and 3 and the board that owns it. The portal code Session 2 wrote is never an authority — board 1's drawers are rebuilt from board 1, and the port's leftover losses on board-3 surfaces are restored from board 2.
+Read in full: the plan's §0, §1, §2b, §7, §10.4, §10.5, §10.6 and §13, then §5d; boards 1 and 2's resolved-spec-full.md (both frozen on the stylesheet I approved); board 3's docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md (§0 first), then 3e/portal-diff.md — apply it before anything — 3e/resolved-spec/, the three maps with §10.6's portal names, and 3e/measure.cjs; the decision ledger's board-3 and Session 4 sections (ctx_search, source project:dioreo-docs).
 Never port a board declaration verbatim: board 3-E's read --b3-* and --h1-* tokens the portal does not have (3e/token-map.md). Close every element row with scripts/portalProbe.mjs pointed at the board (--mockup local/pins2-board-3/redo --mk-page board3e.html), and the 13 relations of 3e/measure.cjs on the portal. The design code is read from local/pins2-board-3/redo/ — stop if it is absent.
 Step 1 is §5d Step 1 as ONE message. If npm run index:health exits 4, stop and tell me.
 Build in §5d's order, tokens first. Every surface closes on a side-by-side against its board with its values read from the page, then the pin walk (§5d Step 9): I look at that page before I walk the portal.
