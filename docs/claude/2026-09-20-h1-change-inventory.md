@@ -99,6 +99,14 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
+## ROUND 16C — the export square was the EMPTY-state variant (2026-09-20 20:31 EDT)
+
+*"that export drawer is literally SO fucking bad!"* — and the wrong date was not what he meant.
+
+**I ported `.b3-xf-h0 .b3-xf-sq`, which is what the picker's file card wears while it is EMPTY.** Opening the picker with three builds picked — which is what I should have done before porting — shows the real object: **filled in the mode's own hue, near-black type, 40×40**, a solid thing that leads the header. So the landing rendered every live count in the board's own "nothing here yet" treatment, in a 72px box that read as a disabled input, beside a name two sizes smaller than the header it was imitating. `MODE_HEX` already existed for this (MP `#FF3B5C`, DMZ `#3DA5F5`).
+
+**Third time in two rounds that a port carried the wrong member of a family:** the rail took Armory's number instead of the board's treatment, the glow took a collapsed element that has never rendered, and the square took the empty state. **A component has states and variants; picking one by name is not porting it.** The check that catches all three is the same: open the thing being copied, in the state it is copied FOR, and look at it.
+
 ## ROUND 16B — two findings from "you call this fixed???" (2026-09-20 20:23 EDT)
 
 **1 · EVERY DATE THIS BOARD RENDERS WAS TOMORROW'S.** He screenshotted the export panel at 20:22 EDT and its filenames read `2026-09-21`. `new Date().toISOString().slice(0,10)` is UTC, so from 20:00 EDT onward the board shows the next day — and it is not one filename: **eight sites board-side, thirty-six across the kit** (`codebase-memory search_code`). A stored instant wants UTC; a date a person reads wants the day they are living in. `isoLocal` now lives in `b3/state.js` and the eight board-side sites use it. ⚠️ **The remaining 28 are portal code that Session 5 ships and they need triage, not a blanket replace** — some of those slices are storage keys and diff values where UTC is correct. Filed.
