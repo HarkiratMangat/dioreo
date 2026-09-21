@@ -99,6 +99,12 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
+## HOW TO RECOVER A GITIGNORED FILE'S EARLIER STATE (2026-09-20 21:23 EDT)
+
+**The session transcript is the version store.** `~/.claude/projects/<slug>/*.jsonl` holds every tool call, and this repo's editing contract — a `python3` heredoc with `assert <anchor> in t` before each replacement — means **every edit carries the PREVIOUS text verbatim as its anchor**. ROUND 10F's anchors hold v2's markup; ROUND 10I's hold v2's CSS. So a revert on a gitignored file is a COPY, not a reconstruction.
+
+What does NOT hold history, tested rather than assumed: **codebase-memory** keeps one current graph per project (`detect_changes` compares against a `base_sha` but no prior content is retained) · **the artifact service** does keep versions, but `ver` needs a `<unix>-<hash>` id, nothing enumerates them, and the UI's version picker was removed in a recent update — four forms tried, only the current id resolves.
+
 ## ROUND 17 — v3 scrapped; the landing is v2, ENTIRELY (2026-09-20 20:58 EDT)
 
 ⚠️ **He had to say it twice.** The first pass reverted to v2 *and* applied his five in one change, so he was again judging a composition he had never approved — the readout strip, the mode-hued squares, the staging-yellow Pick were all still mine. The panel is v2 now, unmodified, and his five land on it next.
