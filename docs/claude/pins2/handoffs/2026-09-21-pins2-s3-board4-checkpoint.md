@@ -5,7 +5,7 @@ status: live
 
 # Checkpoint — pins 2, Session 3, Board 4: Collective in progress (2026-09-21 12:39 EDT)
 
-*Written at Harkirat's instruction before a compact at ~890k context: "A LOT happened and was decided these last hour or so, you shouldn't lose any context of it." Read this whole file first; then `.remember/remember.md`.*
+*Written at Harkirat's instruction before a compact at ~890k context: "A LOT happened and was decided these last hour or so, you shouldn't lose any context of it." `.remember/remember.md` points here; this file is the handoff. Read all of it before the first tool call.*
 
 ## Where things stand
 
@@ -53,6 +53,49 @@ status: live
 - **Board 2 G11 (Broadcast manifest)**: close by eye; not measured.
 - **Shared portal rules Session 2 changed** that board 1's look depended on: drawer side column 320 → 340, drawer footer buttons 44 → 40 and to pills. These are SHARED — every drawer — so the standard is Session 4's (E1). Board 4 restores board 1's values only inside `.b1`.
 - **8 things my first census plan missed** (all folded in or queued): realm-colour false splits, motion, icons, wording, same-look-wrong-element, data-only states, 158 inline styles, regressions after Session 5.
+
+## Everything else this session produced today, so nothing is re-derived
+
+| Artifact | What it is | Where |
+|---|---|---|
+| **Board 3-E spec set** | the structural handoff (§0 first), the diffs of the kit's portal files and how to apply them (never verbatim), the generated resolved spec, token / class / file maps, 13 layout relations | `docs/superpowers/mockups/2026-09-15-pins2-board-3/handoff-3e.md` · `3e/` |
+| `3e/switches.md` (`switches.cjs`) | every board switch, the value the board holds, live vs dead selectors — p10 and e1–e6 are Session 4's | generated |
+| `3e/portal-class-rules.md` (`overrides.cjs`) | the 259 board-3 rules on classes the portal already ships | generated |
+| `3e/extract-spec.cjs` | enumerating extractor; `BOARD=1\|2` modes; logical-twin matching; forced states with transitions off; child-state deltas | tool |
+| **Boards 1 and 2 frozen** | both relinked from the live `portal/public/app.css` to the stylesheet he approved them on (`docs/superpowers/mockups/2026-09-14-pins2-board/app.css`, from their published artifacts) | commit `a90ef6bb` |
+| `resolved-spec-full.md` for boards 1 and 2 | enumerated value specs; board 1's is the first with G10 Compare | beside each board |
+| **FINAL.md + lineage.md** | every surface of boards 1–3 with its owner; lineage traced board-3 values to their origin (board rule vs Session 2's port by git blame) and found 3 port losses on the Armory manifest — the build number's weight 700 and tabular figures, the weapon-line gap 10px — **restored on board 3 itself** (kit `1a93155`) | `docs/superpowers/mockups/2026-09-21-pins2-final/` |
+| Plan §10.4 | every board-2 row that board 3 later changed carries a ⚠️ BOARD 3 CHANGED THIS note (row 52→58px, heads 44→48, hazard edge on the LEFT, the problem card replaces Fix build, tools-row grids, History superseded by H1, queue card recoloured) | plan |
+| Plan §5c Steps 4c–4g, §5d Step 8, §11 prompts, §9 G13 closed, §2b routing note | Session 4's full job list and Session 5's close conditions | plan |
+| Ledger | board-3 section + the precedence row (board 3 wins only where it CHANGED a rule; the port never) | `docs/reference/portal-decision-ledger.md` |
+| **Kit fallbacks fixed** | `--gh-chip-x` 30→20, `--r-warn-img` 18→14, to match his saved `spacing/list` (kit `a315c2c`) | kit |
+| Instruments | the measuring scripts behind every number here | `docs/claude/pins2/instruments/` |
+
+**Board 3 is closed** at 3-E v77 (`2LxjJwzsg7odUiJKmvq2Jo`) — never republish it. `sdgh` is **44** (his word; the artifact database's 48 is stale).
+
+## Standing constraints
+
+- Push, PR, merge, deploy and **publishing any artifact** each need his approval restated at that moment.
+- Never `resolve_drift(action:"harden")`. No sub-agent without his explicit word (anchor #42). No H1 element changes without its row in `docs/claude/2026-09-20-h1-constraint-table.md` (anchor #41). Session 4 draws (anchor #44, supersedes #15).
+- The kit's git is local only — never GitHub.
+- Silent mode; questions in popups; tool routing by the question (`read_smart`, `ctx_execute_file`, `ctx_search`, `codebase-memory`; `rg`/`cat` last).
+- Unruled and open, his to decide: H1's EVENTS title, the deleted count line, "is Alert a kind?", the burst head, intake items 2 / 5/7d / 7a / 7e, M2's `.b3-fc` hue, Ends' default date on the post drawer (board 1 shows one; the portal has no rule to compute it).
+
+## Compact instructions — what to keep and what to drop
+
+```text
+/compact KEEP: Session 3 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md is building BOARD 4: COLLECTIVE (kit local/pins2-board-3/redo/board4.html + gates4/main.js) at Harkirat's direction: every finished surface of boards 1-3 on one board in portal code, no switches; then Session 4 standardizes in a SEPARATE artifact and Board 4: Final (a new artifact) supersedes the Collective; Session 5 ports Final. The handoff is docs/claude/pins2/handoffs/2026-09-21-pins2-s3-board4-checkpoint.md — read it in full first. Decided today, binding: board 3's button family applies to board 1's drawers; Session 4 draws (anchor #44); phone is out of scope; the port is never an authority ("the final product in the portal should be the CORRECT, non-buggy versions of the finalized designs"); board 1 ported ~20-30%, board 2 80-95%. Built: b1.css (board 1's stylesheet scoped .b1), the post drawer rebuilt on board 1's markup (measured to data-only differences), Compare's classes remapped to board 1's (written, NOT yet rendered or measured — the next step), scripts/portalCensus.cjs + portalCensusCheck.cjs (763 families, 42 drift groups, 249 hand-typed values). Measuring method: docs/claude/pins2/instruments/ (elcmp/g10cmp pair elements by class path). Repo head 3716fe58+ on feat/portal-pins2-manifests, kit head 15f4d1d, nothing pushed or published. Standing: every push/PR/merge/publish needs his approval restated; board 3-E is closed; no sub-agents; silent mode; popups for questions; one heredoc per Bash call. DROP: the narration of the census build, the individual screenshot reads, the earlier-today spec-audit back-and-forth (it is all in the handoff and the plan), tool-output dumps.
+```
+
+## Post-compact start prompt
+
+```text
+/rename Opus5-High · Pins2 S3 Board 4 Collective · Sep 21
+Continue Session 3 of docs/superpowers/plans/2026-09-13-portal-pins-batch-2.md. Read docs/claude/pins2/handoffs/2026-09-21-pins2-s3-board4-checkpoint.md in full before the first tool call — it carries every decision of today in my words, what is built, what is measured, and the next steps in order.
+You are building Board 4: Collective (kit local/pins2-board-3/redo/board4.html). Next: render and measure Compare against board 1 (docs/claude/pins2/instruments/g10cmp.cjs), fix until only data differs; then New build (board 1 G9) and the Broadcast manifest (board 2 G11) the same way; re-render every section and update each section's open line; teach 3e/extract-spec.cjs a BOARD=4 mode and generate Board 4's spec; update FINAL.md, the plan's §10.5 and §11 prompts, handoff-3e, the ledger and .remember; then ask me before publishing Board 4 as a NEW artifact.
+Start the kit server (.claude/launch.json → repo-static, :8900) and the harness (portal-harness, :8901, after the portal build).
+Silent mode. Questions in popups. Tool routing by the question. One heredoc per Bash call. Push, PR, merge and publish each need my approval restated.
+```
 
 ## Next, in order
 
