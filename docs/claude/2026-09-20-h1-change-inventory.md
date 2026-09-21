@@ -99,6 +99,14 @@ He validated the seven items one by one. **Four closed (3, 4, 7b, 7f); items 2, 
 
 **The shape under all four:** a borrowed component's constants and measurements were tuned for its first caller's data. 42%, `--warn`, 48px, `overflow:hidden` — every one correct where it came from.
 
+## THE KIT HAS ITS OWN LOCAL-ONLY GIT REPO (2026-09-20 21:33 EDT)
+
+*"set up a local git for the kit, i dont want it in the online github for the dioreo repo."*
+
+`local/pins2-board-3/redo/` is now a standalone git repo. **No remote, and two independent layers refuse one:** this repo's `.gitignore:25` makes the directory invisible to it, and the kit's own `.git/hooks/pre-push` exits 1 — **tested by running the hook directly**, not assumed. 107 files, 1.7 MB of `.git`; `shots/` is excluded because it is 277 MB of the kit's 281 MB and every frame is reproducible from `sweep-screens.cjs`, `shot-el.cjs` or `verify.cjs`. Its own README is `redo/KIT-GIT.md`.
+
+**Commit at the end of each round, named for the round.** Then "revert that to the version before" is `git show <sha>:gates/armory.js`.
+
 ## HOW TO RECOVER A GITIGNORED FILE'S EARLIER STATE (2026-09-20 21:23 EDT)
 
 **The session transcript is the version store.** `~/.claude/projects/<slug>/*.jsonl` holds every tool call, and this repo's editing contract — a `python3` heredoc with `assert <anchor> in t` before each replacement — means **every edit carries the PREVIOUS text verbatim as its anchor**. ROUND 10F's anchors hold v2's markup; ROUND 10I's hold v2's CSS. So a revert on a gitignored file is a COPY, not a reconstruction.
