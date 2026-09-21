@@ -12,7 +12,7 @@ status: live
 
 ### C8 stage
 
-46 distinct signatures on screen; 42 not already specced above.
+47 distinct signatures on screen; 43 not already specced above.
 
 
 ### `section.b3-hi.panel`
@@ -171,7 +171,7 @@ inside `.mt-r1` · 1 on screen · **1 look**
 
 ### `span`
 
-inside `.mlabel` · 233 on screen · **6 looks**
+inside `.mlabel` · 181 on screen · **6 looks**
 
 #### look 1 of 6
 
@@ -228,7 +228,7 @@ inside `.mlabel` · 233 on screen · **6 looks**
 
 #### look 3 of 6
 
-`C8-102` · rendered **110×24** · 100 instances look like this
+`C8-102` · rendered **110×24** · 74 instances look like this
 
 ```html
 <span><span class="b3-htab">⟨svg.ic⟩Change</span></span>
@@ -301,7 +301,7 @@ inside `.mlabel` · 233 on screen · **6 looks**
 
 #### look 6 of 6
 
-`C8-601` · rendered **42×12** · 73 instances look like this · text “system”
+`C8-603` · rendered **42×12** · 47 instances look like this · text “system”
 
 ```html
 <span>system</span>
@@ -337,7 +337,7 @@ inside `.mtools` · 1 on screen · **1 look**
 `C8-8` · rendered **1102×130** · 1 instance look like this
 
 ```html
-<div class="mt-r2 b3-hi-f"><div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--info);">⟨svg.ic⟩Changes<em>27</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--warn);">⟨svg.ic⟩Alerts<em>47</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--sched);">⟨svg.ic⟩Restarts<em>26<
+<div class="mt-r2 b3-hi-f"><div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--info);">⟨svg.ic⟩Changes<em>27</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--warn);">⟨svg.ic⟩Alerts<em>21</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--sched);">⟨svg.ic⟩Restarts<em>26<
 ```
 
 | property | winning declaration | computed | from |
@@ -375,7 +375,7 @@ inside `.mt-r2` · 6 on screen · **1 look**
 `C8-9` · rendered **412×32** · 6 instances look like this
 
 ```html
-<div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--info);">⟨svg.ic⟩Changes<em>27</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--warn);">⟨svg.ic⟩Alerts<em>47</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--sched);">⟨svg.ic⟩Restarts<em>26</em></button></div>
+<div class="b3-fg"><span class="b3-fgl">Kind</span><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--info);">⟨svg.ic⟩Changes<em>27</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--warn);">⟨svg.ic⟩Alerts<em>21</em></button><button type="button" class="b3-fc" aria-pressed="false" style="--c: var(--sched);">⟨svg.ic⟩Restarts<em>26</em></button></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -508,9 +508,9 @@ inside `.b3-fg` · 10 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.b3-fc` · 243 on screen · **18 looks**
+inside `.b3-fc` · 217 on screen · **16 looks**
 
-#### look 1 of 18
+#### look 1 of 16
 
 `C8-12` · rendered **16×13** · 1 instance look like this · aria-hidden="true"
 
@@ -554,7 +554,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 18
+#### look 2 of 16
 
 `C8-15` · rendered **16×13** · 1 instance look like this · aria-hidden="true"
 
@@ -598,7 +598,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 3 of 18
+#### look 3 of 16
 
 `C8-18` · rendered **16×13** · 1 instance look like this · aria-hidden="true"
 
@@ -642,7 +642,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 18
+#### look 4 of 16
 
 `C8-57` · rendered **11×11** · 1 instance look like this · aria-hidden="true"
 
@@ -674,7 +674,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 5 of 18
+#### look 5 of 16
 
 `C8-62` · rendered **16×13** · 1 instance look like this · aria-hidden="true"
 
@@ -718,7 +718,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1225 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 6 of 18
+#### look 6 of 16
 
 `C8-65` · rendered **16×13** · 3 instances look like this · aria-hidden="true"
 
@@ -763,7 +763,7 @@ inside `.b3-fc` · 243 on screen · **18 looks**
 | cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4690 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-*12 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*10 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `em`
@@ -876,10 +876,10 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 
 #### look 5 of 11
 
-`C8-49` · rendered **13×11** · 1 instance look like this · text “39”
+`C8-49` · rendered **13×11** · 1 instance look like this · text “13”
 
 ```html
-<em>39</em>
+<em>13</em>
 ```
 
 | property | winning declaration | computed | from |
@@ -1024,7 +1024,7 @@ inside `.b3-fg` · 7 on screen · **1 look**
 
 ### `span.b3-meter`
 
-inside `.b3-fc` · 51 on screen · **3 looks**
+inside `.b3-fc` · 25 on screen · **3 looks**
 
 #### look 1 of 3
 
@@ -1111,7 +1111,7 @@ inside `.b3-fc` · 51 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C8-612` · rendered **18×12** · 47 instances look like this · aria-hidden="true"
+`C8-659` · rendered **18×12** · 21 instances look like this · aria-hidden="true"
 
 ```html
 <span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>
@@ -1142,7 +1142,7 @@ inside `.b3-fc` · 51 on screen · **3 looks**
 
 ### `i.on`
 
-inside `.b3-meter` · 65 on screen · **13 looks**
+inside `.b3-meter` · 39 on screen · **13 looks**
 
 #### look 1 of 13
 
@@ -1341,7 +1341,7 @@ inside `.b3-meter` · 65 on screen · **13 looks**
 
 ### `i`
 
-inside `.b3-meter` · 139 on screen · **7 looks**
+inside `.b3-meter` · 61 on screen · **7 looks**
 
 #### look 1 of 7
 
@@ -1473,7 +1473,7 @@ inside `.b3-meter` · 139 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C8-614` · rendered **3×7** · 39 instances look like this
+`C8-661` · rendered **3×7** · 13 instances look like this
 
 ```html
 <i class=""></i>
@@ -1504,7 +1504,7 @@ inside `.b3-meter` · 139 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C8-615` · rendered **3×10** · 47 instances look like this
+`C8-662` · rendered **3×10** · 21 instances look like this
 
 ```html
 <i class=""></i>
@@ -1615,7 +1615,7 @@ inside `.b3-fc` · 28 on screen · **2 looks**
 
 ### `span.b3-av.sys`
 
-inside `.b3-fc` · 74 on screen · **2 looks**
+inside `.b3-fc` · 48 on screen · **2 looks**
 
 #### look 1 of 2
 
@@ -1660,7 +1660,7 @@ inside `.b3-fc` · 74 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-599` · rendered **22×22** · 73 instances look like this
+`C8-601` · rendered **22×22** · 47 instances look like this
 
 ```html
 <span class="b3-av sys">⟨svg.ic⟩</span>
@@ -1871,10 +1871,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 #### look 5 of 5
 
-`C8-580` · rendered **1146×3264** · 1 instance look like this
+`C8-580` · rendered **1146×2197** · 1 instance look like this
 
 ```html
-<section class="b3-hi-dg" style="--n: 73;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Aug 27</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>47</em>alerts</span><span class="b3-hi-dk" style="--c: var(--sched);">⟨svg.ic⟩<em>26</em>restarts</span></span><span class="b3-hi-ds">10:30 AM – 9:42 PM</span></div><div class="b3-hi-r" style="--c: var(--sched);"><span class="when">9:4
+<section class="b3-hi-dg" style="--n: 47;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Aug 27</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>21</em>alerts</span><span class="b3-hi-dk" style="--c: var(--sched);">⟨svg.ic⟩<em>26</em>restarts</span></span><span class="b3-hi-ds">10:30 AM – 9:42 PM</span></div><div class="b3-hi-r st-a" style="--c: var(--sched);"><span class="when
 ```
 
 | property | winning declaration | computed | from |
@@ -2069,7 +2069,7 @@ inside `.b3-hi-day` · 5 on screen · **1 look**
 
 #### the one look
 
-`C8-96` · rendered **762×22** · 5 instances look like this
+`C8-96` · rendered **762×24** · 5 instances look like this
 
 ```html
 <span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span></span>
@@ -2102,7 +2102,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C8-97` · rendered **93×22** · 4 instances look like this
+`C8-97` · rendered **102×24** · 4 instances look like this
 
 ```html
 <span class="b3-hi-dk" style="--c: var(--info);">⟨svg.ic⟩<em>4</em>changes</span>
@@ -2111,74 +2111,74 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4672 |
-| gap | `6px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| column-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| row-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | align-items | `center` | `center` | .b3-hi-day .b3-hi-dm, .b3-hi-day .b3-hi-dk · gates.css:955 |
-| height | `22px` | `22px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| height | `24px` | `24px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 8px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-top | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-right | `9px` | `9px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-bottom | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-left | `8px` | `8px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| border-radius | `5px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| padding | `0 9px 0 10px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-top | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-right | `9px` | `9px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-bottom | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-left | `10px` | `10px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| border-radius | `5px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-color | `` | `color(srgb 0.25098 0.603922 0.815686 / 0.08)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-image | `` | `none` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(64, 154, 208) 3px 0px 0px 0px inset` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-size | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-weight | `` | `600` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-style | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-variant-numeric | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| line-height | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-size | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-weight | `` | `600` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-style | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | letter-spacing | — | `normal` | initial |
 | white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4672 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.404157 0.630275 0.769569)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 
 #### look 2 of 3
 
-`C8-584` · rendered **86×22** · 1 instance look like this
+`C8-584` · rendered **93×24** · 1 instance look like this
 
 ```html
-<span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>47</em>alerts</span>
+<span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>21</em>alerts</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4672 |
-| gap | `6px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| column-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| row-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | align-items | `center` | `center` | .b3-hi-day .b3-hi-dm, .b3-hi-day .b3-hi-dk · gates.css:955 |
-| height | `22px` | `22px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| height | `24px` | `24px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 8px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-top | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-right | `9px` | `9px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-bottom | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-left | `8px` | `8px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| border-radius | `5px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| padding | `0 9px 0 10px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-top | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-right | `9px` | `9px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-bottom | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-left | `10px` | `10px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| border-radius | `5px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.08)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-image | `` | `none` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(255, 122, 69) 3px 0px 0px 0px inset` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-size | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-weight | `` | `600` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-style | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-variant-numeric | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| line-height | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-size | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-weight | `` | `600` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-style | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | letter-spacing | — | `normal` | initial |
 | white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4672 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.838588 0.55749 0.453412)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 
 #### look 3 of 3
 
-`C8-587` · rendered **97×22** · 1 instance look like this
+`C8-587` · rendered **106×24** · 1 instance look like this
 
 ```html
 <span class="b3-hi-dk" style="--c: var(--sched);">⟨svg.ic⟩<em>26</em>restarts</span>
@@ -2187,29 +2187,29 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4672 |
-| gap | `6px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| column-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| row-gap | `6px` | `6px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | align-items | `center` | `center` | .b3-hi-day .b3-hi-dm, .b3-hi-day .b3-hi-dk · gates.css:955 |
-| height | `22px` | `22px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| height | `24px` | `24px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 8px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-top | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-right | `9px` | `9px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-bottom | `0px` | `0px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| padding-left | `8px` | `8px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| border-radius | `5px` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| padding | `0 9px 0 10px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-top | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-right | `9px` | `9px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-bottom | `0px` | `0px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| padding-left | `10px` | `10px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| border-radius | `5px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-color | `` | `color(srgb 0.65098 0.501961 0.984314 / 0.08)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | background-image | `` | `none` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(166, 128, 251) 3px 0px 0px 0px inset` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-size | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-weight | `` | `600` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-style | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| font-variant-numeric | `` | `normal` | .b3-hi-day .b3-hi-dk · gates.css:944 |
-| line-height | `` | `10.5px` | .b3-hi-day .b3-hi-dk · gates.css:944 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-size | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-weight | `` | `600` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-style | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
+| line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:125 |
 | letter-spacing | — | `normal` | initial |
 | white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4672 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.636157 0.571137 0.867373)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
@@ -2217,11 +2217,11 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 
 ### `div.b3-hi-r.st-a`
 
-inside `.b3-hi-dg` · 16 on screen · **3 looks**
+inside `.b3-hi-dg` · 19 on screen · **3 looks**
 
 #### look 1 of 3
 
-`C8-100` · rendered **1146×46** · 4 instances look like this
+`C8-100` · rendered **1146×46** · 5 instances look like this
 
 ```html
 <div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">3:25 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><span>own
@@ -2287,7 +2287,7 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 #### look 2 of 3
 
-`C8-134` · rendered **1146×47** · 9 instances look like this
+`C8-134` · rendered **1146×47** · 13 instances look like this
 
 ```html
 <div class="b3-hi-r st-a" style="--c: var(--info);"><span class="when">9:36 AM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Realwalk Probe 2026-09-06T13-36-…</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><s
@@ -2353,10 +2353,10 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C8-699` · rendered **1146×44** · 3 instances look like this
+`C8-1209` · rendered **1146×44** · 1 instance look like this
 
 ```html
-<div class="b3-hi-r st-a" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</sp
+<div class="b3-hi-r st-a" style="--c: var(--warn);"><span class="when">11:49 AM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</s
 ```
 
 | property | winning declaration | computed | from |
@@ -2420,11 +2420,11 @@ inside `.b3-hi-dg` · 16 on screen · **3 looks**
 
 ### `span.when`
 
-inside `.b3-hi-r` · 100 on screen · **1 look**
+inside `.b3-hi-r` · 74 on screen · **1 look**
 
 #### the one look
 
-`C8-101` · rendered **50×12** · 100 instances look like this · text “3:25 PM”
+`C8-101` · rendered **50×12** · 74 instances look like this · text “3:25 PM”
 
 ```html
 <span class="when">3:25 PM</span>
@@ -2451,7 +2451,7 @@ inside `.b3-hi-r` · 100 on screen · **1 look**
 
 ### `span.b3-htab`
 
-inside `.—` · 100 on screen · **3 looks**
+inside `.—` · 74 on screen · **3 looks**
 
 #### look 1 of 3
 
@@ -2533,7 +2533,7 @@ inside `.—` · 100 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C8-606` · rendered **66×24** · 47 instances look like this
+`C8-653` · rendered **66×24** · 21 instances look like this
 
 ```html
 <span class="b3-htab">⟨svg.ic⟩Alert</span>
@@ -2573,11 +2573,11 @@ inside `.—` · 100 on screen · **3 looks**
 
 ### `button.b3-hi-open.what`
 
-inside `.b3-hi-r` · 100 on screen · **2 looks**
+inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C8-105` · rendered **630×46** · 27 instances look like this · type="button"
+`C8-105` · rendered **630×46** · 53 instances look like this · type="button"
 
 ```html
 <button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Deleted</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button>
@@ -2642,10 +2642,10 @@ inside `.b3-hi-r` · 100 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-595` · rendered **630×41** · 73 instances look like this · type="button"
+`C8-655` · rendered **630×41** · 21 instances look like this · type="button"
 
 ```html
-<button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">restarted — automatic</span></span></button>
+<button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span></button>
 ```
 
 | property | winning declaration | computed | from |
@@ -2749,11 +2749,11 @@ inside `.what` · 27 on screen · **1 look**
 
 ### `span.s`
 
-inside `.hlead` · 100 on screen · **1 look**
+inside `.hlead` · 74 on screen · **1 look**
 
 #### the one look
 
-`C8-107` · rendered **78×19** · 100 instances look like this · text “Deleted”
+`C8-107` · rendered **78×19** · 74 instances look like this · text “Deleted”
 
 ```html
 <span class="s">Deleted</span>
@@ -2867,7 +2867,7 @@ inside `.b3-hi-r` · 27 on screen · **1 look**
 
 ### `span.act`
 
-inside `.b3-hi-r` · 100 on screen · **2 looks**
+inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 #### look 1 of 2
 
@@ -2892,7 +2892,7 @@ inside `.b3-hi-r` · 100 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-602` · rendered **90×0** · 73 instances look like this
+`C8-604` · rendered **90×0** · 47 instances look like this
 
 ```html
 <span class="act"></span>
@@ -3006,11 +3006,11 @@ inside `.act` · 14 on screen · **1 look**
 
 ### `div.b3-hi-r.st-z`
 
-inside `.b3-hi-dg` · 16 on screen · **2 looks**
+inside `.b3-hi-dg` · 19 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C8-117` · rendered **1146×47** · 13 instances look like this
+`C8-117` · rendered **1146×47** · 18 instances look like this
 
 ```html
 <div class="b3-hi-r st-z" style="--c: var(--info);"><span class="when">3:22 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Added new</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Test Draw For Portal Write</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><span>o
@@ -3076,10 +3076,10 @@ inside `.b3-hi-dg` · 16 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C8-718` · rendered **1146×44** · 3 instances look like this
+`C8-1228` · rendered **1146×44** · 1 instance look like this
 
 ```html
-<div class="b3-hi-r st-z" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</sp
+<div class="b3-hi-r st-z" style="--c: var(--warn);"><span class="when">11:48 AM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</s
 ```
 
 | property | winning declaration | computed | from |
@@ -3192,11 +3192,11 @@ inside `.act` · 13 on screen · **1 look**
 
 ### `div.b3-hi-r`
 
-inside `.b3-hi-dg` · 67 on screen · **3 looks**
+inside `.b3-hi-dg` · 22 on screen · **2 looks**
 
-#### look 1 of 3
+#### look 1 of 2
 
-`C8-277` · rendered **1146×47** · 1 instance look like this
+`C8-277` · rendered **1146×47** · 3 instances look like this
 
 ```html
 <div class="b3-hi-r" style="--c: var(--info);"><span class="when">12:18 PM</span><span><span class="b3-htab">⟨svg.ic⟩Change</span></span><button type="button" class="what b3-hi-open"><span class="hlead has-ent"><span class="s">Added new</span><span class="b3-ent" style="--c: var(--r-season);">⟨svg.ic⟩Realwalk Probe 2026-09-04T16-18-…</span></span></button><span class="b3-who" title=""><span class="b3-av">O</span><spa
@@ -3260,78 +3260,12 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 | content | `none` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:927 |
 | z-index | `-1` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
 
-#### look 2 of 3
+#### look 2 of 2
 
-`C8-590` · rendered **1146×44** · 1 instance look like this
-
-```html
-<div class="b3-hi-r" style="--c: var(--sched);"><span class="when">9:42 PM</span><span><span class="b3-htab">⟨svg.ic⟩Restart</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">restarted — automatic</span></span></button><span class="b3-who sys" title=""><span class="b3-av sys">⟨svg.ic⟩</span><span>system</span></span><span class="act"></span></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
-| grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
-| column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
-| min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| padding-top | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `0` | `` | .b3-hi-day + .b3-hi-r · b3/board.css:1524 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4917 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1523 |
-
-**::before**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1525 |
-| width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| top | `9px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| bottom | `9px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| left | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| border-radius | `0 2px 2px 0` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| background | `var(--c)` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1525 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| width | `1px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| top | `0px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| bottom | `0px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| left | `26px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| background | `var(--rule2)` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| background-color | `` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| background-image | `` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-| content | `none` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:927 |
-| z-index | `-1` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
-
-#### look 3 of 3
-
-`C8-603` · rendered **1146×44** · 65 instances look like this
+`C8-650` · rendered **1146×44** · 19 instances look like this
 
 ```html
-<div class="b3-hi-r" style="--c: var(--warn);"><span class="when">9:42 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span></
+<div class="b3-hi-r" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span></
 ```
 
 | property | winning declaration | computed | from |
@@ -3395,11 +3329,11 @@ inside `.b3-hi-dg` · 67 on screen · **3 looks**
 
 ### `span.hlead`
 
-inside `.what` · 73 on screen · **1 look**
+inside `.what` · 47 on screen · **1 look**
 
 #### the one look
 
-`C8-596` · rendered **181×19** · 73 instances look like this
+`C8-596` · rendered **181×19** · 47 instances look like this
 
 ```html
 <span class="hlead"><span class="s">restarted — automatic</span></span>
@@ -3434,13 +3368,60 @@ inside `.what` · 73 on screen · **1 look**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1536 |
 
 
-### `span.b3-who.sys`
+### `span.b3-htab.b3-online`
 
-inside `.b3-hi-r` · 73 on screen · **1 look**
+inside `.what` · 26 on screen · **1 look**
 
 #### the one look
 
-`C8-598` · rendered **100×22** · 73 instances look like this · title=""
+`C8-598` · rendered **105×24** · 26 instances look like this · title="Back online at 9:42 PM"
+
+```html
+<span class="b3-htab b3-online" title="Back online at 9:42 PM" style="--c: var(--ok);">⟨svg.ic⟩Back online</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-htab · b3/board.css:1529 |
+| gap | `6px` | `` | .b3-htab · b3/board.css:1529 |
+| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1529 |
+| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1529 |
+| align-items | `center` | `center` | .b3-htab · b3/board.css:1529 |
+| height | `24px` | `24px` | .b3-htab · b3/board.css:1529 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1529 |
+| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1529 |
+| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1529 |
+| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1529 |
+| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1529 |
+| margin-left | `var(--h1-cell,16px)` | `22px` | .b4 .b3-hi-r .b3-online · b4.css:129 |
+| border-radius | `5px` | `` | .b3-htab · b3/board.css:1529 |
+| background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
+| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.08)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
+| background-image | `` | `none` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
+| box-shadow | `inset 3px 0 0 var(--c)` | `rgb(123, 219, 99) 3px 0px 0px 0px inset` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1529 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1529 |
+| font-size | `` | `12px` | .b3-htab · b3/board.css:1529 |
+| font-weight | `` | `600` | .b3-htab · b3/board.css:1529 |
+| font-style | `` | `normal` | .b3-htab · b3/board.css:1529 |
+| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1529 |
+| line-height | `` | `12px` | .b3-htab · b3/board.css:1529 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1529 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.538353 0.778118 0.521647)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1536 |
+
+
+### `span.b3-who.sys`
+
+inside `.b3-hi-r` · 47 on screen · **1 look**
+
+#### the one look
+
+`C8-600` · rendered **100×22** · 47 instances look like this · title=""
 
 ```html
 <span class="b3-who sys" title=""><span class="b3-av sys">⟨svg.ic⟩</span><span>system</span></span>
@@ -3467,52 +3448,16 @@ inside `.b3-hi-r` · 73 on screen · **1 look**
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1523 |
 
 
-### `span.b3-lvl`
-
-inside `.what` · 47 on screen · **1 look**
-
-#### the one look
-
-`C8-611` · rendered **49×12** · 47 instances look like this
-
-```html
-<span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-lvl · b3/board.css:1555 |
-| gap | `6px` | `` | .b3-lvl · b3/board.css:1555 |
-| column-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1555 |
-| row-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1555 |
-| flex | `none` | `` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5072 |
-| align-items | `center` | `center` | .b3-lvl · b3/board.css:1555 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5120 |
-| font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-lvl · b3/board.css:1555 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-lvl · b3/board.css:1555 |
-| font-size | `` | `10.5px` | .b3-lvl · b3/board.css:1555 |
-| font-weight | `` | `500` | .b3-lvl · b3/board.css:1555 |
-| font-style | `` | `normal` | .b3-lvl · b3/board.css:1555 |
-| font-variant-numeric | `` | `normal` | .b3-lvl · b3/board.css:1555 |
-| line-height | `` | `10.5px` | .b3-lvl · b3/board.css:1555 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-lvl · b3/board.css:1555 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1536 |
-
-
 ### `div.b3-hi-r.st-m`
 
-inside `.b3-hi-dg` · 1 on screen · **1 look**
+inside `.b3-hi-dg` · 14 on screen · **1 look**
 
 #### the one look
 
-`C8-1566` · rendered **1146×44** · 1 instance look like this
+`C8-605` · rendered **1146×47** · 14 instances look like this
 
 ```html
-<div class="b3-hi-r st-m" style="--c: var(--warn);"><span class="when">11:49 AM</span><span><span class="b3-htab">⟨svg.ic⟩Alert</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</s
+<div class="b3-hi-r st-m" style="--c: var(--sched);"><span class="when">9:39 PM</span><span><span class="b3-htab">⟨svg.ic⟩Restart</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">restarted — automatic</span></span><span class="b3-htab b3-online" title="Back online at 9:39 PM" style="--c: var(--ok);">⟨svg.ic⟩Back online</span></button><span class="b3-who sys" title=""><spa
 ```
 
 | property | winning declaration | computed | from |
@@ -3574,16 +3519,52 @@ inside `.b3-hi-dg` · 1 on screen · **1 look**
 | z-index | `-1` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
 
 
+### `span.b3-lvl`
+
+inside `.what` · 21 on screen · **1 look**
+
+#### the one look
+
+`C8-658` · rendered **49×12** · 21 instances look like this
+
+```html
+<span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></span>info</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-lvl · b3/board.css:1555 |
+| gap | `6px` | `` | .b3-lvl · b3/board.css:1555 |
+| column-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1555 |
+| row-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1555 |
+| flex | `none` | `` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5072 |
+| align-items | `center` | `center` | .b3-lvl · b3/board.css:1555 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-left | `0px` | `0px` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5120 |
+| font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-lvl · b3/board.css:1555 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-lvl · b3/board.css:1555 |
+| font-size | `` | `10.5px` | .b3-lvl · b3/board.css:1555 |
+| font-weight | `` | `500` | .b3-lvl · b3/board.css:1555 |
+| font-style | `` | `normal` | .b3-lvl · b3/board.css:1555 |
+| font-variant-numeric | `` | `normal` | .b3-lvl · b3/board.css:1555 |
+| line-height | `` | `10.5px` | .b3-lvl · b3/board.css:1555 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-lvl · b3/board.css:1555 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1536 |
+
+
 ### `div.b3-hi-more`
 
 inside `.panel` · 1 on screen · **1 look**
 
 #### the one look
 
-`C8-1821` · rendered **1146×76** · 1 instance look like this
+`C8-1379` · rendered **1146×76** · 1 instance look like this
 
 ```html
-<div class="b3-hi-more"><button type="button" class="b3-btn2">⟨svg.ic⟩<span class="b3-nw">Load older events<em>1,321 more</em></span></button></div>
+<div class="b3-hi-more"><button type="button" class="b3-btn2">⟨svg.ic⟩<span class="b3-nw">Load older events<em>1,347 more</em></span></button></div>
 ```
 
 | property | winning declaration | computed | from |

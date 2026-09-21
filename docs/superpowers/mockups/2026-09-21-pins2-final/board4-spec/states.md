@@ -1268,7 +1268,7 @@ inside `.b3-vl` · 3 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.304984` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
+| opacity | `0` | `0` | .b3-vb · b3/board.css:3204 |
 | animation | `8.2s linear 0s infinite normal none running b3vb01` | `` | style attribute |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -1419,7 +1419,7 @@ inside `.b3-vl` · 3 on screen · **1 look**
 
 ### manifest · Pick one build
 
-91 distinct signatures on screen; 21 not already specced above.
+91 distinct signatures on screen; 20 not already specced above.
 
 
 ### `svg.ic`
@@ -1729,67 +1729,6 @@ inside `.wg-fold` · 10 on screen · **1 look**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`manifestt2-462` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.34; --ha: 43.9%; --sx: 30.6%; --sy: 49.3%; animation: 8.2s linear 0s infinite normal none running b3vb02;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3204 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3204 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3204 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.66752) 0px 0px 29.12px -4.3px` | .b3-vb · b3/board.css:3204 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.244272` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
-| animation | `8.2s linear 0s infinite normal none running b3vb02` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3207 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3207 |
-| inset | `0` | .b3-vb::after · b3/board.css:3207 |
-| top | `0px` | .b3-vb::after · b3/board.css:3207 |
-| right | `0px` | .b3-vb::after · b3/board.css:3207 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3207 |
-| left | `0px` | .b3-vb::after · b3/board.css:3207 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3207 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3207 |
-| background-color | `` | .b3-vb::after · b3/board.css:3207 |
-| background-image | `` | .b3-vb::after · b3/board.css:3207 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3207 |
-| content | `""` | .b3-vb::after · b3/board.css:3207 |
 
 
 ### `div.sel.wg-r`
@@ -2620,7 +2559,7 @@ inside `.wg` · 1 on screen · **1 look**
 
 ### manifest · Pick eight
 
-92 distinct signatures on screen; 6 not already specced above.
+92 distinct signatures on screen; 7 not already specced above.
 
 
 ### `em`
@@ -2853,6 +2792,67 @@ inside `.chip` · 20 on screen · **4 looks**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-sc · b3/board.css:786 |
 
 
+### `span.b3-vb`
+
+inside `.b3-vl` · 3 on screen · **1 look**
+
+#### the one look
+
+`manifestt4-461` · rendered **58×22** · 1 instance look like this
+
+```html
+<span class="b3-vb" style="--pk: 0.22; --ha: 25.1%; --sx: 35.5%; --sy: 73.7%; animation: 8.2s linear 0s infinite normal none running b3vb01;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3204 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .b3-vb · b3/board.css:3204 |
+| top | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
+| right | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
+| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
+| left | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
+| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3204 |
+| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941177 / 0.55616) 0px 0px 23.36px -4.9px` | .b3-vb · b3/board.css:3204 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
+| opacity | ⚠️ `0` | `0.0353017` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
+| animation | `8.2s linear 0s infinite normal none running b3vb01` | `` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-vb::after · b3/board.css:3207 |
+| padding | `1px` | .b3-vb::after · b3/board.css:3207 |
+| padding-top | `1px` | .b3-vb::after · b3/board.css:3207 |
+| padding-right | `1px` | .b3-vb::after · b3/board.css:3207 |
+| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3207 |
+| padding-left | `1px` | .b3-vb::after · b3/board.css:3207 |
+| inset | `0` | .b3-vb::after · b3/board.css:3207 |
+| top | `0px` | .b3-vb::after · b3/board.css:3207 |
+| right | `0px` | .b3-vb::after · b3/board.css:3207 |
+| bottom | `0px` | .b3-vb::after · b3/board.css:3207 |
+| left | `0px` | .b3-vb::after · b3/board.css:3207 |
+| border-radius | `inherit` | .b3-vb::after · b3/board.css:3207 |
+| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3207 |
+| background-color | `` | .b3-vb::after · b3/board.css:3207 |
+| background-image | `` | .b3-vb::after · b3/board.css:3207 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3207 |
+| content | `""` | .b3-vb::after · b3/board.css:3207 |
+
+
 ### `div.b3-selbar.on.selbar[role=region]`
 
 inside `.panel` · 1 on screen · **1 look**
@@ -3002,68 +3002,7 @@ inside `.b3-sd-bar` · 1 on screen · **1 look**
 
 ### manifest · Clear
 
-76 distinct signatures on screen; 1 not already specced above.
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`manifestt5-462` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.34; --ha: 43.9%; --sx: 30.6%; --sy: 49.3%; animation: 8.2s linear 0s infinite normal none running b3vb02;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3204 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3204 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3204 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3204 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.66752) 0px 0px 29.12px -4.3px` | .b3-vb · b3/board.css:3204 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.678344` | .b3-vb · b3/board.css:3204 · **a later rule wins — port the computed value and find that rule** |
-| animation | `8.2s linear 0s infinite normal none running b3vb02` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3207 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3207 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3207 |
-| inset | `0` | .b3-vb::after · b3/board.css:3207 |
-| top | `0px` | .b3-vb::after · b3/board.css:3207 |
-| right | `0px` | .b3-vb::after · b3/board.css:3207 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3207 |
-| left | `0px` | .b3-vb::after · b3/board.css:3207 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3207 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3207 |
-| background-color | `` | .b3-vb::after · b3/board.css:3207 |
-| background-image | `` | .b3-vb::after · b3/board.css:3207 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3207 |
-| content | `""` | .b3-vb::after · b3/board.css:3207 |
+76 distinct signatures on screen; 0 not already specced above.
 
 
 ### new-build · Bulk create
@@ -3077,7 +3016,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-2` · rendered **980×642** · 1 instance look like this · aria-label="New MP builds" role="dialog"
+`new-builds1-2` · rendered **880×642** · 1 instance look like this · aria-label="New MP builds" role="dialog"
 
 ```html
 <aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="New MP builds" style="--m1: var(--patch); --m2: var(--r-armory); --m3: var(--patch); --m4: var(--r-armory);"><header class="dw-h"><div class="dw-ttl"><h2>New MP builds</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-a
@@ -3088,7 +3027,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | display | `flex` | `flex` | .drawer · app.css:1361 |
 | position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
 | flex-direction | `column` | `column` | .drawer · app.css:1361 |
-| width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
+| width | `min(880px, -40px + 100vw)` | `880px` | .b4 .drawer.wide:has(.b3-nb) · b4.css:120 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `50%` | `450px` | .drawer · app.css:1361 |
@@ -3109,7 +3048,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .drawer · app.css:1361 |
 | overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
 | overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -321)` | .drawer.open · app.css:1366 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -440, -321)` | .drawer.open · app.css:1366 |
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
@@ -3121,7 +3060,7 @@ inside `.x` · 5 on screen · **4 looks**
 
 #### look 1 of 4
 
-`new-builds1-33` · rendered **86×37** · 1 instance look like this · text “0”
+`new-builds1-33` · rendered **74×37** · 1 instance look like this · text “0”
 
 ```html
 <b>0</b>
@@ -3143,7 +3082,7 @@ inside `.x` · 5 on screen · **4 looks**
 
 #### look 2 of 4
 
-`new-builds1-36` · rendered **86×37** · 1 instance look like this · text “0”
+`new-builds1-36` · rendered **74×37** · 1 instance look like this · text “0”
 
 ```html
 <b>0</b>
@@ -3165,7 +3104,7 @@ inside `.x` · 5 on screen · **4 looks**
 
 #### look 3 of 4
 
-`new-builds1-39` · rendered **86×30** · 1 instance look like this · text “0”
+`new-builds1-39` · rendered **74×30** · 1 instance look like this · text “0”
 
 ```html
 <b>0</b>
@@ -3187,7 +3126,7 @@ inside `.x` · 5 on screen · **4 looks**
 
 #### look 4 of 4
 
-`new-builds1-42` · rendered **86×37** · 1 instance look like this · text “0”
+`new-builds1-42` · rendered **74×30** · 1 instance look like this · text “0”
 
 ```html
 <b>0</b>
@@ -3214,7 +3153,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-9` · rendered **978×518** · 1 instance look like this
+`new-builds1-9` · rendered **878×518** · 1 instance look like this
 
 ```html
 <div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" a
@@ -3247,7 +3186,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-10` · rendered **930×502** · 1 instance look like this
+`new-builds1-10` · rendered **830×502** · 1 instance look like this
 
 ```html
 <div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One bui
@@ -3271,7 +3210,7 @@ inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-18` · rendered **930×401** · 1 instance look like this
+`new-builds1-18` · rendered **830×401** · 1 instance look like this
 
 ```html
 <div class="pb-view pb-in"><div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Clo
@@ -3296,7 +3235,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-19` · rendered **930×401** · 1 instance look like this
+`new-builds1-19` · rendered **830×401** · 1 instance look like this
 
 ```html
 <div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C B
@@ -3305,7 +3244,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `466.094px 443.891px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `414.875px 395.109px` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | gap | `20px` | `` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | column-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | row-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
@@ -3325,7 +3264,7 @@ inside `.pb-bulk` · 6 on screen · **3 looks**
 
 #### look 1 of 3
 
-`new-builds1-20` · rendered **466×401** · 1 instance look like this
+`new-builds1-20` · rendered **415×401** · 1 instance look like this
 
 ```html
 <div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - G
@@ -3344,7 +3283,7 @@ inside `.pb-bulk` · 6 on screen · **3 looks**
 
 #### look 2 of 3
 
-`new-builds1-30` · rendered **444×100** · 1 instance look like this
+`new-builds1-30` · rendered **395×100** · 1 instance look like this
 
 ```html
 <div><div class="pb-tally" style="grid-template-columns: repeat(4, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div></div><ol class="pb-rows"></ol></div>
@@ -3363,7 +3302,7 @@ inside `.pb-bulk` · 6 on screen · **3 looks**
 
 #### look 3 of 3
 
-`new-builds1-32` · rendered **110×88** · 4 instances look like this
+`new-builds1-32` · rendered **98×88** · 4 instances look like this
 
 ```html
 <div data-o="new"><b>0</b><span>new</span></div>
@@ -3398,7 +3337,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-21` · rendered **466×17** · 1 instance look like this
+`new-builds1-21` · rendered **415×17** · 1 instance look like this
 
 ```html
 <div class="pb-edhead"><label for="pb-ta">Builds</label><span>0 builds · 1 lines</span></div>
@@ -3487,7 +3426,7 @@ inside `.pb-edhead` · 5 on screen · **3 looks**
 
 #### look 2 of 3
 
-`new-builds1-34` · rendered **86×22** · 3 instances look like this · text “new”
+`new-builds1-34` · rendered **74×22** · 2 instances look like this · text “new”
 
 ```html
 <span>new</span>
@@ -3509,7 +3448,7 @@ inside `.pb-edhead` · 5 on screen · **3 looks**
 
 #### look 3 of 3
 
-`new-builds1-40` · rendered **86×29** · 1 instance look like this · text “saved with a warning”
+`new-builds1-40` · rendered **74×29** · 2 instances look like this · text “saved with a warning”
 
 ```html
 <span>saved with a warning</span>
@@ -3536,7 +3475,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-24` · rendered **466×376** · 1 instance look like this
+`new-builds1-24` · rendered **415×376** · 1 instance look like this
 
 ```html
 <div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div><textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between block
@@ -3570,7 +3509,7 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-25` · rendered **466×46** · 1 instance look like this · aria-hidden="true"
+`new-builds1-25` · rendered **415×46** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div></div>
@@ -3582,17 +3521,17 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 | position | `relative` | `relative` | .b3-nb .pb-ed · b4.css:59 |
 | min-height | `0px` | `0px` | .b3-xt-bin · b3/board.css:3079 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
 | background | `none` | `` | .b3-nb .pb-ed · b4.css:59 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ed · b4.css:59 |
 | background-image | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
@@ -3635,7 +3574,7 @@ inside `.pb-ed` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-26` · rendered **466×22** · 1 instance look like this
+`new-builds1-26` · rendered **415×22** · 1 instance look like this
 
 ```html
 <div class="b3-xt-ln x-blank"><span class="b3-xt-no">1</span><span class="b3-xt-tx"> </span></div>
@@ -3644,7 +3583,7 @@ inside `.pb-ed` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
-| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 378.875px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -3711,7 +3650,7 @@ inside `.b3-xt-ln` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-28` · rendered **430×22** · 1 instance look like this
+`new-builds1-28` · rendered **379×22** · 1 instance look like this
 
 ```html
 <span class="b3-xt-tx"> </span>
@@ -3747,7 +3686,7 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-29` · rendered **466×376** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
+`new-builds1-29` · rendered **415×376** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
 
 ```html
 <textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between blocks" style="height: 376px;"></textarea>
@@ -3757,41 +3696,41 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `block` | `block` | .b3-nb .pb-ta · b3/board.css:1167 |
 | position | `absolute` | `absolute` | .b3-nb .pb-ta · b4.css:68 |
-| width | `100%` | `466.094px` | .b3-nb .pb-ta · b4.css:68 |
+| width | `100%` | `414.875px` | .b3-nb .pb-ta · b4.css:68 |
 | min-width | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | height | `376px` | `376px` | style attribute |
 | min-height | `100%` | `100%` | .b3-nb .pb-ta · b4.css:68 |
 | box-sizing | `border-box` | `border-box` | .b3-nb .pb-ta · b4.css:68 |
-| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | inset | `0` | `` | .b3-nb .pb-ta · b4.css:68 |
 | top | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | right | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | bottom | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | left | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
-| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | border-radius | `0!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
 | outline | `none` | `` | .b3-nb .pb-ta · b4.css:68 |
 | background | `transparent!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-image | `initial !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
 | box-shadow | `none !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
 | white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
 | color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
@@ -3818,7 +3757,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-31` · rendered **444×88** · 1 instance look like this
+`new-builds1-31` · rendered **395×88** · 1 instance look like this
 
 ```html
 <div class="pb-tally" style="grid-template-columns: repeat(4, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div></div>
@@ -3827,7 +3766,7 @@ inside `.—` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-tally · b3/board.css:1182 |
-| grid-template-columns | `repeat(4, 1fr)` | `110.219px 110.219px 110.219px 110.234px` | style attribute |
+| grid-template-columns | `repeat(4, 1fr)` | `98.0156px 98.0312px 98.0312px 98.0312px` | style attribute |
 | gap | `1px` | `` | .b3-nb .pb-tally · b3/board.css:1182 |
 | column-gap | `1px` | `1px` | .b3-nb .pb-tally · b3/board.css:1182 |
 | row-gap | `1px` | `1px` | .b3-nb .pb-tally · b3/board.css:1182 |
@@ -3854,7 +3793,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds1-44` · rendered **444×0** · 1 instance look like this
+`new-builds1-44` · rendered **395×0** · 1 instance look like this
 
 ```html
 <ol class="pb-rows"></ol>
@@ -3903,7 +3842,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | align-self | `center` | `center` | .dw-f .why · app.css:6866 |
 | max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `auto` | `714.609px` | .dw-f .why · app.css:6866 |
+| margin-right | `auto` | `614.609px` | .dw-f .why · app.css:6866 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
 | font-weight | — | `400` | initial |
@@ -3923,7 +3862,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-10` · rendered **930×1229** · 1 instance look like this
+`new-builds2-10` · rendered **830×1229** · 1 instance look like this
 
 ```html
 <div class="b3-nb" data-arm="DMZ" data-panel="add"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="false">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="true">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One bui
@@ -3947,7 +3886,7 @@ inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-18` · rendered **930×1128** · 1 instance look like this
+`new-builds2-18` · rendered **830×1128** · 1 instance look like this
 
 ```html
 <div class="pb-view pb-in"><div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</lab
@@ -3972,7 +3911,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-19` · rendered **930×1128** · 1 instance look like this
+`new-builds2-19` · rendered **830×1128** · 1 instance look like this
 
 ```html
 <div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><opt
@@ -3981,7 +3920,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .bed · app.css:3557 |
-| grid-template-columns | `minmax(0px, 1fr) 320px` | `592px 320px` | .b3-nb .bed · b3/board.css:1081 |
+| grid-template-columns | `minmax(0px, 1fr) 320px` | `492px 320px` | .b3-nb .bed · b3/board.css:1081 |
 | gap | `18px` | `` | .drawer.wide .bed · app.css:7080 |
 | column-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
 | row-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
@@ -4000,7 +3939,7 @@ inside `.bed` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-20` · rendered **592×1128** · 1 instance look like this
+`new-builds2-20` · rendered **492×1128** · 1 instance look like this
 
 ```html
 <div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Ass
@@ -4025,7 +3964,7 @@ inside `.bed-main` · 4 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-36` · rendered **592×496** · 1 instance look like this
+`new-builds2-36` · rendered **492×496** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><h4 class="bf-h">Attachments <span class="bf-n">0 of 9</span></h4><div class="pb-atts"><div class="pb-att"><span class="pb-slot">Optic</span><div class="" style="position: relative;"><input class="ati" aria-label="Optic attachment" autocomplete="off" placeholder="Search optic"></div><span></span></div><div class="pb-att"><span class="pb-slot">Muzzle</span><div class="" style="position: relativ
@@ -4062,7 +4001,7 @@ inside `.bf-sec` · 4 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-37` · rendered **592×22** · 1 instance look like this
+`new-builds2-37` · rendered **492×22** · 1 instance look like this
 
 ```html
 <h4 class="bf-h">Attachments <span class="bf-n">0 of 9</span></h4>
@@ -4149,7 +4088,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds2-39` · rendered **592×460** · 1 instance look like this
+`new-builds2-39` · rendered **492×460** · 1 instance look like this
 
 ```html
 <div class="pb-atts"><div class="pb-att"><span class="pb-slot">Optic</span><div class="" style="position: relative;"><input class="ati" aria-label="Optic attachment" autocomplete="off" placeholder="Search optic"></div><span></span></div><div class="pb-att"><span class="pb-slot">Muzzle</span><div class="" style="position: relative;"><input class="ati" aria-label="Muzzle attachment" autocomplete="off" placeholder="Sear
@@ -4201,7 +4140,7 @@ inside `.pb-att` · 9 on screen · **1 look**
 
 ### new-build · Edit 3 builds
 
-45 distinct signatures on screen; 27 not already specced above.
+45 distinct signatures on screen; 28 not already specced above.
 
 
 ### `aside.drawer.open.wide[role=dialog]`
@@ -4210,7 +4149,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-2` · rendered **980×746** · 1 instance look like this · aria-label="Edit 3 MP builds" role="dialog"
+`new-builds3-2` · rendered **880×746** · 1 instance look like this · aria-label="Edit 3 MP builds" role="dialog"
 
 ```html
 <aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="Edit 3 MP builds" style="--m1: #ff3b5c; --m2: var(--r-armory); --m3: var(--patch); --m4: var(--r-armory);"><header class="dw-h"><div class="dw-ttl"><h2>Edit 3 MP builds</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-
@@ -4221,7 +4160,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | display | `flex` | `flex` | .drawer · app.css:1361 |
 | position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
 | flex-direction | `column` | `column` | .drawer · app.css:1361 |
-| width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
+| width | `min(880px, -40px + 100vw)` | `880px` | .b4 .drawer.wide:has(.b3-nb) · b4.css:120 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `50%` | `450px` | .drawer · app.css:1361 |
@@ -4242,7 +4181,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .drawer · app.css:1361 |
 | overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
 | overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -372.953)` | .drawer.open · app.css:1366 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -440, -372.953)` | .drawer.open · app.css:1366 |
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
@@ -4250,9 +4189,9 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 ### `b`
 
-inside `.x` · 9 on screen · **3 looks**
+inside `.x` · 9 on screen · **5 looks**
 
-#### look 1 of 3
+#### look 1 of 5
 
 `new-builds3-28` · rendered **53×17** · 3 instances look like this · text “BAL-27”
 
@@ -4275,9 +4214,53 @@ inside `.x` · 9 on screen · **3 looks**
 | white-space | ↑ `pre` | `` | inherited · .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
 | color | `color-mix(in srgb,var(--c) 42%,white)` | `color(srgb 1 0.677176 0.731529)` | .b3-xt-ln.x-hd .b3-xt-tx b · b3/board.css:3085 |
 
-#### look 2 of 3
+#### look 2 of 5
 
-`new-builds3-154` · rendered **64×30** · 1 instance look like this · text “0”
+`new-builds3-145` · rendered **51×44** · 1 instance look like this · text “0”
+
+```html
+<b>0</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(123, 219, 99)` | .b3-nb .pb-tally b · b3/board.css:1184 |
+
+#### look 3 of 5
+
+`new-builds3-148` · rendered **51×44** · 1 instance look like this · text “0”
+
+```html
+<b>0</b>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `700 30px/1 var(--data)` | `` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-size | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-weight | `` | `700` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-style | `` | `normal` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| line-height | `` | `30px` | .b3-nb .pb-tally b · b3/board.css:1184 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--o,var(--ink))` | `rgb(242, 194, 48)` | .b3-nb .pb-tally b · b3/board.css:1184 |
+
+#### look 4 of 5
+
+`new-builds3-154` · rendered **51×37** · 1 instance look like this · text “0”
 
 ```html
 <b>0</b>
@@ -4297,9 +4280,9 @@ inside `.x` · 9 on screen · **3 looks**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--o,var(--ink))` | `rgb(255, 138, 133)` | .b3-nb .pb-tally b · b3/board.css:1184 |
 
-#### look 3 of 3
+#### look 5 of 5
 
-`new-builds3-157` · rendered **66×37** · 1 instance look like this · text “3”
+`new-builds3-157` · rendered **66×44** · 1 instance look like this · text “3”
 
 ```html
 <b>3</b>
@@ -4326,7 +4309,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-10` · rendered **930×854** · 1 instance look like this
+`new-builds3-10` · rendered **830×854** · 1 instance look like this
 
 ```html
 <div class="b3-nb" data-arm="MP" data-panel="bulk"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false" disabled="">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><span class="pb-editing">⟨svg.ic⟩Editing BAL-
@@ -4413,7 +4396,7 @@ inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-16` · rendered **930×753** · 1 instance look like this
+`new-builds3-16` · rendered **830×753** · 1 instance look like this
 
 ```html
 <div class="pb-view pb-in"><div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv">
@@ -4438,7 +4421,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-17` · rendered **930×753** · 1 instance look like this
+`new-builds3-17` · rendered **830×753** · 1 instance look like this
 
 ```html
 <div class="pb-bulk"><div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</s
@@ -4447,7 +4430,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-bulk · b3/board.css:1160 |
-| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `466.094px 443.891px` | .b3-nb .pb-bulk · b3/board.css:1160 |
+| grid-template-columns | `minmax(0px, 1.05fr) minmax(0px, 1fr)` | `414.875px 395.109px` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | gap | `20px` | `` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | column-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
 | row-gap | `20px` | `20px` | .b3-nb .pb-bulk · b3/board.css:1160 |
@@ -4463,11 +4446,11 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 ### `div`
 
-inside `.pb-bulk` · 7 on screen · **2 looks**
+inside `.pb-bulk` · 7 on screen · **3 looks**
 
-#### look 1 of 2
+#### look 1 of 3
 
-`new-builds3-18` · rendered **466×753** · 1 instance look like this
+`new-builds3-18` · rendered **415×753** · 1 instance look like this
 
 ```html
 <div><div class="pb-edhead"><label for="pb-ta">Builds</label><span>3 builds · 32 lines</span></div><div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-x
@@ -4484,9 +4467,9 @@ inside `.pb-bulk` · 7 on screen · **2 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
-#### look 2 of 2
+#### look 2 of 3
 
-`new-builds3-142` · rendered **444×305** · 1 instance look like this
+`new-builds3-142` · rendered **395×320** · 1 instance look like this
 
 ```html
 <div><div class="pb-tally" style="grid-template-columns: repeat(5, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div><div data-o="same"><b>3</b><span>unchanged</span></div></div><ol class="pb-rows"><li class="pb-row" data-o="same"><div cla
@@ -4503,12 +4486,86 @@ inside `.pb-bulk` · 7 on screen · **2 looks**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
+#### look 3 of 3
+
+`new-builds3-144` · rendered **75×102** · 5 instances look like this
+
+```html
+<div data-o="new"><b>0</b><span>new</span></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| gap | `6px` | `` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| column-gap | `6px` | `6px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| row-gap | `6px` | `6px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `12px 12px 11px` | `` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| padding-top | `12px` | `12px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| padding-right | `12px` | `12px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| padding-bottom | `11px` | `11px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| padding-left | `12px` | `12px` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| background | `var(--sunk)` | `` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| background-image | `` | `none` | .b3-nb .pb-tally div · b3/board.css:1183 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+
 
 ### `span`
 
-inside `.pb-edhead` · 12 on screen · **1 look**
+inside `.pb-edhead` · 12 on screen · **3 looks**
 
-#### the one look
+#### look 1 of 3
+
+`new-builds3-152` · rendered **51×43** · 1 instance look like this · text “saved with a warning”
+
+```html
+<span>saved with a warning</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
+
+#### look 2 of 3
+
+`new-builds3-155` · rendered **51×36** · 1 instance look like this · text “can’t be read”
+
+```html
+<span>can’t be read</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | `500 var(--t-sm)/1.2 var(--ui)` | `` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-size | `` | `12px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-weight | `` | `500` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-style | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| font-variant-numeric | `` | `normal` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| line-height | `` | `14.4px` | .b3-nb .pb-tally span · b3/board.css:1185 |
+| letter-spacing | — | `normal` | initial |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-nb .pb-tally span · b3/board.css:1185 |
+
+#### look 3 of 3
 
 `new-builds3-167` · rendered **128×16** · 3 instances look like this · text “Matches the live build”
 
@@ -4537,7 +4594,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-22` · rendered **466×728** · 1 instance look like this
+`new-builds3-22` · rendered **415×728** · 1 instance look like this
 
 ```html
 <div class="pb-edwrap"><div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span
@@ -4571,7 +4628,7 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-23` · rendered **466×728** · 1 instance look like this · aria-hidden="true"
+`new-builds3-23` · rendered **415×728** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <div class="pb-ed b3-xt-bin" aria-hidden="true"><div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span><span class="b3-xt-tx"
@@ -4583,17 +4640,17 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 | position | `relative` | `relative` | .b3-nb .pb-ed · b4.css:59 |
 | min-height | `0px` | `0px` | .b3-xt-bin · b3/board.css:3079 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
-| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:80 |
+| padding | `12px 0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| padding-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap .pb-ed · b4.css:83 |
 | background | `none` | `` | .b3-nb .pb-ed · b4.css:59 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ed · b4.css:59 |
 | background-image | `none` | `none` | .b3-nb .pb-ed · b4.css:59 |
@@ -4636,7 +4693,7 @@ inside `.pb-ed` · 3 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-24` · rendered **466×220** · 3 instances look like this
+`new-builds3-24` · rendered **415×220** · 3 instances look like this
 
 ```html
 <div class="pb-blk" data-o="same" style="--c: #ff3b5c;"><div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div><div class="b3-xt-ln x-kv"><span class="b3-xt-no">3</span><span class="b3-xt-tx"><em>Image:</em> BAL-27-2</span></div><div class
@@ -4696,7 +4753,7 @@ inside `.pb-blk` · 3 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-25` · rendered **466×22** · 3 instances look like this
+`new-builds3-25` · rendered **415×22** · 3 instances look like this
 
 ```html
 <div class="b3-xt-ln x-hd"><span class="b3-xt-no">1</span><span class="b3-xt-tx"><b>BAL-27 </b><i>|</i> AR</span></div>
@@ -4705,7 +4762,7 @@ inside `.pb-blk` · 3 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
-| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 378.875px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -4737,7 +4794,7 @@ inside `.b3-xt-ln` · 32 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-48` · rendered **430×22** · 15 instances look like this · text “- Gauge-9 Mono”
+`new-builds3-48` · rendered **379×22** · 15 instances look like this · text “- Gauge-9 Mono”
 
 ```html
 <span class="b3-xt-tx">- Gauge-9 Mono</span>
@@ -4801,7 +4858,7 @@ inside `.pb-blk` · 12 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-30` · rendered **466×22** · 12 instances look like this
+`new-builds3-30` · rendered **415×22** · 12 instances look like this
 
 ```html
 <div class="b3-xt-ln x-kv"><span class="b3-xt-no">2</span><span class="b3-xt-tx"><em>Build:</em> Build 2</span></div>
@@ -4810,7 +4867,7 @@ inside `.pb-blk` · 12 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
-| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 378.875px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -4870,7 +4927,7 @@ inside `.pb-blk` · 15 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-46` · rendered **466×22** · 15 instances look like this
+`new-builds3-46` · rendered **415×22** · 15 instances look like this
 
 ```html
 <div class="b3-xt-ln x-at"><span class="b3-xt-no">6</span><span class="b3-xt-tx">- Gauge-9 Mono</span></div>
@@ -4879,7 +4936,7 @@ inside `.pb-blk` · 15 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
-| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 430.094px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
+| grid-template-columns | `36px minmax(0px, 1fr)` | `36px 378.875px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | min-height | `22px` | `22px` | .b3-nb .pb-ed .b3-xt-ln · b4.css:61 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -4911,7 +4968,7 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-141` · rendered **466×728** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
+`new-builds3-141` · rendered **415×728** · 1 instance look like this · aria-label="Builds, one block per build, a blank lin"
 
 ```html
 <textarea id="pb-ta" class="pb-ta" spellcheck="true" wrap="off" placeholder="BAL-27 | AR Build: Close range Code: 1C2C4A8A9C Badges: meta, best - Gauge-9 Mono - Crown-H3 Barrel" aria-label="Builds, one block per build, a blank line between blocks" style="height: 728px;"></textarea>
@@ -4921,41 +4978,41 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `block` | `block` | .b3-nb .pb-ta · b3/board.css:1167 |
 | position | `absolute` | `absolute` | .b3-nb .pb-ta · b4.css:68 |
-| width | `100%` | `466.094px` | .b3-nb .pb-ta · b4.css:68 |
+| width | `100%` | `414.875px` | .b3-nb .pb-ta · b4.css:68 |
 | min-width | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | height | `728px` | `728px` | style attribute |
 | min-height | `100%` | `100%` | .b3-nb .pb-ta · b4.css:68 |
 | box-sizing | `border-box` | `border-box` | .b3-nb .pb-ta · b4.css:68 |
-| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| padding | `12px 12px 12px 36px!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-top | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-right | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-bottom | `12px !important !important` | `12px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| padding-left | `36px !important !important` | `36px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-top | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-right | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-bottom | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| margin-left | `0px !important !important` | `0px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | inset | `0` | `` | .b3-nb .pb-ta · b4.css:68 |
 | top | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | right | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | bottom | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
 | left | `0px` | `0px` | .b3-nb .pb-ta · b4.css:68 |
-| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| border | `0!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | border-radius | `0!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
 | outline | `none` | `` | .b3-nb .pb-ta · b4.css:68 |
 | background | `transparent!important !important` | `` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
 | background-image | `initial !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
 | box-shadow | `none !important !important` | `none` | .b3-nb .pb-ta · b3/board.css:1167 |
-| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
-| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:79 |
+| font | `500 12.5px/22px var(--data)!important !important` | `` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-family | `!important !important` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-size | `!important !important` | `12.5px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-weight | `!important !important` | `500` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-style | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| font-variant-numeric | `!important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| line-height | `!important !important` | `22px` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
+| letter-spacing | `0px !important !important` | `normal` | .drawer .b3-nb .pb-edwrap textarea.pb-ta · b4.css:82 |
 | text-align | `start` | `start` | input, textarea, select, button · user-agent:? |
 | white-space | `pre` | `` | .b3-nb .pb-ed .b3-xt-tx, .b3-nb .pb-ta · b4.css:63 |
 | color | `transparent !important !important` | `rgba(0, 0, 0, 0)` | .b3-nb .pb-ta · b3/board.css:1167 |
@@ -4976,13 +5033,49 @@ inside `.pb-edwrap` · 1 on screen · **1 look**
 **:active** — changes nothing on the element itself
 
 
+### `div.pb-tally`
+
+inside `.—` · 1 on screen · **1 look**
+
+#### the one look
+
+`new-builds3-143` · rendered **395×102** · 1 instance look like this
+
+```html
+<div class="pb-tally" style="grid-template-columns: repeat(5, 1fr);"><div data-o="new"><b>0</b><span>new</span></div><div data-o="upd"><b>0</b><span>updated</span></div><div data-o="warn"><b>0</b><span>saved with a warning</span></div><div data-o="bad"><b>0</b><span>can’t be read</span></div><div data-o="same"><b>3</b><span>unchanged</span></div></div>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-nb .pb-tally · b3/board.css:1182 |
+| grid-template-columns | `repeat(5, 1fr)` | `75.2969px 75.2969px 75.2969px 75.3125px 89.9062px` | style attribute |
+| gap | `1px` | `` | .b3-nb .pb-tally · b3/board.css:1182 |
+| column-gap | `1px` | `1px` | .b3-nb .pb-tally · b3/board.css:1182 |
+| row-gap | `1px` | `1px` | .b3-nb .pb-tally · b3/board.css:1182 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| border-radius | `var(--rad-2)` | `` | .b3-nb .pb-tally · b3/board.css:1182 |
+| background | `var(--rule)` | `` | .b3-nb .pb-tally · b3/board.css:1182 |
+| background-color | `` | `rgb(42, 52, 61)` | .b3-nb .pb-tally · b3/board.css:1182 |
+| background-image | `` | `none` | .b3-nb .pb-tally · b3/board.css:1182 |
+| box-shadow | `inset 0 0 0 1px var(--rule)` | `rgb(42, 52, 61) 0px 0px 0px 1px inset` | .b3-nb .pb-tally · b3/board.css:1182 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow | `hidden` | `` | .b3-nb .pb-tally · b3/board.css:1182 |
+| overflow-x | `hidden` | `hidden` | .b3-nb .pb-tally · b3/board.css:1182 |
+| overflow-y | `hidden` | `hidden` | .b3-nb .pb-tally · b3/board.css:1182 |
+
+
 ### `ol.pb-rows`
 
 inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-159` · rendered **444×206** · 1 instance look like this
+`new-builds3-159` · rendered **395×206** · 1 instance look like this
 
 ```html
 <ol class="pb-rows"><li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div><span class="pb-oc">Unchanged</span><div class="pb-rd"><span>Matches the live build</span></div></li><li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 2</span><span class="pb-ln">lines 12–21</span></div><span class="pb-oc">Un
@@ -5019,7 +5112,7 @@ inside `.pb-rows` · 3 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-160` · rendered **444×63** · 3 instances look like this
+`new-builds3-160` · rendered **395×63** · 3 instances look like this
 
 ```html
 <li class="pb-row" data-o="same"><div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div><span class="pb-oc">Unchanged</span><div class="pb-rd"><span>Matches the live build</span></div></li>
@@ -5029,7 +5122,7 @@ inside `.pb-rows` · 3 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-row · b3/board.css:1187 |
 | position | `relative` | `relative` | .b3-nb .pb-row · b3/board.css:1187 |
-| grid-template-columns | `minmax(0px, 1fr) auto` | `333.375px 66.5156px` | .b3-nb .pb-row · b3/board.css:1187 |
+| grid-template-columns | `minmax(0px, 1fr) auto` | `284.594px 66.5156px` | .b3-nb .pb-row · b3/board.css:1187 |
 | gap | `8px 12px` | `` | .b3-nb .pb-row · b3/board.css:1187 |
 | column-gap | `12px` | `12px` | .b3-nb .pb-row · b3/board.css:1187 |
 | row-gap | `8px` | `8px` | .b3-nb .pb-row · b3/board.css:1187 |
@@ -5076,7 +5169,7 @@ inside `.pb-row` · 3 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-161` · rendered **333×16** · 3 instances look like this
+`new-builds3-161` · rendered **285×16** · 3 instances look like this
 
 ```html
 <div class="pb-rt"><strong>BAL-27</strong><span>Build 1</span><span class="pb-ln">lines 1–10</span></div>
@@ -5186,7 +5279,7 @@ inside `.pb-row` · 3 on screen · **1 look**
 
 #### the one look
 
-`new-builds3-166` · rendered **412×16** · 3 instances look like this
+`new-builds3-166` · rendered **363×16** · 3 instances look like this
 
 ```html
 <div class="pb-rd"><span>Matches the live build</span></div>
@@ -5231,7 +5324,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | align-self | `center` | `center` | .dw-f .why · app.css:6866 |
 | max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `auto` | `574.141px` | .dw-f .why · app.css:6866 |
+| margin-right | `auto` | `474.141px` | .dw-f .why · app.css:6866 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
 | font-weight | — | `400` | initial |
@@ -5260,20 +5353,20 @@ inside `.b1` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `16px` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-top | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-right | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-bottom | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-left | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
-| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | border-radius | `var(--rad-3)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background | `var(--paper)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background-color | `` | `rgb(23, 30, 36)` | .b4 .b4-cmp .pb-panel · b4.css:31 |
@@ -5570,20 +5663,20 @@ inside `.b1` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `16px` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-top | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-right | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-bottom | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-left | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
-| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | border-radius | `var(--rad-3)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background | `var(--paper)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background-color | `` | `rgb(23, 30, 36)` | .b4 .b4-cmp .pb-panel · b4.css:31 |
@@ -5820,9 +5913,9 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -6105,17 +6198,17 @@ inside `.b4-exp` · 1 on screen · **1 look**
 | position | `relative` | `relative` | .g-stage · gates.css:90 |
 | height | `var(--stage-h)` | `900px` | .g-stage.g-fixed · gates.css:145 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `28px` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-top | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-right | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-bottom | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-left | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| border | `0` | `` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
-| border-radius | `var(--rad-3)` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| background | `radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| background-color | `` | `rgb(11, 15, 18)` | .b4 #c-export .g-stage · b4.css:90 |
-| background-image | `` | `radial-gradient(900px 320px at 30% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.07), rgba(0, 0, 0, 0) 70%), none` | .b4 #c-export .g-stage · b4.css:90 |
-| box-shadow | `none` | `none` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
+| padding | `28px` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-top | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-right | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-bottom | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-left | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| border | `0` | `` | .b4 .g-stage:not(.b4-stage) · b4.css:92 |
+| border-radius | `var(--rad-3)` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| background | `radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| background-color | `` | `rgb(11, 15, 18)` | .b4 #c-export .g-stage · b4.css:93 |
+| background-image | `` | `radial-gradient(900px 320px at 30% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.07), rgba(0, 0, 0, 0) 70%), none` | .b4 #c-export .g-stage · b4.css:93 |
+| box-shadow | `none` | `none` | .b4 .g-stage:not(.b4-stage) · b4.css:92 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -11441,7 +11534,7 @@ inside `.pb-col` · 4 on screen · **2 looks**
 | row-gap | `` | `8px` | .dwfield · app.css:2541 |
 | flex-direction | `column` | `column` | .dwfield · app.css:2541 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:101 |
+| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:104 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -11466,7 +11559,7 @@ inside `.pb-col` · 4 on screen · **2 looks**
 | row-gap | `` | `8px` | .dwfield · app.css:2541 |
 | flex-direction | `column` | `column` | .dwfield · app.css:2541 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:101 |
+| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:104 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -11718,7 +11811,7 @@ inside `.dw-grid2` · 1 on screen · **1 look**
 | row-gap | `` | `8px` | .dwfield · app.css:2541 |
 | flex-direction | `column` | `column` | .dwfield · app.css:2541 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:101 |
+| margin-bottom | `0px` | `0px` | .drawer.b1 .dwfield · b4.css:104 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -12106,7 +12199,7 @@ inside `.bed` · 1 on screen · **1 look**
 
 ### history · Only alerts
 
-42 distinct signatures on screen; 7 not already specced above.
+42 distinct signatures on screen; 8 not already specced above.
 
 
 ### `section.b3-hi.panel.uk.uw`
@@ -12206,11 +12299,11 @@ inside `.b3-fc` · 1 on screen · **1 look**
 
 ### `span.b3-av.sys`
 
-inside `.b3-fc` · 48 on screen · **1 look**
+inside `.b3-fc` · 22 on screen · **1 look**
 
 #### the one look
 
-`historyt0-117` · rendered **22×22** · 47 instances look like this
+`historyt0-117` · rendered **22×22** · 21 instances look like this
 
 ```html
 <span class="b3-av sys">⟨svg.ic⟩</span>
@@ -12254,10 +12347,10 @@ inside `.b3-hi-list` · 1 on screen · **1 look**
 
 #### the one look
 
-`historyt0-95` · rendered **1146×2120** · 1 instance look like this
+`historyt0-95` · rendered **1146×976** · 1 instance look like this
 
 ```html
-<section class="b3-hi-dg" style="--n: 47;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Aug 27</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>47</em>alerts</span></span><span class="b3-hi-ds">10:30 AM – 9:42 PM</span></div><div class="b3-hi-r st-a" style="--c: var(--warn);"><span class="when">9:42 PM</span><span><span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨s
+<section class="b3-hi-dg" style="--n: 21;"><div class="b3-hi-day"><b class="b3-hi-dd">Thu, Aug 27</b><span class="b3-hi-dm"><span class="b3-hi-dk" style="--c: var(--warn);">⟨svg.ic⟩<em>21</em>alerts</span></span><span class="b3-hi-ds">10:30 AM – 9:37 PM</span></div><div class="b3-hi-r" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨svg.ic
 ```
 
 | property | winning declaration | computed | from |
@@ -12277,16 +12370,16 @@ inside `.b3-hi-list` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `div.b3-hi-r.st-a`
+### `div.b3-hi-r`
 
-inside `.b3-hi-dg` · 3 on screen · **1 look**
+inside `.b3-hi-dg` · 18 on screen · **1 look**
 
 #### the one look
 
 `historyt0-102` · rendered **1146×44** · 1 instance look like this
 
 ```html
-<div class="b3-hi-r st-a" style="--c: var(--warn);"><span class="when">9:42 PM</span><span><span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨svg.ic⟩</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""><
+<div class="b3-hi-r" style="--c: var(--warn);"><span class="when">9:37 PM</span><span><span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨svg.ic⟩</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class=""></i><i
 ```
 
 | property | winning declaration | computed | from |
@@ -12323,7 +12416,7 @@ inside `.b3-hi-dg` · 3 on screen · **1 look**
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | top | `9px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| bottom | `0px` | html[data-b3-p9="b"] .b3-hi-r.st-a::before · gates.css:924 |
+| bottom | `9px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | left | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | border-radius | `0 2px 2px 0` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background | `var(--c)` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -12350,11 +12443,11 @@ inside `.b3-hi-dg` · 3 on screen · **1 look**
 
 ### `span.b3-htab.quiet`
 
-inside `.—` · 47 on screen · **1 look**
+inside `.—` · 21 on screen · **1 look**
 
 #### the one look
 
-`historyt0-105` · rendered **24×24** · 47 instances look like this · aria-label="Alert" title="Alert"
+`historyt0-105` · rendered **24×24** · 21 instances look like this · aria-label="Alert" title="Alert"
 
 ```html
 <span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨svg.ic⟩</span>
@@ -12396,11 +12489,11 @@ inside `.—` · 47 on screen · **1 look**
 
 ### `span.b3-who.quiet.sys`
 
-inside `.b3-hi-r` · 47 on screen · **1 look**
+inside `.b3-hi-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`historyt0-116` · rendered **22×22** · 47 instances look like this · title="system"
+`historyt0-116` · rendered **22×22** · 21 instances look like this · title="system"
 
 ```html
 <span class="b3-who sys quiet" title="system"><span class="b3-av sys">⟨svg.ic⟩</span></span>
@@ -12426,6 +12519,77 @@ inside `.b3-hi-r` · 47 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-who.sys · b3/board.css:1561 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1523 |
+
+
+### `div.b3-hi-r.st-m`
+
+inside `.b3-hi-dg` · 1 on screen · **1 look**
+
+#### the one look
+
+`historyt0-390` · rendered **1146×44** · 1 instance look like this
+
+```html
+<div class="b3-hi-r st-m" style="--c: var(--warn);"><span class="when">11:49 AM</span><span><span class="b3-htab quiet" title="Alert" aria-label="Alert">⟨svg.ic⟩</span></span><button type="button" class="what b3-hi-open"><span class="hlead"><span class="s">Bot online</span></span><span class="b3-lvl"><span class="b3-meter" aria-hidden="true" style="--sv: var(--sv-info);"><i class="on"></i><i class=""></i><i class="">
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1523 |
+| grid-template-columns | `84px 28px minmax(0,1fr) 28px var(--h1-undo,92px)` | `84px 28px 784px 28px 90px` | html[data-b3-p9="b"] .b3-hi.uk.uw .b3-hi-h, html[data-b3-p9="b"] .b3-hi.uk.uw .b3-hi-r, ht · gates.css:1031 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4716 |
+| column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1514 |
+| min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
+| padding-top | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
+| padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
+| padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
+| padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1523 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4917 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1523 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1525 |
+| width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| top | `0px` | html[data-b3-p9="b"] .b3-hi-r.st-m::before · gates.css:925 |
+| bottom | `0px` | html[data-b3-p9="b"] .b3-hi-r.st-m::before · gates.css:925 |
+| left | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| border-radius | `0` | html[data-b3-p9="b"] .b3-hi-r.st-m::before · gates.css:925 |
+| background | `var(--c)` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1525 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| width | `1px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| top | `0px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| bottom | `0px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| left | `26px` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| background | `var(--rule2)` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| background-color | `` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| background-image | `` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
+| content | `none` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:927 |
+| z-index | `-1` | html[data-b3-p9="b"] .b3-hi-r::after · gates.css:674 |
 
 
 ### history · Only what can be undone

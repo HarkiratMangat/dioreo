@@ -31,20 +31,20 @@ inside `.b4-exp` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-stage · b2.css:38 |
 | position | `relative` | `relative` | .g-stage · gates.css:90 |
-| height | `560px !important !important` | `560px` | #c-export[data-st="landing"] .g-stage · b4.css:107 |
-| min-height | `0px !important !important` | `0px` | #c-export[data-st="landing"] .g-stage · b4.css:107 |
+| height | `560px !important !important` | `560px` | #c-export .g-stage:not(:has(.drawer.wide)) · b4.css:112 |
+| min-height | `0px !important !important` | `0px` | #c-export .g-stage:not(:has(.drawer.wide)) · b4.css:112 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `28px` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-top | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-right | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-bottom | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| padding-left | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:90 |
-| border | `0` | `` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
-| border-radius | `var(--rad-3)` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| background | `radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)` | `` | .b4 #c-export .g-stage · b4.css:90 |
-| background-color | `` | `rgb(11, 15, 18)` | .b4 #c-export .g-stage · b4.css:90 |
-| background-image | `` | `radial-gradient(900px 320px at 30% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.07), rgba(0, 0, 0, 0) 70%), none` | .b4 #c-export .g-stage · b4.css:90 |
-| box-shadow | `none` | `none` | .b4 .g-stage:not(.b4-stage) · b4.css:89 |
+| padding | `28px` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-top | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-right | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-bottom | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| padding-left | `28px` | `28px` | .b4 #c-export .g-stage · b4.css:93 |
+| border | `0` | `` | .b4 .g-stage:not(.b4-stage) · b4.css:92 |
+| border-radius | `var(--rad-3)` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| background | `radial-gradient(900px 320px at 30% 0,color-mix(in srgb,var(--realm-c) 7%,transparent),transparent 70%),var(--sunk)` | `` | .b4 #c-export .g-stage · b4.css:93 |
+| background-color | `` | `rgb(11, 15, 18)` | .b4 #c-export .g-stage · b4.css:93 |
+| background-image | `` | `radial-gradient(900px 320px at 30% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.07), rgba(0, 0, 0, 0) 70%), none` | .b4 #c-export .g-stage · b4.css:93 |
+| box-shadow | `none` | `none` | .b4 .g-stage:not(.b4-stage) · b4.css:92 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |

@@ -58,7 +58,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-2` · rendered **980×746** · 1 instance look like this · aria-label="New MP build" role="dialog"
+`C2-2` · rendered **880×746** · 1 instance look like this · aria-label="New MP build" role="dialog"
 
 ```html
 <aside class="drawer open wide" role="dialog" aria-modal="true" aria-label="New MP build" style="--m1: var(--patch); --m2: var(--r-armory); --m3: var(--patch); --m4: var(--r-armory);"><header class="dw-h"><div class="dw-ttl"><h2>New MP build</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header><div class="dw-b"><div class="b3-nb" data-arm
@@ -69,7 +69,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | display | `flex` | `flex` | .drawer · app.css:1361 |
 | position | `absolute` | `absolute` | .g-stage .drawer · gates.css:165 |
 | flex-direction | `column` | `column` | .drawer · app.css:1361 |
-| width | `min(980px, -40px + 100vw)` | `980px` | .drawer.wide:has(.b3-nb) · b3/board.css:1061 |
+| width | `min(880px, -40px + 100vw)` | `880px` | .b4 .drawer.wide:has(.b3-nb) · b4.css:120 |
 | max-height | `min(84vh, 860px)` | `745.92px` | .drawer · app.css:1361 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `50%` | `450px` | .drawer · app.css:1361 |
@@ -90,7 +90,7 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | overflow | `hidden` | `` | .drawer · app.css:1361 |
 | overflow-x | `hidden` | `hidden` | .drawer · app.css:1361 |
 | overflow-y | `hidden` | `hidden` | .drawer · app.css:1361 |
-| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -490, -372.953)` | .drawer.open · app.css:1366 |
+| transform | `translate(-50%, -50%) scale(1)` | `matrix(1, 0, 0, 1, -440, -372.953)` | .drawer.open · app.css:1366 |
 | transition | `opacity .18s,transform .18s cubic-bezier(.2,.8,.3,1)` | `` | .drawer · app.css:1361 |
 | z-index | `45` | `45` | .drawer · app.css:1361 |
 | pointer-events | `auto` | `auto` | .drawer.open · app.css:1366 |
@@ -102,7 +102,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-3` · rendered **978×57** · 1 instance look like this
+`C2-3` · rendered **878×57** · 1 instance look like this
 
 ```html
 <header class="dw-h"><div class="dw-ttl"><h2>New MP build</h2></div><div class="dw-nav"><button class="x" aria-label="Close">⟨svg.ic.sm⟩<b aria-hidden="true">Close</b></button></div></header>
@@ -189,7 +189,7 @@ inside `.dw-h` · 1 on screen · **1 look**
 | flex | `none` | `` | .dw-nav · gates.css:811 |
 | align-items | `center` | `center` | .dw-nav · gates.css:811 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `auto` | `750.281px` | .dw-nav · gates.css:811 |
+| margin-left | `auto` | `650.281px` | .dw-nav · gates.css:811 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -406,7 +406,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-9` · rendered **978×622** · 1 instance look like this
+`C2-9` · rendered **878×622** · 1 instance look like this
 
 ```html
 <div class="dw-b"><div class="b3-nb" data-arm="MP" data-panel="add"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" ar
@@ -439,7 +439,7 @@ inside `.dw-b` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-10` · rendered **930×1114** · 1 instance look like this
+`C2-10` · rendered **830×1114** · 1 instance look like this
 
 ```html
 <div class="b3-nb" data-arm="MP" data-panel="add"><div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One buil
@@ -463,7 +463,7 @@ inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-11` · rendered **978×77** · 1 instance look like this
+`C2-11` · rendered **878×77** · 1 instance look like this
 
 ```html
 <div class="pb-bar"><div class="mh-mode b3-xt-mode" role="radiogroup" aria-label="Which armory"><button type="button" role="radio" data-arm="MP" aria-checked="true">MP</button><button type="button" role="radio" data-arm="DMZ" aria-checked="false">DMZ</button></div><span class="pb-div" aria-hidden="true"></span><div class="seg pb-seg " role="group" aria-label="One build or many"><span class="pb-thumb" style="width: 10
@@ -872,7 +872,7 @@ inside `.b3-nb` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-18` · rendered **930×1013** · 1 instance look like this
+`C2-18` · rendered **830×1013** · 1 instance look like this
 
 ```html
 <div class="pb-view pb-in"><div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</lab
@@ -897,7 +897,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-19` · rendered **930×1013** · 1 instance look like this
+`C2-19` · rendered **830×1013** · 1 instance look like this
 
 ```html
 <div class="bed bform"><div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><opt
@@ -906,7 +906,7 @@ inside `.pb-view` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .bed · app.css:3557 |
-| grid-template-columns | `minmax(0px, 1fr) 320px` | `592px 320px` | .b3-nb .bed · b3/board.css:1081 |
+| grid-template-columns | `minmax(0px, 1fr) 320px` | `492px 320px` | .b3-nb .bed · b3/board.css:1081 |
 | gap | `18px` | `` | .drawer.wide .bed · app.css:7080 |
 | column-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
 | row-gap | `18px` | `18px` | .drawer.wide .bed · app.css:7080 |
@@ -925,7 +925,7 @@ inside `.bed` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-20` · rendered **592×1013** · 1 instance look like this
+`C2-20` · rendered **492×1013** · 1 instance look like this
 
 ```html
 <div class="bed-main"><section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Ass
@@ -950,7 +950,7 @@ inside `.bed-main` · 5 on screen · **5 looks**
 
 #### look 1 of 5
 
-`C2-21` · rendered **592×190** · 1 instance look like this
+`C2-21` · rendered **492×190** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><h4 class="bf-h">Build</h4><div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Assault Rifle</option><op
@@ -982,7 +982,7 @@ inside `.bed-main` · 5 on screen · **5 looks**
 
 #### look 2 of 5
 
-`C2-36` · rendered **592×71** · 1 instance look like this
+`C2-36` · rendered **492×71** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><div class="dwfield"><label for="nb-code">Gunsmith code</label><div class="pb-codefield"><input id="nb-code" spellcheck="true" autocomplete="off" placeholder="1C2C4A8A9B"><button type="button" class="pb-copy" aria-label="Copy code" disabled="">⟨svg.ic⟩</button></div></div></section>
@@ -1014,7 +1014,7 @@ inside `.bed-main` · 5 on screen · **5 looks**
 
 #### look 3 of 5
 
-`C2-42` · rendered **592×283** · 1 instance look like this
+`C2-42` · rendered **492×283** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><h4 class="bf-h">Attachments <span class="pb-hfill">Paste a code and the slots fill themselv…</span></h4><div class="pb-atts"><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div><div class="pb-att"><span class="pb-slot pb-s
@@ -1046,7 +1046,7 @@ inside `.bed-main` · 5 on screen · **5 looks**
 
 #### look 4 of 5
 
-`C2-71` · rendered **592×131** · 1 instance look like this
+`C2-71` · rendered **492×131** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><h4 class="bf-h">Badges </h4><div class="pb-badges"><button type="button" class="pb-tog" aria-pressed="false"><i>⟨svg.ic⟩</i>META</button><button type="button" class="pb-tog pb-tox" aria-pressed="false"><i>⟨svg.ic⟩</i>TOXIC</button></div><div class="pb-rank"><span>Tier in AR</span><div class="seg pb-seg " role="group" aria-label="Tier" data-tier="none"><span class="pb-thumb" style="width: 58px
@@ -1078,7 +1078,7 @@ inside `.bed-main` · 5 on screen · **5 looks**
 
 #### look 5 of 5
 
-`C2-84` · rendered **592×207** · 1 instance look like this
+`C2-84` · rendered **492×207** · 1 instance look like this
 
 ```html
 <section class="bf-sec"><div class="pb-imghead"><h4 class="bf-h">Image</h4><div class="seg pb-seg pb-small" role="group" aria-label="Image source"><span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">Upload or link</button><button type="button" aria-pressed="false">Existing key</button></div></div><div class="pb-drop"><div class="pb-shot" role="img"
@@ -1115,7 +1115,7 @@ inside `.bf-sec` · 4 on screen · **1 look**
 
 #### the one look
 
-`C2-22` · rendered **592×17** · 4 instances look like this · text “Build”
+`C2-22` · rendered **492×17** · 4 instances look like this · text “Build”
 
 ```html
 <h4 class="bf-h">Build</h4>
@@ -1164,7 +1164,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-23` · rendered **592×71** · 1 instance look like this
+`C2-23` · rendered **492×71** · 1 instance look like this
 
 ```html
 <div class="bed-g2"><div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div><div class="dwfield"><label for="nb-cat">Category</label><select id="nb-cat"><option value="AR">AR — Assault Rifle</option><option value="SMG">SMG — Submachine Gun</option><opti
@@ -1173,7 +1173,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .bed-g2 · b3/board.css:1088 |
-| grid-template-columns | `1fr 1fr` | `288px 288px` | .b3-nb .bed-g2 · b3/board.css:1088 |
+| grid-template-columns | `1fr 1fr` | `238px 238px` | .b3-nb .bed-g2 · b3/board.css:1088 |
 | gap | `16px` | `` | .b3-nb .bed-g2 · b3/board.css:1088 |
 | column-gap | `16px` | `16px` | .b3-nb .bed-g2 · b3/board.css:1088 |
 | row-gap | `16px` | `16px` | .b3-nb .bed-g2 · b3/board.css:1088 |
@@ -1193,7 +1193,7 @@ inside `.bed-g2` · 6 on screen · **1 look**
 
 #### the one look
 
-`C2-24` · rendered **288×71** · 6 instances look like this
+`C2-24` · rendered **238×71** · 6 instances look like this
 
 ```html
 <div class="dwfield"><label for="nb-w">Weapon</label><div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div></div>
@@ -1227,7 +1227,7 @@ inside `.dwfield` · 6 on screen · **1 look**
 
 #### the one look
 
-`C2-25` · rendered **288×14** · 6 instances look like this · text “Weapon”
+`C2-25` · rendered **238×14** · 6 instances look like this · text “Weapon”
 
 ```html
 <label for="nb-w">Weapon</label>
@@ -1268,7 +1268,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-26` · rendered **288×44** · 1 instance look like this
+`C2-26` · rendered **238×44** · 1 instance look like this
 
 ```html
 <div class="pb-combo"><input id="nb-w" role="combobox" aria-expanded="false" aria-controls="nb-wmenu" autocomplete="off" placeholder="Search weapons">⟨svg.ic⟩</div>
@@ -1293,7 +1293,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-32` · rendered **592×44** · 1 instance look like this
+`C2-32` · rendered **492×44** · 1 instance look like this
 
 ```html
 <div class="pb-labelf"><span class="pb-bno"><small>BUILD</small><b class="pb-num">1</b></span><input id="nb-label" placeholder="Optional — a name like Close range" maxlength="32"></div>
@@ -1302,7 +1302,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-labelf · b3/board.css:1094 |
-| grid-template-columns | `auto 1fr` | `80.4062px 511.594px` | .b3-nb .pb-labelf · b3/board.css:1094 |
+| grid-template-columns | `auto 1fr` | `80.4062px 411.594px` | .b3-nb .pb-labelf · b3/board.css:1094 |
 | align-items | `stretch` | `stretch` | .b3-nb .pb-labelf · b3/board.css:1094 |
 | min-height | `var(--tap)` | `44px` | .b3-nb .pb-labelf · b3/board.css:1094 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1419,7 +1419,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-39` · rendered **592×44** · 1 instance look like this
+`C2-39` · rendered **492×44** · 1 instance look like this
 
 ```html
 <div class="pb-codefield"><input id="nb-code" spellcheck="true" autocomplete="off" placeholder="1C2C4A8A9B"><button type="button" class="pb-copy" aria-label="Copy code" disabled="">⟨svg.ic⟩</button></div>
@@ -1537,7 +1537,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-45` · rendered **592×252** · 1 instance look like this
+`C2-45` · rendered **492×252** · 1 instance look like this
 
 ```html
 <div class="pb-atts"><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div><div class="pb-att"><span class="pb-slot pb-slot-q">Slot 2</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 2" autocomplete="off" pla
@@ -1564,7 +1564,7 @@ inside `.pb-atts` · 5 on screen · **1 look**
 
 #### the one look
 
-`C2-46` · rendered **592×44** · 5 instances look like this
+`C2-46` · rendered **492×44** · 5 instances look like this
 
 ```html
 <div class="pb-att"><span class="pb-slot pb-slot-q">Slot 1</span><div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div><span></span></div>
@@ -1573,7 +1573,7 @@ inside `.pb-atts` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-att · b3/board.css:1110 |
-| grid-template-columns | `112px minmax(0px, 1fr) 44px` | `112px 416px 44px` | .b3-nb .pb-att · b3/board.css:1110 |
+| grid-template-columns | `112px minmax(0px, 1fr) 44px` | `112px 316px 44px` | .b3-nb .pb-att · b3/board.css:1110 |
 | gap | `10px` | `` | .b3-nb .pb-att · b3/board.css:1110 |
 | column-gap | `10px` | `10px` | .b3-nb .pb-att · b3/board.css:1110 |
 | row-gap | `10px` | `10px` | .b3-nb .pb-att · b3/board.css:1110 |
@@ -1622,7 +1622,7 @@ inside `.pb-att` · 5 on screen · **1 look**
 
 #### the one look
 
-`C2-48` · rendered **416×44** · 5 instances look like this
+`C2-48` · rendered **316×44** · 5 instances look like this
 
 ```html
 <div class="" style="position: relative;"><input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search"></div>
@@ -1647,7 +1647,7 @@ inside `.—` · 5 on screen · **1 look**
 
 #### the one look
 
-`C2-49` · rendered **416×44** · 5 instances look like this · aria-label="Attachment 1"
+`C2-49` · rendered **316×44** · 5 instances look like this · aria-label="Attachment 1"
 
 ```html
 <input class="ati" aria-label="Attachment 1" autocomplete="off" placeholder="Type to search">
@@ -1657,7 +1657,7 @@ inside `.—` · 5 on screen · **1 look**
 |---|---|---|---|
 | display | `inline-block` | `inline-block` | input, textarea, select, button · user-agent:? |
 | flex | `1` | `` | .ati · app.css:5492 |
-| width | `100%` | `416px` | .b3-nb .pb-att .ati · b3/board.css:1114 |
+| width | `100%` | `316px` | .b3-nb .pb-att .ati · b3/board.css:1114 |
 | min-width | `0px` | `0px` | .ati · app.css:5492 |
 | min-height | `var(--tap)` | `44px` | input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([data-bare]), sel · app.css:652 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
@@ -1732,7 +1732,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-73` · rendered **592×44** · 1 instance look like this
+`C2-73` · rendered **492×44** · 1 instance look like this
 
 ```html
 <div class="pb-badges"><button type="button" class="pb-tog" aria-pressed="false"><i>⟨svg.ic⟩</i>META</button><button type="button" class="pb-tog pb-tox" aria-pressed="false"><i>⟨svg.ic⟩</i>TOXIC</button></div>
@@ -1970,7 +1970,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-80` · rendered **592×42** · 1 instance look like this
+`C2-80` · rendered **492×42** · 1 instance look like this
 
 ```html
 <div class="pb-rank"><span>Tier in AR</span><div class="seg pb-seg " role="group" aria-label="Tier" data-tier="none"><span class="pb-thumb" style="width: 58px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">None</button><button type="button" aria-pressed="false">Best</button><button type="button" aria-pressed="false">Top 3</button><button type="button" aria-pressed="false">Top 4</button
@@ -1999,7 +1999,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-85` · rendered **592×36** · 1 instance look like this
+`C2-85` · rendered **492×36** · 1 instance look like this
 
 ```html
 <div class="pb-imghead"><h4 class="bf-h">Image</h4><div class="seg pb-seg pb-small" role="group" aria-label="Image source"><span class="pb-thumb" style="width: 103px; transform: translateX(3px);"></span><button type="button" aria-pressed="true">Upload or link</button><button type="button" aria-pressed="false">Existing key</button></div></div>
@@ -2066,7 +2066,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-89` · rendered **592×157** · 1 instance look like this
+`C2-89` · rendered **492×157** · 1 instance look like this
 
 ```html
 <div class="pb-drop"><div class="pb-shot" role="img" aria-label="No screenshot yet"><span class="pb-shot-ui"></span></div><div class="pb-dropcol"><div class="dwfield"><label>Screenshot or link</label><div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div></div><div cl
@@ -2075,7 +2075,7 @@ inside `.bf-sec` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .b3-nb .pb-drop · b3/board.css:1146 |
-| grid-template-columns | `200px 1fr` | `200px 376px` | .b3-nb .pb-drop · b3/board.css:1146 |
+| grid-template-columns | `200px 1fr` | `200px 306.094px` | .b3-nb .pb-drop · b3/board.css:1146 |
 | gap | `16px` | `` | .b3-nb .pb-drop · b3/board.css:1146 |
 | column-gap | `16px` | `16px` | .b3-nb .pb-drop · b3/board.css:1146 |
 | row-gap | `16px` | `16px` | .b3-nb .pb-drop · b3/board.css:1146 |
@@ -2164,7 +2164,7 @@ inside `.pb-drop` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-92` · rendered **376×157** · 1 instance look like this
+`C2-92` · rendered **306×157** · 1 instance look like this
 
 ```html
 <div class="pb-dropcol"><div class="dwfield"><label>Screenshot or link</label><div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div></div><div class="dwfield"><label for="nb-key">Key</label><input id="nb-key"></div></div>
@@ -2191,7 +2191,7 @@ inside `.dwfield` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-95` · rendered **376×44** · 1 instance look like this
+`C2-95` · rendered **306×44** · 1 instance look like this
 
 ```html
 <div class="pb-file">⟨svg.ic⟩<input class="pb-link" placeholder="Paste a link, or choose a file"><label class="chip">Choose<input type="file" accept="image/png,image/jpeg,image/webp" hidden=""></label></div>
@@ -2230,7 +2230,7 @@ inside `.pb-file` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-97` · rendered **257×44** · 1 instance look like this
+`C2-97` · rendered **187×44** · 1 instance look like this
 
 ```html
 <input class="pb-link" placeholder="Paste a link, or choose a file">
@@ -2449,7 +2449,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-104` · rendered **978×65** · 1 instance look like this
+`C2-104` · rendered **878×65** · 1 instance look like this
 
 ```html
 <footer class="dw-f"><span class="why blocked" role="status">Still needs a weapon</span><button class="b3-btn2">Cancel</button><button class="b3-btn2" disabled="">Stage and add another</button><button class="b3-btn2 go" disabled="">Stage this MP build</button></footer>
@@ -2499,7 +2499,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | align-self | `center` | `center` | .dw-f .why · app.css:6866 |
 | max-width | `52%` | `52%` | .dw-f .why · app.css:6866 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-right | `auto` | `417.406px` | .dw-f .why · app.css:6866 |
+| margin-right | `auto` | `317.406px` | .dw-f .why · app.css:6866 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-sm)` | `12px` | .dw-f .why · app.css:6866 |
 | font-weight | — | `400` | initial |

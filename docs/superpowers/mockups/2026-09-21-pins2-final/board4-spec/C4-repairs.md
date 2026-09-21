@@ -36,9 +36,9 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `0px` | `0px` | .panel · app.css:723 |
-| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:93 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |

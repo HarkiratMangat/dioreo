@@ -30,20 +30,20 @@ inside `.b1` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| width | `auto` | `1148px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
-| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| max-width | `none` | `none` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `16px` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-top | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-right | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-bottom | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | padding-left | `16px` | `16px` | .b4 .b4-cmp .pb-panel · b4.css:31 |
-| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
-| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:96 |
+| margin | `0` | `` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-top | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-right | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-bottom | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
+| margin-left | `0px` | `0px` | .b4 .b4-cmp .pb-panel · b4.css:99 |
 | border-radius | `var(--rad-3)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background | `var(--paper)` | `` | .b4 .b4-cmp .pb-panel · b4.css:31 |
 | background-color | `` | `rgb(23, 30, 36)` | .b4 .b4-cmp .pb-panel · b4.css:31 |
