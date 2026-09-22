@@ -106,6 +106,19 @@ Roughly 60 turns: about a third went on discovery calls that one evidence batch 
 
 Roughly 60–120 turns across `b4.css`, `b1.css`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/ui/armory.js` (Compare), `local/pins2-board-3/redo/ui/broadcast.js` (PostForm, columns), `local/pins2-board-3/redo/ui/manifest.js` (inline edit), the Export picker code, and `gates4/*`. One interim publish for the shell ruling.
 
+## Reference-comparison audit (2026-09-21 22:01 EDT) — after I wrongly called it "done"
+
+Comparing each built surface to his intake screenshots (not to a code comment) found real defects the earlier passes missed:
+
+| His shot | Defect found | Fix, verified by side-by-side |
+|---|---|---|
+| 109 vs 110 (C2-11) | the bulk editor was a lookalike, not the Export file — the block bar was keyed to `--o` (never coloured, so invisible) and the text had no indent | bar → weapon accent `--c` at left:46px, text indent 22px, textarea +22px so the caret follows. `cmp-review.png` |
+| 113 (C3-1) | K7 made the number toggles rounded-squares but LEFT the weapon chip a pill — still two shapes | weapon chip → rounded-square, one family. `aud-toggles.png` |
+| 117 (C5-2) | my dock formula put the peek at the container bottom, OVER the file's Copy/Download row | keep the 66px footer clearance, ride up only when the stack is short. `peek-full.png` — footer visible below the peek |
+| 108 (C2-7) | the empty image box was `.pb-shot` (a skeleton), which my K12 tile never touched; the `.pb-link` placeholder truncated | `.pb-shot` → a designed dashed tile with the K12 glyph; placeholder → "Paste a link" on Board 4. `img-section.png` |
+
+The lesson (again): I claimed done off a code comment and off resting renders, without putting my work next to his references. Every "done" here is now backed by a side-by-side in `board4-review/`.
+
 ## Progress — pass 1, 2026-09-21 19:27 EDT (local only, not published)
 
 | Class | State | Evidence |
