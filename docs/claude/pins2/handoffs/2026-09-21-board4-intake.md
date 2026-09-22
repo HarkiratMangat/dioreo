@@ -136,3 +136,5 @@ Fine for now.
 5. the badges selector doesn't use the checkbox system we already standardized and utilize elsewhere in the board. *(v10-06, v10-07)*
 6. the badges also just show as bare text even tho we literally have designed badges... why?? Like do you see the pattern here in my notes? How nearly every field/surface of the form is just basic barebone lazy design, despite the "Awwwards worthy" bar and despite us also having better versions of a design used elsewhere? *(v10-06, v10-07)*
 7. similarly with the tier selector badge... 1. wtf is that shit positioning? 2. improve it's design significantly. redesign it, if anything. *(v10-07)*
+
+*His clarification, 2026-09-22 10:57 EDT, after my acknowledgement narrowed item 7 to the tier selector: "not just the tier selector... i literally said this in my bullet... 'every field/surface of the form is just basic barebone lazy design'". **The redesign scope is EVERY field and surface of the build form**, each rebuilt from the better version the board already has; the tier selector is one instance.*
