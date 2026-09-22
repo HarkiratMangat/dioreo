@@ -86,6 +86,12 @@ Full spec: `reference_priority_tier_system` memory. Canonical copy of this legen
 
 ## 🐞 Active Bugs
 
+### Escape in any portal drawer discards the draft without asking `[P1 · XS]`
+
+Found 2026-09-22 15:40 EDT by a flow test on Board 4 (Session 3 of pins batch 2), which writes no portal code, so it is filed for Session 5. `portal/ui/overlay.js` `Drawer` adds its keydown listener once (`useEffect(..., [])`), so the Escape branch calls the `onClose` from the drawer's FIRST render — when every draft is still empty. A filled build, post or edit is thrown away with no "Discard this draft?", while the Close button, which reads the current `onClose`, asks. The board's copy (`local/pins2-board-3/redo/ui/overlay.js`) is fixed with a ref that always holds the current `onClose`; the portal needs the same three lines.
+
+**Verify condition:** open New build in the portal, type a weapon, press Escape: the discard confirm appears and the drawer stays open.
+
 ### Six unique attachment slots are missing from the slot vocabulary `[P1 · S]`
 
 🟡 **HALF OF THIS IS NOW CLOSED ON PROD — 2026-09-17 12:59 EDT.** The six labels reach Mongo: the slot backfill wrote `attachmentSlots` on 130 prod builds with **0 blank entries**, and reading them back finds **Smoothbore** on R9-0 Build 1 · **Bolt** on SP-R 208 Builds 1 and 2 · **Trigger Action** on ARGUS, MACHINE PISTOL and DOBVRA Build 1 · **Bowstring** and **Limb** on CROSSBOW Build 2 · **Guard** on SHORTY Build 1. That works because `attachmentSlots` is a plain array of labels and `scripts/backfillSlotsFromMetadata.js` carries his twelve corrections in `KNOWN_SLOTS`.
