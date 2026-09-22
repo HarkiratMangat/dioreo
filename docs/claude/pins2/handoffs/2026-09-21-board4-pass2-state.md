@@ -3,6 +3,8 @@ kind: record
 status: live
 ---
 
+> **Superseded 2026-09-21 22:44 EDT:** the Opus 5 rework reviewed this cut on renders and rebuilt K6, K7, K8 and K12 by class — see the fix plan's "Pass 2 finished by class" section. The v6 notes below still stand: v6 is live, unrepublished.
+
 # Board 4 — pass 2 + audit, state at compact (2026-09-21 22:16 EDT)
 
 *Written on the Opus 4.8 turn where v6 published and he called the build drawer broken. He is switching back to Opus 5. Read this, then the fix plan `2026-09-21-board4-fixplan.md`, then the intake `2026-09-21-board4-intake.md`.*

@@ -228,3 +228,22 @@ Each is verified with b4states and shots across every section and looked at by e
 Tool routing: codebase-memory for code, read_smart for files, ctx_execute_file for line ranges, ctx_search for prose, ctx_batch_execute running node or python. Never rg, sed, awk or cat for discovery.
 Silent mode, popups only, mega-batch, one heredoc per Bash call, class not instance, Awwwards worthy, nitpicked, never lazy.
 ```
+
+## Pass 2 finished by class — Opus 5 over 4.8's cut (2026-09-21 22:44 EDT; kit `5067d41` + the hover follow-up, local only, v6 not republished)
+
+Every claim below was checked on puppeteer renders with Cloudinary blocked (`board4-review/p2-compare.png`, `p2-export.png`, `p2-drawers.png`), `board4-review/keys.cjs` and `b4states` (`board4-review/states-pass2b.md`).
+
+| Class | What 4.8 left | What is true now |
+|---|---|---|
+| K8 peek | Claimed "verified by computed values"; on a collapsed file it still floated ~330px below the card | Anchors to its own file card: open → above that file's name/Copy/Download row; collapsed → just under the header; clamped to the files viewport; glides between anchors |
+| K6 edit chips | Weapon name in the builds slot (`<em>`), no "Builds n–m", the chip outlived its blocks after ×, and it replaced 3-E's "Editing X" span ungated | The selection bar's markup exactly (dot · name · Builds 1–3 · ×), derived from the text so × removes chip and blocks together; 3-E keeps its span |
+| K7 toggles | Weapon chip and build numbers all one pink square: one shape, no hierarchy; cut builds wore `.pb-cut`, which board 1 uses for another element | Weapon chip = `.b3-sc`, build toggles = the Export picker's `.b3-xr-k` keys; cut = `data-cut` (dashed ring, struck number); measured: every key 38px / 7px radius on the chip's centre line, cut keys included; pressed+hover answers |
+| K7 cards | Grid by count (kept); cards named only the weapon | Each card captioned with its build ("Build 2", or "BAL-27 · 2" across two weapons) above the Discord card, which stays Discord's |
+| K7 landing | A dashed box with the broken-image glyph as decoration (also on the one-build state) | The ghost of a real comparison (a weapon's first three builds, slot by slot, faded — `.b3-xt-ghost`'s recipe), the sentence, suggestions as chips; the glyph is gone from both states |
+| K12 image | "Cloudinary did not return this image —" as the tile's text | One image-off glyph (Lucide, as a mask) + "Image not loaded" + the key as a chip, on every failed image |
+| C2 | The Attachments hint squeezed its heading rule to a stub (mine, from K2); grammar chips broke across lines | The hint sits under its heading; grammar chips never break |
+| Instrument | `b4states` forced `:hover` only, and read a transition's first frame (false NONE on the add-another chip) | Transitions settled before reading; `:focus-visible` and `:active` measured too |
+
+**Still flagged, deliberately or unverified:** GREY on Cancel and the drawer close (the `.b3-btn2` / `.dw-h .x` family hovers on `--hi` board-wide — a family change nobody asked for); NOFOCUS on the close (its focus shows on the word child, which the instrument does not read — unverified); NOACTIVE 11 (no `:active` press style in most families — not in his intake); CENTRE "Code" +5.8px (board 1's gap row, by design).
+
+**Publish:** v6 (4.8's whole-tree upload) is still live and he called it broken. Nothing was republished. The next publish, on his yes, sends only changed files from root `local/pins2-board-3/redo/`.
