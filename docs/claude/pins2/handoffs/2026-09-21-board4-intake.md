@@ -293,3 +293,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 47. and can you change armory manifest weapon row's "x build" text to match the style of the Selection bar's 'by weapon' view's `build x` chip design? including removing the bullet dot that precedes that `x build` text. *(C1 · v10-45)*
 
 **Round closed, 2026-09-22 12:24 EDT** — his words: "Okay that's it for the intake." **47 items.** His instruction for the pass: sequential thinking over every item; "Awwwards worthy" work, "nitpicked, never lazy", "catching the tiny things before i even notice them", "fixing the class, not just patching the instance", "true design adjustments and improvements, not blind patches"; plan the investigation, tools, batching and turns first; ask every fork and question FIRST, then work autonomously to the end.
+
+### His answers to the forks — 2026-09-22 12:30 EDT (popup)
+
+| Fork | His answer | What it means for the pass |
+|---|---|---|
+| Mixed modes | **Per build (Recommended).** | A build's own Mode wins over the drawer switch; one paste restores MP and DMZ together; the switch is the default for builds that do not say; each Add-build card carries its own MP/DMZ. |
+| A build with no badges | *"Keep the line in the UI, but not as "-". Do something much better please."* | My reading: the parsed view ALWAYS shows a Badges row; when empty it is a designed empty state (the badge choices offered, not a dash). In the raw text the badge-less build omits its badge line and the parser recognises badges by their fixed names. |
+| Ends default | *"keep the 60 day default but state it MUCH better in the UI. because honestly, i've been reading "default" and had completely forgotten what it even meant before you asked this question. Or literally auto-select/auto-type whatever date is 60 days following the 'start' date? idk.. think about it and design it nice."* | Keep 60 days. The field shows the real date (60 days after Starts) as its value, marked as the automatic end, so "default" never needs explaining; it follows Starts until he types his own; "Never ends" stays a separate switch. |
+| Publish | **Publish when done (Recommended).** | **Approved by: Harkirat · to: publish Board 4 v11 once, after the whole v10-intake pass is built and verified, with every changed file · when: this popup, 2026-09-22 12:30 EDT.** Nothing is published mid-work. |
+
+*Not asked, carried to his review: whether the new format also replaces the Discord bot's own block format (it reaches bot code, which this board pass does not touch; the board treats it as the portal's paste/export format).*
