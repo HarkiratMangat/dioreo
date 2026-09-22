@@ -251,3 +251,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 32. Including the actual compare cells before, which don't even have any hover-events or any identity or anything to help the user distinguish them apart in anyway. Like everything looks exactly the same monotonic style. Improve and refine it's design. *(v10-26, v10-27, v10-28)*
 
 *Also visible, not in his words (mine): every build tile reads as pressed, so on and off cannot be told apart; with eight builds picked and six columns shown, "2 not shown" never says which two, and no tile shows it; column heads say "Build 2" but never the build's own label ("Close range"); in a two-weapon compare every FFAR cell is amber because it is measured against a BAL-27 baseline, so "differs" stops meaning anything across weapons; "VT-7 Spiritfire Suppressor" runs past its cell's edge (v10-28); and Code is a heading row on its own while the slots are row labels in the same column.*
+
+### Message 9 — 2026-09-22 12:01 EDT · C3 Compare (the one-build panel and the empty landing)
+
+*Screenshots: `v10-29-compare-one-build.webp` (one weapon with one build: "Add a weapon"; the chip "● DL Q33 1 build ×"; centred "DL Q33 has one build" / "Add another sniper to line them up"; three pills "+ LW3-TUNDRA", "+ M21 EBR", "+ 3-LINE RIFLE") · `v10-30-compare-empty-landing.webp` (nothing picked: "Add a weapon"; a faded ghost of a three-column compare table behind; "Pick a weapon" / "Its builds line up slot by slot"; two pills "BAL-27 · 5 builds", "FFAR 1 · 3 builds").*
+
+33. the "one build" panel is so barebone, ugly, and basic. drastically redesign this. *(v10-29)*
+34. the empty landing is still not up to my expectations in design. i like the faded background image you have but all the other surfaces of it, the buttons, the search, the layout, etc is so lazy and poorly designed! *(v10-30)* — **keep:** the faded background image.
+
+*Also visible, not in his words (mine): the two states offer the same action — add a weapon — in two pill grammars ("+ LW3-TUNDRA" against "BAL-27 · 5 builds"); and both centre their message in the panel while the search and the chip sit left, so each screen has two unrelated alignments.*
+
+*His note: "done with the compare panel items, the remaining items will be scattered and not tied to a single topic..."*
