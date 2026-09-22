@@ -191,6 +191,23 @@ Silent mode. Questions in popups. Tool routing by the question. Mega-batch. One 
   - the K2 shell;
   - C7 was held for his comments earlier, and those comments are now in the intake log (C7 1–10).
 
+## v6 IS BROKEN — compact + start prompt (2026-09-21 22:19 EDT) — supersede everything below
+
+Read `2026-09-21-board4-pass2-state.md` FIRST: v6 published and he called the build drawer broken/bugged/"half-ass lazy", "you fucked up more than you corrected." My own renders looked fine to me and were not — do not trust any screenshot I made.
+
+```text
+/compact KEEP: (1) Board 4 v6 (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh) is PUBLISHED and he says the build drawer is BROKEN/bugged/lazy — "fucked up more than corrected." State + recovery: docs/claude/pins2/handoffs/2026-09-21-board4-pass2-state.md (read FIRST). (2) The §0 WORKING CONTRACT is in docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md (linksee anchor #45) — restate as the first thought. (3) His C1-C9 verbatim: 2026-09-21-board4-intake.md; shots in local/pins2-board-3/board4-review/intake/. (4) DO NOT TRUST MY RENDER SHEETS — I judged them fine all session and the published result is broken. Open the PUBLISHED v6 in a fresh web browser tab and look with his eyes, comparing each state to his shots, before changing anything. (5) The whole session's work (K2 K6 K7 K8 K12 + C2 form) is built locally and committed (kit HEAD 5efa239, nothing pushed to GitHub); the changed-vs-v5 files are listed in the state doc. (6) Publish LESSON: publish only the CHANGED files, never re-upload the whole tree (re-uploading vendor/*.mjs is a suspected cause of a mount failure). DISCARD: my screenshot reads, the render-sheet dumps, the tool-routing reminder text.
+```
+
+```text
+/rename Opus5-High · Pins2 S3 Board 4 pass 2 repair · Sep 21
+The Board 4 build drawer is broken on the published v6 and he is right that I over-trusted my own renders all session. Before ANY change:
+1. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-pass2-state.md, then the fixplan's §0, then the intake.
+2. tabs_create + navigate to https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh in a fresh WEB tab, open the New build surface, and LOOK at every drawer state (add, bulk, edit, DMZ) — plus read_console_messages / read_network_requests. Compare to his intake shots 105-112 and to board 1's real drawer. Find what is actually broken; do not trust any screenshot the previous session made.
+3. Only then fix, verified against HIS shots, and republish ONLY the changed files (never the whole tree). Do not publish until he says.
+Silent mode, popups only, mega-batch, tool routing by the question, class not instance.
+```
+
 ## FINAL compact instructions and start prompt (2026-09-21 20:03 EDT) — supersede the two blocks above
 
 ```text
