@@ -53,17 +53,15 @@ unconditional: true
 4. **Plain language.** Natural first-person sentences are welcome; telegraphese is not. A section head is a sentence a non-engineer could read. Bold the verdict and the numbers, nothing else. Each block stands alone — no "as above", no pronoun reaching past its own block.
 5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
 6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
-7. **How the message looks — it reads at a glance.**
-   - **Title:** any message longer than three lines opens with a `#` title that is the verdict, then one short line under it. Sections under it are `##`.
-   - **Headings:** short, plain, named for what is under them ("Where it stands", "The honest limit"), never a template label.
-   - **Paragraphs:** one to three sentences.
-   - **Tables:** one kind of row per table; cells of a few words; a state cell starts with a mark — ✅ done · ⚠️ partly · ❌ not · 📋 filed · ⏳ waiting on him. A status column only when the states DIFFER: a column of identical ✅ says nothing and belongs as a short list.
-   - **Say it once:** never restate a rule or a format back to him, and never repeat in a list what a table just said.
-   - **Bullets:** one line, one claim — **label** — a few words.
-   - **Bold:** the verdict, the key number, and what waits on him. Nothing else.
-   - **Leave out:** file paths, rule and anchor numbers, class and tool names, measurements — unless he needs one to act. They go in the file the message points to.
-   - **Order:** the answer first, then what matters, then what only he can do.
-8. **What it must never look like** (every summary rejected on 2026-09-22 18:04 EDT and before): bullets holding three or four claims joined by semicolons · one table mixing different kinds of rows · table cells written as sentences with bold inside · dense bold-led paragraphs · internal jargon · a pointer to an earlier message instead of saying it again.
+7. **How the message looks — it reads at a glance.** The good samples are built from tables and short paragraphs, with bullets as the exception.
+   - Open any message longer than three lines with a `#` title that is the verdict, then one short line. Sections under it are `##`, each named for what is under it ("Where it stands", "The honest limit"), with space between them so each is told apart at a glance.
+   - The backbone is the table: a header row, one kind of row per table, a few words per cell. A state cell starts with a mark (✅ done · ⚠️ partly · ❌ not · 📋 filed · ⏳ waiting on him), and a status column is used only when the states differ.
+   - The one or two things that matter are short paragraphs of one to three sentences, with bold on the key phrase inside the sentence.
+   - Bullets are for a genuinely flat list only: few, plain, one short line each. A bold label at the head of every bullet is the failure below, not a style.
+   - Use the rest of markdown where it helps reading: `code` for a name he may need, → for a change, a blockquote for an example, a code block for anything structural.
+   - Leave out file paths, rule and anchor numbers, class and tool names and measurements unless he needs one to act; never restate a rule or a format back to him; never repeat in a list what a table just said.
+   - Order: the answer first, then what matters, then what only he can do.
+8. **What it must never look like** (every summary rejected on 2026-09-22): every section built as a list of bold-led bullets — the shape he first named *"bullets on bullets on bullets"*, which survived three rewrites because each rewrite only shortened the bullets · one table mixing different kinds of rows · table cells written as sentences with bold inside · a status column where every row says the same thing · internal jargon · a pointer to an earlier message instead of saying it again.
 
 ### The reference — Harkirat, 2026-09-02 02:29 EDT: *"this is how your summary should have been… clean, organized, structured, easy to read, simple terms, concise/to-the-point"*
 
