@@ -177,3 +177,12 @@ Fine for now.
 19. and wtf is this random faded gradient background/block behind these buttons? it looks so random and odd. *(v10-18)*
 
 *Mine, for the fix pass: item 17 supersedes the "Add another after this" chip that his K2 footer ruling (D2, 2026-09-21 20:43 EDT) asked to be designed, and board 1 G9's "Stage and add another" button with it — adding a build becomes a second form card, and one Stage covers every card. The faded block (item 19) is the dock ground v8 added. And the reason chip showing in the footer at all contradicts the K2 ruling that a build's missing piece sits beside its own field ("the 'still needs a weapon' chip should be near the weapon field"): b4.css hides `.why` in the add panel, but a later, more specific `.why:not(:empty)` rule shows it again.*
+
+### Message 6 — 2026-09-22 11:21 EDT · C2 build drawer (the MP and DMZ attachment fields)
+
+*Screenshots: `v10-19-dmz-attachments.webp` (DMZ: the header's MP/DMZ tiles and Add build / Bulk create segment; "Attachments" with an orange "Needed to stage" pill and an outlined "0 of 9" counter; nine rows named Optic, Muzzle, Barrel, Stock, Laser, Underbarrel, Rear Grip, Ammunition, Perk in upright text, each field "Search <slot>", no remove control) · `v10-20-mp-attachments.png` (MP: "Attachments" with a letter-spaced monospace hint "Paste a code and the slots fill themselves"; rows labelled "Slot 1" to "Slot 5" in grey italics; Slot 1 filled "Monolithic Suppressor" with a bare × floating outside the field on the right; the rest "Type to search").*
+
+20. and why is the actual design of these fields literally different between the MP/DMZ forms? that's a prime example of handcrafting something which is literally shared by it's neighbour. *(v10-19, v10-20)*
+21. not to mention look how shit the actual design of these fields is, and how random and poorly designed that X icon button is. *(v10-20)*
+
+*Also visible, not in his words (mine): the two modes differ in five ways, not one — slot names vs "Slot N", upright vs italic labels (v8 claimed italics were removed), a status pill + counter vs a monospace hint on the heading, "Search optic" vs "Type to search" placeholders, and a remove control on MP only. MP's "Slot 1–5" also drops G9's named-slot rows. "Needed to stage" is one more pill-shaped warning (item 18's class). In v10-19 the header's bottom edge is broken: a faded line under the MP tile and a dark bar under the segment sit at different heights.*
