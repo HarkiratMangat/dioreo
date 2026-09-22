@@ -322,3 +322,5 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | Which surfaces get options | *"all large redesigns"* + Build form fields · Bulk create + Edit · Compare chips + cells · Compare empty + one-build | Every large redesign ships as 2–3 rendered options, switchable on the published board. Smaller fixes (bugs, chip matches, tints, hovers) ship as one finished change. |
 | A new build card starts | **Blank.** | "Add another build" appends an empty card; nothing is copied. |
 | Existing-key search | **Every stored image (Recommended).** | Lists keys builds use (thumbnail + which build) and uploaded images no build uses yet, marked unused. |
+
+**Handled — 2026-09-22 15:46 EDT:** all 47 items are built as v11 / v11.1 / v12; their state, item by item, is the tracker in `docs/claude/pins2/handoffs/2026-09-22-board4-v11-plan.md` §8, and the four forks await his pick.
