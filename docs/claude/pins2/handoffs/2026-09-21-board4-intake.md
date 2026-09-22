@@ -116,4 +116,4 @@ Fine for now.
 
 ## v10 intake round — opened 2026-09-22 10:40 EDT
 
-*His review of the live v10 (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh), recorded verbatim, gate by gate. Nothing is fixed until he says the round is done; then one pass, by class, checking neighbouring elements. The design-debt pass (C2-1/6/8, C2-4/7) waits behind this round.*
+*His review of the live v10 (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh), recorded verbatim in the order he sends them — his scratchpad of thoughts, not gate by gate — each tagged with the gate it concerns (or marked unclear). Questions for him are batched at the END of the round, never asked mid-intake. Nothing is fixed until he says the round is done; then one pass, by class, checking neighbouring elements. The design-debt pass (C2-1/6/8, C2-4/7) waits behind this round.*
