@@ -113,3 +113,7 @@ Fine for now.
 - **Partial:** C2-10/11/12 (half done) · C2-13 (Editing X chips need correcting) · C5-2 (hover card still wrong).
 - **Untouched:** C7-10 (the Ends field is confusing; the drawers need designed hints; hint COPY is Session 4's, the field and hint DESIGN is this pass; the Ends default date is his to rule).
 - **Lead (it was right):** the dead buttons were exactly the ones header C moved.
+
+## v10 intake round — opened 2026-09-22 10:40 EDT
+
+*His review of the live v10 (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh), recorded verbatim, gate by gate. Nothing is fixed until he says the round is done; then one pass, by class, checking neighbouring elements. The design-debt pass (C2-1/6/8, C2-4/7) waits behind this round.*
