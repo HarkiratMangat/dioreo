@@ -92,6 +92,18 @@ Found 2026-09-22 15:40 EDT by a flow test on Board 4 (Session 3 of pins batch 2)
 
 **Verify condition:** open New build in the portal, type a weapon, press Escape: the discard confirm appears and the drawer stays open.
 
+### The loadout preview card says "No image on this build" when a key is set but nothing is uploaded `[P3 · XS]`
+
+Found 2026-09-22 17:42 EDT in the Board 4 v12 critique (Session 3, which writes no portal code). `portal/ui/armory.js` `LoadoutCard` shows its no-gallery note whenever `imageUrl` is empty, so a build whose key is set to the next free key (no upload yet) reads as having no image at all, beside a form that shows the key. Board 4's kit now passes an upload or a link to the preview; the copy for "key set, nothing uploaded" is Session 5's.
+
+**Verify condition:** in the portal's New build drawer, pick a weapon so the key reads the next free key, upload nothing: the preview names the key and says nothing is uploaded under it yet, rather than "no image on this build".
+
+### The post composer counts 112 characters on an empty text `[P3 · XS]`
+
+Found 2026-09-22 17:42 EDT in the same critique: Broadcast's post drawer reads "5,888 of 6,000 left" before anything is typed. Either the count includes text the bot appends (then the counter should say so), or it is wrong.
+
+**Verify condition:** open Post announcement with the text empty: the counter reads 6,000 left, or its label names what the other characters are.
+
 ### Six unique attachment slots are missing from the slot vocabulary `[P1 · S]`
 
 🟡 **HALF OF THIS IS NOW CLOSED ON PROD — 2026-09-17 12:59 EDT.** The six labels reach Mongo: the slot backfill wrote `attachmentSlots` on 130 prod builds with **0 blank entries**, and reading them back finds **Smoothbore** on R9-0 Build 1 · **Bolt** on SP-R 208 Builds 1 and 2 · **Trigger Action** on ARGUS, MACHINE PISTOL and DOBVRA Build 1 · **Bowstring** and **Limb** on CROSSBOW Build 2 · **Guard** on SHORTY Build 1. That works because `attachmentSlots` is a plain array of labels and `scripts/backfillSlotsFromMetadata.js` carries his twelve corrections in `KNOWN_SLOTS`.
