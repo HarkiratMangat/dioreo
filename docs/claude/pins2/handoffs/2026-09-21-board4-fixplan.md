@@ -371,7 +371,7 @@ Caught in the render before publishing: a mask on the drawer scroller hid the he
 - v9 "same line colours as your screenshot 109": judged on a thumbnail, never measured or compared at full size.
 - "Seen" through this session often meant a montage sheet downscaled to ~600px per drawer. That is the script looking, not me.
 
-**v10 carries a change to a surface he reviewed:** scoping the drawer-shell rules also took K2's head off the **Export picker's drawer** (84px with the divider in v7–v9 → 57px with its own 1px rule, looked at full size, `board4-review/r12-export-head.png`). That matches his ruling ("all four drawers": build, bulk, edit, post), but it is a visible change to C5. Say so when v10 is offered.
+**v10 may change a surface he reviewed:** scoping the drawer-shell rules took them off the **Export picker's drawer**. Now measured at 57px with its own 1px rule and looked at full size (`board4-review/r12-export-head.png`, re-shot 2026-09-22 09:02 EDT: the first capture's clip caught the page title, and I had already written this line as "looked at"). The v7 render (`p2-export.png`) shows the same compact head, so the visible change is probably nil, but its v9 height was never measured. His ruling covered "all four drawers" (build, bulk, edit, post), so the Export head following its own rules is correct either way.
 
 **The live v9 he is reviewing still has two regressions**: the "Discard this draft?" dialog's buttons over its sentence, and History's event drawer with the floating footer. Only v10 fixes them.
 
