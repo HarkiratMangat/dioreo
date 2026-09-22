@@ -262,3 +262,20 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 *Also visible, not in his words (mine): the two states offer the same action — add a weapon — in two pill grammars ("+ LW3-TUNDRA" against "BAL-27 · 5 builds"); and both centre their message in the panel while the search and the chip sit left, so each screen has two unrelated alignments.*
 
 *His note: "done with the compare panel items, the remaining items will be scattered and not tied to a single topic..."*
+
+### Message 10 — 2026-09-22 12:14 EDT · mixed: C4 Repairs and C5 the Export picker
+
+*Screenshots: `v10-31-repairs-pass-tile.webp` (Repairs: the JAK-12 "Code disagrees with the build" card; the "Below standard · 2 builds" section label with its icon and rule, over the KILO 141 and PP19 BIZON cards; then the green-bordered "120 builds pass every check" tile with five check tiles and "106 with no edit in 90 days · Show them", following the cards with no section label and tighter spacing) · `v10-32-filename-editing.png` (the filename chip being edited, "jjhkkhkhk.txt", glowing, beside the red "125" count tile) · `v10-33-pick-all-hover.png` ("0 / 35 Pick all" hovered: no tint) · `v10-34-pick-all-active.png` ("35 / 35", the gold checked box, the red category outline) · `v10-35-export-empty-collapsed.png` (a collapsed file card left at "0 MP builds" with Copy and Download disabled) · `v10-36-export-three-files.png` (three files of 23 · 23 · 24 builds whose toggles read Expand · Collapse · Expand, the middle one not open) · `v10-37-export-scroll-cut.png` (the file list scrolled: cards cut hard at the top edge) · `v10-38-list-x-button.png` (the list's small red × on a dark tile, hovered).*
+
+35. better separate the "x builds pass" tile from the above tiles. use the same section label/design used above. same with the spacing used by them. *(C4 · v10-31)*
+36. add an X/checkmark icons in the filename chip when it's being edited. With x closing it and reseting the filename to whatever saved or default state it was in before editing. and checkmark or clicking outside the chip to save it. Integrate those icons/buttons nicely and natively into the chip, they shouldn't feel forced in. *(C5 · v10-32)*
+37. the category "pick all" chip in the export pick builds... panel needs hover event tint to match the category it represents. it already has an 'active' accent state (notice the red outline), it just needs its other hover states implemented. *(C5 · v10-33, v10-34)*
+38. the export list is also bugged... *(C5)*
+    - If it was in the collapsed state when items were selected, then those items are all deselected, it remains in the closed state instead of returning to it's default landing open empty state. *(v10-35)*
+    - also, when multiple (more than 2) lists are created, the lists don't expand. Notice how the toggles says "expand / collapse / expand" yet that middle list isn't even open and won't open. *(v10-36)*
+39. the list's also don't have the scrolling fade effect on the panel's borders, so they get hard cut when they scroll away behind the top/bottom area *(C5 · v10-37)*
+40. and the list's inside X button needs some refining, it's so tiny and out of place right now. just finetune it to fit and look better. *(C5 · v10-38)*
+
+*Also visible, not in his words (mine): item 38b's state and label disagree — the middle card's toggle says Collapse (it believes it is open) while its body is shut, so the toggle's label and the card's height come from two different states; and the orange "3,9xx characters" chips are his own rule working (the chip turns warn near 4,000), not a defect.*
+
+*His note: "more items remain..."*
