@@ -29,7 +29,7 @@ His ask (16:01 EDT): nitpick every surface the v10 intake touched with design-cr
 | 16 | Compare Empty B (shelf) | "Assault rifle" ran under "5 builds"; a first fix truncated it to "Assaul…" | the shelf uses the Armory's short category names (Assault, Marksman) and a tighter tile | `local/pins2-board-3/redo/b4/compare.js`, `local/pins2-board-3/redo/b4/compare.css` |
 | 17 | Compare one build (clarify) | Placeholder "Search Sniper" | "Find another sniper" | `local/pins2-board-3/redo/b4/compare.js` |
 
-Gates: `node --check` on the three JS files, `b4/bulkformat.test.mjs` (round trip holds, 4 broken writers caught), the impeccable detector on the three stylesheets (no findings). Console: one 404, the page's `favicon.ico`, nothing else.
+Gates: `node --check` on the three JS files, `local/pins2-board-3/redo/b4/bulkformat.test.mjs` (round trip holds, 4 broken writers caught), the impeccable detector on the three stylesheets (no findings). Console: one 404, the page's `favicon.ico`, nothing else.
 
 ## Seen and not changed, with the reason
 
