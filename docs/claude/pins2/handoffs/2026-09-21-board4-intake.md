@@ -313,3 +313,12 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | Format scope | **Everywhere (Recommended).** | One format for the portal's Export, Bulk create AND the Discord bot. The board builds the portal half; Session 5 ports the parser and writer to the bot, so a backup restores anywhere. Export's "the bot's own block format" stays true. |
 | Designs | *"options.. rendered as forks i can view in the published board"* | The big redesigns are built as 2–3 OPTIONS each, switchable on the published board, for his pick — not one finished design each. Board 4 stops being "no switches" on those surfaces. |
 | Publish | *"Publish v11. Also any other questions? I'd rather you ask than assume."* | The 12:30 approval stands. More questions are asked before building. |
+
+### His answers to a third popup — 2026-09-22 13:08 EDT
+
+| Fork | His answer | What it means for the pass |
+|---|---|---|
+| The other session (logged 12:24, forks 12:30, no kit edits since) | **Stopped, build here.** | This session builds the whole pass and honours the 12:30 answers too (a designed empty Badges row; Ends shows the real date 60 days after Starts). |
+| Which surfaces get options | *"all large redesigns"* + Build form fields · Bulk create + Edit · Compare chips + cells · Compare empty + one-build | Every large redesign ships as 2–3 rendered options, switchable on the published board. Smaller fixes (bugs, chip matches, tints, hovers) ship as one finished change. |
+| A new build card starts | **Blank.** | "Add another build" appends an empty card; nothing is copied. |
+| Existing-key search | **Every stored image (Recommended).** | Lists keys builds use (thumbnail + which build) and uploaded images no build uses yet, marked unused. |
