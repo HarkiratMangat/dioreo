@@ -270,8 +270,15 @@ v7 (23:07 EDT, his yes at 23:05 EDT) carries pass 2 by class and the dead header
 | 2 | Mesh | The build drawer's ground follows the Category select, both hues; the Post drawer takes the Broadcast hue (was a fixed pair) | AR → #ff3b5c, SMG → #ffd23f, Sniper → #4361ee |
 | 3 | Header C + footer D2 finish | One 40px height for every control in the header row; G9's mono eyebrow; the dock sits on its own soft ground; the scroller ends on air | Heights 40/40/40 (close 28) |
 | 4 | Form surfaces | G9's tinted "BUILD n" block restored (4.8 had flattened it); no italic in any drawer; a heading's hint inline as in G9, wrapping only when a need chip crowds it; the empty preview is a faded real card (one empty-state class with Compare); a Filled state on the head switch | Filled render matches G9's arrangement |
-| 5 | Bulk list | Unchanged this round beyond the hint treatment (grammar line) — still pass 3's K5 | Not yet compared against 109/110 again |
+| 5 | Bulk list | **Done in v9 (2026-09-21 23:52 EDT), below** | Side by side with 109/110 in `board4-review/r10-bulk.png` |
 | 6 | Ends + hints | Placeholder says what leaving it empty does; every echo and hint takes the p10 "state" treatment | The default date rule is still his |
 | 7 | Grey hover family | The neutral control family hovers with ink and a ring, no fill, board-wide; hued controls and rows untouched | b4states GREY: 0 on hover everywhere; the remaining flags are pressed "All" chips and the List toggle resting on grey (board 2's ruling) |
 
 Caught in the render before publishing: a mask on the drawer scroller hid the header controls it carries, and the Filled state typed into the drawer being replaced. Both fixed.
+
+## v9 published — the bulk list pass (2026-09-21 23:52 EDT; kit `1c2d89f`, his yes at 23:48 EDT)
+
+- **The grammar stays visible while you type** (C2-10). After the last line, the rest of the current block's shape is drawn faded (Build, Code, Badges, an attachment), and the next line is the brightest. An empty list shows the whole template. It is overlay only: the Stage counts are unchanged with it (0 / 3 / 2 / 1 across the scenarios), and the caret lands where typed.
+- **Marks in place:** an attachment the armory doesn't know gets a dotted warn underline on its own line (matching the orange in the result list). The block being typed is not marked as an error while its ghost is showing.
+- **The Export file's line roles** (C2-11, against 109): key in ink3, value ink2, attachment ink with its dash in ink4, and a solid 3px rail.
+- **Scenarios** (C2-12): empty, typing, one, several, warning, can't read.
