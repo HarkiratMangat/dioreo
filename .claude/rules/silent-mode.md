@@ -53,8 +53,8 @@ unconditional: true
 4. **Plain language.** Natural first-person sentences are welcome; telegraphese is not. A section head is a sentence a non-engineer could read. Bold the verdict and the numbers, nothing else. Each block stands alone — no "as above", no pronoun reaching past its own block.
 5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
 6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
-7. **Structure — the reader navigates by headings.** Added 2026-09-22 17:49 EDT, after two summaries in a row broke it. The title is the verdict; one line under it carries the key number. Then `##` sections, each a plain sentence and each holding ONE kind of content, in this order: the structured part as one table whose rows are all the same kind (all fixes, or all claims against the truth — never fixes, wrong claims, filings and memory work mixed in one table); **The two that matter**, as numbered bold leads followed by plain sentences; **Also**, one-line bullets with one claim each and no bold lead; **Where that leaves it**, the next action; then a bold bottom line. Scanning only the headings must tell him what is in the message.
-8. **The two failures this rule exists for**, both 2026-09-22: a wall of bold-led bullets, each holding three or four claims joined by semicolons (*"Bullets on bullets on bullets"*); and one table of everything with two bold paragraphs above it and no headings (*"this one's not any better"*). A bullet with a semicolon, a second claim or a bold lead belongs in a table row or under its own heading. Never point at an earlier message ("as above", "in my previous message") — each message stands alone.
+7. **A summary is organised around HIS questions, in plain words** (rewritten 2026-09-22 17:52 EDT after three rejected summaries). A status or wrap-up answers, each under a short plain heading: what this was, in one or two sentences · where things stand, as a small table with a few plain words per cell · what I'd do next, numbered, one short line each · what only he can do, as bullets he can act on. An audit of my own claims uses the claimed-against-true shape below; a status uses the 2026-09-16 shape below — never the audit's headings for a status. Leave out of the message: file paths, class names, anchor and rule numbers, measurements and tool names, unless he needs one to act; they go in the file the message points to. Spacing and short cells are the point: he should find any answer by scanning the headings.
+8. **The failures this rule exists for, all 2026-09-22:** a wall of bold-led bullets, each holding three or four claims joined by semicolons (*"Bullets on bullets on bullets"*); one table mixing fixes, wrong claims and filings under two bold paragraphs (*"this one's not any better"*); and a status written in the audit's headings, dense with jargon — "anchor #51", "rules 26–28", `.f-src` — and about my mistakes rather than his next move (*"it's better but still not it"*). Never point at an earlier message; each message stands alone.
 
 ### The reference — Harkirat, 2026-09-02 02:29 EDT: *"this is how your summary should have been… clean, organized, structured, easy to read, simple terms, concise/to-the-point"*
 
@@ -99,7 +99,46 @@ Both documents need a rewrite. The plan's main task should be **deleted and repl
 Rewriting now unless you'd rather push it to the fresh session.
 ```
 
-What makes it work: headed sections a reader can scan · a verdict in the title · one table carrying one kind of row · the two things that matter, numbered, in plain first-person sentences · the rest as one-line bullets, one claim each · where that leaves it · a bottom line · the next action. About 1,500 characters. It is not a table of everything and it is not telegraphese.
+What makes it work: headed sections a reader can scan · a verdict in the title · one table carrying one kind of row · the two things that matter, numbered, in plain first-person sentences · the rest as one-line bullets, one claim each · where that leaves it · a bottom line · the next action.
+
+### The second reference — a STATUS, Harkirat 2026-09-16 13:47 EDT: *"THIS is a good summary — clean, spaced out, easy to navigate, easy to distinguish the sections at a glance, organized, concise, simple terms!"*
+
+His screenshot is `docs/reference/silent-summary/good-2026-09-16.webp` (the one he rejected the night before, dense with measurements and jargon, is `rejected-2026-09-16.webp` beside it). The message, transcribed:
+
+```markdown
+Morning. Here's the picture.
+
+## This session's job
+Take your 57 review pins from yesterday, turn each one into either **a decision you make** or **a document the build session follows**. No portal code gets written here — that's session 5.
+
+## Where the 57 pins went
+| Bucket | Count | Status |
+|---|---|---|
+| Decisions for you → board 3 | 13 forks | **waiting on you** |
+| Documents for the build session | 12 | 10 written, 2 open |
+| Already settled / session 4's | rest | filed |
+
+## Plan steps
+| Step | What | State |
+|---|---|---|
+| 1–4 | Triage, board 3, the rebuild | ✅ done |
+| **5** | **You review board 3** | **your move** |
+| 6 | Port documents | 10 of 12 |
+| 7 | Mark all 57 pins as handled | mine, mechanical |
+| 8 | Close out: 2 prod writes, then push/PR/merge | **needs your OK** |
+
+## What I'd do next, in order
+1. **Step 7** — mark the pins. Pure bookkeeping, no decisions.
+2. **Pins 32 and 46** — the two unfinished documents. Both just need me to look at a rendered page.
+3. Then Step 8, which stops at you.
+
+## What only you can do
+- **Open board 3** and pick the 13 forks → Design board 3
+- Your 14 old comments need **"Send to Claude"** before I can reply to them
+- Approve the prod writes, then push/PR/merge
+```
+
+What makes it work: every heading is a question he has; the tables hold three or four plain words per cell; bold marks only what waits on him; nothing in it needs the repo to understand. (Its closing question was prose; here it goes in a popup.) About 1,500 characters. It is not a table of everything and it is not telegraphese.
 
 ### Two more shapes, in miniature
 
