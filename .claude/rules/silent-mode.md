@@ -53,6 +53,8 @@ unconditional: true
 4. **Plain language.** Natural first-person sentences are welcome; telegraphese is not. A section head is a sentence a non-engineer could read. Bold the verdict and the numbers, nothing else. Each block stands alone — no "as above", no pronoun reaching past its own block.
 5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
 6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
+7. **Structure — the reader navigates by headings.** Added 2026-09-22 17:49 EDT, after two summaries in a row broke it. The title is the verdict; one line under it carries the key number. Then `##` sections, each a plain sentence and each holding ONE kind of content, in this order: the structured part as one table whose rows are all the same kind (all fixes, or all claims against the truth — never fixes, wrong claims, filings and memory work mixed in one table); **The two that matter**, as numbered bold leads followed by plain sentences; **Also**, one-line bullets with one claim each and no bold lead; **Where that leaves it**, the next action; then a bold bottom line. Scanning only the headings must tell him what is in the message.
+8. **The two failures this rule exists for**, both 2026-09-22: a wall of bold-led bullets, each holding three or four claims joined by semicolons (*"Bullets on bullets on bullets"*); and one table of everything with two bold paragraphs above it and no headings (*"this one's not any better"*). A bullet with a semicolon, a second claim or a bold lead belongs in a table row or under its own heading. Never point at an earlier message ("as above", "in my previous message") — each message stands alone.
 
 ### The reference — Harkirat, 2026-09-02 02:29 EDT: *"this is how your summary should have been… clean, organized, structured, easy to read, simple terms, concise/to-the-point"*
 
@@ -97,7 +99,7 @@ Both documents need a rewrite. The plan's main task should be **deleted and repl
 Rewriting now unless you'd rather push it to the fresh session.
 ```
 
-What makes it work: a verdict in the title · one table carrying the structured part · the two things that matter in plain first-person sentences · the rest as one-line bullets · a bottom line · the next action. About 1,500 characters. It is not a table of everything and it is not telegraphese.
+What makes it work: headed sections a reader can scan · a verdict in the title · one table carrying one kind of row · the two things that matter, numbered, in plain first-person sentences · the rest as one-line bullets, one claim each · where that leaves it · a bottom line · the next action. About 1,500 characters. It is not a table of everything and it is not telegraphese.
 
 ### Two more shapes, in miniature
 
