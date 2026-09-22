@@ -1419,6 +1419,8 @@ rg -n '^### ' docs/db-deferred-list.md | rg -v '✅|CLOSED|DECIDED-NO|🚫|SUPER
 
 **Do:** drain the distill queue and re-home the 42. **Verify:** the SessionStart banner's two counts both read 0.
 
+*2026-09-22 09:54 EDT: the counts in this heading are from 2026-09-06. The SessionStart banner of 2026-09-22 read 11 awaiting distil and 62 misfiled. The Board 4 plan cleaned only what it recalls (14 memories distilled, eight anchors superseded; record in `docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md` → "Linksee clean-up for this plan"). The misfiling is untouched; the pins2 session prompts sit under a path-derived "Lightning" entity.*
+
 ### `[P2 · S · Opus5-High]` linksee's ANCHOR set has three separate faults, and together they make the useful anchors unreadable
 
 *Filed 2026-09-19 22:42 EDT, after auditing all 32 anchors during a compact prep. The server and hooks are correctly wired — `PreToolUse` + `SessionStart` guard and a `Stop` sync in `~/.claude/settings.json`, server on the binary `/opt/homebrew/bin/linksee-memory` v0.16.1, `npx` resolving to the same 0.16.1 so there is no version skew, ~0.54s per guard call. **The configuration is fine; the CONTENT is the problem.**

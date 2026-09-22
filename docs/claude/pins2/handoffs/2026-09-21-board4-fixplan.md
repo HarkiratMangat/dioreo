@@ -11,7 +11,7 @@ status: live
 
 *Harkirat, 2026-09-21 19:58 EDT: "I don't want drift with the next session's compliance." Every compact this session drifted within about ten turns ("CORRECT RIGHT NOW", "your plan is shit, it's a loop", "COMPLIANCE DRIFT", "YOU'RE DRIFTING", "ASK BETTER SEQUENTIAL-THINKING QUESTIONS"), because the rules arrived as a sentence and the task as a table, and the table won. So the rules are written here as CALLS, and the start prompt makes you restate them before you act.*
 
-**Tool routing: the question decides the call (linksee anchor #45 encodes this whole contract; #35 is the older routing anchor)**
+**Tool routing: the question decides the call (linksee anchor #48 encodes this whole contract — it superseded #45 on 2026-09-22 09:54 EDT; #35 is the older routing anchor)**
 
 | The question | The call | Never |
 |---|---|---|
@@ -21,15 +21,15 @@ status: live
 | A whole file | `mcp__linksee__read_smart` (first read too) | cat, Read |
 | A question about prose (records, rulings, handoffs, specs) | `ctx_search` | rg |
 | Several gathers at once | ONE `ctx_batch_execute` whose commands run node or python, with `queries` attached | awk/grep/sed inside it (he named this one: "rg inside of context mode") |
-| The rendered page | puppeteer (`b4states.cjs`, `shots.cjs`) or the chrome-devtools CLI | reasoning about CSS instead of looking |
+| The rendered page | puppeteer (`b4states.cjs`, `shots.cjs`) or the chrome-devtools CLI | reasoning about CSS instead of looking; the in-app browser pane ("you have /chrome-devtools-mcp:chrome-devtools-cli why are you using the in-app browser?", 2026-09-21) |
 | rg / fd | Only for ONE known literal in a path no index covers, and say why | — |
 
 The harness's auto-mode text recommending cat/grep/sed LOSES to this table. The "say what you're doing" nudge LOSES to silent mode: zero mid-run prose.
 
 **Working style**
-- **Silent mode.** Zero prose between the first call and the final message; questions only in `AskUserQuestion` popups; the final message follows the Silent contract (≤ 25 lines, verdict first, one table per section, plain sentences, never "done").
-- **Mega-batch.** Independent calls share one message. Every multi-place edit is ONE `python3` heredoc (assert each anchor, print each edit, verifier chained with `&&`, timestamps COMPUTED). Never two heredocs on one command line: bash feeds their bodies in command-line order, and that broke twice.
-- **Turn budget.** ≤ 12 turns per pass (the table in "Turn budget"). Pass 1 took about 60 and he called that unacceptable.
+- **Silent mode.** Zero prose between the first call and the final message; questions only in `AskUserQuestion` popups; the final message follows the Silent contract (≤ 25 lines, verdict first, one table per section, plain sentences, never "done") and is **checked against it before it is sent**: he had to ask for that shape by hand three times on 2026-09-21→22 ("EVERY SINGLE TIME i have to manually ask you").
+- **Mega-batch.** Independent calls share one message. Every multi-place edit is ONE `python3` heredoc (assert each anchor, print each edit, verifier chained with `&&`, timestamps COMPUTED). Never two heredocs on one command line: bash feeds their bodies in command-line order, and that broke twice. **Every command after a heredoc goes on the same line, joined with `&&`**: on 2026-09-22 a failed assert did not stop the next line's commit, and a follow-up commit had to correct it.
+- **Turn budget.** ~~≤ 12 turns per pass~~ → **under 10 turns per request**: his 22:26 EDT bar on the next line supersedes the 19:55 EDT table in "Turn budget" (corrected 2026-09-22 09:54 EDT; anchor #48 carries the same number). Pass 1 took about 60 and he called that unacceptable.
 - **His latest bar (2026-09-21 22:26 EDT): "i want them done in under 10 turns."** That session took ~14. Budget ≤ 10 per request, and say the count honestly when it is over.
 - **Sequential thinking, pre-emptive and harsh.** Run it BEFORE work, not after. Probing questions, not sorting: what am I claiming that I have not seen, what will he find in 5 seconds, what is the class behind this instance, which ruling already answers this, what did the last round get wrong. One thought is never a pass.
 - **Class, not instance.** A fix names its class, is applied to every instance on the board, and is checked on the elements beside it. C4, C6 and C8 are "fine": any change there is a regression unless it is the same class, deliberately.
@@ -134,7 +134,7 @@ The lesson (again): I claimed done off a code comment and off resting renders, w
 | K6 Editing-X chips | **Built, pass 2.** "Editing X" is the selection bar's `.b3-sc` chip, one per weapon with ×, and × strips that weapon's blocks from the editor (`removeWeapon`) | `board4-review/k7/c2-editchips.png` |
 | K12 image fallback | **Built, pass 2.** A designed tile at the image's proportion (16/9, dashed, a CSS-drawn broken-image glyph, the key in mono) on Compare's cards and the New-build preview; CSS-only under `.b4`, so 3-E is untouched | in the K7 card sheet |
 | K3 C2 form surfaces | **Built (2026-09-21 21:42 EDT).** The native Category `<select>` takes the combobox's chevron and drops the OS arrow (one field family with the Weapon combobox); placeholders lost their italic; the "BUILD n" label prefix is a quiet chip, not a pink block | `board4-review/c2-review.png` |
-| K4 mesh | **Already dynamic.** Add lights the mesh from the picked weapon's accent, Bulk from the parsed blocks' — the `hueList` effect in `b3/drawer.js`, no change needed this pass |
+| K4 mesh | **Already dynamic.** Add lights the mesh from the picked weapon's accent, Bulk from the parsed blocks' — the `hueList` effect in `local/pins2-board-3/redo/b3/drawer.js`, no change needed this pass |
 | K5 bulk list + C2-10/12 | **Built.** The bulk editor already renders the Export file's `.b3-xt-ln` rows; added a standing grammar legend so the shape survives the first keypress, and board-chrome prefill states (Bulk · empty / one / several) that fill the list with real builds and light the tally | `board4-review/c2-review.png` "Bulk · several" — 3 builds, tally 3 new, export-style rows |
 | C7-10 drawer hints | **Deferred to Session 4** by the plan's own fact ("hint COPY stays Session 4's"). The Ends field's treatment is in place; the wording is S4's | — |
 
@@ -243,7 +243,7 @@ Silent mode, popups only, mega-batch, one heredoc per Bash call, class not insta
 > ⚠️ Stale in part (2026-09-22 08:55 EDT): its "Still flagged" GREY on Cancel/close was fixed in v8, and the v8 fix itself was corrected in the prep.
 
 
-Every claim below was checked on puppeteer renders with Cloudinary blocked (`board4-review/p2-compare.png`, `p2-export.png`, `p2-drawers.png`), `board4-review/keys.cjs` and `b4states` (`board4-review/states-pass2b.md`).
+Every claim below was checked on puppeteer renders with Cloudinary blocked (`board4-review/p2-compare.png`, `p2-export.png`, `p2-drawers.png`), `board4-review/keys.cjs` and `b4states` (`local/pins2-board-3/board4-review/states-pass2b.md`).
 
 | Class | What 4.8 left | What is true now |
 |---|---|---|
@@ -384,3 +384,20 @@ Carried verbatim in the session's last message; the start prompt makes the next 
 
 ### v10 published (2026-09-22 09:04 EDT, his popup yes: "publish it and update your compact prep with it accordingly")
 Only `b4.css` and the page went up (kit `bf176f4`); the live `b4.css` matches the local file's size (49,900 bytes). **The two v9 regressions are fixed on the live board**: the "Discard this draft?" dialog and History's event drawer are back to their own layout, and open toggles keep their hover. Every "local, unpublished" line above now means "live in v10". The design debt and the never-looked-at list are unchanged.
+
+### Linksee clean-up for this plan (2026-09-22 09:54 EDT)
+
+*His words: "clean up some of the more imminent items that directly effect this plan and its work so they're not assumed as truth… That includes the 'resolve drift' stuff for the stale anchors." Only what this plan's sessions recall was cleaned. The store-wide clean-up stays queued in `docs/db-deferred-list.md` → 🗂️ Queued → "linksee's store carries … raw utterances and … misfiled entities".*
+
+| What | It said | Now |
+|---|---|---|
+| Anchors #21, #22, #36, #40 | each named a Board 3 artifact as "the only publish target", or held 3-E back "until his round is done" | superseded by **#47**: Board 4 is the only live board; 3-A…3-E are never published again; Board 4 publishes only on his yes, from root `redo/`, with every changed file |
+| Anchor #45 (the contract) | "at most 12 turns"; no pane, summary or `&&` rule | superseded by **#48**: under 10 turns, chrome-devtools CLI not the pane, the summary checked before sending, `&&` after heredocs. §0 above now says the same |
+| Anchor #39 (H1's intake-then-fix order) | a finished phase that read as the next step | superseded by **#48**; History is C8, still governed by the constraint table (#43) |
+| Anchor #41 | a copy of #43 that the startup brief kept listing | superseded by **#43** |
+| Anchor #16 (the 18 Access pins) | `local/portal-sync-notes` (retired name), which no longer exists | re-declared as **#49** with `docs/portal/portal-sync-notes.md`; both boundary pins checked present |
+| Fork #17 (Board 3 v1 "awaits his choices") | listed as open at every session start | dismissed: resolved through 3-A…3-E; FINAL.md cites the resolved specs |
+| State memories 61767, 61770, 61771, 61824, 61673, 58285, 61765, 61769, 61763, 49705 | v5/v6 state, "publish only after passes 2–3", a vendor-MIME theory, "awaits his yes", the old pin-log path | rewritten to the v10 state; the MIME theory marked disproved; finished phases `done` or `superseded` |
+| Auto-captured 61570, 61612, 61613, 61615–61618, 61624, 61626, 61660, 61832, 61836, 61837 | raw session prompts recallable as instructions | each rewritten into one decision or lesson with `"distilled": true`, or `superseded` where it held none; 61616 folded into 61837 ("are you sure?", twice) |
+
+**Left queued, deliberately:** the path-derived entity misfiling (the pins2 prompts sit under "Lightning"; recall by `query` still finds them) · forks #2, #3, #4, #11, #12, which belong to other plans · distil items 49667 and 47337 (another plan, another repo) · anchor #35's `escalate_to_hard` suggestion, declined because harden is never used.

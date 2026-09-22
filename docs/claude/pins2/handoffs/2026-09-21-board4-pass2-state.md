@@ -26,7 +26,7 @@ He is looking at the **published v6** (https://claude.ai/artifact/FCAFvDXrKQN28S
 
 ## The publish LESSON regardless
 
-Never re-upload an artifact's whole tree to change a few files — **publish only the changed files**; the host keeps the rest. The files changed vs v5 are: `b4.css`, `gates4/main.js`, `gates4/surfaces.js`, `ui/manifest.js`, `ui/broadcast.js`, `ui/armory.js`, `b3/armory-parts.js`, `b3/history.js`, `b3/drawer.js`, `gates/armory.js`, `gates/history.js`, `b1.css`, `board4.html`.
+Never re-upload an artifact's whole tree to change a few files — **publish only the changed files**; the host keeps the rest. The files changed vs v5 are: `b4.css`, `local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/ui/manifest.js`, `local/pins2-board-3/redo/ui/broadcast.js`, `local/pins2-board-3/redo/ui/armory.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/b3/history.js`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/gates/armory.js`, `local/pins2-board-3/redo/gates/history.js`, `b1.css`, `board4.html`.
 
 ## What was BUILT this session (local, committed; kit HEAD `5efa239`, nothing pushed) — built, NOT confirmed good
 
