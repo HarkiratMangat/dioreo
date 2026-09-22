@@ -167,3 +167,13 @@ Fine for now.
 16. or shit like how the label field's glow is literally cut off/bugged, meanwhile some other fields don't even have a glow or anything when they're active/being typed in. *(v10-17)*
 
 *Also visible, not in his words (mine): the pressed "Best" is dark text on a muted fill, a contrast failure, and board 1 G9's own rule is that the tier takes its tier's colour — gold for Best, blue fading through Top 3–5 — which the pressed state ignores; the Label input shows the browser's spell-check underline on a build label.*
+
+### Message 5 — 2026-09-22 11:18 EDT · C2 build drawer (adding another build, the reason chip, the footer's ground)
+
+*Screenshot: `v10-18-footer-dock.png` (the footer: an orange pill "● Still needs at least one attachment", a "+ Add another after this" pill toggle, Cancel and a disabled green "Stage this MP build", all sitting on a faded rounded gradient block).*
+
+17. make the "add another after this" toggle a button or some sort of thing under the form. Where it basically created another form. This way multiple builds can be created and the "stage" button works for all of them. If another form is added, enclose each form in a border/card (such as the one used to hold the tiles in the Export Pick builds... panel). *(v10-18)*
+18. and why is this "still needs at least one attachment" warning chip a brand new design when we already have a design for warning chips (not the hazard one... that's a 'problem' chip, but rather the fact that all hint/info chips have been rectangle shaped, such as the "Never" chip used by the broadcast card)? *(v10-18)*
+19. and wtf is this random faded gradient background/block behind these buttons? it looks so random and odd. *(v10-18)*
+
+*Mine, for the fix pass: item 17 supersedes the "Add another after this" chip that his K2 footer ruling (D2, 2026-09-21 20:43 EDT) asked to be designed, and board 1 G9's "Stage and add another" button with it — adding a build becomes a second form card, and one Stage covers every card. The faded block (item 19) is the dock ground v8 added. And the reason chip showing in the footer at all contradicts the K2 ruling that a build's missing piece sits beside its own field ("the 'still needs a weapon' chip should be near the weapon field"): b4.css hides `.why` in the add panel, but a later, more specific `.why:not(:empty)` rule shows it again.*
