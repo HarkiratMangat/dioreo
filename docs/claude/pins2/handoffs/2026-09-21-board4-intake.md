@@ -117,3 +117,14 @@ Fine for now.
 ## v10 intake round — opened 2026-09-22 10:40 EDT
 
 *His review of the live v10 (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh), recorded verbatim in the order he sends them — his scratchpad of thoughts, not gate by gate — each tagged with the gate it concerns (or marked unclear). Questions for him are batched at the END of the round, never asked mid-intake. Nothing is fixed until he says the round is done; then one pass, by class, checking neighbouring elements. The design-debt pass (C2-1/6/8, C2-4/7) waits behind this round.*
+
+### Message 1 — 2026-09-22 10:49 EDT · C2 build drawer (Add build: the image section and the fields)
+
+*Screenshots copied to `local/pins2-board-3/board4-review/intake/`: `v10-01-image-placeholder.png` (the empty image preview: a dashed frame with a second frame nested inside it, the broken-image icon centred) · `v10-02-file-uploaded.png` (the row after an upload: image icon, the filename wrapping to two lines, "81 KB" stacked on two lines, a Replace pill) · `v10-03-paste-link-field.png` (a bar holding the icon, an inner "Paste a link" input box and a Choose pill) · `v10-04-existing-key-empty.png` (the Upload or link / Existing key segment, and an empty Key field with placeholder "BAL-27-1") · `v10-05-existing-key-filled.png` (the Key field filled with "BAL-27-6").*
+
+1. correct this placeholder image in the build drawer. *(v10-01)*
+2. the attach file/link field in the build drawer shows a bar inside of a bar. and look at how bad the field looks when an image is uploaded. Please correct that and significantly improve it's design. *(v10-02, v10-03)*
+3. the 'existing key' field needs a search/autocomplete/fuzzy system based on the keys already stored in the system because i don't remember the key to type. And going and looking for it in cloudinary kind of defeats the purpose of the helpfulness of the portal. *(v10-04)*
+4. the key field also needs improvement so when the key is auto created or when an existing one is used. in-fact, ALL of the fields in the drawer/form need drastic design improvements. They're so basic, barebone, and nothing about them is useful or "awwwards worthy". *(v10-04, v10-05)*
+
+*His note: "just fyi, these next several intake items are all going to be on the Build drawer. i'll let you know when the intake topic shifts to another item."*
