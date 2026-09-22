@@ -140,6 +140,22 @@ Take your 57 review pins from yesterday, turn each one into either **a decision 
 
 What makes it work: every heading is a question he has; the tables hold three or four plain words per cell; bold marks only what waits on him; nothing in it needs the repo to understand. (Its closing question was prose; here it goes in a popup.) About 1,500 characters. It is not a table of everything and it is not telegraphese.
 
+### The samples — LOOK AT THEM before writing a long final message
+
+*Added 2026-09-22 18:01 EDT. These screenshots were collected when this style was first written, in `local/output-style-samples/` (**ok-1 … ok-5** good, **bad-1 … bad-7** bad), and until now nothing here pointed at them; four summaries in a row were then rejected on 2026-09-22 by a session that had never opened them. The good five are also tracked as `docs/reference/silent-summary/ok-1.webp … ok-5.webp`.*
+
+| Sample | What it is | What makes it good |
+|---|---|---|
+| ok-1 | a findings report | each table is ONE list (Agent A's findings, Agent B's); a # column; the disposition cell **starts with a status mark** (✅ fixed · 📋 filed) and then a few words; one bold-led closing paragraph for the one new thing |
+| ok-2 | an audit | the claimed-against-true table, "the two that matter", "also", "where that leaves it" (transcribed above) |
+| ok-3 | a release state | the verdict with a ✅ in the title; a label/value table; a tiny second table; bullets shaped **label** — what → **result** |
+| ok-4 | an answer with a proposal | bold one-line verdict first; the template in a code block; a short example; short headed sections ("The honest limit") |
+| ok-5 | an explanation | "The mechanics, plainly"; a small diagram in a code block; examples side by side; "The catch, in one line" |
+
+What all five share: short plain headings specific to the content · paragraphs of one to three sentences · table cells of a few words, a status mark leading any state cell · bullets of one line, **bold label** — short explanation · bold only on the key phrase · a code block when the thing is structural · generous spacing.
+
+What the bad seven share: narration between tool calls (bad-1) · cells written as sentences with bold inside them, dense bold-led paragraphs, dot-separated run-on lists and internal jargon (bad-6) — the shape of every summary rejected on 2026-09-22.
+
 ### Two more shapes, in miniature
 
 **State of a branch or job** — a label/value table, verdict in the heading, then one line of what is next:
