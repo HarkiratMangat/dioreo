@@ -279,3 +279,17 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 *Also visible, not in his words (mine): item 38b's state and label disagree — the middle card's toggle says Collapse (it believes it is open) while its body is shut, so the toggle's label and the card's height come from two different states; and the orange "3,9xx characters" chips are his own rule working (the chip turns warn near 4,000), not a defect.*
 
 *His note: "more items remain..."*
+
+### Message 11 — 2026-09-22 12:24 EDT · mixed: toggles and tints, chips, the problem popup, the manifest row
+
+*Screenshots: `v10-39-broadcast-view-toggle.png` (Broadcast's "Delivery queue / Airtime" toggle, the pressed side a muted mauve fill and border) · `v10-40-armory-view-toggle.webp` (Armory's "Tier board / Compare" toggle, pressed side a neutral dark fill, no tint; "5 Repairs NEED WORK" on the right) · `v10-41-state-chips.png` (STATE chips: "All 4" pressed in neutral grey, "Live now 1", "Upcoming 0", "Ended 3") · `v10-42-never-chip.png` (the "∞ Never" chip: small-radius rectangle, orange outline, mono text) · `v10-43-blocks-sharing-chip.png` ("Blocks sharing" heading with a full-pill "3 builds" chip) · `v10-44-problem-popup.png` (the problem popup: "PP19 BIZON" mono eyebrow over "Build 3", "Open build ↗", ×, hazard stripes on the top edge, "Same code as AK117 Build 1") · `v10-45-manifest-builds-text.png` (the manifest row "SKS MARKSMAN • 4 BUILDS", and below it the selection bar's by-weapon view with its "Build 2" chip).*
+
+41. the tint on the toggles is just so poorly done. Like this realm's accent is a nice pink color, yet does this toggle's tint look even close to it's realm's accent? no. *(v10-39)*
+42. meanwhile, you didn't even apply the tint to armory's tier board/compare toggles. *(v10-40)*
+43. All the toggles also need better hover-events.
+44. and "all" toggle's tint is supposed to match that of the realm's accent color. correct that for the armory manifest, broadcast manifest. *(v10-41)*
+45. the "3 build" warn chip used by the "Blocks sharing" heading is also incorrectly styled. It should be a match the style of the `Never` chip, same shape and style. *(C4 · v10-42, v10-43)*
+46. can you also finetune/tweak the look and style of the Weapon name/Build # text design inside of the problem pop-up? *(C1/C4 · v10-44)*
+47. and can you change armory manifest weapon row's "x build" text to match the style of the Selection bar's 'by weapon' view's `build x` chip design? including removing the bullet dot that precedes that `x build` text. *(C1 · v10-45)*
+
+**Round closed, 2026-09-22 12:24 EDT** — his words: "Okay that's it for the intake." **47 items.** His instruction for the pass: sequential thinking over every item; "Awwwards worthy" work, "nitpicked, never lazy", "catching the tiny things before i even notice them", "fixing the class, not just patching the instance", "true design adjustments and improvements, not blind patches"; plan the investigation, tools, batching and turns first; ask every fork and question FIRST, then work autonomously to the end.
