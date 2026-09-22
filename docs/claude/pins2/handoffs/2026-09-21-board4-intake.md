@@ -98,3 +98,8 @@ Fine for now.
 ## C9 · Admin traffic
 
 1. Fix the full set of hover-events and it's grey washed tint.
+
+## K2 ruling — 2026-09-21 20:28 EDT (popup on `board4-review/k2-header.png` and `k2-footer.png`)
+
+- **Header: C**, "but middle align the controls, they're currently top aligned. And add a subtle divider line to give more breathing room between the header and the form".
+- **Footer: none of A, B, C.** "the "still needs a weapon" chip should be near the weapon field, it makes no sense being at the bottom. None of these options solve the core issue i stated which was that the bottom bar wasted space. All this did was make the bar invisible. the same is still wasted just the same as it was before. and confirm buttons in the header (your option c) is just stupid."
