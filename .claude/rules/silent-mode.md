@@ -54,9 +54,11 @@ unconditional: true
 5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
 6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
 7. **How the message looks — it reads at a glance.**
+   - **Title:** any message longer than three lines opens with a `#` title that is the verdict, then one short line under it. Sections under it are `##`.
    - **Headings:** short, plain, named for what is under them ("Where it stands", "The honest limit"), never a template label.
    - **Paragraphs:** one to three sentences.
-   - **Tables:** one kind of row per table; cells of a few words; a state cell starts with a mark — ✅ done · ⚠️ partly · ❌ not · 📋 filed · ⏳ waiting on him.
+   - **Tables:** one kind of row per table; cells of a few words; a state cell starts with a mark — ✅ done · ⚠️ partly · ❌ not · 📋 filed · ⏳ waiting on him. A status column only when the states DIFFER: a column of identical ✅ says nothing and belongs as a short list.
+   - **Say it once:** never restate a rule or a format back to him, and never repeat in a list what a table just said.
    - **Bullets:** one line, one claim — **label** — a few words.
    - **Bold:** the verdict, the key number, and what waits on him. Nothing else.
    - **Leave out:** file paths, rule and anchor numbers, class and tool names, measurements — unless he needs one to act. They go in the file the message points to.
