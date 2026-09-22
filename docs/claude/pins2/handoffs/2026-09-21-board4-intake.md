@@ -186,3 +186,57 @@ Fine for now.
 21. not to mention look how shit the actual design of these fields is, and how random and poorly designed that X icon button is. *(v10-20)*
 
 *Also visible, not in his words (mine): the two modes differ in five ways, not one — slot names vs "Slot N", upright vs italic labels (v8 claimed italics were removed), a status pill + counter vs a monospace hint on the heading, "Search optic" vs "Type to search" placeholders, and a remove control on MP only. MP's "Slot 1–5" also drops G9's named-slot rows. "Needed to stage" is one more pill-shaped warning (item 18's class). In v10-19 the header's bottom edge is broken: a faded line under the MP tile and a dark bar under the segment sit at different heights.*
+
+### Message 7 — 2026-09-22 11:54 EDT · C2 build drawer (Bulk create and Edit loadouts; a new bulk format)
+
+*Screenshots: `v10-21-bulk-three-new.webp` (Bulk create, three builds: the monospace guide above the editor with inline tokens "Build:", "Code:", "Badges:", "- attachment"; four tally cells 3 new · 0 updated · 0 saved with a warning · 0 can't be read; three result cards with a green left border and "New", two listing slot names "Muzzle · Barrel" / "Barrel · Stock", the LOCUS card listing "40 Round Mag · Tac Laser" in orange; editor line 20 the placeholder "- another attachment, or a blank line") · `v10-22-bulk-cant-read.webp` (LOCUS with no category: a hatched "Can't read" card, "First line needs a category: LOCUS | AR"; footer pill "Block 2 is skipped"; Stage 1 MP build) · `v10-23-bulk-warning.webp` (FENNEC with "bestt": an orange-bordered Warning card "bestt isn't a badge — saved with META"; the cursor's line 11 highlighted in the editor; "No Stok" underlined) · `v10-24-edit-loadouts.webp` (Edit loadouts: the "BAL-27 Builds 1-3" chip with ×; five tally cells including unchanged; Update cards with Adds / Drops rows and Unchanged cards "Matches the live build"; the editor carries `Image:` lines; the Cancel / Stage buttons float over the last card).*
+
+22. the guide/hints above the list are SOOO SHIT and UGLY! they're not helpful at all or look nice at all! Rework them! *(v10-21)*
+23. the cards on the right are so uninformative. *(v10-21, v10-22, v10-23, v10-24)*
+    - like why do some only say "muzzle" "barrel" while the 3rd card actually states the actual attachment name?
+    - if my cursor is active in the text/items pertaining to that card, that card should be highlighted or something to show that the list text = that card
+    - change that useless muzzle/barrel/etc text and actually display the attachment chips (the ones we use in the armory manifest) in a single line.
+    - change that "line 1-6" hint text to a better design and placement.
+    - mention the gunsmith code in the card.
+    - and i notice your list also doesn't contain any image key or image url or anything??
+    - making the card's left border the green "new" accent is just misleading and confusing. Infact that whole chip section at the top needs to be better integrated into the layout and fully redesigned.
+    - and why not actually display the badges?
+24. and why is the "- 40 Round Mag - Tac Laser" text even underlined and orange in the card?? I'm so confused! *(v10-21)*
+25. your "another attachment, or a blank line" placeholder/hint text is also so bad! it's literally the same color and everything as the normal text so it looks like its something actually typed into the list. *(v10-21)*
+26. Also i want the bulk export format to be like this:
+
+```
+Weapon | Category | Mode
+BuildLabel | GunsmithCode | Key_or_URL
+Badge, Badge
+Attachment
+Attachment
+Attachment
+Attachment
+Attachment
+```
+
+27. with the portal UI auto adding the chrome such as "Label", "Code", "Badges", etc. so when it's actually pased into the Bulk Create field, the UI automatically parses it and displays:
+
+```
+BAL-27 | AR [MP] <- MP would be in a chip or something.
+Label: Close range
+Code: 1C2C4A8A9C
+Badges: meta, best
+- Gauge-9 Mono
+- Crown-H3 Barrel
+- etc
+- etc
+- etc
+Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the image (rephrase if you want).
+```
+
+28. with each being editable of course.
+29. like overall, the entire surface needs to be drastically improved as i've already stated many times during this intake.
+30. similarly with the "edit build" panel. *(v10-24)*
+
+*Also visible, not in his words (mine): the orange, underlined attachment names (item 24) are v9's "unknown attachment" mark, which neither the editor nor the card explains; the result cards repeat the tally's colour as their left border, so the same green means both "count" and "status"; in Edit loadouts the editor holds 6 builds for "Builds 1-3" — each build appears twice (Build 1 at lines 1–10 and again at 34–43), which looks like a duplication bug; its first block's label line reads "Build: Build 2" while its card is titled "Build 1"; and the floating Cancel / Stage cover the last card (v10-24).*
+
+*Questions for the end of the intake (his rule: batched, not asked now):*
+- *Q1 · The new format carries Mode per build. Does a pasted block's Mode override the drawer's MP/DMZ switch, so one paste can mix MP and DMZ builds?*
+- *Q2 · Export writes this same format, and Export's own hint says it is "the bot's own block format" used to restore a backup. Does the new format replace the Discord bot's format too, or only the portal's paste/export?*
