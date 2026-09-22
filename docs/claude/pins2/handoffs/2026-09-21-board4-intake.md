@@ -303,4 +303,13 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | Ends default | *"keep the 60 day default but state it MUCH better in the UI. because honestly, i've been reading "default" and had completely forgotten what it even meant before you asked this question. Or literally auto-select/auto-type whatever date is 60 days following the 'start' date? idk.. think about it and design it nice."* | Keep 60 days. The field shows the real date (60 days after Starts) as its value, marked as the automatic end, so "default" never needs explaining; it follows Starts until he types his own; "Never ends" stays a separate switch. |
 | Publish | **Publish when done (Recommended).** | **Approved by: Harkirat · to: publish Board 4 v11 once, after the whole v10-intake pass is built and verified, with every changed file · when: this popup, 2026-09-22 12:30 EDT.** Nothing is published mid-work. |
 
-*Not asked, carried to his review: whether the new format also replaces the Discord bot's own block format (it reaches bot code, which this board pass does not touch; the board treats it as the portal's paste/export format).*
+~~Not asked, carried to his review: whether the new format also replaces the Discord bot's own block format (it reaches bot code, which this board pass does not touch; the board treats it as the portal's paste/export format).~~ *Asked and answered at 13:01 EDT, below.*
+
+### His answers to a second popup — 2026-09-22 13:01 EDT (asked from the Opus 5.5 session)
+
+| Fork | His answer | What it means for the pass |
+|---|---|---|
+| Mixed modes | **Per build (Recommended).** | Same answer as 12:30. |
+| Format scope | **Everywhere (Recommended).** | One format for the portal's Export, Bulk create AND the Discord bot. The board builds the portal half; Session 5 ports the parser and writer to the bot, so a backup restores anywhere. Export's "the bot's own block format" stays true. |
+| Designs | *"options.. rendered as forks i can view in the published board"* | The big redesigns are built as 2–3 OPTIONS each, switchable on the published board, for his pick — not one finished design each. Board 4 stops being "no switches" on those surfaces. |
+| Publish | *"Publish v11. Also any other questions? I'd rather you ask than assume."* | The 12:30 approval stands. More questions are asked before building. |
