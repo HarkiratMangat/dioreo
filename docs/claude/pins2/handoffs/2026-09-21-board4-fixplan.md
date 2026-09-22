@@ -381,3 +381,6 @@ Caught in the render before publishing: a mask on the drawer scroller hid the he
 
 ### The compact block and the start prompt (final, 2026-09-22 09:02 EDT)
 Carried verbatim in the session's last message; the start prompt makes the next session read THIS section first.
+
+### v10 published (2026-09-22 09:04 EDT, his popup yes: "publish it and update your compact prep with it accordingly")
+Only `b4.css` and the page went up (kit `bf176f4`); the live `b4.css` matches the local file's size (49,900 bytes). **The two v9 regressions are fixed on the live board**: the "Discard this draft?" dialog and History's event drawer are back to their own layout, and open toggles keep their hover. Every "local, unpublished" line above now means "live in v10". The design debt and the never-looked-at list are unchanged.
