@@ -128,3 +128,11 @@ Fine for now.
 4. the key field also needs improvement so when the key is auto created or when an existing one is used. in-fact, ALL of the fields in the drawer/form need drastic design improvements. They're so basic, barebone, and nothing about them is useful or "awwwards worthy". *(v10-04, v10-05)*
 
 *His note: "just fyi, these next several intake items are all going to be on the Build drawer. i'll let you know when the intake topic shifts to another item."*
+
+### Message 2 — 2026-09-22 10:56 EDT · C2 build drawer (Badges, and the tier selector)
+
+*Screenshots: `v10-06-badges-hover.png` (META hovered and TOXIC at rest: each a dark tile holding a hand-drawn empty square and the badge name as bare monospace text) · `v10-07-badges-and-tier.png` (the Badges heading with its rule, the two tiles, and below them "Tier in AR" as a label on the left with a pill segment None · Best · Top 3 · Top 4 · Top 5 offset far to its right, None pressed).*
+
+5. the badges selector doesn't use the checkbox system we already standardized and utilize elsewhere in the board. *(v10-06, v10-07)*
+6. the badges also just show as bare text even tho we literally have designed badges... why?? Like do you see the pattern here in my notes? How nearly every field/surface of the form is just basic barebone lazy design, despite the "Awwwards worthy" bar and despite us also having better versions of a design used elsewhere? *(v10-06, v10-07)*
+7. similarly with the tier selector badge... 1. wtf is that shit positioning? 2. improve it's design significantly. redesign it, if anything. *(v10-07)*
