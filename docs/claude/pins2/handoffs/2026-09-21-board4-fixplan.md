@@ -350,8 +350,8 @@ Caught in the render before publishing: a mask on the drawer scroller hid the he
 | The in-app browser showed 4.8 a blank artifact | puppeteer or the chrome-devtools CLI only |
 
 ### Open — his to rule, or the next session's first job
-- **His:** publish v10 (the three prep fixes); the Ends default date rule; his review of v9 against his side-chat verdict (now filed in the intake log).
-- **First job next session:** the NOT-looked-at column above, in one render batch: Compare at 1–4 cards; K12 with a real image; the v9 ghost in Edit and DMZ; the DMZ drawer; the live v9 page opened with the chrome-devtools CLI.
+- **His:** ~~publish v10~~ published 2026-09-22 on his yes; the Ends default date rule; his review of v10 (his side-chat verdict on v6 is filed in the intake log). *(corrected 2026-09-22 09:58 EDT)*
+- **First job next session:** the NOT-looked-at column above, in one render batch: Compare at 1–4 cards; K12 with a real image; the v9 ghost in Edit and DMZ; the DMZ drawer; the live v10 page opened with the chrome-devtools CLI. Then the design debt: C2-1/6/8 header/footer and C2-4/7 form, a real design pass against board 1 G9 with the design skills (inline), shown before asked.
 
 ### Second pass of the prep, after his "are you sure?" (2026-09-22 09:02 EDT)
 
@@ -379,7 +379,7 @@ Caught in the render before publishing: a mask on the drawer scroller hid the he
 
 **Memory work skipped, stated rather than hidden:** the linksee distill queue (13 raw captures; the brief asks for 3 per session) was not drained.
 
-### The compact block and the start prompt (final, 2026-09-22 09:02 EDT)
+### The compact block and the start prompt (2026-09-22 09:02 EDT) — superseded by the block at the end of this file
 Carried verbatim in the session's last message; the start prompt makes the next session read THIS section first.
 
 ### v10 published (2026-09-22 09:04 EDT, his popup yes: "publish it and update your compact prep with it accordingly")
@@ -399,5 +399,20 @@ Only `b4.css` and the page went up (kit `bf176f4`); the live `b4.css` matches th
 | Fork #17 (Board 3 v1 "awaits his choices") | listed as open at every session start | dismissed: resolved through 3-A…3-E; FINAL.md cites the resolved specs |
 | State memories 61767, 61770, 61771, 61824, 61673, 58285, 61765, 61769, 61763, 49705 | v5/v6 state, "publish only after passes 2–3", a vendor-MIME theory, "awaits his yes", the old pin-log path | rewritten to the v10 state; the MIME theory marked disproved; finished phases `done` or `superseded` |
 | Auto-captured 61570, 61612, 61613, 61615–61618, 61624, 61626, 61660, 61832, 61836, 61837 | raw session prompts recallable as instructions | each rewritten into one decision or lesson with `"distilled": true`, or `superseded` where it held none; 61616 folded into 61837 ("are you sure?", twice) |
+| Next-actions on finished work: 61651, 61652, 61653, 61655, 61656, 61662, 61698 | held a 3-E publish "until he says the round is done", sent the next session to H1's rows, asked for his yes on a publish already made, or listed H1 questions his C8 ruling answered | each `next_action` cleared or re-pointed at Board 4; each now says where the work went. Found by scanning the store read-only for board-era `next_action` text, after a recall surfaced the first one |
+
+**Read the drift map with this in mind:** `drift_status` still lists a superseded anchor's OLD text under "aligned — accounted for by recorded resolution" (#16, #21 and #39 show that way). The supersede edge is the record; every live carrier names #43, #47, #48 and #49 instead.
 
 **Left queued, deliberately:** the path-derived entity misfiling (the pins2 prompts sit under "Lightning"; recall by `query` still finds them) · forks #2, #3, #4, #11, #12, which belong to other plans · distil items 49667 and 47337 (another plan, another repo) · anchor #35's `escalate_to_hard` suggestion, declined because harden is never used.
+
+### The compact block and the start prompt — after the linksee clean-up (2026-09-22 09:58 EDT)
+
+Supersedes the 09:02 EDT block. The only changes: the new anchor ids, the superseded ids never to cite, v10 as the live page, and the design debt as the job after the render batch.
+
+```text
+/compact KEEP: (1) Board 4: Collective v10 is LIVE (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh, published 2026-09-22 on his yes). Carrier: docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md — §0 WORKING CONTRACT (linksee anchor #48), then "Compact prep" (2026-09-22), "Linksee clean-up for this plan", and the compact block at its end. (2) NOT done, in his words: C2-1/6/8 header/footer "lazy, half-ass" (only geometry changed); C2-4/7 form "complete shit" (partial); C3 and C5-2 unreviewed since v7. Never looked at: Compare at 1–4 cards, K12 with a real image, the bulk ghost in Edit and DMZ, the DMZ drawer, the live page. His to rule: the Ends default date; his review of v10. (3) Linksee is clean for this plan: anchors #47 (Board 4 is the only live board; 3-A…3-E are never published), #48 (the contract), #46 (a shared-class rule is rendered on every surface it reaches; moved controls hit-tested and clicked), #43 (History's constraint table), #49 (the 18 Access pins in docs/portal/portal-sync-notes.md). Never cite #16 #21 #22 #36 #39 #40 #41 #45: superseded. (4) Standing: publish/push/PR/merge each need his yes restated; no sub-agents without his word; never resolve_drift harden; docs:audit's one red (devlog-orphan v3.85.0, "Proposed" until the merge) is known, so do not retag the DEVLOG. (5) Habits: the page via puppeteer or the chrome-devtools CLI, never the pane; under 10 turns, mega-batched; every command after a heredoc on the same line with &&; the summary checked against the Silent contract before sending; sequential thinking first, with questions that could change the work. DISCARD: tool outputs, render sheets, linksee payloads, audit logs.
+```
+
+```text
+Resume portal pins batch 2, Session 3: Board 4: Collective, v10 live (https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh). Before any tool call, read_smart .remember/remember.md in full and docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md. Your FIRST sequential thought restates its §0 WORKING CONTRACT (linksee anchor #48) as calls. Then read its "Compact prep" and "Linksee clean-up for this plan" sections. If he has sent a v10 verdict, file it in docs/claude/pins2/handoffs/2026-09-21-board4-intake.md before acting on it. First job: the "Open" list's render batch at full size (Compare at 1–4 cards; K12 with a real image; the bulk ghost in Edit and DMZ; the DMZ drawer; the live v10 page via the chrome-devtools CLI). Then the design debt, C2-1/6/8 header/footer and C2-4/7 form: a real design pass against board 1 G9 with the design skills, run inline (no sub-agents without his word), shown to him before asked. Nothing is published without his yes. Under 10 turns; silent mode; mega-batch.
+```
