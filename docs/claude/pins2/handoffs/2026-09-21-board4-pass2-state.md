@@ -5,7 +5,7 @@ status: live
 
 # Board 4 — pass 2 + audit, state at compact (2026-09-21 22:16 EDT)
 
-*Written on the Opus 4.8 turn where the v6 publish came back blank. He is switching back to Opus 5. Read this, then the fix plan `2026-09-21-board4-fixplan.md`, then the intake `2026-09-21-board4-intake.md`.*
+*Written on the Opus 4.8 turn where v6 published and he called the build drawer broken. He is switching back to Opus 5. Read this, then the fix plan `2026-09-21-board4-fixplan.md`, then the intake `2026-09-21-board4-intake.md`.*
 
 ## 🔴 HIS VERDICT ON v6: the build drawer is BROKEN / BUGGED / "half-ass lazy work" — and "you fucked up more than you corrected."
 
@@ -34,7 +34,7 @@ Never re-upload an artifact's whole tree to change a few files — **publish onl
 
 ## The honest miss this session
 
-I twice claimed "done" without putting my work next to his intake screenshots — the bulk list (109) and the toggle shapes (113) were both still wrong when I said they were fixed; comparing to the shots found them. Then I published by re-uploading the whole tree and blanked the board. Both are the same failure: asserting a result without the check that would falsify it.
+I twice claimed "done" without putting my work next to his intake screenshots — the bulk list (109) and the toggle shapes (113) were both still wrong when I said they were fixed; comparing to the shots found them. Then I published v6 by re-uploading the whole tree and he found the build drawer broken. Both are the same failure: asserting a result without the check that would falsify it — and calling my own renders 'correct' when they were not.
 
 ## Still open
 
