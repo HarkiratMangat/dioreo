@@ -17,6 +17,8 @@ Harkirat's direction: compile every finished surface of boards 1, 2 and 3 onto *
 
 **Nitpick pass (2026-09-21 15:30 EDT, local, not yet republished)**: Compare's cut builds, the post drawer's field spacing, the build toggles' hover, Export's three states, five dead Try buttons and the test-data prefix — itemised in `docs/claude/pins2/handoffs/2026-09-21-pins2-s3-board4-round1.md`.
 
+**His intake round (2026-09-21 20:00 EDT):** Board 4 **v5** is live (the Export stage, corners and Compare cards fixed at 17:30 EDT). His gate-by-gate intake of C1–C9 is logged verbatim in `docs/claude/pins2/handoffs/2026-09-21-board4-intake.md`; the fix is organised by class in `docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md` (pass 1 is built locally and unpublished; passes 2 and 3 are next). This board is not signed off until that pass is published and he reviews it.
+
 **Round 1 of his review (2026-09-21 14:50 EDT)**: whole-realm renders replaced by the surface alone; command search removed (its ranking is its own session); the build and post drawers in the Export picker's shell and mesh ground, with board 3's buttons and no eyebrow; the bulk editor on the export file's line style, caret aligned; Repairs' clean day restored as a state.
 
 ## 0 · What "done" means

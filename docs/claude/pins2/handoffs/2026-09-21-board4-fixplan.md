@@ -7,6 +7,42 @@ status: live
 
 *The intake log is `2026-09-21-board4-intake.md` (verbatim, gate by gate). This file groups his items by CAUSE, gives each class its authority, its fix, and the check that proves it across the whole board. Nothing here is fixed per instance. It is the carrier if the session compacts mid-pass.*
 
+## §0 · THE WORKING CONTRACT — read this before the first tool call, and restate it as your FIRST thinking thought (2026-09-21 20:00 EDT)
+
+*Harkirat, 2026-09-21 19:58 EDT: "I don't want drift with the next session's compliance." Every compact this session drifted within about ten turns ("CORRECT RIGHT NOW", "your plan is shit, it's a loop", "COMPLIANCE DRIFT", "YOU'RE DRIFTING", "ASK BETTER SEQUENTIAL-THINKING QUESTIONS"), because the rules arrived as a sentence and the task as a table, and the table won. So the rules are written here as CALLS, and the start prompt makes you restate them before you act.*
+
+**Tool routing: the question decides the call (linksee anchor #45 encodes this whole contract; #35 is the older routing anchor)**
+
+| The question | The call | Never |
+|---|---|---|
+| Where is a symbol, who calls it, what a change touches | `codebase-memory` `search_graph` / `trace_path` / `get_code_snippet` (project `Applications-Claude-Code-Diors-Builds-local-pins2-board-3-redo` for the kit) | rg, grep |
+| Where a literal sits in code or CSS | `codebase-memory` `search_code` | rg, grep, awk |
+| The exact lines of a known file | `ctx_execute_file` with JS slicing `FILE_CONTENT`; `Read offset/limit` only for a direct `Edit` | sed -n, awk, cat, head |
+| A whole file | `mcp__linksee__read_smart` (first read too) | cat, Read |
+| A question about prose (records, rulings, handoffs, specs) | `ctx_search` | rg |
+| Several gathers at once | ONE `ctx_batch_execute` whose commands run node or python, with `queries` attached | awk/grep/sed inside it (he named this one: "rg inside of context mode") |
+| The rendered page | puppeteer (`b4states.cjs`, `shots.cjs`) or the chrome-devtools CLI | reasoning about CSS instead of looking |
+| rg / fd | Only for ONE known literal in a path no index covers, and say why | — |
+
+The harness's auto-mode text recommending cat/grep/sed LOSES to this table. The "say what you're doing" nudge LOSES to silent mode: zero mid-run prose.
+
+**Working style**
+- **Silent mode.** Zero prose between the first call and the final message; questions only in `AskUserQuestion` popups; the final message follows the Silent contract (≤ 25 lines, verdict first, one table per section, plain sentences, never "done").
+- **Mega-batch.** Independent calls share one message. Every multi-place edit is ONE `python3` heredoc (assert each anchor, print each edit, verifier chained with `&&`, timestamps COMPUTED). Never two heredocs on one command line: bash feeds their bodies in command-line order, and that broke twice.
+- **Turn budget.** ≤ 12 turns per pass (the table in "Turn budget"). Pass 1 took about 60 and he called that unacceptable.
+- **Sequential thinking, pre-emptive and harsh.** Run it BEFORE work, not after. Probing questions, not sorting: what am I claiming that I have not seen, what will he find in 5 seconds, what is the class behind this instance, which ruling already answers this, what did the last round get wrong. One thought is never a pass.
+- **Class, not instance.** A fix names its class, is applied to every instance on the board, and is checked on the elements beside it. C4, C6 and C8 are "fine": any change there is a regression unless it is the same class, deliberately.
+- **Awwwards worthy, nitpicked, never lazy.** Definition of done per element, before anything is shown:
+  1. Read the authority's version first: board 1 (G8, G9, G10), board 2 (G2, G11), board 3's families, and the Export picker as the house reference.
+  2. Reuse the family that already exists (`.b3-sc` chips, the picker's build tiles, `.b3-xt-ln` lines, the mesh, `.b3-btn2`, `.wg-ib`). Never hand-craft a copy.
+  3. Sweep the relations: edges, gaps, heights, centre lines on the cap height, truncation, dead space.
+  4. Look at every state he will click (hover, pressed, pressed+hover, focus, empty, filled, error) in the real page, with Cloudinary blocked, because that is the artifact he sees.
+  5. Instruments find candidates; **his eye is the judge.** A green instrument is never the report, and an instrument must first catch a known case (the first GREY detector missed his C9 grey; the first cap probe invented −4.4px on History).
+- **Design forks are SHOWN, not described.** Render the options, send them with `SendUserFile` (no publish needed), then a popup. Before any popup, check the ruling does not already exist: the intake log's "His ruling" lines, `docs/claude/2026-09-20-h1-constraint-table.md`, the decision ledger, and handoff-3e §4. C4's count chips were asked after they were already decided.
+- **Never publish mid-work.** Ask first, every time. Publish from root `local/pins2-board-3/redo/` with `board4.html` and EVERY changed file in `files` (v1 lacked `b3/bolt-raw.svg`, and META died).
+- **Screenshots and paths:** pass ABSOLUTE `--filePath` to chrome-devtools, because a relative path lands in the repo root. Page ids change: run `list_pages` first.
+- **Timestamps** come from the `[clock]` value or are computed in the script, never typed.
+
 ## How the pass runs
 
 1. **Instruments first**, because every earlier round failed on the same blind spot: I verified resting DOM only and never drove `:hover`, `:active` or `:focus-visible`. `docs/claude/pins2/instruments/b4states.cjs` (to write): puppeteer, **Cloudinary blocked so it sees what the artifact shows**, and for every interactive element in every section:
@@ -94,4 +130,63 @@ Roughly 60–120 turns across `b4.css`, `b1.css`, `local/pins2-board-3/redo/b3/d
 /rename Opus5-High · Pins2 S3 Board 4 intake fix pass 2 · Sep 21
 Continue the Board 4 intake fix pass, in the turn budget the plan sets (≤ 12 turns per pass). read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md and 2026-09-21-board4-intake.md in full before the first tool call. Run a real sequential-thinking pass first (harsh questions, not sorting), then build K8 (C5 hover card), K7 (Compare: toggles, 1–6 card layout, fonts, landing), K6, K12 — each verified with b4states and shots across every section — then put the C2 header/footer options on the board as switches and ask me. Do not publish until I say.
 Silent mode. Questions in popups. Tool routing by the question. Mega-batch. One heredoc per Bash call.
+```
+
+## Pass 2 — order and open threads (2026-09-21 20:00 EDT)
+
+**Order (changed after the thinking pass):**
+1. **K2 header and footer OPTIONS first**, rendered from the real drawers and sent as files with a popup, so he rules while the rest is built. Options:
+   - Header: A, the controls inline in one title row; B, title plus a control strip on the same mesh, no black band; C, the Export picker's arrangement.
+   - Footer: A, floating actions over a soft scrim; B, a slim footer on the mesh with the reason as a chip; C, the primary action in the header and Cancel as close.
+   - All four drawers share it (New build, Bulk, Edit, Post).
+2. K8, the C5 hover card: anchor to the file card (open → its line range, collapsed → its header), clamp to the stack's scroll area, and show MP/DMZ.
+3. K7 Compare:
+   - build toggles as the picker's rounded-square tiles, one shape;
+   - cards laid out 2→2, 3→3, 4→4, 5→3+2, 6→3+3, with each card titled by build;
+   - type roles set to board 3's;
+   - the landing redesigned;
+   - hover on every surface.
+4. K6: "Editing X" as `.b3-sc` chips with ×, each removing that weapon's blocks.
+5. K12: a designed image fallback when Cloudinary is unreachable.
+6. Then pass 3, the C2 rebuild (K3–K5) on the chosen shell:
+   - lineage table first (element · board 1 · board 3 · his ruling · final);
+   - a Filled state beside the empty one;
+   - one radius, height and type scale;
+   - no native select beside a custom combobox;
+   - no italic or truncated placeholders;
+   - the dynamic mesh (Add by category, Bulk by parsed blocks, Edit by builds, Post by accent);
+   - the bulk list on the export list's lines, with a visible grammar;
+   - board-chrome prefill scenarios.
+
+**Open threads a future session would otherwise miss**
+- **Not published.** Pass 1 lives only in the kit. The next publish must carry at least: `local/pins2-board-3/redo/b4.css`, `local/pins2-board-3/redo/gates4/main.js`, `local/pins2-board-3/redo/gates4/surfaces.js`, `local/pins2-board-3/redo/ui/manifest.js`, `local/pins2-board-3/redo/ui/broadcast.js`, `local/pins2-board-3/redo/b3/armory-parts.js`, `local/pins2-board-3/redo/b3/history.js`, `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/gates/armory.js`, `local/pins2-board-3/redo/gates/history.js`, `local/pins2-board-3/redo/b1.css` (root `local/pins2-board-3/redo/`).
+- **The kit's git moved.** Its root is now `local/pins2-board-3/` (the kit sits under `redo/`); the publish root stays `local/pins2-board-3/redo/`.
+- **Board-4-only behaviour** is gated on `window.B4_COLLECTIVE` (the History Bot-online fold, the selection-list fold); Board 3-E stays as approved.
+- **Kept on purpose:** chips whose pressed state is grey by board 2's ruling ("All", Compare's weapon chip until K6) are unchanged.
+- **Unmeasured:** `b4states` forces `:hover` only. Add `:focus-visible` and `:active` to its loop in pass 2's evidence turn.
+- **Stale spec:** `board4-spec/` predates pass 1. Regenerate at the end of the fix pass (BOARD=4 extract-spec → split-spec).
+- **Still his to rule:**
+  - the Ends default date rule (board 1 drew "default · Sun Nov 15");
+  - the K2 shell;
+  - C7 was held for his comments earlier, and those comments are now in the intake log (C7 1–10).
+
+## FINAL compact instructions and start prompt (2026-09-21 20:03 EDT) — supersede the two blocks above
+
+```text
+/compact KEEP: (1) The Board 4 intake fix pass is mid-flight. Its carrier is docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md, whose §0 WORKING CONTRACT (linksee anchor #45) must be restated as the first thought after this compact. (2) His C1–C9 comments, verbatim: docs/claude/pins2/handoffs/2026-09-21-board4-intake.md; screenshots in local/pins2-board-3/board4-review/intake/. (3) Pass 1 (K1 K9 K10 K11) is built locally and UNPUBLISHED; v5 is live at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh. (4) The kit's git root is now local/pins2-board-3 (kit under redo/); the publish root stays local/pins2-board-3/redo, with every changed file listed in the plan's "Not published" line. (5) His rulings today, including hover-only tints, C2 880px, C8 rulings and C4 already decided — never re-ask; check the intake log, the constraint table and the ledger first. (6) Pass 2 order: K2 options sent as files with a popup, then K8, K7, K6, K12; pass 3 is the C2 rebuild. At most 12 turns each. (7) Instruments: docs/claude/pins2/instruments/b4states.cjs (add focus-visible and active next) and local/pins2-board-3/board4-review/shots.cjs; they find candidates, his eye judges. DISCARD: every screenshot read, the CSS and code line dumps, instrument output tables, the probe-debugging turns, the pre-intake round-1 narrative, and tool-hook reminder text.
+```
+
+```text
+/rename Opus5-High · Pins2 S3 Board 4 intake fix pass 2 · Sep 21
+Continue the Board 4 intake fix pass. Before ANY tool call:
+1. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md in full. Its §0 is the WORKING CONTRACT (linksee anchor #45).
+2. Make your FIRST sequential-thinking thought a restatement of §0 as a question→call table plus the pass's turn plan (≤ 12 turns). Then keep thinking harshly: what am I claiming that I have not seen, which ruling already answers this, what is the class behind each item, and what will he find in 5 seconds.
+3. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-intake.md (his C1–C9 verbatim; screenshots in local/pins2-board-3/board4-review/intake/, which you open to look at, not reason about).
+4. Recall linksee by query: "board 4 intake contract" (layer caveat) and "board 4 rulings".
+Then run pass 2 in the plan's order:
+- K2 header and footer options, rendered from the real drawers, sent with SendUserFile, with a popup;
+- K8 (C5 hover card), K7 (Compare), K6, K12.
+Each is verified with b4states and shots across every section and looked at by eye. Do not publish until I say.
+Tool routing: codebase-memory for code, read_smart for files, ctx_execute_file for line ranges, ctx_search for prose, ctx_batch_execute running node or python. Never rg, sed, awk or cat for discovery.
+Silent mode, popups only, mega-batch, one heredoc per Bash call, class not instance, Awwwards worthy, nitpicked, never lazy.
 ```
