@@ -261,3 +261,17 @@ v7 (23:07 EDT, his yes at 23:05 EDT) carries pass 2 by class and the dead header
 | 5 | C2-10/11/12 bulk list | Pass 3 (K5): a visible grammar and prefill scenarios, checked against 109/110 | Side by side with the Export file list |
 | 6 | C7-10 Ends field + drawer hints | Design the field and the hint treatment (p10 = "state" is ruled; hint COPY is Session 4's). Hint history: `docs/superpowers/mockups/2026-09-15-pins2-board-3/README.md`, "The hint line was skippable because it was skippable" | Render; the Ends default date rule stays his |
 | 7 | GREY hover on Cancel and the drawer close | The `.b3-btn2` / `.dw-h .x` family's `--hi` hover; a board-wide family change, so ask before changing it | b4states GREY 0 |
+
+## v8 published — the open list worked (2026-09-21 23:27 EDT; kit `4a4e4e1`, his yes at 23:15 EDT)
+
+| # | Item | What changed | Measured / seen |
+|---|---|---|---|
+| 1 | Repeats push the fields | `.pb-rep` was a grid whose 1fr track grew with every glyph; both levels wrap now | 12 repeats: the row ends at the column's edge (797 of 797) |
+| 2 | Mesh | The build drawer's ground follows the Category select, both hues; the Post drawer takes the Broadcast hue (was a fixed pair) | AR → #ff3b5c, SMG → #ffd23f, Sniper → #4361ee |
+| 3 | Header C + footer D2 finish | One 40px height for every control in the header row; G9's mono eyebrow; the dock sits on its own soft ground; the scroller ends on air | Heights 40/40/40 (close 28) |
+| 4 | Form surfaces | G9's tinted "BUILD n" block restored (4.8 had flattened it); no italic in any drawer; a heading's hint inline as in G9, wrapping only when a need chip crowds it; the empty preview is a faded real card (one empty-state class with Compare); a Filled state on the head switch | Filled render matches G9's arrangement |
+| 5 | Bulk list | Unchanged this round beyond the hint treatment (grammar line) — still pass 3's K5 | Not yet compared against 109/110 again |
+| 6 | Ends + hints | Placeholder says what leaving it empty does; every echo and hint takes the p10 "state" treatment | The default date rule is still his |
+| 7 | Grey hover family | The neutral control family hovers with ink and a ring, no fill, board-wide; hued controls and rows untouched | b4states GREY: 0 on hover everywhere; the remaining flags are pressed "All" chips and the List toggle resting on grey (board 2's ruling) |
+
+Caught in the render before publishing: a mask on the drawer scroller hid the header controls it carries, and the Filled state typed into the drawer being replaced. Both fixed.
