@@ -240,3 +240,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 *Questions for the end of the intake (his rule: batched, not asked now):*
 - *Q1 · The new format carries Mode per build. Does a pasted block's Mode override the drawer's MP/DMZ switch, so one paste can mix MP and DMZ builds?*
 - *Q2 · Export writes this same format, and Export's own hint says it is "the bot's own block format" used to restore a backup. Does the new format replace the Discord bot's format too, or only the portal's paste/export?*
+
+### Message 8 — 2026-09-22 11:58 EDT · C3 Compare (the build chips and the compare cells)
+
+*His topic change: "Changing topic to the compare panel now".*
+
+*Screenshots: `v10-25-compare-build-chips.png` (one weapon's group: a pill "● BAL-27 5 builds ×" and five square number tiles 1–5, every one the same dark-red pressed fill with a red border, inside an outer pill track) · `v10-26-compare-one-weapon.webp` (one weapon: the "Add a weapon" field; that group; summary pills "5 builds · 6 slots used · 6 differ"; the table with Build 1 as a dark "baseline" column, cells that differ from it in amber borders, "Not equipped" in dashed orange, "—" for empty; a separate Code row; "Same on all 5: Ammunition 60 Round Reload · Rank Best"; a "Hide cards" button) · `v10-27-compare-cell-hover.png` (the pointer over the "SZ 1MW PEQ" cell: no hover change) · `v10-28-compare-two-weapons.webp` (two weapons: "6 of 6 columns" in the field; BAL-27 1–5 and FFAR 1 1–3 groups; pills "6 builds · 7 slots used · 2 not shown"; columns BAL-27·1 (baseline) to FFAR 1·3; "Same on all 6: Category AR").*
+
+31. these build chips ARE SO SHIT!! you basically took the same shit design that the opus 4.8 session created and have it some pretty make-up. Drastically improve the design of all of these chips/buttons/interface. *(v10-25, v10-26, v10-28)*
+32. Including the actual compare cells before, which don't even have any hover-events or any identity or anything to help the user distinguish them apart in anyway. Like everything looks exactly the same monotonic style. Improve and refine it's design. *(v10-26, v10-27, v10-28)*
+
+*Also visible, not in his words (mine): every build tile reads as pressed, so on and off cannot be told apart; with eight builds picked and six columns shown, "2 not shown" never says which two, and no tile shows it; column heads say "Build 2" but never the build's own label ("Close range"); in a two-weapon compare every FFAR cell is amber because it is measured against a BAL-27 baseline, so "differs" stops meaning anything across weapons; "VT-7 Spiritfire Suppressor" runs past its cell's edge (v10-28); and Code is a heading row on its own while the slots are row labels in the same column.*
