@@ -24,6 +24,8 @@ const PROPS = ['color', 'background-color', 'background-image', 'border-top-colo
     p.on('request', (r) => (/res\.cloudinary\.com/.test(r.url()) ? r.abort() : r.continue()));
     await p.goto(URL, { waitUntil: 'networkidle0' });
     await p.waitForSelector('#c-admin .incchip'); await new Promise((r) => setTimeout(r, 1500));
+    // (2026-09-21 22:43 EDT) Settle every transition, or a forced :hover reads the transition's FIRST frame and reports NONE on a control that does answer (it did: the add-another chip).
+    await p.addStyleTag({ content: '*,*::before,*::after{transition:none!important;animation:none!important}' });
     const cdp = await p.target().createCDPSession();
     await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
     const sections = await p.evaluate(() => [...document.querySelectorAll('.b4g')].map((g) => g.id));
@@ -51,11 +53,13 @@ const PROPS = ['color', 'background-color', 'background-image', 'border-top-colo
             // A segmented control draws its pressed fill on a sibling thumb, so that is the pressed button's real ground.
             const th = e.parentElement && e.parentElement.querySelector(':scope > .pb-thumb, :scope > .thumb'); if (th && ['aria-pressed', 'aria-selected'].some((k) => e.getAttribute(k) === 'true')) o['background-color'] = getComputedStyle(th).backgroundColor;
             const ic = e.querySelector('svg'); if (ic) { const c = getComputedStyle(ic); o['ic:color'] = c.color; o['ic:stroke'] = c.stroke; o['ic:opacity'] = c.opacity; }
+            // (2026-09-22 08:51 EDT) a hover can paint a CHILD (.wg-code → .wg-igb); read the first three children's fills too, or 'no grey' is vacuous.
+            [...e.children].slice(0, 3).forEach((ch, i) => { o['c' + i + ':bg'] = getComputedStyle(ch).backgroundColor; });
             return o; }, q, PROPS);
         const grey = (c) => { const m = String(c).match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?/); if (!m) return false; const [r, g, bb, a] = [+m[1], +m[2], +m[3], m[4] == null ? 1 : +m[4]]; const mx = Math.max(r, g, bb) / 255, mn = Math.min(r, g, bb) / 255, l = (mx + mn) / 2; const sat = mx === mn ? 0 : (mx - mn) / (l > 0.5 ? 2 - mx - mn : mx + mn);
             // A blue-grey like the portal's --hi (35,44,52) is still a grey to the eye: saturation under .3 at low lightness.
             return a > 0.05 && sat < 0.3 && l < 0.45; };
-        const none = [], greys = [];
+        const none = [], greys = [], nofocus = [], noactive = [], hitbad = [];
         for (const e of els) {
             const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: `[data-b4q="${e.q}"]` });
             if (!nodeId) continue;
@@ -63,9 +67,14 @@ const PROPS = ['color', 'background-color', 'background-image', 'border-top-colo
             await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: ['hover'] });
             const hov = await read(e.q);
             await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
+            // Pass 2 (2026-09-21 22:40 EDT): keyboard focus and press are states he clicks too.
+            for (const [ps, bag] of [['focus-visible', nofocus], ['active', noactive]]) { await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [ps] }); const st = await read(e.q); await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] }); if (!Object.keys(rest).some((k) => rest[k] !== st[k])) bag.push(e.name); }
             const diff = Object.keys(rest).filter((k) => rest[k] !== hov[k]);
             if (!diff.length) none.push(e.name);
-            else if (diff.includes('background-color') && grey(hov['background-color']) && !grey(rest['background-color'])) greys.push('hover ' + e.name + ' → ' + hov['background-color']);
+            else { const gk = diff.find((k) => (k === 'background-color' || /^c\d:bg$/.test(k)) && grey(hov[k]) && !grey(rest[k])); if (gk) greys.push('hover ' + e.name + (gk === 'background-color' ? '' : ' (child ' + gk + ')') + ' → ' + hov[gk]); }
+            // (2026-09-22 08:51 EDT) forcePseudoState paints a DEAD control's hover perfectly; only a hit-test at its centre sees what is on top.
+            const blocker = await p.evaluate((q) => { const x = document.querySelector(`[data-b4q="${q}"]`); if (!x) return null; x.scrollIntoView({ block: 'center' }); const R = x.getBoundingClientRect(); if (!R.width || !R.height) return null; const h = document.elementFromPoint(R.left + R.width / 2, R.top + R.height / 2); return h && !(x === h || x.contains(h)) ? ((h.className && h.className.toString()) || h.tagName).slice(0, 40) : null; }, e.q);
+            if (blocker) hitbad.push(e.name + ' ← ' + blocker);
             // A PRESSED control resting on a neutral grey fill is the other half of his "grey washed" (C2, C9).
             if (/\[pressed\]/.test(e.name) && grey(rest['background-color'])) greys.push('pressed ' + e.name + ' rests on ' + rest['background-color']);
         }
@@ -111,9 +120,9 @@ const PROPS = ['color', 'background-color', 'background-image', 'border-top-colo
             [...g.querySelectorAll('*')].forEach((e) => { const cs = getComputedStyle(e); if (e.offsetParent && e.children.length === 0 && e.scrollWidth > e.clientWidth + 1 && cs.overflowX === 'visible' && cs.display !== 'inline' && !e.closest('.sr')) bad.push(`overflow «${e.textContent.trim().slice(0, 24)}» ${e.scrollWidth}>${e.clientWidth}`); });
             return bad.slice(0, 12);
         }, sec);
-        say(`\n## ${sec} — ${els.length} controls · NONE ${none.length} · GREY ${greys.length} · SHAPES ${shapes.length} · CENTRE ${centre.length} · CONTAIN ${contain.length}`);
+        say(`\n## ${sec} — ${els.length} controls · NONE ${none.length} · GREY ${greys.length} · SHAPES ${shapes.length} · CENTRE ${centre.length} · CONTAIN ${contain.length} · NOFOCUS ${nofocus.length} · NOACTIVE ${noactive.length} · BLOCKED ${hitbad.length}`);
         none.forEach((x) => say(`- NONE  ${x}`)); greys.forEach((x) => say(`- GREY  ${x}`)); shapes.forEach((x) => say(`- SHAPE ${x}`));
-        centre.slice(0, 10).forEach((x) => say(`- CENTRE ${x}`)); contain.forEach((x) => say(`- CONTAIN ${x}`));
+        centre.slice(0, 10).forEach((x) => say(`- CENTRE ${x}`)); hitbad.forEach((x) => say(`- BLOCKED ${x}`)); nofocus.slice(0, 14).forEach((x) => say(`- NOFOCUS ${x}`)); noactive.slice(0, 8).forEach((x) => say(`- NOACTIVE ${x}`)); contain.forEach((x) => say(`- CONTAIN ${x}`));
         say(`- FONTS ${fonts.slice(0, 8).join(' · ')}`);
     }
     await b.close();

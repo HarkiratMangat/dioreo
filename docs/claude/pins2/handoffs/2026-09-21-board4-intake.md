@@ -103,3 +103,13 @@ Fine for now.
 
 - **Header: C**, "but middle align the controls, they're currently top aligned. And add a subtle divider line to give more breathing room between the header and the form".
 - **Footer: none of A, B, C.** "the "still needs a weapon" chip should be near the weapon field, it makes no sense being at the bottom. None of these options solve the core issue i stated which was that the bottom bar wasted space. All this did was make the bar invisible. the same is still wasted just the same as it was before. and confirm buttons in the header (your option c) is just stupid."
+
+## His verdict on v6 — relayed from the side chat, 2026-09-21 23:05 EDT (filed 2026-09-22 08:54 EDT)
+
+*Given on v6 (Opus 4.8's publish) and the pre-rewind work; it PREDATES v7–v9. He still has to look at v9 and update it.*
+
+- **Confirmed fixed:** C1-1/2/3 · C7-1/2/4/5 · C7-3 · C7-6/7 · C9-1.
+- **Not fixed / wrong:** C7-8/9 (the repeats bug still pushes the fields) · C2-1/6/8 (header C + footer D2 "lazy, half-ass", below the awwwards bar) · C2-2/3 (the New build drawer's MP/DMZ and Add/Bulk buttons dead; the grey-wash fix instance-scoped) · C5-1 (false: the build drawer's MP/DMZ broken while Export's works) · C2-4/7 ("complete shit", nothing polished) · C2-5/9 (mesh not dynamic; "already dynamic" was a wrong assumption) · C3-1 to 7 (unfinished; the finished parts worse than before).
+- **Partial:** C2-10/11/12 (half done) · C2-13 (Editing X chips need correcting) · C5-2 (hover card still wrong).
+- **Untouched:** C7-10 (the Ends field is confusing; the drawers need designed hints; hint COPY is Session 4's, the field and hint DESIGN is this pass; the Ends default date is his to rule).
+- **Lead (it was right):** the dead buttons were exactly the ones header C moved.
