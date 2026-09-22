@@ -5,7 +5,7 @@ status: frozen
 
 # Board 4 v12 — the critique, and what it fixed (2026-09-22 16:20 EDT)
 
-His ask (16:01 EDT): nitpick every surface the v10 intake touched with design-critique, the impeccable verbs polish, onboard, distill, clarify, overdrive, layout, delight and animate, and sequential thinking; a larger redesign becomes a new fork option. Every state was opened on the local board with the chrome-devtools CLI (41 shots, then 3 re-shoot rounds), each shot read for faults before any fix. The shots are in `local/pins2-board-3/board4-review/v12crit/`. **Local only; v12 is still the published version.**
+His ask (16:01 EDT): nitpick every surface the v10 intake touched with design-critique, the impeccable verbs polish, onboard, distill, clarify, overdrive, layout, delight and animate, and sequential thinking; a larger redesign becomes a new fork option. Every state was opened on the local board with the chrome-devtools CLI (41 shots, then 3 re-shoot rounds), each shot read for faults before any fix. The shots are in `local/pins2-board-3/board4-review/v12crit/`. **Published as Version 13 at 2026-09-22 17:10 EDT on his yes (popup, 16:41 EDT), with round two below; 8 changed kit files plus board4.html.**
 
 ## Fixed, each as a class, each re-shot after the last edit
 
