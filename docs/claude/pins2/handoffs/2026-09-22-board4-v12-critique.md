@@ -62,6 +62,33 @@ Checked each surface for a redesign the refinement could not reach. None found: 
 | My "kill all animation" style before shots | The badges' shine parked over a letter: "B ST ASSAULT" looked like a defect | Shoot without it; it only belongs on a probe that measures layout |
 | `scrollWidth > clientWidth` | "Marksman" was cut by 0.58px; both widths round to the same integer, so it reported no cut | Measure the text with a `Range` against the box's float width |
 
+## Round two — his "are you sure?", the three he picked, and more (2026-09-22 16:41 EDT)
+
+He answered the publish question with *are you sure?* and asked for the three open items plus anything else that improves the experience. Each addition below was USED on the local board with the chrome-devtools CLI (clicked, typed, pasted, keyed), not only rendered.
+
+| # | Addition | Why it is there | How it was checked | File |
+|---|---|---|---|---|
+| 18 | A disabled Stage names its reason ("Pick a weapon to stage", "Card 2 needs an attachment · 1 more"), and the reason is a button that jumps to the blocking field and pulses it once | A disabled primary with no reason was the one dead end in the form | clicked: focus landed on the weapon field, pulse class present, the page itself did not move (scroll delta 0) | `local/pins2-board-3/redo/b3/drawer.js`, `local/pins2-board-3/redo/b4/form.js`, `local/pins2-board-3/redo/b4/classes.css` |
+| 19 | ⌘↵ stages from anywhere in the drawer; a blocked Stage jumps to its reason instead. The Stage button carries the hint | Mastery for a man who adds builds in sets. The handler reads a ref, never a mount-time closure (the Escape bug) | pressed Meta+Enter on a filled card: staged, drawer closed, toast "Staged · BAL-27" | `local/pins2-board-3/redo/b3/drawer.js` |
+| 20 | A screenshot on the clipboard pastes into the build being edited from anywhere in the drawer (⌘V hint in the drop row); the preview card shows it | §3's job starts with "a screenshot just taken" | a real paste event with an image file: file row "Screenshot.png · 2 KB", the well and the Discord preview both show it | `local/pins2-board-3/redo/b4/form.js` |
+| 21 | Before a code names the slots, attachment rows appear one at a time | Five identical "Any slot" rows | blank MP form: 1 row; filled: all 5 | `local/pins2-board-3/redo/b4/form.js` |
+| 22 | Bulk's empty results show the guide's example as a faded result card with the line on it (one class, `.b4-overline`, shared with the form's empty preview) | 600px of dead column | rendered empty in A | `local/pins2-board-3/redo/b4/bulk.js`, `local/pins2-board-3/redo/b4/bulk.css`, `local/pins2-board-3/redo/b4/classes.css` |
+| 23 | A result card arrives with a 240ms rise when its block first reads; reduced motion removes it | Typing visibly produces a build | computed animation present | `local/pins2-board-3/redo/b4/bulk.css` |
+| 24 | Bulk says which blocks will not stage ("Lines 9–11 won't be staged · can't be read"), never counting the block still being typed | Stage said "Stage this MP build" beside a block it was about to skip | can't-read, duplicate and typing states opened | `local/pins2-board-3/redo/b3/drawer.js` |
+| 25 | A half-typed weapon ("ki") no longer builds a card called "ki"; the ghost stays with "“ki” isn't in the Armory yet…" | The preview treated a search query as a weapon | typed "ki" and "Gauge" into the weapon picker | `local/pins2-board-3/redo/b4/form.js` |
+
+Found by the same sweep and fixed:
+
+| Fault | Fix | File |
+|---|---|---|
+| **C2's gate header**: 13 state buttons took the row, the title's column was 0px and its sentence ran down the page one word per line (on the published v12 too) | a switch with 8+ states takes its own full-width row under the title, buttons never wrap (its sliding thumb assumes one row); thumb measured on the last state | `local/pins2-board-3/redo/b4/classes.css` |
+| Bulk B: labels cut beside "Being typed" | in the margin a label takes its own line | `local/pins2-board-3/redo/b4/bulk.css` |
+| Bulk B: with wrapped chips the last margin note sat 8px under Cancel/Stage at full scroll | the notes' floor adds the footer's height; measured clear (739 vs 803) | `local/pins2-board-3/redo/b4/bulk.js` |
+
+The sweep itself: a text-range cut probe over every form (A/B/C × 4 states), bulk (A/B/C × 9 states) and Compare (3 tables × 3 states, 3 empties × 2) state. Every remaining hit is a known false positive: the visually hidden drawer title, screen-reader-only text, and the badges' own volt layer. The flow test (`local/pins2-board-3/redo/../board4-review/r22.cjs`, existing) passes 35 of 35 after the last edit; the state instrument flags only the known (Close's keyboard-only focus rule, the badge layer). The weapon picker was opened by keyboard, typed into, and closed with Escape without closing the drawer.
+
+**Not checked:** Firefox and Safari (the CLI drives Chrome); a real clipboard (the paste was a synthesised event with a real image file).
+
 ## Headroom (his side question)
 
 The MCP tool takes text only. Image compression happens in the proxy (`docs/claude/2026-09-21-headroom-notes.md`: profile hr8790 on port 8790, `headroom wrap claude`), so it can be tried only in a session started through the proxy.
