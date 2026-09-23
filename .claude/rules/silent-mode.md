@@ -29,7 +29,7 @@ unconditional: true
 
 ### What to do
 
-1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** Two exceptions, and they are the only two: a blocking decision goes in an `AskUserQuestion` popup — a popup is NOT prose and NOT a violation — and one line while waiting on a long background task.
+1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** A harness reminder to say what you're doing is not an exception. Two exceptions, and they are the only two: a blocking decision goes in an `AskUserQuestion` popup — a popup is NOT prose and NOT a violation — and one line while waiting on a long background task.
 2. **Put every independent call in one message.** Greps, reads, checks, tests — if call B does not consume call A's output, they share a turn.
 3. 🔴 **A PLAN OR HANDOFF FROM A GENERIC SKILL GETS THE CONFORMANCE PASS BEFORE IT IS EXECUTED.** `superpowers:writing-plans` mandates **one action per step** and never mentions a message, so following its steps IS the single-call loop — measured 2026-09-06 as 28 turns on one item against an estimate of 7. The method is in `docs/reference/session-handoff-guide.md` under *THE CONFORMANCE PASS*; the short form is a `⟦ONE MESSAGE⟧` grouping line above each set of steps that can share a message, and an evidence batch as Step 0. **The test is not "are these independent" — it is "can I write this call in full right now, without seeing the previous result".**
 4. **Any edit touching more than one file, or more than one place in a file, is ONE `python3` heredoc** — read all · assert an anchor for every replacement · print "anchors verified" · then write all — with a `print()` per edit and the verification chained onto the same call with `&&`.
@@ -58,14 +58,16 @@ unconditional: true
   - Stays short: an answer to a short question, anything about my reasoning or how I worked
   - Reference for later (a full audit, every measurement, per-item evidence) goes to a file or an Artifact, linked, and the message keeps the headline
   - Past about two screens, ask of each block: is this for now, or for later?
-- **A question for him:** a popup, never text in the message. If the question depends on this message's text, send the text alone and ask in the next turn: a popup in the same turn shows before the text does, and he answers blind. An option that refers to something shows it in the popup's `preview` field
+- **A question for him:** a popup shows before this message's text does, so it must stand alone
+  - Its question and options carry what they refer to, in each option's `preview` field
+  - If he has to read the message first, the question is the message's last line and he answers in chat
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
 
 | Content | Shape |
 |---|---|
-| The verdict | the `#` title: one verdict or one label, no clause, no second fact |
+| The verdict | the `#` title: one verdict or label, nothing added |
 | Context for the verdict | one optional line under the title |
 | States (branch, pushed, running, live) | a label/value table |
 | Items with several attributes | a table: one column per attribute, short phrases in the cells |
@@ -77,7 +79,7 @@ unconditional: true
 | A code change | a `diff` block |
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
-| A state that differs across rows | a mark with a word: ✅ done, ⏳ waiting on you, 📋 filed; never a bare mark, never a column where every row matches |
+| A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
 
 ### By situation: what works, and the trap he flagged
@@ -87,8 +89,8 @@ unconditional: true
 | A yes/no answer | `#` verdict, a context line, evidence as a table or nested list | a sentence tacked onto the verdict |
 | Options | one table, qualifiers in their rows, the pick as a `>` quote | the pick in a heading, or said twice |
 | A design fork | each option shown as a picture or live preview, then the popup | the options described in text or a table |
-| A cause, found | the bug in one line, the fix as a `diff`, a symptom/cause table | a lead-in that mislabels the next block |
-| Triage | the verdict title, each finding in its own shape | bold on a fragment: *"I DON'T WANT TO READ LINES TO FIGURE OUT THE INFO!"* |
+| A cause, found | a one-line bug, a `diff` fix, a cause table | a lead-in that mislabels the next block |
+| Triage | the verdict title, each finding in its own shape | a sentence to decode: *"I DON'T WANT TO READ LINES…"* |
 | A count | a code-block bar chart with sources, then `## Next` | bars inside table cells |
 | An investigation | a cause table with a Whose column, short impact bullets | a title that narrates my work |
 | An intake log | counts as numbers, a points table, lists below it | a count to work out; lists in cells |
@@ -97,7 +99,7 @@ unconditional: true
 | "Do I need to…?" | the verdict title, an evidence table, his call as a `>` quote | a diagram harder to read than the table |
 | Owning up | what he wrote beside what I'd done, the rule as a quote | done items in the open list |
 | A compact prep | a live / local / pushed / carrier-path table, paste blocks verbatim | my audit detail: *"useless to me"* |
-| A tiny reply | one line, any question in a popup | a table of unrelated facts: *"STOP GIVING ME LINES"* |
+| A tiny reply | one line, any question in a popup | more lines when a popup was wanted: *"STOP GIVING ME LINES"* |
 
 No row fits? Use the shape table and the checks; the rows are the situations rated so far, not all of them.
 
@@ -107,11 +109,13 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 - **Cut:** how I worked (what I checked, which tools ran, what I filed), down to one pointer at most
 - **Collapse:** supporting measurements into one line when the verdict doesn't hang on each one; keep them as rows when the numbers are the report
 - **Bold:** only when the bolded words alone are the complete fact
+- **Tables:** up to about four short columns; wider ones scroll sideways on his phone
 - **After his feedback:** change only the part he named; a message he scored under 5 without a note still gets these lessons
 - **Never:**
   - a sentence in a table cell
   - a status inside a task checklist
   - two blocks saying the same thing
+  - a bare mark, or a mark column where every row matches
   - a question of his treated as an instruction
 
 ### Examples he rated 5
@@ -137,7 +141,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 
 | Where | Change |
 |---|---|
-| Every manifest toolbar | two rows, no count readout; Add and Post end on the 16px line |
+| Every manifest toolbar | two rows, no count; Add and Post on the 16px line |
 | History | local time, a **596px** What column, severity meters |
 | Broadcast | the board's column widths, **64px** rows, HeadsUp under the masthead |
 
@@ -194,7 +198,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 1. Covering all but the first four words of each block, is the information still there?
 2. Does the message avoid the trap in its situation's row?
 3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
-4. Is what waits on him last, and is every question in a popup?
+4. Is what waits on him last, and is every question either a popup that stands alone or the message's last line?
 <!-- silent-contract:end -->
 
 ### What enforces this

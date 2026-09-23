@@ -38,6 +38,13 @@ status: frozen
 
 Agreed 2026-09-22 21:46 EDT: the next session adds its own real end-of-run summaries to the corpus page (artifact `VWhr3tjRbuBHLsJu4y4CGZ`) and he rates a few, because every rule so far came from rewriting old messages rather than writing new ones. Compare with this session's baseline from `node scripts/summaryShape.mjs --session latest`: 18 of 57 final messages put a sentence in a table cell.
 
+Steps, all in `local/summary-corpus/` (gitignored, so this machine only):
+
+1. `node extract.mjs <session-id-prefix>` lists that session's final messages and writes `finals-<prefix>.json`
+2. Pick about six of different kinds, and write them to `real.json` as `[{"kind", "when", "text"}]`
+3. `node build.mjs` adds them after the 12 samples as "Real summaries, as sent", each rated into the `ratings-real` collection
+4. Republish `summary-corpus.html` to the same artifact URL, and change the page's header line to say what's being rated
+
 ## Every note, verbatim
 
 ### 1 · A yes/no answer with evidence

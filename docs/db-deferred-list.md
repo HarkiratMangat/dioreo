@@ -595,6 +595,10 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 ## 🔔 Reminders / watch-for
 
 
+### `[P2 · S]` Rate real end-of-run summaries against the rebuilt Silent contract — next session
+
+**Filed 2026-09-22 21:59 EDT, agreed with Harkirat.** Every rule in the Silent contract came from rewriting 12 old messages; none has been tested on a summary written at the end of a real run. Next session: add a few of its real final messages to the corpus page (artifact `VWhr3tjRbuBHLsJu4y4CGZ`) and he rates them. Steps are in `docs/claude/2026-09-22-summary-corpus-ratings.md`, "Next: the real test". **Verify:** a `ratings-real` collection with his scores, and `node scripts/summaryShape.mjs --session latest` compared with this session's baseline (18 of 57 final messages had a sentence in a table cell).
+
 ### `[P1 · S · Sonnet5-High]` The handoff requirements reach a session too LATE — put them at the WRITE, not at the end
 
 **Filed 2026-09-10 13:32 EDT, from a measurement about my own additions rather than a theory.** `npm run handoff` now requires a `## Audit log` in a handoff and does set arithmetic against the list it summarises, and `docs/reference/session-handoff-guide.md` gained four steps. **Both channels are weak by this session's own evidence:** the guide already contained four warnings about that exact failure class and I read past all four on the same day, and the check runs at the END, by which point the document feels finished and restructuring it is expensive enough to rationalise past.
