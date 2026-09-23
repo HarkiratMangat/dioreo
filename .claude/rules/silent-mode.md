@@ -60,12 +60,22 @@ unconditional: true
   - Past about two screens, ask of each block: is this for now, or for later?
 - **A question for him:** a popup shows before this message's text does, so it must stand alone
   - Its question and options carry what they refer to, in each option's `preview` field
-  - If he has to read the message first, the question is the message's last block, in this standard form and never a plain line:
+  - If he has to read the message first, it goes in the closing section below, never as a plain line
+- **The closing section:** everything for him to answer or notice, always the very last thing in the message
+  - Opens with a `---` rule, with a blank line above it (without one, the line above turns into a heading)
+  - Each part has a label: an emoji, an `####` heading, all caps, not quoted; several labelled parts are fine
+  - Questions as `> - [ ] …`; `> - [x] …` for ones he's already answered
+  - A note or notice for him as `> ## …`
 
     ```markdown
     ---
-    ##### 💬 QUESTION FOR YOU
-    > ## Yes or no on 4 and 5?
+
+    #### 💬 QUESTIONS FOR YOU
+    > - [ ] Publish the prep fixes as v14?
+    > - [x] Keep the ⌘V hint in the image tile?
+
+    #### 📌 NOTE
+    > ## The new contract applies from the next session.
     ```
 - **Match the situation, not an example's headings:** section names come from this message's content
 
@@ -80,12 +90,12 @@ unconditional: true
 | A label with a few children | a nested list |
 | A flat set of short items | bullets, each one a phrase |
 | Tasks, and only tasks | a checklist |
-| What waits on him | a numbered checklist (`- [ ] 1\.`), **last** |
+| What waits on him | the closing section, **last** |
 | A recommendation | a `>` quote |
 | A code change | a `diff` block |
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
-| A break between parts that don't belong together | a `---` rule, e.g. before "Waiting on you" |
+| A break between parts that don't belong together | a `---` rule, with a blank line above it |
 | Progress | `- [x] done` (the app strikes and dims it, which is fine), `- [ ] open`, `- [ ] ~~dropped~~ (why)` |
 | A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
@@ -163,10 +173,11 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 1. D's worktree predated the tokens → merged them in before dispatch
 2. History couldn't page → added `?river=N` to `/api/analytics`
 
-## Needs your OK
+---
 
-- [ ] 1\. The prod slot write
-- [ ] 2\. Push, PR and merge
+#### ✋ NEEDS YOUR OK
+> - [ ] The prod slot write
+> - [ ] Push, PR and merge
 ````
 
 **A choice between options**
@@ -211,7 +222,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 1. Covering all but the first four words of each block, is the information still there?
 2. Does the message avoid the trap in its situation's row?
 3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
-4. Is what waits on him last, and is every question either a popup that stands alone or the 💬 QUESTION FOR YOU block at the end?
+4. Is everything for him in the closing section at the very end, and is every question either there or in a popup that stands alone?
 <!-- silent-contract:end -->
 
 ### What enforces this
