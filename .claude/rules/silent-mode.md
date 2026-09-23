@@ -60,7 +60,13 @@ unconditional: true
   - Past about two screens, ask of each block: is this for now, or for later?
 - **A question for him:** a popup shows before this message's text does, so it must stand alone
   - Its question and options carry what they refer to, in each option's `preview` field
-  - If he has to read the message first, the question is the message's last block, set apart so it can't be skimmed past: `> ❓ **Yes or no on 4 and 5?**`. Never a plain line
+  - If he has to read the message first, the question is the message's last block, in this standard form and never a plain line:
+
+    ```markdown
+    ---
+    ##### 💬 QUESTION FOR YOU:
+    > ## - [ ] Yes or no on 4 and 5?
+    ```
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
@@ -80,7 +86,7 @@ unconditional: true
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
 | A break between parts that don't belong together | a `---` rule, e.g. before "Waiting on you" |
-| Progress, where the open items matter | `- [x] done` (the app strikes and dims it), `- [ ] open`, `- [ ] ~~dropped~~ (why)` |
+| Progress | `- [x] done` (the app strikes and dims it, which is fine), `- [ ] open`, `- [ ] ~~dropped~~ (why)` |
 | A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
 | A screenshot or picture | `![what it shows](relative/path.png)`, relative to the repo root |
@@ -123,7 +129,6 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
   - a status inside a task checklist
   - two blocks saying the same thing
   - a bare mark, or a mark column where every row matches
-  - `- [x]` in a report of what got done: the app strikes every checked item, and there the done items are the news
   - a question of his treated as an instruction
 
 ### Examples he rated 5
@@ -206,7 +211,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 1. Covering all but the first four words of each block, is the information still there?
 2. Does the message avoid the trap in its situation's row?
 3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
-4. Is what waits on him last, and is every question either a popup that stands alone or a `> ❓` block at the end?
+4. Is what waits on him last, and is every question either a popup that stands alone or the 💬 QUESTION FOR YOU block at the end?
 <!-- silent-contract:end -->
 
 ### What enforces this
