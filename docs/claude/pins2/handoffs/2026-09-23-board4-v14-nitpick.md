@@ -5,7 +5,7 @@ status: frozen
 
 # Board 4 v14 — the nitpick round (2026-09-23 00:27 EDT)
 
-His asks (2026-09-23 00:10–00:14 EDT): harshly nitpick the Bulk create panel; "you seem to have messed up the colors for the row's highlight glow" (the manifest rows); sweep the board for small bugs in buttons, hover and pressed states; harshly nitpick Form A (Instrument) of Add build, scroll included. Everything below is **local only** in the kit (commits `22259bd` → `0ac0554`); v13 is still the published board.
+His asks (2026-09-23 00:10–00:14 EDT): harshly nitpick the Bulk create panel; "you seem to have messed up the colors for the row's highlight glow" (the manifest rows); sweep the board for small bugs in buttons, hover and pressed states; harshly nitpick Form A (Instrument) of Add build, scroll included. Kit commits `22259bd` → `0ac0554`. **Published as Version 14 at 2026-09-23 08:31 EDT** on his yes ("yes you can publish", 2026-09-23 08:29 EDT): board4.html plus the seven changed files, each matching its local byte size in the artifact's file listing.
 
 ## Fixed, each at its class, each re-shot after the last edit
 
