@@ -59,7 +59,7 @@ unconditional: true
   - Reference for later (a full audit, every measurement, per-item evidence) goes to a file or an Artifact, linked, and the message keeps the headline
   - Past about two screens, ask of each block: is this for now, or for later?
 - **A question for him:** a popup shows before this message's text does, so it must stand alone
-  - Its question and options carry what they refer to, in each option's `preview` field: in the desktop app an HTML fragment with inline styles, so a styled mockup and never a picture (no `<img>`, no `url()`)
+  - Its question and each option's label and description carry what they refer to: the Code tab doesn't show an option's `preview` while he chooses, so pictures go out as images before the popup
   - If he has to read the message first, it goes in the closing section below, never as a plain line
   - Which to use: choosing among a few options → a popup with previews; a question he answers in words, or several related ones → the closing section
 - **The closing section:** everything for him to answer or notice, always the very last thing in the message
