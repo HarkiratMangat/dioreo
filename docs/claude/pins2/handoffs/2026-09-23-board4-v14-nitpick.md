@@ -38,7 +38,7 @@ Checked after the last edit: drawer heights 860 in five states; key field and hi
 - Firefox and Safari (the CLI drives Chrome); a real wheel at a scroll end (the computed value was read, the chaining itself not felt)
 - Hover states were forced by copying `:hover` rules onto a class, which misses a hover declared on an ancestor's `:hover`
 
-## Round 2 — the header lift replaced by the board's fade (2026-09-23 08:32–08:54 EDT) — LOCAL ONLY, not published
+## Round 2 — the header lift replaced by the board's fade (2026-09-23 08:32–08:54 EDT) — **published as Version 15 at 2026-09-23 09:26 EDT** on his yes ("yes publish v15", 09:25 EDT): board4.html plus the six changed files, each matching its local byte size in the artifact's file listing
 
 His ruling, 08:32 EDT: *"keeping it stick is the correction direction but the lift is the wrong method of implementing it. Use the fading method we already utilize elsewhere, such as the tile's scrolling in Export's Pick builds... panel."* The method is `.b3-fady` (`local/pins2-board-3/redo/b3/fady.js`): a mask whose top and bottom depths are read from the scroller's own position, so a run that fits has no fade.
 
@@ -124,7 +124,7 @@ Checked after the last edit: Form A, B and C filled and DMZ scrolled (fade 28px 
 
 ### Open, his to decide
 
-- **Publish the fade round as v15 BEFORE the intake**: the published v14 still carries the header lift he rejected, so an intake on it would review a design that is gone locally.
+- ~~Publish the fade round as v15 before the intake~~ → published 2026-09-23 09:26 EDT on his yes.
 - The four fork picks (Form, Bulk, Table, Empty).
 - The four proposals: a clickable Bulk result card, one label layout in Form A, the chips' rest state, a Link chip in the Bulk editor.
 - Still open from before this session: the real-summary rating test (`docs/claude/2026-09-22-summary-corpus-ratings.md`, "Next: the real test"), nine unmarked items in `docs/ideas/diors-notes.md`, four orphaned forks in linksee from other sessions.
@@ -138,7 +138,7 @@ KEEP: this file (Compact prep 3 first) · the v12 critique's Compact prep 2 · t
 ```text
 /rename Sonnet5-XHigh · Pins2 S3 Board 4 intake round · Sep 23
 Continue Board 4 (Session 3 of pins batch 2): an in-chat intake round on the latest board. Before ANY tool call, read_smart in full, in this order: docs/claude/pins2/handoffs/2026-09-23-board4-v14-nitpick.md ("Compact prep 3" at the END first: the patterns with his words, what is only partly verified, the corrected claims, the instruments that lied; then Round 2 and the round above it), then "Compact prep 2" at the end of docs/claude/pins2/handoffs/2026-09-22-board4-v12-critique.md, then §0 WORKING CONTRACT of docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md, then .remember/remember.md in full (PRE-FLIGHT 0–33). Recall linksee by query on both entities (Diors-Builds, pins2-board-3): 'existing treatment before inventing', 'structural role consumers', 'comment swallowed survivors', 'session summary 2026-09-23', 'popup preview Code tab'. Anchors #47, #48, #50, #51 and #52 (the board fade) govern. Do not trust this prompt's summary of state; the carriers are the record.
-State to confirm from the carriers, not from here: v14 is published and still carries the header lift he rejected; the fade round (kit commits after 0ac0554) is local only. Before the intake, ask whether to publish it as v15 so the board he reviews is the current one; publish only on his yes.
+State to confirm from the carriers, not from here: v15 is published (the fade round); the local kit and the published board match. The intake reviews v15.
 For his intake: write each item's question, then the surface that answers it (the local board with the chrome-devtools CLI; the artifact's file listing for a publish; never the live page). Before inventing any treatment, search the kit for the one the board already uses. Fix the CLASS, search every consumer of what you change (closest(), scrollIntoView, scrollTop for a scroller) and open every state it reaches: USE it (click, type, paste, Escape, ⌘↵, scroll) and LOOK, three faults per shot. A claim about what a surface renders is tested on that surface first. Before porting a recipe, list its constants and recall its caveats. Open the record's 'measured only, or not opened' column before any publish or pick popup. Never append a comment to a line inside a replacement; assert the survivors after writing. Read a layout chain before writing a layout fix.
 Silent mode: zero prose between the first tool call and the final message; the final message in the Silent contract's shape, everything for him in the closing section. Tool routing by the question: read_smart for whole files, codebase-memory for code, ctx_search / ctx_execute_file for prose and slices, rg / sed / cat only as a last resort for one literal. Mega-batch: one heredoc per Bash call, ended with &&, kit paths from one K prefix. Sequential thinking pre-emptively and harshly. Class, not instance. Awwwards worthy, nitpicked never lazy. The phone is not a review surface. Publish only on his yes.
 ```
