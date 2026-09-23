@@ -54,7 +54,7 @@ unconditional: true
 ### Before writing
 
 - **A long run:** the long version goes to a file or an Artifact, and the message carries its path
-- **A question for him:** a popup, never text in the message. If the question depends on this message's text, send the text alone and ask in the next turn: a popup in the same turn shows before the text does, and he answers blind
+- **A question for him:** a popup, never text in the message. If the question depends on this message's text, send the text alone and ask in the next turn: a popup in the same turn shows before the text does, and he answers blind. An option that refers to something shows it in the popup's `preview` field
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
@@ -81,6 +81,7 @@ unconditional: true
 |---|---|---|
 | A yes/no answer | `#` verdict, a context line, evidence as a table or nested list | a sentence tacked onto the verdict |
 | Options | one table, qualifiers in their rows, the pick as a `>` quote | the pick in a heading, or said twice |
+| A design fork | each option shown as a picture or live preview, then the popup | the options described in text or a table |
 | A cause, found | the bug in one line, the fix as a `diff`, a symptom/cause table | a lead-in that mislabels the next block |
 | Triage | the verdict title, each finding in its own shape | bold on a fragment: *"I DON'T WANT TO READ LINES TO FIGURE OUT THE INFO!"* |
 | A count | a code-block bar chart with sources, then `## Next` | bars inside table cells |

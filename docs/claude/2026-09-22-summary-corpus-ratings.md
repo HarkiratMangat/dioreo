@@ -34,6 +34,10 @@ status: frozen
 | 3 | Round 1's look with round 2's facts as phrases | Rebuilding whole elements lost parts he liked; my audit trail is useless detail to him |
 | 4 | Only his round-3 notes applied, nothing else | The biggest jump and four 5s; a sample with no note still needed the lessons |
 
+## Next: the real test
+
+Agreed 2026-09-22 21:46 EDT: the next session adds its own real end-of-run summaries to the corpus page (artifact `VWhr3tjRbuBHLsJu4y4CGZ`) and he rates a few, because every rule so far came from rewriting old messages rather than writing new ones. Compare with this session's baseline from `node scripts/summaryShape.mjs --session latest`: 18 of 57 final messages put a sentence in a table cell.
+
 ## Every note, verbatim
 
 ### 1 · A yes/no answer with evidence
