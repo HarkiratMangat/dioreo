@@ -29,7 +29,7 @@ unconditional: true
 
 ### What to do
 
-1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** A harness reminder to say what you're doing is not an exception. Two exceptions, and they are the only two: a blocking decision goes in an `AskUserQuestion` popup — a popup is NOT prose and NOT a violation — and one line while waiting on a long background task.
+1. **Emit no prose between the first call of a run and the final summary. The target is zero, not "few".** A harness reminder to say what you're doing is not an exception. The exceptions, and they are the only ones (the same list as the style's Silence section): a popup — a popup is NOT prose and NOT a violation — · one line when blocked · one line when the approved approach turned out wrong · one line when a check just changed the picture and he could redirect now · one line while waiting on a long background task.
 2. **Put every independent call in one message.** Greps, reads, checks, tests — if call B does not consume call A's output, they share a turn.
 3. 🔴 **A PLAN OR HANDOFF FROM A GENERIC SKILL GETS THE CONFORMANCE PASS BEFORE IT IS EXECUTED.** `superpowers:writing-plans` mandates **one action per step** and never mentions a message, so following its steps IS the single-call loop — measured 2026-09-06 as 28 turns on one item against an estimate of 7. The method is in `docs/reference/session-handoff-guide.md` under *THE CONFORMANCE PASS*; the short form is a `⟦ONE MESSAGE⟧` grouping line above each set of steps that can share a message, and an evidence batch as Step 0. **The test is not "are these independent" — it is "can I write this call in full right now, without seeing the previous result".**
 4. **Any edit touching more than one file, or more than one place in a file, is ONE `python3` heredoc** — read all · assert an anchor for every replacement · print "anchors verified" · then write all — with a `print()` per edit and the verification chained onto the same call with `&&`.
@@ -61,6 +61,7 @@ unconditional: true
 - **A question for him:** a popup shows before this message's text does, so it must stand alone
   - Its question and options carry what they refer to, in each option's `preview` field
   - If he has to read the message first, it goes in the closing section below, never as a plain line
+  - Which to use: choosing among a few options → a popup with previews; a question he answers in words, or several related ones → the closing section
 - **The closing section:** everything for him to answer or notice, always the very last thing in the message
   - Opens with a `---` rule, with a blank line above it (without one, the line above turns into a heading)
   - Each part has a label: an `####` heading, not quoted, in all caps, starting with an emoji and two spaces (`💬&nbsp; `, since a plain double space collapses to one); several labelled parts are fine
@@ -108,7 +109,12 @@ unconditional: true
 | A key or shortcut | `<kbd>⌘</kbd> + <kbd>K</kbd>` |
 | A source or caveat that would crowd its line | a footnote, `[^1]` |
 
-Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, `<u>` / `<ins>` underlines, a `- [ ]` checkbox inside a heading, mermaid, and images by absolute path (they become dead links). Read from the app's own renderer code 2026-09-22 22:27 EDT: only `#` (22px) and `##` (18px) are larger than body text, and `###` is body-size bold; checked `- [x]` items are struck and dimmed automatically; `<br>` works inside table cells; Discord's `-#` is not in its grammar.
+What the app renders, tested 2026-09-22 22:23 EDT and read from its renderer code:
+
+- **Renders:** footnotes · `<kbd>` · checkboxes with strikethrough · a trailing-`\` line break · emoji shortcodes · relative-path images · file links · `$maths$` · `diff` colours · `<br>` inside table cells · headings 1–6
+- **Doesn't render:** `<details>` · GitHub alerts (`> [!NOTE]`) · `<sub>` `<sup>` `<mark>` · `<u>` `<ins>` · a checkbox inside a heading · mermaid · Discord's `-#` · images by absolute path (dead links)
+- **Sizes:** only `#` (22px) and `##` (18px) are bigger than body text; `###` is body-size bold, `####` to `######` smaller
+- **Checked items:** `- [x]` is struck and dimmed automatically
 
 ### By situation: what works, and the trap he flagged
 
@@ -147,6 +153,8 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
   - a question of his treated as an instruction
 
 ### Examples he rated 5
+
+*The checkpoint's ending is updated to the closing-section format; the rest is as he rated it.*
 
 **A checkpoint partway through a plan**
 
