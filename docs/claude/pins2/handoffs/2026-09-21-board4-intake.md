@@ -368,3 +368,12 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 19 | `dl/101052-Arc.png` | Add build · Stored image picker | the subtitles ("3-LINE RIFLE · B…") are cut off; every thumbnail is a placeholder icon |
 | 20 | `dl/101101-Arc.png` | Add build · Stored image picker, scrolled | rows lose their thumbnail and key; three different left indents ("Unused upload", BP50) |
 | 21 | `dl/101144-Arc.png` | Add build · category picker open | the short-code column repeats the name (MARKSMAN, SHOTGUN) and is uneven |
+
+### His answers on the screenshots (popups, verbatim)
+
+| # | His answer |
+|---|---|
+| 1 | *"I want that entire pop up replaced with the styling of screenshot 4 + changing the "assault" "smg" etc text matching their accent color."* |
+| 2 | Overflow and wrap: the switch, the drop zone and Key run past the well's right edge, and "file" wraps. |
+| 3 | Both: clearer wording (name the other blocker instead of "· 1 more") and restyle the chip. |
+| 4 | *"This is taken from the compare panels empty state. I liked the design of this list. It's a reference for screenshot 1."* |
