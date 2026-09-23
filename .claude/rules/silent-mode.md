@@ -79,6 +79,8 @@ unconditional: true
 | A code change | a `diff` block |
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
+| A break between parts that don't belong together | a `---` rule, e.g. before "Waiting on you" |
+| Progress, where the open items matter | `- [x] ~~done~~` recedes, `- [ ] open` stands out; `- [ ] ~~dropped~~ (why)` |
 | A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
 
@@ -116,6 +118,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
   - a status inside a task checklist
   - two blocks saying the same thing
   - a bare mark, or a mark column where every row matches
+  - struck-through items in a report of what got done: there the done items are the news
   - a question of his treated as an instruction
 
 ### Examples he rated 5
