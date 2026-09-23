@@ -80,14 +80,14 @@ unconditional: true
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
 | A break between parts that don't belong together | a `---` rule, e.g. before "Waiting on you" |
-| Progress, where the open items matter | `- [x] ~~done~~` recedes, `- [ ] open` stands out; `- [ ] ~~dropped~~ (why)` |
+| Progress, where the open items matter | `- [x] done` (the app strikes and dims it), `- [ ] open`, `- [ ] ~~dropped~~ (why)` |
 | A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
 | A screenshot or picture | `![what it shows](relative/path.png)`, relative to the repo root |
 | A key or shortcut | `<kbd>⌘</kbd> + <kbd>K</kbd>` |
 | A source or caveat that would crowd its line | a footnote, `[^1]` |
 
-Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, mermaid, and images by absolute path (they become dead links).
+Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, mermaid, and images by absolute path (they become dead links). Read from the app's own renderer code 2026-09-22 22:27 EDT: only `#` (22px) and `##` (18px) are larger than body text, and `###` is body-size bold; checked `- [x]` items are struck and dimmed automatically; `<br>` works inside table cells; Discord's `-#` is not in its grammar.
 
 ### By situation: what works, and the trap he flagged
 
@@ -123,7 +123,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
   - a status inside a task checklist
   - two blocks saying the same thing
   - a bare mark, or a mark column where every row matches
-  - struck-through items in a report of what got done: there the done items are the news
+  - `- [x]` in a report of what got done: the app strikes every checked item, and there the done items are the news
   - a question of his treated as an instruction
 
 ### Examples he rated 5
