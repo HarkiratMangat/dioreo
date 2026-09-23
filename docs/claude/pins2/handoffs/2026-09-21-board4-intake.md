@@ -381,3 +381,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 6 | *"Broken hover event. It used to be different before but now it goes transparent which is wrong"* |
 | 7 | Card placement: the hover preview card's position or size is off. |
 | 8 | *"This is a reference for how your build drawer field highlights should be styled."* |
+| 9 | *"Inconsistent fade position. The right side is wrong. Make it match the fade position/cut of the left side tiles scroll. Use this same fade position/cut for the Build drawer scroll as well."* |
+| 10 | *"When there's multiple lists, the expand barelyyyy opens it up. Make it expand more"* |
+| 11 | A question, not a fix: *"what exactly do those left side accent colors match to or represent?"* (Broadcast manifest rows) |
+| 12 | *"The rail toggles and the admin traffic tints/colors don't match even tho they're supposed to be using the same accent color from the realm."* |
