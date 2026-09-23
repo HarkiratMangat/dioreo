@@ -54,7 +54,7 @@ unconditional: true
 ### Before writing
 
 - **A long run:** the long version goes to a file or an Artifact, and the message carries its path
-- **A question for him:** a popup, called as the last action of the message, after the text. A popup called first appears before the text it refers to
+- **A question for him:** a popup, never text in the message. If the question depends on this message's text, send the text alone and ask in the next turn: a popup in the same turn shows before the text does, and he answers blind
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
