@@ -118,6 +118,12 @@ Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now g
 
 **Verify condition:** ask him whether Repairs tickets count as manifest rows; if yes, hover a ticket on the local board and it glows in its own lifted hue, with no warn layer.
 
+### The docs audit fails on a v3.85.0 DEVLOG entry with no CHANGELOG heading `[P1 · XS]`
+
+Found 2026-09-23 17:00 EDT in Session 3's compact prep 4, not caused by it: `npm run docs:audit` reports one ERROR, `[devlog-orphan] v3.85.0 has a DEVLOG entry but NO heading in CHANGELOG.md`, on `feat/portal-pins2-manifests`. It fails CI; the audit's own advice is to restore the heading, never to delete the DEVLOG entry.
+
+**Verify condition:** `npm run docs:audit` exits 0 on the branch, with the v3.85.0 DEVLOG entry still present and a matching CHANGELOG heading.
+
 ### Board 4 v16 — states only measured or never opened `[P2 · S]`
 
 Filed 2026-09-23 16:59 EDT (Session 3 compact prep 4). v16 is built on the board kit and unpublished; these states were measured without being looked at, or not opened: History's and Repairs' filter chips, Repairs' view pills, Compare's build keys and Export's build numbers on the new tint recipe; Top 3/4/5 pressed; History and Broadcast manifest rows after the category alignment; the post drawer's focus and its fade while scrolling; keyboard ↑ ↓ in the new picker rows; DMZ slot pickers and the DMZ replace warning; Bulk after typing with the footer question; Form C with the Link source; Firefox and Safari. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §11.
