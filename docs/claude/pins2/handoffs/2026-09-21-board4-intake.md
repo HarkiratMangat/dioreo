@@ -389,3 +389,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 14 | *"The copy button doesn't have any hover events or confirmation when the code is copied"* |
 | 15 | *"This directly links with shot 16. It's showing how this button has a tint yet the other X button in the form is lacking the tint."* |
 | 16 | *"Links to shot 15"*: the grey × in the form gets the red clear ×'s tint. |
+| 17 | *"The badge chips in the card need to be improved. The attachment slot labels need their accent color"* (the preview card) |
+| 18 | *"The fields get cut off/escape the background block when multiple loadouts are added"* |
+| 19–20 | *"Like shots 4 + overall improvement"* (the Stored image picker) |
+| 21 | *"Like shot 4s + why are you stating the twice?"* (the category picker: a question about the name and its short code both showing) |
