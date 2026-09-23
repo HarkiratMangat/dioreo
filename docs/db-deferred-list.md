@@ -104,6 +104,24 @@ Found 2026-09-22 17:42 EDT in the same critique: Broadcast's post drawer reads "
 
 **Verify condition:** open Post announcement with the text empty: the counter reads 6,000 left, or its label names what the other characters are.
 
+### Bulk and Edit's drawer body scrolls with a hard cut `[P2 · S]`
+
+Found 2026-09-23 08:56 EDT in the Board 4 compact prep (Session 3, board kit only). The Add build form scrolls inside its own column with the board's `.b3-fady` fade (Round 2). Bulk and Edit still scroll the whole drawer body: Edit with three builds (30 lines) by 36px, Bulk empty by 12px, with the text cut hard under the header. Making the editor column the scroller was built and reverted (kit `703abb0` → `7fe1164`) because the editor's frame lives inside the scroller, so its top edge faded away. The fix needs the frame on an unmasked wrapper around the scroller.
+
+**Verify condition:** on the local board, Edit 3 builds in Bulk A and C: the drawer body does not scroll; the editor scrolls with a fade at the edge it has scrolled past; the editor's frame keeps all four edges at every scroll position; Bulk empty does not scroll at all.
+
+### Repairs tickets keep board 3's hover recipe while the manifest rows moved to the lifted one `[P3 · XS]`
+
+Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now glow in `--glo`, their hue lifted to at least L .72. `.b3-wr` (Repairs tickets) still uses board 3's percentage ellipses with a `--warn` middle radial. It may be right as a different surface; he said "the various manifest rows".
+
+**Verify condition:** ask him whether Repairs tickets count as manifest rows; if yes, hover a ticket on the local board and it glows in its own lifted hue, with no warn layer.
+
+### Board 4's round-14/15 fixes that live in portal code — Session 5 carries them `[P1 · M]`
+
+Filed 2026-09-23 08:56 EDT. Session 3 writes no portal code (anchor #13), so these board fixes must be ported by Session 5: the manifest row glow's `--glo` lift (Broadcast and History); the build drawer's fixed height; the form column as the scroller with the board fade, and its consumers (the Stage-reason jump, the picker's up/down test); a picker list that scrolls only itself; Discard confirmed in red; the key hint under the key field; the image tile filling its well; scroll containment on drawer scrollers. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v14-nitpick.md`.
+
+**Verify condition:** each behaviour, opened in the portal's own drawer and manifests after Session 5, matches the board.
+
 ### Six unique attachment slots are missing from the slot vocabulary `[P1 · S]`
 
 🟡 **HALF OF THIS IS NOW CLOSED ON PROD — 2026-09-17 12:59 EDT.** The six labels reach Mongo: the slot backfill wrote `attachmentSlots` on 130 prod builds with **0 blank entries**, and reading them back finds **Smoothbore** on R9-0 Build 1 · **Bolt** on SP-R 208 Builds 1 and 2 · **Trigger Action** on ARGUS, MACHINE PISTOL and DOBVRA Build 1 · **Bowstring** and **Limb** on CROSSBOW Build 2 · **Guard** on SHORTY Build 1. That works because `attachmentSlots` is a plain array of labels and `scripts/backfillSlotsFromMetadata.js` carries his twelve corrections in `KNOWN_SLOTS`.
