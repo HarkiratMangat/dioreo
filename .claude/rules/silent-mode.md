@@ -83,6 +83,11 @@ unconditional: true
 | Progress, where the open items matter | `- [x] ~~done~~` recedes, `- [ ] open` stands out; `- [ ] ~~dropped~~ (why)` |
 | A state that differs across rows | a mark plus a word: ✅ done, ⏳ waiting on you, 📋 filed |
 | One fact | one line |
+| A screenshot or picture | `![what it shows](relative/path.png)`, relative to the repo root |
+| A key or shortcut | `<kbd>⌘</kbd> + <kbd>K</kbd>` |
+| A source or caveat that would crowd its line | a footnote, `[^1]` |
+
+Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, mermaid, and images by absolute path (they become dead links).
 
 ### By situation: what works, and the trap he flagged
 
@@ -90,7 +95,7 @@ unconditional: true
 |---|---|---|
 | A yes/no answer | `#` verdict, a context line, evidence as a table or nested list | a sentence tacked onto the verdict |
 | Options | one table, qualifiers in their rows, the pick as a `>` quote | the pick in a heading, or said twice |
-| A design fork | each option shown as a picture or live preview, then the popup | the options described in text or a table |
+| A design fork | each option as a relative-path image or a live preview, then the popup | the options described in text or a table |
 | A cause, found | a one-line bug, a `diff` fix, a cause table | a lead-in that mislabels the next block |
 | Triage | the verdict title, each finding in its own shape | a sentence to decode: *"I DON'T WANT TO READ LINES…"* |
 | A count | a code-block bar chart with sources, then `## Next` | bars inside table cells |
