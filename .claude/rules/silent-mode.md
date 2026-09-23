@@ -60,7 +60,7 @@ unconditional: true
   - Past about two screens, ask of each block: is this for now, or for later?
 - **A question for him:** a popup shows before this message's text does, so it must stand alone
   - Its question and options carry what they refer to, in each option's `preview` field
-  - If he has to read the message first, the question is the message's last line and he answers in chat
+  - If he has to read the message first, the question is the message's last block, set apart so it can't be skimmed past: `> ❓ **Yes or no on 4 and 5?**`. Never a plain line
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
@@ -198,7 +198,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 1. Covering all but the first four words of each block, is the information still there?
 2. Does the message avoid the trap in its situation's row?
 3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
-4. Is what waits on him last, and is every question either a popup that stands alone or the message's last line?
+4. Is what waits on him last, and is every question either a popup that stands alone or a `> ❓` block at the end?
 <!-- silent-contract:end -->
 
 ### What enforces this
