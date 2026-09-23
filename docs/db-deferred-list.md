@@ -110,6 +110,8 @@ Found 2026-09-23 08:56 EDT in the Board 4 compact prep (Session 3, board kit onl
 
 **Verify condition:** on the local board, Edit 3 builds in Bulk A and C: the drawer body does not scroll; the editor scrolls with a fade at the edge it has scrolled past; the editor's frame keeps all four edges at every scroll position; Bulk empty does not scroll at all.
 
+✅ **Built on the board — 2026-09-23 14:58 EDT** (kit `d16116e`, `42cfafd`): the editor column scrolls with the fade and its frame sits on an unmasked wrapper (`.bk-frame`). Checked in Edit 3 builds (A): the drawer body scrolls 0px, the top fade 28px at 120px, the frame keeps its top edge. Bulk C not opened. It stays filed until Session 5 ports it into `portal/ui`.
+
 ### Repairs tickets keep board 3's hover recipe while the manifest rows moved to the lifted one `[P3 · XS]`
 
 Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now glow in `--glo`, their hue lifted to at least L .72. `.b3-wr` (Repairs tickets) still uses board 3's percentage ellipses with a `--warn` middle radial. It may be right as a different surface; he said "the various manifest rows".
@@ -118,7 +120,7 @@ Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now g
 
 ### Board 4's round-14/15 fixes that live in portal code — Session 5 carries them `[P1 · M]`
 
-Filed 2026-09-23 08:56 EDT. Session 3 writes no portal code (anchor #13), so these board fixes must be ported by Session 5: the manifest row glow's `--glo` lift (Broadcast and History); the build drawer's fixed height; the form column as the scroller with the board fade, and its consumers (the Stage-reason jump, the picker's up/down test); a picker list that scrolls only itself; Discard confirmed in red; the key hint under the key field; the image tile filling its well; scroll containment on drawer scrollers. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v14-nitpick.md`.
+Filed 2026-09-23 08:56 EDT. Session 3 writes no portal code (anchor #13), so these board fixes must be ported by Session 5: the manifest row glow's `--glo` lift (Broadcast and History); the build drawer's fixed height; the form column as the scroller with the board fade, and its consumers (the Stage-reason jump, the picker's up/down test); a picker list that scrolls only itself; Discard confirmed in red; the key hint under the key field; the image tile filling its well; scroll containment on drawer scrollers. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v14-nitpick.md`. **Added 2026-09-23 14:58 EDT (v16, his v15 intake):** one chip / segment / tier tint recipe; one gold focus on every field (the post drawer's focus rule never won its specificity); every drawer scroller on a 21px floor with the fade, Bulk/Edit's editor included (frame on `.bk-frame`); the picker list as Compare's ranked list with a column-bound width; copy that confirms; the card remove × in red; the image block's yielding tile; Export's file-column fade, open-file height and hover-card inset; the empty preview's radial clearing; the Stage reason naming each card; the Discord preview's badge kinds and slot colours (`ui/armory.js` LoadoutCard); History's list fade. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §8.
 
 **Verify condition:** each behaviour, opened in the portal's own drawer and manifests after Session 5, matches the board.
 

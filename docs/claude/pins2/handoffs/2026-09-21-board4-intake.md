@@ -402,3 +402,5 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 |---|---|
 | S7 · the Export hover preview's place | *"That spot is fine, it just needs fine tuning"* |
 | S17 · the preview card's styling | **Portal-only styling** |
+
+**Handled — 2026-09-23 14:58 EDT:** all 25 items are built locally (kit `42cfafd`); item by item in `2026-09-23-board4-v15-plan.md` §7, verification in §8. Not published.
