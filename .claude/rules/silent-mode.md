@@ -63,18 +63,22 @@ unconditional: true
   - If he has to read the message first, it goes in the closing section below, never as a plain line
 - **The closing section:** everything for him to answer or notice, always the very last thing in the message
   - Opens with a `---` rule, with a blank line above it (without one, the line above turns into a heading)
-  - Each part has a label: an emoji, an `####` heading, all caps, not quoted; several labelled parts are fine
+  - Each part has a label: an `####` heading, not quoted, in all caps, starting with an emoji and two spaces (`💬&nbsp; `, since a plain double space collapses to one); several labelled parts are fine
+  - Topics inside a part get a `> ######` label above their group
   - Questions as `> - [ ] …`; `> - [x] …` for ones he's already answered
   - A note or notice for him as `> ## …`
 
     ```markdown
     ---
 
-    #### 💬 QUESTIONS FOR YOU
-    > - [ ] Publish the prep fixes as v14?
+    #### 💬&nbsp; QUESTIONS FOR YOU
+    > ###### BOARD 4
     > - [x] Keep the ⌘V hint in the image tile?
+    > - [ ] Publish the prep fixes as v14?
+    > ###### SILENT CONTRACT
+    > - [ ] Different emoji per label kind?
 
-    #### 📌 NOTE
+    #### 📌&nbsp; NOTE
     > ## The new contract applies from the next session.
     ```
 - **Match the situation, not an example's headings:** section names come from this message's content
@@ -175,7 +179,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 
 ---
 
-#### ✋ NEEDS YOUR OK
+#### ✋&nbsp; NEEDS YOUR OK
 > - [ ] The prod slot write
 > - [ ] Push, PR and merge
 ````
