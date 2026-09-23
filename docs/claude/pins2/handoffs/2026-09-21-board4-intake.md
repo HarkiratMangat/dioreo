@@ -377,3 +377,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 2 | Overflow and wrap: the switch, the drop zone and Key run past the well's right edge, and "file" wraps. |
 | 3 | Both: clearer wording (name the other blocker instead of "· 1 more") and restyle the chip. |
 | 4 | *"This is taken from the compare panels empty state. I liked the design of this list. It's a reference for screenshot 1."* |
+| 5 | *"Bad inconsistent spacing that doesn't match the above sections (for the section label of the pass-check tile)"* |
+| 6 | *"Broken hover event. It used to be different before but now it goes transparent which is wrong"* |
+| 7 | Card placement: the hover preview card's position or size is off. |
+| 8 | *"This is a reference for how your build drawer field highlights should be styled."* |
