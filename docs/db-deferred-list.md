@@ -615,6 +615,8 @@ Home held its own copy of Armory's fault predicate; the copy happened to AGREE, 
 
 ### `[P2 · S]` Rate real end-of-run summaries against the rebuilt Silent contract — next session
 
+**Still not done, 2026-09-23 09:00 EDT:** the session it was filed for spent its run on Board 4 and never added a real summary to the corpus page. Carried to the next session that is not mid-intake.
+
 **Filed 2026-09-22 21:59 EDT, agreed with Harkirat.** Every rule in the Silent contract came from rewriting 12 old messages; none has been tested on a summary written at the end of a real run. Next session: add a few of its real final messages to the corpus page (artifact `VWhr3tjRbuBHLsJu4y4CGZ`) and he rates them. Steps are in `docs/claude/2026-09-22-summary-corpus-ratings.md`, "Next: the real test". **Verify:** a `ratings-real` collection with his scores, and `node scripts/summaryShape.mjs --session latest` compared with this session's baseline (18 of 57 final messages had a sentence in a table cell).
 
 ### `[P1 · S · Sonnet5-High]` The handoff requirements reach a session too LATE — put them at the WRITE, not at the end
@@ -1841,9 +1843,11 @@ It did not run for `local/handoff/2026-08-30-mode-collapse-and-season-overlays.m
 
 ⚠️ **What is NOT outstanding, so nobody re-opens it:** ① CASCADE is closed as a cited +16px (Harkirat, 2026-08-31 10:5x EDT) and will report forever · ③ WORDS is 100% cited (b) · the overview strip's minis were verified correct as a SET and differ only by the cascade offset.
 
-### `docs/ideas/diors-notes.md` has six unmarked items, untouched through 2026-08-28 `[P2 · S · Opus5-Low]`
+### `docs/ideas/diors-notes.md` has NINE unmarked items, untouched through 2026-09-23 `[P2 · S · Opus5-Low]`
 
 *Filed 2026-08-28 21:5x EDT.* The `SessionStart` check flagged them at the start of a twelve-hour session and not one was opened. Recorded here because a skipped obligation leaves no trace in git and the next session's hook will report the same count without anyone knowing it has been carried. Workflow: the `project_central_notes_file` memory — review, answer, mark in-file the same session, sweep resolved items to `docs/archive/graveyard.md`.
+
+**Re-checked 2026-09-23 09:00 EDT:** the `SessionStart` check now reports **nine** (six DMZ/v2/v3/v4 feature notes, the MarkEdit mark and cursor bugs). Carried again through the Board 4 session of 2026-09-22→23, which is design-board work and never opened them. **Verify:** the `SessionStart` notes check reports 0 open items, each one answered, marked in-file and, once confirmed, swept to the graveyard.
 
 ### Events and Playlists auto-collapse on real data, hiding 20 of the season's 39 items `[P2 · S · Opus5-Medium]`
 
