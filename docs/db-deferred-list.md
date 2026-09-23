@@ -110,7 +110,7 @@ Found 2026-09-23 08:56 EDT in the Board 4 compact prep (Session 3, board kit onl
 
 **Verify condition:** on the local board, Edit 3 builds in Bulk A and C: the drawer body does not scroll; the editor scrolls with a fade at the edge it has scrolled past; the editor's frame keeps all four edges at every scroll position; Bulk empty does not scroll at all.
 
-✅ **Built on the board — 2026-09-23 14:58 EDT** (kit `d16116e`, `42cfafd`): the editor column scrolls with the fade and its frame sits on an unmasked wrapper (`.bk-frame`). Checked in Edit 3 builds (A): the drawer body scrolls 0px, the top fade 28px at 120px, the frame keeps its top edge. Bulk C not opened. It stays filed until Session 5 ports it into `portal/ui`.
+✅ **Built on the board — 2026-09-23 14:58 EDT** (kit `d16116e`, `42cfafd`): the editor column scrolls with the fade and its frame sits on an unmasked wrapper (`.bk-frame`). Checked in Edit 3 builds (A): the drawer body scrolls 0px, the top fade 28px at 120px, the frame keeps its top edge. Bulk C and Bulk empty not opened. It stays filed until Session 5 ports it into `portal/ui`.
 
 ### Repairs tickets keep board 3's hover recipe while the manifest rows moved to the lifted one `[P3 · XS]`
 
