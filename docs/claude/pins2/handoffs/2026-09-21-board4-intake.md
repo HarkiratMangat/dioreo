@@ -385,3 +385,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 10 | *"When there's multiple lists, the expand barelyyyy opens it up. Make it expand more"* |
 | 11 | A question, not a fix: *"what exactly do those left side accent colors match to or represent?"* (Broadcast manifest rows) |
 | 12 | *"The rail toggles and the admin traffic tints/colors don't match even tho they're supposed to be using the same accent color from the realm."* |
+| 13 | Like shot 4's list: the attachment picker restyled like the Compare empty-state list. |
+| 14 | *"The copy button doesn't have any hover events or confirmation when the code is copied"* |
+| 15 | *"This directly links with shot 16. It's showing how this button has a tint yet the other X button in the form is lacking the tint."* |
+| 16 | *"Links to shot 15"*: the grey × in the form gets the red clear ×'s tint. |
