@@ -110,13 +110,25 @@ Found 2026-09-23 08:56 EDT in the Board 4 compact prep (Session 3, board kit onl
 
 **Verify condition:** on the local board, Edit 3 builds in Bulk A and C: the drawer body does not scroll; the editor scrolls with a fade at the edge it has scrolled past; the editor's frame keeps all four edges at every scroll position; Bulk empty does not scroll at all.
 
-✅ **Built on the board — 2026-09-23 14:58 EDT** (kit `d16116e`, `42cfafd`): the editor column scrolls with the fade and its frame sits on an unmasked wrapper (`.bk-frame`). Checked in Edit 3 builds (A): the drawer body scrolls 0px, the top fade 28px at 120px, the frame keeps its top edge. Bulk C and Bulk empty not opened. It stays filed until Session 5 ports it into `portal/ui`.
+✅ **Built on the board — 2026-09-23 14:58 EDT** (kit `d16116e`, `42cfafd`): the editor column scrolls with the fade and its frame sits on an unmasked wrapper (`.bk-frame`). Checked in Edit 3 builds (A): the drawer body scrolls 0px, the top fade 28px at 120px, the frame keeps its top edge. Bulk B, C and empty opened 2026-09-23 16:59 EDT: the frame keeps its edges; Bulk C after typing measured only. It stays filed until Session 5 ports it into `portal/ui`.
 
 ### Repairs tickets keep board 3's hover recipe while the manifest rows moved to the lifted one `[P3 · XS]`
 
 Found 2026-09-23 08:56 EDT. The manifest rows (Armory, Broadcast, History) now glow in `--glo`, their hue lifted to at least L .72. `.b3-wr` (Repairs tickets) still uses board 3's percentage ellipses with a `--warn` middle radial. It may be right as a different surface; he said "the various manifest rows".
 
 **Verify condition:** ask him whether Repairs tickets count as manifest rows; if yes, hover a ticket on the local board and it glows in its own lifted hue, with no warn layer.
+
+### Board 4 v16 — states only measured or never opened `[P2 · S]`
+
+Filed 2026-09-23 16:59 EDT (Session 3 compact prep 4). v16 is built on the board kit and unpublished; these states were measured without being looked at, or not opened: History's and Repairs' filter chips, Repairs' view pills, Compare's build keys and Export's build numbers on the new tint recipe; Top 3/4/5 pressed; History and Broadcast manifest rows after the category alignment; the post drawer's focus and its fade while scrolling; keyboard ↑ ↓ in the new picker rows; DMZ slot pickers and the DMZ replace warning; Bulk after typing with the footer question; Form C with the Link source; Firefox and Safari. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §11.
+
+**Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
+
+### Board 4's flow test has no relational assertions `[P3 · S]`
+
+Filed 2026-09-23 16:59 EDT. `local/pins2-board-3/board4-review/r22.cjs` (35 checks) passed while Cancel sat 16px over the form column, because none of its checks compare two elements. The class sweep (`docs/claude/pins2/instruments/board4-class-sweep.js`) measures recipes but is not wired into it.
+
+**Verify condition:** the flow test fails on a footer that overlaps the form column, on a picker list wider than its column, and on a chip family whose pressed ring differs from the recipe.
 
 ### Board 4's round-14/15 fixes that live in portal code — Session 5 carries them `[P1 · M]`
 
