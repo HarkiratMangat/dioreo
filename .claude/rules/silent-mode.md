@@ -53,7 +53,11 @@ unconditional: true
 
 ### Before writing
 
-- **A long run:** the long version goes to a file or an Artifact, and the message carries its path
+- **How long:** it depends on what he'll use now, not on a number
+  - Can run long: his own items, his decisions, blocks he'll copy, tables he asked for
+  - Stays short: an answer to a short question, anything about my reasoning or how I worked
+  - Reference for later (a full audit, every measurement, per-item evidence) goes to a file or an Artifact, linked, and the message keeps the headline
+  - Past about two screens, ask of each block: is this for now, or for later?
 - **A question for him:** a popup, never text in the message. If the question depends on this message's text, send the text alone and ask in the next turn: a popup in the same turn shows before the text does, and he answers blind. An option that refers to something shows it in the popup's `preview` field
 - **Match the situation, not an example's headings:** section names come from this message's content
 
@@ -73,6 +77,7 @@ unconditional: true
 | A code change | a `diff` block |
 | A chart, a format, a layout | a code block |
 | A claim that changed | `~~old~~ → new` |
+| A state that differs across rows | a mark with a word: ✅ done, ⏳ waiting on you, 📋 filed; never a bare mark, never a column where every row matches |
 | One fact | one line |
 
 ### By situation: what works, and the trap he flagged
@@ -188,7 +193,7 @@ No row fits? Use the shape table and the checks; the rows are the situations rat
 
 1. Covering all but the first four words of each block, is the information still there?
 2. Does the message avoid the trap in its situation's row?
-3. Does every checklist hold only tasks, and is nothing in it about how I worked?
+3. Does every checklist hold only tasks, is nothing in it about how I worked, and is every block for now (anything for later linked)?
 4. Is what waits on him last, and is every question in a popup?
 <!-- silent-contract:end -->
 
