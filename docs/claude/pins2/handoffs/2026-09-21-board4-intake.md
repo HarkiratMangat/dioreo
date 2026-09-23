@@ -395,3 +395,10 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 21 | *"Like shot 4s + why are you stating the twice?"* (the category picker: a question about the name and its short code both showing) |
 
 **v15 round closed — 2026-09-23 12:58 EDT**, his words: *"The rounds done. Not thoroughly review each point with sequential thinking first and layout your steps, plan, turns/calls, batches, etc etc"*. **25 items** (Message 1's five and 20 screenshot answers; shot 11 and part of shot 21 were questions, answered in chat 12:56 EDT). The plan: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` (written 2026-09-23 13:07 EDT).
+
+### His answers to the plan's popup — 2026-09-23 13:08 EDT
+
+| Fork | His answer |
+|---|---|
+| S7 · the Export hover preview's place | *"That spot is fine, it just needs fine tuning"* |
+| S17 · the preview card's styling | **Portal-only styling** |
