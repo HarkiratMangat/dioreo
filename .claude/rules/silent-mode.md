@@ -66,7 +66,7 @@ unconditional: true
   - Opens with a `---` rule, with a blank line above it (without one, the line above turns into a heading)
   - Each part has a label: an `####` heading, not quoted, in all caps, starting with an emoji and two spaces (`💬&nbsp; `, since a plain double space collapses to one); several labelled parts are fine
   - Topics inside a part get a `> ######` label above their group
-  - One emoji per kind of label, so he can tell them apart before reading: 💬 questions · 🚦 needs your OK · 📌 a note · 🔔 a heads-up
+  - One emoji per kind of label, so he can tell them apart before reading: 💬 questions · 🚦 needs your OK · 📌 a note · 🔔 a heads-up (worth knowing) · ⚠️ a warning (something may break or cost you)
   - Questions as `> - [ ] …`; `> - [x] …` for ones he's already answered
   - A note or notice for him as `> ## …`
 
