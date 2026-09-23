@@ -1,0 +1,386 @@
+---
+kind: record
+status: frozen
+---
+
+# The summary corpus: the round-4 rewrites he rated
+
+*Recorded 2026-09-22 21:29 EDT, verbatim from `local/summary-corpus/rewrites4.md`. The scores and his notes are in [`2026-09-22-summary-corpus-ratings.md`](2026-09-22-summary-corpus-ratings.md).*
+
+## 1 · A yes/no answer with evidence: scored 4
+
+````markdown
+# No: GitHub Pro changes nothing while the repo is public
+
+Standard runners are free and unlimited on public repos, on every plan.
+
+## If it goes private (the site setup allows for it)
+
+| After included minutes | Linux 2-core | macOS M1 |
+|---|--:|--:|
+| Per minute | $0.006 | $0.062 |
+| ~1½-min hooks job | ~$0.01 | ~$0.09 |
+| ~4½-min full run | ~$0.03 | ~$0.28 |
+
+| Included minutes | |
+|---|---|
+| Order | spent first, before paying |
+| Pro vs Free | Pro gets more |
+| macOS vs Linux | used up **~10×** faster |
+| Pro's allowance | **not confirmed** (I couldn't get it from GitHub's page; I believe 3,000/month) |
+
+> **Cheap:** a hooks-only macOS job, even private. **Costly:** the whole suite on macOS.
+
+*Nothing changed or filed yet.*
+````
+
+## 2 · An options menu: scored 5
+
+````markdown
+# Six ways to speed up CI
+
+| # | Idea | Saves | Catch |
+|:-:|---|---|---|
+| 1 | Split tests into 3 parallel jobs | ~2–3 min *(my guess)* | needs a final job that waits for the other 3 |
+| 2 | Check the two geometry tests: identical times, maybe duplicate work | ≤ 31 s | **not checked yet** |
+| 3 | Stop running `docs:audit:test` twice (in `npm test` and as its own step) | 16 s | a docs check finds that step by name, so it needs a small update |
+| 4 | Run the small tests at the same time | ~30 s | browser tests must stay one at a time, or they time out |
+| 5 | Skip tests for unchanged files | the most | CI stops being the place that runs everything |
+| 6 | Cancel old runs on a new push | waiting time only | none |
+
+> **Best pick:** #1, plus the quick #2 and #3. I'd skip #5.
+
+A macOS runner won't make CI faster; it only catches Mac-only bugs in the hooks.
+````
+
+## 3 · A root cause, found: scored 5
+
+````markdown
+# Found it, and it wasn't the chip
+
+**The bug:** `.exs-t span` (`app.css:5261`) is a descendant selector. It was written for the row's subtitle, and once the filename became the picker's chip, it also reached the chip's `.b3-xf-nm` and `.b3-xf-ext`.
+
+**The fix,** one character, at the class:
+
+```diff
+- .exs-t span   { font-size: var(--t-sm) }
++ .exs-t > span { font-size: var(--t-sm) }
+```
+
+| Symptom | Cause |
+|---|---|
+| Wrong size: `--t-sm` in the picker, `--t-xs` in the export list | a direct `font-size` on the span beats the button's inherited one |
+| Colour still right | the `--ok` tint rule is four classes deep |
+| Ellipsis still right | `gates.css:523` already used the child form |
+
+> My earlier answer checked what the rule **said**, not what **won** on the page.
+
+**Reload:** it should read 10.5px. Step 2 when you're ready.
+````
+
+## 4 · A small triage note: scored 3
+
+````markdown
+# None of the 9 design-hook findings needs a fix
+
+Both flagged things are **board-file only** (gitignored), never portal code.
+
+- **Banner gradient**, announcement card 2: four colours standing in for a real image
+- **1px corners**, History's severity bars
+
+**Ignore rules: not added.** They'd also hide these colours if they ever reached the real portal.
+````
+
+## 5 · A count: scored 4
+
+````markdown
+# At least 141 board versions have gone live
+
+```text
+3-E      ████████████████████████████████████  72   exact: tonight's 4 publishes carried the counter
+3-D      ██████████████▌                       29   board-3 README
+Board 2  ██████████▌                           21   resolved-spec.md
+Board 1  ███████                               14   handoff record
+3-A      ██                                    ≥4   one mention
+3-C      ██                                    ≥4   v4 was the last publish; the rest stayed local
+3-B      ▌                                     ≥1   nothing recorded
+```
+
+Every row but 3-E is a floor: the artifact service shows no version history.
+
+- **36 of 3-E's 72** were never written down; they exist only as things you looked at and reacted to
+- **You were the QA pass for all of them.** Tonight: 4 publishes, 4 returns, 25 defects, all found by you
+
+> **Next: no publishes** until a surface passes a check aimed at what I did **not** change. Working the class now.
+````
+
+## 6 · An investigation’s result: scored 4
+
+````markdown
+# codebase-memory vs my searches: 5 causes
+
+4 are codebase-memory gaps; 1 was my mistake.
+
+| # | Cause | Proof | Whose |
+|:-:|---|---|:-:|
+| 1 | A call passing a `/…` string or a URL is filed as a web request | **135 of 200** web links are fake. Any web server in the project triggers it, so all bot code is hit | tool |
+| 2 | Cross-file calls attach to the import line | **42 of 50** "unused" functions have callers; the dead-code query can't see them | tool |
+| 3 | Functions passed as values get no link (`.map(normAtt)`) | only **16** such links; `normAtt` has 0 callers | tool |
+| 4 | Calls through a module object link to nothing (`logger.noteHotpatch()`) | 0 callers | tool |
+| 5 | I counted names in text and comments as uses | `parseCol` is script inside a string | **me** |
+
+## What it changes
+
+- `trace_path` misses causes 1, 3 and 4, and the coverage check can't flag them
+- `search_code` found every caller in all four cases
+- `get_architecture`'s routes include the fake addresses
+- Definitions are **24 of 24**; the **7** unused `utils/` functions still stand, each checked by hand
+
+## Recorded
+
+| Where | What |
+|---|---|
+| Repo | causes table in `tool-capability-tests.md`; nudge hook (`681c103a`, `f0b32747`); hook test 22/22, docs audit passed |
+| Global | `CLAUDE.md`, `TOOLING.md` |
+| Local | the write-up and an upstream bug draft, **not filed** |
+| Memory | a linksee caveat, a perseus-vault note |
+
+PR 192: **5 commits, not pushed.**
+````
+
+## 7 · An intake log: scored 4
+
+````markdown
+## Items 22–30 logged: 30 so far, 4 screenshots (`v10-21` to `v10-24`)
+
+| # | Your point |
+|---|---|
+| 22 | Rework the guide above the list |
+| 23 | Redesign the result cards and the tally row (below) |
+| 24 | Explain why some attachments are orange and underlined |
+| 25 | The placeholder looks like typed text |
+| 26–28 | A new paste/export format (below); both your code blocks saved as written |
+| 29–30 | Redesign the whole surface, and Edit loadouts |
+
+#### Item 23: each card gets
+
+- [ ] Real attachment chips, on one line
+- [ ] Code, badges and image
+- [ ] A better line-range label
+- [ ] A highlight while your cursor is in its lines
+- [ ] No misleading green border
+
+#### Items 26–28: the format, line by line
+
+```text
+weapon / category / mode
+label / code / image
+badges
+attachments
+```
+
+The UI adds the field labels and an image chip; everything stays editable.
+
+#### Noticed in your screenshots
+
+- **Orange underline:** v9's "unknown attachment" mark, unexplained on screen
+- **Duplicates:** Edit loadouts shows each build twice ("Builds 1-3" shows 6)
+- **Wrong card:** a "Build 2" block sits under a "Build 1" card
+- **Covered:** Cancel and Stage sit over the last card
+
+#### Saved for the end of the intake
+
+1. Should a block's mode override the drawer's MP/DMZ switch, so one paste can mix both?
+2. Does the new format replace the Discord bot's format too, or only the portal's?
+````
+
+## 8 · A publish, with measurements: scored 4
+
+````markdown
+# 3-E v50 is live
+
+Your layout in the real code, not injected: [claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo](https://claude.ai/artifact/2LxjJwzsg7odUiJKmvq2Jo)
+
+| Your ask | Measured |
+|---|---|
+| Count in a soft square, mode accent | 40px, 10px corners, reusing `.b3-sd-count` |
+| 16px from border to text | **16.0** |
+| 16px each side of the divider | **16 / 16** |
+| Row middle-aligned | square **9 / 9**, marks **15 / 15** |
+| Words always on | fits: you were right, **84px** spare |
+| No gap to the dashed line | **0** |
+| Chips stacked left in the footer | on **16**, actions' right edge on 16 |
+| `--ok` tint on the file name | fill, outline and pencil, read as computed values |
+
+## Three misses, one cause: leftovers from a layout that moved
+
+| You saw | Leftover |
+|---|---|
+| Only the text tinted | tint at 2 classes, losing to a 3-class rule |
+| 14px under Download | `min-height: var(--xf-rest, 145px)`, the old header plus the old footer |
+| Row 5.5px low | `top: var(--xf-ty)`, aimed at a baseline that's gone |
+
+## The original defect is gone at the class
+
+| | Before | Now |
+|---|---|---|
+| The count | right-aligned in a measured well | inside the title's text flow |
+| Left edge | **29.85px** ragged across 6 files | nothing left to drift |
+| Measuring JavaScript | 120 lines | **0** |
+
+Committed `44412cb2`, **not pushed**. Next round: one at a time, and I'll only intake.
+````
+
+## 9 · A checkpoint partway through a plan: scored 5
+
+````markdown
+# Paused after Step 9
+
+- [x] Tokens (`5bb2052d`)
+- [x] 9b slot backfill, dev database only (`5bb2052d`): **130 builds**, one per tagged image
+- [x] Step 9 (`af8abe76`)
+- [ ] Agent D: dispatched, **still running**, no result yet
+- [ ] Step 10: G4 Armory groups, G6, G3, G2, G1
+- [ ] Compare, the C1–C14 measurements, merging D, the records
+
+Committed on `feat/portal-pins2-manifests`, **nothing pushed**. Checkpoint: `local/pins2/s2-checkpoint-2026-09-15.md`
+
+## What Step 9 changed
+
+| Where | Change |
+|---|---|
+| Every manifest toolbar | two rows, no count readout; Add and Post end on the 16px line |
+| History | local time, a **596px** What column, severity meters, a "Load older events · 1,312 more" button |
+| Broadcast | the board's column widths, **64px** rows, one State tab per row, HeadsUp under the masthead |
+
+Checked at 1282px; state walk, orphan and TDZ checks exit 0; fixtures re-recorded.
+
+## Plan gaps, fixed
+
+1. D's worktree predated the tokens → merged them in before dispatch
+2. Worktrees lack `node_modules`, slot fixtures and the FSS Hurricane build → Compare and tag colours need fixtures or the dev portal
+3. History couldn't page → added `?river=N` to `/api/analytics`
+
+## Needs your OK
+
+- [ ] 1\. The prod slot write
+- [ ] 2\. The FSS Hurricane name write
+- [ ] 3\. Push, PR and merge
+````
+
+## 10 · An answer to “do I need to…?”: scored 4
+
+````markdown
+# No, you shouldn't need to
+
+Placing things on the grid is my job; you only overrule. *(Your message got cut off; I think I know the rest.)*
+
+| All 7 relations hold | On the grid |
+|---|---|
+| Insets, top and bottom | 12 / 12 |
+| Chip gaps | 8 and 12 |
+| Left edges | x16 |
+| Title and file name | x84 |
+| Right edges | x424 |
+| Baseline | y67 |
+
+> **Your call:** title aligned to the file name's **text** (x84), not the chip's **border** (x78), where your +2.5 nudge pointed. Say "x 78" to switch.
+
+**Yours to judge:** the header as a design. The measuring is mine.
+````
+
+## 11 · Owning up to a round: scored –
+
+````markdown
+# I could read your screenshots all along
+
+I kept saying the path "won't come through"; you corrected me twice. They're `.webp` files in `~/Downloads`, one convert away. **7 opened** this round, and **4** threads needed the picture.
+
+## 4 of your notes were my mistakes
+
+| You wrote | I had |
+|---|---|
+| *"nothing was wrong with them, why were they changed?"* | taken 2px off every category pill |
+| *"misligned text"* | baselined the header, lifting words above their BEST badge |
+| *"revert the hazard tweak"* | reverted it |
+| *"remove the hazard lines"* | removed them; the count and NEED WORK already say it |
+
+> The rule I over-applied: boxes in a row share a centre line; words share a baseline only inside their wrapper.
+
+## "Still looks skipable": fixed by deleting, not rewording
+
+Grey, small and trailing means *skip me* on this board. The test: does the line carry a new fact?
+
+- Deleted: "4 builds · 3 weapons", "every action below applies to these"
+- Kept as data, in the weapon's accent: "Builds 1–5"
+- Same test on Export: the picker now shows its selection as the bar's chip strip
+
+## Done: 17 of 24, including
+
+- Badges as you listed: loop while visible, BEST flat, Ladder and Weight gone (P1 no longer a fork), TOXIC back to the seep. I'd rebuilt five when you named two
+- Slot colours: yours, plus cyan / blue / lime for the three you couldn't place, closing the yellow-to-lavender gap
+
+## Still open: 7
+
+- [ ] The `/design-critique` on Repairs
+- [ ] The "1 never ends" alignment
+- [ ] Popup border and pointer *(your 3rd ask)*
+- [ ] The selection-list fork (you answered "both")
+- [ ] Small text showing no change
+- [ ] One image icon out of line
+- [ ] Neutral+text and the named-slot style
+
+**Version 4:** <https://claude.ai/artifact/UBHiLGvchhYfdS8p2SVTdd>
+````
+
+## 12 · A compact prep: scored 5
+
+````markdown
+# Compact prep done: 3 regressions fixed locally, unpublished
+
+| | |
+|---|---|
+| Live | **v9**, <https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh> |
+| On my machine | the 3 regression fixes, which would be **v10** |
+| Pushed | **nothing** |
+| The full audit | `docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md`, "Compact prep" section |
+
+## Corrections
+
+| I said | True |
+|---|---|
+| Files match | by size only |
+| No grey hovers | unproven then; **0** now |
+| Compare checked | 1–4 cards never rendered |
+| One header height | the close button is smaller |
+
+## Never opened
+
+- Compare with 1–4 cards
+- The image fallback with a real image
+- The bulk guide in Edit and DMZ
+- The DMZ drawer
+- The published pages
+
+## To paste
+
+```text
+/compact KEEP: (1) Board 4 v9 is LIVE at https://claude.ai/artifact/FCAFvDXrKQN28SotQLJhTh; three compact-prep fixes are LOCAL and UNPUBLISHED (drawer-shell rules scoped to the four ruled drawers, the neutral-hover override skipping pressed toggles, the eyebrow header restored) — v10 needs his yes, restated. (2) The carrier is docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md: §0 WORKING CONTRACT at the top (anchor #45), and the "Compact prep" section dated 2026-09-22 at the END — the mistakes as patterns with his quotes, the verified/NOT-looked-at table, corrected claims, instrument recipes, the first job. (3) His C1–C9 and his v6 verdict relayed from the side chat: docs/claude/pins2/handoffs/2026-09-21-board4-intake.md. (4) New rule, anchor #46: a rule on a shared class is rendered on every surface it reaches, and moved controls are hit-tested plus clicked. (5) Kit git at local/pins2-board-3 (kit under redo/); publish only changed files from root redo/. (6) Instruments: docs/claude/pins2/instruments/b4states.cjs (hover/focus/active, child fills, BLOCKED hit-test) and board4-review/r9.cjs r10.cjs r11.cjs. DISCARD: every screenshot read, the render sheets' contents, code and CSS dumps, instrument output tables, the 4.8 diff review, the K2 option rounds' details, tool-hook reminder text.
+```
+
+```text
+/rename Opus5-High · Pins2 S3 Board 4 after v9 · Sep 22
+Continue the Board 4 fix pass. Before ANY tool call:
+1. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-fixplan.md — §0 WORKING CONTRACT at the top, then the "Compact prep" section dated 2026-09-22 at the END. Do not trust the compact summary over it.
+2. read_smart docs/claude/pins2/handoffs/2026-09-21-board4-intake.md (his C1–C9 and his v6 verdict).
+3. Recall linksee by query: "board 4 shared class every surface" and "board 4 session summary".
+4. FIRST thought: restate §0 as a question→call table and the pass's turn plan (≤10 turns). Then ask questions that could change the work: what did he actually see, what falsifies this, what else does this class reach.
+First job, one render batch: Compare at 1–4 cards; the image tile with a real image; the bulk guide in Edit and DMZ; the DMZ drawer; the live v9 page opened with the chrome-devtools CLI. Do not publish v10 until I say.
+Tool routing: read_smart for files, codebase-memory for code, ctx_execute_file for line ranges, ctx_search for prose, ctx_batch_execute running node/python; the page is puppeteer or the chrome-devtools CLI, never the in-app pane; rg/sed/cat only for one literal. Silent mode, mega-batch (every command after a heredoc on the same line with &&), class not instance, render a shared-class rule on every surface it reaches, click-test anything moved, Awwwards worthy, nitpicked never lazy, sequential-thinking pre-emptively. Check the final message against the Silent contract before sending it.
+```
+
+## Waiting on you
+
+- [ ] 1\. Publish v10
+- [ ] 2\. The Ends default date
+````

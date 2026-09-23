@@ -42,19 +42,19 @@ unconditional: true
 
 🔴 **Will this be in the summary anyway?** If yes it was never a mid-run line and the reader pays twice. **Length decides nothing in either direction** — measured across 3,775 real instances, mid-run prose runs 13 to 7,869 characters with mass in every band, so a nine-character "Found it." and a page-long formatted block are the same violation. ⚠️ **THIS TEST DOES NOT AUTHORISE MID-RUN PROSE — rule 1 is still zero.** It exists because if a line is written anyway, only one kind is defensible: one that changes what happens next. A hedge, a contentless acknowledgement, or anything the summary repeats is not, and "it was a checkpoint" is the excuse to expect. **One per run at most, and the honest default is none.**
 
-> 🔴 **THE OUTPUT STYLE IS READ AT SESSION START — 2026-09-22 21:20 EDT.** An edit to `~/.claude/output-styles/silent.md` reaches the next session, not the one that made it. Measured the night the contract was rebuilt: the editing session carried the old style in its system prompt and the new block from this file at once, and the two contradicted each other. After an edit, say that the new contract applies from the next session or compact. His earlier praised references (2026-09-02, 2026-09-16) and the sample screenshots stay as history in `docs/reference/silent-summary/` and `local/output-style-samples/`; the rating corpus is `local/summary-corpus/` (artifact `VWhr3tjRbuBHLsJu4y4CGZ`, collections `ratings` to `ratings4`).
+> 🔴 **THE OUTPUT STYLE IS READ AT SESSION START — 2026-09-22 21:20 EDT.** An edit to `~/.claude/output-styles/silent.md` reaches the next session, not the one that made it. Measured the night the contract was rebuilt: the editing session carried the old style in its system prompt and the new block from this file at once, and the two contradicted each other. After an edit, say that the new contract applies from the next session or compact. His earlier praised references (2026-09-02, 2026-09-16) and the sample screenshots stay as history in `docs/reference/silent-summary/` and `local/output-style-samples/`; the rating record, every score and note verbatim, is `docs/claude/2026-09-22-summary-corpus-ratings.md`, with the rated round-4 rewrites beside it (working files in `local/summary-corpus/`, artifact `VWhr3tjRbuBHLsJu4y4CGZ`).
 
 <!-- silent-contract:start -->
 ## The final message — the contract
 
-*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rewritten 2026-09-22 21:20 EDT from four rounds of Harkirat's 1–5 ratings of 12 real summaries (average 3.67 → 4.27). The examples below are ones he rated 5.*
+*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rebuilt 2026-09-22 21:29 EDT from Harkirat's 1–5 ratings of 12 real summaries over four rounds (average 3.67 → 4.27). Every score and note is in `docs/claude/2026-09-22-summary-corpus-ratings.md`.*
 
-**He reads at a glance.** Every fact must be visible from a block's shape or its first few words, without reading a sentence. I check the facts; he glances.
+**He reads at a glance; I check the facts.** Every fact must be visible from a block's shape or its first few words, without reading a sentence.
 
 ### Before writing
 
 - **A long run:** the long version goes to a file or an Artifact, and the message carries its path
-- **A question for him:** a popup, never text in the message
+- **A question for him:** a popup, sent after the content it asks about, never text in the message
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
@@ -75,17 +75,36 @@ unconditional: true
 | A claim that changed | `~~old~~ → new` |
 | One fact | one line |
 
+### By situation: what worked, and the trap he flagged
+
+| Situation | What worked | The trap |
+|---|---|---|
+| A yes/no answer | `#` verdict, one context line, evidence as a table or nested list | a sentence attached to the verdict; a bold verdict smaller than the heading below it |
+| Options to choose from | one table, each qualifier in its own row; the pick as a `>` quote | the pick folded into a heading, or said twice |
+| A cause, found | the bug in one line; the fix as a `diff`; a symptom/cause table | a lead-in that makes the next block read as the wrong thing |
+| Triage of findings | the verdict title; each finding and its state in its own shape | bold on a fragment: *"I DON'T WANT TO READ LINES TO FIGURE OUT THE INFO!"* |
+| A count | a code-block bar chart with a source column; the caveat as a bold claim; `## Next` | bars squeezed into table cells |
+| An investigation | a cause table with a Whose column; what it changes as short bullets | a title or line that narrates what I did |
+| An intake log | counts as numbers; a points table; lists outside the cells | a count he has to work out; lists crammed into cells |
+| A publish report | every one of his asks as its own row; a before/now table | dropping any of his asks |
+| A checkpoint | a status table; a task checklist; problem → fix; approvals last | a status in the title, or as a checkbox |
+| "Do I need to…?" | the verdict title; the evidence as a table; his call as a `>` quote | a diagram harder to read than the table it replaced |
+| Owning up | what he wrote beside what I'd done; the misread rule as a quote | done items inside the open list |
+| A compact prep | a live / local / pushed / carrier-path table; paste blocks verbatim | my audit trail and correction detail: *"useless to me"* |
+| A tiny reply | one line; any question in a popup | a table of unrelated facts; *"STOP GIVING ME LINES"* |
+
 ### Keep and cut
 
-- **Keep:** his asks, his decisions, and every qualifier that changes whether a claim is true (*not checked yet*, *my guess*, *not confirmed*)
+- **Keep:** his asks, his decisions, and every qualifier that changes whether a claim is true (*not checked yet*, *my guess*, *not confirmed*); dropping one turns a claim false
 - **Cut:** how I worked (what I checked, which tools ran, what I filed), down to one pointer at most
 - **Collapse:** supporting measurements into one line when the verdict doesn't hang on each one; keep them as rows when the numbers are the report
 - **Bold:** only when the bolded words alone are the complete fact
+- **After his feedback:** change only the part he named; a message he scored under 5 without a note still gets these lessons
 - **Never:**
   - a sentence in a table cell
   - a status inside a task checklist
   - two blocks saying the same thing
-  - a fix that rebuilds a part he didn't mention
+  - a question of his treated as an instruction
 
 ### Examples he rated 5
 
@@ -165,8 +184,8 @@ unconditional: true
 ### Before sending, every answer must be yes
 
 1. Covering all but the first four words of each block, is the information still there?
-2. Does every checklist hold only tasks?
-3. Is nothing in it about how I worked?
+2. Does the message avoid the trap in its situation's row?
+3. Does every checklist hold only tasks, and is nothing in it about how I worked?
 4. Is what waits on him last, and is every question in a popup?
 <!-- silent-contract:end -->
 
