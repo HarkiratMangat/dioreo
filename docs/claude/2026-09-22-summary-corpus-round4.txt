@@ -1,11 +1,7 @@
----
-kind: record
-status: frozen
----
 
 # The summary corpus: the round-4 rewrites he rated
 
-*Recorded 2026-09-22 21:29 EDT, verbatim from `local/summary-corpus/rewrites4.md`. The scores and his notes are in [`2026-09-22-summary-corpus-ratings.md`](2026-09-22-summary-corpus-ratings.md).*
+*Recorded 2026-09-22 21:29 EDT, verbatim from `local/summary-corpus/rewrites4.md`. The scores and his notes are in 2026-09-22-summary-corpus-ratings.md. Plain text on purpose: the prose reflow joins lines inside nested code fences.*
 
 ## 1 · A yes/no answer with evidence: scored 4
 

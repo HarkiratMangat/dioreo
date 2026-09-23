@@ -31,7 +31,8 @@ const SLUG = opt("--project", "-Applications-Claude-Code-Diors-Builds");
 const JSON_OUT = args.includes("--json");
 const DIR = join(homedir(), ".claude", "projects", SLUG);
 const CUTOFF = Date.now() - DAYS * 86_400_000;
-const BUDGET_CHARS = 1800; // the contract's "one screen"
+// 2026-09-22 21:35 EDT: the contract dropped its 1,800-character budget after four rounds of his ratings; a budget column would now push sessions to drop facts, the round-1 failure. It measures the rebuilt contract's checks instead: sentences in table cells, and questions left in prose instead of a popup.
+const CELL_WORDS = 12; // a cell longer than this is a sentence
 const LONG_PARA = 400;
 // His own words for the failure, from the transcripts. Matched against USER messages only.
 const COMPLAINT = /too much prose|walls? of text|too mechanical|walls? of uselessness|silent\.md summary|summary convention|stop (narrat|with the narration)|i hate (long )?prose/i;
@@ -43,7 +44,7 @@ const weekOf = (iso) => {
   return d.toISOString().slice(0, 10);
 };
 const bucket = (k) => {
-  if (!weeks.has(k)) weeks.set(k, { sessions: 0, styled: 0, runs: 0, lens: [], over: 0, multiTable: 0, longPara: 0, complaints: 0, msgs: 0, midRun: 0, midRunLines: [] });
+  if (!weeks.has(k)) weeks.set(k, { sessions: 0, styled: 0, runs: 0, lens: [], sentenceCell: 0, proseQuestion: 0, longPara: 0, complaints: 0, msgs: 0, midRun: 0, midRunLines: [] });
   return weeks.get(k);
 };
 const textOf = (c) => (typeof c === "string" ? c : Array.isArray(c) ? c.filter((x) => x && x.type === "text").map((x) => x.text || "").join("\n") : "");
@@ -118,10 +119,11 @@ for (const f of files) {
     }
     const final = r.msgs[r.msgs.length - 1].text;
     w.lens.push(final.length);
-    if (final.length > BUDGET_CHARS) w.over += 1;
     const lines = final.split("\n");
-    const tables = lines.reduce((n, l, i) => n + (l.startsWith("|") && !(lines[i - 1] || "").startsWith("|") ? 1 : 0), 0);
-    if (tables > 1) w.multiTable += 1;
+    let fence = false;
+    const prose = lines.filter((l) => { if (l.startsWith("```")) { fence = !fence; return false; } return !fence; });
+    if (prose.some((l) => l.startsWith("|") && l.split("|").some((cell) => cell.trim().split(/\s+/).length > CELL_WORDS))) w.sentenceCell += 1;
+    if (prose.some((l) => !l.startsWith(">") && !l.startsWith("|") && /\?\s*$/.test(l.trim()) && l.trim().length > 12)) w.proseQuestion += 1;
     const paras = final.split("\n\n").filter((q) => q.trim() && !/^\s*[|#\-*`>]/.test(q));
     if (paras.some((q) => q.length > LONG_PARA)) w.longPara += 1;
   }
@@ -134,14 +136,14 @@ const quantile = (a, q) => {
 };
 const rows = [...weeks.keys()].sort().map((k) => {
   const w = weeks.get(k);
-  return { week: k, sessions: w.sessions, styleLoaded: w.styled, runs: w.runs, midRun: w.midRun, msgs: w.msgs, finalMedian: quantile(w.lens, 0.5), finalP90: quantile(w.lens, 0.9), overBudget: w.over, multiTable: w.multiTable, longParagraph: w.longPara, complaints: w.complaints };
+  return { week: k, sessions: w.sessions, styleLoaded: w.styled, runs: w.runs, midRun: w.midRun, msgs: w.msgs, finalMedian: quantile(w.lens, 0.5), finalP90: quantile(w.lens, 0.9), sentenceCell: w.sentenceCell, proseQuestion: w.proseQuestion, longParagraph: w.longPara, complaints: w.complaints };
 });
 
 if (JSON_OUT) { console.log(JSON.stringify(rows, null, 2)); process.exit(0); }
-console.log(`summaryShape — ${SLUG}, last ${DAYS} days, sessions with ≥3 prompts. Budget ${BUDGET_CHARS} chars, long paragraph >${LONG_PARA}. A REPORT, never a gate.`);
-console.log(`| ${SESSION ? "session" : "week (Mon)"} | sessions | style loaded | runs | MID-RUN PROSE | of msgs | final median | final p90 | > budget | > 1 table | long paragraph | his complaints |`);
+console.log(`summaryShape — ${SLUG}, last ${DAYS} days, sessions with ≥3 prompts. Sentence cell >${CELL_WORDS} words, long paragraph >${LONG_PARA}. A REPORT, never a gate.`);
+console.log(`| ${SESSION ? "session" : "week (Mon)"} | sessions | style loaded | runs | MID-RUN PROSE | of msgs | final median | final p90 | sentence in a cell | question in prose | long paragraph | his complaints |`);
 console.log("|---|---|---|---|---|---|---|---|---|---|---|---|");
-for (const r of rows) console.log(`| ${r.week} | ${r.sessions} | ${r.styleLoaded} | ${r.runs} | ${r.midRun} | ${r.msgs} | ${r.finalMedian} | ${r.finalP90} | ${r.overBudget} | ${r.multiTable} | ${r.longParagraph} | ${r.complaints} |`);
+for (const r of rows) console.log(`| ${r.week} | ${r.sessions} | ${r.styleLoaded} | ${r.runs} | ${r.midRun} | ${r.msgs} | ${r.finalMedian} | ${r.finalP90} | ${r.sentenceCell} | ${r.proseQuestion} | ${r.longParagraph} | ${r.complaints} |`);
 console.log("\nRead the DELTA week over week. 'style loaded' says which weeks the contract could have reached; 'complaints' are his own messages matching too-much-prose / walls of text / narration.");
 console.log("MID-RUN PROSE counts messages carrying text ALONGSIDE tool calls — the contract's first rule, and the one this report could not see until 2026-09-10 20:01 EDT. The style allows four narrow exceptions, and this count cannot tell one from a violation: it is a floor, never a verdict.");
 if (SESSION) {

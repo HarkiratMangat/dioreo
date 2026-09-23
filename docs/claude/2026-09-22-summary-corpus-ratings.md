@@ -5,7 +5,7 @@ status: frozen
 
 # The summary corpus: 12 messages, four rounds, his ratings
 
-*Recorded 2026-09-22 21:29 EDT. Harkirat rated my rewrites of 12 real end-of-run messages from 1 (terrible) to 5 (near great), in four rounds, on the artifact `VWhr3tjRbuBHLsJu4y4CGZ` (database collections `ratings` to `ratings4`). Every score and note below is copied from that database by script, not retyped. The Silent contract in `.claude/rules/silent-mode.md` was rebuilt from this record; the round-4 rewrites he rated are in [`2026-09-22-summary-corpus-round4.md`](2026-09-22-summary-corpus-round4.md), and the working files are in `local/summary-corpus/`.*
+*Recorded 2026-09-22 21:29 EDT. Harkirat rated my rewrites of 12 real end-of-run messages from 1 (terrible) to 5 (near great), in four rounds, on the artifact `VWhr3tjRbuBHLsJu4y4CGZ` (database collections `ratings` to `ratings4`). Every score and note below is copied from that database by script, not retyped. The Silent contract in `.claude/rules/silent-mode.md` was rebuilt from this record; the round-4 rewrites he rated are in [`2026-09-22-summary-corpus-round4.txt`](2026-09-22-summary-corpus-round4.txt) (plain text, so the prose reflow cannot join the code blocks inside it), and the working files are in `local/summary-corpus/`.*
 
 ## Scores
 
@@ -124,11 +124,13 @@ status: frozen
 
 **Round 4, scored 4:**
 
-> liked the "next" style of round 2 better. 
+> liked the "next" style of round 2 better.
+>
 > not a fan of your "Every row but 3-E is a floor: the artifact service shows no version history.
 >
 > 36 of 3-E's 72 were never written down; they exist only as things you looked at and reacted to
-> You were the QA pass for all of them. Tonight: 4 publishes, 4 returns, 25 defects, all found by you" aesthetically. 
+>
+> You were the QA pass for all of them. Tonight: 4 publishes, 4 returns, 25 defects, all found by you" aesthetically.
 >
 > and speaking interms of glancability, round 2's "Every row but 3-E is a floor" and "What the count shows" were better.
 
@@ -155,6 +157,7 @@ status: frozen
 **Round 1, scored 4:**
 
 > much cleaner but also missing a few useful bits of info, such as "with screenshots v10-21 to v10-24" missing the # of screenshots which would have been helpful instead of me having to figure out the math. Overall for each section in this, the verdict is: cleaner but dropped specks of useful info.
+>
 > Also, couldn't you have put the 'open items' checkbox list inside of the table's cell? is that not possible or something??
 
 **Round 2, scored 3:**
@@ -228,7 +231,9 @@ status: frozen
 **Round 1, scored 4:**
 
 > still could be improved, especially the `"Still looks skippable," the third time, so I stopped rewording
+>
 > Grey, small and trailing something louder is how this board says skip me. Lines that carried no new fact are deleted. "Builds 1–5" carries one, so it's now set as data in the weapon's accent.` line.
+>
 > and listing the badges and slot colors items within the "Where the round stands: 17 of 24" list is misleading.
 
 **Round 2, scored 3:**

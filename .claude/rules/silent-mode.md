@@ -47,14 +47,14 @@ unconditional: true
 <!-- silent-contract:start -->
 ## The final message — the contract
 
-*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rebuilt 2026-09-22 21:29 EDT from Harkirat's 1–5 ratings of 12 real summaries over four rounds (average 3.67 → 4.27). Every score and note is in `docs/claude/2026-09-22-summary-corpus-ratings.md`.*
+*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rebuilt 2026-09-22 21:29 EDT from Harkirat's 1–5 ratings of 12 real summaries over four rounds (average 3.67 → 4.27). Every score and note is in Diors-Builds' `docs/claude/2026-09-22-summary-corpus-ratings.md`.*
 
 **He reads at a glance; I check the facts.** Every fact must be visible from a block's shape or its first few words, without reading a sentence.
 
 ### Before writing
 
 - **A long run:** the long version goes to a file or an Artifact, and the message carries its path
-- **A question for him:** a popup, sent after the content it asks about, never text in the message
+- **A question for him:** a popup, called as the last action of the message, after the text. A popup called first appears before the text it refers to
 - **Match the situation, not an example's headings:** section names come from this message's content
 
 ### The lightest shape that shows the structure
@@ -75,23 +75,25 @@ unconditional: true
 | A claim that changed | `~~old~~ → new` |
 | One fact | one line |
 
-### By situation: what worked, and the trap he flagged
+### By situation: what works, and the trap he flagged
 
-| Situation | What worked | The trap |
+| Situation | Works | Trap |
 |---|---|---|
-| A yes/no answer | `#` verdict, one context line, evidence as a table or nested list | a sentence attached to the verdict; a bold verdict smaller than the heading below it |
-| Options to choose from | one table, each qualifier in its own row; the pick as a `>` quote | the pick folded into a heading, or said twice |
-| A cause, found | the bug in one line; the fix as a `diff`; a symptom/cause table | a lead-in that makes the next block read as the wrong thing |
-| Triage of findings | the verdict title; each finding and its state in its own shape | bold on a fragment: *"I DON'T WANT TO READ LINES TO FIGURE OUT THE INFO!"* |
-| A count | a code-block bar chart with a source column; the caveat as a bold claim; `## Next` | bars squeezed into table cells |
-| An investigation | a cause table with a Whose column; what it changes as short bullets | a title or line that narrates what I did |
-| An intake log | counts as numbers; a points table; lists outside the cells | a count he has to work out; lists crammed into cells |
-| A publish report | every one of his asks as its own row; a before/now table | dropping any of his asks |
-| A checkpoint | a status table; a task checklist; problem → fix; approvals last | a status in the title, or as a checkbox |
-| "Do I need to…?" | the verdict title; the evidence as a table; his call as a `>` quote | a diagram harder to read than the table it replaced |
-| Owning up | what he wrote beside what I'd done; the misread rule as a quote | done items inside the open list |
-| A compact prep | a live / local / pushed / carrier-path table; paste blocks verbatim | my audit trail and correction detail: *"useless to me"* |
-| A tiny reply | one line; any question in a popup | a table of unrelated facts; *"STOP GIVING ME LINES"* |
+| A yes/no answer | `#` verdict, a context line, evidence as a table or nested list | a sentence tacked onto the verdict |
+| Options | one table, qualifiers in their rows, the pick as a `>` quote | the pick in a heading, or said twice |
+| A cause, found | the bug in one line, the fix as a `diff`, a symptom/cause table | a lead-in that mislabels the next block |
+| Triage | the verdict title, each finding in its own shape | bold on a fragment: *"I DON'T WANT TO READ LINES TO FIGURE OUT THE INFO!"* |
+| A count | a code-block bar chart with sources, then `## Next` | bars inside table cells |
+| An investigation | a cause table with a Whose column, short impact bullets | a title that narrates my work |
+| An intake log | counts as numbers, a points table, lists below it | a count to work out; lists in cells |
+| A publish report | each of his asks as a row, a before/now table | a dropped ask |
+| A checkpoint | a status table, a task checklist, problem → fix, approvals last | a status in the title or as a checkbox |
+| "Do I need to…?" | the verdict title, an evidence table, his call as a `>` quote | a diagram harder to read than the table |
+| Owning up | what he wrote beside what I'd done, the rule as a quote | done items in the open list |
+| A compact prep | a live / local / pushed / carrier-path table, paste blocks verbatim | my audit detail: *"useless to me"* |
+| A tiny reply | one line, any question in a popup | a table of unrelated facts: *"STOP GIVING ME LINES"* |
+
+No row fits? Use the shape table and the checks; the rows are the situations rated so far, not all of them.
 
 ### Keep and cut
 
@@ -191,4 +193,4 @@ unconditional: true
 
 ### What enforces this
 
-⚠️ **Nothing blocks a violation, by Harkirat's standing choice** — friction on the model is free, friction on him is disqualifying, and a Stop gate on his loop is the wrong instrument until a number says the contract failed. 🔴 **RUN `node scripts/summaryShape.mjs` AT THE START OF A SESSION, NOT AS EVIDENCE FOR A FUTURE GATE.** Until 2026-09-10 19:56 EDT this paragraph framed it only as *the number that would justify a guard* — so it read as a meta-tool about whether to add enforcement, and went unrun through an entire session that broke the contract **33 times**: 33 messages carrying mid-run prose against a four-item exception list, 9 of 13 finals over the 1,800 budget, 11 chapter marks across 176 messages. None of it was noticed until Harkirat asked, and the thinking pass that explicitly asked *"where will this be wrong?"* produced four answers and named none of these. **A report you only read when deciding whether to build a gate is a report nobody reads.** It takes seconds and it is the only thing in this repo that can tell you the contract is not working. `node scripts/summaryShape.mjs` is that number: per week, how long the final messages ran, how many broke the budget, how many carried more than one table or a 400-character paragraph, and how many times he had to say "too much prose". The parked guards on `chore/silent-mode-guards-parked` stay parked until that report says the contract did not move the shape.
+⚠️ **Nothing blocks a violation, by Harkirat's standing choice** — friction on the model is free, friction on him is disqualifying, and a Stop gate on his loop is the wrong instrument until a number says the contract failed. 🔴 **RUN `node scripts/summaryShape.mjs` AT THE START OF A SESSION, NOT AS EVIDENCE FOR A FUTURE GATE.** Until 2026-09-10 19:56 EDT this paragraph framed it only as *the number that would justify a guard* — so it read as a meta-tool about whether to add enforcement, and went unrun through an entire session that broke the contract **33 times**: 33 messages carrying mid-run prose against a four-item exception list, 9 of 13 finals over the 1,800 budget, 11 chapter marks across 176 messages. None of it was noticed until Harkirat asked, and the thinking pass that explicitly asked *"where will this be wrong?"* produced four answers and named none of these. **A report you only read when deciding whether to build a gate is a report nobody reads.** It takes seconds and it is the only thing in this repo that can tell you the contract is not working. `node scripts/summaryShape.mjs` is that number: per week, how long the final messages ran, how many put a sentence in a table cell, left a question in prose instead of a popup, or ran a 400-character paragraph, and how many times he had to say "too much prose". The parked guards on `chore/silent-mode-guards-parked` stay parked until that report says the contract did not move the shape.
