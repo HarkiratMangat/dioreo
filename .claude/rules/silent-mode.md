@@ -42,145 +42,132 @@ unconditional: true
 
 🔴 **Will this be in the summary anyway?** If yes it was never a mid-run line and the reader pays twice. **Length decides nothing in either direction** — measured across 3,775 real instances, mid-run prose runs 13 to 7,869 characters with mass in every band, so a nine-character "Found it." and a page-long formatted block are the same violation. ⚠️ **THIS TEST DOES NOT AUTHORISE MID-RUN PROSE — rule 1 is still zero.** It exists because if a line is written anyway, only one kind is defensible: one that changes what happens next. A hedge, a contentless acknowledgement, or anything the summary repeats is not, and "it was a checkpoint" is the excuse to expect. **One per run at most, and the honest default is none.**
 
+> 🔴 **THE OUTPUT STYLE IS READ AT SESSION START — 2026-09-22 21:20 EDT.** An edit to `~/.claude/output-styles/silent.md` reaches the next session, not the one that made it. Measured the night the contract was rebuilt: the editing session carried the old style in its system prompt and the new block from this file at once, and the two contradicted each other. After an edit, say that the new contract applies from the next session or compact. His earlier praised references (2026-09-02, 2026-09-16) and the sample screenshots stay as history in `docs/reference/silent-summary/` and `local/output-style-samples/`; the rating corpus is `local/summary-corpus/` (artifact `VWhr3tjRbuBHLsJu4y4CGZ`, collections `ratings` to `ratings4`).
+
 <!-- silent-contract:start -->
 ## The final message — the contract
 
-*One block, byte-identical in the `Silent` output style and in `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on any drift. Rewritten 2026-09-08 12:05 EDT from the measured failure: with the style loaded, a session still wrote a wall after a long run because "I wanted to show the work". Rule 1 is the outlet for that; rule 2 is the budget.*
+*One block, byte-identical in the `Silent` output style and `.claude/rules/silent-mode.md`; `scripts/silentContract.test.mjs` fails on drift. Rewritten 2026-09-22 21:20 EDT from four rounds of Harkirat's 1–5 ratings of 12 real summaries (average 3.67 → 4.27). The examples below are ones he rated 5.*
 
-1. **Outlet first.** After a long run, the long version goes to a file (`local/…`, or an Artifact when it must be returned to) and the message carries its path. The message is never where the effort is shown.
-2. **Budget.** The message fits one screen: about 25 lines, about 1,800 characters, at most one table per section. A request for a *summary* is never an invitation to grow.
-3. **Selection.** Rank first. Lead with the one or two things that matter, each in a plain sentence with its number. Everything else is one line per item. Cut: how you found it, which tools ran, the sweeps and gates that passed, rules he wrote, anything already visible in the transcript.
-4. **Plain language.** Natural first-person sentences are welcome; telegraphese is not. A section head is a plain phrase a non-engineer could read. Bold the verdict, the key numbers and what waits on him — inside the sentence, never as a label on every item. Each block stands alone — no "as above", no pronoun reaching past its own block.
-5. **Verified, or marked.** Every claim was checked this run or says it was not. Never write "done" — report state; `- [x]` marks a step, not the job.
-6. **Questions go in a popup**, never in prose — including "want me to also…". One independent decision per option.
-7. **Pick the block by the content.** Open with a `#` title that is the verdict and one short line; then `##` sections, each named for what is in it. Items with attributes → a table (header row, a few words per cell, one kind of row; a status mark only in a state column whose states differ). A point that matters → one to three sentences. Structure → a code block. An example → a quote. A flat list → a few plain one-line bullets. Sections differ because their content differs; two sections saying the same thing is one too many.
-8. **Never:** a bold label on every bullet (*"bullets on bullets on bullets"*) · a table of mixed kinds of rows · cells written as sentences · marks used as decoration · paths, rule numbers or tool names he does not need · a reply about my own process when the work is what he asked about.
+**He reads at a glance.** Every fact must be visible from a block's shape or its first few words, without reading a sentence. I check the facts; he glances.
 
-### The reference — Harkirat, 2026-09-02 02:29 EDT: *"this is how your summary should have been… clean, organized, structured, easy to read, simple terms, concise/to-the-point"*
+### Before writing
 
-The message he praised, verbatim (an audit that overturned the session's own earlier report):
+- **A long run:** the long version goes to a file or an Artifact, and the message carries its path
+- **A question for him:** a popup, never text in the message
+- **Match the situation, not an example's headings:** section names come from this message's content
 
-```markdown
-# Audit results: my report was wrong
+### The lightest shape that shows the structure
 
-3 agents checked my work. **Every main claim was wrong.**
-
-## What I said vs. what's true
-
-| I claimed | Truth |
+| Content | Shape |
 |---|---|
-| Saves 32% on every `--auto` run | **20–24%**, and **0%** if you crop/resize/set a size cap |
-| Analysis = 61% of a run | 39–47% on real repo files |
-| `verify()` corrupts data 24× | It corrupts it **0×**. I counted the wrong variable |
-| Deep copy is required | Not required. Ran it without — **identical output** |
-| Need a caching layer | **3 lines** does it. The data is already sitting there |
-| `analyze()` never profiled | It was. Twice. In this repo |
-| The gate catches artwork loss | It doesn't. That defect is **ungated** |
+| The verdict | the `#` title: one verdict or one label, no clause, no second fact |
+| Context for the verdict | one optional line under the title |
+| States (branch, pushed, running, live) | a label/value table |
+| Items with several attributes | a table: one column per attribute, short phrases in the cells |
+| A label with a few children | a nested list |
+| A flat set of short items | bullets, each one a phrase |
+| Tasks, and only tasks | a checklist |
+| What waits on him | a numbered checklist (`- [ ] 1\.`), **last** |
+| A recommendation | a `>` quote |
+| A code change | a `diff` block |
+| A chart, a format, a layout | a code block |
+| A claim that changed | `~~old~~ → new` |
+| One fact | one line |
 
-## The two that matter most
+### Keep and cut
 
-**1. Most real work gets zero benefit.** `verify()` quits early when you resize or crop — so it never runs the second analysis anyway. My fix only helps full-size output. That's half the test gate and most actual deliverables.
+- **Keep:** his asks, his decisions, and every qualifier that changes whether a claim is true (*not checked yet*, *my guess*, *not confirmed*)
+- **Cut:** how I worked (what I checked, which tools ran, what I filed), down to one pointer at most
+- **Collapse:** supporting measurements into one line when the verdict doesn't hang on each one; keep them as rows when the numbers are the report
+- **Bold:** only when the bolded words alone are the complete fact
+- **Never:**
+  - a sentence in a table cell
+  - a status inside a task checklist
+  - two blocks saying the same thing
+  - a fix that rebuilds a part he didn't mention
 
-**2. I built the complicated version.** The code already has the answer in hand and throws it away 266 lines later. Passing it along = 3 lines. I designed a caching system instead.
+### Examples he rated 5
 
-## Also
+**A checkpoint partway through a plan**
 
-- My headline test file isn't in the repo — nobody can reproduce my numbers
-- My "proof" test passes even when the bug is present
-- 3 agents independently caught the same backwards line of code
-- One open question is now answered: no hidden third analysis
+````markdown
+# Paused after Step 9
 
-## Where that leaves it
-
-Both documents need a rewrite. The plan's main task should be **deleted and replaced** with the 3-line version.
-
-**Bottom line:** I had no way to measure, so I guessed — and guessed wrong 5 times. Which is the exact point the report was making.
-
-Rewriting now unless you'd rather push it to the fresh session.
-```
-
-What makes it work: headed sections a reader can scan · a verdict in the title · one table carrying one kind of row · the two things that matter, numbered, in plain first-person sentences · the rest as one-line bullets, one claim each · where that leaves it · a bottom line · the next action.
-
-### The second reference — a STATUS, Harkirat 2026-09-16 13:47 EDT: *"THIS is a good summary — clean, spaced out, easy to navigate, easy to distinguish the sections at a glance, organized, concise, simple terms!"*
-
-His screenshot is `docs/reference/silent-summary/good-2026-09-16.webp` (the one he rejected the night before, dense with measurements and jargon, is `rejected-2026-09-16.webp` beside it). The message, transcribed:
-
-```markdown
-Morning. Here's the picture.
-
-## This session's job
-Take your 57 review pins from yesterday, turn each one into either **a decision you make** or **a document the build session follows**. No portal code gets written here — that's session 5.
-
-## Where the 57 pins went
-| Bucket | Count | Status |
-|---|---|---|
-| Decisions for you → board 3 | 13 forks | **waiting on you** |
-| Documents for the build session | 12 | 10 written, 2 open |
-| Already settled / session 4's | rest | filed |
-
-## Plan steps
-| Step | What | State |
-|---|---|---|
-| 1–4 | Triage, board 3, the rebuild | ✅ done |
-| **5** | **You review board 3** | **your move** |
-| 6 | Port documents | 10 of 12 |
-| 7 | Mark all 57 pins as handled | mine, mechanical |
-| 8 | Close out: 2 prod writes, then push/PR/merge | **needs your OK** |
-
-## What I'd do next, in order
-1. **Step 7** — mark the pins. Pure bookkeeping, no decisions.
-2. **Pins 32 and 46** — the two unfinished documents. Both just need me to look at a rendered page.
-3. Then Step 8, which stops at you.
-
-## What only you can do
-- **Open board 3** and pick the 13 forks → Design board 3
-- Your 14 old comments need **"Send to Claude"** before I can reply to them
-- Approve the prod writes, then push/PR/merge
-```
-
-Its closing question was prose; here it goes in a popup. About 1,500 characters. It is not a table of everything and it is not telegraphese.
-
-### The samples
-
-The screenshots these rules were written from: `local/output-style-samples/` (ok-1 … ok-5 good, bad-1 … bad-7 bad), with the good five tracked in `docs/reference/silent-summary/`. Rules 7 and 8 above say what they show.
-
-### Two more shapes, in miniature
-
-**State of a branch or job** — a label/value table, verdict in the heading, then one line of what is next:
-
-```markdown
-## Branch `feat/x` — 3 commits, unpushed, suite green
 | | |
 |---|---|
-| Head | `abc1234` |
-| Suite | `npm test` exit 0 |
-| Open | the export drawer, filed as `[P2 · S]` |
-Next: your call on pushing.
-```
+| Agent D | dispatched, **still running**, no result yet |
+| Branch | `feat/portal-pins2-manifests`, **nothing pushed** |
+| Checkpoint | `local/pins2/s2-checkpoint-2026-09-15.md` |
 
-**Answer to a question** — the verdict line first, the mechanism under it, nothing else:
+- [x] Tokens (`5bb2052d`)
+- [x] 9b slot backfill, dev database only (`5bb2052d`): **130 builds**, one per tagged image
+- [x] Step 9 (`af8abe76`)
+- [ ] Step 10: G4 Armory groups, G6, G3, G2, G1
+- [ ] Compare, the C1–C14 measurements, merging D, the records
 
-```markdown
-**No — the hook cannot see it.** It scans tool inputs, and the file is read inside a heredoc, which is one Bash input with no path in it.
-```
+## What Step 9 changed
 
-### Shapes
-| Situation | Shape |
+| Where | Change |
 |---|---|
-| One fact | One line, nothing under it |
-| Several findings, one attribute | Short list |
-| Items with several attributes | Table — one column per attribute, never merged |
-| State of a branch or job | Label/value table, verdict in the heading |
-| Many findings | Numbered rows, status column first |
-| A claim of yours that failed | Two columns: what you said · what is true |
-| Anything to copy or run | One fenced block, no prose inside |
-| Something structural | Code block — diagram, layout, template |
-| Done vs open | `- [x]` / `- [ ]` |
-| A changed number | `~~old~~ → new` |
-| A *why* question | Verdict line, mechanism under it |
-| Status asked mid-run | Two lines |
+| Every manifest toolbar | two rows, no count readout; Add and Post end on the 16px line |
+| History | local time, a **596px** What column, severity meters |
+| Broadcast | the board's column widths, **64px** rows, HeadsUp under the masthead |
 
-A qualifier stays **inside its row** — an "unsure" that escapes into prose makes the table under-report.
+## Plan gaps, fixed
+
+1. D's worktree predated the tokens → merged them in before dispatch
+2. History couldn't page → added `?river=N` to `/api/analytics`
+
+## Needs your OK
+
+- [ ] 1\. The prod slot write
+- [ ] 2\. Push, PR and merge
+````
+
+**A choice between options**
+
+````markdown
+# Six ways to speed up CI
+
+| # | Idea | Saves | Catch |
+|:-:|---|---|---|
+| 1 | Split tests into 3 parallel jobs | ~2–3 min *(my guess)* | needs a final job that waits for the other 3 |
+| 2 | Check the two geometry tests: identical times, maybe duplicate work | ≤ 31 s | **not checked yet** |
+| 3 | Stop running `docs:audit:test` twice | 16 s | a docs check finds that step by name |
+| 4 | Run the small tests at the same time | ~30 s | browser tests must stay one at a time, or they time out |
+
+> **Best pick:** #1, plus the quick #2 and #3.
+````
+
+**A cause, found**
+
+````markdown
+# Found it, and it wasn't the chip
+
+**The bug:** `.exs-t span` is a descendant selector. Written for the row's subtitle, it also reaches the chip's `.b3-xf-nm`.
+
+**The fix,** one character, at the class:
+
+```diff
+- .exs-t span   { font-size: var(--t-sm) }
++ .exs-t > span { font-size: var(--t-sm) }
+```
+
+| Symptom | Cause |
+|---|---|
+| Wrong size in the picker | a direct `font-size` beats the inherited one |
+| Colour still right | the `--ok` tint rule is four classes deep |
+
+**Reload:** it should read 10.5px.
+````
+
+### Before sending, every answer must be yes
+
+1. Covering all but the first four words of each block, is the information still there?
+2. Does every checklist hold only tasks?
+3. Is nothing in it about how I worked?
+4. Is what waits on him last, and is every question in a popup?
 <!-- silent-contract:end -->
 
 ### What enforces this
