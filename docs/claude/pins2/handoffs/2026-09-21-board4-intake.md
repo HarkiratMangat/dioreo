@@ -324,3 +324,47 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | Existing-key search | **Every stored image (Recommended).** | Lists keys builds use (thumbnail + which build) and uploaded images no build uses yet, marked unused. |
 
 **Handled — 2026-09-22 15:46 EDT:** all 47 items are built as v11 / v11.1 / v12; their state, item by item, is the tracker in `docs/claude/pins2/handoffs/2026-09-22-board4-v11-plan.md` §8, and the four forks await his pick.
+
+## v15 intake round — opened 2026-09-23 10:13 EDT
+
+*His review of v15 (published 2026-09-23 09:26 EDT). Same protocol as the v10 round: recorded verbatim in the order he sends them, each tagged with the gate it concerns; questions batched; nothing fixed until he says the round is done, then a written plan, then one pass by class. Logged 2026-09-23 10:28 EDT.*
+
+### Message 1 — 2026-09-23 10:26 EDT · mixed: the filter chips, the rail toggles, the manifest row, the build drawer
+
+*Screenshots in `local/pins2-board-3/board4-review/intake/v15/`: `inline/1–7.png` are the seven he attached (identical by hash to `dl/095204`, `100423`, `095543`, `095215`, `095314`, `095534`, `095436`); `dl/` holds all 28 he left in Downloads, named by time.*
+
+1. the "all" buttons don't have the correct hover-events, the ones matching the "assault"/"smg",etc buttons. *(inline 1: Armory's All 21 hovered beside Assault 7; inline 2: Broadcast's All 4 hovered beside Live now 1)*
+2. the drawer's "add build"/"bulk create" buttons use incorrect styling/hover-events. They should be the same as the other rail toggles in the Armory gates *(inline 3: the drawer's Add build / Bulk create switch; inline 4: Armory's List / By slot, the reference)*
+3. The category label in the armory manifest row is misaligned. also slightly nudge increase the space between the category label and the "x builds" chip. *(inline 5: his line through the row: BAL-27, ASSAULT and "5 builds" off the line the META and BEST badges sit on)*
+4. the discord preview being cut in half in the new build drawer is odd. *(inline 6: the "Pick a weapon and its card builds itself here." card sits across the middle of the faded example, which is cleared above and below it)*
+5. the new build drawer form also needs its fade moved down a bit, it starts to fade out too early with so much space available below it. Match the fade position of the export drawer's pick builds panel. *(inline 7: the fade covers the Key row while the footer's buttons sit well below it)*
+
+*His note: "ok so i have to head out but the intake screenshots are on my downloads for this round … i'll come back and explain them, or you can try sending them back to me 1 by 1 and ask me to clarify what i want with it."*
+
+### The 21 screenshots not yet explained — his explanation pending
+
+*Numbered copies for the clarification popups: `intake/v15/ask/NN-<time>.png`. "My reading" is a guess to confirm, never a ruling.*
+
+| # | File | What it shows | My reading (unconfirmed) |
+|---|---|---|---|
+| 1 | `dl/095515-Arc.png` | Add build · weapon picker open | the "N builds" chips are cut off at the list's right edge |
+| 2 | `dl/095742-Arc.png` | Add build · Image section, empty | the drop line wraps "file" onto a second line; the source switch, drop zone and Key field run past the well's right edge |
+| 3 | `dl/095820-Arc.png` | Add build · footer blocker chip | "Card 1 needs a weapon · 1 more": wording or the chip itself — unclear |
+| 4 | `dl/095858-Arc.png` | a weapon list, CX-9 hovered (Compare landing?) | the hover is a flat gold tint and ring, not the manifest glow |
+| 5 | `dl/100035-Arc.png` | Repairs · Below standard and Pass every check | unclear: solid green Repair buttons, the checks panel, or the tickets' hover (filed) |
+| 6 | `dl/100049-Arc.png` | Export · the Pick button, hovered | the hover looks like the rest state |
+| 7 | `dl/100130-Arc.png` | Export picker · build 3 hovered, preview card | unclear: the preview card's placement or its content |
+| 8 | `dl/100152-Arc.png` | a search field focused ("Find a weapon, code or attachment") | a thick olive halo and a gold caret, unlike the teal focus elsewhere |
+| 9 | `dl/100242-Arc.png` | Export drawer · the bottom edge | the "MP builds" file card is cut by the drawer's bottom with a hard edge |
+| 10 | `dl/100312-Arc.png` | Export · three file cards (23, 24, 22) | unclear: the number tiles, the order, or the card layout |
+| 11 | `dl/100440-Arc.png` | Broadcast manifest · filter chips and rows | unclear beyond the All chip (item 1) |
+| 12 | `dl/100518-Arc.png` | Analytics · the realm tabs and Admin traffic | the active tab and toggle may not match the rail toggles (item 2) |
+| 13 | `dl/100634-Arc.png` | Add build · attachment picker open | attachments are unordered, not grouped by slot |
+| 14 | `dl/100733-Arc.png` | Add build · Gunsmith code field, copy hovered | the copy button's hover tile sits tight to the field's right edge |
+| 15 | `dl/100842-Arc.png` | Add build · attachment row, clear × hovered (red) | the clear button's hover or placement |
+| 16 | `dl/100851-Arc.png` | a close × hovered (grey) | its hover differs from the red clear × in the shot before |
+| 17 | `dl/101003-Arc.png` | Add build · preview card, no image | the card shows the note "No image on this build, so the card omits the gallery entirely." |
+| 18 | `dl/101023-Arc.png` | Add build · Image section, key filled | the "Replaces the image on 3-LINE RIFLE · B…" warning runs out of the well |
+| 19 | `dl/101052-Arc.png` | Add build · Stored image picker | the subtitles ("3-LINE RIFLE · B…") are cut off; every thumbnail is a placeholder icon |
+| 20 | `dl/101101-Arc.png` | Add build · Stored image picker, scrolled | rows lose their thumbnail and key; three different left indents ("Unused upload", BP50) |
+| 21 | `dl/101144-Arc.png` | Add build · category picker open | the short-code column repeats the name (MARKSMAN, SHOTGUN) and is uneven |
