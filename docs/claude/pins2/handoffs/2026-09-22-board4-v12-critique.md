@@ -160,8 +160,7 @@ Silent contract, measured by `node scripts/summaryShape.mjs --session latest`: 2
 
 ### Compact — KEEP / DISCARD
 
-KEEP: this file (round one, round two, this section) · the v11 plan §2, §8, §12 · the fix plan §0 · `.remember/remember.md` PRE-FLIGHT 0–28 · anchors #48, #50, #51 · caveats 62045, 62068, 62114 · summary 62113 · `local/pins2-board-3/board4-review/r22.cjs` (35 flows) and `docs/claude/pins2/instruments/b4states.cjs` as the two existing instruments.
-DISCARD: every screenshot in `local/pins2-board-3/board4-review/v12crit/` · the shelf-width guessing · the headroom detour (answered: proxy-only, `docs/claude/2026-09-21-headroom-notes.md`) · the live-page detour.
+KEEP: this file (round one, round two, this section) · the v11 plan §2, §8, §12 · the fix plan §0 · `.remember/remember.md` PRE-FLIGHT 0–28 · anchors #48, #50, #51 · caveats 62045, 62068, 62114 · summary 62113 · `local/pins2-board-3/board4-review/r22.cjs` (35 flows) and `docs/claude/pins2/instruments/b4states.cjs` as the two existing instruments. DISCARD: every screenshot in `local/pins2-board-3/board4-review/v12crit/` · the shelf-width guessing · the headroom detour (answered: proxy-only, `docs/claude/2026-09-21-headroom-notes.md`) · the live-page detour.
 
 ### Post-compact start prompt
 
