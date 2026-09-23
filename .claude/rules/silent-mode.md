@@ -64,8 +64,8 @@ unconditional: true
 
     ```markdown
     ---
-    ##### 💬 QUESTION FOR YOU:
-    > ## - [ ] Yes or no on 4 and 5?
+    ##### 💬 QUESTION FOR YOU
+    > ## Yes or no on 4 and 5?
     ```
 - **Match the situation, not an example's headings:** section names come from this message's content
 
@@ -93,7 +93,7 @@ unconditional: true
 | A key or shortcut | `<kbd>⌘</kbd> + <kbd>K</kbd>` |
 | A source or caveat that would crowd its line | a footnote, `[^1]` |
 
-Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, mermaid, and images by absolute path (they become dead links). Read from the app's own renderer code 2026-09-22 22:27 EDT: only `#` (22px) and `##` (18px) are larger than body text, and `###` is body-size bold; checked `- [x]` items are struck and dimmed automatically; `<br>` works inside table cells; Discord's `-#` is not in its grammar.
+Tested in the app 2026-09-22 22:23 EDT. Renders: footnotes, `<kbd>`, `- [x] ~~…~~`, a trailing-backslash line break, emoji shortcodes, relative-path images, file links, `$maths$`, `diff` colours, `#####` headings. **Doesn't render:** `<details>`, GitHub alerts (`> [!NOTE]`), `<sub>` / `<sup>` / `<mark>`, `<u>` / `<ins>` underlines, a `- [ ]` checkbox inside a heading, mermaid, and images by absolute path (they become dead links). Read from the app's own renderer code 2026-09-22 22:27 EDT: only `#` (22px) and `##` (18px) are larger than body text, and `###` is body-size bold; checked `- [x]` items are struck and dimmed automatically; `<br>` works inside table cells; Discord's `-#` is not in its grammar.
 
 ### By situation: what works, and the trap he flagged
 
