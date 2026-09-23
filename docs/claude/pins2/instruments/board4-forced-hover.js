@@ -1,4 +1,4 @@
-// Board 4 · forced hover (2026-09-23): copies every :hover/:active rule onto .__h/.__a so a state can be read without a pointer. Run with the chrome-devtools CLI: evaluate_script "$(< this)" on the board page, then use window.__H (pick, snap, rect, targets). Blind spot: a hover drawn on ::before or on a child.
+// Board 4 · forced hover (kept 2026-09-23 16:59 EDT): copies every :hover/:active rule onto .__h/.__a so a state can be read without a pointer. Run with the chrome-devtools CLI: evaluate_script "$(< this)" on the board page, then use window.__H (pick, snap, rect, targets). Blind spot: a hover drawn on ::before or on a child.
 () => {
   const copy = (list, sheet) => {
     for (let i = list.length - 1; i >= 0; i--) {
