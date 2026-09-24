@@ -506,3 +506,24 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 3. Then the Compare panel, fully fixed and designed
 4. Then a sweep of the entire board for anything missed
 5. Only then Session 4's prep, work and spec restart
+
+## v19 intake round — opened 2026-09-24 11:46 EDT
+
+*Log-only until he says the round is done. Media copied to `local/pins2-board-3/board4-review/intake/v19/`.*
+
+### Message 1 — 2026-09-24 11:51 EDT, verbatim
+
+*Media: `01-peek-empty.png` (the Export drawer's Pick builds list, BAL-27 build 2 hovered, no builds selected: the peek card's text runs out past its bottom edge over the Copy/Download footer) · `02-peek-resize.gif` (his screen recording, `Arc (09-24-2026 at 11.45.36.AM).gif` from Downloads: adding a build and removing it, the peek keeps its shape).*
+
+> * The export drawer's pick build peek card is bugged/broken. This screenshot is how it appears when no builds are selected. Then look at this gif ('/Users/harkirat/Downloads/Arc (09-24-2026 at 11.45.36.AM).gif') because it's also broken at every other stage: notice how the container doesn't resize based on the content? I clicked and added the build, then click it again to remove it yet the peek container remained the same shape. It's animation also needs to be slightly more refined. and add a dropshadow to it so it feels like it's floating above the content.
+> * Also remove the Dot bullets between the badges. and i realize i never tested what happens when a build as meta+best+toxic badges? Does it wrap to 2 lines? because it should.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 1 | the peek card overflows when no builds are selected | Export's Pick builds peek card |
+| 2 | the peek never resizes to its content, at any stage (add, remove) | the same card, every state |
+| 3 | the peek's animation, slightly more refined | the same card's open, move and resize motion |
+| 4 | a drop shadow so the peek floats above the content | the same card; check the board's existing floating surfaces for the shadow |
+| 5 | no dot bullets between the badges | the badge run (`B3Badges`' `i.sep`), everywhere it renders; scope to confirm when the round closes |
+| 6 | META + BEST + TOXIC wraps to two lines | the badge run in narrow places (the peek's header first); never tested |
+
