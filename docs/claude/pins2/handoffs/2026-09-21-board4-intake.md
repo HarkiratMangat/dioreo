@@ -664,3 +664,29 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 42 | only Label, Grade and Tier inline | Weapon + Category are v18's stacked pair again |
 | 43 | Before staging wastes horizontal space | the mark leads each row; mode, weapon and build on one line, the need under it on the same edge; no right icon column |
 
+### His look at v20, round 2 — 2026-09-24 15:44–15:51 EDT, verbatim (four messages)
+
+> * these are also the incorrect attachment ship design. *(screenshot: two chips, "MUZZLE Gauge-9 Mono" and "BARREL Crown-H3 Barrel")*
+> * and for the export pick builds.. list, 1. the text/lines should be using the actual export format that the file would deliver.
+> * the peek card's position are needs finetuning/nitpicking. And the "mp/dmz" chip should follow the weapon name/build #, not be before it.
+>
+> dw-940-filled.png:
+> * revert the inline "label" to it's original format.
+> * correct the spacing between "badges" and "grade" labels, matching the spacing used between "build" and "weapon" labels.
+> * fix alignment of the chips, both within their chip container and middle aligned with the text.
+>
+> AND CORRECT YOUR WORKING STYLE, TOOL ROUTING, TURN/CALLS MEGA-BATCHING!
+>
+> i notice you also don't have an "Optional" chip for the form fields which are options.
+
+| # | Item | 2026-09-24 15:59 EDT (kit) |
+|---|---|---|
+| 44 | the attachment chip design is incorrect | NOT built — which chip is the reference is asked back (the manifest row draws the same slot-word + name chip) |
+| 45 | Export's lines in the format the file delivers | one writer for the list, the hover card and the download: the Bulk create format |
+| 46 | the hover card's position | 14px from the drawer's sides, the floor and the file's footer rule, in every hover state |
+| 47 | the mode chip follows the weapon and build | hover card, build card head, Before staging rows, Bulk result cards |
+| 48 | Label back to its original format | label over field; only Grade, Tier and the slots use the label column |
+| 49 | Badges → Grade spacing = Build → Weapon | every heading holds 24px; equal where Grade stacks (880, 940); at 980 Grade sits beside its row, centred on it |
+| 50 | chip alignment | chip boxes centred in tiles and track (0.00); words centred in their chips (−0.25px); No tier's word was 1px high — trimmed |
+| 51 | "Optional" chips | Label, Gunsmith code, Badges and Image carry a neutral Optional chip while empty |
+
