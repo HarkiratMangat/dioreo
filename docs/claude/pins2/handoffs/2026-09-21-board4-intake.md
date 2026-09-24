@@ -527,3 +527,20 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 5 | no dot bullets between the badges | the badge run (`B3Badges`' `i.sep`), everywhere it renders; scope to confirm when the round closes |
 | 6 | META + BEST + TOXIC wraps to two lines | the badge run in narrow places (the peek's header first); never tested |
 
+### Message 2 — 2026-09-24 12:13 EDT, verbatim
+
+*Screenshots: `03-tier-row.png` (the build drawer's Tier row: No tier, BEST ASSAULT, TOP 3, TOP 4, TOP 5) · `04-grade-row.png` (Badges, Grade: META and TOXIC toggles, labels above the buttons) · `05-label-field.png` (the Label field: "Label" above the BUILD 2 cell and "Optional, like Close range").*
+
+> * remove the "top 4" badge completely out of the system/bot. for 'tier' we're keeping Best/Top 3/Top 5. and adding 1 more tier respectively "Capable" and add a new 'grade' called "Ass". So tier list becomes: Best/Top 3/Top 5/Capable. That means capable and ass also need new badge designs. Use a thumbs up icon for the capable badge and it can use the other design/colors that the "top 4" badge used (so it's basically just a swap job), and a poop icon for the Ass badge (this is the one needing a significant design, since all of the 'grade' badges are fairly unique designed... think of some design directions for it and then show me 2-3 options with animation in the board). Leave top 3/top 5 badge designs as well.
+> * Can you also change the 'grade' and 'tier' labels to be inline with the buttons instead of above them?
+> * similarly with the "Label" label, make it inline with the field instead of above it.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 7 | TOP 4 removed from the whole system and the bot; tiers become Best / Top 3 / Top 5 / Capable | the tier set: the board's badges, pickers, filters, Compare, Export's format, and outside the board the model, the bot's render and bulk import (Session 3 writes no portal or bot code, anchor #13; to be filed for the session that does) |
+| 8 | a new tier badge, CAPABLE: a thumbs-up icon on TOP 4's design and colours, a swap | the tier badge family |
+| 9 | a new grade badge, ASS: a poop icon, a significant design of its own; 2–3 animated options shown on the board before he picks | the grade badge family (META, TOXIC), each uniquely designed |
+| 10 | TOP 3 and TOP 5 badge designs stay as they are | — |
+| 11 | "Grade" and "Tier" labels inline with their buttons, not above | the build form's label-and-control rows |
+| 12 | "Label" inline with its field, not above | the same class, the Label field |
+
