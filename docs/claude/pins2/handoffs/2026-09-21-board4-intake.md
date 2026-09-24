@@ -612,3 +612,9 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 32 | Bulk's fork: B "margin notes" is out; A "ledger" and C "preview stack" both stay, as a toggle inside the panel to switch the preview style (both ship in the product) | the Bulk preview column |
 | 33 | the Add build form's fork: A "instrument" is chosen | the build form (forms B and C retire) |
 
+### Round closed — 2026-09-24 13:48 EDT, verbatim
+
+> That's it for the intake items so far. Now, invoke sequential-thinking and thoroughly go over each of the task items i provided you. because i don't want half-ass, lazy work. I want "Awwwards worthy" level of work, design, and effort. Nitpicked, never lazy. That means catching the tiny things before i even notice them! That means fixing the class, not just patching the instance. That means true design adjustments and improvements, not blind patches to check off a task. […] I don't want to have to do another intake round on these same surfaces. So your work should be thorough and open minded. I *want* the next intake to be about the Compare panel, and that depends on your quality and level of work fixing and improving these items mentioned in this intake, as well as any other items/elements/surfaces that connect to them, neighbour them, etc etc. Don't be narrow minded and only work as if you're doing a patch job. You are *designing and refining*!
+
+*33 items, 5 messages. His next intake is meant to be Compare, so these surfaces (the Export peek, the badges, the build form, Bulk create) and their neighbours must not need another round.*
+
