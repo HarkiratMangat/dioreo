@@ -627,3 +627,24 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 *So: the portal's tier badges read BEST ASSAULT · TOP 3 · TOP 5 · CAPABLE (no category word after TOP n or CAPABLE); the bot writes every tier with its category, "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR". The board's Discord preview card follows the bot. Filed for the session that writes bot code.*
 
 *Built 2026-09-24 14:30 EDT — all 33 items and his tier-word ruling, by class, on the kit (`d3a0bf7`, not published): plan §17 maps each item to what changed.*
+
+### His look at the v19 build — 2026-09-24 14:42 EDT, verbatim (the items; his compact-prep instructions follow in the same message)
+
+*Screenshot: `local/pins2-board-3/board4-review/intake/v19/22-before-staging-floating.png` (Add · filled, Add · three and DMZ: the Before staging panel parked mid-column under a short preview).*
+
+> * your "before staging" is literally floating in the middle of no where... why? fix it.
+> * both stink lines and flies direction is fine but there's no "ambiance" to the design as well. Just improve them a bit more please.
+> * capable for dmz, sure.
+> * meta + ass at the same time? no. if Meta/Best/Top 3/Top 5/Capable are selected, "Ass" should become disabled. And similarly, if "Ass" is selected, Meta/Best/Top 3/Top 5/Capable become disabled. Toxic + Ass together is fine.
+> * for the 880 vs 980px, i need to see it in the board as toggles.
+> * publish after i've approved the badge design.
+
+| # | Item | Class |
+|---|---|---|
+| 34 | Before staging floats mid-column; anchor it | the side column's layout (preview + summary), every state |
+| 35 | ASS options A (stink lines) and B (flies): keep the direction, add ambiance | the grade badges' layer stack (META and TOXIC carry resting light, glow and haze; ASS has motion only) |
+| 36 | Capable exists for DMZ too — his yes | the tier set |
+| 37 | ASS excludes META and every tier (Best, Top 3, Top 5, Capable), both ways; TOXIC + ASS is allowed | the grade and tier controls, the bulk parser, the model (Session 5) |
+| 38 | the 880 vs 980 drawer as a toggle on the board | a board fork on C2 |
+| 39 | publish v20 only after he approves the badge design | — |
+

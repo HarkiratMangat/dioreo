@@ -21,3 +21,8 @@ Throwaway-shaped but load-bearing for Board 4: each was used to measure a claim 
 | `board4-shot.sh <name> <js>` | reload, load `board4-forced-hover.js`, run a shot script, screenshot and crop to its returned rect; deletes the old crop first |
 | `board4-shot-add-build.js` | the Add build drawer with the Stage hint open (dispatched `mouseenter`, 900ms) |
 | `board4-forced-hover.js` · `board4-class-sweep.js` · `board4-class-sweep-agg.js` | forced `:hover`/`:active` as classes (cannot reveal JS hover UI) · one recipe measured across a class's every instance |
+| `board4-row-ink.cjs` | form rows: the label's drawn ink against its field's centre, 2x and 4x |
+| `board4-row-boxes.cjs` | form rows: boxes, overflow and stacking at 1440/1280 — never an alignment claim |
+| `board4-image-well-walk.cjs` · `board4-export-card.cjs` · `board4-bulk-walk.cjs` | walks through the image well, the Export hover card and Bulk |
+| `board4-badge-gif.cjs` | a badge's motion as frames, for a gif he can judge |
+| `prep-helpers.py` | `insert_after`, the insert that asserts its line delta |
