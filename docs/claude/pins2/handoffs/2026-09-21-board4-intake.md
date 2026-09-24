@@ -404,3 +404,105 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | S17 · the preview card's styling | **Portal-only styling** |
 
 **Handled — 2026-09-23 14:58 EDT:** all 25 items are built locally (kit `42cfafd`); item by item in `2026-09-23-board4-v15-plan.md` §7, verification in §8. Not published.
+
+## v17 intake round — opened 2026-09-23 20:15 EDT
+
+### Message 1 — 2026-09-23 20:15 EDT, verbatim
+
+*Screenshots, copied to `local/pins2-board-3/board4-review/intake/v17/`: `01-row-category-tag.png` (a manifest row: BAL-27, ASSAULT, 5 builds, META, BEST ASSAULT, with his blue line through the middle) · `02-required-chip.png` (the build drawer: "Weapon" with its "Required" chip, "Category") · `03-pick-a-weapon.png` (the footer hint "→ Pick a weapon to stage") · `04-never-chip.png` (the queue's "∞ Never" chip).*
+
+> * armory manifest's weapon name row still has the category tag misaligned; needs to be middle aligned.
+> * build drawer's `require` chip is misaligned with the "Weapon" label text; needs to be middle aligned.
+> * this "pick a weapon" chip/warning needs a redesign to match the color, shape, styling, etc of the `never` chip. I also don't understand the usage of the `->` icon, like how does that choice make sense? use something else. wait honestly, instead of the `never` chip... why not just make that "pick a weapon" warning in a pop-up aria hint when hovering over the disabled `stage build` button? wouldn't that make more sense? and give that pop-up hover the same color styling as the `never` chip while keeping the pop-up's overall container shape, and adjusting outer glow in a matching tint.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 1 | the manifest row's category tag, middle-aligned | the manifest row's inline run (name, tag, count, badges); v16's K7 claimed this fixed, and it is not |
+| 2 | "Required" chip middle-aligned with its label | every form label that carries a chip |
+| 3 | the Stage blocker as a hover pop-up on the disabled Stage, in the Never chip's colours, the pop-up's own shape, a matching glow; no → icon | the drawer footer's blocker line (`.b4-why`), and the board's tooltip |
+
+### Message 2 — 2026-09-23 20:26 EDT, verbatim
+
+*Screenshots, in the same folder: `05-build-number-field.png` (the Label field's "BUILD 1" part, a divider, "Opt…") · `06-badges-and-tier-mp.png` (Badges and tier: Badges META / TOXIC; "Tier in AR": No tier, BEST ASSAULT, TOP 3, TOP 4, TOP 5) · `07-badges-tier-range-dmz.png` (DMZ: Badges; "Range tier": No tier, BEST, TOP 3, TOP 5; "Range": Any range, Close, Mid-long) · `08-image-section.png` (the image block: "No image yet", "⌘V pastes one", Upload / Link / Stored image, "Drop a screenshot, or choose a file", Key).*
+
+> * refine/improve the design of this `build x` field that's attached to the label field in the build drawer. Also, you notice how the divider between the 2 fields isn't extending out/higher than their container heights?
+> * reword this section's label to just "Badges". Then relabel the "Badges" sub-heading (above the meta/toxic badges) to "Grade". Reword "Tier in AR" to just "Tier".
+> * Similarly with the DMZ badges as well. and improve the integration/design/linking of the "Range" toggles with the "Tier" toggles... they're literally 2 parts of the same equation but don't feel connected in their design/layout.
+> * i don't like the image section's "Drop a screenshot, or choose a file" line wrapping when multiple builds are being created, please improve/refine that. Also, remove the "cmd V" hint line. Leave the capability in there if it exists, but just remove the hint text. Also give the image icon the warn color and change it's shape to the icon with the line running throught it (the mark/icon we use in the armory manifest if an image isn't set)
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 4 | the Label field's "BUILD n" prefix, refined; the divider between its two parts stops short of the field's height | the joined-field prefix (any field with an attached prefix) |
+| 5 | "Badges and tier" → "Badges"; its "Badges" sub-heading → "Grade"; "Tier in AR" → "Tier" | the badge section's copy, MP |
+| 6 | the same copy in DMZ; Range and Tier drawn as one linked control | the DMZ badge section |
+| 7 | the drop line must not wrap with several cards; no ⌘V hint (the paste stays); the empty tile's icon becomes the manifest's no-image mark in the warn colour | the image block |
+
+### Message 3 — 2026-09-23 22:56 EDT, verbatim
+
+*Screenshots, in the same folder: `09-compare-empty-reference.png` (his reference: Compare's empty-state list, black ground, "BAL-27 Assault rifle … 5 builds") · `10-weapon-picker.png` (the drawer's weapon list: grey ground, dots, ".50 GS Secondaries 2 builds") · `11-category-picker.png` (the category list: Submachine Gun … Secondary, Melee) · `12-attachment-picker.png` (the attachment list for "Any slot": "Crossbar Underbarrel" …) · `13-stored-image-picker.png` (the stored-image list: "3-LINE-RIFLE-1 3-LINE RIFLE ·…", "50GS-1 .50 GS · Build 1").*
+
+> * weapon name field in the drawer: the dropdown is grey background right now. i wanted it black like my reference screenshot from Compare's empty state mockup. I also remove the colored dors beside the weapon names. Write the category names in the smaller, full caps style used in the armory manifest. Same with the "x build" text in the chip style used in the armory manifest.
+> * Weapon category dropdown: give the same black background treatmeant. also why is "melee" even a category choice?? that's so stupid. Also make the categories in all caps.
+> * Attachment slot dropdown: make the slot label inside the drop all caps and matching the accent color assigned to each attachment slot. also same black background treatment. "any slot" is also bad ux-copy, improve it's phrase. Can you also organize the attachments inside of the dropdown by the attachment slots order that'd already stated (such as which order to always state the attachment slots, such as sight is always first, perk is always last, etc).
+> * search stored image dropdown: same black treatment. and similarly with it's weapon name, "build x" text, make them in their accent colors and use the correct chip design.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 8 | weapon list: black ground (Compare's empty-state list), no dots, the category in the manifest's small caps tag, "x builds" in the manifest's count chip | every picker list (`.f-menu`) |
+| 9 | category list: black ground, no Melee, all caps | every picker list; the category options |
+| 10 | attachment list: black ground, slot labels in caps and their slot colours, a better phrase than "Any slot", attachments ordered by the standard slot order (Sight first, Perk last) | every picker list; the slot vocabulary (`--sl-*`) |
+| 11 | stored-image list: black ground; the weapon name and "Build x" in their accent colours, in the correct chip design | every picker list; the manifest's chips |
+
+### Message 4 — 2026-09-23 23:04 EDT, verbatim
+
+*Screenshots, in the same folder: `14-card-tint-new-build.png` (an MP card, Marksman picked, red-tinted edge and ground) · `15-dmz-attachments.png` (DMZ's nine slot rows, Optic … Perk; converted from .webp) · `16-compare-same-on-all.png` (Compare: "Same on all 5 · Ammunition 60 Round Reload") · `17-c9-admin-traffic.png` (C9: the Analytics rail, Reach pressed, and Admin traffic) · `18-export-list-x-clipped.png` (Export's list: the × beside "KILO BOLT-ACTION | MARKSMAN" cut at its top) · `19-export-smg-pick-all.png` (the SMG bay's "26 / 26 Unpick all", red) · `20-export-top-pick-all.png` (the top "8 / 8 Unpick all" beside MP / DMZ, red).*
+
+> * multiple builds are being created, can the background container/block/tile or whatever you want to call it, be tinted in the accent of the weapon category for that build instead of it only being redish for MP, blueish for DMZ?
+> * same black dropdown menu, accent colors, chips, etc treatment for the DMZ fields as well.
+> * similarly over on the Compare panel, things like this Ammunition chip should be using the pre-designed color accented chip. Carrying those elements/designs across surfaces is what creates familiarity and ties the entire design and portal together as a collective product.
+> * the C9 rail toggles and 'admin traffic' button still don't have matching accent/tint/hover, etc.
+> * the `x` button in export's pick builds... panel's export list is clipping/cutoff towards it's top.
+> * that same panel's "pick all" chip is also incorrectly tinted. i asked for the chip to get the tint treatment, which you did, but you did it incorrectly and applied the Armory tint to every "pick all". The pick all at the top (the one inline with the MP/DMZ buttons and represents all builds) should be tinted in the MP/DMZ accents. Meanwhile the ones that sit in each category's section, such as the one inside of SMGs, should be tinted in that category's accent (notice how it's red tinted even tho that doesn't match SMG's accent color?).
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 12 | each build card tinted in its weapon category's accent, not only MP red / DMZ blue | the Add form's cards |
+| 13 | the DMZ fields get the same black lists, accent colours and chips | every picker list, DMZ |
+| 14 | Compare's "Ammunition" chip becomes the board's slot-coloured chip; carry designs across surfaces | the slot chip, board-wide |
+| 15 | C9's rail toggles and Admin traffic still don't share accent, tint and hover | the segment and chip recipes (v16 K3) — v16 claimed this matched |
+| 16 | the × in Export's picked-builds list is clipped at its top | the Export files list |
+| 17 | "Pick all" tinted in the wrong hue: the top one in MP/DMZ's accent, each bay's in its category's accent | the pick-all chips (v16 tinted them all in the Armory hue) |
+
+### Message 5 — 2026-09-23 23:07 EDT, verbatim
+
+*Screenshot, in the same folder: `21-rename-x-check.png` (Export's filename rename chip: "dioreo-mp-2026-09-23 .txt", a boxed ×, a ✓, the pointer on the ×).*
+
+> the X/checkmark buttons/icons are SOO POORLY implemented. 1. they clip, and have weird hover events, and notice that random box around the `X`? 2. they have terrible alignment and spacing inside of the chip, despite me asking for "a native well integrated set of buttons that doesn't feel stuck on". 3. you didn't even apply the buttons to the rename chip of the Export drawer landing... even tho they're supposed to share the same code since they're the same element.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 18 | the rename chip's × / ✓: clipping, odd hover, a stray box around the ×; poor alignment and spacing ("a native well integrated set of buttons that doesn't feel stuck on"); missing from the Export landing's rename chip, which is the same element | the filename rename chip, everywhere it appears (one component) |
+
+### Message 6 — 2026-09-23 23:13 EDT, verbatim (round closed)
+
+*Screenshot, in the same folder: `22-pick-list-top-fade.png` (Export's Pick builds list under the header: a file card, "3,838 characters", Copy, Download, the top fade).*
+
+> * slightly tweak the top fade position of the Pick Builds... list. it needs to be slightlyyy pulled down a bit more. it feels too abrupt/quick of a fade.
+>
+> That's it for the intake items so far. Now, invoke sequential-thinking and thoroughly go over each of the task items i provided you. because i don't want half-ass, lazy work. I want "Awwwards worthy" level of work, design, and effort. Nitpicked, never lazy. That means catching the tiny things before i even notice them! That means fixing the class, not just patching the instance. That means true design adjustments and improvements, not blind patches to check off a task. Also thoroughly plan and organize your steps, your investigation, your alignment, your tools, your batching, your turns/calls, your designs, your ideas, the problems, the real uncomfortable unasked questions and angles, etc so you don't waste any turns or give me shit output.
+>
+> after all these are FULLY AND CORRECTLY fixed, along with any other elements you find along the way, anything related or surrounded or near these elements, and covering the entire class, not just patching the single instances... then we'll move onto bulk create/edit's panels. After those are fixed, finetuned, designed correctly, then we'll finally move to the Compare panel. Once compare panel is fully fixed and designed. Then we'll sweep the entire board for anything missed. Then after that is when the prep, work, spec, etc for Session 4 restarts. (this is the general plan/tasks of what we still need to do overall for board 4 and it'll likely take us a couple more compacts to finish it all. but remember it and carry it forward in the next few compacts so we're on track and don't drift).
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 19 | the Pick builds list's top fade: start slightly lower, a softer ramp | the board's top scroll fade (`b3/fady.js`), every list under a sticky head |
+
+**Handled 2026-09-24 10:38 EDT: all 19 built in kit `565f38e` (plan § 15, "Built"), local, not published.** **Round closed at 2026-09-23 23:14 EDT: 19 items across six messages.** The build plan is `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` § 15.
+
+### His roadmap for the rest of Board 4 (2026-09-23 23:13 EDT), carried across compacts
+
+1. The v17 intake above, fixed fully and correctly, by class, with everything related or nearby
+2. Then Bulk create and Edit's panels, fixed, fine-tuned and designed correctly
+3. Then the Compare panel, fully fixed and designed
+4. Then a sweep of the entire board for anything missed
+5. Only then Session 4's prep, work and spec restart
