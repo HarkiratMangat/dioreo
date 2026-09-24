@@ -626,3 +626,4 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 *So: the portal's tier badges read BEST ASSAULT · TOP 3 · TOP 5 · CAPABLE (no category word after TOP n or CAPABLE); the bot writes every tier with its category, "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR". The board's Discord preview card follows the bot. Filed for the session that writes bot code.*
 
+*Built 2026-09-24 14:30 EDT — all 33 items and his tier-word ruling, by class, on the kit (`d3a0bf7`, not published): plan §17 maps each item to what changed.*

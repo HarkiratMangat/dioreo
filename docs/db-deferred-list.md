@@ -130,9 +130,21 @@ Filed 2026-09-23 16:59 EDT (Session 3 compact prep 4). v16 is built on the board
 
 **Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
 
+### The badge set changes: Top 4 retired, Capable and Ass added — the model, the bot and the portal `[P1 · M]`
+
+Filed 2026-09-24 14:30 EDT (Board 4, his v19 intake items 7–10 and his 13:54 EDT ruling; built on the board kit only). `models/Loadout.js`: `categoryRank` drops `top4` and gains `capable`, a new `isAss` Boolean beside `isMeta`/`isToxic`, and `dmzRangeRank` gains `capable`/`capable-close`/`capable-midlong` if he confirms Capable for DMZ. Migrate every stored `top4` to `top5` (a top-4 build is inside the top five; the dev data holds two, LK24 Builds 1 and 2) — count prod first. `utils/loadoutRender.js` `buildBadgesLine`: every tier names its category, "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR" (his ruling: the portal may leave the word off TOP n and CAPABLE, the bot never does), and an ASS line with its emoji. `utils/adminParser.js` `parseLoadoutBadges` and the portal's mirror (`portal/ui/armory.logic.js`): `ass`, `capable`, and `top4` read as top5. The bulk format, Export's words, the rack order and the palette follow `local/pins2-board-3/redo/b4/bulkformat.js` and `local/pins2-board-3/redo/ui/armory.logic.js`.
+
+**Verify condition:** no `top4` anywhere in models, bot, portal or stored data; a Capable and an Ass build render in Discord as "Capable AR" and ASS; a pasted `top4` stages as Top 5 with a warning.
+
+### `deriveNextImageKey` offers a key that is already taken `[P1 · XS]`
+
+Filed 2026-09-24 14:30 EDT (his v19 item 13). `portal/ui/armory.logic.js` compares candidate keys against stored `imageKey`s, which carry `.png`, so no candidate ever matches and every weapon is offered `-1` (AK117 was offered AK117-1, which Build 1 holds). The kit's copy strips the extension and also skips unused uploads and the other builds in the same drawer (`reserved`). Check the bot's `utils/loadoutImageCache.js` `deriveImageKey` for the same fault.
+
+**Verify condition:** a new AK117 build is offered AK117-2 while AK117-1.png exists, and two new builds in one drawer never share a key.
+
 ### Board 4 v18–v19 — states only measured or never opened `[P2 · S]`
 
-Filed 2026-09-24 11:39 EDT (Session 3 compact prep 5). v19 is published; these states were measured without being looked at, or not opened: build forms A and C; the DMZ picker lists and the DMZ image well; the Stage blocker's hint by keyboard; ↑ ↓ in the two-line stored-image rows; the Hint's containing-block fix inside SelectAllBox; C9's chip at resting hover; every width but 1440; the manifest row's ink on DMZ rows and expanded build rows (only the first six MP rows were measured). Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §15–§16.
+Filed 2026-09-24 11:39 EDT (Session 3 compact prep 5). v19 is published; these states were measured without being looked at, or not opened: build forms A and C; the DMZ picker lists and the DMZ image well; the Stage blocker's hint by keyboard; ↑ ↓ in the two-line stored-image rows; the Hint's containing-block fix inside SelectAllBox; C9's chip at resting hover; every width but 1440; the manifest row's ink on DMZ rows and expanded build rows (only the first six MP rows were measured). v19 adds: keyboard on the Before staging rows; reduced motion on the new motion (the hover card, the checks, the wand, the ASS options); the hover card with three badges; DMZ Bulk; Edit with an empty editor. Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §15–§16.
 
 **Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
 
