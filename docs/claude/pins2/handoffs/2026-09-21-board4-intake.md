@@ -648,3 +648,5 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 38 | the 880 vs 980 drawer as a toggle on the board | a board fork on C2 |
 | 39 | publish v20 only after he approves the badge design | — |
 
+*Built 2026-09-24 15:30 EDT on the kit, not published: 34–38 (plan §19). 39 waits on his badge approval.*
+
