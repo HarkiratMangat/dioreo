@@ -681,7 +681,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 | # | Item | 2026-09-24 15:59 EDT (kit) |
 |---|---|---|
-| 44 | the attachment chip design is incorrect | built 2026-09-24 16:40 EDT: the manifest's chip rules were scoped to its own contexts, so Bulk's cards and legend, Compare's same row and the Export specimen drew the bare wash; they now take the manifest chip. His 16:38 EDT: "we literally use it in the armory manifest ON THIS VERY BOARD" — asking back was wrong |
+| 44 | the attachment chip design is incorrect | built 2026-09-24 16:47 EDT: every chip on the board computes the manifest chip (fill, slot-coloured ring, size, slot word), measured against the manifest's Muzzle chip. Two rule sets were scoped to the manifest's own contexts — the p2sty selector lists and the neutralbg ring override's `:is()` list — and both now include Bulk's cards and legend, Compare's same row and the Export specimen. His 16:38 EDT: "we literally use it in the armory manifest ON THIS VERY BOARD" — asking back was wrong |
 | 45 | Export's lines in the format the file delivers | one writer for the list, the hover card and the download: the Bulk create format |
 | 46 | the hover card's position | 14px from the drawer's sides, the floor and the file's footer rule, in every hover state |
 | 47 | the mode chip follows the weapon and build | hover card, build card head, Before staging rows, Bulk result cards |

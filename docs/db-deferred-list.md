@@ -131,6 +131,7 @@ Filed 2026-09-23 16:59 EDT (Session 3 compact prep 4). v16 is built on the board
 **Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
 
 ### Board 4 — his look at v19 — built on the kit 2026-09-24 15:30 EDT (plan §19), not published; the ASS exclusivity still to port to the portal and bot in Session 5 `[P1 · M]`
+  - **Added 2026-09-24 16:47 EDT (Board 4 v20, for Session 5 to port):** the Export file writes the Bulk create format (`WEAPON | CATEGORY | MODE`, Label / Code / Image / Badges, `- ` attachments; no auto label, no `.png`) — `utils/adminParser.js` `formatLoadoutsAsBulkText` and the importer move to it together · "Optional" chips on Label, Gunsmith code, Badges and Image while empty · the MP/DMZ chip follows the weapon and build on every head · every attachment chip is the manifest's chip. Verify: export a file in the portal and paste it into Bulk create unchanged.
 
 Filed 2026-09-24 14:44 EDT (intake log items 34–39; plan §18). Before staging floats mid-column (sticky `bottom:78px` in the side column); ASS options A and B need the grade family's ambiance; ASS and META/Best/Top 3/Top 5/Capable disable each other in the form; the 880 / 980 drawer as a board toggle; the Grade and Tier labels' +0.5px ink offset (identical boxes and styles to Label, unexplained); a cap-only ink proof for the descender labels. Publish v20 only after he approves the badge design.
 
