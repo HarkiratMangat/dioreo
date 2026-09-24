@@ -650,3 +650,17 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 *Built 2026-09-24 15:30 EDT on the kit, not published: 34–38 (plan §19). 39 waits on his badge approval.*
 
+### His look at the v20 build — 2026-09-24 15:39 EDT, verbatim
+
+> * i want to see both variants of badge in the board before i decide
+> * i want to see the 980 vs 880 in the board as well. And show me a 3rd option of 940px, that's a +60px increase from 880px, so put ~1/3 (20px) of it into the discord preview side, and ~2/3 (40px) into the form side. Apple the same logic to 980px.
+> * i never asked for "weapon" and "category" to get the inline treatment. i only asked for "label", "grade" and "tier" to be changed.
+> * also better organize/layout the "before staged" card so you're not wasing so much horizontal space inside.
+
+| # | Item | Built 2026-09-24 15:44 EDT (kit) |
+|---|---|---|
+| 40 | see ASS A and B on the board before deciding | the fork is A · Stink lines / B · Flies; C (plop) deleted; needs a publish |
+| 41 | Drawer 880 / 940 / 980, the added width split ⅓ preview, ⅔ form | C2 fork A 880 (preview 300, form 514) · B 940 (320, 554) · C 980 (333, 581); needs a publish |
+| 42 | only Label, Grade and Tier inline | Weapon + Category are v18's stacked pair again |
+| 43 | Before staging wastes horizontal space | the mark leads each row; mode, weapon and build on one line, the need under it on the same edge; no right icon column |
+
