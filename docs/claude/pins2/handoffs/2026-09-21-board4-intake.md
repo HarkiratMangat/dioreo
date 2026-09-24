@@ -560,3 +560,32 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 15 | the image preview takes the closest of a few set aspect ratios to the image it holds, without disturbing the fields around it | the image well's preview tile, across Upload, Link and Stored image |
 | 16 | a way to clear the image once uploaded or linked | the image well, every source |
 
+### Message 4 — 2026-09-24 13:33 EDT, verbatim
+
+*Screenshots: `09-code-filled-chip.png` (Gunsmith code with "✦ Filled 4 slots" in --ok) · `10-attachments-code.png` (Attachments "4 of 5", each code-filled slot with a green CODE chip and a green field border; Badges, Grade and Tier below) · `11-ready-chip.png` (a card header: MP BAL-27 Build 6 · Close range with "✓ Ready"; Build, Label, Gunsmith code, Attachments 5 of 5) · `12-still-needs-one.png` (the chip "Still needs one") · `13-preview-empty-space.png` (the IN DISCORD column: the AK117 preview card, then empty space down to Cancel and Stage) · `14-stage-hint-cut.png` (the Stage hint "CARD 1 NEEDS AN ATTACHMENT · CA… NEEDS AN ATTACHMENT", wrapped and cut off at the drawer's right edge) · `15-stage-hint-weapon.png` (the Stage hint "CARD 2 NEEDS A WEAPON").*
+
+> * I'm not a fan of the "filled 4 slots" design when the attachments are auto detected by the system via the code. Change it's icon to a wand with sparkles. Also change it's tint/color from --ok to the Yellow #F3C231 accent since it's not really a confirmation, it's more like a "look at this magic". Also reword it to "Recognized 4 of 5 slots".
+> * similarly with the `code` chip beside the attachment slot, change that to just the wand+sparkles icon in yellow alone.
+> * And then add a chip beside the "Attachments" label `[wand+sparkle icon] Filled 4 slots` in yellow, followed by it's normal `4 of 5` chip.
+> * Can you also colorize the actual "muzzle" "barrel", etc text in it's respective accent colors.
+> * Remove the green border around the field for auto-detected slots. it just makes it confusing. leave those fields as normal/not-highlisted.
+> * also your "Ready" chip at the top... why not just integrate that info into/beside form's labels? Let's take the "Build" form section as an example:
+>    * when nothing is input, it should have a --warn tinted chip, with the triangle icon, saying "Weapon required".
+>    * when the weapon name gets filled, add a checkmark (with tinted background around it) beside the "Weapon" label and "Category" label that basically imply that this input is valid and correctly filled in/ready.
+>    * While the "Build" section label's chip then changes to a "Ready" chip
+>    * What do you think? This is a pretty preemptive idea/thought, so use your own design and judgement to improve upon my design and expand it.
+> * Also that "Still needs one" chip is so confusingly phrased
+> * And the disabled Stage button pop-up is actually being cut off. But i had an idea... that inside the space after the discord preview card is always empty, instead of the pop-up, why not just have a chip area over there that actually states the "ready"/"x still needs x" info in like a dedicated little area? Wouldn't that make more sense?
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 17 | Gunsmith code's code-fill chip: a wand-with-sparkles icon, yellow #F3C231 instead of --ok, reworded "Recognized 4 of 5 slots" | the code-recognition signal (a "look at this magic" tone, not a confirmation) |
+| 18 | a code-filled slot's CODE chip becomes the yellow wand-and-sparkles icon alone | the same signal, per slot |
+| 19 | beside "Attachments": a yellow "[wand+sparkles] Filled 4 slots" chip, then the normal "4 of 5" chip | the same signal, on the section heading |
+| 20 | the slot names (Muzzle, Barrel…) in their own slot accent colours | slot-name labels, wherever the form lists slots |
+| 21 | no green border on a code-filled slot's field; it looks like any other field | the attachment field's resting state |
+| 22 | the card header's "Ready" chip moves into the form: the Build section shows a --warn "⚠ Weapon required" chip while empty; once the weapon is filled, a tinted check beside "Weapon" and "Category" and the section chip turns "Ready"; he asks me to improve on and extend the idea with my own design judgement | per-section and per-field readiness across the build form (every section with a requirement) |
+| 23 | "Still needs one" is confusingly phrased | readiness copy |
+| 24 | the disabled Stage button's pop-up is cut off at the drawer's edge (a long multi-card reason wraps and clips) | the Stage blocker hint (v17 item 3 put it on the board's Hint) |
+| 25 | his idea: instead of the pop-up, a dedicated chip area in the always-empty space below the Discord preview, stating ready / what still needs what | the drawer's readiness summary; supersedes item 24's pop-up if taken |
+
