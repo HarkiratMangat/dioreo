@@ -618,3 +618,11 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 *33 items, 5 messages. His next intake is meant to be Compare, so these surfaces (the Export peek, the badges, the build form, Bulk create) and their neighbours must not need another round.*
 
+### His ruling during the build — 2026-09-24 13:54 EDT, verbatim ("don't forget this in your notes", 13:55 EDT)
+
+*Asked of my thinking note that BEST carries the category word ("BEST ASSAULT") and TOP 3 / TOP 5 do not:*
+
+> top 3/top 5 should be carrying the word inside the bot. it's fine to leave it out of the portal for aesthetic purposes. but in the bot, it's labeled as "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR"
+
+*So: the portal's tier badges read BEST ASSAULT · TOP 3 · TOP 5 · CAPABLE (no category word after TOP n or CAPABLE); the bot writes every tier with its category, "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR". The board's Discord preview card follows the bot. Filed for the session that writes bot code.*
+
