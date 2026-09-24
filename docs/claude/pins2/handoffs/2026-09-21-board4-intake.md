@@ -687,6 +687,6 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 47 | the mode chip follows the weapon and build | hover card, build card head, Before staging rows, Bulk result cards |
 | 48 | Label back to its original format | label over field; only Grade, Tier and the slots use the label column |
 | 49 | Badges → Grade spacing = Build → Weapon | every heading holds 24px; equal where Grade stacks (880, 940); at 980 Grade sits beside its row, centred on it |
-| 50 | chip alignment | chip boxes centred in tiles and track (0.00); words centred in their chips (−0.25px); No tier's word was 1px high — trimmed |
+| 50 | chip alignment | chip boxes centred in tiles and track (0.00); words centred in their chips (−0.25px); No tier's word was 1px high — a 2px top inset centres it (measured after) |
 | 51 | "Optional" chips | Label, Gunsmith code, Badges and Image carry a neutral Optional chip while empty |
 
