@@ -130,9 +130,15 @@ Filed 2026-09-23 16:59 EDT (Session 3 compact prep 4). v16 is built on the board
 
 **Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
 
+### Board 4 v18–v19 — states only measured or never opened `[P2 · S]`
+
+Filed 2026-09-24 11:39 EDT (Session 3 compact prep 5). v19 is published; these states were measured without being looked at, or not opened: build forms A and C; the DMZ picker lists and the DMZ image well; the Stage blocker's hint by keyboard; ↑ ↓ in the two-line stored-image rows; the Hint's containing-block fix inside SelectAllBox; C9's chip at resting hover; every width but 1440; the manifest row's ink on DMZ rows and expanded build rows (only the first six MP rows were measured). Record: `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` §15–§16.
+
+**Verify condition:** on the local board with the chrome-devtools CLI, each state opened and shot, three faults looked for per shot, none left unexplained.
+
 ### Board 4's flow test has no relational assertions `[P3 · S]`
 
-Filed 2026-09-23 16:59 EDT. `local/pins2-board-3/board4-review/r22.cjs` (35 checks) passed while Cancel sat 16px over the form column, because none of its checks compare two elements. The class sweep (`docs/claude/pins2/instruments/board4-class-sweep.js`) measures recipes but is not wired into it.
+Filed 2026-09-23 16:59 EDT. `local/pins2-board-3/board4-review/r22.cjs` (35 checks) passed while Cancel sat 16px over the form column, because none of its checks compare two elements. The class sweep (`docs/claude/pins2/instruments/board4-class-sweep.js`) measures recipes but is not wired into it. Nor can it see UI a JS `mouseenter` reveals (the board's Hint): forced `.__h` classes never fire it, so the Stage blocker's hint needs a dispatched `mouseenter` and a wait over 400ms (`docs/claude/pins2/instruments/board4-shot-add-build.js`).
 
 **Verify condition:** the flow test fails on a footer that overlaps the form column, on a picker list wider than its column, and on a chip family whose pressed ring differs from the recipe.
 

@@ -495,7 +495,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 | # | Item | Class it belongs to |
 |---|---|---|
-| 19 | the Pick builds list's top fade: start slightly lower, a softer ramp | the board's top scroll fade (`b3/fady.js`), every list under a sticky head |
+| 19 | the Pick builds list's top fade: start slightly lower, a softer ramp | the board's top scroll fade (`local/pins2-board-3/redo/b3/fady.js`), every list under a sticky head |
 
 **Handled 2026-09-24 10:38 EDT: all 19 built in kit `565f38e` (plan § 15, "Built"), local, not published.** **Round closed at 2026-09-23 23:14 EDT: 19 items across six messages.** The build plan is `docs/claude/pins2/handoffs/2026-09-23-board4-v15-plan.md` § 15.
 
