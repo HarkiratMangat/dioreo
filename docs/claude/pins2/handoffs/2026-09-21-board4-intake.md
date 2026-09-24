@@ -589,3 +589,26 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 24 | the disabled Stage button's pop-up is cut off at the drawer's edge (a long multi-card reason wraps and clips) | the Stage blocker hint (v17 item 3 put it on the board's Hint) |
 | 25 | his idea: instead of the pop-up, a dedicated chip area in the always-empty space below the Discord preview, stating ready / what still needs what | the drawer's readiness summary; supersedes item 24's pop-up if taken |
 
+### Message 5 — 2026-09-24 13:43 EDT, verbatim
+
+*Screenshots: `16-bulk-format-hint.png` (Bulk create, empty: "Builds 0 builds", the Format button pressed, the format hint card with four example lines and their captions and the "Paste this, or a file from Export…" footer) · `17-bulk-ghost-lines.png` (one FENNEC build typed: dashed ghost lines "Code: the gunsmith code", "Image: a key or a link", "Badges: meta, best", "- an attachment, one per line"; the preview card "Being typed" with "Its attachments come next, one per line") · `18-mp-chip-product.png` and `19-dmz-chip-product.png` (the product's MP and DMZ chips, his reference) · `20-bulk-two-builds.png` (BAL-27 and FENNEC typed: the inline chips "New image · next free key" and "Unused upload", the list's MP chip, the "Name" legend, the preview cards with MUZZLE/BARREL chips, "No Stok" dashed, the META • BEST ASSAULT run) · `21-bulk-overflow.png` (a long paste: line 24 runs out below the editor's bottom edge, "This build's image" chips on each Image line).*
+
+> * i HATE the "format" hint section/design/integration. It needs a complete redesign. It's so unintuitive.
+> * similarly with the hints inside of the actual list, they're so intrusive, instead of being helpful. Their design needs improving as well.
+> * and why are the MP/DMZ chips different inside of the list? Can you make them more like the other mp/dmz chips are created? (screenshots attached)
+> * the list also doesn't scroll, so typing a lot of items will just make it bug out and get stuck. And it also escapes out.
+> * and why are you using different chip designs and elements when pre-designed versions already exist? Such as the attachment chips.
+> * Just overall... the flow/feel of the bulk create panel needs work and improvement. HARSHLY nitpick every element, every line, every border, every surface, every component, every state, etc etc of the bulk create panel and refine it's design and usability. and B "margin notes" is out. I want both "a ledger" and "c preview stack" kept and i want them as a toggle within the panel so the preview style can be switched between the two. Basically keeping both view styles in the product.
+> * Meanwhile, "A instrument" is the chosen style for the Add Build form panel.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 26 | the Format hint: a complete redesign, it is unintuitive | Bulk create's format guidance |
+| 27 | the hints inside the list (ghost lines, the inline "New image · next free key" / "Unused upload" / "This build's image" chips) are intrusive; redesign them | the editor's inline annotations |
+| 28 | the list's MP/DMZ chips differ from the product's MP/DMZ chips; make them match | the mode chip, wherever it renders (his screenshots are the reference) |
+| 29 | the list does not scroll: a long paste gets stuck and runs out of its box | the Bulk editor's overflow and scroll |
+| 30 | use the existing chips (the attachment chips and others) instead of new designs | every chip Bulk draws: search the kit for the role first (PRE-FLIGHT 38) |
+| 31 | the whole Bulk create panel, harshly nitpicked: every element, line, border, surface, component and state, for design and usability | the Bulk panel, all states |
+| 32 | Bulk's fork: B "margin notes" is out; A "ledger" and C "preview stack" both stay, as a toggle inside the panel to switch the preview style (both ship in the product) | the Bulk preview column |
+| 33 | the Add build form's fork: A "instrument" is chosen | the build form (forms B and C retire) |
+
