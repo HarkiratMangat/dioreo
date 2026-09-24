@@ -544,3 +544,19 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 11 | "Grade" and "Tier" labels inline with their buttons, not above | the build form's label-and-control rows |
 | 12 | "Label" inline with its field, not above | the same class, the Label field |
 
+### Message 3 — 2026-09-24 12:18 EDT, verbatim
+
+*Screenshots: `06-key-taken.png` (a new AK117 build: Key auto-filled "AK117-1" with the warn chip "Replaces the image on AK117 · Build 1") · `07-your-key-chip.png` (Key "AK117-2" with the "✦ Your key" chip under it) · `08-uploaded-image.png` (an uploaded screenshot in the square preview, the file row "Screenshot…. 2.0 MB Replace", Key "AK117-2", "Your key").*
+
+> * so i tried making a new build and selected "AK117", and the Key field auto filled with a key which is already used... that needs to be corrected.
+> * I also DO NOT like the "your key" chip design, please improve that. Including it's icon choice which makes no sense.
+> * also, the image that's uploaded, you need to dynamically change the aspect ratio of the preview image to a few pre-designated ratios, whichever ratio closest fits the detected image. Be careful not to mess up the fields/design around it when you make this change.
+> * Also, i notice where's no method or button to actually clear away/remove the image once uploaded or added by url... that's a gap, correct it.
+
+| # | Item | Class it belongs to |
+|---|---|---|
+| 13 | a new build's auto-filled Key must never be one already in use (AK117 got "AK117-1", which Build 1 holds) | the Key's default: the next free key for that weapon, checked against every stored key |
+| 14 | the "Your key" chip redesigned, and its icon (a sparkle) replaced with one that means something | the Key field's status chips (Your key, the replace warning), one family |
+| 15 | the image preview takes the closest of a few set aspect ratios to the image it holds, without disturbing the fields around it | the image well's preview tile, across Upload, Link and Stored image |
+| 16 | a way to clear the image once uploaded or linked | the image well, every source |
+
