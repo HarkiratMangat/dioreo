@@ -770,5 +770,13 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 
 **His to decide (not changed):** 84 — Table A prints "No label" in every head and "No badges" in three; drop a line that no shown build fills? 85 — Tables B and C show no badges at all; add them? And Bulk's MP / DMZ switch lights DMZ while every block keeps its own mode (his mixed-modes ruling), so the switch changes nothing in Bulk.
 
+**His answers (popup, 2026-09-25 01:45 EDT), built 2026-09-25 01:51 EDT:**
+| # | His answer | Built |
+|---|---|---|
+| 84 | Keep the placeholders | unchanged: "No label" and "No badges" stay in every head |
+| 85 | Add badges to B and C | every head in B and C carries its badges under the label; every head in A, B and C now reads from the top (bottom-aligned, FFAR 1's names had sat 16px under BAL-27's) — measured one top in each table |
+| 86 | Default for unmarked blocks | the parser already took the switch's mode for a block with no mode; checked: "KILO 141 \| AR" with the switch on DMZ stages as "Stage this DMZ build". The Format card's first line now says so: "Weapon · category · mode (blank: the switch)" |
+| — | Publish v24 after these answers | published next |
+
 **Opened and fine:** ASS on in the form (META and every tier disabled with their reasons, TOXIC free); ASS's motion is gated under reduced motion (every animated ASS rule sits inside `prefers-reduced-motion: no-preference`, checked against a known gated rule); the Optional chip clears as Label fills and returns when it empties; DMZ with BEST and its range row at 980; Export's Landing, Picker and Three picked; Bulk's Format card (MP in red); the post drawer's upload, a working link and a failed link. **Could not be checked here:** Tab order inside a drawer — the board opens several drawers at once and each traps focus, so a Tab lands in Export's drawer; disabled controls are native `disabled` buttons, which a browser skips. Flow test PASS 35.
 
