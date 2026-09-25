@@ -740,3 +740,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 68 | the whole counter and its bar in one pill chip | one 28px chip in the "1 a day max" pill's own fill, ring and mono: a 96px bar with its fill, then "5,835 of 6,000 left"; it sits where a helper sits, 8px under the Text field on its left edge (I had put only the bar's fill in a pill — his ask was the whole counter) |
 | 69 | "Posted now" under the banner, as a footer | the Discord card reads title, body, banner, then the timestamp, 10px under the banner as Discord draws an embed footer |
 
+### The sweep before v23 — 2026-09-25 01:24 EDT (his 01:13 EDT: "do your sweep of the various states/surfaces/elements, etc and then publish a collective v23 after your sweep")
+
+| # | Found opening a state | Fixed |
+|---|---|---|
+| 70 | Export's build tiles: an ASS build (KILO 141 Build 1) showed no mark, and a CAPABLE build (HOLGER 26 Build 1) wore Top's award | `gates/armory.js` marks carry `capable` (thumbs-up, Capable's blue) and `ass` (the ASS mark, its umber) in the tiles, the roster, their labels and `tierWord` (which would have printed "TOP able") |
+| 71 | BEST MARKSMAN, the longest tier word, made the Tier track 432px; with several builds a card has 537 and the row needs 542, so a marksman build's Tier fell under its label | No tier's side inset 9 → 6: the track is 426 and sits beside its label in every card of Add · three |
+| 72 | a banner link that 404s drew an empty 148px box in the Discord card between the body and "Posted now" | the card tracks its banner's load and shows the broken-image mark, as board 1 drew it |
+| 73 | a picked file's name cut to "doubl…" in the banner well | the well's tile is 136px in the post drawer (176 in the build card), so the name reads |
+
+**Opened and fine:** ASS on in the form (META and every tier disabled with their reasons, TOXIC free); ASS's motion is gated under reduced motion (every animated ASS rule sits inside `prefers-reduced-motion: no-preference`, checked against a known gated rule); the Optional chip clears as Label fills and returns when it empties; DMZ with BEST and its range row at 980; Export's Landing, Picker and Three picked; Bulk's Format card (MP in red); the post drawer's upload, a working link and a failed link. **Could not be checked here:** Tab order inside a drawer — the board opens several drawers at once and each traps focus, so a Tab lands in Export's drawer; disabled controls are native `disabled` buttons, which a browser skips. Flow test PASS 35.
+
