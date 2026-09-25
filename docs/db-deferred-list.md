@@ -1085,6 +1085,32 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 ## 🗂️ Queued — worth its own dedicated session
 
+### Integrate the CODM weapons and attachments catalogue into the prod and dev bot — BEFORE v3 LAUNCHES `[P1 · M]`
+
+Filed 2026-09-25 01:30 EDT at Harkirat's direction ("File in deferred list to integrate the json into the prod and dev bot data and code, before v3 is launched"). A Haiku sub-agent transcribed his screenshot of the game's weapon and attachment table on 2026-09-25 01:18 EDT; the main session spot-checked it against the screenshot (no season notes, 122 unique weapons, the Stock weapon groups and Barrel's ASM10 / HVK-30 lines match).
+
+**The data (tracked copies; the originals sit in gitignored `local/codm-attachments/`):**
+- `docs/claude/pins2/data/2026-09-25-codm-weapons-attachments.json` — `weapons[]` (`name`, `category`, `mode: "DMZ"` on MicroMG 9mm) and `attachments{slot: {general[], byWeapon{}, notes{}}}` across 14 slots (Muzzle, Barrel, Bowstring, Limb, Optic, Stock, Laser, Underbarrel, Trigger Action, Smoothbore, Guard, Bolt, Ammunition, Rear Grip)
+- `docs/claude/pins2/data/2026-09-25-codm-weapons-attachments-source.png` — his full-resolution screenshot, to re-check any name
+
+**Code that holds or checks weapon, category, attachment or slot names today (each must read the catalogue or be reconciled with it):**
+- `models/Loadout.js` — `weaponName`, `category`, `attachments`, `attachmentSlots` (schema: a new field goes in the schema in the same change)
+- `core/ops/loadouts.js` — the op algebra's loadout validate/preview/apply (both `/manage` and the portal drive it)
+- `handlers/manage/loadouts.js` · `handlers/loadouts.js` · `utils/adminParser.js` (the bulk and single-build parsers — Session 5 also ports the board's Bulk format here)
+- `utils/search.js` · `models/SearchTerm.js` (weapon and category synonyms for autocomplete)
+- `utils/loadoutRender.js` (category labels and accents in Discord)
+- `utils/autobuildPipeline.js` · `utils/visionExtract.js` · `commands/autobuild.js` (the vision prompt's attachment and slot vocabulary — a known-name list sharply improves extraction)
+- `utils/manageGuides.js` · `utils/loadoutImageCache.js` (slot names in guides and image metadata)
+- `portal/ui/armory.js` · `portal/ui/armory.logic.js` · `portal/ui/harness/stub.js` (the portal's weapon and attachment pickers and their fixtures)
+- `scripts/backfillLoadoutSlots.js` · `scripts/backfillSlotsFromMetadata.js` (the slot backfills — a catalogue replaces their guessing)
+- The board's reference: `local/pins2-board-3/redo/b4/form.js` (the attachment pickers), `local/pins2-board-3/redo/b4/bulkformat.js`, `local/pins2-board-3/redo/data/armory.js`
+
+**Data:** the dev database (`mongodb://localhost:27017/diors-builds-dev`, `.env.dev`) first, then prod Atlas (`MONGODB_URI` in `.env`) — every stored `Loadout` checked against the catalogue: weapon names spelled as the game spells them, every attachment placed in a slot, and a report of any stored attachment the catalogue lacks (a real game item the screenshot missed, or a typo in stored data). A prod write needs his approval restated at the time.
+
+**Decide when built:** where the catalogue lives in the repo (a tracked `data/` module the bot, the portal and the core ops all import, versus a Mongo collection admins can edit from the portal); how a new season's weapons are added (Discord `/manage`, the portal, or a file edit); and whether weapon-specific attachments (`byWeapon`) restrict what a picker offers for that weapon.
+
+**Verify condition:** the bot's and the portal's weapon and attachment pickers list exactly the catalogue's names (count match: 122 weapons; per-slot totals as in the JSON); `/autobuild`'s prompt carries the vocabulary; a script run on dev and on prod reports zero stored loadouts whose weapon or attachments are unknown to the catalogue, or lists each one for him to rule on.
+
 - **Portal setting: the selection bar's ground — mesh or solid** `[P3 · S]` — board 3 thread `bd09c832`, 2026-09-17 18:59 EDT. Harkirat: *"Mesh ground is the default; KEEP the solid styling in the files and document it as a future portal setting."* The board now defaults `p5bg` to `mesh` and keeps `html[data-b3-p5bg=solid]` in `local/pins2-board-3/redo/b3/board.css` deliberately — it is a preference to expose later, not a losing fork to delete. **Verify:** a portal user can switch the selection bar between the mesh and the flat ground, and the flat one renders as `.b3-sd` without the four radial layers.
 
 ### Point the conformance instruments at the board that holds the live design `[P1 · S]`
