@@ -729,3 +729,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 65 | the count's fill in a pill | a 10px sunk capsule with a hairline ring, the fill a capsule inside it 2px from every edge |
 | 66 | the banner is the build drawer's image well, Upload or Link, as the last field | `MediaWell` exported from b4/form.js with `sources`, `keyed` and `what`; the announcement form uses it with Upload and Link and no key row. The drop zone fills the column to the preview's foot ("Drop an image, or choose a file"); a link shows its size chip and the Discord preview shows the banner. Two class leaks fixed on the way: the post drawer's own field rules (descendant `.dwfield input`) boxed the well's link input and widened the form past its column — narrowed to `:not([data-bare])` and child labels; and a field's input counted ~190px toward the well's minimum width (`.b4 .f-fld > .f-in{width:0}`, build form widths re-measured unchanged). Flow test PASS 35 |
 
+### His look at the refined form — 2026-09-25 01:05 EDT, verbatim
+
+> i ask you to nitpick the announcement drawer's spacing and what do i see? SHIT, INCONSISTENT SPACING!
+> and also, i asked for the entire character counter+fill-bar to be in a pill-shaped chip. And the "posted now" in the discord preview should be below the image as a footer.
+
+| # | Item | Built 2026-09-25 01:11 EDT (kit, not published) |
+|---|---|---|
+| 67 | the spacing, again | my 00:36 rhythm was measured on boxes; the eye reads ink and holes. The date row ended on a helper under Ends only, leaving a 48px hole under Starts where every other break is 22 — Starts now carries its own truthful helper ("default · now", blank Start posts now); the helper lines sit at line-height 1 so a box is its ink (they were 16.8 tall for 12px text — a shared `:is()` rule's heaviest argument, (0,7,1), pinned every .pb-echo at 1.4 and was split); the form and the preview sit the drawer's 24px apart (18); Never ends ends on its field's edge (2px in). Measured after, both columns: label → field 13, field → helper 8, every section break 22, insets 25 / 25 |
+| 68 | the whole counter and its bar in one pill chip | one 28px chip in the "1 a day max" pill's own fill, ring and mono: a 96px bar with its fill, then "5,835 of 6,000 left"; it sits where a helper sits, 8px under the Text field on its left edge (I had put only the bar's fill in a pill — his ask was the whole counter) |
+| 69 | "Posted now" under the banner, as a footer | the Discord card reads title, body, banner, then the timestamp, 10px under the banner as Discord draws an embed footer |
+
