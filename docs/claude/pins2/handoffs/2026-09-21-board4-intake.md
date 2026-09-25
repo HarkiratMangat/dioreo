@@ -698,3 +698,14 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 58 | *(his 21:27 EDT: "can you show me an option C: the ambiance of the flies variant but using the stink lines?", then "publish it")* | built 2026-09-24 21:29 EDT: C1 fork option C — A's three rising lines with B's plate hum, halo of air and glint; gif `board4-review/v20/ass-c.gif`; published as Version 21 on his word |
 | 59 | *(his 21:29 EDT: "i fele like you have enough space in the 940px width drawer to make the badges inline with the label")* | built 2026-09-24 21:34 EDT: the label column is 96px (its widest label, Ammunition with the wand, measures 95; it was 112), the tier options' insets drop a pixel (track 435 → 425), and Grade and Tier stack together only below 535px of card (96 + 14 + 425). Measured: inline at 940 and 980 with one build and in DMZ; stacked together at 880 and with three builds; the slot fields, Grade tiles and Tier track share one left edge. Published as Version 22 on his word (21:57 EDT) |
 
+### His picks — 2026-09-24 22:30 EDT, verbatim (popup)
+
+> C1 (ASS badge): A · Stink lines
+> C2 (Drawer): "we can do 980 but why does the badges fall into stacked lines when multiple builds are being worked on? correct that, we clearly have enough space."
+
+| # | Item | Built 2026-09-24 22:35 EDT (kit, not published) |
+|---|---|---|
+| 60 | ASS is option A | the C1 fork is gone; B's flies and C's blend deleted; A's lines, fug and fume run on every ASS badge (manifest badge measured: lines block, `b3-fug`, `b3-fume`) |
+| 61 | the drawer is 980 | the C2 fork is gone; build, Bulk and Edit drawers 980, preview 333; a stored 880 or 940 is dropped by migration `2026-09-24-ass-dw-picked` |
+| 62 | Grade and Tier stack with several builds at 980 | a multi-build card's body was 533px against the 535 the inline row needs (96 + 14 + 425); the card's side inset is now its top's 16px, so the body is 537. Measured: Grade and Tier beside their label in all three cards of Add · three, in Add · filled and in DMZ. Flow test PASS 35 |
+
