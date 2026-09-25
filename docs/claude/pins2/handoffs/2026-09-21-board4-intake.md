@@ -709,3 +709,11 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 61 | the drawer is 980 | the C2 fork is gone; build, Bulk and Edit drawers 980, preview 333; a stored 880 or 940 is dropped by migration `2026-09-24-ass-dw-picked` |
 | 62 | Grade and Tier stack with several builds at 980 | a multi-build card's body was 533px against the 535 the inline row needs (96 + 14 + 425); the card's side inset is now its top's 16px, so the body is 537. Measured: Grade and Tier beside their label in all three cards of Add · three, in Add · filled and in DMZ. Flow test PASS 35 |
 
+### His look at the three-build shot — 2026-09-25 00:17 EDT, verbatim
+
+> notice how the tier badge's container has a much more defined soft corners than the grade badge's container? Can you apply that more rounded corner design to all the fields in the form, as well as the various search fields in the board?
+
+| # | Item | Built 2026-09-25 00:23 EDT (kit, not published) |
+|---|---|---|
+| 63 | the Tier track's softer corner on every field and search box | one token, `--fld-rad: 9px` (the Tier track's and the image source switch's corner), on every form field, the Grade tiles, the Tier track, the source switch, the drop zone, the Label field's build-number cap (8px inside), every search box (manifest, Broadcast, History, Export, Compare, stored images) and every Post drawer field (text, banner link and swatch, dates, the count stepper). Read back as 9px on each; the Bulk editor frame (10px) and Compare's big pick (10px) were already rounder and stay. Flow test PASS 35 |
+
