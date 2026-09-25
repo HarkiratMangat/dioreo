@@ -744,7 +744,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 | # | Found opening a state | Fixed |
 |---|---|---|
-| 70 | Export's build tiles: an ASS build (KILO 141 Build 1) showed no mark, and a CAPABLE build (HOLGER 26 Build 1) wore Top's award | `gates/armory.js` marks carry `capable` (thumbs-up, Capable's blue) and `ass` (the ASS mark, its umber) in the tiles, the roster, their labels and `tierWord` (which would have printed "TOP able") |
+| 70 | Export's build tiles: an ASS build (KILO 141 Build 1) showed no mark, and a CAPABLE build (HOLGER 26 Build 1) wore Top's award | `local/pins2-board-3/redo/gates/armory.js` marks carry `capable` (thumbs-up, Capable's blue) and `ass` (the ASS mark, its umber) in the tiles, the roster, their labels and `tierWord` (which would have printed "TOP able") |
 | 71 | BEST MARKSMAN, the longest tier word, made the Tier track 432px; with several builds a card has 537 and the row needs 542, so a marksman build's Tier fell under its label | No tier's side inset 9 → 6: the track is 426 and sits beside its label in every card of Add · three |
 | 72 | a banner link that 404s drew an empty 148px box in the Discord card between the body and "Posted now" | the card tracks its banner's load and shows the broken-image mark, as board 1 drew it |
 | 73 | a picked file's name cut to "doubl…" in the banner well | the well's tile is 136px in the post drawer (176 in the build card), so the name reads |
