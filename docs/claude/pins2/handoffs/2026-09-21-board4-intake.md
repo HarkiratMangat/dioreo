@@ -749,5 +749,26 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 | 72 | a banner link that 404s drew an empty 148px box in the Discord card between the body and "Posted now" | the card tracks its banner's load and shows the broken-image mark, as board 1 drew it |
 | 73 | a picked file's name cut to "doubl…" in the banner well | the well's tile is 136px in the post drawer (176 in the build card), so the name reads |
 
+### The Bulk and Compare sweep — 2026-09-25 01:41 EDT (his 01:29 EDT: "harshly nitpick and sweep the bulk create drawer and the compare panels. HARSH, THOROUGH, INDEPTH nitpicking")
+
+Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplicate, Edit 3 builds, the Discord view and DMZ; Compare · One weapon, Two weapons and One build in Table A, B and C, and Empty in A, B and C. Every number below measured after the last edit.
+
+| # | Found | Fixed |
+|---|---|---|
+| 74 | Bulk: the editor's head row was 30px and the list's 40, so the two heads sat 5px off one centre line and the editor began 10px above the list (in Edit the head also shrank to 36.7) | both heads 40px, `flex:none`: one centre line (226), editor and list start on one edge (258), in Bulk and Edit |
+| 75 | Cancel and Stage sat 4px below both columns' foot, in Bulk and in Add build | the footer sits 20px off the drawer's foot, the columns' own inset; Before staging's hold follows (still 16px above the buttons) |
+| 76 | the Bulk / Edit list ran 35px under Cancel and Stage — Edit's third card showed through them | the list ends 16px above the buttons and fades there |
+| 77 | a build with no label kept an empty label box, so its mode chip sat twice as far from the weapon (Can't read) | an empty label takes no room |
+| 78 | Compare: a column head's name did not start on its cells' words — A 4px off, C 8px, and every weapon's first column off again (B 12px) | each head takes its column's cell inset; measured equal in A, B and C, every column |
+| 79 | Table A's 8px column spacing inset the whole table inside the weapon bar and the figures, on both sides | the scroller spends that spacing outside: the slot labels start on the bar's edge and the last column ends 16px from the panel, as the bar does |
+| 80 | a wrapped suggestion (One build's "Same class", Empty A's "Try") fell back under its label | the chips wrap as one group beside the label |
+| 81 | the weapon shelf's 152px tiles pressed "Marksman" against "4 builds" | the shelf is 760px, tiles 184px, 38px between the class and the count |
+| 82 | "2 not shown: BAL-27 4, 5" | "2 not shown: BAL-27 Builds 4, 5", in the board's own build wording |
+| 83 | Table A's head showed "No badges" for a build whose only badge is ASS, or a DMZ tier | ASS and DMZ tiers count as badges |
+
+**Checked, nothing wrong:** the Edit header chip's "Builds 1–3" is an en dash (JetBrains Mono draws it narrow); Bulk's Discord view; the warning, duplicate and can't-read cards; Compare's Empty C list. Flow test PASS 35.
+
+**His to decide (not changed):** 84 — Table A prints "No label" in every head and "No badges" in three; drop a line that no shown build fills? 85 — Tables B and C show no badges at all; add them? And Bulk's MP / DMZ switch lights DMZ while every block keeps its own mode (his mixed-modes ruling), so the switch changes nothing in Bulk.
+
 **Opened and fine:** ASS on in the form (META and every tier disabled with their reasons, TOXIC free); ASS's motion is gated under reduced motion (every animated ASS rule sits inside `prefers-reduced-motion: no-preference`, checked against a known gated rule); the Optional chip clears as Label fills and returns when it empties; DMZ with BEST and its range row at 980; Export's Landing, Picker and Three picked; Bulk's Format card (MP in red); the post drawer's upload, a working link and a failed link. **Could not be checked here:** Tab order inside a drawer — the board opens several drawers at once and each traps focus, so a Tab lands in Export's drawer; disabled controls are native `disabled` buttons, which a browser skips. Flow test PASS 35.
 
