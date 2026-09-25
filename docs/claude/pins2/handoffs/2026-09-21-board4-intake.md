@@ -717,3 +717,15 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 |---|---|---|
 | 63 | the Tier track's softer corner on every field and search box | one token, `--fld-rad: 9px` (the Tier track's and the image source switch's corner), on every form field, the Grade tiles, the Tier track, the source switch, the drop zone, the Label field's build-number cap (8px inside), every search box (manifest, Broadcast, History, Export, Compare, stored images) and every Post drawer field (text, banner link and swatch, dates, the count stepper). Read back as 9px on each; the Bulk editor frame (10px) and Compare's big pick (10px) were already rounder and stay. Flow test PASS 35 |
 
+### His look at the announcement form — 2026-09-25 00:25 and 00:27 EDT, verbatim
+
+> please nitpick and correct the spacing of elements in this announcement form. also can you enclose the word count fill-ball in a pill container?
+>
+> also give it the full image attach feature/design that the build drawer got. with the options for URL or attach image. and move it down so it sits as the last field in the form. And overall, give the form some nitpicking and refinement
+
+| # | Item | Built 2026-09-25 00:36 EDT (kit, not published) |
+|---|---|---|
+| 64 | the form's spacing | one rhythm, measured after: a label 13px over its field everywhere (Starts and Ends were 22.8 — the 32px switch set their label row; it now sits in a 12.5px row, centred on the label), a helper line 8px under its field (the count was 18, the default date 14), sections 22px apart (were 18), one 16px gutter (banner 12, dates 16, stepper 20); the mini card and the "1 a day max" pill both 28px tall and 10px apart; In Discord centred on Text's label (it sat 14px low on a sticky top); Cancel and Stage on the last field's foot, both 24px off the drawer's (were 16 and 40) |
+| 65 | the count's fill in a pill | a 10px sunk capsule with a hairline ring, the fill a capsule inside it 2px from every edge |
+| 66 | the banner is the build drawer's image well, Upload or Link, as the last field | `MediaWell` exported from b4/form.js with `sources`, `keyed` and `what`; the announcement form uses it with Upload and Link and no key row. The drop zone fills the column to the preview's foot ("Drop an image, or choose a file"); a link shows its size chip and the Discord preview shows the banner. Two class leaks fixed on the way: the post drawer's own field rules (descendant `.dwfield input`) boxed the well's link input and widened the form past its column — narrowed to `:not([data-bare])` and child labels; and a field's input counted ~190px toward the well's minimum width (`.b4 .f-fld > .f-in{width:0}`, build form widths re-measured unchanged). Flow test PASS 35 |
+
