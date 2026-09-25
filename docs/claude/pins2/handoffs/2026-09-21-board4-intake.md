@@ -778,5 +778,7 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | 86 | Default for unmarked blocks | the parser already took the switch's mode for a block with no mode; checked: "KILO 141 \| AR" with the switch on DMZ stages as "Stage this DMZ build". The Format card's first line now says so: "Weapon · category · mode (blank: the switch)" |
 | — | Publish v24 after these answers | published next |
 
+**Found in compact prep 8 (2026-09-25 01:58 EDT), kit only, after v24:** 87 — with a DMZ tier picked, the Tier track grows the range row and the row centred "Tier" 19px under the tier options; beside its label the label now sits on the track's first row (measured 0px off in DMZ with BEST, Add · filled and Add · three).
+
 **Opened and fine:** ASS on in the form (META and every tier disabled with their reasons, TOXIC free); ASS's motion is gated under reduced motion (every animated ASS rule sits inside `prefers-reduced-motion: no-preference`, checked against a known gated rule); the Optional chip clears as Label fills and returns when it empties; DMZ with BEST and its range row at 980; Export's Landing, Picker and Three picked; Bulk's Format card (MP in red); the post drawer's upload, a working link and a failed link. **Could not be checked here:** Tab order inside a drawer — the board opens several drawers at once and each traps focus, so a Tab lands in Export's drawer; disabled controls are native `disabled` buttons, which a browser skips. Flow test PASS 35.
 
