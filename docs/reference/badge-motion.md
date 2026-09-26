@@ -47,6 +47,8 @@ status: live
 | Rank Mode | Scan: an underline drawn under each word in turn | "SO LAZY and basically the sheen wearing makeup" |
 | Rank Mode | Flip (the word hinging like a split-flap card) and Type (the letters re-typing) | "BOTH SHIT. and both incorrect!" — they move the badge's parts |
 | Rank Mode | a ping ring leaving the plate 6px into the open | the radial signal "was a good idea but your execution of it is bad… too prominent and expansive, giving these badges more importance and attention than they require" |
+| Rank Mode | a glint as a second copy of the word laid over it, with a bloom | "it just looks like it got bolder with a glow around it and it looks wierd" — an overlay of the same glyphs doubles the antialiasing; to involve text, move the word's own opacity |
+| Rank Mode | the text's flash a beat after the echo landed | "offsetting the timing wasn't good either, it feels weird since the text is inside the echo and literally right beside it" — layers that touch share the exact beat; an offset only reads for things set apart |
 
 ## Where the code lives
 
