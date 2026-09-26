@@ -1090,6 +1090,28 @@ Four changes on `feat/portal-redesign-session-b` ported the mockup's composition
 
 **His answer (popup, 2026-09-25 23:04 EDT):** "A new family" — neither a grade (beside META / TOXIC / ASS) nor a tier (beside BEST / TOP / CAPABLE), but a third kind with its own row and rules. Names, meanings and rules not yet given; asked for in words.
 
+**His spec (2026-09-25 23:28 EDT), verbatim:** "badge family: * family name: `Modes` * Badge names: `HP` `S&D` `DOM` `TDM` `FTL` `Control` * Goes in the bot as `Recommended Rank Mode: {badge_name | badge_name}` * Goes in portal as `Rank Mode: {badge_name | badge_name}` * I have custom svg icons i will supply you for the badges. until then, just create the badge border/color and utilize the ambiance that we didn't use from the ASS flies ambiance. The badges will all be same color/trim, just with a different icon. I'm thinking a whitish theme? but i'll leave it in your judgement."
+
+**Built on Board 4 (2026-09-25 23:28 EDT, local, not published):**
+
+| Surface | What it shows | Checked |
+|---|---|---|
+| Manifest weapon row | the modes after the grades and tier, one white plate each | LOCUS: META, BEST SNIPER and all six on one line (ends at x 943 of a 1293 row) |
+| Build form | a Rank Mode track under Tier, the Tier track's own form, several pressable; MP only | 376px beside its 96px label (Tier is 419); the row is gone in DMZ |
+| Discord preview (the bot's card) | a line `Recommended Rank Mode: HP \| S&D`, each name after its mark | form preview and Bulk's Discord view |
+| Bulk | tokens on the Badges line (`hp, s&d, dom, tdm, ftl, control`; `snd`, `sd`, `ctrl` accepted); the result card has its own Rank Mode row | a DMZ block with `hp` warns "“hp” is a rank mode — DMZ builds carry none"; the key sits on the first chip line when the run wraps |
+| Compare heads | the modes after the grades | a wrapped run starts on the same x as META (1102) |
+| Export | the hover card shows them; the exported file writes them on the Badges line; tiles and roster keys name them in their labels | LOCUS hover card; the run wraps from the left |
+| Selection bar | the list head carries them | all six on one line |
+| Palette | each mode is findable (hp, s&d, dom, tdm, ftl, control, mode) | not opened |
+
+**The look (my call, his "whitish theme… i'll leave it in your judgement"):** one white plate (`--tc:#E4ECF4`) for all six, the only hue no other badge wears; the grade family's resting light (a lit top edge, a ring, a glow); and ASS option B's ambiance, which his pick A left unused — the plate hums round the mark, a halo of air hangs round it, the mark glints — each chip offset in the loop so six never beat together, never under reduced motion. **The marks are placeholders** (Lucide target, bomb, flag, swords, shield, crosshair) until his SVGs arrive; swapping one is `MODE_ICON` in `local/pins2-board-3/redo/b3/armory-parts.js` and `local/pins2-board-3/redo/ui/icons.js`.
+
+**Not opened:** the palette search, reduced motion as a render (every animated rule sits inside `prefers-reduced-motion: no-preference`), Edit's drawer with a build carrying modes, the p1 b / c badge palettes (the family's colour is fixed, not per palette).
+
+**The port (Session 5), from the board:** `models/Loadout.js` gains `rankModes: [String]` (enum HP, S&D, DOM, TDM, FTL, Control; MP only) in the same change as any code that writes it · `utils/adminParser.js` reads the tokens on the Badges line with the aliases above, and a DMZ build drops them with a warning · `utils/loadoutRender.js` prints `Recommended Rank Mode: {a | b}`, each name after its custom emoji (his SVGs) · the portal labels the field `Rank Mode: {a | b}` · `core/ops/loadouts.js`, `portal/api/bulk.js`, `handlers/manage/loadouts.js` and the rest of this entry's list carry the field. The board's own port-ready copies: `local/pins2-board-3/redo/b4/bulkformat.js` (`RANK_MODES`, `modeToken`, `modesOf`, the reader and writer, tested in `local/pins2-board-3/redo/b4/bulkformat.test.mjs`) and `local/pins2-board-3/redo/ui/armory.logic.js` (`parseBadgesToken` returns `rankModes`; the add op, the bulk diff and the edit dirty-field lists carry it).
+
+
 Filed 2026-09-25 10:49 EDT at Harkirat's direction: "we'll be creating a new set of badges, which need to be designed, and also implemented into the bot/portal code same as the new ASS/CAPABLE badges." **Not yet defined** — which badges, what each means, and whether each is a grade (beside META / TOXIC / ASS) or a tier (beside BEST / TOP / CAPABLE) are his to say; ask in a popup before designing. The ASS / CAPABLE precedent is the "Filed 2026-09-24 14:30 EDT (Board 4, his v19 intake items 7–10 …)" entry in this file.
 
 **Every consumer of the badge set — sweep all of them (on 2026-09-25 Export's tiles and Compare's has-badges test were found still missing ASS and CAPABLE five versions after they shipped):**
