@@ -12,7 +12,7 @@ status: live
 
 ### C7 stage
 
-40 distinct signatures on screen; 31 not already specced above.
+40 distinct signatures on screen; 33 not already specced above.
 
 
 ### `div.b4-panel`
@@ -58,9 +58,9 @@ inside `.b4-panel` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `var(--s6)` | `32px` | #manifest, #sessions · app.css:2852 |
-| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -137,16 +137,140 @@ inside `.mlabel` · 6 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `svg.ic`
 
-inside `.pill` · 6 on screen · **2 looks**
+inside `.pill` · 13 on screen · **6 looks**
 
-#### look 1 of 2
+#### look 1 of 6
 
-`C7-83` · rendered **16×16** · 1 instance look like this · aria-hidden="true"
+`C7-19` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-radio"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| height | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
+| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--c)` | `rgb(123, 219, 99)` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 2 of 6
+
+`C7-23` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-calendar"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| height | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
+| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--c)` | `rgb(166, 128, 251)` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 3 of 6
+
+`C7-27` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-circle-check"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| height | `14px` | `14px` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
+| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `var(--c)` | `rgb(133, 147, 159)` | .b4 [data-realm="broadcast"] .mfilters .chip.topic .ic, .b4 [data-realm="broadcast"] .chip · b4.css:211 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 4 of 6
+
+`C7-72` · rendered **16×16** · 4 instances look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-trash-2"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .ic · b2.css:10 |
+| width | `16px` | `16px` | .wg-ib .ic · app.css:1150 |
+| height | `16px` | `16px` | .wg-ib .ic · app.css:1150 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `inherit` | `14.5px` | inherited · button · app.css:621 |
+| font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `19.575px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .rmv · app.css:5191 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · .rmv · app.css:5191 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 5 of 6
+
+`C7-85` · rendered **16×16** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-infinity"></use></svg>
@@ -172,11 +296,11 @@ inside `.pill` · 6 on screen · **2 looks**
 | color | ↑ `var(--warn-ink)` | `rgb(255, 158, 114)` | inherited · .bcdt.never · app.css:979 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
-#### look 2 of 2
+#### look 6 of 6
 
-`C7-85` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
+`C7-88` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-radio"></use></svg>
@@ -202,7 +326,7 @@ inside `.pill` · 6 on screen · **2 looks**
 | color | ↑ `var(--lc)` | `rgb(123, 219, 99)` | inherited · .btab · app.css:980 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `div.mt-r2`
@@ -214,13 +338,13 @@ inside `.mtools` · 1 on screen · **1 look**
 `C7-11` · rendered **1114×32** · 1 instance look like this
 
 ```html
-<div class="mt-r2"><span class="mt-grp" role="group" aria-label="State"><span class="mlabel"><span>State</span></span><button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>4</em></button><button aria-pressed="false" class="chip topic" title="Only Live now" style="--c: var(--ok);"><i></i><span class="cl">Live now</span> <em>1</em></button><button aria-pressed="false" class="chip to
+<div class="mt-r2"><span class="mt-grp" role="group" aria-label="State"><span class="mlabel"><span>State</span></span><button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>4</em></button><button aria-pressed="false" class="chip topic" title="Only Live now" style="--c: var(--ok);">⟨svg.ic⟩<span class="cl">Live now</span> <em>1</em></button><button aria-pressed="false" class="chip t
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
-| grid-template-columns | `max-content max-content` | `390.859px 0px` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
+| grid-template-columns | `max-content max-content` | `408.859px 0px` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
 | column-gap | `16px` | `16px` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
 | row-gap | `var(--s2)` | `8px` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
 | flex-wrap | `wrap` | `wrap` | .mt-r2 · app.css:944 |
@@ -236,11 +360,137 @@ inside `.mtools` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
+### `button.chip`
+
+inside `.mt-grp` · 1 on screen · **1 look**
+
+#### the one look
+
+`C7-15` · rendered **42×32** · 1 instance look like this · aria-pressed="true" title="All state"
+
+```html
+<button aria-pressed="true" class="chip" title="All state"><span class="cl">All</span> <em>4</em></button>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| align-items | `center` | `center` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| justify-content | `center` | `center` | .chip · app.css:1242 |
+| min-height | `32px` | `32px` | .chip · app.css:1242 |
+| box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
+| padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
+| padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
+| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
+| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| background-color | `!important !important` | `color(srgb 0.254902 0.112471 0.197647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| font | `inherit` | `` | button · app.css:621 |
+| font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
+| font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
+| font-weight | `600` | `600` | .chip · app.css:1242 |
+| font-style | `inherit` | `normal` | button · app.css:621 |
+| font-variant-numeric | `inherit` | `normal` | button · app.css:621 |
+| line-height | `inherit` | `18px` | button · app.css:621 |
+| letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
+| text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| text-decoration | `none` | `` | .chip · app.css:1242 |
+| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
+| cursor | `pointer` | `pointer` | button · app.css:621 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+
+**:hover** — changes
+
+| property | at rest | hover |
+|---|---|---|
+| background-color | `color(srgb 0.254902 0.112471 0.197647)` | `color(srgb 0.32549 0.130353 0.24)` |
+| transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
+
+**:focus-visible** — changes
+
+| property | at rest | focus-visible |
+|---|---|---|
+| outline-offset | `0px` | `2px` |
+
+**:active** — changes
+
+| property | at rest | active |
+|---|---|---|
+| transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+
+
+### `span.cl`
+
+inside `.chip` · 4 on screen · **1 look**
+
+#### the one look
+
+`C7-16` · rendered **14×8** · 1 instance look like this · text “All”
+
+```html
+<span class="cl">All</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
+| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+
+
 ### `em`
 
-inside `.chip` · 4 on screen · **3 looks**
+inside `.chip` · 4 on screen · **4 looks**
 
-#### look 1 of 3
+#### look 1 of 4
+
+`C7-17` · rendered **7×9** · 1 instance look like this · text “4”
+
+```html
+<em>4</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-style | `normal` | `normal` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | `inherit` | `color(srgb 0.980627 0.813412 0.896)` | .b4 .mt-grp .chip:not(.topic)[aria-pressed="true"] em · b4/classes.css:116 |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+
+#### look 2 of 4
 
 `C7-21` · rendered **7×9** · 1 instance look like this · text “1”
 
@@ -252,22 +502,22 @@ inside `.chip` · 4 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.805967 0.182064 139.657)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.805967 0.182064 139.657)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 2 of 3
+#### look 3 of 4
 
 `C7-25` · rendered **7×9** · 1 instance look like this · text “0”
 
@@ -279,22 +529,22 @@ inside `.chip` · 4 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.176783 295.668)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.176783 295.668)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 3 of 3
+#### look 4 of 4
 
 `C7-29` · rendered **7×9** · 1 instance look like this · text “3”
 
@@ -306,126 +556,19 @@ inside `.chip` · 4 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.0240867 244.026)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
-| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
-
-
-### `i`
-
-inside `.chip` · 3 on screen · **3 looks**
-
-#### look 1 of 3
-
-`C7-19` · rendered **8×8** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| flex | `none` | `` | .chip.topic i · app.css:2343 |
-| width | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| height | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
-| background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
-| background-color | `` | `rgb(123, 219, 99)` | .chip.topic i · app.css:2343 |
-| background-image | `` | `none` | .chip.topic i · app.css:2343 |
-| box-shadow | `0 0 0 1px var(--scrim-40)` | `rgba(0, 0, 0, 0.4) 0px 0px 0px 1px` | .chip.topic i · app.css:2343 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
-| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
-
-#### look 2 of 3
-
-`C7-23` · rendered **8×8** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| flex | `none` | `` | .chip.topic i · app.css:2343 |
-| width | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| height | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
-| background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
-| background-color | `` | `rgb(166, 128, 251)` | .chip.topic i · app.css:2343 |
-| background-image | `` | `none` | .chip.topic i · app.css:2343 |
-| box-shadow | `0 0 0 1px var(--scrim-40)` | `rgba(0, 0, 0, 0.4) 0px 0px 0px 1px` | .chip.topic i · app.css:2343 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
-| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
-
-#### look 3 of 3
-
-`C7-27` · rendered **8×8** · 1 instance look like this
-
-```html
-<i></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| flex | `none` | `` | .chip.topic i · app.css:2343 |
-| width | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| height | `8px` | `8px` | .chip.topic i · app.css:2343 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
-| background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
-| background-color | `` | `rgb(133, 147, 159)` | .chip.topic i · app.css:2343 |
-| background-image | `` | `none` | .chip.topic i · app.css:2343 |
-| box-shadow | `0 0 0 1px var(--scrim-40)` | `rgba(0, 0, 0, 0.4) 0px 0px 0px 1px` | .chip.topic i · app.css:2343 |
-| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
-| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .chip · app.css:1242 |
-| font-weight | ↑ `600` | `600` | inherited · .chip · app.css:1242 |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
-| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
-| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
-| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
-| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.0240867 244.026)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 
@@ -719,12 +862,22 @@ inside `.sortable` · 5 on screen · **2 looks**
 | color | `inherit` | `rgb(133, 147, 159)` | th.sortable .sortbtn · app.css:1253 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | th.sortable .sortbtn · app.css:1253 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
-**:hover** — changes nothing on the element itself; parts inside it respond (table below)
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
@@ -784,12 +937,22 @@ inside `.sortable` · 5 on screen · **2 looks**
 | color | `inherit` | `rgb(133, 147, 159)` | th.sortable .sortbtn · app.css:1253 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | th.sortable .sortbtn · app.css:1253 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
-**:hover** — changes nothing on the element itself; parts inside it respond (table below)
+**:hover** — changes; parts inside it respond (table below)
+
+| property | at rest | hover |
+|---|---|---|
+| color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
+| ::before | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::before | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::before | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
+| ::after | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | border-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
 | svg.ic.sortic | outline-color | `rgb(133, 147, 159)` | `rgb(157, 170, 180)` |
@@ -940,7 +1103,7 @@ inside `.—` · 4 on screen · **1 look**
 `C7-55` · rendered **582×64** · 4 instances look like this
 
 ```html
-<td class="n" style="cursor: text;"><span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span></td>
+<td class="n" style=""><span class="ncell"><span class="bcbar" style="--c: #337ba6;"></span><span><b title="S6 wrap-up — thanks for playing season 6.">S6 wrap-up — thanks for playing season 6…</b></span></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -964,7 +1127,7 @@ inside `.—` · 4 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | td.n · app.css:1278 |
-| cursor | `text` | `text` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `span.ncell`
@@ -997,7 +1160,7 @@ inside `.n` · 4 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `span.bcbar`
@@ -1035,11 +1198,11 @@ inside `.ncell` · 4 on screen · **4 looks**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 #### look 2 of 4
 
-`C7-73` · rendered **4×43** · 1 instance look like this
+`C7-75` · rendered **4×43** · 1 instance look like this
 
 ```html
 <span class="bcbar" style="--c: #f2c230;"></span>
@@ -1068,11 +1231,11 @@ inside `.ncell` · 4 on screen · **4 looks**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 #### look 3 of 4
 
-`C7-90` · rendered **4×43** · 1 instance look like this
+`C7-95` · rendered **4×43** · 1 instance look like this
 
 ```html
 <span class="bcbar" style="--c: #1f8a5e;"></span>
@@ -1101,11 +1264,11 @@ inside `.ncell` · 4 on screen · **4 looks**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 #### look 4 of 4
 
-`C7-106` · rendered **4×43** · 1 instance look like this
+`C7-113` · rendered **4×43** · 1 instance look like this
 
 ```html
 <span class="bcbar" style="--c: #8a6bd1;"></span>
@@ -1134,7 +1297,7 @@ inside `.ncell` · 4 on screen · **4 looks**
 | letter-spacing | — | `normal` | initial |
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · td.n · app.css:1278 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `b`
@@ -1168,7 +1331,7 @@ inside `.—` · 4 on screen · **1 look**
 | overflow | `hidden` | `` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
 | overflow-x | `hidden` | `hidden` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
 | overflow-y | `hidden` | `hidden` | .app[data-realm="broadcast"] .mtable td:first-child b · app.css:975 |
-| cursor | ↑ `text` | `text` | inherited · style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `td.nums`
@@ -1180,7 +1343,7 @@ inside `.—` · 12 on screen · **1 look**
 `C7-60` · rendered **120×64** · 12 instances look like this
 
 ```html
-<td class="nums" style=""><span class="bcdt">Jul 14<small>68 days ago</small></span></td>
+<td class="nums" style=""><span class="bcdt">Jul 14<small>74 days ago</small></span></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1204,7 +1367,7 @@ inside `.—` · 12 on screen · **1 look**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .mtable .nums · app.css:2138 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .mtable .nums · app.css:2138 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `span.bcdt`
@@ -1213,15 +1376,15 @@ inside `.nums` · 8 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C7-61` · rendered **104×27** · 4 instances look like this
+`C7-61` · rendered **104×23** · 4 instances look like this
 
 ```html
-<span class="bcdt">Jul 14<small>68 days ago</small></span>
+<span class="bcdt">Jul 14<small>74 days ago</small></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .bcdt · app.css:976 |
+| display | `block` | `block` | .b4 [data-realm="broadcast"] .mtable tbody td > :is(b, .bcdt) · b4.css:198 |
 | gap | `var(--s1)` | `` | .bcdt · app.css:976 |
 | column-gap | `` | `4px` | .bcdt · app.css:976 |
 | row-gap | `` | `4px` | .bcdt · app.css:976 |
@@ -1237,11 +1400,11 @@ inside `.nums` · 8 on screen · **2 looks**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .bcdt · app.css:976 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .bcdt · app.css:976 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 #### look 2 of 2
 
-`C7-66` · rendered **104×12** · 4 instances look like this · text “Aug 11”
+`C7-66` · rendered **104×9** · 4 instances look like this · text “Aug 11”
 
 ```html
 <span class="bcdt">Aug 11</span>
@@ -1249,7 +1412,7 @@ inside `.nums` · 8 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .bcdt · app.css:976 |
+| display | `block` | `block` | .b4 [data-realm="broadcast"] .mtable tbody td > :is(b, .bcdt) · b4.css:198 |
 | gap | `var(--s1)` | `` | .bcdt · app.css:976 |
 | column-gap | `` | `4px` | .bcdt · app.css:976 |
 | row-gap | `` | `4px` | .bcdt · app.css:976 |
@@ -1265,7 +1428,7 @@ inside `.nums` · 8 on screen · **2 looks**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .bcdt · app.css:976 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .bcdt · app.css:976 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `small`
@@ -1274,16 +1437,17 @@ inside `.bcdt` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-62` · rendered **104×11** · 4 instances look like this · text “68 days ago”
+`C7-62` · rendered **104×7** · 4 instances look like this · text “74 days ago”
 
 ```html
-<small>68 days ago</small>
+<small>74 days ago</small>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | — | `block` | initial |
+| display | `block` | `block` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt > small · b4.css:199 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| margin-top | `5px` | `5px` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt > small · b4.css:199 |
 | font | `500 var(--t-xs)/1 var(--ui)` | `` | .bcdt small · app.css:977 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .bcdt small · app.css:977 |
 | font-size | `` | `10.5px` | .bcdt small · app.css:977 |
@@ -1295,7 +1459,7 @@ inside `.bcdt` · 4 on screen · **1 look**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .bcdt · app.css:976 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .bcdt small · app.css:977 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `span.bcdt.dim`
@@ -1304,7 +1468,7 @@ inside `.nums` · 3 on screen · **1 look**
 
 #### the one look
 
-`C7-64` · rendered **104×12** · 3 instances look like this · text “On posting”
+`C7-64` · rendered **104×8** · 3 instances look like this · text “On posting”
 
 ```html
 <span class="bcdt dim">On posting</span>
@@ -1312,7 +1476,7 @@ inside `.nums` · 3 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .bcdt · app.css:976 |
+| display | `block` | `block` | .b4 [data-realm="broadcast"] .mtable tbody td > :is(b, .bcdt) · b4.css:198 |
 | gap | `var(--s1)` | `` | .bcdt · app.css:976 |
 | column-gap | `` | `4px` | .bcdt · app.css:976 |
 | row-gap | `` | `4px` | .bcdt · app.css:976 |
@@ -1328,7 +1492,7 @@ inside `.nums` · 3 on screen · **1 look**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .bcdt · app.css:976 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .bcdt.dim · app.css:978 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `span.btab`
@@ -1340,16 +1504,17 @@ inside `.—` · 4 on screen · **2 looks**
 `C7-67` · rendered **80×28** · 3 instances look like this
 
 ```html
-<span class="btab" style="--lc: var(--ink3);">⟨svg.ic⟩Ended</span>
+<span class="btab" style="--lc: var(--ink3);">⟨svg.ic⟩<span class="w">Ended</span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .btab · app.css:980 |
+| display | `flex` | `flex` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
 | gap | `7px` | `` | .btab · app.css:980 |
 | column-gap | `7px` | `7px` | .btab · app.css:980 |
 | row-gap | `7px` | `7px` | .btab · app.css:980 |
 | align-items | `center` | `center` | .btab · app.css:980 |
+| width | `max-content` | `80.375px` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
 | height | `28px` | `28px` | .btab · app.css:980 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 11px 0 12px` | `` | .btab · app.css:980 |
@@ -1357,7 +1522,7 @@ inside `.—` · 4 on screen · **2 looks**
 | padding-right | `11px` | `11px` | .btab · app.css:980 |
 | padding-bottom | `0px` | `0px` | .btab · app.css:980 |
 | padding-left | `12px` | `12px` | .btab · app.css:980 |
-| border-radius | `var(--rad-1)` | `` | .btab · app.css:980 |
+| border-radius | `6px` | `` | .b4 [data-realm="broadcast"] .btab · b4.css:207 |
 | background | `color-mix(in srgb,var(--lc) 9%,transparent)` | `` | .btab · app.css:980 |
 | background-color | `` | `color(srgb 0.521569 0.576471 0.623529 / 0.09)` | .btab · app.css:980 |
 | background-image | `` | `none` | .btab · app.css:980 |
@@ -1373,23 +1538,24 @@ inside `.—` · 4 on screen · **2 looks**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .btab · app.css:980 |
 | color | `var(--lc)` | `rgb(133, 147, 159)` | .btab · app.css:980 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 #### look 2 of 2
 
-`C7-84` · rendered **94×28** · 1 instance look like this
+`C7-87` · rendered **94×28** · 1 instance look like this
 
 ```html
-<span class="btab" style="--lc: var(--ok);">⟨svg.ic⟩Live now</span>
+<span class="btab" style="--lc: var(--ok);">⟨svg.ic⟩<span class="w">Live now</span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .btab · app.css:980 |
+| display | `flex` | `flex` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
 | gap | `7px` | `` | .btab · app.css:980 |
 | column-gap | `7px` | `7px` | .btab · app.css:980 |
 | row-gap | `7px` | `7px` | .btab · app.css:980 |
 | align-items | `center` | `center` | .btab · app.css:980 |
+| width | `max-content` | `94.2031px` | .b4 [data-realm="broadcast"] .mtable tbody td > .btab · b4.css:201 |
 | height | `28px` | `28px` | .btab · app.css:980 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 11px 0 12px` | `` | .btab · app.css:980 |
@@ -1397,7 +1563,7 @@ inside `.—` · 4 on screen · **2 looks**
 | padding-right | `11px` | `11px` | .btab · app.css:980 |
 | padding-bottom | `0px` | `0px` | .btab · app.css:980 |
 | padding-left | `12px` | `12px` | .btab · app.css:980 |
-| border-radius | `var(--rad-1)` | `` | .btab · app.css:980 |
+| border-radius | `6px` | `` | .b4 [data-realm="broadcast"] .btab · b4.css:207 |
 | background | `color-mix(in srgb,var(--lc) 9%,transparent)` | `` | .btab · app.css:980 |
 | background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.09)` | .btab · app.css:980 |
 | background-image | `` | `none` | .btab · app.css:980 |
@@ -1413,7 +1579,87 @@ inside `.—` · 4 on screen · **2 looks**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .btab · app.css:980 |
 | color | `var(--lc)` | `rgb(123, 219, 99)` | .btab · app.css:980 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
+
+### `span.w`
+
+inside `.btab` · 5 on screen · **3 looks**
+
+#### look 1 of 3
+
+`C7-69` · rendered **36×8** · 3 instances look like this · text “Ended”
+
+```html
+<span class="w">Ended</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .btab · app.css:980 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .btab · app.css:980 |
+| font-size | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| font-weight | ↑ `` | `600` | inherited · .btab · app.css:980 |
+| font-style | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| line-height | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | ↑ `nowrap` | `` | inherited · .btab · app.css:980 |
+| color | ↑ `var(--lc)` | `rgb(133, 147, 159)` | inherited · .btab · app.css:980 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
+#### look 2 of 3
+
+`C7-86` · rendered **43×9** · 1 instance look like this · text “No end”
+
+```html
+<span class="w">No end</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 var(--t-sm)/1 var(--data)` | `` | inherited · .bcdt · app.css:976 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .bcdt · app.css:976 |
+| font-size | ↑ `` | `12px` | inherited · .bcdt · app.css:976 |
+| font-weight | ↑ `600` | `600` | inherited · .bcdt.never · app.css:979 |
+| font-style | ↑ `` | `normal` | inherited · .bcdt · app.css:976 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .bcdt · app.css:976 |
+| line-height | ↑ `` | `12px` | inherited · .bcdt · app.css:976 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | ↑ `nowrap` | `` | inherited · .bcdt · app.css:976 |
+| color | ↑ `var(--warn-ink)` | `rgb(255, 158, 114)` | inherited · .bcdt.never · app.css:979 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
+
+#### look 3 of 3
+
+`C7-89` · rendered **50×8** · 1 instance look like this · text “Live now”
+
+```html
+<span class="w">Live now</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .btab · app.css:980 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .btab · app.css:980 |
+| font-size | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| font-weight | ↑ `` | `600` | inherited · .btab · app.css:980 |
+| font-style | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .btab · app.css:980 |
+| line-height | ↑ `` | `12px` | inherited · .btab · app.css:980 |
+| letter-spacing | — | `normal` | initial |
+| text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
+| white-space | ↑ `nowrap` | `` | inherited · .btab · app.css:980 |
+| color | ↑ `var(--lc)` | `rgb(123, 219, 99)` | inherited · .btab · app.css:980 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
 ### `td.ra`
@@ -1422,10 +1668,10 @@ inside `.—` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-69` · rendered **64×64** · 4 instances look like this
+`C7-70` · rendered **64×64** · 4 instances look like this
 
 ```html
-<td class="ra"><button class="rmv" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button></td>
+<td class="ra"><button class="rmv wg-ib wg-del" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg.ic⟩</button></td>
 ```
 
 | property | winning declaration | computed | from |
@@ -1449,30 +1695,31 @@ inside `.—` · 4 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | text-align | `right` | `right` | .mtable td.ra, .mtable th.ra · app.css:5182 |
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | td · app.css:1273 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |
 
 
-### `button.rmv`
+### `button.rmv.wg-del.wg-ib`
 
 inside `.ra` · 4 on screen · **1 look**
 
 #### the one look
 
-`C7-70` · rendered **44×44** · 4 instances look like this · aria-label="Remove S6 wrap-up — thanks for playing s"
+`C7-71` · rendered **44×44** · 4 instances look like this · aria-label="Remove S6 wrap-up — thanks for playing s"
 
 ```html
-<button class="rmv" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg⟩</button>
+<button class="rmv wg-ib wg-del" data-tip="Remove" aria-label="Remove S6 wrap-up — thanks for playing season 6.">⟨svg.ic⟩</button>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-grid` | `inline-grid` | .rmv · app.css:5191 |
 | position | `relative` | `relative` | .rmv · app.css:5191 |
+| flex | `none` | `` | .wg-ib · app.css:1148 |
 | align-items | `center` | `center` | .rmv · app.css:5191 |
 | place-items | `center` | `` | .rmv · app.css:5191 |
 | width | `var(--tap)` | `44px` | .rmv · app.css:5191 |
 | height | `var(--tap)` | `44px` | .rmv · app.css:5191 |
-| min-height | `var(--ctl-min, 32px)` | `0px` | input, select, textarea, button · app.css:388 |
+| min-height | `0px` | `0px` | .wg-ib · app.css:1148 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0` | `` | .rmv · app.css:5191 |
 | padding-top | `0px` | `0px` | .rmv · app.css:5191 |
@@ -1498,7 +1745,7 @@ inside `.ra` · 4 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .rmv · app.css:5191 |
 | isolation | `isolate` | `isolate` | .rmv · app.css:5191 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -1515,9 +1762,32 @@ inside `.ra` · 4 on screen · **1 look**
 | background-color | `` | .rmv::before · app.css:5192 |
 | background-image | `` | .rmv::before · app.css:5192 |
 | box-shadow | `inset 0 0 0 1px var(--rule2)` | .rmv::before · app.css:5192 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | .rmv::before · app.css:5192 |
+| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1635 |
 | content | `""` | .rmv::before · app.css:5192 |
 | z-index | `-1` | .rmv::before · app.css:5192 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1528,21 +1798,21 @@ inside `.ra` · 4 on screen · **1 look**
 | part inside | property | at rest | hover |
 |---|---|---|---|
 | ::before | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| ::before | background-color | `rgb(31, 39, 46)` | `color(srgb 0.209412 0.191765 0.21451)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `color(srgb 0.22698 0.199529 0.221333)` |
 | ::before | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(84, 50, 47) 0px 0px 0px 1px inset` |
 | ::before | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 
 **:focus-visible** — changes; parts inside it respond (table below)
 
@@ -1555,19 +1825,21 @@ inside `.ra` · 4 on screen · **1 look**
 | part inside | property | at rest | focus-visible |
 |---|---|---|---|
 | ::before | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
 | ::before | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
 | ::before | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 | ::after | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| svg | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
-| path | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| svg.ic | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | border-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | outline-color | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
+| use | stroke | `rgb(133, 147, 159)` | `rgb(255, 138, 133)` |
 
 **:active** — changes
 
@@ -1582,19 +1854,19 @@ inside `.nums` · 1 on screen · **1 look**
 
 #### the one look
 
-`C7-82` · rendered **65×16** · 1 instance look like this
+`C7-84` · rendered **104×16** · 1 instance look like this
 
 ```html
-<span class="bcdt never">⟨svg.ic⟩No end</span>
+<span class="bcdt never">⟨svg.ic⟩<span class="w">No end</span></span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .bcdt.never · app.css:979 |
-| gap | `6px` | `` | .bcdt.never · app.css:979 |
-| column-gap | `6px` | `6px` | .bcdt.never · app.css:979 |
-| row-gap | `6px` | `6px` | .bcdt.never · app.css:979 |
-| align-items | `center` | `center` | .bcdt.never · app.css:979 |
+| display | `flex` | `flex` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never · b4.css:200 |
+| gap | `6px` | `` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never · b4.css:200 |
+| column-gap | `6px` | `6px` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never · b4.css:200 |
+| row-gap | `6px` | `6px` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never · b4.css:200 |
+| align-items | `center` | `center` | .b4 [data-realm="broadcast"] .mtable tbody td > .bcdt.never · b4.css:200 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | `500 var(--t-sm)/1 var(--data)` | `` | .bcdt · app.css:976 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .bcdt · app.css:976 |
@@ -1607,4 +1879,4 @@ inside `.nums` · 1 on screen · **1 look**
 | text-align | ↑ `start` | `start` | inherited · table · user-agent:? |
 | white-space | `nowrap` | `` | .bcdt · app.css:976 |
 | color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .bcdt.never · app.css:979 |
-| cursor | ↑ `pointer` | `pointer` | inherited · tbody tr · app.css:1274 |
+| cursor | ↑ `pointer` | `pointer` | inherited · style attribute |

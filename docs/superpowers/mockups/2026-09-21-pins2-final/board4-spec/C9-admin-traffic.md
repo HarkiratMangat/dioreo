@@ -165,13 +165,13 @@ inside `.incg` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .chip · app.css:1242 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(11, 15, 18)` | `rgb(35, 44, 52)` |
+| background-color | `rgb(11, 15, 18)` | `color(srgb 0.611765 0.784314 0.352941 / 0.11)` |
 | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 

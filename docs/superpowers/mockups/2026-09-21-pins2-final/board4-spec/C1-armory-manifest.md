@@ -12,7 +12,7 @@ status: live
 
 ### C1 stage
 
-59 distinct signatures on screen; 59 not already specced above.
+60 distinct signatures on screen; 60 not already specced above.
 
 
 ### `section.panel`
@@ -35,9 +35,9 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
 | margin-top | `var(--s6)` | `32px` | #manifest, #sessions · app.css:2852 |
-| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | margin-bottom | `0px` | `0px` | .panel · app.css:723 |
-| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -146,7 +146,7 @@ inside `.mt-r1` · 3 on screen · **1 look**
 | text-transform | `uppercase` | `uppercase` | .mtools .mlabel · app.css:1339 |
 | text-align | `right` | `right` | .mtools .mlabel · app.css:1339 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .mtools .mlabel · app.css:1339 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 
 ### `span`
@@ -202,7 +202,7 @@ inside `.mlabel` · 9 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C1-78` · rendered **596×0** · 5 instances look like this
+`C1-77` · rendered **599×0** · 5 instances look like this
 
 ```html
 <span></span>
@@ -308,24 +308,24 @@ inside `.mt-r1` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .pill · app.css:4527 |
-| gap | `7px` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| column-gap | `7px` | `7px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| row-gap | `7px` | `7px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| gap | `7px` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| column-gap | `7px` | `7px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| row-gap | `7px` | `7px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | align-items | `center` | `center` | .pill · app.css:4527 |
-| min-height | `0px` | `0px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| min-height | `0px` | `0px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `10px 15px` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| padding-top | `10px` | `10px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| padding-right | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| padding-bottom | `10px` | `10px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| padding-left | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| padding | `10px 15px` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| padding-top | `10px` | `10px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| padding-right | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| padding-bottom | `10px` | `10px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| padding-left | `15px` | `15px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | margin-left | `auto` | `573.844px` | .mtools .madd · app.css:7208 |
 | border | `1px solid var(--rule)` | `` | .pill · app.css:4527 |
 | border-color | `var(--patch)` | `` | .pill.lead · app.css:4543 |
 | border-radius | `var(--rad-3)` | `` | .pill.lead, .pill.mh-t · app.css:5049 |
-| background | `color-mix(in srgb,var(--patch) 14%,transparent)` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| background-color | `` | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
-| background-image | `` | `none` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| background | `color-mix(in srgb,var(--patch) 14%,transparent)` | `` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| background-color | `` | `color(srgb 0.94902 0.760784 0.188235 / 0.14)` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
+| background-image | `` | `none` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | font | `500 var(--t-base)/1 var(--ui)` | `` | .pill · app.css:4527 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .pill · app.css:4527 |
 | font-size | `var(--t-base)` | `13px` | .pill.lead · app.css:4543 |
@@ -336,10 +336,10 @@ inside `.mt-r1` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .pill · app.css:4527 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pill · app.css:4527 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes
 
@@ -364,9 +364,9 @@ inside `.mt-r1` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.pill` · 97 on screen · **12 looks**
+inside `.pill` · 107 on screen · **15 looks**
 
-#### look 1 of 12
+#### look 1 of 15
 
 `C1-9` · rendered **12×12** · 1 instance look like this · aria-hidden="true"
 
@@ -378,8 +378,8 @@ inside `.pill` · 97 on screen · **12 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `12px` | `12px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd .ic · b3/board.css:1606 |
-| height | `12px` | `12px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd .ic · b3/board.css:1606 |
+| width | `12px` | `12px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd .ic · b3/board.css:1610 |
+| height | `12px` | `12px` | html[data-b3-a1="fixed"] .mtools .pill.lead.madd .ic · b3/board.css:1610 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `500 var(--t-base)/1 var(--ui)` | `` | inherited · .pill · app.css:4527 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .pill · app.css:4527 |
@@ -392,13 +392,13 @@ inside `.pill` · 97 on screen · **12 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .pill · app.css:4527 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1604 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · html[data-b3-a1="fixed"] .mtools .pill.lead.madd · b3/board.css:1608 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .pill · app.css:4527 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 2 of 12
+#### look 2 of 15
 
 `C1-49` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -409,9 +409,9 @@ inside `.pill` · 97 on screen · **12 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3298 |
-| width | `13px` | `13px` | .seg button > .ic · b3/board.css:3298 |
-| height | `13px` | `13px` | .seg button > .ic · b3/board.css:3298 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3302 |
+| width | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
+| height | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
@@ -423,13 +423,13 @@ inside `.pill` · 97 on screen · **12 looks**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .seg button[aria-pressed="true"], .seg button[aria-selected="true"] · app.css:740 |
+| color | ↑ `color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white) !important !important` | `color(srgb 0.983686 0.809333 0.809333)` | inherited · .b4 :is(.b3-nb, .panel, .b4-vb, .b1, .pb-gate) .seg button:is([aria-pressed="true"], [aria · b4/classes.css:10 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 3 of 12
+#### look 3 of 15
 
 `C1-50` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -440,9 +440,9 @@ inside `.pill` · 97 on screen · **12 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3298 |
-| width | `13px` | `13px` | .seg button > .ic · b3/board.css:3298 |
-| height | `13px` | `13px` | .seg button > .ic · b3/board.css:3298 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3302 |
+| width | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
+| height | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
@@ -460,7 +460,7 @@ inside `.pill` · 97 on screen · **12 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 12
+#### look 4 of 15
 
 `C1-58` · rendered **14×14** · 1 instance look like this · aria-hidden="true"
 
@@ -491,9 +491,9 @@ inside `.pill` · 97 on screen · **12 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-sort · app.css:1109 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 5 of 12
+#### look 5 of 15
 
-`C1-76` · rendered **11×11** · 3 instances look like this · aria-hidden="true"
+`C1-75` · rendered **11×11** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-crown"></use></svg>
@@ -520,9 +520,9 @@ inside `.pill` · 97 on screen · **12 looks**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 6 of 12
+#### look 6 of 15
 
-`C1-93` · rendered **16×16** · 21 instances look like this · aria-hidden="true"
+`C1-92` · rendered **16×16** · 21 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic" aria-hidden="true"><use href="#i-image"></use></svg>
@@ -545,7 +545,7 @@ inside `.pill` · 97 on screen · **12 looks**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
-*6 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*9 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `div.mt-r2`
@@ -594,9 +594,9 @@ inside `.mt-r2` · 2 on screen · **2 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `flex` | `flex` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp:first-child · gates.css:240 |
-| gap | `3px` | `` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
-| column-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
-| row-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
+| gap | `3px` | `` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
+| column-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
+| row-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
 | flex-wrap | `wrap` | `wrap` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp:first-child · gates.css:240 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp:first-child · gates.css:240 |
 | min-width | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp:first-child · gates.css:240 |
@@ -620,9 +620,9 @@ inside `.mt-r2` · 2 on screen · **2 looks**
 |---|---|---|---|
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp + .mt-grp · gates.css:246 |
 | position | `relative` | `relative` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp + .mt-grp · gates.css:246 |
-| gap | `3px` | `` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
-| column-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
-| row-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3376 |
+| gap | `3px` | `` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
+| column-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
+| row-gap | `3px` | `3px` | html[data-b3-a1] .mtools .mt-r2 > .mt-grp, html[data-b3-a1] .mtools .mt-r2 > .mt-grp:first · b3/board.css:3380 |
 | flex-wrap | `wrap` | `wrap` | .mt-grp · app.css:945 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .mt-r2 > .mt-grp + .mt-grp · gates.css:246 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -670,26 +670,27 @@ inside `.mt-grp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3434 |
-| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3434 |
-| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3434 |
-| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3434 |
-| align-items | `center` | `center` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3434 |
+| display | `inline-flex` | `flex` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| align-items | `center` | `center` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
 | justify-content | `center` | `center` | .chip · app.css:1242 |
 | min-height | `32px` | `32px` | .chip · app.css:1242 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
 | padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
-| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
-| border-color | `var(--ink4)` | `` | .chip[aria-pressed="true"] · app.css:1245 |
+| border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
-| background | `var(--hi)` | `` | .chip[aria-pressed="true"] · app.css:1245 |
-| background-color | `` | `rgb(35, 44, 52)` | .chip[aria-pressed="true"] · app.css:1245 |
-| background-image | `` | `none` | .chip[aria-pressed="true"] · app.css:1245 |
+| background | `color-mix(in srgb,var(--c) 24%,var(--sunk))!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| background-color | `!important !important` | `color(srgb 0.257726 0.108706 0.117647)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| background-image | `!important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
+| box-shadow | `none !important !important` | `none` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
 | font-size | `var(--t-sm)` | `12px` | .chip · app.css:1242 |
@@ -700,16 +701,16 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | text-decoration | `none` | `` | .chip · app.css:1242 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .chip[aria-pressed="true"] · app.css:1245 |
+| color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.983686 0.809333 0.809333)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(35, 44, 52)` | `color(srgb 0.21451 0.248235 0.278039)` |
+| background-color | `color(srgb 0.257726 0.108706 0.117647)` | `color(srgb 0.329255 0.125333 0.133333)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
 **:focus-visible** — changes
@@ -717,7 +718,6 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | property | at rest | focus-visible |
 |---|---|---|
 | outline-offset | `0px` | `2px` |
-| box-shadow | `none` | `rgba(242, 194, 48, 0.16) 0px 0px 0px 5px` |
 
 **:active** — changes
 
@@ -752,7 +752,7 @@ inside `.chip` · 8 on screen · **2 looks**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .chip[aria-pressed="true"] · app.css:1245 |
+| color | ↑ `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.983686 0.809333 0.809333)` | inherited · .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 2 of 2
@@ -797,18 +797,18 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mt-grp .chip:not(.topic) em · b3/board.css:3291 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .mt-grp .chip:not(.topic) em · b3/board.css:3291 |
-| font-style | `normal` | `normal` | .mt-grp .chip:not(.topic) em · b3/board.css:3291 |
+| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-style | `normal` | `normal` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .mt-grp .chip:not(.topic) em · b3/board.css:3291 |
+| color | `inherit` | `color(srgb 0.983686 0.809333 0.809333)` | .b4 .mt-grp .chip:not(.topic)[aria-pressed="true"] em · b4/classes.css:116 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 2 of 9
@@ -823,19 +823,19 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.228671 17.4759)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.228671 17.4759)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 3 of 9
@@ -850,19 +850,19 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.878915 0.161739 90.9295)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.878915 0.161739 90.9295)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 4 of 9
@@ -877,19 +877,19 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.151655 299.054)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.151655 299.054)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 5 of 9
@@ -904,19 +904,19 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.796842 0.163562 159.681)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.796842 0.163562 159.681)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 6 of 9
@@ -931,19 +931,19 @@ inside `.chip` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3432 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3289 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.214095 269.022)` | .chip.topic em · b3/board.css:3289 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3289 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.214095 269.022)` | .chip.topic em · b3/board.css:3293 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 *3 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
@@ -964,19 +964,19 @@ inside `.mt-grp` · 7 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .chip.topic · app.css:2342 |
-| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3433 |
-| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3433 |
-| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3433 |
+| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3440 |
+| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3440 |
+| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip.topic · b3/board.css:3440 |
 | align-items | `center` | `center` | .chip.topic · app.css:2342 |
 | justify-content | `center` | `center` | .chip · app.css:1242 |
 | min-height | `32px` | `32px` | .chip · app.css:1242 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
 | padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
-| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3377 |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
 | background | `var(--sunk)` | `` | .chip · app.css:1242 |
@@ -995,13 +995,13 @@ inside `.mt-grp` · 7 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .chip · app.css:1242 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes; parts inside it respond (table below)
 
 | property | at rest | hover |
 |---|---|---|
-| background-color | `rgb(11, 15, 18)` | `color(srgb 1 0.231373 0.360784 / 0.09)` |
+| background-color | `rgb(11, 15, 18)` | `color(srgb 1 0.231373 0.360784 / 0.11)` |
 | color | `rgb(157, 170, 180)` | `rgb(232, 237, 241)` |
 | transform | `none` | `matrix(1, 0, 0, 1, 0, -1)` |
 
@@ -1037,9 +1037,9 @@ inside `.mt-grp` · 7 on screen · **1 look**
 
 ### `i`
 
-inside `.chip` · 15 on screen · **11 looks**
+inside `.chip` · 19 on screen · **15 looks**
 
-#### look 1 of 11
+#### look 1 of 15
 
 `C1-18` · rendered **8×8** · 1 instance look like this
 
@@ -1054,7 +1054,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(255, 59, 92)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1070,10 +1070,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 2 of 11
+#### look 2 of 15
 
 `C1-22` · rendered **8×8** · 1 instance look like this
 
@@ -1088,7 +1088,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(255, 210, 63)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1104,10 +1104,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 3 of 11
+#### look 3 of 15
 
 `C1-26` · rendered **8×8** · 1 instance look like this
 
@@ -1122,7 +1122,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(132, 94, 194)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1138,10 +1138,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 4 of 11
+#### look 4 of 15
 
 `C1-30` · rendered **8×8** · 1 instance look like this
 
@@ -1156,7 +1156,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(61, 220, 151)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1172,10 +1172,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 5 of 11
+#### look 5 of 15
 
 `C1-34` · rendered **8×8** · 1 instance look like this
 
@@ -1190,7 +1190,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(67, 97, 238)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1206,10 +1206,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-#### look 6 of 11
+#### look 6 of 15
 
 `C1-38` · rendered **8×8** · 1 instance look like this
 
@@ -1224,7 +1224,7 @@ inside `.chip` · 15 on screen · **11 looks**
 | width | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | height | `8px` | `8px` | .chip.topic i · app.css:2343 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1236 |
+| border-radius | `50%` | `` | .chip.topic i, .pill .dot, .b3-sc > i, .b3-sd-gh > i · b3/board.css:1240 |
 | background | `var(--c)` | `` | .chip.topic i · app.css:2343 |
 | background-color | `` | `rgb(246, 169, 59)` | .chip.topic i · app.css:2343 |
 | background-image | `` | `none` | .chip.topic i · app.css:2343 |
@@ -1240,10 +1240,10 @@ inside `.chip` · 15 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .chip · app.css:1242 |
-| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3292 |
+| transition | `box-shadow var(--b3-d1) var(--ease)` | `` | .chip.topic i · b3/board.css:3296 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
-*5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+*9 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `span.seg[role=tablist]`
@@ -1410,7 +1410,7 @@ inside `.b3-hint` · 1 on screen · **1 look**
 | text-transform | ↑ `uppercase` | `uppercase` | inherited · .wg-heads · app.css:1108 |
 | color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · html[data-b3-a1="fixed"] .wg-heads · gates.css:255 |
 | cursor | `pointer` | `pointer` | .wg-cb · app.css:1120 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes nothing on the element itself; parts inside it respond (table below)
 
@@ -1585,7 +1585,7 @@ inside `.—` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-sort · app.css:1109 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .wg-sort · app.css:1109 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1649,7 +1649,7 @@ inside `.wg-heads` · 1 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .wg-fold · app.css:1112 |
 | isolation | `isolate` | `isolate` | .wg-fold · app.css:1112 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -1750,7 +1750,7 @@ inside `.wg-fold` · 9 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C1-80` · rendered **14×14** · 8 instances look like this · aria-hidden="true"
+`C1-79` · rendered **14×14** · 8 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic ic-fold" aria-hidden="true"><use href="#i-b2-fold"></use></svg>
@@ -1760,16 +1760,16 @@ inside `.wg-fold` · 9 on screen · **2 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `14px` | `14px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn .ic · b3/board.css:1650 |
-| height | `14px` | `14px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn .ic · b3/board.css:1650 |
+| width | `14px` | `14px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn .ic · b3/board.css:1654 |
+| height | `14px` | `14px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn .ic · b3/board.css:1654 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-size | ↑ `` | `12px` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-weight | ↑ `` | `600` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-style | ↑ `` | `normal` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| line-height | ↑ `` | `12px` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-size | ↑ `` | `12px` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-weight | ↑ `` | `600` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-style | ↑ `` | `normal` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| line-height | ↑ `` | `12px` | inherited · html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
@@ -1789,7 +1789,7 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 `C1-61` · rendered **1146×478** · 1 instance look like this
 
 ```html
-<div class="wg" data-w="BAL-27" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b
+<div class="wg" data-w="BAL-27" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault</small><em class="wg-nb b3-sd-gn">5 builds</em><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">
 ```
 
 | property | winning declaration | computed | from |
@@ -1806,10 +1806,10 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 2 of 5
 
-`C1-206` · rendered **1146×308** · 2 instances look like this
+`C1-205` · rendered **1146×308** · 2 instances look like this
 
 ```html
-<div class="wg" data-w="HOLGER 26" style="--c: #845ec2;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div><span></span><button type="button" class="wg-ib wg-fbtn" aria-expanded="true
+<div class="wg" data-w="HOLGER 26" style="--c: #845ec2;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG</small><em class="wg-nb b3-sd-gn">3 builds</em><span class="b3-bdgs" style="--ph: 0.433;"><span class="b3-bdg" data-k="t
 ```
 
 | property | winning declaration | computed | from |
@@ -1826,10 +1826,10 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 3 of 5
 
-`C1-292` · rendered **1146×138** · 2 instances look like this
+`C1-303` · rendered **1146×138** · 2 instances look like this
 
 ```html
-<div class="wg" data-w="JAK-12" style="--c: #f6a93b;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="to
+<div class="wg" data-w="JAK-12" style="--c: #f6a93b;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="meta">⟨
 ```
 
 | property | winning declaration | computed | from |
@@ -1846,10 +1846,10 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 4 of 5
 
-`C1-342` · rendered **1146×223** · 2 instances look like this
+`C1-356` · rendered **1146×223** · 2 instances look like this
 
 ```html
-<div class="wg" data-w="KILO 141" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every KILO 141 build"><span class="cb"></span></span><div class="wg-line"><b>KILO 141</b><small>Assault<em class="wg-nb">2 builds</em></small></div><span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-ex
+<div class="wg" data-w="KILO 141" style="--c: #ff3b5c;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every KILO 141 build"><span class="cb"></span></span><div class="wg-line"><b>KILO 141</b><small>Assault</small><em class="wg-nb b3-sd-gn">2 builds</em><span class="b3-bdgs" style="--ph: 0.301;"><span class="b3-bdg" data-k="
 ```
 
 | property | winning declaration | computed | from |
@@ -1866,10 +1866,10 @@ inside `.wg-wrap` · 8 on screen · **5 looks**
 
 #### look 5 of 5
 
-`C1-607` · rendered **1146×393** · 1 instance look like this
+`C1-650` · rendered **1146×393** · 1 instance look like this
 
 ```html
-<div class="wg" data-w="SKS" style="--c: #3ddc97;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every SKS build"><span class="cb"></span></span><div class="wg-line"><b>SKS</b><small>Marksman<em class="wg-nb">4 builds</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="top3" ari
+<div class="wg" data-w="SKS" style="--c: #3ddc97;"><div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every SKS build"><span class="cb"></span></span><div class="wg-line"><b>SKS</b><small>Marksman</small><em class="wg-nb b3-sd-gn">4 builds</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="
 ```
 
 | property | winning declaration | computed | from |
@@ -1894,14 +1894,14 @@ inside `.wg` · 8 on screen · **7 looks**
 `C1-62` · rendered **1146×52** · 2 instances look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every BAL-27 build"><span class="cb"></span></span><div class="wg-line"><b>BAL-27</b><small>Assault</small><em class="wg-nb b3-sd-gn">5 builds</em><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span 
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 407.375px 595.625px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 403.594px 599.406px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -1950,17 +1950,17 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 2 of 7
 
-`C1-207` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-206` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div><span></span><button type="button" class="wg-ib wg-fbtn" aria-expanded="true" aria-label="Collapse HOLGER 26">⟨svg.ic.ic-fold⟩</butto
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every HOLGER 26 build"><span class="cb"></span></span><div class="wg-line"><b>HOLGER 26</b><small>LMG</small><em class="wg-nb b3-sd-gn">3 builds</em><span class="b3-bdgs" style="--ph: 0.433;"><span class="b3-bdg" data-k="tier" data-t="capable" aria-label="Capable in LMG">⟨svg.ic
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 184.5px 818.5px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 426.438px 576.562px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2009,17 +2009,17 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C1-293` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-304` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="tier" data-t="top5" aria-label="Top 5 in Shotgun">⟨svg.ic⟩TOP 5<i clas
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every JAK-12 build"><span class="cb"></span></span><div class="wg-line"><b>JAK-12</b><small>Shotgun</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.438;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span c
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 358.984px 644.016px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 419.281px 583.719px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2068,17 +2068,17 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C1-408` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-428` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every LOCUS build"><span class="cb"></span></span><div class="wg-line"><b>LOCUS</b><small>Sniper<em class="wg-nb">2 builds</em></small><span class="b3-bdgs" style="--ph: 0.298;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every LOCUS build"><span class="cb"></span></span><div class="wg-line"><b>LOCUS</b><small>Sniper</small><em class="wg-nb b3-sd-gn">2 builds</em><span class="b3-bdgs" style="--ph: 0.298;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span cla
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 389.578px 613.422px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 773.516px 229.484px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2127,17 +2127,17 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C1-478` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-521` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every MACHINE PISTOL build"><span class="cb"></span></span><div class="wg-line"><b>MACHINE PISTOL</b><small>Secondaries<em class="wg-nb">1 build</em></small><span class="b3-bdgs" style="--ph: 0.877;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Secondarie
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every MACHINE PISTOL build"><span class="cb"></span></span><div class="wg-line"><b>MACHINE PISTOL</b><small>Secondaries</small><em class="wg-nb b3-sd-gn">1 build</em><span class="b3-bdgs" style="--ph: 0.877;"><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in S
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 442.438px 560.562px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 452.75px 550.25px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2186,17 +2186,17 @@ inside `.wg` · 8 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C1-518` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
+`C1-561` · rendered **1146×52** · 1 instance look like this · aria-expanded="true"
 
 ```html
-<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every PP19 BIZON build"><span class="cb"></span></span><div class="wg-line"><b>PP19 BIZON</b><small>SMG<em class="wg-nb">3 builds</em></small></div><span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩<b>Build 3
+<div class="wg-h" tabindex="0" aria-expanded="true"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select every PP19 BIZON build"><span class="cb"></span></span><div class="wg-line"><b>PP19 BIZON</b><small>SMG</small><em class="wg-nb b3-sd-gn">3 builds</em></div><span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩<
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .wg-h · app.css:1117 |
 | position | `relative` | `relative` | .wg-h · app.css:1117 |
-| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 187.234px 815.766px 39px` | .wg-h · app.css:1117 |
+| grid-template-columns | `32px auto minmax(0px, 1fr) auto` | `32px 197.453px 805.547px 39px` | .wg-h · app.css:1117 |
 | column-gap | `var(--s3)` | `12px` | .wg-h · app.css:1117 |
 | align-items | `center` | `center` | .wg-h · app.css:1117 |
 | min-height | `52px` | `52px` | .wg-h · app.css:1117 |
@@ -2274,7 +2274,7 @@ inside `.wg-h` · 29 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | cursor | `pointer` | `pointer` | .wg-cb · app.css:1120 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes nothing on the element itself; parts inside it respond (table below)
 
@@ -2298,23 +2298,23 @@ inside `.wg-h` · 29 on screen · **1 look**
 
 ### `div.wg-line`
 
-inside `.wg-h` · 8 on screen · **2 looks**
+inside `.wg-h` · 8 on screen · **1 look**
 
-#### look 1 of 2
+#### the one look
 
-`C1-65` · rendered **407×22** · 5 instances look like this
+`C1-65` · rendered **404×22** · 8 instances look like this
 
 ```html
-<div class="wg-line"><b>BAL-27</b><small>Assault<em class="wg-nb">5 builds</em></small><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span><i class="sep" aria-hidden="true"></i><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></s
+<div class="wg-line"><b>BAL-27</b><small>Assault</small><em class="wg-nb b3-sd-gn">5 builds</em><span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></span></div>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `flex` | `flex` | .wg-line · app.css:1123 |
-| gap | `10px` | `` | .wg-line · b3/board.css:5143 |
-| column-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
-| row-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
-| align-items | `center` | `center` | .wg-h > .wg-line · b3/board.css:3422 |
+| gap | `10px` | `` | .wg-line · b3/board.css:5162 |
+| column-gap | `10px` | `10px` | .wg-line · b3/board.css:5162 |
+| row-gap | `10px` | `10px` | .wg-line · b3/board.css:5162 |
+| align-items | `center` | `center` | .wg-h > .wg-line · b3/board.css:3426 |
 | min-width | `0px` | `0px` | .wg-line · app.css:1123 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -2323,33 +2323,6 @@ inside `.wg-h` · 8 on screen · **2 looks**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateY(0.5px)` | `matrix(1, 0, 0, 1, 0, 0.5)` | .wg-h > .wg-line · b3/board.css:3427 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 2 of 2
-
-`C1-210` · rendered **185×10** · 3 instances look like this
-
-```html
-<div class="wg-line"><b>HOLGER 26</b><small>LMG<em class="wg-nb">3 builds</em></small></div>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `flex` | `flex` | .wg-line · app.css:1123 |
-| gap | `10px` | `` | .wg-line · b3/board.css:5143 |
-| column-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
-| row-gap | `10px` | `10px` | .wg-line · b3/board.css:5143 |
-| align-items | `center` | `center` | .wg-h > .wg-line · b3/board.css:3422 |
-| min-width | `0px` | `0px` | .wg-line · app.css:1123 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transform | `translateY(0.5px)` | `matrix(1, 0, 0, 1, 0, 0.5)` | .wg-h > .wg-line · b3/board.css:3427 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 
@@ -2379,12 +2352,12 @@ inside `.wg-line` · 11 on screen · **2 looks**
 | letter-spacing | `0.005em` | `0.0725px` | .wg-line b · app.css:1124 |
 | white-space | `nowrap` | `` | .wg-line b · app.css:1124 |
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .wg-line b · app.css:1124 |
-| transform | `translateY(-0.37px)` | `matrix(1, 0, 0, 1, 0, -0.37)` | .wg-h > .wg-line > b · b3/board.css:3428 |
+| transform | `translateY(0.5px)` | `matrix(1, 0, 0, 1, 0, 0.5)` | .wg-h > .wg-line > b · b3/board.css:3434 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 2 of 2
 
-`C1-313` · rendered **38×12** · 3 instances look like this · text “Build 1”
+`C1-327` · rendered **38×12** · 3 instances look like this · text “Build 1”
 
 ```html
 <b>Build 1</b>
@@ -2415,10 +2388,10 @@ inside `.wg-line` · 8 on screen · **7 looks**
 
 #### look 1 of 7
 
-`C1-67` · rendered **128×10** · 2 instances look like this
+`C1-67` · rendered **51×10** · 2 instances look like this · text “Assault”
 
 ```html
-<small>Assault<em class="wg-nb">5 builds</em></small>
+<small>Assault</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2426,25 +2399,26 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(255, 59, 92)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(255, 59, 92)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 2 of 7
 
-`C1-212` · rendered **99×10** · 1 instance look like this
+`C1-211` · rendered **22×10** · 1 instance look like this · text “LMG”
 
 ```html
-<small>LMG<em class="wg-nb">3 builds</em></small>
+<small>LMG</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2452,25 +2426,26 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(132, 94, 194)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(132, 94, 194)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 3 of 7
 
-`C1-298` · rendered **121×10** · 1 instance look like this
+`C1-309` · rendered **51×10** · 1 instance look like this · text “Shotgun”
 
 ```html
-<small>Shotgun<em class="wg-nb">1 build</em></small>
+<small>Shotgun</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2478,25 +2453,26 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(246, 169, 59)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(246, 169, 59)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 4 of 7
 
-`C1-413` · rendered **121×10** · 1 instance look like this
+`C1-433` · rendered **43×10** · 1 instance look like this · text “Sniper”
 
 ```html
-<small>Sniper<em class="wg-nb">2 builds</em></small>
+<small>Sniper</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2504,25 +2480,26 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(67, 97, 238)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(67, 97, 238)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 5 of 7
 
-`C1-483` · rendered **150×10** · 1 instance look like this
+`C1-526` · rendered **79×10** · 1 instance look like this · text “Secondaries”
 
 ```html
-<small>Secondaries<em class="wg-nb">1 build</em></small>
+<small>Secondaries</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2530,25 +2507,26 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(63, 110, 142)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(63, 110, 142)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 #### look 6 of 7
 
-`C1-523` · rendered **99×10** · 1 instance look like this
+`C1-566` · rendered **22×10** · 1 instance look like this · text “SMG”
 
 ```html
-<small>SMG<em class="wg-nb">3 builds</em></small>
+<small>SMG</small>
 ```
 
 | property | winning declaration | computed | from |
@@ -2556,57 +2534,66 @@ inside `.wg-line` · 8 on screen · **7 looks**
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-line small · gates.css:317 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small · app.css:1125 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small · app.css:1125 |
-| font-size | `` | `9.5px` | .wg-line small · app.css:1125 |
-| font-weight | `` | `600` | .wg-line small · app.css:1125 |
-| font-style | `` | `normal` | .wg-line small · app.css:1125 |
-| font-variant-numeric | `` | `normal` | .wg-line small · app.css:1125 |
-| line-height | `` | `9.5px` | .wg-line small · app.css:1125 |
-| letter-spacing | `0.16em` | `1.52px` | .wg-line small · app.css:1125 |
-| text-transform | `uppercase` | `uppercase` | .wg-line small · app.css:1125 |
-| white-space | `nowrap` | `` | .wg-line small · app.css:1125 |
-| color | `var(--c)` | `rgb(255, 210, 63)` | .wg-line small · app.css:1125 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-size | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-weight | `` | `600` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-style | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| font-variant-numeric | `` | `normal` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| line-height | `` | `9.5px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| letter-spacing | `0.16em` | `1.52px` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| text-transform | `uppercase` | `uppercase` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| white-space | `nowrap` | `` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| color | `var(--c)` | `rgb(255, 210, 63)` | .wg-line small, .f-menu .f-om · app.css:1125 |
+| transform | `translateY(-0.25px)` | `matrix(1, 0, 0, 1, 0, -0.25)` | .wg-h > .wg-line > small · b3/board.css:3435 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 *1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
-### `em.wg-nb`
+### `em.b3-sd-gn.wg-nb`
 
-inside `.—` · 8 on screen · **1 look**
+inside `.wg-line` · 8 on screen · **7 looks**
 
-#### the one look
+#### look 1 of 7
 
-`C1-68` · rendered **77×10** · 8 instances look like this · text “5 builds”
+`C1-68` · rendered **73×22** · 2 instances look like this · text “5 builds”
 
 ```html
-<em class="wg-nb">5 builds</em>
+<em class="wg-nb b3-sd-gn">5 builds</em>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
 | align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-micro)/1 var(--data)` | `` | inherited · .wg-line small · app.css:1125 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .wg-line small · app.css:1125 |
-| font-size | ↑ `` | `9.5px` | inherited · .wg-line small · app.css:1125 |
-| font-weight | ↑ `` | `600` | inherited · .wg-line small · app.css:1125 |
-| font-style | `normal` | `normal` | .wg-nb · app.css:1126 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .wg-line small · app.css:1125 |
-| line-height | ↑ `` | `9.5px` | inherited · .wg-line small · app.css:1125 |
-| letter-spacing | `0.14em` | `1.33px` | .wg-nb · app.css:1126 |
-| text-transform | ↑ `uppercase` | `uppercase` | inherited · .wg-line small · app.css:1125 |
-| white-space | ↑ `nowrap` | `` | inherited · .wg-line small · app.css:1125 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .wg-nb · app.css:1126 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 1 0.231373 0.360784 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.962118 0.524549 0.606196)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `inline-block` | .wg-nb::before · app.css:1127 |
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
 | width | `3px` | .wg-nb::before · app.css:1127 |
 | height | `3px` | .wg-nb::before · app.css:1127 |
 | margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
@@ -2620,17 +2607,279 @@ inside `.—` · 8 on screen · **1 look**
 | background-image | `` | .wg-nb::before · app.css:1127 |
 | content | `""` | .wg-nb::before · app.css:1127 |
 
+#### look 2 of 7
+
+`C1-212` · rendered **73×22** · 1 instance look like this · text “3 builds”
+
+```html
+<em class="wg-nb b3-sd-gn">3 builds</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 0.517647 0.368627 0.760784 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.682353 0.604157 0.838196)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
+| width | `3px` | .wg-nb::before · app.css:1127 |
+| height | `3px` | .wg-nb::before · app.css:1127 |
+| margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-top | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-right | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-bottom | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-left | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| border-radius | `var(--rad-round)` | .wg-nb::before · app.css:1127 |
+| background | `var(--ink4)` | .wg-nb::before · app.css:1127 |
+| background-color | `` | .wg-nb::before · app.css:1127 |
+| background-image | `` | .wg-nb::before · app.css:1127 |
+| content | `""` | .wg-nb::before · app.css:1127 |
+
+#### look 3 of 7
+
+`C1-310` · rendered **67×22** · 1 instance look like this · text “1 build”
+
+```html
+<em class="wg-nb b3-sd-gn">1 build</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 0.964706 0.662745 0.231373 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.941647 0.774745 0.531137)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
+| width | `3px` | .wg-nb::before · app.css:1127 |
+| height | `3px` | .wg-nb::before · app.css:1127 |
+| margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-top | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-right | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-bottom | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-left | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| border-radius | `var(--rad-round)` | .wg-nb::before · app.css:1127 |
+| background | `var(--ink4)` | .wg-nb::before · app.css:1127 |
+| background-color | `` | .wg-nb::before · app.css:1127 |
+| background-image | `` | .wg-nb::before · app.css:1127 |
+| content | `""` | .wg-nb::before · app.css:1127 |
+
+#### look 4 of 7
+
+`C1-434` · rendered **73×22** · 1 instance look like this · text “2 builds”
+
+```html
+<em class="wg-nb b3-sd-gn">2 builds</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 0.262745 0.380392 0.933333 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.53451 0.61098 0.938275)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
+| width | `3px` | .wg-nb::before · app.css:1127 |
+| height | `3px` | .wg-nb::before · app.css:1127 |
+| margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-top | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-right | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-bottom | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-left | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| border-radius | `var(--rad-round)` | .wg-nb::before · app.css:1127 |
+| background | `var(--ink4)` | .wg-nb::before · app.css:1127 |
+| background-color | `` | .wg-nb::before · app.css:1127 |
+| background-image | `` | .wg-nb::before · app.css:1127 |
+| content | `""` | .wg-nb::before · app.css:1127 |
+
+#### look 5 of 7
+
+`C1-527` · rendered **67×22** · 1 instance look like this · text “1 build”
+
+```html
+<em class="wg-nb b3-sd-gn">1 build</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 0.247059 0.431373 0.556863 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.525412 0.640549 0.719922)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
+| width | `3px` | .wg-nb::before · app.css:1127 |
+| height | `3px` | .wg-nb::before · app.css:1127 |
+| margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-top | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-right | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-bottom | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-left | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| border-radius | `var(--rad-round)` | .wg-nb::before · app.css:1127 |
+| background | `var(--ink4)` | .wg-nb::before · app.css:1127 |
+| background-color | `` | .wg-nb::before · app.css:1127 |
+| background-image | `` | .wg-nb::before · app.css:1127 |
+| content | `""` | .wg-nb::before · app.css:1127 |
+
+#### look 6 of 7
+
+`C1-567` · rendered **73×22** · 1 instance look like this · text “3 builds”
+
+```html
+<em class="wg-nb b3-sd-gn">3 builds</em>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-nb · gates.css:318 |
+| height | `22px` | `22px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 9px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-top | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-right | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-bottom | `0px` | `0px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| padding-left | `9px` | `9px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| margin-left | `4px` | `4px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:185 |
+| border-radius | `6px` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)` | `color(srgb 1 0.823529 0.247059 / 0.26) 0px 0px 0px 1px inset` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font | `600 var(--t-xs)/1 var(--data)` | `` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-size | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-weight | `` | `600` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-style | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| line-height | `` | `10.5px` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| letter-spacing | `var(--b3-tr-tight,.01em)` | `0.63px` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| text-transform | `none` | `none` | .b4 .wg-nb.b3-sd-gn · b4/classes.css:33 |
+| color | `color-mix(in srgb,var(--c) 58%,var(--ink))` | `color(srgb 0.962118 0.868 0.540235)` | .b3-sd-gn, .f-menu .f-oc · b3/board.css:2400 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| display | `none` | .b4 .wg-nb.b3-sd-gn::before · b4/classes.css:34 |
+| width | `3px` | .wg-nb::before · app.css:1127 |
+| height | `3px` | .wg-nb::before · app.css:1127 |
+| margin | `0 9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-top | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-right | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-bottom | `0px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| margin-left | `9px` | html[data-b3-a1="fixed"] .wg-nb::before · gates.css:319 |
+| border-radius | `var(--rad-round)` | .wg-nb::before · app.css:1127 |
+| background | `var(--ink4)` | .wg-nb::before · app.css:1127 |
+| background-color | `` | .wg-nb::before · app.css:1127 |
+| background-image | `` | .wg-nb::before · app.css:1127 |
+| content | `""` | .wg-nb::before · app.css:1127 |
+
+*1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
+
 
 ### `span.b3-bdgs`
 
-inside `.wg-line` · 5 on screen · **1 look**
+inside `.wg-line` · 7 on screen · **1 look**
 
 #### the one look
 
-`C1-69` · rendered **206×22** · 5 instances look like this
+`C1-69` · rendered **192×22** · 7 instances look like this
 
 ```html
-<span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span><i class="sep" aria-hidden="true"></i><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></span>
+<span class="b3-bdgs" style="--ph: 0.839;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span><span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -2638,13 +2887,14 @@ inside `.wg-line` · 5 on screen · **1 look**
 | display | `inline-flex` | `flex` | .b3-bdgs · b3/board.css:148 |
 | gap | `6px` | `` | .b3-bdgs · b3/board.css:148 |
 | column-gap | `6px` | `6px` | .b3-bdgs · b3/board.css:148 |
-| row-gap | `6px` | `6px` | .b3-bdgs · b3/board.css:148 |
+| row-gap | `6px` | `6px` | .b3-bdgs · b4/classes.css:339 |
+| flex-wrap | `wrap` | `wrap` | .b3-bdgs · b4/classes.css:339 |
 | align-items | `center` | `center` | .b3-bdgs · b3/board.css:148 |
-| align-self | `center` | `center` | .wg-line > .b3-bdgs, .wg-line > span:not(:has(> b)), .wg-line > i, .wg-line > button · b3/board.css:2020 |
+| align-self | `center` | `center` | .wg-line > .b3-bdgs, .wg-line > span:not(:has(> b)), .wg-line > i, .wg-line > button · b3/board.css:2024 |
 | min-height | `22px` | `22px` | .b3-bdgs · b3/board.css:148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-left | `17px` | `17px` | .wg-h .b3-bdgs · b3/board.css:3408 |
-| margin-left | `4px` | `4px` | .wg-h .b3-bdgs · b3/board.css:3264 |
+| padding-left | `17px` | `17px` | .wg-h .b3-bdgs · b3/board.css:3412 |
+| margin-left | `4px` | `4px` | .wg-h .b3-bdgs · b3/board.css:3268 |
 | box-shadow | `inset 1px 0 0 var(--rule2)` | `rgb(58, 71, 82) 1px 0px 0px 0px inset` | .b3-bdgs · b3/board.css:148 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2657,11 +2907,11 @@ inside `.wg-line` · 5 on screen · **1 look**
 
 ### `span.b3-bdg`
 
-inside `.b3-bdgs` · 8 on screen · **5 looks**
+inside `.b3-bdgs` · 19 on screen · **8 looks**
 
-#### look 1 of 5
+#### look 1 of 8
 
-`C1-70` · rendered **58×22** · 2 instances look like this
+`C1-70` · rendered **58×22** · 3 instances look like this
 
 ```html
 <span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt"></span><span class="b3-vl" aria-hidden="true"></span></span>
@@ -2670,7 +2920,7 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1821 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -2686,7 +2936,7 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
 | background-color | `` | `color(srgb 0.219608 0.839216 0.941176 / 0.13)` | .b3-bdg · b3/board.css:150 |
 | background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
-| box-shadow | `inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent), 0 0 calc((8px + 30px*var(--lit))*var(--b3-amb)) calc(-6px + 5px*var(--lit)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--lit))*var(--b3-amb)),transparent)` | `color(srgb 1 1 1 / 0.14) 0px 1px 0px 0px inset, color(srgb 0.219608 0.839216 0.941176 / 0.40768) 0px 0px 15.68px -5.7px` | .b3-bdg[data-k="meta"] · b3/board.css:1887 |
+| box-shadow | `inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent), 0 0 calc((8px + 30px*var(--lit))*var(--b3-amb)) calc(-6px + 5px*var(--lit)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--lit))*var(--b3-amb)),transparent)` | `color(srgb 1 1 1 / 0.14) 0px 1px 0px 0px inset, color(srgb 0.219608 0.839216 0.941176 / 0.40768) 0px 0px 15.68px -5.7px` | .b3-bdg[data-k="meta"] · b3/board.css:1891 |
 | font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
 | font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
@@ -2697,38 +2947,38 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | .b3-bdg · b3/board.css:150 |
-| overflow | `clip` | `` | .b3-bdg[data-k="meta"] · b3/board.css:3195 |
-| overflow-x | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3195 |
-| overflow-y | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3195 |
+| overflow | `clip` | `` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
+| overflow-x | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
+| overflow-y | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 **::after**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| padding | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| padding-top | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| padding-right | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| padding-bottom | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| padding-left | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| inset | `0` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| top | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| right | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| bottom | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| left | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| border-radius | `inherit` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| background | `radial-gradient(circle at var(--sx,50%) var(--sy,50%), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--lit)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(46% + 18%*var(--lit)),transparent) calc(24% + 34%*var(--lit)), color-mix(in srgb,var(--tc) 46%,transparent) 76%)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| background-color | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| background-image | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| content | `""` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| z-index | `3` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
-| pointer-events | `none` | .b3-bdg[data-k="meta"]::after · b3/board.css:1890 |
+| position | `absolute` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| padding | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| padding-top | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| padding-right | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| padding-bottom | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| padding-left | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| inset | `0` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| top | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| right | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| bottom | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| left | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| border-radius | `inherit` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| background | `radial-gradient(circle at var(--sx,50%) var(--sy,50%), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--lit)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(46% + 18%*var(--lit)),transparent) calc(24% + 34%*var(--lit)), color-mix(in srgb,var(--tc) 46%,transparent) 76%)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| background-color | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| background-image | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| content | `""` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| z-index | `3` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| pointer-events | `none` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
 
-#### look 2 of 5
+#### look 2 of 8
 
-`C1-75` · rendered **111×22** · 3 instances look like this · aria-label="Best in Assault"
+`C1-74` · rendered **111×22** · 3 instances look like this · aria-label="Best in Assault"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="best" aria-label="Best in Assault">⟨svg.ic⟩BEST<em>ASSAULT</em></span>
@@ -2737,7 +2987,7 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1821 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -2764,14 +3014,117 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `rgb(26, 20, 0)` | `rgb(26, 20, 0)` | html[data-b3-p1="a"] .b3-bdg[data-t="best"] · b3/board.css:167 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1821 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 3 of 5
+#### look 3 of 8
 
-`C1-301` · rendered **65×22** · 1 instance look like this · aria-label="Top 5 in Shotgun"
+`C1-214` · rendered **78×22** · 1 instance look like this · aria-label="Capable in LMG"
+
+```html
+<span class="b3-bdg" data-k="tier" data-t="capable" aria-label="Capable in LMG">⟨svg.ic⟩CAPABLE<i class="b3-rim" aria-hidden="true"><i></i></i></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
+| gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
+| column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
+| row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
+| align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
+| height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 8px 0 7px` | `` | .b3-bdg · b3/board.css:150 |
+| padding-top | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
+| padding-right | `8px` | `8px` | .b3-bdg · b3/board.css:150 |
+| padding-bottom | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
+| padding-left | `7px` | `7px` | .b3-bdg · b3/board.css:150 |
+| border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
+| background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
+| background-color | `` | `color(srgb 0.356863 0.607843 1 / 0.13)` | .b3-bdg · b3/board.css:150 |
+| background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent)` | `color(srgb 0.356863 0.607843 1 / 0.5) 0px 0px 0px 1px inset` | .b3-bdg · b3/board.css:150 |
+| font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
+| font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
+| font-weight | `` | `700` | .b3-bdg · b3/board.css:150 |
+| font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
+| line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
+| white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
+| color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.434039 0.654902 1)` | .b3-bdg · b3/board.css:150 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+#### look 4 of 8
+
+`C1-217` · rendered **55×22** · 8 instances look like this · aria-label="Rank mode DOM"
+
+```html
+<span class="b3-bdg" data-k="mode" data-m="DOM" aria-label="Rank mode DOM" style="--mi: 0;"><i class="b3-mdi" aria-hidden="true">⟨svg.ic⟩</i><span class="b3-mdw">DOM</span></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| gap | `4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| column-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| row-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
+| height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| padding | `0 7px 0 4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| padding-top | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| padding-right | `7px` | `7px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| padding-bottom | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| padding-left | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent))` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| background-image | `` | `linear-gradient(color(srgb 0.894118 0.92549 0.956863 / 0.09), color(srgb 0.894118 0.92549 0.956863 / 0.04))` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)` | `color(srgb 0.894118 0.92549 0.956863 / 0.4) 0px 0px 0px 1px inset, color(srgb 1 1 1 / 0.24) 0px 1px 0px 0px inset, color(srgb 0.894118 0.92549 0.956863 / 0.55) 0px 0px 14px -6px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
+| font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
+| font-weight | `` | `700` | .b3-bdg · b3/board.css:150 |
+| font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
+| line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
+| white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
+| color | `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+| isolation | `isolate` | `isolate` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+
+**::before**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| inset | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| top | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| right | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| bottom | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| left | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| border-radius | `inherit` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| opacity | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| content | `""` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| z-index | `-1` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| pointer-events | `none` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+
+#### look 5 of 8
+
+`C1-316` · rendered **65×22** · 1 instance look like this · aria-label="Top 5 in Shotgun"
 
 ```html
 <span class="b3-bdg" data-k="tier" data-t="top5" aria-label="Top 5 in Shotgun">⟨svg.ic⟩TOP 5<i class="b3-rim" aria-hidden="true"><i></i></i></span>
@@ -2780,7 +3133,7 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1821 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -2807,14 +3160,14 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.703216 0.599686 1)` | .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1821 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 4 of 5
+#### look 6 of 8
 
-`C1-305` · rendered **65×22** · 1 instance look like this
+`C1-319` · rendered **65×22** · 1 instance look like this
 
 ```html
 <span class="b3-bdg" data-k="toxic">⟨svg.ic⟩TOXIC<i class="b3-tox" aria-hidden="true"><i></i><i></i><i></i></i></span>
@@ -2823,7 +3176,7 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1821 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -2850,62 +3203,21 @@ inside `.b3-bdgs` · 8 on screen · **5 looks**
 | letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.654902 0.899922 0.327059)` | .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1821 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-#### look 5 of 5
-
-`C1-616` · rendered **65×22** · 1 instance look like this · aria-label="Top 3 in Marksman"
-
-```html
-<span class="b3-bdg" data-k="tier" data-t="top3" aria-label="Top 3 in Marksman">⟨svg.ic⟩TOP 3<i class="b3-rim" aria-hidden="true"><i></i></i></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1821 |
-| gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
-| column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
-| row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
-| align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
-| height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 8px 0 7px` | `` | .b3-bdg · b3/board.css:150 |
-| padding-top | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-right | `8px` | `8px` | .b3-bdg · b3/board.css:150 |
-| padding-bottom | `0px` | `0px` | .b3-bdg · b3/board.css:150 |
-| padding-left | `7px` | `7px` | .b3-bdg · b3/board.css:150 |
-| border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
-| background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
-| background-color | `` | `color(srgb 0.247059 0.839216 0.709804 / 0.13)` | .b3-bdg · b3/board.css:150 |
-| background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent)` | `color(srgb 0.247059 0.839216 0.709804 / 0.5) 0px 0px 0px 1px inset` | .b3-bdg · b3/board.css:150 |
-| font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
-| font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| font-weight | `` | `700` | .b3-bdg · b3/board.css:150 |
-| font-style | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | `` | `normal` | .b3-bdg · b3/board.css:150 |
-| line-height | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-bdg · b3/board.css:150 |
-| white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
-| color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.337412 0.85851 0.744627)` | .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1821 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1821 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+*2 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
 
 ### `svg.b3-zap.ic`
 
-inside `.b3-bdg` · 2 on screen · **1 look**
+inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-71` · rendered **11×11** · 2 instances look like this · aria-hidden="true"
+`C1-71` · rendered **11×11** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <svg class="ic b3-zap" aria-hidden="true"><use href="#i-zap"></use></svg>
@@ -2935,11 +3247,11 @@ inside `.b3-bdg` · 2 on screen · **1 look**
 
 ### `span.b3-volt`
 
-inside `.b3-bdg` · 2 on screen · **1 look**
+inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-72` · rendered **58×22** · 2 instances look like this
+`C1-72` · rendered **58×22** · 3 instances look like this
 
 ```html
 <span class="b3-volt"></span>
@@ -2948,14 +3260,14 @@ inside `.b3-bdg` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-volt · b3/board.css:1900 |
+| position | `absolute` | `absolute` | .b3-volt · b3/board.css:1904 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-volt · b3/board.css:1900 |
-| top | `0px` | `0px` | .b3-volt · b3/board.css:1900 |
-| right | `0px` | `0px` | .b3-volt · b3/board.css:1900 |
-| bottom | `0px` | `0px` | .b3-volt · b3/board.css:1900 |
-| left | `0px` | `0px` | .b3-volt · b3/board.css:1900 |
-| border-radius | `inherit` | `` | .b3-volt · b3/board.css:1900 |
+| inset | `0` | `` | .b3-volt · b3/board.css:1904 |
+| top | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
+| right | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
+| bottom | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
+| left | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
+| border-radius | `inherit` | `` | .b3-volt · b3/board.css:1904 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -2966,21 +3278,21 @@ inside `.b3-bdg` · 2 on screen · **1 look**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-volt · b3/board.css:1900 |
-| overflow-x | `hidden` | `hidden` | .b3-volt · b3/board.css:1900 |
-| overflow-y | `hidden` | `hidden` | .b3-volt · b3/board.css:1900 |
+| overflow | `hidden` | `` | .b3-volt · b3/board.css:1904 |
+| overflow-x | `hidden` | `hidden` | .b3-volt · b3/board.css:1904 |
+| overflow-y | `hidden` | `hidden` | .b3-volt · b3/board.css:1904 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-| z-index | `2` | `2` | .b3-volt · b3/board.css:1900 |
-| pointer-events | `none` | `none` | .b3-volt · b3/board.css:1900 |
+| z-index | `2` | `2` | .b3-volt · b3/board.css:1904 |
+| pointer-events | `none` | `none` | .b3-volt · b3/board.css:1904 |
 
 
 ### `span.b3-vl`
 
-inside `.b3-bdg` · 2 on screen · **1 look**
+inside `.b3-bdg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-73` · rendered **58×22** · 2 instances look like this · aria-hidden="true"
+`C1-73` · rendered **58×22** · 3 instances look like this · aria-hidden="true"
 
 ```html
 <span class="b3-vl" aria-hidden="true"></span>
@@ -2989,14 +3301,14 @@ inside `.b3-bdg` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vl · b3/board.css:3196 |
+| position | `absolute` | `absolute` | .b3-vl · b3/board.css:3200 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vl · b3/board.css:3196 |
-| top | `0px` | `0px` | .b3-vl · b3/board.css:3196 |
-| right | `0px` | `0px` | .b3-vl · b3/board.css:3196 |
-| bottom | `0px` | `0px` | .b3-vl · b3/board.css:3196 |
-| left | `0px` | `0px` | .b3-vl · b3/board.css:3196 |
-| border-radius | `inherit` | `` | .b3-vl · b3/board.css:3196 |
+| inset | `0` | `` | .b3-vl · b3/board.css:3200 |
+| top | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
+| right | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
+| bottom | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
+| left | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
+| border-radius | `inherit` | `` | .b3-vl · b3/board.css:3200 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -3008,45 +3320,8 @@ inside `.b3-bdg` · 2 on screen · **1 look**
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-| z-index | `4` | `4` | .b3-vl · b3/board.css:3196 |
-| pointer-events | `none` | `none` | .b3-vl · b3/board.css:3196 |
-
-
-### `i.sep`
-
-inside `.b3-bdgs` · 3 on screen · **1 look**
-
-#### the one look
-
-`C1-74` · rendered **4×4** · 3 instances look like this · aria-hidden="true"
-
-```html
-<i class="sep" aria-hidden="true"></i>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| width | `4px` | `4px` | .b3-bdgs .sep · b3/board.css:149 |
-| height | `4px` | `4px` | .b3-bdgs .sep · b3/board.css:149 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 2px` | `` | .b3-bdgs .sep · b3/board.css:149 |
-| margin-top | `0px` | `0px` | .b3-bdgs .sep · b3/board.css:149 |
-| margin-right | `2px` | `2px` | .b3-bdgs .sep · b3/board.css:149 |
-| margin-bottom | `0px` | `0px` | .b3-bdgs .sep · b3/board.css:149 |
-| margin-left | `2px` | `2px` | .b3-bdgs .sep · b3/board.css:149 |
-| border-radius | `50%` | `` | .b3-bdgs .sep · b3/board.css:149 |
-| background | `var(--ink4)` | `` | .b3-bdgs .sep · b3/board.css:149 |
-| background-color | `` | `rgb(92, 106, 117)` | .b3-bdgs .sep · b3/board.css:149 |
-| background-image | `` | `none` | .b3-bdgs .sep · b3/board.css:149 |
-| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
-| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
-| font-weight | — | `400` | initial |
-| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
-| letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+| z-index | `4` | `4` | .b3-vl · b3/board.css:3200 |
+| pointer-events | `none` | `none` | .b3-vl · b3/board.css:3200 |
 
 
 ### `button.wg-fbtn.wg-ib`
@@ -3055,7 +3330,7 @@ inside `.wg-h` · 8 on screen · **1 look**
 
 #### the one look
 
-`C1-79` · rendered **44×44** · 8 instances look like this · aria-label="Collapse BAL-27" aria-expanded="true" type="button"
+`C1-78` · rendered **44×44** · 8 instances look like this · aria-label="Collapse BAL-27" aria-expanded="true" type="button"
 
 ```html
 <button type="button" class="wg-ib wg-fbtn" aria-expanded="true" aria-label="Collapse BAL-27">⟨svg.ic.ic-fold⟩</button>
@@ -3063,45 +3338,45 @@ inside `.wg-h` · 8 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| display | `grid` | `grid` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | position | `relative` | `relative` | .wg-ib · app.css:1148 |
-| grid-template-columns | `14px 0fr` | `14px 0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| column-gap | `0px` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| grid-template-columns | `14px 0fr` | `14px 0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| column-gap | `0px` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | flex | `none` | `` | .wg-ib · app.css:1148 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| justify-content | `center` | `center` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| justify-self | `end` | `end` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| justify-content | `center` | `center` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| justify-self | `end` | `end` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | place-items | `center` | `` | .wg-ib · app.css:1148 |
-| width | `auto` | `44px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| min-width | `var(--tap)` | `44px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| width | `auto` | `44px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| min-width | `var(--tap)` | `44px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | height | `var(--tap)` | `44px` | .wg-ib · app.css:1148 |
 | min-height | `0px` | `0px` | .wg-ib · app.css:1148 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 var(--s3)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| padding-top | `` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| padding-right | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| padding-bottom | `` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| padding-left | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| padding | `0 var(--s3)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| padding-top | `` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| padding-right | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| padding-bottom | `` | `0px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| padding-left | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | margin-right | `calc(-1 * var(--box-inset))` | `-5px` | .wg-fbtn · app.css:1156 |
 | border | `0` | `` | .wg-ib · app.css:1148 |
 | border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:388 |
 | background | `none` | `` | .wg-ib · app.css:1148 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .wg-ib · app.css:1148 |
 | background-image | `none` | `none` | .wg-ib · app.css:1148 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-size | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-weight | `` | `600` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-style | `` | `normal` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| font-variant-numeric | `` | `normal` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
-| line-height | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-size | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-weight | `` | `600` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-style | `` | `normal` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| font-variant-numeric | `` | `normal` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
+| line-height | `` | `12px` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .wg-ib · app.css:1148 |
-| transition | `grid-template-columns var(--b3-reveal) var(--b3-reveal-ease),column-gap var(--b3-reveal) var(--b3-reveal-ease)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1646 |
+| transition | `grid-template-columns var(--b3-reveal) var(--b3-reveal-ease),column-gap var(--b3-reveal) var(--b3-reveal-ease)` | `` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn · b3/board.css:1650 |
 | cursor | `pointer` | `pointer` | .wg-ib · app.css:1148 |
 | isolation | `isolate` | `isolate` | .wg-ib · app.css:1148 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -3118,7 +3393,7 @@ inside `.wg-h` · 8 on screen · **1 look**
 | background-color | `` | .wg-ib::before · app.css:1149 |
 | background-image | `` | .wg-ib::before · app.css:1149 |
 | box-shadow | `inset 0 0 0 1px var(--rule2)` | .wg-ib::before · app.css:1149 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1631 |
+| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1635 |
 | content | `""` | .wg-ib::before · app.css:1149 |
 | z-index | `-1` | .wg-ib::before · app.css:1149 |
 
@@ -3126,27 +3401,27 @@ inside `.wg-h` · 8 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `static` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1651 |
-| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| max-width | `none` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1651 |
-| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| transform | `none` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1651 |
-| transition | `opacity calc(var(--b3-reveal) * .55) var(--b3-reveal-ease)` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1651 |
-| content | `"Collapse"` | html[data-b3-a1="fixed"] .wg-fbtn[aria-expanded="true"]::after · b3/board.css:1632 |
-| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
+| position | `static` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1655 |
+| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| max-width | `none` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1655 |
+| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| transform | `none` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1655 |
+| transition | `opacity calc(var(--b3-reveal) * .55) var(--b3-reveal-ease)` | html[data-b3-a1="fixed"] .wg-ib.wg-fbtn::after · b3/board.css:1655 |
+| content | `"Collapse"` | html[data-b3-a1="fixed"] .wg-fbtn[aria-expanded="true"]::after · b3/board.css:1636 |
+| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3161,7 +3436,7 @@ inside `.wg-h` · 8 on screen · **1 look**
 | part inside | property | at rest | hover |
 |---|---|---|---|
 | ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgba(0, 0, 0, 0)` |
 | ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
 | ::before | width | `34px` | `85.2188px` |
@@ -3227,7 +3502,7 @@ inside `.wg` · 18 on screen · **1 look**
 
 #### the one look
 
-`C1-81` · rendered **1146×85** · 18 instances look like this
+`C1-80` · rendered **1146×85** · 18 instances look like this
 
 ```html
 <div class="wg-r" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select BAL-27 build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span cla
@@ -3279,7 +3554,7 @@ inside `.wg` · 18 on screen · **1 look**
 | property | at rest | hover |
 |---|---|---|
 | background-color | `rgba(0, 0, 0, 0)` | `rgb(23, 30, 36)` |
-| background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 1 0.231373 0.360784 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 1 0.231373 0.360784 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
+| background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 1.08802 0.325069 0.430231 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 1.08802 0.325069 0.430231 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
@@ -3309,7 +3584,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-84` · rendered **5×32** · 21 instances look like this · text “1” · title=""
+`C1-83` · rendered **5×32** · 21 instances look like this · text “1” · title=""
 
 ```html
 <span class="wg-ix" title="">1</span>
@@ -3325,9 +3600,9 @@ inside `.wg-r` · 21 on screen · **1 look**
 | font | `500 21px/1 var(--display)` | `` | .wg-ix · app.css:1167 |
 | font-family | `` | `"Big Shoulders Display", "Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-ix · app.css:1167 |
 | font-size | `` | `21px` | .wg-ix · app.css:1167 |
-| font-weight | `700` | `700` | .wg-r .wg-ix · b3/board.css:5142 |
+| font-weight | `700` | `700` | .wg-r .wg-ix · b3/board.css:5161 |
 | font-style | `` | `normal` | .wg-ix · app.css:1167 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .wg-r .wg-ix · b3/board.css:5142 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .wg-r .wg-ix · b3/board.css:5161 |
 | line-height | `` | `21px` | .wg-ix · app.css:1167 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .wg-ix · app.css:1167 |
@@ -3340,7 +3615,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-85` · rendered **705×84** · 21 instances look like this
+`C1-84` · rendered **705×84** · 21 instances look like this
 
 ```html
 <div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span><span class="wg-at" data-slot="Stock" title="Stock" style="--sl: var(--sl-stock, var(-
@@ -3375,7 +3650,7 @@ inside `.wg-main` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-86` · rendered **705×62** · 21 instances look like this
+`C1-85` · rendered **705×62** · 21 instances look like this
 
 ```html
 <div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span><span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span><span class="wg-at" data-slot="Stock" title="Stock" style="--sl: var(--sl-stock, var(--sl-unknown));">Clare
@@ -3390,7 +3665,7 @@ inside `.wg-main` · 21 on screen · **1 look**
 | flex-wrap | `wrap` | `wrap` | .wg-rail · app.css:1175 |
 | align-items | `center` | `center` | .wg-rail · app.css:1175 |
 | min-width | `0px` | `0px` | .wg-rail · app.css:1175 |
-| max-height | `76px` | `76px` | .wg-r .wg-rail · b3/board.css:2760 |
+| max-height | `76px` | `76px` | .wg-r .wg-rail · b3/board.css:2764 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3398,8 +3673,8 @@ inside `.wg-main` · 21 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow-y | `auto` | `auto` | .wg-r .wg-rail · b3/board.css:2760 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | .wg-r .wg-rail · b3/board.css:2760 |
+| overflow-y | `auto` | `auto` | .wg-r .wg-rail · b3/board.css:2764 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | .wg-r .wg-rail · b3/board.css:2764 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
 
@@ -3409,7 +3684,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 1 of 9
 
-`C1-87` · rendered **152×28** · 20 instances look like this · text “Gauge-9 Mono” · title="Muzzle"
+`C1-86` · rendered **152×28** · 20 instances look like this · text “Gauge-9 Mono” · title="Muzzle"
 
 ```html
 <span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Gauge-9 Mono</span>
@@ -3476,7 +3751,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 2 of 9
 
-`C1-88` · rendered **161×28** · 18 instances look like this · text “Crown-H3 Barrel” · title="Barrel"
+`C1-87` · rendered **161×28** · 18 instances look like this · text “Crown-H3 Barrel” · title="Barrel"
 
 ```html
 <span class="wg-at" data-slot="Barrel" title="Barrel" style="--sl: var(--sl-barrel, var(--sl-unknown));">Crown-H3 Barrel</span>
@@ -3543,7 +3818,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 3 of 9
 
-`C1-89` · rendered **172×28** · 17 instances look like this · text “Clarent Light Stock” · title="Stock"
+`C1-88` · rendered **172×28** · 17 instances look like this · text “Clarent Light Stock” · title="Stock"
 
 ```html
 <span class="wg-at" data-slot="Stock" title="Stock" style="--sl: var(--sl-stock, var(--sl-unknown));">Clarent Light Stock</span>
@@ -3610,7 +3885,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 4 of 9
 
-`C1-90` · rendered **181×28** · 18 instances look like this · text “Highground Grip” · title="Rear Grip"
+`C1-89` · rendered **181×28** · 18 instances look like this · text “Highground Grip” · title="Rear Grip"
 
 ```html
 <span class="wg-at" data-slot="Rear Grip" title="Rear Grip" style="--sl: var(--sl-rear-grip, var(--sl-unknown));">Highground Grip</span>
@@ -3677,7 +3952,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 5 of 9
 
-`C1-91` · rendered **192×28** · 13 instances look like this · text “60 Round Reload” · title="Ammunition"
+`C1-90` · rendered **192×28** · 13 instances look like this · text “60 Round Reload” · title="Ammunition"
 
 ```html
 <span class="wg-at" data-slot="Ammunition" title="Ammunition" style="--sl: var(--sl-ammunition, var(--sl-unknown));">60 Round Reload</span>
@@ -3744,7 +4019,7 @@ inside `.wg-rail` · 104 on screen · **9 looks**
 
 #### look 6 of 9
 
-`C1-115` · rendered **129×28** · 6 instances look like this · text “SZ 1MW PEQ” · title="Laser"
+`C1-114` · rendered **129×28** · 6 instances look like this · text “SZ 1MW PEQ” · title="Laser"
 
 ```html
 <span class="wg-at" data-slot="Laser" title="Laser" style="--sl: var(--sl-laser, var(--sl-unknown));">SZ 1MW PEQ</span>
@@ -3818,7 +4093,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-92` · rendered **28×28** · 21 instances look like this · aria-label="Image uploaded" role="img" title="Image uploaded"
+`C1-91` · rendered **28×28** · 21 instances look like this · aria-label="Image uploaded" role="img" title="Image uploaded"
 
 ```html
 <span class="wg-im" role="img" aria-label="Image uploaded" title="Image uploaded">⟨svg.ic⟩</span>
@@ -3847,7 +4122,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-94` · rendered **144×44** · 21 instances look like this · aria-label="Copy gunsmith code 1I2C4A8A9D" type="button"
+`C1-93` · rendered **144×44** · 21 instances look like this · aria-label="Copy gunsmith code 1I2C4A8A9D" type="button"
 
 ```html
 <button type="button" class="wg-code" aria-label="Copy gunsmith code 1I2C4A8A9D"><span class="wg-ig"><span class="wg-igf"><span class="wg-ct" title="">1I2C4A8A9D</span></span><span class="wg-igb">⟨svg.ic⟩</span></span></button>
@@ -3882,7 +4157,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | html[data-b3-a1="fixed"] .wg-code · gates.css:326 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes nothing on the element itself
 
@@ -3922,7 +4197,7 @@ inside `.wg-code` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-95` · rendered **144×34** · 21 instances look like this
+`C1-94` · rendered **144×34** · 21 instances look like this
 
 ```html
 <span class="wg-ig"><span class="wg-igf"><span class="wg-ct" title="">1I2C4A8A9D</span></span><span class="wg-igb">⟨svg.ic⟩</span></span>
@@ -3976,7 +4251,7 @@ inside `.wg-ig` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-96` · rendered **106×34** · 21 instances look like this
+`C1-95` · rendered **106×34** · 21 instances look like this
 
 ```html
 <span class="wg-igf"><span class="wg-ct" title="">1I2C4A8A9D</span></span>
@@ -4016,7 +4291,7 @@ inside `.wg-igf` · 20 on screen · **1 look**
 
 #### the one look
 
-`C1-97` · rendered **82×12** · 20 instances look like this · text “1I2C4A8A9D” · title=""
+`C1-96` · rendered **82×12** · 20 instances look like this · text “1I2C4A8A9D” · title=""
 
 ```html
 <span class="wg-ct" title="">1I2C4A8A9D</span>
@@ -4047,7 +4322,7 @@ inside `.wg-ig` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-98` · rendered **38×34** · 21 instances look like this
+`C1-97` · rendered **38×34** · 21 instances look like this
 
 ```html
 <span class="wg-igb">⟨svg.ic⟩</span>
@@ -4088,7 +4363,7 @@ inside `.wg-r` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-100` · rendered **113×44** · 21 instances look like this
+`C1-99` · rendered **113×44** · 21 instances look like this
 
 ```html
 <div class="wg-acts"><button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button><i class="wg-vr" aria-hidden="true"></i><button type="button" class="wg-ib wg-del" aria-label="Stage deletion of BAL-27 build 1">⟨svg.ic⟩</button></div>
@@ -4119,7 +4394,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-101` · rendered **44×44** · 21 instances look like this · aria-label="Copy share command" type="button"
+`C1-100` · rendered **44×44** · 21 instances look like this · aria-label="Copy share command" type="button"
 
 ```html
 <button type="button" class="wg-ib" aria-label="Copy share command" data-tip="Copy share command">⟨svg.ic⟩</button>
@@ -4159,7 +4434,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .wg-ib · app.css:1148 |
 | isolation | `isolate` | `isolate` | .wg-ib · app.css:1148 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -4176,7 +4451,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | background-color | `` | .wg-ib::before · app.css:1149 |
 | background-image | `` | .wg-ib::before · app.css:1149 |
 | box-shadow | `inset 0 0 0 1px var(--rule2)` | .wg-ib::before · app.css:1149 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1631 |
+| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1635 |
 | content | `""` | .wg-ib::before · app.css:1149 |
 | z-index | `-1` | .wg-ib::before · app.css:1149 |
 
@@ -4184,24 +4459,24 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
+| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4212,7 +4487,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | part inside | property | at rest | hover |
 |---|---|---|---|
 | ::before | color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
-| ::before | background-color | `rgb(31, 39, 46)` | `rgb(35, 44, 52)` |
+| ::before | background-color | `rgb(31, 39, 46)` | `rgba(0, 0, 0, 0)` |
 | ::before | border-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
 | ::before | box-shadow | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | `rgb(92, 106, 117) 0px 0px 0px 1px inset` |
 | ::before | outline-color | `rgb(133, 147, 159)` | `rgb(232, 237, 241)` |
@@ -4253,7 +4528,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-103` · rendered **1×24** · 21 instances look like this · aria-hidden="true"
+`C1-102` · rendered **1×24** · 21 instances look like this · aria-hidden="true"
 
 ```html
 <i class="wg-vr" aria-hidden="true"></i>
@@ -4285,7 +4560,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 #### the one look
 
-`C1-104` · rendered **44×44** · 21 instances look like this · aria-label="Stage deletion of BAL-27 build 1" type="button"
+`C1-103` · rendered **44×44** · 21 instances look like this · aria-label="Stage deletion of BAL-27 build 1" type="button"
 
 ```html
 <button type="button" class="wg-ib wg-del" aria-label="Stage deletion of BAL-27 build 1">⟨svg.ic⟩</button>
@@ -4325,7 +4600,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .wg-ib · app.css:1148 |
 | isolation | `isolate` | `isolate` | .wg-ib · app.css:1148 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -4342,7 +4617,7 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | background-color | `` | .wg-ib::before · app.css:1149 |
 | background-image | `` | .wg-ib::before · app.css:1149 |
 | box-shadow | `inset 0 0 0 1px var(--rule2)` | .wg-ib::before · app.css:1149 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1631 |
+| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1635 |
 | content | `""` | .wg-ib::before · app.css:1149 |
 | z-index | `-1` | .wg-ib::before · app.css:1149 |
 
@@ -4350,24 +4625,24 @@ inside `.wg-acts` · 21 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
-| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1630 |
+| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4413,13 +4688,73 @@ inside `.wg-acts` · 21 on screen · **1 look**
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
+### `i.b3-mdi`
+
+inside `.b3-bdg` · 8 on screen · **1 look**
+
+#### the one look
+
+`C1-218` · rendered **20×20** · 8 instances look like this · aria-hidden="true"
+
+```html
+<i class="b3-mdi" aria-hidden="true">⟨svg.ic⟩</i>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-flex` | `flex` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:620 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:620 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+
+### `span.b3-mdw`
+
+inside `.b3-bdg` · 8 on screen · **1 look**
+
+#### the one look
+
+`C1-220` · rendered **20×10** · 8 instances look like this · text “DOM”
+
+```html
+<span class="b3-mdw">DOM</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+
 ### `span.b3-fx.wg-fwrap`
 
 inside `.wg-h` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-310` · rendered **165×34** · 3 instances look like this
+`C1-324` · rendered **165×34** · 3 instances look like this
 
 ```html
 <span class="wg-fwrap b3-fx"><button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩<b>Build 1</b><i aria-hidden="true"></i>1 problem</button></span>
@@ -4448,7 +4783,7 @@ inside `.wg-fwrap` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-311` · rendered **165×34** · 3 instances look like this · aria-expanded="false" type="button"
+`C1-325` · rendered **165×34** · 3 instances look like this · aria-expanded="false" type="button"
 
 ```html
 <button type="button" class="b3-fchip" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩<b>Build 1</b><i aria-hidden="true"></i>1 problem</button>
@@ -4492,7 +4827,7 @@ inside `.wg-fwrap` · 3 on screen · **1 look**
 | overflow-y | `hidden` | `hidden` | .b3-fchip · b3/board.css:568 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | `` | .b3-fchip · b3/board.css:568 |
 | cursor | `pointer` | `pointer` | .b3-fchip · b3/board.css:568 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
@@ -4535,7 +4870,7 @@ inside `.wg` · 3 on screen · **1 look**
 
 #### the one look
 
-`C1-317` · rendered **1146×85** · 3 instances look like this
+`C1-331` · rendered **1146×85** · 3 instances look like this
 
 ```html
 <div class="wg-r bad" tabindex="0"><span class="wg-cb" role="checkbox" tabindex="0" aria-checked="false" aria-label="Select JAK-12 build 1"><span class="cb"></span></span><span class="wg-ix" title="">1</span><div class="wg-main"><div class="wg-rail" style="--fo: 0px; --ft: 0px; --fb: 0px;"><span class="wg-at" data-slot="Muzzle" title="Muzzle" style="--sl: var(--sl-muzzle, var(--sl-unknown));">Marauder Suppressor</spa
@@ -4569,7 +4904,7 @@ inside `.wg` · 3 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| display | `none` | .wg-r.bad::before, .wg-r.bad:hover::before, .wg-r.bad.open::before · b3/board.css:3177 |
+| display | `none` | .wg-r.bad::before, .wg-r.bad:hover::before, .wg-r.bad.open::before · b3/board.css:3181 |
 | position | `absolute` | .wg-r::before · app.css:1159 |
 | width | `2.5px` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
 | top | `12px` | html[data-b3-a1="fixed"] .wg-r::before · gates.css:259 |
@@ -4588,15 +4923,15 @@ inside `.wg` · 3 on screen · **1 look**
 | property | winning declaration | from |
 |---|---|---|
 | position | `absolute` | .wg-r.bad::after · app.css:1164 |
-| width | `4px` | .wg-r.bad::after · b3/board.css:3176 |
+| width | `4px` | .wg-r.bad::after · b3/board.css:3180 |
 | top | `0px` | .wg-r.bad::after · app.css:1164 |
-| right | `auto` | .wg-r.bad::after · b3/board.css:3176 |
+| right | `auto` | .wg-r.bad::after · b3/board.css:3180 |
 | bottom | `0px` | .wg-r.bad::after · app.css:1164 |
-| left | `0px` | .wg-r.bad::after · b3/board.css:3176 |
+| left | `0px` | .wg-r.bad::after · b3/board.css:3180 |
 | background | `repeating-linear-gradient(-45deg,var(--warn) 0 3px,transparent 3px 6px)` | .wg-r.bad::after · app.css:1164 |
 | background-color | `` | .wg-r.bad::after · app.css:1164 |
 | background-image | `` | .wg-r.bad::after · app.css:1164 |
-| mask-image | `radial-gradient(farthest-side at 0px 50%, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 90%, transparent 100%), linear-gradient(transparent 0px, rgba(0, 0, 0, 0.14) 10%, rgba(0, 0, 0, 0.42) 24%, rgba(0, 0, 0, 0.78) 38%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0.78) 62%, rgba(0, 0, 0, 0.42) 76%, rgba(0, 0, 0, 0.14) 90%, transparent 100%)` | .wg-r.bad::after · b3/board.css:3176 |
+| mask-image | `radial-gradient(farthest-side at 0px 50%, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 90%, transparent 100%), linear-gradient(transparent 0px, rgba(0, 0, 0, 0.14) 10%, rgba(0, 0, 0, 0.42) 24%, rgba(0, 0, 0, 0.78) 38%, rgb(0, 0, 0) 50%, rgba(0, 0, 0, 0.78) 62%, rgba(0, 0, 0, 0.42) 76%, rgba(0, 0, 0, 0.14) 90%, transparent 100%)` | .wg-r.bad::after · b3/board.css:3180 |
 | content | `""` | .wg-r.bad::after · app.css:1164 |
 
 **:hover** — changes; parts inside it respond (table below)
@@ -4604,7 +4939,7 @@ inside `.wg` · 3 on screen · **1 look**
 | property | at rest | hover |
 |---|---|---|
 | background-color | `rgba(0, 0, 0, 0)` | `rgb(23, 30, 36)` |
-| background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 0.964706 0.662745 0.231373 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 0.964706 0.662745 0.231373 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
+| background-image | `none` | `radial-gradient(360px 80px at 14% 40%, color(srgb 0.964706 0.662745 0.231372 / 0.16), rgba(0, 0, 0, 0) 72%), radial-gradient(420px 100px at 76% 70%, color(srgb 0.964706 0.662745 0.231372 / 0.07), rgba(0, 0, 0, 0) 70%), radial-gradient(260px 70px at 46% 0px, color(srgb 0.937255 0.266667 0.266667 / 0.06), rgba(0, 0, 0, 0) 70%), none` |
 
 | part inside | property | at rest | hover |
 |---|---|---|---|
@@ -4633,7 +4968,7 @@ inside `.wg-rail` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-327` · rendered **210×28** · 1 instance look like this · text “8-R Dragon's Breath” · title="Ammunition — not in the gunsmith code"
+`C1-341` · rendered **210×28** · 1 instance look like this · text “8-R Dragon's Breath” · title="Ammunition — not in the gunsmith code"
 
 ```html
 <span class="wg-at nocode" data-slot="Ammunition" title="Ammunition — not in the gunsmith code" style="--sl: var(--sl-ammunition, var(--sl-unknown));">8-R Dragon's Breath</span>
@@ -4652,12 +4987,12 @@ inside `.wg-rail` · 1 on screen · **1 look**
 | padding-bottom | `0px` | `0px` | .wg-at · app.css:1176 |
 | padding-left | `10px` | `10px` | .wg-at · app.css:1176 |
 | border-radius | `5px` | `` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at, html[data-b3-p2lab]:not([data-b3-p2 · b3/board.css:526 |
-| outline | `1px dashed color-mix(in srgb,var(--warn) 72%,transparent)` | `` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
-| outline-offset | `-1px` | `-1px` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
-| background | `repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px),color-mix(in srgb,var(--warn) 6%,var(--sunk))` | `` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
-| background-color | `` | `color(srgb 0.100549 0.084 0.0825882)` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
-| background-image | `` | `repeating-linear-gradient(-45deg, color(srgb 1 0.478431 0.270588 / 0.11) 0px, color(srgb 1 0.478431 0.270588 / 0.11) 4px, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 0) 8px), none` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
-| box-shadow | `none` | `none` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
+| outline | `1px dashed color-mix(in srgb,var(--warn) 72%,transparent)` | `` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
+| outline-offset | `-1px` | `-1px` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
+| background | `repeating-linear-gradient(-45deg,color-mix(in srgb,var(--warn) 11%,transparent) 0 4px,transparent 4px 8px),color-mix(in srgb,var(--warn) 6%,var(--sunk))` | `` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
+| background-color | `` | `color(srgb 0.100549 0.084 0.0825882)` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
+| background-image | `` | `repeating-linear-gradient(-45deg, color(srgb 1 0.478431 0.270588 / 0.11) 0px, color(srgb 1 0.478431 0.270588 / 0.11) 4px, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 0) 8px), none` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
+| box-shadow | `none` | `none` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
 | font | `500 var(--t-sm)/1 var(--ui)` | `` | .wg-at · app.css:1176 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .wg-at · app.css:1176 |
 | font-size | `` | `12px` | .wg-at · app.css:1176 |
@@ -4667,7 +5002,7 @@ inside `.wg-rail` · 1 on screen · **1 look**
 | line-height | `` | `12px` | .wg-at · app.css:1176 |
 | letter-spacing | — | `normal` | initial |
 | white-space | `nowrap` | `` | .wg-at · app.css:1176 |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3611 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .wg-at.nocode:not(#_), .wg-sc.nocode:not(#_) · b3/board.css:3618 |
 | transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-r · app.css:1157 |
 
@@ -4697,7 +5032,7 @@ inside `.wg-rail` · 1 on screen · **1 look**
 | font-weight | `var(--lab-w,700)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 | letter-spacing | `var(--lab-tr,inherit)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 | text-transform | `var(--lab-tt,none)` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
-| color | `color-mix(in srgb,var(--warn) 80%,var(--ink3))` | .wg-at.nocode:not(#_)::before · b3/board.css:3613 |
+| color | `color-mix(in srgb,var(--warn) 80%,var(--ink3))` | .wg-at.nocode:not(#_)::before · b3/board.css:3620 |
 | content | `attr(data-slot) var(--lab-sep,":")` | html[data-b3-p2lab]:not([data-b3-p2lab="off"]) .wg-at[data-slot]::before, .b3-lab[data-lab · b3/board.css:508 |
 
 
@@ -4707,7 +5042,7 @@ inside `.wg-igf` · 1 on screen · **1 look**
 
 #### the one look
 
-`C1-333` · rendered **65×12** · 1 instance look like this · text “1C2B6B9A” · title="Code lists 4 attachments, build has 5"
+`C1-347` · rendered **65×12** · 1 instance look like this · text “1C2B6B9A” · title="Code lists 4 attachments, build has 5"
 
 ```html
 <span class="wg-ct bad" title="Code lists 4 attachments, build has 5">1C2B6B9A</span>

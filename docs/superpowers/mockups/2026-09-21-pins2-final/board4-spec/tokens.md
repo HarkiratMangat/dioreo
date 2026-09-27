@@ -61,9 +61,11 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--b3-tr-tight` | `.06em` | :root |
 | `--b3-tr-wide` | `.14em` | :root |
 | `--b3-under` | — | component |
+| `--b4-imgoff` | — | component |
 | `--bc` | — | component |
 | `--box-inset` | `5px` | :root |
 | `--c` | — | component |
+| `--cc-edge` | — | component |
 | `--ci` | — | fallback only |
 | `--ci-bg` | — | component |
 | `--code-js` | — | fallback only |
@@ -108,6 +110,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--fdy` | — | component |
 | `--fill` | — | component |
 | `--fl` | — | fallback only |
+| `--fn-edge` | — | component |
 | `--fo` | — | fallback only |
 | `--focus` | `#5FD4E8` | :root |
 | `--focus-07` | `rgba(95,212,232,.07)` | :root |
@@ -198,10 +201,12 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--m3` | — | fallback only |
 | `--m4` | — | fallback only |
 | `--marks-w` | — | component |
+| `--mc` | — | component |
 | `--mk` | — | component |
 | `--mode-dmz` | `#3DA5F5` | :root |
 | `--mode-mp` | `#FF3430` | :root |
 | `--mono` | `"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace` | :root |
+| `--mw` | — | fallback only |
 | `--n` | — | fallback only |
 | `--nw` | — | component |
 | `--o` | — | component |

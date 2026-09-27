@@ -30,14 +30,14 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| width | `100%` | `1148px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
-| min-width | `0px` | `0px` | .pb-stage > .g-bpanel · b3/board.css:2643 |
+| width | `100%` | `1148px` | .pb-stage > .g-bpanel · b3/board.css:2647 |
+| min-width | `0px` | `0px` | .pb-stage > .g-bpanel · b3/board.css:2647 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0` | `` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
 | margin-top | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
-| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-right | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | margin-bottom | `0px` | `0px` | .g-e2card, .g-e4panel, .g-bman-panel, .g-bpanel · gates.css:191 |
-| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:96 |
+| margin-left | `0px` | `0px` | .b4 .g-stage > .panel, .b4 .b4-panel .panel, .b4 .g-stage .mfst.panel · b4.css:103 |
 | border | `1px solid var(--rule2)` | `` | .panel · app.css:2846 |
 | border-radius | `var(--rad-2)` | `` | .panel · app.css:723 |
 | background | `var(--paper)` | `` | .panel · app.css:723 |
@@ -95,9 +95,40 @@ inside `.panel` · 1 on screen · **1 look**
 
 ### `svg.ic`
 
-inside `.—` · 11 on screen · **5 looks**
+inside `.—` · 11 on screen · **6 looks**
 
-#### look 1 of 5
+#### look 1 of 6
+
+`C6-5` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
+
+```html
+<svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `inline-block` | `block` | .ic · app.css:6457 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3302 |
+| width | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
+| height | `13px` | `13px` | .seg button > .ic · b3/board.css:3302 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `inherit` | `` | inherited · button · app.css:621 |
+| font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
+| font-size | ↑ `var(--t-sm)` | `12px` | inherited · .seg button · app.css:732 |
+| font-weight | ↑ `600` | `600` | inherited · .seg button · app.css:732 |
+| font-style | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
+| line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
+| letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
+| text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
+| text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
+| color | ↑ `color-mix(in srgb,var(--realm-c,var(--ink)) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | inherited · .b4 .ph .seg button:is([aria-selected="true"], [aria-pressed="true"]) · b4/classes.css:12 |
+| overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
+| cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
+| pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
+
+#### look 2 of 6
 
 `C6-9` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -109,7 +140,7 @@ inside `.—` · 11 on screen · **5 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2516 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2520 |
 | width | `13px` | `13px` | .g-status .ic · gates.css:404 |
 | height | `13px` | `13px` | .g-status .ic · gates.css:404 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -125,7 +156,7 @@ inside `.—` · 11 on screen · **5 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 2 of 5
+#### look 3 of 6
 
 `C6-26` · rendered **12×12** · 1 instance look like this · aria-hidden="true"
 
@@ -145,7 +176,7 @@ inside `.—` · 11 on screen · **5 looks**
 | font-size | ↑ `` | `10.5px` | inherited · .g-fact · gates.css:374 |
 | font-weight | ↑ `` | `500` | inherited · .g-fact · gates.css:374 |
 | font-style | ↑ `` | `normal` | inherited · .g-fact · gates.css:374 |
-| font-variant-numeric | ↑ `tabular-nums` | `tabular-nums` | inherited · .g-fact.b3-cc · b3/board.css:3652 |
+| font-variant-numeric | ↑ `tabular-nums` | `tabular-nums` | inherited · .g-fact.b3-cc · b3/board.css:3659 |
 | line-height | ↑ `` | `10.5px` | inherited · .g-fact · gates.css:374 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink4)` | `rgb(92, 106, 117)` | .g-fact .ic · gates.css:376 |
@@ -153,7 +184,7 @@ inside `.—` · 11 on screen · **5 looks**
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .pb-enc · b2.css:368 |
 
-#### look 3 of 5
+#### look 4 of 6
 
 `C6-28` · rendered **16×16** · 2 instances look like this · aria-hidden="true"
 
@@ -185,7 +216,7 @@ inside `.—` · 11 on screen · **5 looks**
 | cursor | ↑ `pointer` | `pointer` | inherited · .pb-exp · b2.css:224 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
-#### look 4 of 5
+#### look 5 of 6
 
 `C6-34` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -213,7 +244,7 @@ inside `.—` · 11 on screen · **5 looks**
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
-#### look 5 of 5
+#### look 6 of 6
 
 `C6-42` · rendered **13×13** · 1 instance look like this · aria-hidden="true"
 
@@ -237,7 +268,7 @@ inside `.—` · 11 on screen · **5 looks**
 | line-height | ↑ `` | `12px` | inherited · .pb-end · b2.css:549 |
 | letter-spacing | — | `normal` | initial |
 | white-space | ↑ `nowrap` | `` | inherited · .pb-end · b2.css:549 |
-| color | `inherit` | `rgb(255, 158, 114)` | .pb-end.g-noend .ic, .pb-end.g-stagedend .ic · b3/board.css:4351 |
+| color | `inherit` | `rgb(255, 158, 114)` | .pb-end.g-noend .ic, .pb-end.g-stagedend .ic · b3/board.css:4367 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -256,11 +287,11 @@ inside `.ph` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
-| gap | `8px` | `` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
-| column-gap | `8px` | `8px` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
-| row-gap | `8px` | `8px` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2515 |
+| display | `flex` | `flex` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2519 |
+| gap | `8px` | `` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2519 |
+| column-gap | `8px` | `8px` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2519 |
+| row-gap | `8px` | `8px` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2519 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .ph .sp:has(> .g-status) · b3/board.css:2519 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-left | `auto` | `492.422px` | .ph .sp · app.css:730 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .ph .sp · app.css:730 |
@@ -331,8 +362,8 @@ inside `.g-status` · 2 on screen · **2 looks**
 | gap | `7px` | `` | .b3-nw · b3/board.css:950 |
 | column-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
 | row-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .g-status .b3-nw · b3/board.css:2517 |
-| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2516 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .g-status .b3-nw · b3/board.css:2521 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2520 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
@@ -359,8 +390,8 @@ inside `.g-status` · 2 on screen · **2 looks**
 | gap | `7px` | `` | .b3-nw · b3/board.css:950 |
 | column-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
 | row-gap | `7px` | `7px` | .b3-nw · b3/board.css:950 |
-| align-items | `center` | `center` | html[data-b3-a1="fixed"] .g-status .b3-nw · b3/board.css:2517 |
-| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2516 |
+| align-items | `center` | `center` | html[data-b3-a1="fixed"] .g-status .b3-nw · b3/board.css:2521 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status > * · b3/board.css:2520 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | `inherit` | `` | .b3-nw · b3/board.css:950 |
@@ -458,7 +489,7 @@ inside `.g-status` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status .cmeter · b3/board.css:2518 |
+| align-self | `center` | `center` | html[data-b3-a1="fixed"] .g-status .cmeter · b3/board.css:2522 |
 | width | `44px` | `44px` | .g-status .cmeter · gates.css:407 |
 | height | `4px` | `4px` | .cmeter · app.css:2472 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -499,9 +530,9 @@ inside `.cmeter` · 1 on screen · **1 look**
 | height | `100%` | `4px` | .cmeter i · app.css:2480 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-radius | `var(--rad-1)` | `` | .cmeter i · app.css:2480 |
-| background | `var(--r-broadcast)` | `` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2519 |
-| background-color | `` | `rgb(236, 72, 153)` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2519 |
-| background-image | `` | `none` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2519 |
+| background | `var(--r-broadcast)` | `` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2523 |
+| background-color | `` | `rgb(236, 72, 153)` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2523 |
+| background-image | `` | `none` | html[data-b3-a1="fixed"] .g-status .cmeter i · b3/board.css:2523 |
 | font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .g-status · gates.css:401 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .g-status · gates.css:401 |
 | font-size | ↑ `` | `10.5px` | inherited · .g-status · gates.css:401 |
@@ -540,11 +571,11 @@ inside `.panel` · 1 on screen · **1 look**
 | padding-right | `` | `16px` | .g-queue · gates.css:364 |
 | padding-bottom | `` | `16px` | .g-queue · gates.css:364 |
 | padding-left | `` | `16px` | .g-queue · gates.css:364 |
-| border-radius | `0 0 5px 5px` | `` | .panel > .pb-qafter · b3/board.css:4942 |
+| border-radius | `0 0 5px 5px` | `` | .panel > .pb-qafter · b3/board.css:4961 |
 | background | `var(--paper)` | `` | .pb-qafter · b2.css:271 |
 | background-color | `` | `rgb(23, 30, 36)` | .pb-qafter · b2.css:271 |
 | background-image | `` | `none` | .pb-qafter · b2.css:271 |
-| box-shadow | `inset 0 1px 0 0 var(--rule2)` | `rgb(58, 71, 82) 0px 1px 0px 0px inset` | .panel > .pb-qafter · b3/board.css:4942 |
+| box-shadow | `inset 0 1px 0 0 var(--rule2)` | `rgb(58, 71, 82) 0px 1px 0px 0px inset` | .panel > .pb-qafter · b3/board.css:4961 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -719,7 +750,7 @@ inside `.pb-body` · 1 on screen · **1 look**
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | border-radius | `var(--rad-2)` | `` | .pb-enc · b2.css:221 |
 | outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd · b3/board.css:4057 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4073 |
 | background | `linear-gradient(180deg,color-mix(in srgb,var(--c) 7%,var(--sunk)),var(--sunk) 64%)` | `` | .pb-enc · b2.css:368 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .pb-enc · b2.css:368 |
 | background-image | `` | `linear-gradient(color(srgb 0.106549 0.107961 0.0788235), rgb(11, 15, 18) 64%)` | .pb-enc · b2.css:368 |
@@ -832,34 +863,34 @@ inside `.pb-encf` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .g-fact · gates.css:374 |
-| position | `relative` | `relative` | .g-fact.b3-cc · b3/board.css:3652 |
+| position | `relative` | `relative` | .g-fact.b3-cc · b3/board.css:3659 |
 | gap | `7px` | `` | .g-fact · gates.css:374 |
 | column-gap | `7px` | `7px` | .g-fact · gates.css:374 |
 | row-gap | `7px` | `7px` | .g-fact · gates.css:374 |
 | align-items | `center` | `center` | .g-fact · gates.css:374 |
-| height | `22px` | `22px` | .g-fact.b3-cc · b3/board.css:3840 |
+| height | `22px` | `22px` | .g-fact.b3-cc · b3/board.css:3856 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 9px` | `` | .g-fact · gates.css:374 |
 | padding-top | `0px` | `0px` | .g-fact · gates.css:374 |
-| padding-right | `9px` | `9px` | .g-fact · gates.css:374 |
+| padding-right | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3668 |
 | padding-bottom | `0px` | `0px` | .g-fact · gates.css:374 |
-| padding-left | `9px` | `9px` | .g-fact · gates.css:374 |
-| border | `1px solid var(--rule2)` | `` | .g-fact.b3-cc · b3/board.css:3652 |
+| padding-left | `10px` | `10px` | .g-fact.b3-cc · b3/board.css:3668 |
+| border | `0` | `` | .g-fact.b3-cc · b3/board.css:3668 |
 | border-radius | `6px` | `` | .g-fact · gates.css:374 |
 | background | `var(--sunk)` | `` | .g-fact · gates.css:374 |
 | background-color | `` | `rgb(11, 15, 18)` | .g-fact · gates.css:374 |
 | background-image | `` | `none` | .g-fact · gates.css:374 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .g-fact · gates.css:374 |
+| box-shadow | `inset 0 0 0 1px var(--cc-edge),inset 0 0 0 2px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset, rgb(58, 71, 82) 0px 0px 0px 2px inset` | .g-fact.b3-cc · b3/board.css:3668 |
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .g-fact · gates.css:374 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .g-fact · gates.css:374 |
 | font-size | `` | `10.5px` | .g-fact · gates.css:374 |
 | font-weight | `` | `500` | .g-fact · gates.css:374 |
 | font-style | `` | `normal` | .g-fact · gates.css:374 |
-| font-variant-numeric | `tabular-nums` | `tabular-nums` | .g-fact.b3-cc · b3/board.css:3652 |
+| font-variant-numeric | `tabular-nums` | `tabular-nums` | .g-fact.b3-cc · b3/board.css:3659 |
 | line-height | `` | `10.5px` | .g-fact · gates.css:374 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .g-fact.b3-cc · b3/board.css:3652 |
-| transition | `color 200ms ease-out,border-color 200ms ease-out,background 200ms ease-out` | `` | .g-fact.b3-cc · b3/board.css:3652 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .g-fact.b3-cc · b3/board.css:3659 |
+| transition | `color 200ms ease-out,box-shadow 200ms ease-out,background 200ms ease-out` | `` | .g-fact.b3-cc · b3/board.css:3668 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .pb-enc · b2.css:368 |
 
 
@@ -878,7 +909,7 @@ inside `.pb-encf` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .pb-enc .pb-exp · b2.css:371 |
-| position | `relative` | `relative` | .pb-enc .pb-exp · b3/board.css:4267 |
+| position | `relative` | `relative` | .pb-enc .pb-exp · b3/board.css:4283 |
 | gap | `8px` | `` | .pb-enc .pb-exp · b2.css:371 |
 | column-gap | `8px` | `8px` | .pb-enc .pb-exp · b2.css:371 |
 | row-gap | `8px` | `8px` | .pb-enc .pb-exp · b2.css:371 |
@@ -915,26 +946,26 @@ inside `.pb-encf` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .pb-enc .pb-exp · b2.css:371 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pb-exp · b2.css:224 |
-| isolation | `isolate` | `isolate` | .pb-enc .pb-exp · b3/board.css:4267 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| isolation | `isolate` | `isolate` | .pb-enc .pb-exp · b3/board.css:4283 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| inset | `var(--box-inset,5px) 0` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| top | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| right | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| bottom | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| left | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| border-radius | `var(--rad-box)` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| background | `var(--raised)` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| background-color | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| background-image | `` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| content | `""` | .pb-enc .pb-exp::before · b3/board.css:4272 |
-| z-index | `-1` | .pb-enc .pb-exp::before · b3/board.css:4272 |
+| position | `absolute` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| inset | `var(--box-inset,5px) 0` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| top | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| right | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| bottom | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| left | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| border-radius | `var(--rad-box)` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| background | `var(--raised)` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| background-color | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| background-image | `` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| content | `""` | .pb-enc .pb-exp::before · b3/board.css:4288 |
+| z-index | `-1` | .pb-enc .pb-exp::before · b3/board.css:4288 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -989,7 +1020,7 @@ inside `.pb-body` · 1 on screen · **1 look**
 `C6-29` · rendered **674×79** · 1 instance look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.5889%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.8037%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1016,16 +1047,16 @@ inside `.pb-life3` · 1 on screen · **1 look**
 `C6-30` · rendered **674×43** · 1 instance look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.5889%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.8037%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-tl · b2.css:374 |
-| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 500px 75px` | .pb-tl · b3/board.css:4350 |
+| grid-template-columns | `max-content minmax(0px, 1fr) max-content` | `75px 500px 75px` | .pb-tl · b3/board.css:4366 |
 | gap | `12px` | `` | .pb-tl · b2.css:374 |
 | column-gap | `12px` | `12px` | .pb-tl · b2.css:374 |
-| row-gap | `5px` | `5px` | .pb-tl · b3/board.css:4260 |
+| row-gap | `5px` | `5px` | .pb-tl · b3/board.css:4276 |
 | align-items | `center` | `center` | .pb-tl · b2.css:374 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -1050,7 +1081,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `contents` | `contents` | .b3-dt · b3/board.css:4261 |
+| display | `contents` | `contents` | .b3-dt · b3/board.css:4277 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1075,18 +1106,18 @@ inside `.b3-dt` · 2 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| justify-self | `start` | `start` | .b3-dt > em · b3/board.css:4262 |
+| justify-self | `start` | `start` | .b3-dt > em · b3/board.css:4278 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-dt > em · b3/board.css:4262 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-dt > em · b3/board.css:4262 |
-| font-size | `` | `9.5px` | .b3-dt > em · b3/board.css:4262 |
-| font-weight | `` | `600` | .b3-dt > em · b3/board.css:4262 |
-| font-style | `normal` | `normal` | .b3-dt > em · b3/board.css:4262 |
-| font-variant-numeric | `` | `normal` | .b3-dt > em · b3/board.css:4262 |
-| line-height | `` | `9.5px` | .b3-dt > em · b3/board.css:4262 |
-| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-dt > em · b3/board.css:4262 |
-| text-transform | `uppercase` | `uppercase` | .b3-dt > em · b3/board.css:4262 |
-| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-dt > em · b3/board.css:4262 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-dt > em · b3/board.css:4278 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-dt > em · b3/board.css:4278 |
+| font-size | `` | `9.5px` | .b3-dt > em · b3/board.css:4278 |
+| font-weight | `` | `600` | .b3-dt > em · b3/board.css:4278 |
+| font-style | `normal` | `normal` | .b3-dt > em · b3/board.css:4278 |
+| font-variant-numeric | `` | `normal` | .b3-dt > em · b3/board.css:4278 |
+| line-height | `` | `9.5px` | .b3-dt > em · b3/board.css:4278 |
+| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-dt > em · b3/board.css:4278 |
+| text-transform | `uppercase` | `uppercase` | .b3-dt > em · b3/board.css:4278 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-dt > em · b3/board.css:4278 |
 
 
 ### `span.pb-end`
@@ -1109,14 +1140,14 @@ inside `.b3-dt` · 1 on screen · **1 look**
 | row-gap | `6px` | `6px` | .pb-end · b2.css:549 |
 | align-items | `center` | `center` | .pb-end · b2.css:549 |
 | justify-content | `center` | `center` | .pb-end · b2.css:549 |
-| justify-self | `start` | `start` | .b3-dt > .pb-end · b3/board.css:4263 |
+| justify-self | `start` | `start` | .b3-dt > .pb-end · b3/board.css:4279 |
 | height | `28px` | `28px` | .pb-end · b2.css:549 |
 | box-sizing | `border-box` | `border-box` | .pb-end · b2.css:549 |
-| padding | `0 10px` | `` | .pb-end · b3/board.css:4349 |
-| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4349 |
-| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4349 |
-| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4349 |
-| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4349 |
+| padding | `0 10px` | `` | .pb-end · b3/board.css:4365 |
+| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4365 |
+| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4365 |
+| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4365 |
+| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4365 |
 | border-radius | `6px` | `` | .pb-end · b2.css:549 |
 | background | `var(--sunk)` | `` | .pb-end · b2.css:549 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-end · b2.css:549 |
@@ -1143,7 +1174,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 `C6-35` · rendered **500×20** · 1 instance look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 27.5889%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 47 days" style="left: 90.8037%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1159,7 +1190,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 64%, transparent 100%)` | `linear-gradient(90deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 64%, rgba(0, 0, 0, 0) 100%)` | html[data-b3-a1="fixed"] .pb-tl:has(.g-noend) .pb-bar · b3/board.css:2493 |
+| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 64%, transparent 100%)` | `linear-gradient(90deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 64%, rgba(0, 0, 0, 0) 100%)` | html[data-b3-a1="fixed"] .pb-tl:has(.g-noend) .pb-bar · b3/board.css:2497 |
 
 
 ### `span.pb-track`
@@ -1204,10 +1235,10 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-37` · rendered **362×6** · 1 instance look like this
+`C6-37` · rendered **371×6** · 1 instance look like this
 
 ```html
-<span class="pb-span g-run" style="left: 27.5889%; right: 0px;"></span>
+<span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1218,7 +1249,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
 | right | `0px` | `0px` | style attribute |
-| left | `27.5889%` | `137.938px` | style attribute |
+| left | `25.7709%` | `128.844px` | style attribute |
 | border-radius | `3px` | `` | .pb-span · b2.css:231 |
 | background | `linear-gradient(90deg, var(--c) 0, var(--c) calc(100% - 96px), color-mix(in srgb, var(--c) 0%, transparent))` | `` | .g-card .pb-span.g-run · gates.css:378 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .g-card .pb-span.g-run · gates.css:378 |
@@ -1237,10 +1268,10 @@ inside `.pb-bar` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-38` · rendered **2×18** · 1 instance look like this · title="Up 47 days"
+`C6-38` · rendered **2×18** · 1 instance look like this · title="Up 53 days"
 
 ```html
-<span class="pb-now" title="Up 47 days" style="left: 90.8037%;"></span>
+<span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1251,7 +1282,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `90.8037%` | `454.016px` | style attribute |
+| left | `91.4097%` | `457.047px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
@@ -1278,7 +1309,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `contents` | `contents` | .b3-dt · b3/board.css:4261 |
+| display | `contents` | `contents` | .b3-dt · b3/board.css:4277 |
 | justify-self | `stretch` | `stretch` | .pb-tl > :last-child · b2.css:548 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -1309,14 +1340,14 @@ inside `.b3-dt` · 1 on screen · **1 look**
 | row-gap | `6px` | `6px` | .pb-end · b2.css:549 |
 | align-items | `center` | `center` | .pb-end · b2.css:549 |
 | justify-content | `center` | `center` | .pb-end · b2.css:549 |
-| justify-self | `end` | `end` | .b3-dt-e > .pb-end · b3/board.css:4266 |
+| justify-self | `end` | `end` | .b3-dt-e > .pb-end · b3/board.css:4282 |
 | height | `28px` | `28px` | .pb-end · b2.css:549 |
 | box-sizing | `border-box` | `border-box` | .pb-end · b2.css:549 |
-| padding | `0 10px` | `` | .pb-end · b3/board.css:4349 |
-| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4349 |
-| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4349 |
-| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4349 |
-| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4349 |
+| padding | `0 10px` | `` | .pb-end · b3/board.css:4365 |
+| padding-top | `0px` | `0px` | .pb-end · b3/board.css:4365 |
+| padding-right | `10px` | `10px` | .pb-end · b3/board.css:4365 |
+| padding-bottom | `0px` | `0px` | .pb-end · b3/board.css:4365 |
+| padding-left | `10px` | `10px` | .pb-end · b3/board.css:4365 |
 | border-radius | `6px` | `` | .pb-end · b2.css:549 |
 | background | `var(--sunk)` | `` | .pb-end · b2.css:549 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-end · b2.css:549 |
@@ -1343,7 +1374,7 @@ inside `.pb-life3` · 1 on screen · **1 look**
 `C6-43` · rendered **674×28** · 1 instance look like this
 
 ```html
-<div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 47d</span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><button type="button" class="b3-endbtn" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩Set end date</button></span><button type="button" class="pb-ib has-word g-edit">⟨svg.ic⟩Edit</button><i class="pb-vr" aria-hidden="true"></i><button type="button" class="pb-ib pb-del" aria-label="
+<div class="pb-dates"><span class="pb-pill">⟨svg.ic⟩Active for 53d</span><div class="pb-cacts"><span class="b3-endwrap b3-endwarn"><button type="button" class="b3-endbtn" aria-expanded="false" aria-haspopup="dialog">⟨svg.ic⟩Set end date</button></span><button type="button" class="pb-ib has-word g-edit">⟨svg.ic⟩Edit</button><i class="pb-vr" aria-hidden="true"></i><button type="button" class="pb-ib pb-del" aria-label="
 ```
 
 | property | winning declaration | computed | from |
@@ -1369,10 +1400,10 @@ inside `.pb-dates` · 1 on screen · **1 look**
 
 #### the one look
 
-`C6-44` · rendered **121×28** · 1 instance look like this
+`C6-44` · rendered **122×28** · 1 instance look like this
 
 ```html
-<span class="pb-pill">⟨svg.ic⟩Active for 47d</span>
+<span class="pb-pill">⟨svg.ic⟩Active for 53d</span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1424,13 +1455,13 @@ inside `.pb-dates` · 1 on screen · **1 look**
 | gap | `12px` | `` | .pb-dates .pb-cacts · b2.css:511 |
 | column-gap | `12px` | `12px` | .pb-dates .pb-cacts · b2.css:511 |
 | row-gap | `12px` | `12px` | .pb-dates .pb-cacts · b2.css:511 |
-| align-items | `center` | `center` | .pb-dates .pb-cacts · b3/board.css:4355 |
+| align-items | `center` | `center` | .pb-dates .pb-cacts · b3/board.css:4371 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `-5px calc(-1 * var(--pb-inset)) -5px auto` | `` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-top | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-right | `` | `0px` | .pb-dates .pb-cacts · b2.css:511 |
 | margin-bottom | `` | `-5px` | .pb-dates .pb-cacts · b2.css:511 |
-| margin-left | `` | `295.844px` | .pb-dates .pb-cacts · b2.css:511 |
+| margin-left | `` | `295.203px` | .pb-dates .pb-cacts · b2.css:511 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1453,10 +1484,10 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-endwarn · b3/board.css:4275 |
-| position | `relative` | `relative` | .b3-endwrap · b3/board.css:1446 |
-| align-items | `center` | `center` | .b3-endwarn · b3/board.css:4275 |
-| justify-self | `end` | `end` | .b3-endwrap · b3/board.css:1446 |
+| display | `inline-flex` | `flex` | .b3-endwarn · b3/board.css:4291 |
+| position | `relative` | `relative` | .b3-endwrap · b3/board.css:1450 |
+| align-items | `center` | `center` | .b3-endwarn · b3/board.css:4291 |
+| justify-self | `end` | `end` | .b3-endwrap · b3/board.css:1450 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1480,39 +1511,39 @@ inside `.b3-endwrap` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-endbtn · b3/board.css:1447 |
-| gap | `7px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| column-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| row-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| align-items | `center` | `center` | .b3-endbtn · b3/board.css:1447 |
-| height | `28px` | `28px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
+| display | `inline-flex` | `flex` | .b3-endbtn · b3/board.css:1451 |
+| gap | `7px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| column-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| row-gap | `7px` | `7px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| align-items | `center` | `center` | .b3-endbtn · b3/board.css:1451 |
+| height | `28px` | `28px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 11px 0 9px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| padding-top | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| padding-right | `11px` | `11px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| padding-bottom | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| padding-left | `9px` | `9px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| border | `0` | `` | .b3-endbtn · b3/board.css:1447 |
-| border-radius | `var(--rad-2)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| background | `color-mix(in srgb,var(--warn) 9%,var(--sunk))` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| background-color | `` | `color(srgb 0.129255 0.0965882 0.0885882)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| background-image | `` | `none` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-endbtn · b3/board.css:1447 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-endbtn · b3/board.css:1447 |
-| font-size | `` | `12px` | .b3-endbtn · b3/board.css:1447 |
-| font-weight | `` | `600` | .b3-endbtn · b3/board.css:1447 |
-| font-style | `` | `normal` | .b3-endbtn · b3/board.css:1447 |
-| font-variant-numeric | `` | `normal` | .b3-endbtn · b3/board.css:1447 |
-| line-height | `` | `12px` | .b3-endbtn · b3/board.css:1447 |
+| padding | `0 11px 0 9px` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| padding-top | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| padding-right | `11px` | `11px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| padding-bottom | `0px` | `0px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| padding-left | `9px` | `9px` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| border | `0` | `` | .b3-endbtn · b3/board.css:1451 |
+| border-radius | `var(--rad-2)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| background | `color-mix(in srgb,var(--warn) 9%,var(--sunk))` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| background-color | `` | `color(srgb 0.129255 0.0965882 0.0885882)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| background-image | `` | `none` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 38%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.38) 0px 0px 0px 1px inset` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-endbtn · b3/board.css:1451 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-endbtn · b3/board.css:1451 |
+| font-size | `` | `12px` | .b3-endbtn · b3/board.css:1451 |
+| font-weight | `` | `600` | .b3-endbtn · b3/board.css:1451 |
+| font-style | `` | `normal` | .b3-endbtn · b3/board.css:1451 |
+| font-variant-numeric | `` | `normal` | .b3-endbtn · b3/board.css:1451 |
+| line-height | `` | `12px` | .b3-endbtn · b3/board.css:1451 |
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b3-endbtn · b3/board.css:1447 |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4628 |
-| cursor | `pointer` | `pointer` | .b3-endbtn · b3/board.css:1447 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| white-space | `nowrap` | `` | .b3-endbtn · b3/board.css:1451 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-endwrap.b3-endwarn .b3-endbtn · b3/board.css:4647 |
+| cursor | `pointer` | `pointer` | .b3-endbtn · b3/board.css:1451 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **:hover** — changes
 
@@ -1549,30 +1580,30 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .pb-ib.has-word · b3/board.css:555 |
-| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | gap | `7px` | `` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | column-gap | `7px` | `7px` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | row-gap | `7px` | `7px` | .g-card .pb-cacts .g-edit · gates.css:395 |
 | flex | `none` | `` | .pb-ib · b2.css:72 |
 | align-items | `center` | `center` | .pb-ib.has-word · b3/board.css:555 |
 | place-items | `center` | `` | .pb-ib · b2.css:72 |
-| width | `auto` | `68.9688px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| width | `auto` | `68.9688px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 13px 0 10px` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
-| padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
-| padding-right | `13px` | `13px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
-| padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
-| padding-left | `10px` | `10px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
-| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| padding | `0 13px 0 10px` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
+| padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
+| padding-right | `13px` | `13px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
+| padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
+| padding-left | `10px` | `10px` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
+| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | border | `0` | `` | .pb-ib · b2.css:72 |
-| border-radius | `0` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2431 |
+| border-radius | `0` | `` | html[data-b3-a1="fixed"] .pb-ib.has-word · b3/board.css:2435 |
 | background | `none!important !important` | `` | .pb-ib, .pb-fbtn · b2.css:462 |
 | background-color | `initial !important !important` | `rgba(0, 0, 0, 0)` | .pb-ib, .pb-fbtn · b2.css:462 |
 | background-image | `none !important !important` | `none` | .pb-ib, .pb-fbtn · b2.css:462 |
@@ -1589,19 +1620,19 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pb-ib · b2.css:72 |
 | isolation | `isolate` | `isolate` | .pb-ib, .pb-fbtn · b2.css:462 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
 | position | `absolute` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
-| inset | `var(--pb-inset,5px) 0` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2434 |
-| top | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2434 |
-| right | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2434 |
-| bottom | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2434 |
-| left | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2434 |
-| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
+| inset | `var(--pb-inset,5px) 0` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2438 |
+| top | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2438 |
+| right | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2438 |
+| bottom | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2438 |
+| left | `` | html[data-b3-a1="fixed"] .pb-ib.has-word::before · b3/board.css:2438 |
+| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
 | background | `var(--raised)` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-color | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-image | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
@@ -1614,14 +1645,14 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
+| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1680,7 +1711,7 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | flex | `none` | `` | .pb-vr · b2.css:582 |
 | align-self | `center` | `center` | .pb-vr · b2.css:582 |
 | width | `1px` | `1px` | .pb-vr · b2.css:582 |
-| height | `20px` | `20px` | .pb-dates .pb-cacts .pb-vr · b3/board.css:4359 |
+| height | `20px` | `20px` | .pb-dates .pb-cacts .pb-vr · b3/board.css:4375 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-right | `calc(-1 * var(--pb-inset, 5px))` | `0px` | .g-card .pb-cacts .pb-vr · gates.css:400 |
 | background | `var(--rule2)` | `` | .pb-vr · b2.css:582 |
@@ -1710,25 +1741,25 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `grid` | `grid` | .pb-ib · b2.css:72 |
-| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| position | `relative` | `relative` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | flex | `none` | `` | .pb-ib · b2.css:72 |
 | align-items | `center` | `center` | .pb-ib · b2.css:72 |
 | place-items | `center` | `` | .pb-ib · b2.css:72 |
-| width | `auto` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| width | `auto` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| min-width | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| height | `28px` | `28px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0` | `` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4357 |
-| padding-top | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4357 |
-| padding-right | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4357 |
-| padding-bottom | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4357 |
-| padding-left | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4357 |
-| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4356 |
+| padding | `0` | `` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4373 |
+| padding-top | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4373 |
+| padding-right | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4373 |
+| padding-bottom | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4373 |
+| padding-left | `0px` | `0px` | .pb-dates .pb-cacts .pb-ib.pb-del · b3/board.css:4373 |
+| margin | `0` | `` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-top | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-right | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-bottom | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .pb-dates .pb-cacts .pb-ib, .pb-dates .pb-cacts .pb-ib · b3/board.css:4372 |
 | border | `0` | `` | .pb-ib · b2.css:72 |
 | border-radius | `var(--rad-2)` | `` | .pb-ib · b2.css:72 |
 | background | `none!important !important` | `` | .pb-ib, .pb-fbtn · b2.css:462 |
@@ -1747,19 +1778,19 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .pb-ib · b2.css:72 |
 | isolation | `isolate` | `isolate` | .pb-ib, .pb-fbtn · b2.css:462 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4976 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
 | position | `absolute` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
-| inset | `0` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
-| top | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
-| right | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
-| bottom | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
-| left | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
-| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4626 |
+| inset | `0` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
+| top | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
+| right | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
+| bottom | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
+| left | `0px` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
+| border-radius | `var(--rad-2)` | .pb-dates .pb-cacts .pb-ib::before · b3/board.css:4645 |
 | background | `var(--raised)` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-color | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
 | background-image | `` | .pb-ib::before, .pb-fbtn::before · b2.css:463 |
@@ -1772,14 +1803,14 @@ inside `.pb-cacts` · 1 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
-| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4358 |
+| position | `absolute` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| inset | `-8px -6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| top | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| right | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| bottom | `-8px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| left | `-6px` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| border-radius | `inherit` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
+| content | `""` | .pb-dates .pb-cacts .pb-ib::after · b3/board.css:4374 |
 
 **:hover** — changes; parts inside it respond (table below)
 
