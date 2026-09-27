@@ -742,3 +742,25 @@ Ten instructions, given as a numbered list against two screenshots and the open 
 | Broadcast queue card class names | ✅ **`.qcard` and `.qbar`**, never `.bcard` / `.bbar` | Both names belong to Season's board card and the bulk bar; the first build inherited their border, radius and hover lift on source order | — |
 | Armory staged rows | ✅ **A build a staged op targets is drawn dashed** (`.wg-r.staged`), derived from `/api/review` ops' `targetIds` (`target.id` plus `payload.ids`) for the Armory realm | `/api/armory` returns live documents only, so without target ids no row could ever show the staged state §10.4 asks to capture | A staged deletion on the real dev portal leaves its rows solid, or a realm starts deriving staged state from somewhere else |
 | Loadout image uploads from the portal | ✅ **Run after the changeset commits** (`afterCommit` in `core/changeset.js`), never inside `apply()` | An upload inside the transaction is not rolled back; a failed changeset had already replaced the live image. A refused upload's message is appended to the History row | A rolled-back two-op changeset makes any Cloudinary call (probe method in plan §5b's audit rows) |
+
+## Decided 2026-09-21 → 2026-09-27 — portal pins batch 2, Board 4: Collective
+
+*Written 2026-09-27 02:47 EDT. His rulings on Board 4 (Version 35), each against the rendered board; the full set per gate, with the line each comes from, is `docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/HANDOFF.md`. The route: Session 4 → Board 4: Final → Session 5.*
+
+| Surface | Decision | Why | Reopens if |
+|---|---|---|---|
+| Tier set | ✅ **Best · Top 3 · Top 5 · Capable; TOP 4 removed from the system and the bot** | intake log 2026-09-24 12:13 EDT | a stored or pasted `top4` survives anywhere |
+| Capable | ✅ a thumbs-up on TOP 4's design and colours; MP **and DMZ** | intake 2026-09-24 12:13, 14:42 EDT | — |
+| ASS grade | ✅ exists; **excludes META and every tier, both ways**; TOXIC + ASS allowed; motion A · Stink lines | intake 2026-09-24 14:42, 22:30 EDT | a build carries ASS with META or a tier |
+| Tier words in the bot | ✅ "Best AR", "Top 3 AR", "Top 5 AR", "Capable AR"; the portal may omit the category | intake 2026-09-24 13:54 EDT | — |
+| Rank Mode | ✅ HP · S&D · DOM · TDM · FTL · Control; **MP only, several allowed**; bot `Recommended Rank Mode: {a \| b}`, portal `Rank Mode: {a \| b}` | plan §19m, §19z (2026-09-25 23:12, 2026-09-26 16:2x EDT) | a DMZ build stores one |
+| Badge motion | ✅ `docs/reference/badge-motion.md` is the law; Rank Mode is pick C with drifting periods | 2026-09-26 | a badge part moves |
+| Build drawer | ✅ **980** (preview 333, form 581); Form A · Instrument; only Grade and Tier (and Rank Mode) inline, also with several builds | intake 2026-09-24 13:43, 15:39, 22:30 EDT | — |
+| Unchecked badge chips | ✅ rest 0.6, hover 1, disabled 0.18 | plan §19z, 2026-09-26 17:45 EDT | — |
+| Bulk | ✅ Ledger / Embed view toggle (the selection bar's); the card's Code row is `CodeCell`; runs two lines then sideways; a click anywhere on a card jumps to its block | plan §19y, §19z | — |
+| Copy chip | ✅ every `CodeCell` keeps the code and ticks its mark `--ok` for 1.1s — no Copied chip | his popup "Yes, both tick", 2026-09-26 | — |
+| Dead space in a drawer | ✅ a wheel there scrolls the column that owns it | plan §19z, 2026-09-26 16:28 EDT | — |
+| Compare | ⏳ **Table A/B/C and Empty A/B/C are his to pick**; badges in the heads are the tighter look, two lines at most, then sideways | his popup, 2026-09-27 | he picks a table or an empty state |
+| Announcement text | ✅ **past 4,000 Stage is blocked** (the /manage modal's cap, under Discord's 4,068 real limit) | plan §19z-h, 2026-09-26 20:07 EDT | the op accepts 4,001 |
+| The shared 6,000 | ✅ **warn only** — the bot must split delivery (filed) | his popup, 2026-09-27 | the bot still sends one reply over 6,000 |
+| Phone | ✅ out of scope: "phone doesn't matter… It's a future scope." | 2026-09-21 10:41 EDT | he brings it into scope |

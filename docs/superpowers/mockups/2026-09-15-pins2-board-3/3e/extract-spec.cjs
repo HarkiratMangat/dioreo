@@ -254,6 +254,26 @@ const GATES = [
       if (ok) await dumpStage(`${gid.slice(2)} · ${label}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try)`, `${gid.slice(2)}${kind[0]}${i}-`);
     }
   }
+  if (MODE === '4') {
+    // (2026-09-27 02:43 EDT) Every FORK option in a section's `.b4-forks` (Compare's Table and Empty), each with the section's states re-walked, then the
+    // fork restored. Before this, only the held option (A) was ever specced: Tables B and C and Empties B and C had no values at all.
+    const forks = await p.evaluate(() => [...document.querySelectorAll('.b4g')].flatMap((g) => [...g.querySelectorAll('.b4-fork')].map((f, fi) => {
+      const bs = [...f.querySelectorAll('button')]; return [g.id, fi, bs.map((b) => b.textContent.trim()), bs.findIndex((b) => b.getAttribute('aria-pressed') === 'true' || b.getAttribute('aria-checked') === 'true' || b.classList.contains('on'))]; })));
+    for (const [gid, fi, opts, cur] of forks) {
+      for (let oi = 0; oi < opts.length; oi++) {
+        if (oi === cur) continue;
+        await p.evaluate((gid, fi, oi) => document.getElementById(gid).querySelectorAll('.b4-fork')[fi].querySelectorAll('button')[oi].click(), gid, fi, oi);
+        await new Promise((r) => setTimeout(r, 1200));
+        const nst = await p.evaluate((gid) => document.getElementById(gid).querySelectorAll('.pb-ctl button').length, gid);
+        for (let si = 0; si < Math.max(1, nst); si++) {
+          if (nst) { await p.evaluate((gid, si) => document.getElementById(gid).querySelectorAll('.pb-ctl button')[si].click(), gid, si); await new Promise((r) => setTimeout(r, 1400)); }
+          await dumpStage(`${gid.slice(2)} · ${opts[oi]}${nst ? ` · state ${si + 1}` : ''}`, `#${gid} .pb-head ~ :not(.pb-new):not(.b4-try)`, `${gid.slice(2)}f${fi}o${oi}s${si}-`);
+        }
+      }
+      await p.evaluate((gid, fi, cur) => { const b = document.getElementById(gid).querySelectorAll('.b4-fork')[fi].querySelectorAll('button')[Math.max(0, cur)]; if (b) b.click(); }, gid, fi, cur);
+      await new Promise((r) => setTimeout(r, 800));
+    }
+  }
   if (MODE === '3e') {
   if (await click('#g-export .exs-i .b3-xf-fn')) await dumpStage('M3 · the landing\'s rename field, open', '#g-export .g-stage', 'M3e-');
   await p.keyboard.press('Escape'); await new Promise((r) => setTimeout(r, 300));

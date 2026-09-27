@@ -46,6 +46,8 @@ The three boards were one piece of work split into sittings. Each built on what 
 
 ## 2 · Every surface, and where its final design lives
 
+> 🔴 **2026-09-27 02:47 EDT — READ THIS TABLE AS LINEAGE, NOT AS THE BUILD ORDER.** Every surface below is on Board 4: Collective, finished, and **its design is Board 4's**: [`board4-spec/HANDOFF.md`](board4-spec/HANDOFF.md) (the rulings, per gate) and the generated values and maps beside it. The "Session 5 does" column predates Board 4 and is superseded where it says to rebuild from board 1, 2 or 3 — Board 4 already carries those boards' designs, corrected by his rulings since. Keep the table for *where a design came from*.
+
 | Surface | Drawn on | Changed later on | Structure (what to build) | Values (how it looks) | Session 5 does |
 |---|---|---|---|---|---|
 | **New Build drawer**, Add build + Bulk create, MP + DMZ | board 1 · G9 | no board after it; the button family is Session 4's (E1–E2) | [`../2026-09-14-pins2-board/handoff-g9-g8.md`](../2026-09-14-pins2-board/handoff-g9-g8.md) · plan §10.1 | [`../2026-09-14-pins2-board/resolved-spec-full.md`](../2026-09-14-pins2-board/resolved-spec-full.md) (every state: DMZ, Bulk create, existing image key) | **Rebuild it from board 1.** The port is 20–30% right and structurally different (pin 2) |
@@ -65,11 +67,12 @@ The three boards were one piece of work split into sittings. Each built on what 
 
 ## 3 · The order Session 5 builds in
 
-1. **Session 4's shared elements and tokens** (plan §10.6, `handoff-3e.md` §10). They sit under every surface, so they go first.
-2. **Board 1's three surfaces, rebuilt from board 1**: the structure from `handoff-g9-g8.md`, the values from `resolved-spec-full.md`.
-3. **Board 2's surfaces that no later board touched** (build name, Broadcast manifest, admin traffic), corrected against board 2.
-4. **Board 3's surfaces**, from `handoff-3e.md` and `3e/`, with **[`lineage.md`](lineage.md)'s board-2 values restored** where the port lost them.
-5. **Close each element by comparing it with the board that owns it** (`portalProbe`, plan §5d Step 8). Rebuild `portal/public/app.css` before every probe.
+*Rewritten 2026-09-27 02:47 EDT to his route (popup, 2026-09-27): Session 4 standardizes over Board 4, then Board 4: Final; Session 5 ports Final. The earlier order (rebuild boards 1, 2 and 3 separately) is superseded.*
+
+1. **Session 4 standardizes over Board 4: Collective** (batch-2 plan §5c, Step 4g), reading [`board4-spec/HANDOFF.md`](board4-spec/HANDOFF.md) and its maps, and publishes **Board 4: Final** — a new artifact with the standard tokens applied to the kit.
+2. **Regenerate the spec from Final** (§5 below). The values and maps then describe Final, which is what ships.
+3. **Session 5 builds from Final's spec**: the data and bot changes first (HANDOFF.md § "What the data and the bot need" — a badge the model cannot store is not a badge), then each gate in the order C1, C2, C3, C5, C4, C6, C7, C8, C9, applying `portal-diff.md` hunks and porting the classes and tokens the maps name.
+4. **Close each element against Board 4: Final** at 1282×888 (`portalProbe`, plan §5d Step 8). Rebuild `portal/public/app.css` before every probe.
 
 ## 4 · When something is ambiguous
 
@@ -82,5 +85,6 @@ The three boards were one piece of work split into sittings. Each built on what 
 - **Board 3's design CODE lives only on this Mac**, in `local/pins2-board-3/redo/` with its own local git (`../2026-09-15-pins2-board-3/3e/KIT-GIT.md`) — his choice: never GitHub. Sessions 4 and 5 therefore run here. Serve it with `.claude/launch.json` → `repo-static` (port 8900) and open `board3e.html`. `3e/` carries everything derived from it, but the export picker, the problem card, the badges and the History rail are ~2,000 lines of design code in `b3/` and `gates/` that Session 5 ports as code (`3e/file-map.md` labels each file).
 
 - **Boards 1 and 2 are frozen** on the stylesheet he approved them on (`../2026-09-14-pins2-board/app.css`). Never point them back at `portal/public/app.css`: the port would leak into the spec.
+- **Regenerate Board 4 (and Board 4: Final) after any kit change** (2026-09-27 02:47 EDT): `D=docs/superpowers/mockups/2026-09-15-pins2-board-3/3e; O=docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec` then `OUT_DIR=$O node $D/switches.cjs && OUT_DIR=$O node $D/overrides.cjs && BOARD=4 node $D/extract-spec.cjs '' $TMPDIR/b4-spec.md && BOARD=4 node $D/split-spec.cjs $TMPDIR/b4-spec.md && node $O/maps.cjs` — the extractor walks every section's states AND fork options.
 - **Regenerate after any change to a board:** board 3's kit → `3e/switches.cjs → 3e/overrides.cjs → 3e/extract-spec.cjs → 3e/split-spec.cjs → 3e/measure.cjs`. Boards 1 and 2 → `BOARD=1|2 node ../2026-09-15-pins2-board-3/3e/extract-spec.cjs '' <board>/resolved-spec-full.md`. Then `node lineage.cjs`.
 - **Session 4 adds a row to `handoff-3e.md` §10 for every decision that changes a surface above**, on any board, and updates this table if a surface's owner changes.

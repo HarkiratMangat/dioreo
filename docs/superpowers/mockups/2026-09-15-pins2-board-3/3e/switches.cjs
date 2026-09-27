@@ -39,5 +39,6 @@ const out = ['---', 'kind: reference', 'status: live', '---', '', '# Board 3-E �
   '4. **⏳ OPEN** — the board holds a value, but it is NOT his decision. Session 4 decides it. If Session 4 picks another value: change DEFAULTS in the kit, re-run this script, `extract-spec.cjs` and `measure.cjs`, and commit the regenerated files — the spec is stale until then.',
   '5. **Kept in files at his request** (Outline, Solid ground) — the dead rule is preserved in the PORTAL too, commented as unshipped, never deleted.', '',
   '| Switch | Board holds | Who ruled it | Live selectors | Dead selectors — do not port | JS branches |', '|---|---|---|---|---|---|', ...rows, ''];
-fs.writeFileSync(path.join(__dirname, 'switches.md'), out.join('\n'));
+// OUT_DIR (2026-09-27 02:43 EDT): Board 4 writes beside its own spec (docs/superpowers/mockups/2026-09-21-pins2-final/board4-spec/), so Board 3-E's record is not overwritten.
+fs.writeFileSync(path.join(process.env.OUT_DIR || __dirname, 'switches.md'), out.join('\n').replace(/^# Board 3-E/m, process.env.OUT_DIR ? '# Board 4: Collective (the kit Board 3-E shares)' : '# Board 3-E'));
 console.log(JSON.stringify({ keys: keys.length, live, dead, unexplained: keys.filter((k) => !RULED[k]) }));

@@ -700,8 +700,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 ### His picks — 2026-09-24 22:30 EDT, verbatim (popup)
 
-> C1 (ASS badge): A · Stink lines
-> C2 (Drawer): "we can do 980 but why does the badges fall into stacked lines when multiple builds are being worked on? correct that, we clearly have enough space."
+> C1 (ASS badge): A · Stink lines C2 (Drawer): "we can do 980 but why does the badges fall into stacked lines when multiple builds are being worked on? correct that, we clearly have enough space."
 
 | # | Item | Built 2026-09-24 22:35 EDT (kit, not published) |
 |---|---|---|
@@ -731,8 +730,7 @@ Image: [Key Fetched|Url Valid|New Image] <- a chip or something to confirm the i
 
 ### His look at the refined form — 2026-09-25 01:05 EDT, verbatim
 
-> i ask you to nitpick the announcement drawer's spacing and what do i see? SHIT, INCONSISTENT SPACING!
-> and also, i asked for the entire character counter+fill-bar to be in a pill-shaped chip. And the "posted now" in the discord preview should be below the image as a footer.
+> i ask you to nitpick the announcement drawer's spacing and what do i see? SHIT, INCONSISTENT SPACING! and also, i asked for the entire character counter+fill-bar to be in a pill-shaped chip. And the "posted now" in the discord preview should be below the image as a footer.
 
 | # | Item | Built 2026-09-25 01:11 EDT (kit, not published) |
 |---|---|---|

@@ -170,7 +170,7 @@ inside `.chip` · 19 on screen · **8 looks**
 
 #### look 1 of 8
 
-`manifestt0-217` · rendered **240×240** · 1 instance look like this
+`manifestt0-217` · rendered **314×314** · 1 instance look like this
 
 ```html
 <i></i>
@@ -202,7 +202,7 @@ inside `.chip` · 19 on screen · **8 looks**
 
 #### look 2 of 8
 
-`manifestt0-325` · rendered **205×205** · 1 instance look like this
+`manifestt0-325` · rendered **273×273** · 1 instance look like this
 
 ```html
 <i></i>
@@ -333,7 +333,7 @@ inside `.chip` · 19 on screen · **8 looks**
 
 #### look 6 of 8
 
-`manifestt0-394` · rendered **4×8** · 1 instance look like this
+`manifestt0-394` · rendered **4×9** · 1 instance look like this
 
 ```html
 <i></i>
@@ -361,7 +361,7 @@ inside `.chip` · 19 on screen · **8 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.451239` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.0752729` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -1667,7 +1667,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.835293` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.734299` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -1703,7 +1703,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.439881` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.320834` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -1739,7 +1739,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.247098` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.764381` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -1773,7 +1773,7 @@ inside `.b3-bdg` · 8 on screen · **2 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | ⚠️ `0.72` | `1` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.998807` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -1800,7 +1800,7 @@ inside `.b3-bdg` · 8 on screen · **2 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | ⚠️ `0.72` | `0.910158` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.818113` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -2215,7 +2215,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.882727` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.559988` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -2223,7 +2223,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 2 of 4
 
-`manifestt2-394` · rendered **4×8** · 1 instance look like this
+`manifestt2-394` · rendered **4×10** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2251,7 +2251,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.452297` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.00694134` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -2259,7 +2259,7 @@ inside `.chip` · 20 on screen · **4 looks**
 
 #### look 3 of 4
 
-`manifestt2-395` · rendered **4×10** · 1 instance look like this
+`manifestt2-395` · rendered **4×11** · 1 instance look like this
 
 ```html
 <i></i>
@@ -2287,7 +2287,7 @@ inside `.chip` · 20 on screen · **4 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0622163` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.882732` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -2943,7 +2943,7 @@ inside `.b3-bdg` · 8 on screen · **2 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | ⚠️ `0.72` | `0.820376` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
@@ -4901,7 +4901,7 @@ inside `.b3-sd-acts` · 1 on screen · **1 look**
 
 ### manifest · Pick three
 
-116 distinct signatures on screen; 13 not already specced above.
+116 distinct signatures on screen; 12 not already specced above.
 
 
 ### `svg.ic`
@@ -4947,7 +4947,7 @@ inside `.chip` · 20 on screen · **3 looks**
 
 #### look 1 of 3
 
-`manifestt3-393` · rendered **4×8** · 1 instance look like this
+`manifestt3-393` · rendered **4×11** · 1 instance look like this
 
 ```html
 <i></i>
@@ -4975,7 +4975,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.678171` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.0255807` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -4983,7 +4983,7 @@ inside `.chip` · 20 on screen · **3 looks**
 
 #### look 2 of 3
 
-`manifestt3-394` · rendered **4×11** · 1 instance look like this
+`manifestt3-394` · rendered **4×7** · 1 instance look like this
 
 ```html
 <i></i>
@@ -5011,7 +5011,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.253714` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.842421` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -5019,7 +5019,7 @@ inside `.chip` · 20 on screen · **3 looks**
 
 #### look 3 of 3
 
-`manifestt3-395` · rendered **4×6** · 1 instance look like this
+`manifestt3-395` · rendered **4×9** · 1 instance look like this
 
 ```html
 <i></i>
@@ -5047,7 +5047,7 @@ inside `.chip` · 20 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.763777` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.443655` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -5128,9 +5128,9 @@ inside `.wg-rail` · 119 on screen · **1 look**
 
 ### `span.b3-mdw`
 
-inside `.b3-bdg` · 8 on screen · **3 looks**
+inside `.b3-bdg` · 8 on screen · **1 look**
 
-#### look 1 of 3
+#### the one look
 
 `manifestt3-507` · rendered **20×10** · 1 instance look like this · text “TDM”
 
@@ -5153,124 +5153,9 @@ inside `.b3-bdg` · 8 on screen · **3 looks**
 | text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | ⚠️ `0.72` | `1` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0.72` | `0.728467` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
 | animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 2 of 3
-
-`manifestt3-511` · rendered **20×10** · 1 instance look like this · text “FTL”
-
-```html
-<span class="b3-mdw">FTL</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | ⚠️ `0.72` | `0.847586` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
-| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 3 of 3
-
-`manifestt3-515` · rendered **47×10** · 1 instance look like this · text “Control”
-
-```html
-<span class="b3-mdw">Control</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 6 on screen · **1 look**
-
-#### the one look
-
-`manifestt3-486` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 8.2s linear 0s infinite normal none running b3vb00;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.261269` | .b3-vb · b3/board.css:3208 · **a later rule wins — port the computed value and find that rule** |
-| animation | `8.2s linear 0s infinite normal none running b3vb00` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
 
 
 ### `button.b3-fchip`
@@ -5753,7 +5638,7 @@ inside `.b3-sd-flags` · 1 on screen · **1 look**
 
 ### manifest · Pick eight
 
-117 distinct signatures on screen; 17 not already specced above.
+117 distinct signatures on screen; 15 not already specced above.
 
 
 ### `em`
@@ -5867,7 +5752,7 @@ inside `.chip` · 28 on screen · **7 looks**
 
 #### look 1 of 7
 
-`manifestt4-393` · rendered **4×10** · 1 instance look like this
+`manifestt4-393` · rendered **4×7** · 1 instance look like this
 
 ```html
 <i></i>
@@ -5895,7 +5780,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.200007` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.469245` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -5903,7 +5788,7 @@ inside `.chip` · 28 on screen · **7 looks**
 
 #### look 2 of 7
 
-`manifestt4-394` · rendered **4×6** · 1 instance look like this
+`manifestt4-394` · rendered **4×11** · 1 instance look like this
 
 ```html
 <i></i>
@@ -5931,7 +5816,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.839212` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.0104349` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -5939,7 +5824,7 @@ inside `.chip` · 28 on screen · **7 looks**
 
 #### look 3 of 7
 
-`manifestt4-395` · rendered **4×7** · 1 instance look like this
+`manifestt4-395` · rendered **4×6** · 1 instance look like this
 
 ```html
 <i></i>
@@ -5967,7 +5852,7 @@ inside `.chip` · 28 on screen · **7 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.534075` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.848945` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -6304,126 +6189,6 @@ inside `.wg-rail` · 143 on screen · **2 looks**
 | white-space | `nowrap` | `` | .wg-at · app.css:1176 |
 | color | `var(--atink)` | `rgb(232, 237, 241)` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
 | transition | `box-shadow var(--dur-1) var(--ease),background var(--dur-1) var(--ease)` | `` | html[data-b3-p2sty] .wg-r .wg-at[style], html[data-b3-p2sty] .b3-sd .wg-at[style], html[da · b3/board.css:405 |
-
-
-### `span.b3-mdw`
-
-inside `.b3-bdg` · 17 on screen · **2 looks**
-
-#### look 1 of 2
-
-`manifestt4-495` · rendered **14×10** · 1 instance look like this · text “HP”
-
-```html
-<span class="b3-mdw">HP</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-#### look 2 of 2
-
-`manifestt4-499` · rendered **20×10** · 1 instance look like this · text “S&D”
-
-```html
-<span class="b3-mdw">S&amp;D</span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 6 on screen · **1 look**
-
-#### the one look
-
-`manifestt4-487` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.22; --ha: 25.1%; --sx: 35.5%; --sy: 73.7%; animation: 8.2s linear 0s infinite normal none running b3vb01;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941177 / 0.55616) 0px 0px 23.36px -4.9px` | .b3-vb · b3/board.css:3208 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | `0` | `0` | .b3-vb · b3/board.css:3208 |
-| animation | `8.2s linear 0s infinite normal none running b3vb01` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
 
 
 ### `span.nocode.wg-at`
@@ -7023,7 +6788,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.852986` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.899187` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -7031,7 +6796,7 @@ inside `.chip` · 19 on screen · **3 looks**
 
 #### look 2 of 3
 
-`manifestt5-394` · rendered **4×9** · 1 instance look like this
+`manifestt5-394` · rendered **4×10** · 1 instance look like this
 
 ```html
 <i></i>
@@ -7059,7 +6824,7 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.52621` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.469282` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
@@ -7095,37 +6860,29 @@ inside `.chip` · 19 on screen · **3 looks**
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.782588 0.596235 0.413333)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0278541` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
+| opacity | ⚠️ `0` | `0.00212811` | .b3-ass > i · b4/classes.css:379 · **a later rule wins — port the computed value and find that rule** |
 | mask | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>") center/contain no-repeat` | `` | .b3-ass > i · b4/classes.css:379 |
 | mask-image | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 12'><path d='M2 11.4C.6 9.8.6 8.2 2 6.6s1.4-3.2 0-4.8' fill='none' stroke='black' stroke-width='1.3' stroke-linecap='round'/></svg>")` | .b3-ass > i · b4/classes.css:379 |
 | animation | `b3-stink 2.7s cubic-bezier(.45,0,.55,1) infinite` | `` | .b3-ass > i · b4/classes.css:379 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 
-### `span.b3-vb`
+### `span.b3-mdw`
 
-inside `.b3-vl` · 6 on screen · **1 look**
+inside `.b3-bdg` · 8 on screen · **5 looks**
 
-#### the one look
+#### look 1 of 5
 
-`manifestt5-488` · rendered **58×22** · 1 instance look like this
+`manifestt5-499` · rendered **20×10** · 1 instance look like this · text “S&D”
 
 ```html
-<span class="b3-vb" style="--pk: 0.34; --ha: 43.9%; --sx: 30.6%; --sy: 49.3%; animation: 8.2s linear 0s infinite normal none running b3vb02;"></span>
+<span class="b3-mdw">S&amp;D</span>
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.66752) 0px 0px 29.12px -4.3px` | .b3-vb · b3/board.css:3208 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -7134,33 +6891,120 @@ inside `.b3-vl` · 6 on screen · **1 look**
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.293522` | .b3-vb · b3/board.css:3208 · **a later rule wins — port the computed value and find that rule** |
-| animation | `8.2s linear 0s infinite normal none running b3vb02` | `` | style attribute |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| opacity | ⚠️ `0.72` | `0.897338` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
-**::after**
+#### look 2 of 5
 
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
+`manifestt5-503` · rendered **20×10** · 1 instance look like this · text “DOM”
+
+```html
+<span class="b3-mdw">DOM</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| opacity | ⚠️ `0.72` | `0.773653` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+#### look 3 of 5
+
+`manifestt5-507` · rendered **20×10** · 1 instance look like this · text “TDM”
+
+```html
+<span class="b3-mdw">TDM</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| opacity | ⚠️ `0.72` | `0.72448` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 · **a later rule wins — port the computed value and find that rule** |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+#### look 4 of 5
+
+`manifestt5-511` · rendered **20×10** · 1 instance look like this · text “FTL”
+
+```html
+<span class="b3-mdw">FTL</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
+
+#### look 5 of 5
+
+`manifestt5-515` · rendered **47×10** · 1 instance look like this · text “Control”
+
+```html
+<span class="b3-mdw">Control</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| opacity | `0.72` | `0.72` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| animation | `b3-mdword calc(6.7s + var(--mi,0) * .61s + var(--ph,0) * .9s) linear infinite` | `` | .b3-bdgs.in .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:653 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .wg-h · app.css:1117 |
 
 
 ### new-build · Add · filled
@@ -7917,11 +7761,38 @@ inside `.f-att` · 5 on screen · **5 looks**
 
 ### `span.f-wand`
 
-inside `.f-slot` · 4 on screen · **1 look**
+inside `.f-slot` · 4 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
 
-`new-builds1-83` · rendered **13×13** · 4 instances look like this · title="Recognized from the gunsmith code"
+`new-builds1-83` · rendered **13×13** · 3 instances look like this · title="Recognized from the gunsmith code"
+
+```html
+<span class="f-wand" title="Recognized from the gunsmith code">⟨svg.ic⟩</span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `grid` | `grid` | .b4 .f-wand · b4/classes.css:430 |
+| flex | `none` | `` | .b4 .f-wand · b4/classes.css:430 |
+| align-items | `center` | `center` | .b4 .f-wand · b4/classes.css:430 |
+| place-items | `center` | `` | .b4 .f-wand · b4/classes.css:430 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font | ↑ `500 13px/1 var(--ui)` | `` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| font-size | ↑ `` | `13px` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| font-weight | ↑ `` | `500` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| line-height | ↑ `` | `13px` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| letter-spacing | — | `normal` | initial |
+| white-space | ↑ `nowrap` | `` | inherited · .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
+| color | `var(--patch)` | `rgb(242, 194, 48)` | .b4 .f-wand · b4/classes.css:430 |
+| animation | `f-okin .32s cubic-bezier(.2,.9,.3,1.3) both` | `` | .b4 .f-wand · b4/classes.css:430 |
+
+#### look 2 of 2
+
+`new-builds1-123` · rendered **13×13** · 1 instance look like this · title="Recognized from the gunsmith code"
 
 ```html
 <span class="f-wand" title="Recognized from the gunsmith code">⟨svg.ic⟩</span>
@@ -12118,7 +11989,7 @@ inside `.bk-body` · 3 on screen · **2 looks**
 `new-builds3-74` · rendered **175×22** · 2 instances look like this
 
 ```html
-<div class="bk-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/f1ffdddb-4101-4629-bfb3-bb40c1f35da7"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s
+<div class="bk-run b3-fadx" data-rows="2" style="--fl: 0px; --fr: 0px;"><span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/a014541f-2206-4176-8efb-d086f16289e2"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s
 ```
 
 | property | winning declaration | computed | from |
@@ -12305,7 +12176,7 @@ inside `.bk-run` · 2 on screen · **1 look**
 `new-builds3-75` · rendered **175×22** · 2 instances look like this
 
 ```html
-<span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/f1ffdddb-4101-4629-bfb3-bb40c1f35da7"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s infinite normal none running b3vr1;"></span></span><span class="b3-vb" 
+<span class="b3-bdgs in" style="--ph: 0.412;"><span class="b3-bdg" data-k="meta">⟨svg.ic.b3-zap⟩META<span class="b3-volt" data-volt-on="1"><img alt="" aria-hidden="true" src="blob:http://127.0.0.1:8900/a014541f-2206-4176-8efb-d086f16289e2"></span><span class="b3-vl" aria-hidden="true"><span class="b3-vrest"><span style="animation: 9.91s linear 0s infinite normal none running b3vr1;"></span></span><span class="b3-vb" 
 ```
 
 | property | winning declaration | computed | from |
@@ -12488,7 +12359,7 @@ inside `.bk-ghostwrap` · 1 on screen · **1 look**
 
 ### new-build · Bulk · one
 
-71 distinct signatures on screen; 16 not already specced above.
+71 distinct signatures on screen; 17 not already specced above.
 
 
 ### `b`
@@ -13249,6 +13120,67 @@ inside `.bk-body` · 1 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
+
+
+### `span.b3-vb`
+
+inside `.b3-vl` · 3 on screen · **1 look**
+
+#### the one look
+
+`new-builds4-105` · rendered **58×22** · 1 instance look like this
+
+```html
+<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
+| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
+| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
+| opacity | `0` | `0` | .b3-vb · b3/board.css:3208 |
+| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
+| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
+| inset | `0` | .b3-vb::after · b3/board.css:3211 |
+| top | `0px` | .b3-vb::after · b3/board.css:3211 |
+| right | `0px` | .b3-vb::after · b3/board.css:3211 |
+| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
+| left | `0px` | .b3-vb::after · b3/board.css:3211 |
+| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
+| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
+| background-color | `` | .b3-vb::after · b3/board.css:3211 |
+| background-image | `` | .b3-vb::after · b3/board.css:3211 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
+| content | `""` | .b3-vb::after · b3/board.css:3211 |
 
 
 ### `span.bk-none`
@@ -14097,9 +14029,65 @@ inside `.bk-body` · 3 on screen · **1 look**
 
 ### `span.b3-vb`
 
-inside `.b3-vl` · 6 on screen · **1 look**
+inside `.b3-vl` · 6 on screen · **2 looks**
 
-#### the one look
+#### look 1 of 2
+
+`new-builds5-175` · rendered **58×22** · 1 instance look like this
+
+```html
+<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | — | `block` | initial |
+| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
+| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
+| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
+| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
+| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
+| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
+| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
+| opacity | `0` | `0` | .b3-vb · b3/board.css:3208 |
+| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
+
+**::after**
+
+| property | winning declaration | from |
+|---|---|---|
+| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
+| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
+| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
+| inset | `0` | .b3-vb::after · b3/board.css:3211 |
+| top | `0px` | .b3-vb::after · b3/board.css:3211 |
+| right | `0px` | .b3-vb::after · b3/board.css:3211 |
+| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
+| left | `0px` | .b3-vb::after · b3/board.css:3211 |
+| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
+| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
+| background-color | `` | .b3-vb::after · b3/board.css:3211 |
+| background-image | `` | .b3-vb::after · b3/board.css:3211 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
+| content | `""` | .b3-vb::after · b3/board.css:3211 |
+
+#### look 2 of 2
 
 `new-builds5-215` · rendered **58×22** · 1 instance look like this
 
@@ -16027,73 +16015,12 @@ inside `.bk-body` · 1 on screen · **1 look**
 
 ### new-build · Bulk · pasted
 
-76 distinct signatures on screen; 1 not already specced above.
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`new-builds9-140` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | ⚠️ `0` | `0.0464385` | .b3-vb · b3/board.css:3208 · **a later rule wins — port the computed value and find that rule** |
-| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
+76 distinct signatures on screen; 0 not already specced above.
 
 
 ### new-build · Bulk · duplicate
 
-73 distinct signatures on screen; 3 not already specced above.
+73 distinct signatures on screen; 2 not already specced above.
 
 
 ### `div.bk-card[role=listitem]`
@@ -16235,67 +16162,6 @@ inside `.bk-card` · 2 on screen · **1 look**
 | property | at rest | active |
 |---|---|---|
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`new-builds10-142` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | `0` | `0` | .b3-vb · b3/board.css:3208 |
-| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
 
 
 ### new-build · DMZ
@@ -16745,7 +16611,7 @@ inside `.lc-att` · 10 on screen · **1 look**
 
 ### new-build · Edit 3 builds
 
-75 distinct signatures on screen; 10 not already specced above.
+75 distinct signatures on screen; 9 not already specced above.
 
 
 ### `div.pb-edchips`
@@ -17201,67 +17067,6 @@ inside `.bk-run` · 3 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-
-### `span.b3-vb`
-
-inside `.b3-vl` · 3 on screen · **1 look**
-
-#### the one look
-
-`new-builds12-204` · rendered **58×22** · 1 instance look like this
-
-```html
-<span class="b3-vb" style="--pk: 0.3; --ha: 37.6%; --sx: 32.0%; --sy: 60.9%; animation: 9.91s linear 0s infinite normal none running b3vb10;"></span>
-```
-
-| property | winning declaration | computed | from |
-|---|---|---|---|
-| display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vb · b3/board.css:3208 |
-| box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vb · b3/board.css:3208 |
-| top | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| right | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| bottom | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| left | `0px` | `0px` | .b3-vb · b3/board.css:3208 |
-| border-radius | `inherit` | `` | .b3-vb · b3/board.css:3208 |
-| box-shadow | `0 0 calc((8px + 30px*var(--pk))*var(--b3-amb)) calc(-6px + 5px*var(--pk)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--pk))*var(--b3-amb)),transparent)` | `color(srgb 0.219608 0.839216 0.941176 / 0.6304) 0px 0px 27.2px -4.5px` | .b3-vb · b3/board.css:3208 |
-| font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
-| letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| opacity | `0` | `0` | .b3-vb · b3/board.css:3208 |
-| animation | `9.91s linear 0s infinite normal none running b3vb10` | `` | style attribute |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b4 :is(.bk-card, .bk-prev) · b4/bulk.css:84 |
-
-**::after**
-
-| property | winning declaration | from |
-|---|---|---|
-| position | `absolute` | .b3-vb::after · b3/board.css:3211 |
-| padding | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-top | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-right | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-bottom | `1px` | .b3-vb::after · b3/board.css:3211 |
-| padding-left | `1px` | .b3-vb::after · b3/board.css:3211 |
-| inset | `0` | .b3-vb::after · b3/board.css:3211 |
-| top | `0px` | .b3-vb::after · b3/board.css:3211 |
-| right | `0px` | .b3-vb::after · b3/board.css:3211 |
-| bottom | `0px` | .b3-vb::after · b3/board.css:3211 |
-| left | `0px` | .b3-vb::after · b3/board.css:3211 |
-| border-radius | `inherit` | .b3-vb::after · b3/board.css:3211 |
-| background | `radial-gradient(circle at var(--sx) var(--sy), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--pk)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(33.3%*var(--pk)),transparent) calc(24% + 34%*var(--pk)), transparent 76%)` | .b3-vb::after · b3/board.css:3211 |
-| background-color | `` | .b3-vb::after · b3/board.css:3211 |
-| background-image | `` | .b3-vb::after · b3/board.css:3211 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-vb::after · b3/board.css:3211 |
-| content | `""` | .b3-vb::after · b3/board.css:3211 |
 
 
 ### compare · Two weapons
@@ -25306,3 +25111,83 @@ inside `.incg` · 1 on screen · **1 look**
 | property | at rest | active |
 |---|---|---|
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
+
+
+### compare · B · Diff grid · state 1
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Diff grid · state 2
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Diff grid · state 3
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Diff grid · state 4
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Slot lanes · state 1
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Slot lanes · state 2
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Slot lanes · state 3
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Slot lanes · state 4
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Weapon shelf · state 1
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Weapon shelf · state 2
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Weapon shelf · state 3
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · B · Weapon shelf · state 4
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Command field · state 1
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Command field · state 2
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Command field · state 3
+
+5 distinct signatures on screen; 0 not already specced above.
+
+
+### compare · C · Command field · state 4
+
+5 distinct signatures on screen; 0 not already specced above.

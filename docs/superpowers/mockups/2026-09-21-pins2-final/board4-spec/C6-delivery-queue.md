@@ -1020,7 +1020,7 @@ inside `.pb-body` · 1 on screen · **1 look**
 `C6-29` · rendered **674×79** · 1 instance look like this
 
 ```html
-<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
+<div class="pb-life3"><div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7664%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4112%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class=
 ```
 
 | property | winning declaration | computed | from |
@@ -1047,7 +1047,7 @@ inside `.pb-life3` · 1 on screen · **1 look**
 `C6-30` · rendered **674×43** · 1 instance look like this
 
 ```html
-<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
+<div class="pb-tl"><span class="b3-dt"><em>Start</em><span class="pb-end">⟨svg.ic⟩Aug 4</span></span><div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7664%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4112%;"></span></div><span class="b3-dt b3-dt-e"><em>End</em><span class="pb-end g-noend">⟨svg.
 ```
 
 | property | winning declaration | computed | from |
@@ -1174,7 +1174,7 @@ inside `.pb-tl` · 1 on screen · **1 look**
 `C6-35` · rendered **500×20** · 1 instance look like this
 
 ```html
-<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span></div>
+<div class="pb-bar"><span class="pb-track"></span><span class="pb-span g-run" style="left: 25.7664%; right: 0px;"></span><span class="g-tail" aria-hidden="true"></span><span class="pb-now" title="Up 53 days" style="left: 91.4112%;"></span></div>
 ```
 
 | property | winning declaration | computed | from |
@@ -1238,7 +1238,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 `C6-37` · rendered **371×6** · 1 instance look like this
 
 ```html
-<span class="pb-span g-run" style="left: 25.7709%; right: 0px;"></span>
+<span class="pb-span g-run" style="left: 25.7664%; right: 0px;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1249,7 +1249,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `7px` | `7px` | .pb-tl .pb-span · b2.css:377 |
 | right | `0px` | `0px` | style attribute |
-| left | `25.7709%` | `128.844px` | style attribute |
+| left | `25.7664%` | `128.828px` | style attribute |
 | border-radius | `3px` | `` | .pb-span · b2.css:231 |
 | background | `linear-gradient(90deg, var(--c) 0, var(--c) calc(100% - 96px), color-mix(in srgb, var(--c) 0%, transparent))` | `` | .g-card .pb-span.g-run · gates.css:378 |
 | background-color | `` | `rgba(0, 0, 0, 0)` | .g-card .pb-span.g-run · gates.css:378 |
@@ -1271,7 +1271,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 `C6-38` · rendered **2×18** · 1 instance look like this · title="Up 53 days"
 
 ```html
-<span class="pb-now" title="Up 53 days" style="left: 91.4097%;"></span>
+<span class="pb-now" title="Up 53 days" style="left: 91.4112%;"></span>
 ```
 
 | property | winning declaration | computed | from |
@@ -1282,7 +1282,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | top | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
 | bottom | `1px` | `1px` | .pb-tl .pb-now · b2.css:378 |
-| left | `91.4097%` | `457.047px` | style attribute |
+| left | `91.4112%` | `457.047px` | style attribute |
 | border-radius | `1px` | `` | .pb-now · b2.css:234 |
 | background | `var(--ink)` | `` | .pb-now · b2.css:234 |
 | background-color | `` | `rgb(232, 237, 241)` | .pb-now · b2.css:234 |
