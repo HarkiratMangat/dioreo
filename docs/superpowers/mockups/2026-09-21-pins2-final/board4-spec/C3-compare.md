@@ -401,7 +401,7 @@ inside `.cx-wh` · 1 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .cx-wx · b4/compare.css:11 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .cx-wx · b4/compare.css:11 |
 | cursor | `pointer` | `pointer` | .b4 .cx-wx · b4/compare.css:11 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -518,8 +518,8 @@ inside `.cx-wx` · 11 on screen · **4 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:621 |
-| height | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:621 |
+| width | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:628 |
+| height | `20px` | `20px` | .b3-bdg[data-k="mode"] .b3-mdi .ic · b4/classes.css:628 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
@@ -532,7 +532,7 @@ inside `.cx-wx` · 11 on screen · **4 looks**
 | text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:175 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -646,7 +646,7 @@ inside `.cx-keys` · 5 on screen · **1 look**
 | color | `color-mix(in srgb,var(--c) 28%,white)` | `color(srgb 1 0.784784 0.82102)` | .b4 .cx-k[aria-pressed="true"] · b4/compare.css:17 |
 | transition | `background-color .15s,color .15s,box-shadow .15s,transform .1s` | `` | .b4 .cx-k · b4/compare.css:15 |
 | cursor | `pointer` | `pointer` | .b4 .cx-k · b4/compare.css:15 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -1347,8 +1347,8 @@ inside `.cx-hb` · 4 on screen · **1 look**
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · th · app.css:1248 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · th · app.css:1248 |
-| mask-image | `linear-gradient(to right,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl,0px)*.45),rgb(0 0 0/.78) calc(var(--fl,0px)*.8),#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),rgb(0 0 0/.78) calc(100% - var(--fr,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fr,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(to right, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2771 |
-| animation | `none!important !important` | `` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2771 |
+| mask-image | `linear-gradient(to right,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl,0px)*.45),rgb(0 0 0/.78) calc(var(--fl,0px)*.8),#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),rgb(0 0 0/.78) calc(100% - var(--fr,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fr,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(to right, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2784 |
+| animation | `none!important !important` | `` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2784 |
 
 
 ### `span.b3-bdgs`
@@ -1438,7 +1438,7 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1838 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -1454,7 +1454,7 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | background | `color-mix(in srgb,var(--tc) 13%,transparent)` | `` | .b3-bdg · b3/board.css:150 |
 | background-color | `` | `color(srgb 0.219608 0.839216 0.941176 / 0.13)` | .b3-bdg · b3/board.css:150 |
 | background-image | `` | `none` | .b3-bdg · b3/board.css:150 |
-| box-shadow | `inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent), 0 0 calc((8px + 30px*var(--lit))*var(--b3-amb)) calc(-6px + 5px*var(--lit)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--lit))*var(--b3-amb)),transparent)` | `color(srgb 1 1 1 / 0.14) 0px 1px 0px 0px inset, color(srgb 0.219608 0.839216 0.941176 / 0.40768) 0px 0px 15.68px -5.7px` | .b3-bdg[data-k="meta"] · b3/board.css:1891 |
+| box-shadow | `inset 0 1px 0 color-mix(in srgb,#fff 14%,transparent), 0 0 calc((8px + 30px*var(--lit))*var(--b3-amb)) calc(-6px + 5px*var(--lit)) color-mix(in srgb,var(--tc) calc((22% + 58%*var(--lit))*var(--b3-amb)),transparent)` | `color(srgb 1 1 1 / 0.14) 0px 1px 0px 0px inset, color(srgb 0.219608 0.839216 0.941176 / 0.40768) 0px 0px 15.68px -5.7px` | .b3-bdg[data-k="meta"] · b3/board.css:1904 |
 | font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
 | font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
@@ -1467,33 +1467,33 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | .b3-bdg · b3/board.css:150 |
-| overflow | `clip` | `` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
-| overflow-x | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
-| overflow-y | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3199 |
+| overflow | `clip` | `` | .b3-bdg[data-k="meta"] · b3/board.css:3212 |
+| overflow-x | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3212 |
+| overflow-y | `clip` | `clip` | .b3-bdg[data-k="meta"] · b3/board.css:3212 |
 
 **::after**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| padding | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| padding-top | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| padding-right | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| padding-bottom | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| padding-left | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| inset | `0` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| top | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| right | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| bottom | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| left | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| border-radius | `inherit` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| background | `radial-gradient(circle at var(--sx,50%) var(--sy,50%), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--lit)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(46% + 18%*var(--lit)),transparent) calc(24% + 34%*var(--lit)), color-mix(in srgb,var(--tc) 46%,transparent) 76%)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| background-color | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| background-image | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| content | `""` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| z-index | `3` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
-| pointer-events | `none` | .b3-bdg[data-k="meta"]::after · b3/board.css:1894 |
+| position | `absolute` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| padding | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| padding-top | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| padding-right | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| padding-bottom | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| padding-left | `1px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| inset | `0` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| top | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| right | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| bottom | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| left | `0px` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| border-radius | `inherit` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| background | `radial-gradient(circle at var(--sx,50%) var(--sy,50%), color-mix(in srgb,var(--tc) calc(40% + 60%*var(--lit)*var(--b3-amb)),white) 0%, color-mix(in srgb,var(--tc) calc(46% + 18%*var(--lit)),transparent) calc(24% + 34%*var(--lit)), color-mix(in srgb,var(--tc) 46%,transparent) 76%)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| background-color | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| background-image | `` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| mask-image | `linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px), linear-gradient(rgb(255, 255, 255) 0px, rgb(255, 255, 255) 0px)` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| content | `""` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| z-index | `3` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
+| pointer-events | `none` | .b3-bdg[data-k="meta"]::after · b3/board.css:1907 |
 
 #### look 2 of 3
 
@@ -1506,7 +1506,7 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg · b3/board.css:1825 |
+| position | `relative` | `relative` | .b3-bdg · b3/board.css:1838 |
 | gap | `5px` | `` | .b3-bdg · b3/board.css:150 |
 | column-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
 | row-gap | `5px` | `5px` | .b3-bdg · b3/board.css:150 |
@@ -1535,9 +1535,9 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
 | color | `rgb(26, 20, 0)` | `rgb(26, 20, 0)` | html[data-b3-p1="a"] .b3-bdg[data-t="best"] · b3/board.css:167 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1838 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1838 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1838 |
 
 #### look 3 of 3
 
@@ -1550,23 +1550,23 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-bdg · b3/board.css:150 |
-| position | `relative` | `relative` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| gap | `4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| column-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| row-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| gap | `4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| column-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| row-gap | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 | align-items | `center` | `center` | .b3-bdg · b3/board.css:150 |
 | height | `22px` | `22px` | .b3-bdg · b3/board.css:150 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 7px 0 4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| padding-top | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| padding-right | `7px` | `7px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| padding-bottom | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| padding-left | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| padding | `0 7px 0 4px` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding-top | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding-right | `7px` | `7px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding-bottom | `0px` | `0px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| padding-left | `4px` | `4px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 | border-radius | `var(--rad-1)` | `` | .b3-bdg · b3/board.css:150 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent))` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| background-image | `` | `linear-gradient(color(srgb 0.894118 0.92549 0.956863 / 0.09), color(srgb 0.894118 0.92549 0.956863 / 0.04))` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)` | `color(srgb 0.894118 0.92549 0.956863 / 0.4) 0px 0px 0px 1px inset, color(srgb 1 1 1 / 0.24) 0px 1px 0px 0px inset, color(srgb 0.894118 0.92549 0.956863 / 0.55) 0px 0px 14px -6px` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--tc) 9%,transparent),color-mix(in srgb,var(--tc) 4%,transparent))` | `` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| background-image | `` | `linear-gradient(color(srgb 0.894118 0.92549 0.956863 / 0.09), color(srgb 0.894118 0.92549 0.956863 / 0.04))` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--tc) 40%,transparent),inset 0 1px 0 color-mix(in srgb,#fff 24%,transparent),0 0 14px -6px color-mix(in srgb,var(--tc) 55%,transparent)` | `color(srgb 0.894118 0.92549 0.956863 / 0.4) 0px 0px 0px 1px inset, color(srgb 1 1 1 / 0.24) 0px 1px 0px 0px inset, color(srgb 0.894118 0.92549 0.956863 / 0.55) 0px 0px 14px -6px` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 | font | `700 var(--t-micro)/1 var(--data)` | `` | .b3-bdg · b3/board.css:150 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-bdg · b3/board.css:150 |
 | font-size | `` | `9.5px` | .b3-bdg · b3/board.css:150 |
@@ -1578,27 +1578,27 @@ inside `.b3-bdgs` · 13 on screen · **3 looks**
 | text-transform | `none` | `none` | .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:175 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | `nowrap` | `` | .b3-bdg · b3/board.css:150 |
-| color | `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
-| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1825 |
-| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
-| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1825 |
-| isolation | `isolate` | `isolate` | .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| color | `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
+| overflow | `hidden` | `` | .b3-bdg · b3/board.css:1838 |
+| overflow-x | `hidden` | `hidden` | .b3-bdg · b3/board.css:1838 |
+| overflow-y | `hidden` | `hidden` | .b3-bdg · b3/board.css:1838 |
+| isolation | `isolate` | `isolate` | .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| inset | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| top | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| right | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| bottom | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| left | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| border-radius | `inherit` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| opacity | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| content | `""` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| z-index | `-1` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
-| pointer-events | `none` | .b3-bdg[data-k="mode"]::before · b4/classes.css:622 |
+| position | `absolute` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| inset | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| top | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| right | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| bottom | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| left | `0px` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| border-radius | `inherit` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| opacity | `0` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| content | `""` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| z-index | `-1` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
+| pointer-events | `none` | .b3-bdg[data-k="mode"]::before · b4/classes.css:629 |
 
 
 ### `svg.b3-zap.ic`
@@ -1651,14 +1651,14 @@ inside `.b3-bdg` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-volt · b3/board.css:1904 |
+| position | `absolute` | `absolute` | .b3-volt · b3/board.css:1917 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-volt · b3/board.css:1904 |
-| top | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
-| right | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
-| bottom | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
-| left | `0px` | `0px` | .b3-volt · b3/board.css:1904 |
-| border-radius | `inherit` | `` | .b3-volt · b3/board.css:1904 |
+| inset | `0` | `` | .b3-volt · b3/board.css:1917 |
+| top | `0px` | `0px` | .b3-volt · b3/board.css:1917 |
+| right | `0px` | `0px` | .b3-volt · b3/board.css:1917 |
+| bottom | `0px` | `0px` | .b3-volt · b3/board.css:1917 |
+| left | `0px` | `0px` | .b3-volt · b3/board.css:1917 |
+| border-radius | `inherit` | `` | .b3-volt · b3/board.css:1917 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -1671,11 +1671,11 @@ inside `.b3-bdg` · 5 on screen · **1 look**
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| overflow | `hidden` | `` | .b3-volt · b3/board.css:1904 |
-| overflow-x | `hidden` | `hidden` | .b3-volt · b3/board.css:1904 |
-| overflow-y | `hidden` | `hidden` | .b3-volt · b3/board.css:1904 |
-| z-index | `2` | `2` | .b3-volt · b3/board.css:1904 |
-| pointer-events | `none` | `none` | .b3-volt · b3/board.css:1904 |
+| overflow | `hidden` | `` | .b3-volt · b3/board.css:1917 |
+| overflow-x | `hidden` | `hidden` | .b3-volt · b3/board.css:1917 |
+| overflow-y | `hidden` | `hidden` | .b3-volt · b3/board.css:1917 |
+| z-index | `2` | `2` | .b3-volt · b3/board.css:1917 |
+| pointer-events | `none` | `none` | .b3-volt · b3/board.css:1917 |
 
 
 ### `span.b3-vl`
@@ -1693,14 +1693,14 @@ inside `.b3-bdg` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| position | `absolute` | `absolute` | .b3-vl · b3/board.css:3200 |
+| position | `absolute` | `absolute` | .b3-vl · b3/board.css:3213 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| inset | `0` | `` | .b3-vl · b3/board.css:3200 |
-| top | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
-| right | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
-| bottom | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
-| left | `0px` | `0px` | .b3-vl · b3/board.css:3200 |
-| border-radius | `inherit` | `` | .b3-vl · b3/board.css:3200 |
+| inset | `0` | `` | .b3-vl · b3/board.css:3213 |
+| top | `0px` | `0px` | .b3-vl · b3/board.css:3213 |
+| right | `0px` | `0px` | .b3-vl · b3/board.css:3213 |
+| bottom | `0px` | `0px` | .b3-vl · b3/board.css:3213 |
+| left | `0px` | `0px` | .b3-vl · b3/board.css:3213 |
+| border-radius | `inherit` | `` | .b3-vl · b3/board.css:3213 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -1713,8 +1713,8 @@ inside `.b3-bdg` · 5 on screen · **1 look**
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | color | ↑ `color-mix(in srgb,var(--tc) 88%,white)` | `color(srgb 0.313255 0.85851 0.948235)` | inherited · .b3-bdg · b3/board.css:150 |
-| z-index | `4` | `4` | .b3-vl · b3/board.css:3200 |
-| pointer-events | `none` | `none` | .b3-vl · b3/board.css:3200 |
+| z-index | `4` | `4` | .b3-vl · b3/board.css:3213 |
+| pointer-events | `none` | `none` | .b3-vl · b3/board.css:3213 |
 
 
 ### `th.cx-h`
@@ -1800,8 +1800,8 @@ inside `.cx-hb` · 1 on screen · **1 look**
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · th · app.css:1248 |
 | overflow-x | `auto` | `auto` | .b3-fadx.over · b3/board.css:1012 |
 | overflow-y | `hidden` | `hidden` | .b3-fadx.over · b3/board.css:1012 |
-| mask-image | `linear-gradient(to right,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl,0px)*.45),rgb(0 0 0/.78) calc(var(--fl,0px)*.8),#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),rgb(0 0 0/.78) calc(100% - var(--fr,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fr,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(to right, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 22px), rgba(0, 0, 0, 0.78) calc(100% - 17.6px), rgba(0, 0, 0, 0.3) calc(100% - 9.9px), rgba(0, 0, 0, 0) 100%)` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2771 |
-| animation | `none!important !important` | `` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2771 |
+| mask-image | `linear-gradient(to right,rgb(0 0 0/0) 0,rgb(0 0 0/.3) calc(var(--fl,0px)*.45),rgb(0 0 0/.78) calc(var(--fl,0px)*.8),#000 var(--fl,0px),#000 calc(100% - var(--fr,0px)),rgb(0 0 0/.78) calc(100% - var(--fr,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fr,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(to right, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 22px), rgba(0, 0, 0, 0.78) calc(100% - 17.6px), rgba(0, 0, 0, 0.3) calc(100% - 9.9px), rgba(0, 0, 0, 0) 100%)` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2784 |
+| animation | `none!important !important` | `` | :is(.b3-sd-atts, .b3-fadx) · b3/board.css:2784 |
 
 
 ### `i.b3-mdi`
@@ -1818,8 +1818,8 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:620 |
-| position | `relative` | `relative` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:620 |
+| display | `inline-flex` | `flex` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:627 |
+| position | `relative` | `relative` | .b3-bdg[data-k="mode"] .b3-mdi · b4/classes.css:627 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `700 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-bdg · b3/board.css:150 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
@@ -1832,7 +1832,7 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:175 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 
 
 ### `span.b3-mdw`
@@ -1859,10 +1859,10 @@ inside `.b3-bdg` · 3 on screen · **1 look**
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · .b4 #compare.cx :is(th, td, b, h3, span, small, em):not(.b3-bdg *) · b4/compare.css:175 |
-| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:616 |
+| text-transform | `uppercase` | `uppercase` | .b3-bdg[data-k="mode"] .b3-mdw · b4/classes.css:623 |
 | text-align | ↑ `left` | `left` | inherited · .b4 .cx-t th.cx-h · b4/compare.css:42 |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-bdg · b3/board.css:150 |
-| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:617 |
+| color | ↑ `rgb(246, 249, 252)` | `rgb(246, 249, 252)` | inherited · .b3-bdg[data-k="mode"] · b4/classes.css:624 |
 
 
 ### `td.base.cx-c.s-base`
@@ -2657,7 +2657,7 @@ inside `.cx-fold` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .bk-gt · b4/bulk.css:14 |
 | transition | `color .15s,box-shadow .15s,background-color .15s` | `` | .b4 .bk-gt · b4/bulk.css:14 |
 | cursor | `pointer` | `pointer` | .b4 .bk-gt · b4/bulk.css:14 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 

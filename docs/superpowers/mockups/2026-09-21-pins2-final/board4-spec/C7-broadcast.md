@@ -374,20 +374,20 @@ inside `.mt-grp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
-| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
-| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
-| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
-| align-items | `center` | `center` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3441 |
+| display | `inline-flex` | `flex` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3454 |
+| gap | `5px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3454 |
+| column-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3454 |
+| row-gap | `5px` | `5px` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3454 |
+| align-items | `center` | `center` | html[data-b3-a1] .mtools .mt-r2 .chip:not(.topic) · b3/board.css:3454 |
 | justify-content | `center` | `center` | .chip · app.css:1242 |
 | min-height | `32px` | `32px` | .chip · app.css:1242 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
 | padding | `0 8px` | `` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
 | padding-top | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-right | `7px (as padding-inline-end)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3394 |
 | padding-bottom | `0px` | `0px` | html[data-b3-a1="fixed"] .mt-r2 .chip · gates.css:243 |
-| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
-| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3381 |
+| padding-left | `7px (as padding-inline-start)` | `7px` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3394 |
+| padding-inline | `7px` | `` | html[data-b3-a1] .mtools .mt-r2 .chip · b3/board.css:3394 |
 | border | `1px solid var(--rule2)` | `` | .chip · app.css:1242 |
 | border-color | `color-mix(in srgb,var(--c) 66%,transparent)!important !important` | `` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | border-radius | `var(--rad-pill)` | `` | .chip, .seg button, .tbdsw button · app.css:4762 |
@@ -408,7 +408,7 @@ inside `.mt-grp` · 1 on screen · **1 look**
 | color | `color-mix(in srgb,var(--c) 26%,white) !important !important` | `color(srgb 0.980627 0.813412 0.896)` | .b4 :is(.mt-grp .chip, .chip.incchip, .b3-xt-all, .chip.topic):is([aria-pressed="true"], [ · b4/classes.css:281 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | button · app.css:621 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -476,12 +476,12 @@ inside `.chip` · 4 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
-| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
-| font-weight | `700` | `700` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
-| font-style | `normal` | `normal` | .mt-grp .chip:not(.topic) em · b3/board.css:3295 |
+| font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mt-grp .chip:not(.topic) em · b3/board.css:3308 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
+| font-weight | `700` | `700` | .mt-grp .chip:not(.topic) em · b3/board.css:3308 |
+| font-style | `normal` | `normal` | .mt-grp .chip:not(.topic) em · b3/board.css:3308 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -502,19 +502,19 @@ inside `.chip` · 4 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3306 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.805967 0.182064 139.657)` | .chip.topic em · b3/board.css:3293 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.805967 0.182064 139.657)` | .chip.topic em · b3/board.css:3306 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3306 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 3 of 4
@@ -529,19 +529,19 @@ inside `.chip` · 4 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3306 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.176783 295.668)` | .chip.topic em · b3/board.css:3293 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.176783 295.668)` | .chip.topic em · b3/board.css:3306 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3306 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 #### look 4 of 4
@@ -556,19 +556,19 @@ inside `.chip` · 4 on screen · **4 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
+| margin-left | `0px` | `0px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | `var(--data)` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .chip.topic em · app.css:3965 |
-| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3439 |
-| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3293 |
+| font-size | `var(--t-sm)` | `12px` | html[data-b3-a1] .mtools .mt-r2 .chip em · b3/board.css:3452 |
+| font-weight | `700` | `700` | .chip.topic em · b3/board.css:3306 |
 | font-style | `normal` | `normal` | .chip.topic em · app.css:3965 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `18px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.0240867 244.026)` | .chip.topic em · b3/board.css:3293 |
-| opacity | `1` | `1` | .chip.topic em · b3/board.css:3293 |
+| color | `oklch(from var(--c) max(l,.76) c h)` | `oklch(0.76 0.0240867 244.026)` | .chip.topic em · b3/board.css:3306 |
+| opacity | `1` | `1` | .chip.topic em · b3/board.css:3306 |
 | cursor | ↑ `pointer` | `pointer` | inherited · button · app.css:621 |
 
 
@@ -862,7 +862,7 @@ inside `.sortable` · 5 on screen · **2 looks**
 | color | `inherit` | `rgb(133, 147, 159)` | th.sortable .sortbtn · app.css:1253 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | th.sortable .sortbtn · app.css:1253 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -937,7 +937,7 @@ inside `.sortable` · 5 on screen · **2 looks**
 | color | `inherit` | `rgb(133, 147, 159)` | th.sortable .sortbtn · app.css:1253 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | th.sortable .sortbtn · app.css:1253 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1745,7 +1745,7 @@ inside `.ra` · 4 on screen · **1 look**
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .rmv · app.css:5191 |
 | isolation | `isolate` | `isolate` | .rmv · app.css:5191 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **::before**
 
@@ -1762,7 +1762,7 @@ inside `.ra` · 4 on screen · **1 look**
 | background-color | `` | .rmv::before · app.css:5192 |
 | background-image | `` | .rmv::before · app.css:5192 |
 | box-shadow | `inset 0 0 0 1px var(--rule2)` | .rmv::before · app.css:5192 |
-| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1635 |
+| transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease)` | html[data-b3-a1="fixed"] .wg-ib::before · b3/board.css:1648 |
 | content | `""` | .rmv::before · app.css:5192 |
 | z-index | `-1` | .rmv::before · app.css:5192 |
 
@@ -1770,24 +1770,24 @@ inside `.ra` · 4 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
-| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1634 |
+| position | `absolute` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| min-width | `0px` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font | `600 var(--t-sm)/1 var(--ui)` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font-family | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font-size | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font-weight | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font-style | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| font-variant-numeric | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| line-height | `` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| text-align | `left` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| white-space | `nowrap` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| color | `inherit` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| opacity | `0` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| overflow | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| overflow-x | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| overflow-y | `hidden` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| content | `""` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
+| pointer-events | `none` | html[data-b3-a1="fixed"] .wg-ib::after · b3/board.css:1647 |
 
 **:hover** — changes; parts inside it respond (table below)
 

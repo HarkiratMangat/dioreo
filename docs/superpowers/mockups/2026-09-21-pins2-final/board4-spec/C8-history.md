@@ -29,19 +29,19 @@ inside `.pb-stage` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .panel.b3-hi · b3/board.css:5047 |
-| flex-direction | `column` | `column` | .panel.b3-hi · b3/board.css:5047 |
-| align-self | `start` | `start` | #history-manifest · b3/board.css:4722 |
+| display | `flex` | `flex` | .panel.b3-hi · b3/board.css:5060 |
+| flex-direction | `column` | `column` | .panel.b3-hi · b3/board.css:5060 |
+| align-self | `start` | `start` | #history-manifest · b3/board.css:4735 |
 | justify-self | `stretch` | `stretch` | #history-manifest · gates.css:42 |
 | width | `100%` | `1148px` | #history-manifest · gates.css:42 |
 | min-width | `0px` | `0px` | #history-manifest · gates.css:42 |
 | max-height | `100%` | `100%` | .g-stage.g-fixed > .panel, .g-stage.g-fixed > section.panel · gates.css:148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-hi · b3/board.css:1501 |
-| padding-top | `0px` | `0px` | .b3-hi · b3/board.css:1501 |
-| padding-right | `0px` | `0px` | .b3-hi · b3/board.css:1501 |
-| padding-bottom | `0px` | `0px` | .b3-hi · b3/board.css:1501 |
-| padding-left | `0px` | `0px` | .b3-hi · b3/board.css:1501 |
+| padding | `0` | `` | .b3-hi · b3/board.css:1514 |
+| padding-top | `0px` | `0px` | .b3-hi · b3/board.css:1514 |
+| padding-right | `0px` | `0px` | .b3-hi · b3/board.css:1514 |
+| padding-bottom | `0px` | `0px` | .b3-hi · b3/board.css:1514 |
+| padding-left | `0px` | `0px` | .b3-hi · b3/board.css:1514 |
 | margin | `0` | `` | #history-manifest · gates.css:42 |
 | margin-top | `0px` | `0px` | #history-manifest · gates.css:42 |
 | margin-right | `0px` | `0px` | #history-manifest · gates.css:42 |
@@ -82,7 +82,7 @@ inside `.panel` · 1 on screen · **1 look**
 | gap | `var(--s3)` | `` | .mtools · app.css:942 |
 | column-gap | `` | `12px` | .mtools · app.css:942 |
 | row-gap | `var(--h1-head,12px)` | `16px` | html[data-b3-a1] .b3-hi .mtools · gates.css:1020 |
-| flex | `none` | `` | .panel.b3-hi > :is(.b3-hi-tools, .b3-hi-empty, .b3-hi-more) · b3/board.css:5048 |
+| flex | `none` | `` | .panel.b3-hi > :is(.b3-hi-tools, .b3-hi-empty, .b3-hi-more) · b3/board.css:5061 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `var(--h1-top,16px) var(--h1-r,18px) 14px var(--h1-l,22px)` | `` | .b3-hi .b3-hi-tools · gates.css:969 |
 | padding-top | `` | `16px` | .b3-hi .b3-hi-tools · gates.css:969 |
@@ -113,12 +113,12 @@ inside `.mtools` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi .mt-r1 · b3/board.css:4923 |
+| display | `grid` | `grid` | .b3-hi .mt-r1 · b3/board.css:4936 |
 | grid-template-columns | `calc(var(--h1-labw,56px) + var(--h1-lab,16px)) minmax(0,1fr) max-content` | `72px 1030px 0px` | html[data-b3-a1] .b3-hi .mt-r1 · gates.css:1012 |
 | gap | `var(--s3)` | `` | .mt-r1 · app.css:943 |
-| column-gap | `0px` | `0px` | .b3-hi .mt-r1 · b3/board.css:4923 |
+| column-gap | `0px` | `0px` | .b3-hi .mt-r1 · b3/board.css:4936 |
 | row-gap | `` | `12px` | .mt-r1 · app.css:943 |
-| align-items | `center` | `center` | .b3-hi .mt-r1 · b3/board.css:4923 |
+| align-items | `center` | `center` | .b3-hi .mt-r1 · b3/board.css:4936 |
 | min-width | `0px` | `0px` | .mt-r1 · app.css:943 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -144,17 +144,17 @@ inside `.mt-r1` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| grid-column | `1` | `` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
+| grid-column | `1` | `` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
 | flex | `none` | `` | .mtools .mlabel · app.css:1339 |
-| justify-self | `start` | `start` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
+| justify-self | `start` | `start` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
 | width | `var(--h1-labw,56px)` | `56px` | html[data-b3-a1] .b3-hi .mt-r1 > .mlabel · gates.css:1013 |
 | min-width | `0px` | `0px` | html[data-b3-a1] .b3-hi .mt-r1 > .mlabel · gates.css:1013 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0` | `` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
-| margin-top | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
+| margin | `0` | `` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
+| margin-top | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
 | margin-right | `var(--h1-lab,16px)` | `16px` | html[data-b3-a1] .b3-hi .mt-r1 > .mlabel · gates.css:1013 |
-| margin-bottom | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
-| margin-left | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4925 |
+| margin-bottom | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
+| margin-left | `0px` | `0px` | .b3-hi .mt-r1 > .mlabel · b3/board.css:4938 |
 | font | `600 var(--t-micro)/1 var(--data)` | `` | .mtools .mlabel · app.css:1339 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .mtools .mlabel · app.css:1339 |
 | font-size | `` | `9.5px` | .mtools .mlabel · app.css:1339 |
@@ -162,11 +162,11 @@ inside `.mt-r1` · 1 on screen · **1 look**
 | font-style | `` | `normal` | .mtools .mlabel · app.css:1339 |
 | font-variant-numeric | `` | `normal` | .mtools .mlabel · app.css:1339 |
 | line-height | `` | `9.5px` | .mtools .mlabel · app.css:1339 |
-| letter-spacing | `var(--b3-tr-wide,1.33px)` | `1.33px` | .b3-hi .mlabel · b3/board.css:4905 |
+| letter-spacing | `var(--b3-tr-wide,1.33px)` | `1.33px` | .b3-hi .mlabel · b3/board.css:4918 |
 | text-transform | `uppercase` | `uppercase` | .mtools .mlabel · app.css:1339 |
 | text-align | `right` | `right` | html[data-b3-a1] .b3-hi .mt-r1 > .mlabel · gates.css:1013 |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .mtools .mlabel · app.css:1339 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 
 ### `span`
@@ -183,11 +183,11 @@ inside `.mlabel` · 181 on screen · **6 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .b3-hi .mlabel > span · b3/board.css:4928 |
-| gap | `7px` | `` | .b3-hi .mlabel > span · b3/board.css:4928 |
-| column-gap | `7px` | `7px` | .b3-hi .mlabel > span · b3/board.css:4928 |
-| row-gap | `7px` | `7px` | .b3-hi .mlabel > span · b3/board.css:4928 |
-| align-items | `center` | `center` | .b3-hi .mlabel > span · b3/board.css:4928 |
+| display | `inline-flex` | `inline-flex` | .b3-hi .mlabel > span · b3/board.css:4941 |
+| gap | `7px` | `` | .b3-hi .mlabel > span · b3/board.css:4941 |
+| column-gap | `7px` | `7px` | .b3-hi .mlabel > span · b3/board.css:4941 |
+| row-gap | `7px` | `7px` | .b3-hi .mlabel > span · b3/board.css:4941 |
+| align-items | `center` | `center` | .b3-hi .mlabel > span · b3/board.css:4941 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `600 var(--t-micro)/1 var(--data)` | `` | inherited · .mtools .mlabel · app.css:1339 |
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .mtools .mlabel · app.css:1339 |
@@ -196,7 +196,7 @@ inside `.mlabel` · 181 on screen · **6 looks**
 | font-style | ↑ `` | `normal` | inherited · .mtools .mlabel · app.css:1339 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .mtools .mlabel · app.css:1339 |
 | line-height | ↑ `` | `9.5px` | inherited · .mtools .mlabel · app.css:1339 |
-| letter-spacing | ↑ `var(--b3-tr-wide,1.33px)` | `1.33px` | inherited · .b3-hi .mlabel · b3/board.css:4905 |
+| letter-spacing | ↑ `var(--b3-tr-wide,1.33px)` | `1.33px` | inherited · .b3-hi .mlabel · b3/board.css:4918 |
 | text-transform | ↑ `uppercase` | `uppercase` | inherited · .mtools .mlabel · app.css:1339 |
 | text-align | ↑ `right` | `right` | inherited · html[data-b3-a1] .b3-hi .mt-r1 > .mlabel · gates.css:1013 |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .mtools .mlabel · app.css:1339 |
@@ -214,17 +214,17 @@ inside `.mlabel` · 181 on screen · **6 looks**
 | display | — | `block` | initial |
 | justify-self | `start` | `start` | .b3-hi .b3-hi-list > .b3-hi-h > span:first-child · gates.css:1071 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-hi-h · b3/board.css:1519 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-hi-h · b3/board.css:1519 |
-| font-size | ↑ `` | `9.5px` | inherited · .b3-hi-h · b3/board.css:1519 |
-| font-weight | ↑ `` | `600` | inherited · .b3-hi-h · b3/board.css:1519 |
-| font-style | ↑ `` | `normal` | inherited · .b3-hi-h · b3/board.css:1519 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-hi-h · b3/board.css:1519 |
-| line-height | ↑ `` | `9.5px` | inherited · .b3-hi-h · b3/board.css:1519 |
-| letter-spacing | ↑ `var(--b3-tr-wide)` | `1.33px` | inherited · .b3-hi-h · b3/board.css:1519 |
-| text-transform | ↑ `uppercase` | `uppercase` | inherited · .b3-hi-h · b3/board.css:1519 |
+| font | ↑ `600 var(--t-micro)/1 var(--data)` | `` | inherited · .b3-hi-h · b3/board.css:1532 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-hi-h · b3/board.css:1532 |
+| font-size | ↑ `` | `9.5px` | inherited · .b3-hi-h · b3/board.css:1532 |
+| font-weight | ↑ `` | `600` | inherited · .b3-hi-h · b3/board.css:1532 |
+| font-style | ↑ `` | `normal` | inherited · .b3-hi-h · b3/board.css:1532 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-hi-h · b3/board.css:1532 |
+| line-height | ↑ `` | `9.5px` | inherited · .b3-hi-h · b3/board.css:1532 |
+| letter-spacing | ↑ `var(--b3-tr-wide)` | `1.33px` | inherited · .b3-hi-h · b3/board.css:1532 |
+| text-transform | ↑ `uppercase` | `uppercase` | inherited · .b3-hi-h · b3/board.css:1532 |
 | text-align | `left` | `left` | .b3-hi .b3-hi-list > .b3-hi-h > span:first-child · gates.css:1071 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-hi-h · b3/board.css:1519 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-hi-h · b3/board.css:1532 |
 
 #### look 3 of 6
 
@@ -244,7 +244,7 @@ inside `.mlabel` · 181 on screen · **6 looks**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 4 of 6
 
@@ -258,21 +258,21 @@ inside `.mlabel` · 181 on screen · **6 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-who · b3/board.css:1563 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-who · b3/board.css:1563 |
-| font-size | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1563 |
-| font-weight | ↑ `` | `600` | inherited · .b3-who · b3/board.css:1563 |
-| font-style | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1563 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1563 |
-| line-height | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1563 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-who · b3/board.css:1576 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-who · b3/board.css:1576 |
+| font-size | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1576 |
+| font-weight | ↑ `` | `600` | inherited · .b3-who · b3/board.css:1576 |
+| font-style | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1576 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1576 |
+| line-height | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1576 |
 | letter-spacing | — | `normal` | initial |
-| text-overflow | `ellipsis` | `ellipsis` | .b3-who > span:last-child · b3/board.css:1564 |
-| white-space | `nowrap` | `` | .b3-who > span:last-child · b3/board.css:1564 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-who · b3/board.css:1563 |
-| overflow | `hidden` | `` | .b3-who > span:last-child · b3/board.css:1564 |
-| overflow-x | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1564 |
-| overflow-y | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1564 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| text-overflow | `ellipsis` | `ellipsis` | .b3-who > span:last-child · b3/board.css:1577 |
+| white-space | `nowrap` | `` | .b3-who > span:last-child · b3/board.css:1577 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-who · b3/board.css:1576 |
+| overflow | `hidden` | `` | .b3-who > span:last-child · b3/board.css:1577 |
+| overflow-x | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1577 |
+| overflow-y | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1577 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 5 of 6
 
@@ -286,18 +286,18 @@ inside `.mlabel` · 181 on screen · **6 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-xs)/1 var(--ui)` | `` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-size | ↑ `` | `10.5px` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-weight | ↑ `` | `600` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-style | ↑ `` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| line-height | ↑ `` | `10.5px` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
+| font | ↑ `600 var(--t-xs)/1 var(--ui)` | `` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-size | ↑ `` | `10.5px` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-weight | ↑ `` | `600` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-style | ↑ `` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| line-height | ↑ `` | `10.5px` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-undo · b3/board.css:1567 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-undo · b3/board.css:1567 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-undo · b3/board.css:1580 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-undo · b3/board.css:1580 |
 
 #### look 6 of 6
 
@@ -311,21 +311,21 @@ inside `.mlabel` · 181 on screen · **6 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-who · b3/board.css:1563 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-who · b3/board.css:1563 |
-| font-size | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1563 |
-| font-weight | ↑ `` | `600` | inherited · .b3-who · b3/board.css:1563 |
-| font-style | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1563 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1563 |
-| line-height | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1563 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-who · b3/board.css:1576 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-who · b3/board.css:1576 |
+| font-size | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1576 |
+| font-weight | ↑ `` | `600` | inherited · .b3-who · b3/board.css:1576 |
+| font-style | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1576 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-who · b3/board.css:1576 |
+| line-height | ↑ `` | `12px` | inherited · .b3-who · b3/board.css:1576 |
 | letter-spacing | — | `normal` | initial |
-| text-overflow | `ellipsis` | `ellipsis` | .b3-who > span:last-child · b3/board.css:1564 |
-| white-space | `nowrap` | `` | .b3-who > span:last-child · b3/board.css:1564 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-who.sys · b3/board.css:1565 |
-| overflow | `hidden` | `` | .b3-who > span:last-child · b3/board.css:1564 |
-| overflow-x | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1564 |
-| overflow-y | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1564 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| text-overflow | `ellipsis` | `ellipsis` | .b3-who > span:last-child · b3/board.css:1577 |
+| white-space | `nowrap` | `` | .b3-who > span:last-child · b3/board.css:1577 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-who.sys · b3/board.css:1578 |
+| overflow | `hidden` | `` | .b3-who > span:last-child · b3/board.css:1577 |
+| overflow-x | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1577 |
+| overflow-y | `hidden` | `hidden` | .b3-who > span:last-child · b3/board.css:1577 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `div.b3-hi-f.mt-r2`
@@ -344,7 +344,7 @@ inside `.mtools` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | `grid` | `grid` | html[data-b3-a1="fixed"] .mt-r2 · gates.css:238 |
 | grid-template-columns | `max-content minmax(0px, 1fr)` | `411.969px 654.031px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
-| gap | `9px 36px` | `` | .b3-hi-f · b3/board.css:1510 |
+| gap | `9px 36px` | `` | .b3-hi-f · b3/board.css:1523 |
 | column-gap | `var(--h1-col,36px)` | `36px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
 | row-gap | `var(--h1-row,10px)` | `10px` | html[data-b3-a1] .b3-hi .b3-hi-f · gates.css:999 |
 | flex-wrap | `wrap` | `wrap` | .mt-r2 · app.css:944 |
@@ -380,12 +380,12 @@ inside `.mt-r2` · 6 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-fg · b3/board.css:1511 |
+| display | `flex` | `flex` | .b3-fg · b3/board.css:1524 |
 | gap | `var(--h1-chip,6px)` | `` | .b3-hi .b3-fg · gates.css:983 |
 | column-gap | `` | `6px` | .b3-hi .b3-fg · gates.css:983 |
 | row-gap | `` | `6px` | .b3-hi .b3-fg · gates.css:983 |
-| flex-wrap | `wrap` | `wrap` | .b3-fg · b3/board.css:1511 |
-| align-items | `center` | `center` | .b3-fg · b3/board.css:1511 |
+| flex-wrap | `wrap` | `wrap` | .b3-fg · b3/board.css:1524 |
+| align-items | `center` | `center` | .b3-fg · b3/board.css:1524 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -413,19 +413,19 @@ inside `.b3-fg` · 6 on screen · **1 look**
 | width | `var(--h1-labw,56px)` | `56px` | .b3-hi .b3-fgl, .b3-hi .b3-hi-f .b3-fgl · gates.css:992 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-right | `calc(var(--h1-lab,16px) - var(--h1-chip,6px))` | `10px` | .b3-hi .b3-fgl, .b3-hi .b3-hi-f .b3-fgl · gates.css:992 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| font-size | `` | `9.5px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| font-weight | `` | `600` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| font-style | `` | `normal` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| font-variant-numeric | `` | `normal` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| line-height | `` | `9.5px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| text-transform | `uppercase` | `uppercase` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| font-size | `` | `9.5px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| font-weight | `` | `600` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| font-style | `` | `normal` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| font-variant-numeric | `` | `normal` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| line-height | `` | `9.5px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| text-transform | `uppercase` | `uppercase` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
 | text-align | `right` | `right` | .b3-hi .b3-fgl, .b3-hi .b3-hi-f .b3-fgl · gates.css:992 |
-| white-space | `nowrap` | `` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2413 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| white-space | `nowrap` | `` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-sd-vl, .b3-fgl, .g-ctl-l, .b3-wg-l · b3/board.css:2426 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 
 ### `button.b3-fc`
@@ -450,11 +450,11 @@ inside `.b3-fg` · 10 on screen · **1 look**
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2325 |
-| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2325 |
-| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2325 |
+| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2338 |
+| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2338 |
+| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2338 |
 | border | `0` | `` | .b3-fc · b3/board.css:1229 |
 | border-radius | `var(--rad-pill)` | `` | .b3-fc · b3/board.css:1229 |
 | background | `var(--sunk)` | `` | .b3-fc · b3/board.css:1229 |
@@ -474,7 +474,7 @@ inside `.b3-fg` · 10 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fc · b3/board.css:1229 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1229 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -520,23 +520,23 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -548,7 +548,7 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--c)` | `rgb(64, 154, 208)` | .b3-fc > .ic · b3/board.css:4762 |
+| color | `var(--c)` | `rgb(64, 154, 208)` | .b3-fc > .ic · b3/board.css:4775 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
@@ -564,23 +564,23 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -592,7 +592,7 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--c)` | `rgb(255, 122, 69)` | .b3-fc > .ic · b3/board.css:4762 |
+| color | `var(--c)` | `rgb(255, 122, 69)` | .b3-fc > .ic · b3/board.css:4775 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
@@ -608,23 +608,23 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -636,7 +636,7 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--c)` | `rgb(166, 128, 251)` | .b3-fc > .ic · b3/board.css:4762 |
+| color | `var(--c)` | `rgb(166, 128, 251)` | .b3-fc > .ic · b3/board.css:4775 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
@@ -654,21 +654,21 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `11px` | `11px` | .b3-fc > .b3-av .ic · b3/board.css:2331 |
-| height | `11px` | `11px` | .b3-fc > .b3-av .ic · b3/board.css:2331 |
+| width | `11px` | `11px` | .b3-fc > .b3-av .ic · b3/board.css:2344 |
+| height | `11px` | `11px` | .b3-fc > .b3-av .ic · b3/board.css:2344 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `700 11px/1 var(--ui)` | `` | inherited · .b3-av · b3/board.css:1515 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-av · b3/board.css:1515 |
-| font-size | ↑ `9px` | `9px` | inherited · .b3-fc > .b3-av · b3/board.css:2330 |
-| font-weight | ↑ `` | `700` | inherited · .b3-av · b3/board.css:1515 |
-| font-style | ↑ `` | `normal` | inherited · .b3-av · b3/board.css:1515 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-av · b3/board.css:1515 |
-| line-height | ↑ `` | `9px` | inherited · .b3-av · b3/board.css:1515 |
+| font | ↑ `700 11px/1 var(--ui)` | `` | inherited · .b3-av · b3/board.css:1528 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-av · b3/board.css:1528 |
+| font-size | ↑ `9px` | `9px` | inherited · .b3-fc > .b3-av · b3/board.css:2343 |
+| font-weight | ↑ `` | `700` | inherited · .b3-av · b3/board.css:1528 |
+| font-style | ↑ `` | `normal` | inherited · .b3-av · b3/board.css:1528 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-av · b3/board.css:1528 |
+| line-height | ↑ `` | `9px` | inherited · .b3-av · b3/board.css:1528 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-av.sys · b3/board.css:1516 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-av.sys · b3/board.css:1529 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
@@ -684,23 +684,23 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -712,7 +712,7 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--c)` | `rgb(245, 158, 12)` | .b3-fc > .ic · b3/board.css:4762 |
+| color | `var(--c)` | `rgb(245, 158, 12)` | .b3-fc > .ic · b3/board.css:4775 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
@@ -728,23 +728,23 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -756,11 +756,11 @@ inside `.b3-fc` · 217 on screen · **16 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-fc.none > .ic · b3/board.css:4903 |
-| opacity | `0.4` | `0.4` | .b3-fc.none > .dot, .b3-fc.none > .b3-meter, .b3-fc.none > .b3-av, .b3-fc.none > .ic · b3/board.css:4711 |
+| color | `var(--ink4)` | `rgb(92, 106, 117)` | .b3-fc.none > .ic · b3/board.css:4916 |
+| opacity | `0.4` | `0.4` | .b3-fc.none > .dot, .b3-fc.none > .b3-meter, .b3-fc.none > .b3-av, .b3-fc.none > .ic · b3/board.css:4724 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 | pointer-events | `none` | `none` | button .ic, a .ic · app.css:6464 |
 
 *10 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
@@ -785,7 +785,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -793,7 +793,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.116869 238.656)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.116869 238.656)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 2 of 11
@@ -811,7 +811,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -819,7 +819,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.176783 295.668)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.176783 295.668)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 3 of 11
@@ -837,7 +837,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -845,8 +845,8 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 4 of 11
 
@@ -863,7 +863,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -871,7 +871,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.806439 0.140511 79.0076)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.806439 0.140511 79.0076)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 5 of 11
@@ -889,7 +889,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -897,7 +897,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.0240867 244.026)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.0240867 244.026)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 6 of 11
@@ -915,7 +915,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -923,7 +923,7 @@ inside `.b3-fc` · 24 on screen · **11 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.820986 0.141636 190.206)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.820986 0.141636 190.206)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 *5 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
@@ -951,17 +951,17 @@ inside `.b3-fg` · 7 on screen · **1 look**
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2325 |
-| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2325 |
-| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2325 |
+| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2338 |
+| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2338 |
+| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2338 |
 | border | `0` | `` | .b3-fc · b3/board.css:1229 |
 | border-radius | `var(--rad-pill)` | `` | .b3-fc · b3/board.css:1229 |
 | background | `var(--sunk)` | `` | .b3-fc · b3/board.css:1229 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-fc · b3/board.css:1229 |
 | background-image | `` | `none` | .b3-fc · b3/board.css:1229 |
-| box-shadow | `inset 0 0 0 1px var(--rule3)` | `rgb(28, 36, 42) 0px 0px 0px 1px inset` | .b3-fc.none · b3/board.css:4709 |
+| box-shadow | `inset 0 0 0 1px var(--rule3)` | `rgb(28, 36, 42) 0px 0px 0px 1px inset` | .b3-fc.none · b3/board.css:4722 |
 | font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-fc · b3/board.css:1229 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-fc · b3/board.css:1229 |
 | font-size | `` | `12px` | .b3-fc · b3/board.css:1229 |
@@ -972,11 +972,11 @@ inside `.b3-fg` · 7 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-fc · b3/board.css:1229 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
-| cursor | `default` | `default` | .b3-fc.none · b3/board.css:4709 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
-| pointer-events | `none` | `none` | .b3-fc.none · b3/board.css:4709 |
+| cursor | `default` | `default` | .b3-fc.none · b3/board.css:4722 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
+| pointer-events | `none` | `none` | .b3-fc.none · b3/board.css:4722 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1036,23 +1036,23 @@ inside `.b3-fc` · 25 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| gap | `1px` | `` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| column-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| row-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `flex-end` | `flex-end` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| justify-content | `center` | `center` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| height | `16px` | `16px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| box-sizing | `border-box` | `border-box` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| padding-bottom | `2px` | `2px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-flex` | `flex` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| gap | `1px` | `` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| column-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| row-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `flex-end` | `flex-end` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| justify-content | `center` | `center` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| height | `16px` | `16px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| box-sizing | `border-box` | `border-box` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| padding-bottom | `2px` | `2px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1064,9 +1064,9 @@ inside `.b3-fc` · 25 on screen · **3 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| opacity | `0.4` | `0.4` | .b3-fc.none > .dot, .b3-fc.none > .b3-meter, .b3-fc.none > .b3-av, .b3-fc.none > .ic · b3/board.css:4711 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| opacity | `0.4` | `0.4` | .b3-fc.none > .dot, .b3-fc.none > .b3-meter, .b3-fc.none > .b3-av, .b3-fc.none > .ic · b3/board.css:4724 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 2 of 3
 
@@ -1078,23 +1078,23 @@ inside `.b3-fc` · 25 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| gap | `1px` | `` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| column-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| row-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `flex-end` | `flex-end` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| justify-content | `center` | `center` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| height | `16px` | `16px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| box-sizing | `border-box` | `border-box` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| padding-bottom | `2px` | `2px` | .b3-fc > .b3-meter · b3/board.css:2334 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-flex` | `flex` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| gap | `1px` | `` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| column-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| row-gap | `1px` | `1px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `flex-end` | `flex-end` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| justify-content | `center` | `center` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| height | `16px` | `16px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| box-sizing | `border-box` | `border-box` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| padding-bottom | `2px` | `2px` | .b3-fc > .b3-meter · b3/board.css:2347 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1119,25 +1119,25 @@ inside `.b3-fc` · 25 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-meter · b3/board.css:1555 |
-| gap | `2px` | `` | .b3-meter · b3/board.css:1555 |
-| column-gap | `2px` | `2px` | .b3-meter · b3/board.css:1555 |
-| row-gap | `2px` | `2px` | .b3-meter · b3/board.css:1555 |
-| align-items | `flex-end` | `flex-end` | .b3-meter · b3/board.css:1555 |
-| height | `12px` | `12px` | .b3-meter · b3/board.css:1555 |
+| display | `inline-flex` | `flex` | .b3-meter · b3/board.css:1568 |
+| gap | `2px` | `` | .b3-meter · b3/board.css:1568 |
+| column-gap | `2px` | `2px` | .b3-meter · b3/board.css:1568 |
+| row-gap | `2px` | `2px` | .b3-meter · b3/board.css:1568 |
+| align-items | `flex-end` | `flex-end` | .b3-meter · b3/board.css:1568 |
+| height | `12px` | `12px` | .b3-meter · b3/board.css:1568 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-style | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1559 |
-| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
+| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-style | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1572 |
+| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1559 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1572 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `i.on`
@@ -1155,13 +1155,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `5px` | `5px` | .b3-meter i:nth-child(1) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `5px` | `5px` | .b3-meter i:nth-child(1) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1173,8 +1173,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 2 of 13
 
@@ -1187,13 +1187,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1205,8 +1205,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 3 of 13
 
@@ -1219,13 +1219,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1237,8 +1237,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 4 of 13
 
@@ -1251,13 +1251,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 90, 79)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1269,8 +1269,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 5 of 13
 
@@ -1283,13 +1283,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `5px` | `5px` | .b3-meter i:nth-child(1) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `5px` | `5px` | .b3-meter i:nth-child(1) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 138, 61)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 138, 61)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1301,8 +1301,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 6 of 13
 
@@ -1315,13 +1315,13 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1558 |
-| background-color | `` | `rgb(255, 138, 61)` | .b3-meter i.on · b3/board.css:1558 |
-| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1558 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--sv)` | `` | .b3-meter i.on · b3/board.css:1571 |
+| background-color | `` | `rgb(255, 138, 61)` | .b3-meter i.on · b3/board.css:1571 |
+| background-image | `` | `none` | .b3-meter i.on · b3/board.css:1571 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1333,8 +1333,8 @@ inside `.b3-meter` · 39 on screen · **13 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 *7 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
@@ -1354,13 +1354,13 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1372,8 +1372,8 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4902 |
-| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4709 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fc.none, .b3-fc.none em, .b3-hi-burst > em > b · b3/board.css:4915 |
+| cursor | ↑ `default` | `default` | inherited · .b3-fc.none · b3/board.css:4722 |
 
 #### look 2 of 7
 
@@ -1386,13 +1386,13 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1418,13 +1418,13 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `12px` | `12px` | .b3-meter i:nth-child(4) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1450,13 +1450,13 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -1482,25 +1482,25 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `7px` | `7px` | .b3-meter i:nth-child(2) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
-| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1559 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
+| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1572 |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1559 |
-| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1572 |
+| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1559 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1572 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 #### look 6 of 7
 
@@ -1513,25 +1513,25 @@ inside `.b3-meter` · 61 on screen · **7 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `3px` | `3px` | .b3-meter i · b3/board.css:1556 |
-| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1557 |
+| width | `3px` | `3px` | .b3-meter i · b3/board.css:1569 |
+| height | `10px` | `10px` | .b3-meter i:nth-child(3) · b3/board.css:1570 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1556 |
-| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1556 |
-| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1556 |
-| background-image | `` | `none` | .b3-meter i · b3/board.css:1556 |
-| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
-| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1559 |
+| border-radius | `1px` | `` | .b3-meter i · b3/board.css:1569 |
+| background | `var(--rule2)` | `` | .b3-meter i · b3/board.css:1569 |
+| background-color | `` | `rgb(58, 71, 82)` | .b3-meter i · b3/board.css:1569 |
+| background-image | `` | `none` | .b3-meter i · b3/board.css:1569 |
+| font | ↑ `500 var(--t-xs)/1 var(--data)` | `` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-size | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
+| font-weight | ↑ `` | `500` | inherited · .b3-lvl · b3/board.css:1572 |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1559 |
-| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1559 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-lvl · b3/board.css:1572 |
+| line-height | ↑ `` | `10.5px` | inherited · .b3-lvl · b3/board.css:1572 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1559 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-lvl · b3/board.css:1572 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 *1 further looks are the same component in other data hues (a per-row `--c` / `--m` / `--sl`); they differ in colour only.*
 
@@ -1550,34 +1550,34 @@ inside `.b3-fc` · 28 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| height | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| height | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| border-radius | `50%` | `` | .b3-av · b3/board.css:1515 |
-| background | `linear-gradient(135deg,#4A6A85,#2C3E4E)` | `` | .b3-av · b3/board.css:1515 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-av · b3/board.css:1515 |
-| background-image | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | .b3-av · b3/board.css:1515 |
-| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1515 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1515 |
-| font-size | `9px` | `9px` | .b3-fc > .b3-av · b3/board.css:2330 |
-| font-weight | `` | `700` | .b3-av · b3/board.css:1515 |
-| font-style | `` | `normal` | .b3-av · b3/board.css:1515 |
-| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1515 |
-| line-height | `` | `9px` | .b3-av · b3/board.css:1515 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| border-radius | `50%` | `` | .b3-av · b3/board.css:1528 |
+| background | `linear-gradient(135deg,#4A6A85,#2C3E4E)` | `` | .b3-av · b3/board.css:1528 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-av · b3/board.css:1528 |
+| background-image | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | .b3-av · b3/board.css:1528 |
+| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1528 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1528 |
+| font-size | `9px` | `9px` | .b3-fc > .b3-av · b3/board.css:2343 |
+| font-weight | `` | `700` | .b3-av · b3/board.css:1528 |
+| font-style | `` | `normal` | .b3-av · b3/board.css:1528 |
+| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1528 |
+| line-height | `` | `9px` | .b3-av · b3/board.css:1528 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-av · b3/board.css:1515 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-av · b3/board.css:1528 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 2 of 2
@@ -1590,27 +1590,27 @@ inside `.b3-fc` · 28 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-av · b3/board.css:1515 |
-| flex | `none` | `` | .b3-av · b3/board.css:1515 |
-| align-items | `center` | `center` | .b3-av · b3/board.css:1515 |
-| place-items | `center` | `` | .b3-av · b3/board.css:1515 |
-| width | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| height | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
+| display | `inline-grid` | `grid` | .b3-av · b3/board.css:1528 |
+| flex | `none` | `` | .b3-av · b3/board.css:1528 |
+| align-items | `center` | `center` | .b3-av · b3/board.css:1528 |
+| place-items | `center` | `` | .b3-av · b3/board.css:1528 |
+| width | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| height | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-av · b3/board.css:1515 |
-| background | `linear-gradient(135deg,#4A6A85,#2C3E4E)` | `` | .b3-av · b3/board.css:1515 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-av · b3/board.css:1515 |
-| background-image | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | .b3-av · b3/board.css:1515 |
-| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1515 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1515 |
-| font-size | `10px` | `10px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| font-weight | `` | `700` | .b3-av · b3/board.css:1515 |
-| font-style | `` | `normal` | .b3-av · b3/board.css:1515 |
-| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1515 |
-| line-height | `` | `10px` | .b3-av · b3/board.css:1515 |
+| border-radius | `50%` | `` | .b3-av · b3/board.css:1528 |
+| background | `linear-gradient(135deg,#4A6A85,#2C3E4E)` | `` | .b3-av · b3/board.css:1528 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-av · b3/board.css:1528 |
+| background-image | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | `linear-gradient(135deg, rgb(74, 106, 133), rgb(44, 62, 78))` | .b3-av · b3/board.css:1528 |
+| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1528 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1528 |
+| font-size | `10px` | `10px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| font-weight | `` | `700` | .b3-av · b3/board.css:1528 |
+| font-style | `` | `normal` | .b3-av · b3/board.css:1528 |
+| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1528 |
+| line-height | `` | `10px` | .b3-av · b3/board.css:1528 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `span.b3-av.sys`
@@ -1627,35 +1627,35 @@ inside `.b3-fc` · 48 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| height | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| height | `16px` | `16px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| border-radius | `50%` | `` | .b3-av · b3/board.css:1515 |
-| background | `var(--sunk)` | `` | .b3-av.sys · b3/board.css:1516 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-av.sys · b3/board.css:1516 |
-| background-image | `` | `none` | .b3-av.sys · b3/board.css:1516 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-av.sys · b3/board.css:1516 |
-| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1515 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1515 |
-| font-size | `9px` | `9px` | .b3-fc > .b3-av · b3/board.css:2330 |
-| font-weight | `` | `700` | .b3-av · b3/board.css:1515 |
-| font-style | `` | `normal` | .b3-av · b3/board.css:1515 |
-| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1515 |
-| line-height | `` | `9px` | .b3-av · b3/board.css:1515 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| border-radius | `50%` | `` | .b3-av · b3/board.css:1528 |
+| background | `var(--sunk)` | `` | .b3-av.sys · b3/board.css:1529 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-av.sys · b3/board.css:1529 |
+| background-image | `` | `none` | .b3-av.sys · b3/board.css:1529 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-av.sys · b3/board.css:1529 |
+| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1528 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1528 |
+| font-size | `9px` | `9px` | .b3-fc > .b3-av · b3/board.css:2343 |
+| font-weight | `` | `700` | .b3-av · b3/board.css:1528 |
+| font-style | `` | `normal` | .b3-av · b3/board.css:1528 |
+| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1528 |
+| line-height | `` | `9px` | .b3-av · b3/board.css:1528 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-av.sys · b3/board.css:1516 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-av.sys · b3/board.css:1529 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 2 of 2
@@ -1668,28 +1668,28 @@ inside `.b3-fc` · 48 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-av · b3/board.css:1515 |
-| flex | `none` | `` | .b3-av · b3/board.css:1515 |
-| align-items | `center` | `center` | .b3-av · b3/board.css:1515 |
-| place-items | `center` | `` | .b3-av · b3/board.css:1515 |
-| width | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| height | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
+| display | `inline-grid` | `grid` | .b3-av · b3/board.css:1528 |
+| flex | `none` | `` | .b3-av · b3/board.css:1528 |
+| align-items | `center` | `center` | .b3-av · b3/board.css:1528 |
+| place-items | `center` | `` | .b3-av · b3/board.css:1528 |
+| width | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| height | `22px` | `22px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-av · b3/board.css:1515 |
-| background | `var(--sunk)` | `` | .b3-av.sys · b3/board.css:1516 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-av.sys · b3/board.css:1516 |
-| background-image | `` | `none` | .b3-av.sys · b3/board.css:1516 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-av.sys · b3/board.css:1516 |
-| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1515 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1515 |
-| font-size | `10px` | `10px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| font-weight | `` | `700` | .b3-av · b3/board.css:1515 |
-| font-style | `` | `normal` | .b3-av · b3/board.css:1515 |
-| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1515 |
-| line-height | `` | `10px` | .b3-av · b3/board.css:1515 |
+| border-radius | `50%` | `` | .b3-av · b3/board.css:1528 |
+| background | `var(--sunk)` | `` | .b3-av.sys · b3/board.css:1529 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-av.sys · b3/board.css:1529 |
+| background-image | `` | `none` | .b3-av.sys · b3/board.css:1529 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-av.sys · b3/board.css:1529 |
+| font | `700 11px/1 var(--ui)` | `` | .b3-av · b3/board.css:1528 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-av · b3/board.css:1528 |
+| font-size | `10px` | `10px` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| font-weight | `` | `700` | .b3-av · b3/board.css:1528 |
+| font-style | `` | `normal` | .b3-av · b3/board.css:1528 |
+| font-variant-numeric | `` | `normal` | .b3-av · b3/board.css:1528 |
+| line-height | `` | `10px` | .b3-av · b3/board.css:1528 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .b3-who .b3-av · b3/board.css:5088 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .b3-who .b3-av · b3/board.css:5101 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `div.b3-fady.b3-hi-list`
@@ -1706,11 +1706,11 @@ inside `.panel` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list · b3/board.css:4734 |
-| grid-template-columns | `max-content max-content minmax(0px, 1fr) max-content max-content` | `0px 0px 1058px 0px 0px` | .b3-hi-list · b3/board.css:4734 |
+| display | `grid` | `grid` | .b3-hi-list · b3/board.css:4747 |
+| grid-template-columns | `max-content max-content minmax(0px, 1fr) max-content max-content` | `0px 0px 1058px 0px 0px` | .b3-hi-list · b3/board.css:4747 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list · gates.css:1021 |
-| flex | `1 1 auto` | `` | .panel.b3-hi > .b3-hi-list · b3/board.css:5049 |
-| min-height | `0px` | `0px` | .panel.b3-hi > .b3-hi-list · b3/board.css:5049 |
+| flex | `1 1 auto` | `` | .panel.b3-hi > .b3-hi-list · b3/board.css:5062 |
+| min-height | `0px` | `0px` | .panel.b3-hi > .b3-hi-list · b3/board.css:5062 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1718,10 +1718,10 @@ inside `.panel` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `auto` | `` | .panel.b3-hi > .b3-hi-list · b3/board.css:5049 |
-| overflow-x | `auto` | `auto` | .panel.b3-hi > .b3-hi-list · b3/board.css:5049 |
-| overflow-y | `auto` | `auto` | .panel.b3-hi > .b3-hi-list · b3/board.css:5049 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 32px, rgba(0, 0, 0, 0) 32px, rgba(0, 0, 0, 0.3) 32px, rgba(0, 0, 0, 0.78) 32px, rgb(0, 0, 0) 32px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2364 |
+| overflow | `auto` | `` | .panel.b3-hi > .b3-hi-list · b3/board.css:5062 |
+| overflow-x | `auto` | `auto` | .panel.b3-hi > .b3-hi-list · b3/board.css:5062 |
+| overflow-y | `auto` | `auto` | .panel.b3-hi > .b3-hi-list · b3/board.css:5062 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 32px, rgba(0, 0, 0, 0) 32px, rgba(0, 0, 0, 0.3) 32px, rgba(0, 0, 0, 0.78) 32px, rgb(0, 0, 0) 32px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
 
 
 ### `div.b3-hi-h`
@@ -1738,36 +1738,36 @@ inside `.b3-hi-list` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `sticky` | `sticky` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5053 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `sticky` | `sticky` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5066 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
-| min-height | `32px` | `32px` | .b3-hi-h · b3/board.css:1519 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
+| min-height | `32px` | `32px` | .b3-hi-h · b3/board.css:1532 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-top | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| top | `0px` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5053 |
-| background | `var(--sunk)` | `` | .b3-hi-h · b3/board.css:1519 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-hi-h · b3/board.css:1519 |
-| background-image | `` | `none` | .b3-hi-h · b3/board.css:1519 |
-| box-shadow | `inset 0 -1px 0 var(--rule2)` | `rgb(58, 71, 82) 0px -1px 0px 0px inset` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5053 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-hi-h · b3/board.css:1519 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-hi-h · b3/board.css:1519 |
-| font-size | `` | `9.5px` | .b3-hi-h · b3/board.css:1519 |
-| font-weight | `` | `600` | .b3-hi-h · b3/board.css:1519 |
-| font-style | `` | `normal` | .b3-hi-h · b3/board.css:1519 |
-| font-variant-numeric | `` | `normal` | .b3-hi-h · b3/board.css:1519 |
-| line-height | `` | `9.5px` | .b3-hi-h · b3/board.css:1519 |
-| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-hi-h · b3/board.css:1519 |
-| text-transform | `uppercase` | `uppercase` | .b3-hi-h · b3/board.css:1519 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-hi-h · b3/board.css:1519 |
-| z-index | `3` | `3` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5053 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| top | `0px` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5066 |
+| background | `var(--sunk)` | `` | .b3-hi-h · b3/board.css:1532 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-hi-h · b3/board.css:1532 |
+| background-image | `` | `none` | .b3-hi-h · b3/board.css:1532 |
+| box-shadow | `inset 0 -1px 0 var(--rule2)` | `rgb(58, 71, 82) 0px -1px 0px 0px inset` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5066 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-hi-h · b3/board.css:1532 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-hi-h · b3/board.css:1532 |
+| font-size | `` | `9.5px` | .b3-hi-h · b3/board.css:1532 |
+| font-weight | `` | `600` | .b3-hi-h · b3/board.css:1532 |
+| font-style | `` | `normal` | .b3-hi-h · b3/board.css:1532 |
+| font-variant-numeric | `` | `normal` | .b3-hi-h · b3/board.css:1532 |
+| line-height | `` | `9.5px` | .b3-hi-h · b3/board.css:1532 |
+| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-hi-h · b3/board.css:1532 |
+| text-transform | `uppercase` | `uppercase` | .b3-hi-h · b3/board.css:1532 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-hi-h · b3/board.css:1532 |
+| z-index | `3` | `3` | .b3-hi .b3-hi-list > .b3-hi-h · b3/board.css:5066 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 
 ### `section.b3-hi-dg`
@@ -1784,10 +1784,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4738 |
-| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4751 |
+| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1808,10 +1808,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4738 |
-| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4751 |
+| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1832,10 +1832,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4738 |
-| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4751 |
+| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1856,10 +1856,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4738 |
-| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4751 |
+| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1880,10 +1880,10 @@ inside `.b3-hi-list` · 5 on screen · **5 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4738 |
-| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-dg · b3/board.css:4751 |
+| grid-template-columns | `subgrid` | `subgrid [] [] [] [] [] []` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -1909,14 +1909,14 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1520 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1533 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4739 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4752 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| row-gap | `0px` | `0px` | .b3-hi-day · b3/board.css:4739 |
-| align-items | `center` | `center` | .b3-hi-day · b3/board.css:4686 |
+| row-gap | `0px` | `0px` | .b3-hi-day · b3/board.css:4752 |
+| align-items | `center` | `center` | .b3-hi-day · b3/board.css:4699 |
 | min-height | `var(--h1-day,40px)` | `52px` | html[data-b3-p9="b"] .b3-hi-day · gates.css:1035 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -1924,19 +1924,19 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| top | `var(--hi-head)` | `32px` | .b3-hi .b3-hi-dg > .b3-hi-day · b3/board.css:5054 |
-| border-top | `0` | `` | .b3-hi-h + .b3-hi-dg > .b3-hi-day · b3/board.css:4719 |
-| background | `color-mix(in srgb,color-mix(in srgb,var(--sunk) 60%,var(--paper)) 92%,transparent)` | `` | .b3-hi-day · b3/board.css:4718 |
-| background-color | `` | `color(srgb 0.0619608 0.0823529 0.0988235 / 0.92)` | .b3-hi-day · b3/board.css:4718 |
-| background-image | `` | `none` | .b3-hi-day · b3/board.css:4718 |
+| top | `var(--hi-head)` | `32px` | .b3-hi .b3-hi-dg > .b3-hi-day · b3/board.css:5067 |
+| border-top | `0` | `` | .b3-hi-h + .b3-hi-dg > .b3-hi-day · b3/board.css:4732 |
+| background | `color-mix(in srgb,color-mix(in srgb,var(--sunk) 60%,var(--paper)) 92%,transparent)` | `` | .b3-hi-day · b3/board.css:4731 |
+| background-color | `` | `color(srgb 0.0619608 0.0823529 0.0988235 / 0.92)` | .b3-hi-day · b3/board.css:4731 |
+| background-image | `` | `none` | .b3-hi-day · b3/board.css:4731 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `2` | `2` | .b3-hi-day · b3/board.css:1520 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| z-index | `2` | `2` | .b3-hi-day · b3/board.css:1533 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **::before**
 
@@ -1959,12 +1959,12 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-hi-day::after · b3/board.css:1523 |
-| height | `1px` | .b3-hi-day::after · b3/board.css:1523 |
-| background | `var(--rule3)` | .b3-hi-day::after · b3/board.css:1523 |
-| background-color | `` | .b3-hi-day::after · b3/board.css:1523 |
-| background-image | `` | .b3-hi-day::after · b3/board.css:1523 |
-| content | `none` | .b3-hi-day::after · b3/board.css:4688 |
+| flex | `1` | .b3-hi-day::after · b3/board.css:1536 |
+| height | `1px` | .b3-hi-day::after · b3/board.css:1536 |
+| background | `var(--rule3)` | .b3-hi-day::after · b3/board.css:1536 |
+| background-color | `` | .b3-hi-day::after · b3/board.css:1536 |
+| background-image | `` | .b3-hi-day::after · b3/board.css:1536 |
+| content | `none` | .b3-hi-day::after · b3/board.css:4701 |
 
 #### look 2 of 2
 
@@ -1976,14 +1976,14 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1520 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `sticky` | `sticky` | .b3-hi-day · b3/board.css:1533 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4739 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| gap | `0 16px` | `` | .b3-hi-day · b3/board.css:4752 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| row-gap | `0px` | `0px` | .b3-hi-day · b3/board.css:4739 |
-| align-items | `center` | `center` | .b3-hi-day · b3/board.css:4686 |
+| row-gap | `0px` | `0px` | .b3-hi-day · b3/board.css:4752 |
+| align-items | `center` | `center` | .b3-hi-day · b3/board.css:4699 |
 | min-height | `var(--h1-day,40px)` | `52px` | html[data-b3-p9="b"] .b3-hi-day · gates.css:1035 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -1991,19 +1991,19 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| top | `var(--hi-head)` | `32px` | .b3-hi .b3-hi-dg > .b3-hi-day · b3/board.css:5054 |
-| border-top | `1px solid var(--rule)` | `` | .b3-hi-day · b3/board.css:4686 |
-| background | `color-mix(in srgb,color-mix(in srgb,var(--sunk) 60%,var(--paper)) 92%,transparent)` | `` | .b3-hi-day · b3/board.css:4718 |
-| background-color | `` | `color(srgb 0.0619608 0.0823529 0.0988235 / 0.92)` | .b3-hi-day · b3/board.css:4718 |
-| background-image | `` | `none` | .b3-hi-day · b3/board.css:4718 |
+| top | `var(--hi-head)` | `32px` | .b3-hi .b3-hi-dg > .b3-hi-day · b3/board.css:5067 |
+| border-top | `1px solid var(--rule)` | `` | .b3-hi-day · b3/board.css:4699 |
+| background | `color-mix(in srgb,color-mix(in srgb,var(--sunk) 60%,var(--paper)) 92%,transparent)` | `` | .b3-hi-day · b3/board.css:4731 |
+| background-color | `` | `color(srgb 0.0619608 0.0823529 0.0988235 / 0.92)` | .b3-hi-day · b3/board.css:4731 |
+| background-image | `` | `none` | .b3-hi-day · b3/board.css:4731 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| z-index | `2` | `2` | .b3-hi-day · b3/board.css:1520 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| z-index | `2` | `2` | .b3-hi-day · b3/board.css:1533 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **::before**
 
@@ -2026,12 +2026,12 @@ inside `.b3-hi-dg` · 5 on screen · **2 looks**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-hi-day::after · b3/board.css:1523 |
-| height | `1px` | .b3-hi-day::after · b3/board.css:1523 |
-| background | `var(--rule3)` | .b3-hi-day::after · b3/board.css:1523 |
-| background-color | `` | .b3-hi-day::after · b3/board.css:1523 |
-| background-image | `` | .b3-hi-day::after · b3/board.css:1523 |
-| content | `none` | .b3-hi-day::after · b3/board.css:4688 |
+| flex | `1` | .b3-hi-day::after · b3/board.css:1536 |
+| height | `1px` | .b3-hi-day::after · b3/board.css:1536 |
+| background | `var(--rule3)` | .b3-hi-day::after · b3/board.css:1536 |
+| background-color | `` | .b3-hi-day::after · b3/board.css:1536 |
+| background-image | `` | .b3-hi-day::after · b3/board.css:1536 |
+| content | `none` | .b3-hi-day::after · b3/board.css:4701 |
 
 
 ### `b.b3-hi-dd`
@@ -2051,17 +2051,17 @@ inside `.b3-hi-day` · 5 on screen · **1 look**
 | display | — | `block` | initial |
 | justify-self | `start` | `start` | .b3-hi-day .b3-hi-dd · gates.css:1039 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-hi-day b · b3/board.css:1521 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-day b · b3/board.css:1521 |
-| font-size | `` | `12px` | .b3-hi-day b · b3/board.css:1521 |
-| font-weight | `` | `600` | .b3-hi-day b · b3/board.css:1521 |
-| font-style | `` | `normal` | .b3-hi-day b · b3/board.css:1521 |
-| font-variant-numeric | `` | `normal` | .b3-hi-day b · b3/board.css:1521 |
-| line-height | `` | `12px` | .b3-hi-day b · b3/board.css:1521 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-hi-day b · b3/board.css:1534 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-day b · b3/board.css:1534 |
+| font-size | `` | `12px` | .b3-hi-day b · b3/board.css:1534 |
+| font-weight | `` | `600` | .b3-hi-day b · b3/board.css:1534 |
+| font-style | `` | `normal` | .b3-hi-day b · b3/board.css:1534 |
+| font-variant-numeric | `` | `normal` | .b3-hi-day b · b3/board.css:1534 |
+| line-height | `` | `12px` | .b3-hi-day b · b3/board.css:1534 |
 | letter-spacing | — | `normal` | initial |
 | text-align | `left` | `left` | .b3-hi-day .b3-hi-dd · gates.css:1039 |
-| white-space | `nowrap` | `` | .b3-hi-dd · b3/board.css:4689 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-hi-day b · b3/board.css:1521 |
+| white-space | `nowrap` | `` | .b3-hi-dd · b3/board.css:4702 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-hi-day b · b3/board.css:1534 |
 
 
 ### `span.b3-hi-dm`
@@ -2078,13 +2078,13 @@ inside `.b3-hi-day` · 5 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-dm · b3/board.css:4690 |
-| grid-column | `2 / 4` | `` | .b3-hi-dm · b3/board.css:4740 |
+| display | `flex` | `flex` | .b3-hi-dm · b3/board.css:4703 |
+| grid-column | `2 / 4` | `` | .b3-hi-dm · b3/board.css:4753 |
 | gap | `8px` | `` | .b3-hi-day .b3-hi-dm · gates.css:943 |
 | column-gap | `8px` | `8px` | .b3-hi-day .b3-hi-dm · gates.css:943 |
 | row-gap | `8px` | `8px` | .b3-hi-day .b3-hi-dm · gates.css:943 |
 | align-items | `center` | `center` | .b3-hi-day .b3-hi-dm, .b3-hi-day .b3-hi-dk · gates.css:955 |
-| min-width | `0px` | `0px` | .b3-hi-dm · b3/board.css:4690 |
+| min-width | `0px` | `0px` | .b3-hi-dm · b3/board.css:4703 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2092,9 +2092,9 @@ inside `.b3-hi-day` · 5 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-hi-dm · b3/board.css:4690 |
-| overflow-x | `hidden` | `hidden` | .b3-hi-dm · b3/board.css:4690 |
-| overflow-y | `hidden` | `hidden` | .b3-hi-dm · b3/board.css:4690 |
+| overflow | `hidden` | `` | .b3-hi-dm · b3/board.css:4703 |
+| overflow-x | `hidden` | `hidden` | .b3-hi-dm · b3/board.css:4703 |
+| overflow-y | `hidden` | `hidden` | .b3-hi-dm · b3/board.css:4703 |
 
 
 ### `span.b3-hi-dk`
@@ -2111,7 +2111,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4691 |
+| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4704 |
 | gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
@@ -2136,7 +2136,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 | font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4691 |
+| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4704 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.404157 0.630275 0.769569)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 
 #### look 2 of 3
@@ -2149,7 +2149,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4691 |
+| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4704 |
 | gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
@@ -2174,7 +2174,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 | font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4691 |
+| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4704 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.838588 0.55749 0.453412)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 
 #### look 3 of 3
@@ -2187,7 +2187,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4691 |
+| display | `inline-flex` | `flex` | .b3-hi-dk · b3/board.css:4704 |
 | gap | `6px` | `` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | column-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | row-gap | `6px` | `6px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
@@ -2212,7 +2212,7 @@ inside `.b3-hi-dm` · 6 on screen · **3 looks**
 | font-variant-numeric | `` | `normal` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | line-height | `` | `12px` | .b4 .b3-hi-day .b3-hi-dk · b4.css:136 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4691 |
+| white-space | `nowrap` | `` | .b3-hi-dk · b3/board.css:4704 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.636157 0.571137 0.867373)` | .b3-hi-day .b3-hi-dk · gates.css:944 |
 
 
@@ -2230,12 +2230,12 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -2243,21 +2243,21 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `0` | `` | .b3-hi-day + .b3-hi-r · b3/board.css:1528 |
+| border-top | `0` | `` | .b3-hi-day + .b3-hi-r · b3/board.css:1541 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -2269,7 +2269,7 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -2296,12 +2296,12 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -2309,21 +2309,21 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -2335,7 +2335,7 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -2362,12 +2362,12 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -2375,21 +2375,21 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -2401,7 +2401,7 @@ inside `.b3-hi-dg` · 19 on screen · **3 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -2436,18 +2436,18 @@ inside `.b3-hi-r` · 74 on screen · **1 look**
 | display | — | `block` | initial |
 | justify-self | `start` | `start` | .b3-hi-r .when · gates.css:1038 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-hi-r .when · b3/board.css:1532 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-hi-r .when · b3/board.css:1532 |
-| font-size | `` | `12px` | .b3-hi-r .when · b3/board.css:1532 |
-| font-weight | `` | `500` | .b3-hi-r .when · b3/board.css:1532 |
-| font-style | `` | `normal` | .b3-hi-r .when · b3/board.css:1532 |
-| font-variant-numeric | `` | `normal` | .b3-hi-r .when · b3/board.css:1532 |
-| line-height | `` | `12px` | .b3-hi-r .when · b3/board.css:1532 |
+| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-hi-r .when · b3/board.css:1545 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-hi-r .when · b3/board.css:1545 |
+| font-size | `` | `12px` | .b3-hi-r .when · b3/board.css:1545 |
+| font-weight | `` | `500` | .b3-hi-r .when · b3/board.css:1545 |
+| font-style | `` | `normal` | .b3-hi-r .when · b3/board.css:1545 |
+| font-variant-numeric | `` | `normal` | .b3-hi-r .when · b3/board.css:1545 |
+| line-height | `` | `12px` | .b3-hi-r .when · b3/board.css:1545 |
 | letter-spacing | — | `normal` | initial |
 | text-align | `left` | `left` | .b3-hi-r .when · gates.css:1038 |
-| white-space | `nowrap` | `` | .b3-hi-r .when · b3/board.css:1532 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .when · b3/board.css:1532 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| white-space | `nowrap` | `` | .b3-hi-r .when · b3/board.css:1545 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-hi-r .when · b3/board.css:1545 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `span.b3-htab`
@@ -2464,34 +2464,34 @@ inside `.—` · 74 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1533 |
-| gap | `6px` | `` | .b3-htab · b3/board.css:1533 |
-| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| align-items | `center` | `center` | .b3-htab · b3/board.css:1533 |
-| height | `24px` | `24px` | .b3-htab · b3/board.css:1533 |
+| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1546 |
+| gap | `6px` | `` | .b3-htab · b3/board.css:1546 |
+| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| align-items | `center` | `center` | .b3-htab · b3/board.css:1546 |
+| height | `24px` | `24px` | .b3-htab · b3/board.css:1546 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1533 |
-| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1533 |
-| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1533 |
-| border-radius | `5px` | `` | .b3-htab · b3/board.css:1533 |
+| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1546 |
+| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1546 |
+| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1546 |
+| border-radius | `5px` | `` | .b3-htab · b3/board.css:1546 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-color | `` | `color(srgb 0.25098 0.603922 0.815686 / 0.08)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-image | `` | `none` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(64, 154, 208) 3px 0px 0px 0px inset` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1533 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1533 |
-| font-size | `` | `12px` | .b3-htab · b3/board.css:1533 |
-| font-weight | `` | `600` | .b3-htab · b3/board.css:1533 |
-| font-style | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| line-height | `` | `12px` | .b3-htab · b3/board.css:1533 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1546 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1546 |
+| font-size | `` | `12px` | .b3-htab · b3/board.css:1546 |
+| font-weight | `` | `600` | .b3-htab · b3/board.css:1546 |
+| font-style | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| line-height | `` | `12px` | .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1533 |
+| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1546 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.404157 0.630275 0.769569)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 2 of 3
 
@@ -2503,34 +2503,34 @@ inside `.—` · 74 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1533 |
-| gap | `6px` | `` | .b3-htab · b3/board.css:1533 |
-| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| align-items | `center` | `center` | .b3-htab · b3/board.css:1533 |
-| height | `24px` | `24px` | .b3-htab · b3/board.css:1533 |
+| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1546 |
+| gap | `6px` | `` | .b3-htab · b3/board.css:1546 |
+| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| align-items | `center` | `center` | .b3-htab · b3/board.css:1546 |
+| height | `24px` | `24px` | .b3-htab · b3/board.css:1546 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1533 |
-| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1533 |
-| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1533 |
-| border-radius | `5px` | `` | .b3-htab · b3/board.css:1533 |
+| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1546 |
+| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1546 |
+| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1546 |
+| border-radius | `5px` | `` | .b3-htab · b3/board.css:1546 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-color | `` | `color(srgb 0.65098 0.501961 0.984314 / 0.08)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-image | `` | `none` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(166, 128, 251) 3px 0px 0px 0px inset` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1533 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1533 |
-| font-size | `` | `12px` | .b3-htab · b3/board.css:1533 |
-| font-weight | `` | `600` | .b3-htab · b3/board.css:1533 |
-| font-style | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| line-height | `` | `12px` | .b3-htab · b3/board.css:1533 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1546 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1546 |
+| font-size | `` | `12px` | .b3-htab · b3/board.css:1546 |
+| font-weight | `` | `600` | .b3-htab · b3/board.css:1546 |
+| font-style | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| line-height | `` | `12px` | .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1533 |
+| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1546 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.636157 0.571137 0.867373)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 3 of 3
 
@@ -2542,34 +2542,34 @@ inside `.—` · 74 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1533 |
-| gap | `6px` | `` | .b3-htab · b3/board.css:1533 |
-| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| align-items | `center` | `center` | .b3-htab · b3/board.css:1533 |
-| height | `24px` | `24px` | .b3-htab · b3/board.css:1533 |
+| display | `inline-flex` | `inline-flex` | .b3-htab · b3/board.css:1546 |
+| gap | `6px` | `` | .b3-htab · b3/board.css:1546 |
+| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| align-items | `center` | `center` | .b3-htab · b3/board.css:1546 |
+| height | `24px` | `24px` | .b3-htab · b3/board.css:1546 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1533 |
-| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1533 |
-| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1533 |
-| border-radius | `5px` | `` | .b3-htab · b3/board.css:1533 |
+| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1546 |
+| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1546 |
+| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1546 |
+| border-radius | `5px` | `` | .b3-htab · b3/board.css:1546 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.08)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-image | `` | `none` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(255, 122, 69) 3px 0px 0px 0px inset` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1533 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1533 |
-| font-size | `` | `12px` | .b3-htab · b3/board.css:1533 |
-| font-weight | `` | `600` | .b3-htab · b3/board.css:1533 |
-| font-style | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| line-height | `` | `12px` | .b3-htab · b3/board.css:1533 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1546 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1546 |
+| font-size | `` | `12px` | .b3-htab · b3/board.css:1546 |
+| font-weight | `` | `600` | .b3-htab · b3/board.css:1546 |
+| font-style | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| line-height | `` | `12px` | .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1533 |
+| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1546 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.838588 0.55749 0.453412)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `span.w`
@@ -2588,17 +2588,17 @@ inside `.b3-htab` · 74 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1533 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1533 |
-| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
-| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1533 |
-| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1546 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1546 |
+| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
+| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1546 |
+| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1533 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1546 |
 | color | ↑ `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.404157 0.630275 0.769569)` | inherited · .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 2 of 3
 
@@ -2612,17 +2612,17 @@ inside `.b3-htab` · 74 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1533 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1533 |
-| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
-| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1533 |
-| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1546 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1546 |
+| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
+| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1546 |
+| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1533 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1546 |
 | color | ↑ `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.636157 0.571137 0.867373)` | inherited · .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 3 of 3
 
@@ -2636,17 +2636,17 @@ inside `.b3-htab` · 74 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1533 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1533 |
-| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
-| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1533 |
-| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1533 |
-| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1533 |
+| font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-htab · b3/board.css:1546 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-htab · b3/board.css:1546 |
+| font-size | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
+| font-weight | ↑ `` | `600` | inherited · .b3-htab · b3/board.css:1546 |
+| font-style | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-htab · b3/board.css:1546 |
+| line-height | ↑ `` | `12px` | inherited · .b3-htab · b3/board.css:1546 |
 | letter-spacing | — | `normal` | initial |
-| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1533 |
+| white-space | ↑ `nowrap` | `` | inherited · .b3-htab · b3/board.css:1546 |
 | color | ↑ `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.838588 0.55749 0.453412)` | inherited · .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `button.b3-hi-open.what`
@@ -2663,15 +2663,15 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .what · b3/board.css:5004 |
+| display | `flex` | `flex` | .b3-hi-r .what · b3/board.css:5017 |
 | gap | `8px 12px` | `` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | column-gap | `12px` | `12px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | row-gap | `8px` | `8px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
-| flex-wrap | `nowrap` | `nowrap` | .b3-hi-r .what · b3/board.css:1542 |
-| align-items | `center` | `center` | .b3-hi-r .what · b3/board.css:5004 |
-| min-width | `0px` | `0px` | .b3-hi-r .what · b3/board.css:5004 |
+| flex-wrap | `nowrap` | `nowrap` | .b3-hi-r .what · b3/board.css:1555 |
+| align-items | `center` | `center` | .b3-hi-r .what · b3/board.css:5017 |
+| min-width | `0px` | `0px` | .b3-hi-r .what · b3/board.css:5017 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| box-sizing | `border-box` | `border-box` | .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 | padding | `var(--h1-rowp,11px) 0` | `` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | padding-top | `` | `11px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | padding-right | `` | `0px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
@@ -2692,13 +2692,13 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `start` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
-| overflow | `hidden` | `` | .b3-hi-r .what · b3/board.css:1542 |
-| overflow-x | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1542 |
-| overflow-y | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1542 |
-| mask-image | `none` | `none` | .b3-hi-r .what · b3/board.css:5105 |
+| overflow | `hidden` | `` | .b3-hi-r .what · b3/board.css:1555 |
+| overflow-x | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1555 |
+| overflow-y | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1555 |
+| mask-image | `none` | `none` | .b3-hi-r .what · b3/board.css:5118 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-hi-r .b3-hi-open · b3/board.css:1540 |
-| user-select | `none` | `auto` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| cursor | `pointer` | `pointer` | .b3-hi-r .b3-hi-open · b3/board.css:1553 |
+| user-select | `none` | `auto` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2728,15 +2728,15 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .what · b3/board.css:5004 |
+| display | `flex` | `flex` | .b3-hi-r .what · b3/board.css:5017 |
 | gap | `8px 12px` | `` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | column-gap | `12px` | `12px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | row-gap | `8px` | `8px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
-| flex-wrap | `nowrap` | `nowrap` | .b3-hi-r .what · b3/board.css:1542 |
-| align-items | `center` | `center` | .b3-hi-r .what · b3/board.css:5004 |
-| min-width | `0px` | `0px` | .b3-hi-r .what · b3/board.css:5004 |
+| flex-wrap | `nowrap` | `nowrap` | .b3-hi-r .what · b3/board.css:1555 |
+| align-items | `center` | `center` | .b3-hi-r .what · b3/board.css:5017 |
+| min-width | `0px` | `0px` | .b3-hi-r .what · b3/board.css:5017 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| box-sizing | `border-box` | `border-box` | .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 | padding | `var(--h1-rowp,11px) 0` | `` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | padding-top | `` | `11px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
 | padding-right | `` | `0px` | html[data-b3-p9="b"] .b3-hi-r .what · gates.css:1034 |
@@ -2757,13 +2757,13 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `start` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
-| overflow | `hidden` | `` | .b3-hi-r .what · b3/board.css:1542 |
-| overflow-x | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1542 |
-| overflow-y | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1542 |
-| mask-image | `none` | `none` | .b3-hi-r .what · b3/board.css:5105 |
+| overflow | `hidden` | `` | .b3-hi-r .what · b3/board.css:1555 |
+| overflow-x | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1555 |
+| overflow-y | `hidden` | `hidden` | .b3-hi-r .what · b3/board.css:1555 |
+| mask-image | `none` | `none` | .b3-hi-r .what · b3/board.css:5118 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-hi-r .b3-hi-open · b3/board.css:1540 |
-| user-select | `none` | `auto` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| cursor | `pointer` | `pointer` | .b3-hi-r .b3-hi-open · b3/board.css:1553 |
+| user-select | `none` | `auto` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2798,15 +2798,15 @@ inside `.what` · 27 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .hlead · b3/board.css:5106 |
-| gap | `10px` | `` | .b3-hi-r .hlead · b3/board.css:5106 |
-| column-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5106 |
-| row-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5106 |
-| flex | `0 1 auto` | `` | .b3-hi-r .hlead · b3/board.css:5138 |
-| align-items | `center` | `center` | .b3-hi-r .hlead · b3/board.css:5106 |
-| min-width | `0px` | `0px` | .b3-hi-r .hlead · b3/board.css:5106 |
+| display | `flex` | `flex` | .b3-hi-r .hlead · b3/board.css:5119 |
+| gap | `10px` | `` | .b3-hi-r .hlead · b3/board.css:5119 |
+| column-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5119 |
+| row-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5119 |
+| flex | `0 1 auto` | `` | .b3-hi-r .hlead · b3/board.css:5151 |
+| align-items | `center` | `center` | .b3-hi-r .hlead · b3/board.css:5119 |
+| min-width | `0px` | `0px` | .b3-hi-r .hlead · b3/board.css:5119 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-right | `24px` | `24px` | .b3-hi-r .hlead · b3/board.css:5138 |
+| padding-right | `24px` | `24px` | .b3-hi-r .hlead · b3/board.css:5151 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
@@ -2818,11 +2818,11 @@ inside `.what` · 27 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
-| overflow | `hidden` | `` | .b3-hi-r .hlead · b3/board.css:5106 |
-| overflow-x | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5106 |
-| overflow-y | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5106 |
-| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), transparent)` | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), rgba(0, 0, 0, 0))` | .b3-hi-r .hlead · b3/board.css:5106 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| overflow | `hidden` | `` | .b3-hi-r .hlead · b3/board.css:5119 |
+| overflow-x | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5119 |
+| overflow-y | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5119 |
+| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), transparent)` | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), rgba(0, 0, 0, 0))` | .b3-hi-r .hlead · b3/board.css:5119 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `span.s`
@@ -2840,21 +2840,21 @@ inside `.hlead` · 74 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| min-width | `78px` | `78px` | .b3-hi-r .what:has(.b3-ent) .s · b3/board.css:3927 |
+| min-width | `78px` | `78px` | .b3-hi-r .what:has(.b3-ent) .s · b3/board.css:3940 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-base)/1.3 var(--ui)` | `` | .b3-hi-r .what .s · b3/board.css:1550 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .what .s · b3/board.css:1550 |
+| font | `600 var(--t-base)/1.3 var(--ui)` | `` | .b3-hi-r .what .s · b3/board.css:1563 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .what .s · b3/board.css:1563 |
 | font-size | `var(--t-md)` | `14.5px` | html[data-b3-p9="b"] .b3-hi-r .what .s · gates.css:679 |
-| font-weight | `` | `600` | .b3-hi-r .what .s · b3/board.css:1550 |
-| font-style | `` | `normal` | .b3-hi-r .what .s · b3/board.css:1550 |
-| font-variant-numeric | `` | `normal` | .b3-hi-r .what .s · b3/board.css:1550 |
-| line-height | `` | `18.85px` | .b3-hi-r .what .s · b3/board.css:1550 |
+| font-weight | `` | `600` | .b3-hi-r .what .s · b3/board.css:1563 |
+| font-style | `` | `normal` | .b3-hi-r .what .s · b3/board.css:1563 |
+| font-variant-numeric | `` | `normal` | .b3-hi-r .what .s · b3/board.css:1563 |
+| line-height | `` | `18.85px` | .b3-hi-r .what .s · b3/board.css:1563 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b3-hi-r .what .s · b3/board.css:1550 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-hi-r .what .s · b3/board.css:1550 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| white-space | `nowrap` | `` | .b3-hi-r .what .s · b3/board.css:1563 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-hi-r .what .s · b3/board.css:1563 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `span.b3-ent`
@@ -2871,43 +2871,43 @@ inside `.hlead` · 27 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-ent · b3/board.css:1553 |
-| gap | `7px` | `` | .b3-ent · b3/board.css:1553 |
-| column-gap | `7px` | `7px` | .b3-ent · b3/board.css:1553 |
-| row-gap | `7px` | `7px` | .b3-ent · b3/board.css:1553 |
-| align-items | `center` | `center` | .b3-ent · b3/board.css:1553 |
-| min-width | `0px` | `0px` | .b3-ent · b3/board.css:1553 |
-| max-width | `100%` | `100%` | .b3-ent · b3/board.css:1553 |
-| height | `24px` | `24px` | .b3-ent · b3/board.css:1553 |
+| display | `inline-flex` | `flex` | .b3-ent · b3/board.css:1566 |
+| gap | `7px` | `` | .b3-ent · b3/board.css:1566 |
+| column-gap | `7px` | `7px` | .b3-ent · b3/board.css:1566 |
+| row-gap | `7px` | `7px` | .b3-ent · b3/board.css:1566 |
+| align-items | `center` | `center` | .b3-ent · b3/board.css:1566 |
+| min-width | `0px` | `0px` | .b3-ent · b3/board.css:1566 |
+| max-width | `100%` | `100%` | .b3-ent · b3/board.css:1566 |
+| height | `24px` | `24px` | .b3-ent · b3/board.css:1566 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0` | `` | .b3-ent · b3/board.css:1553 |
-| padding-top | `0px` | `0px` | .b3-ent · b3/board.css:1553 |
-| padding-right | `0px` | `0px` | .b3-ent · b3/board.css:1553 |
-| padding-bottom | `0px` | `0px` | .b3-ent · b3/board.css:1553 |
-| padding-left | `0px` | `0px` | .b3-ent · b3/board.css:1553 |
-| border-radius | `0` | `` | .b3-ent · b3/board.css:1553 |
-| background | `none` | `` | .b3-ent · b3/board.css:1553 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-ent · b3/board.css:1553 |
-| background-image | `none` | `none` | .b3-ent · b3/board.css:1553 |
-| box-shadow | `none` | `none` | .b3-ent · b3/board.css:1553 |
-| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-ent · b3/board.css:1553 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-ent · b3/board.css:1553 |
-| font-size | `` | `12px` | .b3-ent · b3/board.css:1553 |
-| font-weight | `` | `500` | .b3-ent · b3/board.css:1553 |
-| font-style | `` | `normal` | .b3-ent · b3/board.css:1553 |
-| font-variant-numeric | `` | `normal` | .b3-ent · b3/board.css:1553 |
-| line-height | `` | `12px` | .b3-ent · b3/board.css:1553 |
-| letter-spacing | `0.01em` | `0.12px` | .b3-ent · b3/board.css:1553 |
+| padding | `0` | `` | .b3-ent · b3/board.css:1566 |
+| padding-top | `0px` | `0px` | .b3-ent · b3/board.css:1566 |
+| padding-right | `0px` | `0px` | .b3-ent · b3/board.css:1566 |
+| padding-bottom | `0px` | `0px` | .b3-ent · b3/board.css:1566 |
+| padding-left | `0px` | `0px` | .b3-ent · b3/board.css:1566 |
+| border-radius | `0` | `` | .b3-ent · b3/board.css:1566 |
+| background | `none` | `` | .b3-ent · b3/board.css:1566 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-ent · b3/board.css:1566 |
+| background-image | `none` | `none` | .b3-ent · b3/board.css:1566 |
+| box-shadow | `none` | `none` | .b3-ent · b3/board.css:1566 |
+| font | `500 var(--t-sm)/1 var(--data)` | `` | .b3-ent · b3/board.css:1566 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-ent · b3/board.css:1566 |
+| font-size | `` | `12px` | .b3-ent · b3/board.css:1566 |
+| font-weight | `` | `500` | .b3-ent · b3/board.css:1566 |
+| font-style | `` | `normal` | .b3-ent · b3/board.css:1566 |
+| font-variant-numeric | `` | `normal` | .b3-ent · b3/board.css:1566 |
+| line-height | `` | `12px` | .b3-ent · b3/board.css:1566 |
+| letter-spacing | `0.01em` | `0.12px` | .b3-ent · b3/board.css:1566 |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| text-overflow | `ellipsis` | `ellipsis` | .b3-ent · b3/board.css:1553 |
-| white-space | `nowrap` | `` | .b3-ent · b3/board.css:1553 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-ent · b3/board.css:1553 |
-| overflow | `hidden` | `` | .b3-ent · b3/board.css:1553 |
-| overflow-x | `hidden` | `hidden` | .b3-ent · b3/board.css:1553 |
-| overflow-y | `hidden` | `hidden` | .b3-ent · b3/board.css:1553 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| text-overflow | `ellipsis` | `ellipsis` | .b3-ent · b3/board.css:1566 |
+| white-space | `nowrap` | `` | .b3-ent · b3/board.css:1566 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-ent · b3/board.css:1566 |
+| overflow | `hidden` | `` | .b3-ent · b3/board.css:1566 |
+| overflow-x | `hidden` | `hidden` | .b3-ent · b3/board.css:1566 |
+| overflow-y | `hidden` | `hidden` | .b3-ent · b3/board.css:1566 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 
 ### `span.b3-who`
@@ -2924,23 +2924,23 @@ inside `.b3-hi-r` · 27 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-who · b3/board.css:1563 |
-| gap | `8px` | `` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| column-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| row-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| align-items | `center` | `center` | .b3-who · b3/board.css:1563 |
-| min-width | `0px` | `0px` | .b3-who · b3/board.css:1563 |
+| display | `inline-flex` | `flex` | .b3-who · b3/board.css:1576 |
+| gap | `8px` | `` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| column-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| row-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| align-items | `center` | `center` | .b3-who · b3/board.css:1576 |
+| min-width | `0px` | `0px` | .b3-who · b3/board.css:1576 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-who · b3/board.css:1563 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-who · b3/board.css:1563 |
-| font-size | `` | `12px` | .b3-who · b3/board.css:1563 |
-| font-weight | `` | `600` | .b3-who · b3/board.css:1563 |
-| font-style | `` | `normal` | .b3-who · b3/board.css:1563 |
-| font-variant-numeric | `` | `normal` | .b3-who · b3/board.css:1563 |
-| line-height | `` | `12px` | .b3-who · b3/board.css:1563 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-who · b3/board.css:1576 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-who · b3/board.css:1576 |
+| font-size | `` | `12px` | .b3-who · b3/board.css:1576 |
+| font-weight | `` | `600` | .b3-who · b3/board.css:1576 |
+| font-style | `` | `normal` | .b3-who · b3/board.css:1576 |
+| font-variant-numeric | `` | `normal` | .b3-who · b3/board.css:1576 |
+| line-height | `` | `12px` | .b3-who · b3/board.css:1576 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-who · b3/board.css:1563 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-who · b3/board.css:1576 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `span.act`
@@ -2957,8 +2957,8 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .act · b3/board.css:1566 |
-| justify-content | `flex-end` | `flex-end` | .b3-hi-r .act · b3/board.css:3931 |
+| display | `flex` | `flex` | .b3-hi-r .act · b3/board.css:1579 |
+| justify-content | `flex-end` | `flex-end` | .b3-hi-r .act · b3/board.css:3944 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2966,7 +2966,7 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 #### look 2 of 2
 
@@ -2978,8 +2978,8 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .act · b3/board.css:1566 |
-| justify-content | `flex-end` | `flex-end` | .b3-hi-r .act · b3/board.css:3931 |
+| display | `flex` | `flex` | .b3-hi-r .act · b3/board.css:1579 |
+| justify-content | `flex-end` | `flex-end` | .b3-hi-r .act · b3/board.css:3944 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2987,7 +2987,7 @@ inside `.b3-hi-r` · 74 on screen · **2 looks**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `button.b3-undo`
@@ -3004,42 +3004,42 @@ inside `.act` · 14 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| gap | `6px` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| column-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| row-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| align-items | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| justify-content | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| place-items | `center` | `` | .b3-undo · b3/board.css:1567 |
-| width | `84px` | `84px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| height | `28px` | `28px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
+| display | `inline-flex` | `flex` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| gap | `6px` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| column-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| row-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| align-items | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| justify-content | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| place-items | `center` | `` | .b3-undo · b3/board.css:1580 |
+| width | `84px` | `84px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| height | `28px` | `28px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
-| box-sizing | `border-box` | `border-box` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding | `0` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding-top | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding-right | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding-bottom | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding-left | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| border | `0` | `` | .b3-undo · b3/board.css:1567 |
-| border-radius | `var(--rad-box)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| background | `var(--raised)` | `` | .b3-undo · b3/board.css:1567 |
-| background-color | `` | `rgb(31, 39, 46)` | .b3-undo · b3/board.css:1567 |
-| background-image | `` | `none` | .b3-undo · b3/board.css:1567 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-undo · b3/board.css:1567 |
-| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-size | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-weight | `` | `600` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-style | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-variant-numeric | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| line-height | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| letter-spacing | `0px` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| text-transform | `none` | `none` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
+| box-sizing | `border-box` | `border-box` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding | `0` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding-top | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding-right | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding-bottom | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding-left | `0px` | `0px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| border | `0` | `` | .b3-undo · b3/board.css:1580 |
+| border-radius | `var(--rad-box)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| background | `var(--raised)` | `` | .b3-undo · b3/board.css:1580 |
+| background-color | `` | `rgb(31, 39, 46)` | .b3-undo · b3/board.css:1580 |
+| background-image | `` | `none` | .b3-undo · b3/board.css:1580 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-undo · b3/board.css:1580 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-size | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-weight | `` | `600` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-style | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-variant-numeric | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| line-height | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| letter-spacing | `0px` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| text-transform | `none` | `none` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-undo · b3/board.css:1567 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-undo · b3/board.css:1580 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
-| cursor | `pointer` | `pointer` | .b3-undo · b3/board.css:1567 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| cursor | `pointer` | `pointer` | .b3-undo · b3/board.css:1580 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3096,12 +3096,12 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -3109,21 +3109,21 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -3135,7 +3135,7 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -3162,12 +3162,12 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -3175,21 +3175,21 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -3201,7 +3201,7 @@ inside `.b3-hi-dg` · 19 on screen · **2 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -3233,39 +3233,39 @@ inside `.act` · 13 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| gap | `6px` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| column-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| row-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| align-items | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| justify-content | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| justify-self | `end` | `end` | .b3-hi-r .act .b3-undone · b3/board.css:1562 |
-| width | `auto` | `58.2188px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| min-width | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| height | `28px` | `28px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| box-sizing | `border-box` | `border-box` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| padding | `0` | `` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| padding-top | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| padding-right | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| padding-bottom | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| padding-left | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| border-radius | `var(--rad-box)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| background | `none` | `` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| background-image | `none` | `none` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| box-shadow | `none` | `none` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-size | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-weight | `` | `600` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-style | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| font-variant-numeric | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| line-height | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| letter-spacing | `0px` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| text-transform | `none` | `none` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3932 |
-| white-space | `nowrap` | `` | .b3-hi-r .act .b3-undone · b3/board.css:1562 |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
-| cursor | `default` | `default` | .b3-hi-r .act .b3-undone · b3/board.css:4855 |
+| display | `inline-flex` | `flex` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| gap | `6px` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| column-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| row-gap | `6px` | `6px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| align-items | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| justify-content | `center` | `center` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| justify-self | `end` | `end` | .b3-hi-r .act .b3-undone · b3/board.css:1575 |
+| width | `auto` | `58.2188px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| min-width | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| height | `28px` | `28px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| box-sizing | `border-box` | `border-box` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| padding | `0` | `` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| padding-top | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| padding-right | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| padding-bottom | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| padding-left | `0px` | `0px` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| border-radius | `var(--rad-box)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| background | `none` | `` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| background-image | `none` | `none` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| box-shadow | `none` | `none` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| font | `600 var(--t-xs)/1 var(--ui)` | `` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-size | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-weight | `` | `600` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-style | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| font-variant-numeric | `` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| line-height | `` | `10.5px` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| letter-spacing | `0px` | `normal` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| text-transform | `none` | `none` | .b3-hi-r .act .b3-undo, .b3-hi-r .act .b3-undone · b3/board.css:3945 |
+| white-space | `nowrap` | `` | .b3-hi-r .act .b3-undone · b3/board.css:1575 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
+| cursor | `default` | `default` | .b3-hi-r .act .b3-undone · b3/board.css:4868 |
 
 
 ### `div.b3-hi-r`
@@ -3282,12 +3282,12 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -3295,21 +3295,21 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -3321,7 +3321,7 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -3348,12 +3348,12 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -3361,21 +3361,21 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -3387,7 +3387,7 @@ inside `.b3-hi-dg` · 22 on screen · **2 looks**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -3419,15 +3419,15 @@ inside `.what` · 47 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-r .hlead · b3/board.css:5106 |
-| gap | `10px` | `` | .b3-hi-r .hlead · b3/board.css:5106 |
-| column-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5106 |
-| row-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5106 |
-| flex | `0 1 auto` | `` | .b3-hi-r .hlead · b3/board.css:5138 |
-| align-items | `center` | `center` | .b3-hi-r .hlead · b3/board.css:5106 |
-| min-width | `0px` | `0px` | .b3-hi-r .hlead · b3/board.css:5106 |
+| display | `flex` | `flex` | .b3-hi-r .hlead · b3/board.css:5119 |
+| gap | `10px` | `` | .b3-hi-r .hlead · b3/board.css:5119 |
+| column-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5119 |
+| row-gap | `10px` | `10px` | .b3-hi-r .hlead · b3/board.css:5119 |
+| flex | `0 1 auto` | `` | .b3-hi-r .hlead · b3/board.css:5151 |
+| align-items | `center` | `center` | .b3-hi-r .hlead · b3/board.css:5119 |
+| min-width | `0px` | `0px` | .b3-hi-r .hlead · b3/board.css:5119 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-right | `24px` | `24px` | .b3-hi-r .hlead · b3/board.css:5138 |
+| padding-right | `24px` | `24px` | .b3-hi-r .hlead · b3/board.css:5151 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
@@ -3439,11 +3439,11 @@ inside `.what` · 47 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | color | ↑ `inherit` | `rgb(232, 237, 241)` | inherited · button · app.css:621 |
-| overflow | `hidden` | `` | .b3-hi-r .hlead · b3/board.css:5106 |
-| overflow-x | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5106 |
-| overflow-y | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5106 |
-| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), transparent)` | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), rgba(0, 0, 0, 0))` | .b3-hi-r .hlead · b3/board.css:5106 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| overflow | `hidden` | `` | .b3-hi-r .hlead · b3/board.css:5119 |
+| overflow-x | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5119 |
+| overflow-y | `hidden` | `hidden` | .b3-hi-r .hlead · b3/board.css:5119 |
+| mask-image | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), transparent)` | `linear-gradient(90deg, rgb(0, 0, 0) calc(100% - 24px), rgba(0, 0, 0, 0))` | .b3-hi-r .hlead · b3/board.css:5119 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `span.b3-htab.b3-online`
@@ -3460,37 +3460,37 @@ inside `.what` · 26 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-htab · b3/board.css:1533 |
-| gap | `6px` | `` | .b3-htab · b3/board.css:1533 |
-| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1533 |
-| align-items | `center` | `center` | .b3-htab · b3/board.css:1533 |
-| height | `24px` | `24px` | .b3-htab · b3/board.css:1533 |
+| display | `inline-flex` | `flex` | .b3-htab · b3/board.css:1546 |
+| gap | `6px` | `` | .b3-htab · b3/board.css:1546 |
+| column-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| row-gap | `6px` | `6px` | .b3-htab · b3/board.css:1546 |
+| align-items | `center` | `center` | .b3-htab · b3/board.css:1546 |
+| height | `24px` | `24px` | .b3-htab · b3/board.css:1546 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1533 |
-| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1533 |
-| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1533 |
-| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1533 |
+| padding | `0 9px 0 10px` | `` | .b3-htab · b3/board.css:1546 |
+| padding-top | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-right | `9px` | `9px` | .b3-htab · b3/board.css:1546 |
+| padding-bottom | `0px` | `0px` | .b3-htab · b3/board.css:1546 |
+| padding-left | `10px` | `10px` | .b3-htab · b3/board.css:1546 |
 | margin-left | `var(--h1-cell,16px)` | `22px` | .b4 .b3-hi-r .b3-online · b4.css:140 |
-| border-radius | `5px` | `` | .b3-htab · b3/board.css:1533 |
+| border-radius | `5px` | `` | .b3-htab · b3/board.css:1546 |
 | background | `color-mix(in srgb,var(--c) 8%,transparent)` | `` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.08)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | background-image | `` | `none` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
 | box-shadow | `inset 3px 0 0 var(--c)` | `rgb(123, 219, 99) 3px 0px 0px 0px inset` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1533 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1533 |
-| font-size | `` | `12px` | .b3-htab · b3/board.css:1533 |
-| font-weight | `` | `600` | .b3-htab · b3/board.css:1533 |
-| font-style | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1533 |
-| line-height | `` | `12px` | .b3-htab · b3/board.css:1533 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-htab · b3/board.css:1546 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-htab · b3/board.css:1546 |
+| font-size | `` | `12px` | .b3-htab · b3/board.css:1546 |
+| font-weight | `` | `600` | .b3-htab · b3/board.css:1546 |
+| font-style | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| font-variant-numeric | `` | `normal` | .b3-htab · b3/board.css:1546 |
+| line-height | `` | `12px` | .b3-htab · b3/board.css:1546 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1533 |
+| white-space | `nowrap` | `` | .b3-htab · b3/board.css:1546 |
 | color | `color-mix(in srgb,var(--c) 58%,var(--ink2))` | `color(srgb 0.538353 0.778118 0.521647)` | .b3-hi-r .b3-htab:not(.quiet) · gates.css:935 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `span.b3-who.sys`
@@ -3507,23 +3507,23 @@ inside `.b3-hi-r` · 47 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-who · b3/board.css:1563 |
-| gap | `8px` | `` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| column-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| row-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5090 |
-| align-items | `center` | `center` | .b3-who · b3/board.css:1563 |
-| min-width | `0px` | `0px` | .b3-who · b3/board.css:1563 |
+| display | `inline-flex` | `flex` | .b3-who · b3/board.css:1576 |
+| gap | `8px` | `` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| column-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| row-gap | `8px` | `8px` | .b3-hi-r .b3-who · b3/board.css:5103 |
+| align-items | `center` | `center` | .b3-who · b3/board.css:1576 |
+| min-width | `0px` | `0px` | .b3-who · b3/board.css:1576 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-who · b3/board.css:1563 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-who · b3/board.css:1563 |
-| font-size | `` | `12px` | .b3-who · b3/board.css:1563 |
-| font-weight | `` | `600` | .b3-who · b3/board.css:1563 |
-| font-style | `` | `normal` | .b3-who · b3/board.css:1563 |
-| font-variant-numeric | `` | `normal` | .b3-who · b3/board.css:1563 |
-| line-height | `` | `12px` | .b3-who · b3/board.css:1563 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-who · b3/board.css:1576 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-who · b3/board.css:1576 |
+| font-size | `` | `12px` | .b3-who · b3/board.css:1576 |
+| font-weight | `` | `600` | .b3-who · b3/board.css:1576 |
+| font-style | `` | `normal` | .b3-who · b3/board.css:1576 |
+| font-variant-numeric | `` | `normal` | .b3-who · b3/board.css:1576 |
+| line-height | `` | `12px` | .b3-who · b3/board.css:1576 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-who.sys · b3/board.css:1565 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1527 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-who.sys · b3/board.css:1578 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r · b3/board.css:1540 |
 
 
 ### `div.b3-hi-r.st-m`
@@ -3540,12 +3540,12 @@ inside `.b3-hi-dg` · 14 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
-| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1527 |
+| display | `grid` | `grid` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
+| position | `relative` | `relative` | .b3-hi-r · b3/board.css:1540 |
 | grid-template-columns | `84px var(--h1-kind,110px) minmax(0,1fr) var(--h1-who,150px) var(--h1-undo,92px)` | `84px 110px 630px 100px 90px` | html[data-b3-p9="b"] .b3-hi-h, html[data-b3-p9="b"] .b3-hi-r, html[data-b3-p9="b"] .b3-hi- · gates.css:1024 |
-| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4735 |
+| grid-column | `1 / -1` | `` | .b3-hi-list > .b3-hi-h, .b3-hi-list > .b3-hi-dg, .b3-hi-dg > .b3-hi-day, .b3-hi-dg > .b3-h · b3/board.css:4748 |
 | column-gap | `var(--h1-cell,16px)` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-list > .b3-hi-dg, .b3-hi .b3-hi-dg > .b3-hi-d · gates.css:1022 |
-| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1518 |
+| align-items | `center` | `center` | .b3-hi-h, .b3-hi-r · b3/board.css:1531 |
 | min-height | `var(--h1-rowh,56px)` | `44px` | html[data-b3-p9="b"] .b3-hi-r · gates.css:1033 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 var(--h1-r,18px) 0 var(--h1-l,22px)` | `` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
@@ -3553,21 +3553,21 @@ inside `.b3-hi-dg` · 14 on screen · **1 look**
 | padding-right | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-bottom | `` | `0px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
 | padding-left | `` | `22px` | .b3-hi .b3-hi-list > .b3-hi-h, .b3-hi .b3-hi-dg > .b3-hi-r, .b3-hi .b3-hi-dg > .b3-hi-day, · gates.css:1023 |
-| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1527 |
+| border-top | `1px solid var(--rule3)` | `` | .b3-hi-r · b3/board.css:1540 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4936 |
-| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1527 |
+| transition | `background var(--b3-d1) var(--ease)` | `` | .b3-hi-r · b3/board.css:4949 |
+| cursor | `pointer` | `pointer` | .b3-hi-r · b3/board.css:1540 |
 
 **::before**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-r::before · b3/board.css:1529 |
+| position | `absolute` | .b3-hi-r::before · b3/board.css:1542 |
 | width | `3px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | height | `auto` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | margin-top | `0px` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
@@ -3579,7 +3579,7 @@ inside `.b3-hi-dg` · 14 on screen · **1 look**
 | background-color | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | background-image | `` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
 | box-shadow | `none` | html[data-b3-p9="b"] .b3-hi-r::before · gates.css:921 |
-| content | `""` | .b3-hi-r::before · b3/board.css:1529 |
+| content | `""` | .b3-hi-r::before · b3/board.css:1542 |
 
 **::after**
 
@@ -3611,26 +3611,26 @@ inside `.what` · 21 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-lvl · b3/board.css:1559 |
-| gap | `6px` | `` | .b3-lvl · b3/board.css:1559 |
-| column-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1559 |
-| row-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1559 |
-| flex | `none` | `` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5091 |
-| align-items | `center` | `center` | .b3-lvl · b3/board.css:1559 |
+| display | `inline-flex` | `flex` | .b3-lvl · b3/board.css:1572 |
+| gap | `6px` | `` | .b3-lvl · b3/board.css:1572 |
+| column-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1572 |
+| row-gap | `6px` | `6px` | .b3-lvl · b3/board.css:1572 |
+| flex | `none` | `` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5104 |
+| align-items | `center` | `center` | .b3-lvl · b3/board.css:1572 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-left | `0px` | `0px` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5139 |
-| font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-lvl · b3/board.css:1559 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-lvl · b3/board.css:1559 |
-| font-size | `` | `10.5px` | .b3-lvl · b3/board.css:1559 |
-| font-weight | `` | `500` | .b3-lvl · b3/board.css:1559 |
-| font-style | `` | `normal` | .b3-lvl · b3/board.css:1559 |
-| font-variant-numeric | `` | `normal` | .b3-lvl · b3/board.css:1559 |
-| line-height | `` | `10.5px` | .b3-lvl · b3/board.css:1559 |
+| margin-left | `0px` | `0px` | .b3-hi-r .what > :is(.b3-lvl, .b3-src) · b3/board.css:5152 |
+| font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-lvl · b3/board.css:1572 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-lvl · b3/board.css:1572 |
+| font-size | `` | `10.5px` | .b3-lvl · b3/board.css:1572 |
+| font-weight | `` | `500` | .b3-lvl · b3/board.css:1572 |
+| font-style | `` | `normal` | .b3-lvl · b3/board.css:1572 |
+| font-variant-numeric | `` | `normal` | .b3-lvl · b3/board.css:1572 |
+| line-height | `` | `10.5px` | .b3-lvl · b3/board.css:1572 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-lvl · b3/board.css:1559 |
-| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1540 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-lvl · b3/board.css:1572 |
+| cursor | ↑ `pointer` | `pointer` | inherited · .b3-hi-r .b3-hi-open · b3/board.css:1553 |
 
 
 ### `div.b3-hi-more`
@@ -3647,17 +3647,17 @@ inside `.panel` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-hi-more · b3/board.css:1572 |
-| position | `relative` | `relative` | .b3-hi-more · b3/board.css:5093 |
-| flex | `none` | `` | .panel.b3-hi > :is(.b3-hi-tools, .b3-hi-empty, .b3-hi-more) · b3/board.css:5048 |
-| justify-content | `center` | `center` | .b3-hi-more · b3/board.css:1572 |
+| display | `flex` | `flex` | .b3-hi-more · b3/board.css:1585 |
+| position | `relative` | `relative` | .b3-hi-more · b3/board.css:5106 |
+| flex | `none` | `` | .panel.b3-hi > :is(.b3-hi-tools, .b3-hi-empty, .b3-hi-more) · b3/board.css:5061 |
+| justify-content | `center` | `center` | .b3-hi-more · b3/board.css:1585 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `18px` | `` | .b3-hi-more · b3/board.css:1572 |
-| padding-top | `18px` | `18px` | .b3-hi-more · b3/board.css:1572 |
-| padding-right | `var(--hi-r)` | `16px` | .b3-hi .b3-hi-more · b3/board.css:4891 |
-| padding-bottom | `18px` | `18px` | .b3-hi-more · b3/board.css:1572 |
-| padding-left | `var(--hi-l)` | `22px` | .b3-hi .b3-hi-more · b3/board.css:4891 |
-| border-top | `0` | `` | .b3-hi-more · b3/board.css:5093 |
+| padding | `18px` | `` | .b3-hi-more · b3/board.css:1585 |
+| padding-top | `18px` | `18px` | .b3-hi-more · b3/board.css:1585 |
+| padding-right | `var(--hi-r)` | `16px` | .b3-hi .b3-hi-more · b3/board.css:4904 |
+| padding-bottom | `18px` | `18px` | .b3-hi-more · b3/board.css:1585 |
+| padding-left | `var(--hi-l)` | `22px` | .b3-hi .b3-hi-more · b3/board.css:4904 |
+| border-top | `0` | `` | .b3-hi-more · b3/board.css:5106 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3669,16 +3669,16 @@ inside `.panel` · 1 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| position | `absolute` | .b3-hi-more::before · b3/board.css:5094 |
-| height | `24px` | .b3-hi-more::before · b3/board.css:5094 |
-| right | `0px` | .b3-hi-more::before · b3/board.css:5094 |
-| bottom | `100%` | .b3-hi-more::before · b3/board.css:5094 |
-| left | `0px` | .b3-hi-more::before · b3/board.css:5094 |
-| background | `linear-gradient(to top,var(--paper),transparent)` | .b3-hi-more::before · b3/board.css:5094 |
-| background-color | `` | .b3-hi-more::before · b3/board.css:5094 |
-| background-image | `` | .b3-hi-more::before · b3/board.css:5094 |
-| content | `""` | .b3-hi-more::before · b3/board.css:5094 |
-| pointer-events | `none` | .b3-hi-more::before · b3/board.css:5094 |
+| position | `absolute` | .b3-hi-more::before · b3/board.css:5107 |
+| height | `24px` | .b3-hi-more::before · b3/board.css:5107 |
+| right | `0px` | .b3-hi-more::before · b3/board.css:5107 |
+| bottom | `100%` | .b3-hi-more::before · b3/board.css:5107 |
+| left | `0px` | .b3-hi-more::before · b3/board.css:5107 |
+| background | `linear-gradient(to top,var(--paper),transparent)` | .b3-hi-more::before · b3/board.css:5107 |
+| background-color | `` | .b3-hi-more::before · b3/board.css:5107 |
+| background-image | `` | .b3-hi-more::before · b3/board.css:5107 |
+| content | `""` | .b3-hi-more::before · b3/board.css:5107 |
+| pointer-events | `none` | .b3-hi-more::before · b3/board.css:5107 |
 
 
 ### `button.b3-btn2`
@@ -3710,7 +3710,7 @@ inside `.b3-hi-more` · 1 on screen · **1 look**
 | padding-bottom | `0px` | `0px` | .b3-btn2 · b3/board.css:801 |
 | padding-left | `13px` | `13px` | .b3-btn2 · b3/board.css:801 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3324 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
 | background | `color-mix(in srgb,var(--sunk) 85%,transparent)` | `` | .b3-btn2 · b3/board.css:801 |
 | background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.85)` | .b3-btn2 · b3/board.css:801 |
 | background-image | `` | `none` | .b3-btn2 · b3/board.css:801 |
@@ -3728,7 +3728,7 @@ inside `.b3-hi-more` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2 · b3/board.css:801 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 

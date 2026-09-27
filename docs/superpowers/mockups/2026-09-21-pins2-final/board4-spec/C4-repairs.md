@@ -30,8 +30,8 @@ inside `.pb-stage` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
-| justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3708 |
-| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3708 |
+| justify-self | `stretch` | `stretch` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3721 |
+| width | `auto` | `1148px` | .g-stage > .panel:has(#b3-repairs) · b3/board.css:3721 |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin | `0 22px` | `` | .panel · app.css:723 |
@@ -170,23 +170,23 @@ inside `.—` · 49 on screen · **11 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2335 |
-| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2335 |
-| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2335 |
-| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2335 |
-| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
-| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2326 |
+| display | `inline-grid` | `grid` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| flex | `none` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| align-items | `center` | `center` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| place-items | `center` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| width | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| height | `13px` | `13px` | .b3-fc > .ic · b3/board.css:2348 |
+| box-sizing | `content-box` | `content-box` | .b3-fc > .ic · b3/board.css:2348 |
+| padding | `0 1.5px 0 1.5px` | `` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-top | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-right | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-bottom | `0px` | `0px` | .b3-fc > .ic · b3/board.css:2348 |
+| padding-left | `1.5px` | `1.5px` | .b3-fc > .ic · b3/board.css:2348 |
+| margin | `0` | `` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-top | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-right | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-bottom | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
+| margin-left | `0px` | `0px` | .b3-fc > .dot, .b3-fc > .b3-av, .b3-fc > .b3-meter, .b3-fc > .ic · b3/board.css:2339 |
 | font | ↑ `600 var(--t-sm)/1 var(--ui)` | `` | inherited · .b3-fc · b3/board.css:1229 |
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-fc · b3/board.css:1229 |
 | font-size | ↑ `` | `12px` | inherited · .b3-fc · b3/board.css:1229 |
@@ -216,19 +216,19 @@ inside `.—` · 49 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3650 |
-| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3650 |
+| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3663 |
+| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3663 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 | font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -244,15 +244,15 @@ inside `.—` · 49 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3148 |
-| height | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3148 |
+| width | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3161 |
+| height | `15px` | `15px` | .b3-tk-ic .ic · b3/board.css:3161 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-ic[data-sev="blocks"] · b3/board.css:3147 |
+| color | ↑ `var(--warn)` | `rgb(255, 122, 69)` | inherited · .b3-tk-ic[data-sev="blocks"] · b3/board.css:3160 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -328,19 +328,19 @@ inside `.—` · 49 on screen · **11 looks**
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
 | flex | `none` | `` | .ic · b2.css:10 |
-| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3650 |
-| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3650 |
+| width | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3663 |
+| height | `15px` | `15px` | .b3-tk-sh > i .ic · b3/board.css:3663 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 | font-style | ↑ `italic` | `italic` | inherited · i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-tk-sh[data-sev="thin"] > i · b3/board.css:3652 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-tk-sh[data-sev="thin"] > i · b3/board.css:3665 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 
@@ -370,11 +370,11 @@ inside `.ph` · 1 on screen · **1 look**
 | height | `34px` | `34px` | .b3-rv · b3/board.css:1258 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 14px 0 6px` | `` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4189 |
-| padding-top | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4189 |
-| padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4189 |
-| padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4189 |
-| padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4189 |
+| padding | `0 14px 0 6px` | `` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4202 |
+| padding-top | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4202 |
+| padding-right | `14px` | `14px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4202 |
+| padding-bottom | `0px` | `0px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4202 |
+| padding-left | `6px` | `6px` | .b3-rv, .b3-rv.warn, .b3-rv.ok · b3/board.css:4202 |
 | margin-left | `auto` | `677.578px` | .b3-rv · b3/board.css:1258 |
 | border | `0` | `` | .b3-rv · b3/board.css:1258 |
 | border-radius | `var(--rad-pill)` | `` | .b3-rv · b3/board.css:1258 |
@@ -397,7 +397,7 @@ inside `.ph` · 1 on screen · **1 look**
 | overflow-y | `hidden` | `hidden` | .b3-rv.warn · b3/board.css:1272 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1)` | `` | .b3-rv · b3/board.css:1258 |
 | cursor | `pointer` | `pointer` | .b3-rv · b3/board.css:1258 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -477,9 +477,9 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
-| gap | `7px` | `` | .b3-rv .b3-nw · b3/board.css:4190 |
-| column-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4190 |
-| row-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4190 |
+| gap | `7px` | `` | .b3-rv .b3-nw · b3/board.css:4203 |
+| column-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4203 |
+| row-gap | `7px` | `7px` | .b3-rv .b3-nw · b3/board.css:4203 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -507,9 +507,9 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
-| gap | `7px` | `` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
-| column-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
-| row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
+| gap | `7px` | `` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
+| column-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
+| row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -538,9 +538,9 @@ inside `.b3-rv` · 11 on screen · **4 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-flex` | `flex` | .b3-nw · b3/board.css:950 |
-| gap | `7px` | `` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
-| column-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
-| row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2041 |
+| gap | `7px` | `` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
+| column-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
+| row-gap | `7px` | `7px` | .b3-fc .b3-nw, .chip .b3-nw · b3/board.css:2054 |
 | align-items | `baseline` | `baseline` | .b3-nw · b3/board.css:950 |
 | min-width | `0px` | `0px` | .b3-nw · b3/board.css:950 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -775,16 +775,16 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 | font-weight | `bolder` | `900` | strong, b · user-agent:? |
-| font-style | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| font-style | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 
 #### look 3 of 9
 
@@ -798,15 +798,15 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-md,15px)/1.1 var(--ui)` | `` | .b3-tk-id b · b3/board.css:3137 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id b · b3/board.css:3137 |
-| font-size | `` | `14.5px` | .b3-tk-id b · b3/board.css:3137 |
-| font-weight | `` | `600` | .b3-tk-id b · b3/board.css:3137 |
-| font-style | `` | `normal` | .b3-tk-id b · b3/board.css:3137 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id b · b3/board.css:3137 |
-| line-height | `` | `15.95px` | .b3-tk-id b · b3/board.css:3137 |
+| font | `600 var(--t-md,15px)/1.1 var(--ui)` | `` | .b3-tk-id b · b3/board.css:3150 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id b · b3/board.css:3150 |
+| font-size | `` | `14.5px` | .b3-tk-id b · b3/board.css:3150 |
+| font-weight | `` | `600` | .b3-tk-id b · b3/board.css:3150 |
+| font-style | `` | `normal` | .b3-tk-id b · b3/board.css:3150 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id b · b3/board.css:3150 |
+| line-height | `` | `15.95px` | .b3-tk-id b · b3/board.css:3150 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-id b · b3/board.css:3137 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-id b · b3/board.css:3150 |
 
 #### look 4 of 9
 
@@ -820,15 +820,15 @@ inside `.b3-rp-t` · 39 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .b3-tk-t b · b3/board.css:3150 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t b · b3/board.css:3150 |
-| font-size | `` | `12px` | .b3-tk-t b · b3/board.css:3150 |
-| font-weight | `` | `600` | .b3-tk-t b · b3/board.css:3150 |
-| font-style | `` | `normal` | .b3-tk-t b · b3/board.css:3150 |
-| font-variant-numeric | `` | `normal` | .b3-tk-t b · b3/board.css:3150 |
-| line-height | `` | `15px` | .b3-tk-t b · b3/board.css:3150 |
+| font | `600 var(--t-sm)/1.25 var(--ui)` | `` | .b3-tk-t b · b3/board.css:3163 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t b · b3/board.css:3163 |
+| font-size | `` | `12px` | .b3-tk-t b · b3/board.css:3163 |
+| font-weight | `` | `600` | .b3-tk-t b · b3/board.css:3163 |
+| font-style | `` | `normal` | .b3-tk-t b · b3/board.css:3163 |
+| font-variant-numeric | `` | `normal` | .b3-tk-t b · b3/board.css:3163 |
+| line-height | `` | `15px` | .b3-tk-t b · b3/board.css:3163 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-t b · b3/board.css:3150 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-t b · b3/board.css:3163 |
 
 #### look 5 of 9
 
@@ -927,11 +927,11 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2325 |
-| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2325 |
-| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2325 |
+| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2338 |
+| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2338 |
+| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2338 |
 | border | `0` | `` | .b3-fc · b3/board.css:1229 |
 | border-radius | `var(--rad-pill)` | `` | .b3-fc · b3/board.css:1229 |
 | background | `color-mix(in srgb,var(--c) 16%,transparent)!important !important` | `` | .b4 :is(.b3-fc, .b3-rv, .cx-k, .b3-xt-c):is([aria-pressed="true"], [aria-checked="true"],  · b4/classes.css:219 |
@@ -951,7 +951,7 @@ inside `.b3-rp-f` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-fc[aria-pressed="true"] · b3/board.css:1244 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1229 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1004,7 +1004,7 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -1012,7 +1012,7 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .8) c h)` | `oklch(0.8 0.175748 41.2014)` | .b3-fc[aria-pressed="true"] em · b3/board.css:4764 |
+| color | `oklch(from var(--c) max(l, .8) c h)` | `oklch(0.8 0.175748 41.2014)` | .b3-fc[aria-pressed="true"] em · b3/board.css:4777 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 2 of 7
@@ -1030,7 +1030,7 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font | `500 var(--t-xs)/1 var(--data)` | `` | .b3-fc em · b3/board.css:1231 |
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-fc em · b3/board.css:1231 |
 | font-size | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
-| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4763 |
+| font-weight | `700` | `700` | .b3-fc em · b3/board.css:4776 |
 | font-style | `normal` | `normal` | .b3-fc em · b3/board.css:1231 |
 | font-variant-numeric | `` | `normal` | .b3-fc em · b3/board.css:1231 |
 | line-height | `` | `10.5px` | .b3-fc em · b3/board.css:1231 |
@@ -1038,7 +1038,7 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-fc · b3/board.css:1229 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.175748 41.2014)` | .b3-fc em · b3/board.css:4763 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.76 0.175748 41.2014)` | .b3-fc em · b3/board.css:4776 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-fc · b3/board.css:1229 |
 
 #### look 3 of 7
@@ -1051,9 +1051,9 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3653 |
-| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3653 |
-| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3653 |
+| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3666 |
+| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3666 |
+| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3666 |
 | height | `24px` | `24px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 8px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1062,10 +1062,10 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | padding-bottom | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-left | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | border-radius | `6px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| background | `color-mix(in srgb,var(--warn) 10%,var(--sunk))` | `` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3654 |
-| background-color | `` | `color(srgb 0.138824 0.100784 0.0905882)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3654 |
-| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3654 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.35) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3654 |
+| background | `color-mix(in srgb,var(--warn) 10%,var(--sunk))` | `` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3667 |
+| background-color | `` | `color(srgb 0.138824 0.100784 0.0905882)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3667 |
+| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3667 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 35%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.35) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3667 |
 | font | `600 12px/1 var(--ui)` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-size | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1073,9 +1073,9 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font-style | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-variant-numeric | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | line-height | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3654 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-sh[data-sev="blocks"] > em · b3/board.css:3667 |
 
 #### look 4 of 7
 
@@ -1089,15 +1089,15 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-tk-id em · b3/board.css:3138 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id em · b3/board.css:3138 |
-| font-size | `` | `12px` | .b3-tk-id em · b3/board.css:3138 |
-| font-weight | `` | `600` | .b3-tk-id em · b3/board.css:3138 |
-| font-style | `normal` | `normal` | .b3-tk-id em · b3/board.css:3138 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id em · b3/board.css:3138 |
-| line-height | `` | `12px` | .b3-tk-id em · b3/board.css:3138 |
+| font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-tk-id em · b3/board.css:3151 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-id em · b3/board.css:3151 |
+| font-size | `` | `12px` | .b3-tk-id em · b3/board.css:3151 |
+| font-weight | `` | `600` | .b3-tk-id em · b3/board.css:3151 |
+| font-style | `normal` | `normal` | .b3-tk-id em · b3/board.css:3151 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id em · b3/board.css:3151 |
+| line-height | `` | `12px` | .b3-tk-id em · b3/board.css:3151 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-id em · b3/board.css:3138 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-id em · b3/board.css:3151 |
 
 #### look 5 of 7
 
@@ -1109,9 +1109,9 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3653 |
-| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3653 |
-| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3653 |
+| display | `inline-grid` | `grid` | .b3-tk-sh > em · b3/board.css:3666 |
+| align-items | `center` | `center` | .b3-tk-sh > em · b3/board.css:3666 |
+| place-items | `center` | `` | .b3-tk-sh > em · b3/board.css:3666 |
 | height | `24px` | `24px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `0 8px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1120,10 +1120,10 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | padding-bottom | `0px` | `0px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | padding-left | `8px` | `8px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | border-radius | `6px` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| background | `var(--sunk)` | `` | .b3-tk-sh > em · b3/board.css:3653 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-sh > em · b3/board.css:3653 |
-| background-image | `` | `none` | .b3-tk-sh > em · b3/board.css:3653 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-sh > em · b3/board.css:3653 |
+| background | `var(--sunk)` | `` | .b3-tk-sh > em · b3/board.css:3666 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-sh > em · b3/board.css:3666 |
+| background-image | `` | `none` | .b3-tk-sh > em · b3/board.css:3666 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-sh > em · b3/board.css:3666 |
 | font | `600 12px/1 var(--ui)` | `` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-size | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
@@ -1131,9 +1131,9 @@ inside `.b3-nw` · 18 on screen · **7 looks**
 | font-style | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | font-variant-numeric | `` | `normal` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
 | line-height | `` | `12px` | .b4 .b3-tk-sh > em · b4/classes.css:25 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-sec h4 em · b3/board.css:3346 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-sec h4 em · b3/board.css:3359 |
 
 #### look 6 of 7
 
@@ -1182,11 +1182,11 @@ inside `.b3-rp-f` · 4 on screen · **1 look**
 | height | `32px` | `32px` | .b3-fc · b3/board.css:1229 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2325 |
-| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2325 |
-| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2325 |
-| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2325 |
+| padding | `0 12px 0 10px` | `` | .b3-fc · b3/board.css:2338 |
+| padding-top | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-right | `12px` | `12px` | .b3-fc · b3/board.css:2338 |
+| padding-bottom | `0px` | `0px` | .b3-fc · b3/board.css:2338 |
+| padding-left | `10px` | `10px` | .b3-fc · b3/board.css:2338 |
 | border | `0` | `` | .b3-fc · b3/board.css:1229 |
 | border-radius | `var(--rad-pill)` | `` | .b3-fc · b3/board.css:1229 |
 | background | `var(--sunk)` | `` | .b3-fc · b3/board.css:1229 |
@@ -1206,7 +1206,7 @@ inside `.b3-rp-f` · 4 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-fc · b3/board.css:1229 |
 | transition | `background var(--b3-d1),box-shadow var(--b3-d1),color var(--b3-d1)` | `` | .b3-fc · b3/board.css:1229 |
 | cursor | `pointer` | `pointer` | .b3-fc · b3/board.css:1229 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -1255,27 +1255,27 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-bar · b3/board.css:3124 |
-| gap | `2px` | `` | .b3-tk-bar · b3/board.css:3124 |
-| column-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3124 |
-| row-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3124 |
-| height | `6px` | `6px` | .b3-tk-bar · b3/board.css:3124 |
+| display | `flex` | `flex` | .b3-tk-bar · b3/board.css:3137 |
+| gap | `2px` | `` | .b3-tk-bar · b3/board.css:3137 |
+| column-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3137 |
+| row-gap | `2px` | `2px` | .b3-tk-bar · b3/board.css:3137 |
+| height | `6px` | `6px` | .b3-tk-bar · b3/board.css:3137 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `4px 0 16px` | `` | .b3-tk-bar · b3/board.css:3124 |
-| margin-top | `4px` | `4px` | .b3-tk-bar · b3/board.css:3124 |
-| margin-right | `0px` | `0px` | .b3-tk-bar · b3/board.css:3124 |
-| margin-bottom | `16px` | `16px` | .b3-tk-bar · b3/board.css:3124 |
-| margin-left | `0px` | `0px` | .b3-tk-bar · b3/board.css:3124 |
-| border-radius | `3px` | `` | .b3-tk-bar · b3/board.css:3124 |
+| margin | `4px 0 16px` | `` | .b3-tk-bar · b3/board.css:3137 |
+| margin-top | `4px` | `4px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-right | `0px` | `0px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-bottom | `16px` | `16px` | .b3-tk-bar · b3/board.css:3137 |
+| margin-left | `0px` | `0px` | .b3-tk-bar · b3/board.css:3137 |
+| border-radius | `3px` | `` | .b3-tk-bar · b3/board.css:3137 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk-bar · b3/board.css:3124 |
-| overflow-x | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3124 |
-| overflow-y | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3124 |
+| overflow | `hidden` | `` | .b3-tk-bar · b3/board.css:3137 |
+| overflow-x | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3137 |
+| overflow-y | `hidden` | `hidden` | .b3-tk-bar · b3/board.css:3137 |
 
 
 ### `i.bl`
@@ -1294,12 +1294,12 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `3 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3125 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3125 |
-| background | `var(--warn)` | `` | .b3-tk-bar .bl · b3/board.css:3126 |
-| background-color | `` | `rgb(255, 122, 69)` | .b3-tk-bar .bl · b3/board.css:3126 |
-| background-image | `` | `none` | .b3-tk-bar .bl · b3/board.css:3126 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `var(--warn)` | `` | .b3-tk-bar .bl · b3/board.css:3139 |
+| background-color | `` | `rgb(255, 122, 69)` | .b3-tk-bar .bl · b3/board.css:3139 |
+| background-image | `` | `none` | .b3-tk-bar .bl · b3/board.css:3139 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1325,12 +1325,12 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `2 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3125 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3125 |
-| background | `color-mix(in srgb,var(--warn) 45%,var(--rule2))` | `` | .b3-tk-bar .th · b3/board.css:3127 |
-| background-color | `` | `color(srgb 0.575098 0.368431 0.298627)` | .b3-tk-bar .th · b3/board.css:3127 |
-| background-image | `` | `none` | .b3-tk-bar .th · b3/board.css:3127 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `color-mix(in srgb,var(--warn) 45%,var(--rule2))` | `` | .b3-tk-bar .th · b3/board.css:3140 |
+| background-color | `` | `color(srgb 0.575098 0.368431 0.298627)` | .b3-tk-bar .th · b3/board.css:3140 |
+| background-image | `` | `none` | .b3-tk-bar .th · b3/board.css:3140 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1356,12 +1356,12 @@ inside `.b3-tk-bar` · 1 on screen · **1 look**
 |---|---|---|---|
 | display | — | `block` | initial |
 | flex | `120 1 0%` | `` | style attribute |
-| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3125 |
+| min-width | `3px` | `3px` | .b3-tk-bar i · b3/board.css:3138 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3125 |
-| background | `color-mix(in srgb,var(--ok) 32%,var(--rule2))` | `` | .b3-tk-bar .ok · b3/board.css:3128 |
-| background-color | `` | `color(srgb 0.30902 0.464157 0.342902)` | .b3-tk-bar .ok · b3/board.css:3128 |
-| background-image | `` | `none` | .b3-tk-bar .ok · b3/board.css:3128 |
+| border-radius | `2px` | `` | .b3-tk-bar i · b3/board.css:3138 |
+| background | `color-mix(in srgb,var(--ok) 32%,var(--rule2))` | `` | .b3-tk-bar .ok · b3/board.css:3141 |
+| background-color | `` | `color(srgb 0.30902 0.464157 0.342902)` | .b3-tk-bar .ok · b3/board.css:3141 |
+| background-image | `` | `none` | .b3-tk-bar .ok · b3/board.css:3141 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1408,7 +1408,7 @@ inside `.b3-rp` · 2 on screen · **2 looks**
 | display | `block` | `block` | article, aside, footer, header, hgroup, main, nav, search, section · user-agent:? |
 | min-width | `0px` | `0px` | main .panel, main section · app.css:680 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `18px` | `18px` | .b3-tk-sec + .b3-tk-sec · b3/board.css:3344 |
+| margin-top | `18px` | `18px` | .b3-tk-sec + .b3-tk-sec · b3/board.css:3357 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1431,39 +1431,39 @@ inside `.b3-tk-sec` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| gap | `10px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| column-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| row-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| align-items | `center` | `center` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| display | `flex` | `flex` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| gap | `10px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| column-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| row-gap | `10px` | `10px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| align-items | `center` | `center` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin | `0 0 12px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| margin-top | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| margin-right | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| margin-bottom | `12px` | `12px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| margin-left | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font | `600 var(--t-md)/1 var(--ui)` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-size | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-weight | `` | `600` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-style | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-variant-numeric | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| line-height | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| letter-spacing | `0px` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | `none` | `none` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| margin | `0 0 12px` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| margin-top | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| margin-right | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| margin-bottom | `12px` | `12px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| margin-left | `0px` | `0px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font | `600 var(--t-md)/1 var(--ui)` | `` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-size | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-weight | `` | `600` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-style | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-variant-numeric | `` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| line-height | `` | `14.5px` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| letter-spacing | `0px` | `normal` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | `none` | `none` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | `var(--ink)` | `rgb(232, 237, 241)` | .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 
 **::after**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-tk-sh::after · b3/board.css:3655 |
-| height | `1px` | .b3-tk-sh::after · b3/board.css:3655 |
-| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3655 |
-| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3655 |
-| background-color | `` | .b3-tk-sh::after · b3/board.css:3655 |
-| background-image | `` | .b3-tk-sh::after · b3/board.css:3655 |
-| content | `""` | .b3-tk-sh::after · b3/board.css:3655 |
+| flex | `1` | .b3-tk-sh::after · b3/board.css:3668 |
+| height | `1px` | .b3-tk-sh::after · b3/board.css:3668 |
+| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3668 |
+| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3668 |
+| background-color | `` | .b3-tk-sh::after · b3/board.css:3668 |
+| background-image | `` | .b3-tk-sh::after · b3/board.css:3668 |
+| content | `""` | .b3-tk-sh::after · b3/board.css:3668 |
 
 
 ### `i`
@@ -1480,27 +1480,27 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-sh > i · b3/board.css:3649 |
-| align-items | `center` | `center` | .b3-tk-sh > i · b3/board.css:3649 |
-| place-items | `center` | `` | .b3-tk-sh > i · b3/board.css:3649 |
-| width | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3649 |
-| height | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3649 |
+| display | `grid` | `grid` | .b3-tk-sh > i · b3/board.css:3662 |
+| align-items | `center` | `center` | .b3-tk-sh > i · b3/board.css:3662 |
+| place-items | `center` | `` | .b3-tk-sh > i · b3/board.css:3662 |
+| width | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3662 |
+| height | `28px` | `28px` | .b3-tk-sh > i · b3/board.css:3662 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-sh > i · b3/board.css:3649 |
-| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
-| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 30%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
-| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
+| border-radius | `8px` | `` | .b3-tk-sh > i · b3/board.css:3662 |
+| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
+| background-image | `` | `none` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 30%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
+| font | ↑ `600 var(--t-md)/1 var(--ui)` | `` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-size | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| font-weight | ↑ `` | `600` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
 | font-style | `italic` | `italic` | i, cite, em, var, address, dfn · user-agent:? |
-| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3648 |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3651 |
+| font-variant-numeric | ↑ `` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| line-height | ↑ `` | `14.5px` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| letter-spacing | ↑ `0px` | `normal` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| text-transform | ↑ `none` | `none` | inherited · .b3-tk-sec h4.b3-tk-sh · b3/board.css:3661 |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-sh[data-sev="blocks"] > i · b3/board.css:3664 |
 
 #### look 2 of 8
 
@@ -1513,15 +1513,15 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3136 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-id > i · b3/board.css:3136 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3136 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1541,11 +1541,11 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3153 |
-| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3153 |
+| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3166 |
+| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3166 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3153 |
-| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-ev.slots i · b3/board.css:3153 |
+| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3166 |
+| box-shadow | `inset 0 0 0 1px var(--rule2)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-tk-ev.slots i · b3/board.css:3166 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1565,15 +1565,15 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3136 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background-color | `` | `rgb(63, 110, 142)` | .b3-tk-id > i · b3/board.css:3136 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3136 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(63, 110, 142)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1592,30 +1592,30 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| background | `var(--sunk)` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| background-image | `` | `none` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| background | `var(--sunk)` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| background-image | `` | `none` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 
 #### look 6 of 8
 
@@ -1628,15 +1628,15 @@ inside `.b3-tk-sh` · 20 on screen · **8 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3136 |
-| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
-| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3136 |
+| flex | `none` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| align-self | `center` | `center` | .b3-tk-id > i · b3/board.css:3149 |
+| width | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
+| height | `8px` | `8px` | .b3-tk-id > i · b3/board.css:3149 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3136 |
-| background-color | `` | `rgb(246, 169, 59)` | .b3-tk-id > i · b3/board.css:3136 |
-| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3136 |
+| border-radius | `50%` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background | `var(--c)` | `` | .b3-tk-id > i · b3/board.css:3149 |
+| background-color | `` | `rgb(246, 169, 59)` | .b3-tk-id > i · b3/board.css:3149 |
+| background-image | `` | `none` | .b3-tk-id > i · b3/board.css:3149 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1662,12 +1662,12 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3129 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3129 |
-| gap | `12px` | `` | .b3-tk-list · b3/board.css:3129 |
-| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3129 |
-| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3129 |
-| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3342 |
+| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3142 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3142 |
+| gap | `12px` | `` | .b3-tk-list · b3/board.css:3142 |
+| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3355 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1686,12 +1686,12 @@ inside `.b3-tk-sec` · 2 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3129 |
-| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3129 |
-| gap | `12px` | `` | .b3-tk-list · b3/board.css:3129 |
-| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3129 |
-| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3129 |
-| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3342 |
+| display | `grid` | `grid` | .b3-tk-list · b3/board.css:3142 |
+| grid-template-columns | `repeat(auto-fill, minmax(440px, 1fr))` | `549px 549px` | .b3-tk-list · b3/board.css:3142 |
+| gap | `12px` | `` | .b3-tk-list · b3/board.css:3142 |
+| column-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| row-gap | `12px` | `12px` | .b3-tk-list · b3/board.css:3142 |
+| align-items | `stretch` | `stretch` | .b3-tk-list.rows · b3/board.css:3355 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1715,27 +1715,27 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3130 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
 | position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 117.375px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3343 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 117.375px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3356 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3130 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
 | outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4073 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4075 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4086 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4088 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3130 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 #### look 2 of 3
 
@@ -1747,27 +1747,27 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3130 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
 | position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3343 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3356 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3130 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
 | outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4073 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3131 |
-| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4075 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4086 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--warn) 7%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| background-image | `` | `linear-gradient(color(srgb 0.183059 0.175726 0.186706), rgb(31, 39, 46) 90px)` | .b3-tk[data-sev="blocks"] · b3/board.css:3144 |
+| box-shadow | `none` | `none` | .b3-tk[data-sev="blocks"] · b3/board.css:4088 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3130 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 #### look 3 of 3
 
@@ -1779,17 +1779,17 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3130 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
 | position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3343 |
+| grid-template-rows | `auto 1fr auto` | `40.9375px 62.6875px 58px` | .b3-tk-list.rows > .b3-tk · b3/board.css:3356 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3130 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
 | outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4073 |
-| background | `var(--raised)` | `` | .b3-tk · b3/board.css:3130 |
-| background-color | `` | `rgb(31, 39, 46)` | .b3-tk · b3/board.css:3130 |
-| background-image | `` | `none` | .b3-tk · b3/board.css:3130 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4086 |
+| background | `var(--raised)` | `` | .b3-tk · b3/board.css:3143 |
+| background-color | `` | `rgb(31, 39, 46)` | .b3-tk · b3/board.css:3143 |
+| background-image | `` | `none` | .b3-tk · b3/board.css:3143 |
 | box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1797,9 +1797,9 @@ inside `.b3-tk-list` · 5 on screen · **3 looks**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3130 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 
 ### `header.b3-tk-h`
@@ -1816,25 +1816,25 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | min-width | `0px` | `0px` | header · app.css:1427 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px 10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| padding-top | `14px` | `14px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| padding-right | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| padding-bottom | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| padding-left | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| padding | `14px 16px 10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-top | `14px` | `14px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-right | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-bottom | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| padding-left | `16px` | `16px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | top | `0px` | `0px` | header · app.css:682 |
 | border-bottom | `1px solid var(--rule)` | `` | header · app.css:682 |
-| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1853,25 +1853,25 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| display | `flex` | `flex` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| position | `static` | `static` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | grid-column | `1/-1` | `` | header · app.css:682 |
-| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| gap | `10px` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| column-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| row-gap | `10px` | `10px` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| align-items | `center` | `center` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | min-width | `0px` | `0px` | header · app.css:1427 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3798 |
-| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3798 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3798 |
-| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3798 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3798 |
+| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3811 |
+| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3811 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3811 |
+| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3811 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-h · b3/board.css:3811 |
 | top | `0px` | `0px` | header · app.css:682 |
 | border-bottom | `1px solid var(--rule)` | `` | header · app.css:682 |
-| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3134 |
-| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3134 |
+| background | `none` | `` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk .b3-tk-h · b3/board.css:3147 |
+| background-image | `none` | `none` | .b3-tk .b3-tk-h · b3/board.css:3147 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -1895,12 +1895,12 @@ inside `.b3-tk-h` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3135 |
-| gap | `8px` | `` | .b3-tk-id · b3/board.css:3135 |
-| column-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3135 |
-| row-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3135 |
-| align-items | `baseline` | `baseline` | .b3-tk-id · b3/board.css:3135 |
-| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3135 |
+| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3148 |
+| gap | `8px` | `` | .b3-tk-id · b3/board.css:3148 |
+| column-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3148 |
+| row-gap | `8px` | `8px` | .b3-tk-id · b3/board.css:3148 |
+| align-items | `baseline` | `baseline` | .b3-tk-id · b3/board.css:3148 |
+| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1919,12 +1919,12 @@ inside `.b3-tk-h` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3135 |
-| gap | `12px` | `` | .b3-tk-pass .b3-tk-id · b3/board.css:3645 |
-| column-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3645 |
-| row-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3645 |
-| align-items | `center` | `center` | .b3-tk-pass .b3-tk-id · b3/board.css:3645 |
-| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3135 |
+| display | `inline-flex` | `flex` | .b3-tk-id · b3/board.css:3148 |
+| gap | `12px` | `` | .b3-tk-pass .b3-tk-id · b3/board.css:3658 |
+| column-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3658 |
+| row-gap | `12px` | `12px` | .b3-tk-pass .b3-tk-id · b3/board.css:3658 |
+| align-items | `center` | `center` | .b3-tk-pass .b3-tk-id · b3/board.css:3658 |
+| min-width | `0px` | `0px` | .b3-tk-id · b3/board.css:3148 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -1950,16 +1950,16 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3139 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3139 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3139 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3139 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3139 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.862353 0.412706)` | .b3-tk-id small · b3/board.css:3139 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.862353 0.412706)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 2 of 9
 
@@ -1973,16 +1973,16 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3139 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3139 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3139 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3139 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3139 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.412706 0.556471 0.654353)` | .b3-tk-id small · b3/board.css:3139 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.412706 0.556471 0.654353)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 3 of 9
 
@@ -1996,16 +1996,16 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3139 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3139 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3139 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3139 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3139 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.972471 0.736941 0.400471)` | .b3-tk-id small · b3/board.css:3139 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 0.972471 0.736941 0.400471)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 4 of 9
 
@@ -2019,16 +2019,16 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3139 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3139 |
-| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3139 |
-| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3139 |
-| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3139 |
-| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3139 |
-| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3139 |
-| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.400471 0.501412)` | .b3-tk-id small · b3/board.css:3139 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-tk-id small · b3/board.css:3152 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-id small · b3/board.css:3152 |
+| font-size | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| font-weight | `` | `600` | .b3-tk-id small · b3/board.css:3152 |
+| font-style | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| font-variant-numeric | `` | `normal` | .b3-tk-id small · b3/board.css:3152 |
+| line-height | `` | `9.5px` | .b3-tk-id small · b3/board.css:3152 |
+| letter-spacing | `var(--b3-tr)` | `1.045px` | .b3-tk-id small · b3/board.css:3152 |
+| text-transform | `uppercase` | `uppercase` | .b3-tk-id small · b3/board.css:3152 |
+| color | `color-mix(in srgb,var(--c) 78%,white)` | `color(srgb 1 0.400471 0.501412)` | .b3-tk-id small · b3/board.css:3152 |
 
 #### look 5 of 9
 
@@ -2042,17 +2042,17 @@ inside `.b3-tk-id` · 11 on screen · **9 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| font-size | `` | `9.5px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| font-weight | `` | `600` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| font-style | `` | `normal` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| font-variant-numeric | `` | `normal` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| line-height | `` | `9.5px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| text-transform | `uppercase` | `uppercase` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| white-space | `nowrap` | `` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2397 |
-| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.878915 0.161739 90.9295)` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small, .b3-wr-b small em, .b3-cmdr > em, .pb-g · b3/board.css:2659 |
+| font | `600 var(--t-micro)/1 var(--data)` | `` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| font-size | `` | `9.5px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| font-weight | `` | `600` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| font-style | `` | `normal` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| font-variant-numeric | `` | `normal` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| line-height | `` | `9.5px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| letter-spacing | `var(--b3-tr-wide)` | `1.33px` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| text-transform | `uppercase` | `uppercase` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| white-space | `nowrap` | `` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small · b3/board.css:2410 |
+| color | `oklch(from var(--c) max(l, .76) c h)` | `oklch(0.878915 0.161739 90.9295)` | .b3-sd-gh > small, .b3-sd-w small, .b3-wg-h small, .b3-wr-b small em, .b3-cmdr > em, .pb-g · b3/board.css:2672 |
 
 #### look 6 of 9
 
@@ -2101,16 +2101,16 @@ inside `.b3-tk` · 5 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3143 |
-| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3143 |
-| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3143 |
-| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3143 |
+| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3156 |
+| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3143 |
-| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
+| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2128,16 +2128,16 @@ inside `.b3-tk` · 5 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3143 |
-| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3143 |
-| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3143 |
-| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3143 |
+| display | `grid` | `grid` | .b3-tk-fs · b3/board.css:3156 |
+| gap | `2px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| column-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
+| row-gap | `2px` | `2px` | .b3-tk-fs · b3/board.css:3156 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3143 |
-| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
-| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3143 |
+| padding | `0 10px 10px` | `` | .b3-tk-fs · b3/board.css:3156 |
+| padding-top | `0px` | `0px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-right | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-bottom | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
+| padding-left | `10px` | `10px` | .b3-tk-fs · b3/board.css:3156 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2160,19 +2160,19 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3144 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3144 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3144 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3144 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 457px 0px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3144 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3144 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2190,20 +2190,20 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3144 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 381px 76px` | .b3-tk-f · b3/board.css:3144 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3144 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3144 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 381px 76px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3144 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3144 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-f + .b3-tk-f · b3/board.css:3145 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-f + .b3-tk-f · b3/board.css:3158 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2221,19 +2221,19 @@ inside `.b3-tk-fs` · 6 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3144 |
-| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 321px 136px` | .b3-tk-f · b3/board.css:3144 |
-| gap | `12px` | `` | .b3-tk-f · b3/board.css:3144 |
-| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3144 |
-| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3144 |
+| display | `grid` | `grid` | .b3-tk-f · b3/board.css:3157 |
+| grid-template-columns | `30px minmax(0px, 1fr) auto` | `30px 321px 136px` | .b3-tk-f · b3/board.css:3157 |
+| gap | `12px` | `` | .b3-tk-f · b3/board.css:3157 |
+| column-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| row-gap | `12px` | `12px` | .b3-tk-f · b3/board.css:3157 |
+| align-items | `center` | `center` | .b3-tk-f · b3/board.css:3157 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3144 |
-| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3144 |
-| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3144 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3144 |
+| padding | `10px 8px` | `` | .b3-tk-f · b3/board.css:3157 |
+| padding-top | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-right | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| padding-bottom | `10px` | `10px` | .b3-tk-f · b3/board.css:3157 |
+| padding-left | `8px` | `8px` | .b3-tk-f · b3/board.css:3157 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-f · b3/board.css:3157 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2256,22 +2256,22 @@ inside `.b3-tk-f` · 11 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3146 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3146 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3146 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
+| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3159 |
+| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3159 |
+| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3159 |
+| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3146 |
-| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3147 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3147 |
-| background-image | `` | `none` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3147 |
+| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background | `color-mix(in srgb,var(--warn) 14%,transparent)` | `` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3160 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.14)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3160 |
+| background-image | `` | `none` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3160 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3147 |
+| color | `var(--warn)` | `rgb(255, 122, 69)` | .b3-tk-ic[data-sev="blocks"] · b3/board.css:3160 |
 
 #### look 2 of 3
 
@@ -2283,22 +2283,22 @@ inside `.b3-tk-f` · 11 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3146 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3146 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3146 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
+| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3159 |
+| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3159 |
+| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3159 |
+| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3146 |
-| background | `var(--sunk)` | `` | .b3-tk-ic · b3/board.css:3146 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ic · b3/board.css:3146 |
-| background-image | `` | `none` | .b3-tk-ic · b3/board.css:3146 |
+| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background | `var(--sunk)` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-tk-ic · b3/board.css:3159 |
+| background-image | `` | `none` | .b3-tk-ic · b3/board.css:3159 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-ic · b3/board.css:3146 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-ic · b3/board.css:3159 |
 
 #### look 3 of 3
 
@@ -2310,22 +2310,22 @@ inside `.b3-tk-f` · 11 on screen · **3 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3146 |
-| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3146 |
-| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3146 |
-| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
-| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3146 |
+| display | `grid` | `grid` | .b3-tk-ic · b3/board.css:3159 |
+| align-items | `center` | `center` | .b3-tk-ic · b3/board.css:3159 |
+| place-items | `center` | `` | .b3-tk-ic · b3/board.css:3159 |
+| width | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
+| height | `30px` | `30px` | .b3-tk-ic · b3/board.css:3159 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3146 |
-| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3356 |
-| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3356 |
-| background-image | `` | `none` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3356 |
+| border-radius | `8px` | `` | .b3-tk-ic · b3/board.css:3159 |
+| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3369 |
+| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3369 |
+| background-image | `` | `none` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3369 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3356 |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-ic[data-sev="ok"] · b3/board.css:3369 |
 
 
 ### `span.b3-tk-t`
@@ -2342,11 +2342,11 @@ inside `.b3-tk-f` · 6 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3149 |
-| gap | `3px` | `` | .b3-tk-t · b3/board.css:3149 |
-| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3149 |
-| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3149 |
-| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3149 |
+| display | `grid` | `grid` | .b3-tk-t · b3/board.css:3162 |
+| gap | `3px` | `` | .b3-tk-t · b3/board.css:3162 |
+| column-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| row-gap | `3px` | `3px` | .b3-tk-t · b3/board.css:3162 |
+| min-width | `0px` | `0px` | .b3-tk-t · b3/board.css:3162 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2372,15 +2372,15 @@ inside `.b3-tk-t` · 12 on screen · **3 looks**
 |---|---|---|---|
 | display | — | `block` | initial |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-xs)/1.4 var(--ui)` | `` | .b3-tk-t span · b3/board.css:3151 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t span · b3/board.css:3151 |
-| font-size | `` | `10.5px` | .b3-tk-t span · b3/board.css:3151 |
-| font-weight | `` | `500` | .b3-tk-t span · b3/board.css:3151 |
-| font-style | `` | `normal` | .b3-tk-t span · b3/board.css:3151 |
-| font-variant-numeric | `` | `normal` | .b3-tk-t span · b3/board.css:3151 |
-| line-height | `` | `14.7px` | .b3-tk-t span · b3/board.css:3151 |
+| font | `500 var(--t-xs)/1.4 var(--ui)` | `` | .b3-tk-t span · b3/board.css:3164 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-t span · b3/board.css:3164 |
+| font-size | `` | `10.5px` | .b3-tk-t span · b3/board.css:3164 |
+| font-weight | `` | `500` | .b3-tk-t span · b3/board.css:3164 |
+| font-style | `` | `normal` | .b3-tk-t span · b3/board.css:3164 |
+| font-variant-numeric | `` | `normal` | .b3-tk-t span · b3/board.css:3164 |
+| line-height | `` | `14.7px` | .b3-tk-t span · b3/board.css:3164 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-t span · b3/board.css:3151 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-tk-t span · b3/board.css:3164 |
 
 #### look 2 of 3
 
@@ -2450,11 +2450,11 @@ inside `.b3-tk-f` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3152 |
-| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3152 |
-| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3152 |
-| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3152 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3152 |
+| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3165 |
+| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3165 |
+| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3165 |
+| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3165 |
+| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3165 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2479,14 +2479,14 @@ inside `.b3-tk-ev` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | — | `block` | initial |
-| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3153 |
-| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3153 |
+| width | `12px` | `12px` | .b3-tk-ev.slots i · b3/board.css:3166 |
+| height | `18px` | `18px` | .b3-tk-ev.slots i · b3/board.css:3166 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3153 |
-| background | `var(--c)` | `` | .b3-tk-ev.slots i.on · b3/board.css:3154 |
-| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-ev.slots i.on · b3/board.css:3154 |
-| background-image | `` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3154 |
-| box-shadow | `none` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3154 |
+| border-radius | `3px` | `` | .b3-tk-ev.slots i · b3/board.css:3166 |
+| background | `var(--c)` | `` | .b3-tk-ev.slots i.on · b3/board.css:3167 |
+| background-color | `` | `rgb(255, 210, 63)` | .b3-tk-ev.slots i.on · b3/board.css:3167 |
+| background-image | `` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3167 |
+| box-shadow | `none` | `none` | .b3-tk-ev.slots i.on · b3/board.css:3167 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2510,18 +2510,18 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3163 |
-| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3328 |
-| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3328 |
-| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3328 |
-| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3163 |
+| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3176 |
+| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3341 |
+| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3341 |
+| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3341 |
+| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3176 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 16px 14px 18px` | `` | .b3-tk-ft · b3/board.css:3328 |
-| padding-top | `12px` | `12px` | .b3-tk-ft · b3/board.css:3328 |
-| padding-right | `16px` | `16px` | .b3-tk-ft · b3/board.css:3328 |
-| padding-bottom | `14px` | `14px` | .b3-tk-ft · b3/board.css:3328 |
-| padding-left | `18px` | `18px` | .b3-tk-ft · b3/board.css:3328 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3163 |
+| padding | `12px 16px 14px 18px` | `` | .b3-tk-ft · b3/board.css:3341 |
+| padding-top | `12px` | `12px` | .b3-tk-ft · b3/board.css:3341 |
+| padding-right | `16px` | `16px` | .b3-tk-ft · b3/board.css:3341 |
+| padding-bottom | `14px` | `14px` | .b3-tk-ft · b3/board.css:3341 |
+| padding-left | `18px` | `18px` | .b3-tk-ft · b3/board.css:3341 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3176 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2539,19 +2539,19 @@ inside `.b3-tk` · 6 on screen · **2 looks**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3163 |
-| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3328 |
-| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3328 |
-| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3328 |
-| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3163 |
-| justify-content | `space-between` | `space-between` | .b3-tk-pass .b3-tk-ft · b3/board.css:3646 |
+| display | `flex` | `flex` | .b3-tk-ft · b3/board.css:3176 |
+| gap | `8px` | `` | .b3-tk-ft · b3/board.css:3341 |
+| column-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3341 |
+| row-gap | `8px` | `8px` | .b3-tk-ft · b3/board.css:3341 |
+| align-items | `center` | `center` | .b3-tk-ft · b3/board.css:3176 |
+| justify-content | `space-between` | `space-between` | .b3-tk-pass .b3-tk-ft · b3/board.css:3659 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `12px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3802 |
-| padding-top | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3802 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3802 |
-| padding-bottom | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3802 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3802 |
-| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3163 |
+| padding | `12px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3815 |
+| padding-top | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3815 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3815 |
+| padding-bottom | `12px` | `12px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3815 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-ft · b3/board.css:3815 |
+| box-shadow | `inset 0 1px 0 var(--rule3)` | `rgb(28, 36, 42) 0px 1px 0px 0px inset` | .b3-tk-ft · b3/board.css:3176 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -2586,7 +2586,7 @@ inside `.b3-tk-ft` · 6 on screen · **1 look**
 | padding-right | `10px` | `10px` | .pb-pill · b2.css:237 |
 | padding-bottom | `0px` | `0px` | .pb-pill · b2.css:237 |
 | padding-left | `10px` | `10px` | .pb-pill · b2.css:237 |
-| margin-right | `auto` | `215.891px` | .b3-tk-agec · b3/board.css:3330 |
+| margin-right | `auto` | `215.891px` | .b3-tk-agec · b3/board.css:3343 |
 | border-radius | `6px` | `` | .pb-pill · b2.css:553 |
 | background | `var(--sunk)` | `` | .pb-pill · b2.css:237 |
 | background-color | `` | `rgb(11, 15, 18)` | .pb-pill · b2.css:237 |
@@ -2622,7 +2622,7 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | gap | `7px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | column-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
 | row-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
-| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3329 |
+| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3342 |
 | align-items | `center` | `center` | .b3-btn2 · b3/board.css:801 |
 | height | `32px` | `32px` | .b3-btn2.sm · b3/board.css:1353 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
@@ -2633,7 +2633,7 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | padding-bottom | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-left | `10px` | `10px` | .b3-btn2.sm · b3/board.css:1353 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3324 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
 | background | `var(--ok)` | `` | .b3-btn2.go · b3/board.css:1355 |
 | background-color | `` | `rgb(123, 219, 99)` | .b3-btn2.go · b3/board.css:1355 |
 | background-image | `` | `none` | .b3-btn2.go · b3/board.css:1355 |
@@ -2649,9 +2649,9 @@ inside `.b3-tk-ft` · 10 on screen · **1 look**
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
 | color | `var(--on-ok)` | `rgb(7, 19, 10)` | .b3-btn2.go · b3/board.css:1355 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4126 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4139 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -2691,11 +2691,11 @@ inside `.b3-tk-f` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3152 |
-| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3152 |
-| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3152 |
-| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3152 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3152 |
+| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3165 |
+| gap | `4px` | `` | .b3-tk-ev · b3/board.css:3165 |
+| column-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3165 |
+| row-gap | `4px` | `4px` | .b3-tk-ev · b3/board.css:3165 |
+| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3165 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2719,31 +2719,31 @@ inside `.b3-tk-ev` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| background | `color-mix(in srgb,var(--warn) 16%,transparent)` | `` | .b3-tk-ev.pairs i.extra · b3/board.css:3156 |
-| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.16)` | .b3-tk-ev.pairs i.extra · b3/board.css:3156 |
-| background-image | `` | `none` | .b3-tk-ev.pairs i.extra · b3/board.css:3156 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 45%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.45) 0px 0px 0px 1px inset` | .b3-tk-ev.pairs i.extra · b3/board.css:3156 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| background | `color-mix(in srgb,var(--warn) 16%,transparent)` | `` | .b3-tk-ev.pairs i.extra · b3/board.css:3169 |
+| background-color | `` | `color(srgb 1 0.478431 0.270588 / 0.16)` | .b3-tk-ev.pairs i.extra · b3/board.css:3169 |
+| background-image | `` | `none` | .b3-tk-ev.pairs i.extra · b3/board.css:3169 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--warn) 45%,transparent)` | `color(srgb 1 0.478431 0.270588 / 0.45) 0px 0px 0px 1px inset` | .b3-tk-ev.pairs i.extra · b3/board.css:3169 |
+| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-ev.pairs i.extra · b3/board.css:3156 |
+| color | `var(--warn-ink)` | `rgb(255, 158, 114)` | .b3-tk-ev.pairs i.extra · b3/board.css:3169 |
 
 
 ### `i.gap`
@@ -2760,32 +2760,32 @@ inside `.b3-tk-ev` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| display | `grid` | `grid` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| align-items | `center` | `center` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| place-items | `center` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| min-width | `24px` | `24px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| height | `22px` | `22px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| outline | `1px dashed color-mix(in srgb,var(--warn) 60%,transparent)` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3157 |
-| outline-offset | `-1px` | `-1px` | .b3-tk-ev.pairs i.gap · b3/board.css:3157 |
-| background | `none` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3157 |
-| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk-ev.pairs i.gap · b3/board.css:3157 |
-| background-image | `none` | `none` | .b3-tk-ev.pairs i.gap · b3/board.css:3157 |
-| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3155 |
-| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| padding | `0 4px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-top | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-right | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-bottom | `0px` | `0px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| padding-left | `4px` | `4px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| border-radius | `5px` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| outline | `1px dashed color-mix(in srgb,var(--warn) 60%,transparent)` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3170 |
+| outline-offset | `-1px` | `-1px` | .b3-tk-ev.pairs i.gap · b3/board.css:3170 |
+| background | `none` | `` | .b3-tk-ev.pairs i.gap · b3/board.css:3170 |
+| background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-tk-ev.pairs i.gap · b3/board.css:3170 |
+| background-image | `none` | `none` | .b3-tk-ev.pairs i.gap · b3/board.css:3170 |
+| font | `600 11px/1 var(--data)` | `` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-size | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-weight | `` | `600` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-style | `normal` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| font-variant-numeric | `` | `normal` | .b3-tk-ev.pairs i · b3/board.css:3168 |
+| line-height | `` | `11px` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3155 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.pairs i · b3/board.css:3168 |
 
 
 ### `span.b3-tk-ev.twin`
@@ -2802,21 +2802,21 @@ inside `.b3-tk-f` · 2 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3152 |
-| gap | `7px` | `` | .b3-tk-ev.twin · b3/board.css:3158 |
-| column-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3158 |
-| row-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3158 |
-| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3152 |
+| display | `inline-flex` | `flex` | .b3-tk-ev · b3/board.css:3165 |
+| gap | `7px` | `` | .b3-tk-ev.twin · b3/board.css:3171 |
+| column-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3171 |
+| row-gap | `7px` | `7px` | .b3-tk-ev.twin · b3/board.css:3171 |
+| align-items | `center` | `center` | .b3-tk-ev · b3/board.css:3165 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-tk-ev.twin · b3/board.css:3158 |
-| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-ev.twin · b3/board.css:3158 |
-| font-size | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3158 |
-| font-weight | `` | `500` | .b3-tk-ev.twin · b3/board.css:3158 |
-| font-style | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3158 |
-| font-variant-numeric | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3158 |
-| line-height | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3158 |
+| font | `500 var(--t-xs)/1 var(--ui)` | `` | .b3-tk-ev.twin · b3/board.css:3171 |
+| font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-tk-ev.twin · b3/board.css:3171 |
+| font-size | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3171 |
+| font-weight | `` | `500` | .b3-tk-ev.twin · b3/board.css:3171 |
+| font-style | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3171 |
+| font-variant-numeric | `` | `normal` | .b3-tk-ev.twin · b3/board.css:3171 |
+| line-height | `` | `10.5px` | .b3-tk-ev.twin · b3/board.css:3171 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.twin · b3/board.css:3158 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-tk-ev.twin · b3/board.css:3171 |
 
 
 ### `div.b3-wh[role=row]`
@@ -2843,12 +2843,12 @@ inside `.b3-work` · 1 on screen · **1 look**
 | padding-top | `0px` | `0px` | .b3-wh · b3/board.css:1296 |
 | padding-right | `130px` | `130px` | .b3-wh · b3/board.css:1296 |
 | padding-bottom | `0px` | `0px` | .b3-wh · b3/board.css:1296 |
-| padding-left | `18px` | `18px` | .b3-work > .b3-wh · b3/board.css:2581 |
-| margin | `0 0 8px` | `` | .b3-work > .b3-wh · b3/board.css:2581 |
-| margin-top | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2581 |
-| margin-right | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2581 |
-| margin-bottom | `8px` | `8px` | .b3-work > .b3-wh · b3/board.css:2581 |
-| margin-left | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2581 |
+| padding-left | `18px` | `18px` | .b3-work > .b3-wh · b3/board.css:2594 |
+| margin | `0 0 8px` | `` | .b3-work > .b3-wh · b3/board.css:2594 |
+| margin-top | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2594 |
+| margin-right | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2594 |
+| margin-bottom | `8px` | `8px` | .b3-work > .b3-wh · b3/board.css:2594 |
+| margin-left | `0px` | `0px` | .b3-work > .b3-wh · b3/board.css:2594 |
 | background | `var(--sunk)` | `` | .b3-wh · b3/board.css:1296 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wh · b3/board.css:1296 |
 | background-image | `` | `none` | .b3-wh · b3/board.css:1296 |
@@ -2880,20 +2880,20 @@ inside `.b3-work` · 5 on screen · **2 looks**
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2582 |
-| background | `var(--paper)` | `` | .b3-wg · b3/board.css:2582 |
-| background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2582 |
-| background-image | `` | `none` | .b3-wg · b3/board.css:2582 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2582 |
+| border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2595 |
+| background | `var(--paper)` | `` | .b3-wg · b3/board.css:2595 |
+| background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2595 |
+| background-image | `` | `none` | .b3-wg · b3/board.css:2595 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2595 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-wg · b3/board.css:2582 |
-| overflow-x | `hidden` | `hidden` | .b3-wg · b3/board.css:2582 |
-| overflow-y | `hidden` | `hidden` | .b3-wg · b3/board.css:2582 |
+| overflow | `hidden` | `` | .b3-wg · b3/board.css:2595 |
+| overflow-x | `hidden` | `hidden` | .b3-wg · b3/board.css:2595 |
+| overflow-y | `hidden` | `hidden` | .b3-wg · b3/board.css:2595 |
 
 #### look 2 of 2
 
@@ -2907,22 +2907,22 @@ inside `.b3-work` · 5 on screen · **2 looks**
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-top | `10px` | `10px` | .b3-work > .b3-wg + .b3-wg · b3/board.css:2580 |
+| margin-top | `10px` | `10px` | .b3-work > .b3-wg + .b3-wg · b3/board.css:2593 |
 | border-top | `1px solid var(--rule2)` | `` | .b3-wg + .b3-wg · b3/board.css:1286 |
-| border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2582 |
-| background | `var(--paper)` | `` | .b3-wg · b3/board.css:2582 |
-| background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2582 |
-| background-image | `` | `none` | .b3-wg · b3/board.css:2582 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2582 |
+| border-radius | `var(--rad-3)` | `` | .b3-wg · b3/board.css:2595 |
+| background | `var(--paper)` | `` | .b3-wg · b3/board.css:2595 |
+| background-color | `` | `rgb(23, 30, 36)` | .b3-wg · b3/board.css:2595 |
+| background-image | `` | `none` | .b3-wg · b3/board.css:2595 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-wg · b3/board.css:2595 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-wg · b3/board.css:2582 |
-| overflow-x | `hidden` | `hidden` | .b3-wg · b3/board.css:2582 |
-| overflow-y | `hidden` | `hidden` | .b3-wg · b3/board.css:2582 |
+| overflow | `hidden` | `` | .b3-wg · b3/board.css:2595 |
+| overflow-x | `hidden` | `hidden` | .b3-wg · b3/board.css:2595 |
+| overflow-y | `hidden` | `hidden` | .b3-wg · b3/board.css:2595 |
 
 
 ### `div.b3-wg-h[role=row]`
@@ -2952,7 +2952,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
 | padding-bottom | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-left | `20px` | `20px` | .b3-wg-h · b3/board.css:1287 |
-| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2584 |
+| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2597 |
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 1 0.823529 0.247059 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
@@ -3001,7 +3001,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
 | padding-bottom | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-left | `20px` | `20px` | .b3-wg-h · b3/board.css:1287 |
-| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2584 |
+| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2597 |
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 0.247059 0.431373 0.556863 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
@@ -3050,7 +3050,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
 | padding-bottom | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-left | `20px` | `20px` | .b3-wg-h · b3/board.css:1287 |
-| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2584 |
+| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2597 |
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 0.964706 0.662745 0.231373 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
@@ -3099,7 +3099,7 @@ inside `.b3-wg` · 5 on screen · **4 looks**
 | padding-right | `16px` | `16px` | .b3-wg-h · b3/board.css:1287 |
 | padding-bottom | `0px` | `0px` | .b3-wg-h · b3/board.css:1287 |
 | padding-left | `20px` | `20px` | .b3-wg-h · b3/board.css:1287 |
-| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2584 |
+| border-radius | `var(--rad-3) var(--rad-3) 0 0` | `` | .b3-wg-h · b3/board.css:2597 |
 | background | `linear-gradient(90deg,color-mix(in srgb,var(--c) 9%,transparent),transparent 42%),var(--sunk)` | `` | .b3-wg-h · b3/board.css:1287 |
 | background-color | `` | `rgb(11, 15, 18)` | .b3-wg-h · b3/board.css:1287 |
 | background-image | `` | `linear-gradient(90deg, color(srgb 1 0.231373 0.360784 / 0.09), rgba(0, 0, 0, 0) 42%), none` | .b3-wg-h · b3/board.css:1287 |
@@ -3175,7 +3175,7 @@ inside `.b3-wg` · 5 on screen · **1 look**
 | display | `grid` | `grid` | .b3-wr · b3/board.css:1304 |
 | position | `relative` | `relative` | .b3-wr · b3/board.css:1304 |
 | grid-template-columns | `minmax(0px, 1fr) 110px` | `minmax(0px, 1fr) 110px` | .b3-wr · b3/board.css:1304 |
-| align-items | `stretch` | `stretch` | .b3-wr · b3/board.css:2220 |
+| align-items | `stretch` | `stretch` | .b3-wr · b3/board.css:2233 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | border-top | `1px solid var(--rule3)` | `` | .b3-wr · b3/board.css:1304 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -3228,9 +3228,9 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | padding-left | `18px` | `18px` | .b3-wr-main · b3/board.css:1307 |
 | border | `0` | `` | button · app.css:621 |
 | border-radius | `var(--ctl-rad, 5px)` | `` | input, select, textarea, button · app.css:388 |
-| background | `transparent` | `` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2789 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2789 |
-| background-image | `initial` | `none` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2789 |
+| background | `transparent` | `` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
+| background-image | `initial` | `none` | .b3-wr .b3-wr-main, .b3-wr .b3-wr-main:hover, .b3-wr .b3-wr-main:focus, .b3-wr .b3-wr-main · b3/board.css:2802 |
 | font | `inherit` | `` | button · app.css:621 |
 | font-family | `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | button · app.css:621 |
 | font-size | `inherit` | `13px` | button · app.css:621 |
@@ -3243,7 +3243,7 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `transform var(--dur-1) var(--ease), background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | button, .pill, .chip, .btn, .mi, .realm, .hcard, .att-row · app.css:5549 |
 | cursor | `pointer` | `pointer` | .b3-wr-main · b3/board.css:1307 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes nothing on the element itself
 
@@ -3602,24 +3602,24 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `inline-flex` | `flex` | .b3-fold2 · b3/board.css:2188 |
-| gap | `0` | `` | .b3-fold2 · b3/board.css:2188 |
-| column-gap | `0px` | `0px` | .b3-fold2 · b3/board.css:2188 |
-| row-gap | `0px` | `0px` | .b3-fold2 · b3/board.css:2188 |
-| align-items | `center` | `center` | .b3-fold2 · b3/board.css:2188 |
-| justify-self | `end` | `end` | .b3-fold2 · b3/board.css:2188 |
-| height | `30px` | `30px` | .b3-fold2 · b3/board.css:2188 |
+| display | `inline-flex` | `flex` | .b3-fold2 · b3/board.css:2201 |
+| gap | `0` | `` | .b3-fold2 · b3/board.css:2201 |
+| column-gap | `0px` | `0px` | .b3-fold2 · b3/board.css:2201 |
+| row-gap | `0px` | `0px` | .b3-fold2 · b3/board.css:2201 |
+| align-items | `center` | `center` | .b3-fold2 · b3/board.css:2201 |
+| justify-self | `end` | `end` | .b3-fold2 · b3/board.css:2201 |
+| height | `30px` | `30px` | .b3-fold2 · b3/board.css:2201 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `0 7px` | `` | .b3-fold2 · b3/board.css:2188 |
-| padding-top | `0px` | `0px` | .b3-fold2 · b3/board.css:2188 |
-| padding-right | `7px` | `7px` | .b3-fold2 · b3/board.css:2188 |
-| padding-bottom | `0px` | `0px` | .b3-fold2 · b3/board.css:2188 |
-| padding-left | `7px` | `7px` | .b3-fold2 · b3/board.css:2188 |
-| border-radius | `9px` | `` | .b3-fold2 · b3/board.css:2188 |
-| background | `var(--sunk)` | `` | .b3-fold2 · b3/board.css:2188 |
-| background-color | `` | `rgb(11, 15, 18)` | .b3-fold2 · b3/board.css:2188 |
-| background-image | `` | `none` | .b3-fold2 · b3/board.css:2188 |
-| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-fold2 · b3/board.css:2188 |
+| padding | `0 7px` | `` | .b3-fold2 · b3/board.css:2201 |
+| padding-top | `0px` | `0px` | .b3-fold2 · b3/board.css:2201 |
+| padding-right | `7px` | `7px` | .b3-fold2 · b3/board.css:2201 |
+| padding-bottom | `0px` | `0px` | .b3-fold2 · b3/board.css:2201 |
+| padding-left | `7px` | `7px` | .b3-fold2 · b3/board.css:2201 |
+| border-radius | `9px` | `` | .b3-fold2 · b3/board.css:2201 |
+| background | `var(--sunk)` | `` | .b3-fold2 · b3/board.css:2201 |
+| background-color | `` | `rgb(11, 15, 18)` | .b3-fold2 · b3/board.css:2201 |
+| background-image | `` | `none` | .b3-fold2 · b3/board.css:2201 |
+| box-shadow | `var(--b3-ring)` | `rgb(58, 71, 82) 0px 0px 0px 1px inset` | .b3-fold2 · b3/board.css:2201 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
@@ -3630,8 +3630,8 @@ inside `.b3-wr-main` · 5 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fold2 · b3/board.css:2188 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease),gap var(--b3-d2) var(--ease)` | `` | .b3-fold2 · b3/board.css:2188 |
+| color | `var(--ink3)` | `rgb(133, 147, 159)` | .b3-fold2 · b3/board.css:2201 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),color var(--b3-d1) var(--ease),gap var(--b3-d2) var(--ease)` | `` | .b3-fold2 · b3/board.css:2201 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
 
 
@@ -3650,9 +3650,9 @@ inside `.b3-fold2` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2190 |
-| width | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2190 |
-| height | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2190 |
+| flex | `none` | `` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2203 |
+| width | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2203 |
+| height | `15px` | `15px` | .b3-fold2 .ic, .b3-fold2 svg · b3/board.css:2203 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font | ↑ `inherit` | `` | inherited · button · app.css:621 |
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
@@ -3664,7 +3664,7 @@ inside `.b3-fold2` · 5 on screen · **1 look**
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `start` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
-| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fold2 · b3/board.css:2188 |
+| color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b3-fold2 · b3/board.css:2201 |
 | overflow-x | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | overflow-y | `hidden` | `hidden` | svg:not(:root), symbol, image, marker, pattern, foreignObject · user-agent:? |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-wr-main · b3/board.css:1307 |
@@ -3686,13 +3686,13 @@ inside `.b3-wr` · 5 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `flex` | `flex` | .b3-wr-a · b3/board.css:1336 |
-| align-items | `center` | `center` | .b3-wr-a · b3/board.css:2221 |
+| align-items | `center` | `center` | .b3-wr-a · b3/board.css:2234 |
 | justify-content | `flex-end` | `flex-end` | .b3-wr-a · b3/board.css:1336 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding-right | `16px` | `16px` | .b3-wr-a · b3/board.css:1336 |
-| background | `transparent` | `` | .b3-wr-main, .b3-wr-a · b3/board.css:2475 |
-| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr-main, .b3-wr-a · b3/board.css:2475 |
-| background-image | `initial` | `none` | .b3-wr-main, .b3-wr-a · b3/board.css:2475 |
+| background | `transparent` | `` | .b3-wr-main, .b3-wr-a · b3/board.css:2488 |
+| background-color | `transparent` | `rgba(0, 0, 0, 0)` | .b3-wr-main, .b3-wr-a · b3/board.css:2488 |
+| background-image | `initial` | `none` | .b3-wr-main, .b3-wr-a · b3/board.css:2488 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3741,13 +3741,13 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | from |
 |---|---|---|
-| flex | `1` | .b3-tk-sh::after · b3/board.css:3655 |
-| height | `1px` | .b3-tk-sh::after · b3/board.css:3655 |
-| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3655 |
-| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3655 |
-| background-color | `` | .b3-tk-sh::after · b3/board.css:3655 |
-| background-image | `` | .b3-tk-sh::after · b3/board.css:3655 |
-| content | `""` | .b3-tk-sh::after · b3/board.css:3655 |
+| flex | `1` | .b3-tk-sh::after · b3/board.css:3668 |
+| height | `1px` | .b3-tk-sh::after · b3/board.css:3668 |
+| margin-left | `4px` | .b3-tk-sh::after · b3/board.css:3668 |
+| background | `var(--rule2)` | .b3-tk-sh::after · b3/board.css:3668 |
+| background-color | `` | .b3-tk-sh::after · b3/board.css:3668 |
+| background-image | `` | .b3-tk-sh::after · b3/board.css:3668 |
+| content | `""` | .b3-tk-sh::after · b3/board.css:3668 |
 
 
 ### `article.b3-tk.b3-tk-pass`
@@ -3764,17 +3764,17 @@ inside `.b3-rp` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk · b3/board.css:3130 |
+| display | `grid` | `grid` | .b3-tk · b3/board.css:3143 |
 | position | `relative` | `relative` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | margin-top | `0px !important !important` | `0px` | .b4 h4.b3-tk-okh + .b3-tk-pass · b4/classes.css:189 |
 | border | `1px solid var(--b3-edge,var(--rule2))` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3130 |
+| border-radius | `var(--rad-3)` | `` | .b3-tk · b3/board.css:3143 |
 | outline | `0` | `` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
-| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4073 |
-| background | `linear-gradient(180deg,color-mix(in srgb,var(--ok) 6%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk-pass · b3/board.css:3349 |
-| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk-pass · b3/board.css:3349 |
-| background-image | `` | `linear-gradient(color(srgb 0.143216 0.195294 0.192863), rgb(31, 39, 46) 90px)` | .b3-tk-pass · b3/board.css:3349 |
+| outline-offset | `-1px` | `-1px` | .b3-tk, .b3-xf, .pb-enc, .b3-sd, .drawer .b4-ask · b3/board.css:4086 |
+| background | `linear-gradient(180deg,color-mix(in srgb,var(--ok) 6%,var(--raised)),var(--raised) 90px)` | `` | .b3-tk-pass · b3/board.css:3362 |
+| background-color | `` | `rgba(0, 0, 0, 0)` | .b3-tk-pass · b3/board.css:3362 |
+| background-image | `` | `linear-gradient(color(srgb 0.143216 0.195294 0.192863), rgb(31, 39, 46) 90px)` | .b3-tk-pass · b3/board.css:3362 |
 | box-shadow | `none` | `none` | .dk, .exs-i, .exs-pick, .b3-tk, .b3-xf, .pb-enc, .b3-sd · gates.css:868 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3782,9 +3782,9 @@ inside `.b3-rp` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow | `hidden` | `` | .b3-tk · b3/board.css:3130 |
-| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
-| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3130 |
+| overflow | `hidden` | `` | .b3-tk · b3/board.css:3143 |
+| overflow-x | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
+| overflow-y | `hidden` | `hidden` | .b3-tk · b3/board.css:3143 |
 
 
 ### `span.b3-tk-shield`
@@ -3801,23 +3801,23 @@ inside `.b3-tk-id` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-shield · b3/board.css:3643 |
-| align-items | `center` | `center` | .b3-tk-shield · b3/board.css:3643 |
-| place-items | `center` | `` | .b3-tk-shield · b3/board.css:3643 |
-| width | `26px` | `26px` | .b3-tk-shield · b3/board.css:3643 |
-| height | `26px` | `26px` | .b3-tk-shield · b3/board.css:3643 |
+| display | `grid` | `grid` | .b3-tk-shield · b3/board.css:3656 |
+| align-items | `center` | `center` | .b3-tk-shield · b3/board.css:3656 |
+| place-items | `center` | `` | .b3-tk-shield · b3/board.css:3656 |
+| width | `26px` | `26px` | .b3-tk-shield · b3/board.css:3656 |
+| height | `26px` | `26px` | .b3-tk-shield · b3/board.css:3656 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| border-radius | `8px` | `` | .b3-tk-shield · b3/board.css:3643 |
-| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-shield · b3/board.css:3643 |
-| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-shield · b3/board.css:3643 |
-| background-image | `` | `none` | .b3-tk-shield · b3/board.css:3643 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-shield · b3/board.css:3643 |
+| border-radius | `8px` | `` | .b3-tk-shield · b3/board.css:3656 |
+| background | `color-mix(in srgb,var(--ok) 13%,transparent)` | `` | .b3-tk-shield · b3/board.css:3656 |
+| background-color | `` | `color(srgb 0.482353 0.858824 0.388235 / 0.13)` | .b3-tk-shield · b3/board.css:3656 |
+| background-image | `` | `none` | .b3-tk-shield · b3/board.css:3656 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--ok) 30%,transparent)` | `color(srgb 0.482353 0.858824 0.388235 / 0.3) 0px 0px 0px 1px inset` | .b3-tk-shield · b3/board.css:3656 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
-| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-shield · b3/board.css:3643 |
+| color | `var(--ok)` | `rgb(123, 219, 99)` | .b3-tk-shield · b3/board.css:3656 |
 
 
 ### `div.b3-tk-cks`
@@ -3834,18 +3834,18 @@ inside `.b3-tk` · 1 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| grid-template-columns | `repeat(5, minmax(0px, 1fr))` | `repeat(5, minmax(0px, 1fr))` | .b3-tk-cks · b3/board.css:3352 |
-| gap | `8px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| column-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| row-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| flex-wrap | `wrap` | `wrap` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
+| display | `flex` | `flex` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| grid-template-columns | `repeat(5, minmax(0px, 1fr))` | `repeat(5, minmax(0px, 1fr))` | .b3-tk-cks · b3/board.css:3365 |
+| gap | `8px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| column-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| row-gap | `8px` | `8px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| flex-wrap | `wrap` | `wrap` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
-| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3799 |
+| padding | `14px 16px` | `` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| padding-top | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| padding-right | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| padding-bottom | `14px` | `14px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
+| padding-left | `16px` | `16px` | .b3-tk.b3-tk-pass > .b3-tk-cks · b3/board.css:3812 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3868,23 +3868,23 @@ inside `.b3-tk-cks` · 5 on screen · **1 look**
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `grid` | `grid` | .b3-tk-ck · b3/board.css:3354 |
-| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 114.781px` | .b3-tk-ck · b3/board.css:3354 |
-| gap | `9px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| column-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| row-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| flex | `1 1 auto` | `` | .b3-tk.b3-tk-pass .b3-tk-ck · b3/board.css:3800 |
-| align-items | `center` | `center` | .b3-tk-ck · b3/board.css:3354 |
+| display | `grid` | `grid` | .b3-tk-ck · b3/board.css:3367 |
+| grid-template-columns | `30px minmax(0px, 1fr)` | `30px 114.781px` | .b3-tk-ck · b3/board.css:3367 |
+| gap | `9px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| column-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| row-gap | `9px` | `9px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| flex | `1 1 auto` | `` | .b3-tk.b3-tk-pass .b3-tk-ck · b3/board.css:3813 |
+| align-items | `center` | `center` | .b3-tk-ck · b3/board.css:3367 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding | `8px 10px 8px 8px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| padding-top | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| padding-right | `10px` | `10px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| padding-bottom | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| padding-left | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3715 |
-| border-radius | `var(--rad-2)` | `` | .b3-tk-ck · b3/board.css:3354 |
-| background | `color-mix(in srgb,var(--ok) 4%,var(--sunk))` | `` | .b3-tk-ck · b3/board.css:3354 |
-| background-color | `` | `color(srgb 0.0607059 0.0908235 0.0832941)` | .b3-tk-ck · b3/board.css:3354 |
-| background-image | `` | `none` | .b3-tk-ck · b3/board.css:3354 |
+| padding | `8px 10px 8px 8px` | `` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| padding-top | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| padding-right | `10px` | `10px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| padding-bottom | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| padding-left | `8px` | `8px` | .b3-tk-cks .b3-tk-ck · b3/board.css:3728 |
+| border-radius | `var(--rad-2)` | `` | .b3-tk-ck · b3/board.css:3367 |
+| background | `color-mix(in srgb,var(--ok) 4%,var(--sunk))` | `` | .b3-tk-ck · b3/board.css:3367 |
+| background-color | `` | `color(srgb 0.0607059 0.0908235 0.0832941)` | .b3-tk-ck · b3/board.css:3367 |
+| background-image | `` | `none` | .b3-tk-ck · b3/board.css:3367 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3911,7 +3911,7 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | gap | `7px` | `` | .b3-btn2.sm · b3/board.css:1353 |
 | column-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
 | row-gap | `7px` | `7px` | .b3-btn2.sm · b3/board.css:1353 |
-| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3329 |
+| flex | `none` | `` | .b3-tk-ft > .b3-btn2 · b3/board.css:3342 |
 | align-items | `center` | `center` | .b3-btn2 · b3/board.css:801 |
 | height | `32px` | `32px` | .b3-btn2.sm · b3/board.css:1353 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
@@ -3922,11 +3922,11 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | padding-bottom | `0px` | `0px` | .b3-btn2.sm · b3/board.css:1353 |
 | padding-left | `10px` | `10px` | .b3-btn2.sm · b3/board.css:1353 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3324 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
 | background | `none` | `` | .b3-btn2.ghost · b3/board.css:811 |
 | background-color | `initial` | `rgba(0, 0, 0, 0)` | .b3-btn2.ghost · b3/board.css:811 |
 | background-image | `none` | `none` | .b3-btn2.ghost · b3/board.css:811 |
-| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--rule2) 70%,transparent)` | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | .b3-btn2.ghost · b3/board.css:3325 |
+| box-shadow | `inset 0 0 0 1px color-mix(in srgb,var(--rule2) 70%,transparent)` | `color(srgb 0.227451 0.278431 0.321569 / 0.7) 0px 0px 0px 1px inset` | .b3-btn2.ghost · b3/board.css:3338 |
 | font | `600 var(--t-sm)/1 var(--ui)` | `` | .b3-btn2 · b3/board.css:801 |
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b3-btn2 · b3/board.css:801 |
 | font-size | `` | `12px` | .b3-btn2 · b3/board.css:801 |
@@ -3937,10 +3937,10 @@ inside `.b3-tk-ft` · 1 on screen · **1 look**
 | letter-spacing | `normal` | `normal` | input, textarea, select, button · user-agent:? |
 | text-align | `center` | `center` | input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
-| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2.ghost · b3/board.css:3325 |
+| color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2.ghost · b3/board.css:3338 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4009,5 +4009,5 @@ inside `.b3-btn2` · 1 on screen · **1 look**
 | text-transform | ↑ `none` | `none` | inherited · input, textarea, select, button · user-agent:? |
 | text-align | ↑ `center` | `center` | inherited · input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i · user-agent:? |
 | white-space | ↑ `nowrap` | `` | inherited · .b3-btn2 · b3/board.css:801 |
-| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-btn2.ghost · b3/board.css:3325 |
+| color | ↑ `var(--ink2)` | `rgb(157, 170, 180)` | inherited · .b3-btn2.ghost · b3/board.css:3338 |
 | cursor | ↑ `pointer` | `pointer` | inherited · .b3-btn2 · b3/board.css:801 |

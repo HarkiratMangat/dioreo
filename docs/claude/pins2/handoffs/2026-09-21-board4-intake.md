@@ -797,3 +797,23 @@ Opened: Bulk · empty, one, several, typing, warning, can't read, pasted, duplic
 | ~~3~~ | ~~the × hover and a deletion accent~~ | → Session 4; written up as D2 in the same file |
 
 **His ruling (2026-09-27 11:02 EDT):** *"--patch yellow color and where it's used is a decision/part of session 4's work, so make so it's properly documented for that session. similarly with the X button and it's standardizing. … so realistically theres only 1 item so far on the intake and that's copy share command's --ok color."*
+
+### The date picker — his asks after the compact, 2026-09-27 19:12–19:18 EDT, verbatim
+
+> *(19:12 EDT, in chat, before the order from compact prep 12)* before the below mentioned order from your pre-compact self, i want to tweak the date picker a bit since i didn't get the oppertunity to give feedback before the compact due to context window being full. my feedback: i want to remove the quick-pick date buttons at the top of the picker. I want it to be a bit more compact in it's width. i want the number's text size slightly nudged up. i want it to have a black background, so it matches the style of the dropdown menus (the ones in build drawer), including making the broadcast realm's pink accent better integrated into the design of the picker. Also make sure you design it so it can be universally transferable to any date field in the portal, in any realm, and easily match accently. Also don't forget to update it and add it into the session 4 and 5 spec/docs/notes/handoff/etc wherever.
+>
+> *(19:16 EDT, on my question whether the dropdown ground has a token)* smart question. and if it doesn't have a token, then that's something to let session 4 know/be aware of, correct?
+>
+> *(19:18 EDT, with a reference picture: a 270px month grid, 36px days in 38px rows, the month centred between two arrows, weekdays in title case, a dot under today, the picked day a filled rounded square)* sizing/compact/spacing, this is what i was thinking.
+
+| # | His ask | Built (2026-09-27 19:24 EDT, kit `5cf50ac`) |
+|---|---|---|
+| 1 | remove the quick picks | gone from Starts, Ends and Set end date; `isoAhead` and the `.b3-dp-picks` rules deleted |
+| 2 | more compact | 312 → **270px**, his picture's size: 7 × 36 + 2 × 9; only the weeks the month needs (5 rows for September) |
+| 3 | numbers up | 12 → **14px**, the board's sans |
+| 4 | the dropdowns' black ground | the build drawer's `.f-menu` ground, edge and shadow, same values |
+| 5 | the pink worked in | the picked day and every hover use the realm toggles' pressed and hover recipe; today is a dot in the realm's colour; the open calendar button takes the realm's tint |
+| 6 | any date field, any realm | every accent reads `--dp-c`, which defaults to the realm's `--realm-c` — a Season-coloured test re-coloured all of it with one variable |
+| 7 | the spec and docs | HANDOFF.md (rulings, C6, C7, **D3**), the build log, the ledger, the batch-2 plan |
+| — | his token question | **no token** — a hex mixed nine ways in 18 places; written up for Session 4 as D3 |
+

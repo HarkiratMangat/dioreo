@@ -91,6 +91,7 @@ Every custom property the kit's four stylesheets read. **Scope** says where it i
 | `--desk` | `#0F1418` | :root |
 | `--display` | `"Big Shoulders Display","Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif` | :root |
 | `--dlen` | — | component |
+| `--dp-c` | — | fallback only |
 | `--dsc` | `#5865F2` | :root |
 | `--dsc-hover` | `#4752C4` | :root |
 | `--dur-1` | `130ms` | :root |

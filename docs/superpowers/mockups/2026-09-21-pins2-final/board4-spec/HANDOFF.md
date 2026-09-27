@@ -60,6 +60,7 @@ status: live
 | Export | C5 | the list reads the Bulk create format; attachment chips are the manifest's; MP/DMZ follows the weapon and build; pick-all tinted by its category (the top one by its own); list fades; a clean ×; the filename chip's × and ✓ | `intake:669`–`671`, `intake:465`, `intake:272`, `intake:276`, `intake:490`, `intake:271`, `intake:480` | built per the record |
 | Broadcast rows | C7 | middle-aligned; the Armory's delete button; State chips with board 2's rounder corners, no colour dots; an active sort label brightens; a row click opens the editor, an Ended row opens Post again; the staged chip's dash on top, right and bottom only | `intake:80`–`86` | built per the record |
 | Post form | C7 | the count row: `CharCount` + the budget chip in the counter's own style, squared, one-piece bar; 150px text field; the banner is the build drawer's image well, last; "Posted" as a footer under the image; **past 4,000 Stage is blocked; past the shared 6,000 it only warns** | `plan:761`–`767`, `intake:723`, `intake:733`, his popup answers, 2026-09-26 20:07 EDT (the harden) and 2026-09-27 before 02:17 EDT (warn only) | measured, plan §19z–§19z-h (2026-09-26 18:20–20:07 EDT) |
+| Date picker | C6 C7, every realm | one `DateGrid` for every date the portal sets: the build drawer's dropdown ground; 270 wide, 36px days in 38px rows, the month centred between arrows over the first and last columns, 14px numbers, weekdays in title case, today a dot; **no quick picks**; every accent reads `--dp-c`, which defaults to the realm's `--realm-c` (picked = the realm toggles' pressed recipe, hover = their 11% tint) | `intake:801` (2026-09-27 19:12, 19:18 EDT) · replaced the 312px picker with quick picks (18:58 EDT) | this session: Starts, Ends, Set end date, a Season-coloured test, a real-mouse hover on a day, an arrow and the calendar button |
 | Admin traffic | C9 | the chip and the rail toggles share the realm's accent, tint and hover | `intake:100`, `intake:463` | built per the record |
 | Toggles | all | the pressed tint is the realm's accent; "All" takes it too, and hovers like its neighbours; the drawer's Add build / Bulk create switch is a rail toggle | `intake:287`–`290`, `intake:336`–`337` | built per the record |
 | Selection bar | C1 | a soft drop shadow and a subtle border; the list reveal as smooth as Export's; Edit builds / Export hover in `--staged` / `--ok` | `intake:12`–`14`, `plan:288` | built per the record |
@@ -127,7 +128,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | | |
 |---|---|
 | Kit → portal | `b3/broadcast.js` → `portal/ui/broadcast.js` |
-| Structure | Board 3-E's handoff § B1; Board 4 changed none of its rules after Version 10 |
+| Structure | Board 3-E's handoff § B1; Board 4 changed none of its rules after Version 10 **except Set end date** (2026-09-27 19:24 EDT): its pop-up is the board's date picker (C7, Dates), fixed to the window, with no quick picks |
 
 ### C7 · The Broadcast manifest, and posting — `C7-broadcast.md`
 
@@ -138,7 +139,7 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 | States | Saved · One staged · Posting |
 | Limits | empty → Stage off, "Needs its text" · 3,600+ → the counter warns · past 4,000 → blocked, the counter `over` · past the shared 6,000 with the live posts → warned, not blocked; each post costs its text plus the 28-character Posted line (`POSTED_LINE`) · an unreadable date → "Needs a readable date for the start/end" · a banner link that 404s → no empty box |
 | Why 6,000 matters | the bot sends the oldest ten due posts in one reply; over 6,000, or a text over 4,068, Discord rejects the whole reply and the same batch fails on every later command (verified 2026-09-26 21:19 EDT against `utils/announcement.js` and Discord's Embed Limits) |
-| Dates (2026-09-27 18:58 EDT) | `DateGrid` + `.b3-datepop` (`b3/broadcast.js`, `b3/board.css`) under Starts and Ends from a calendar button with quick picks; typed dates still parse; hints "Goes live when you commit it" / "Stops showing <date>" in 12.5px sans. The same grid in C6's Set end date, whose pop-up is fixed to the window. Season's native date inputs are not on the board — Session 5 moves them onto `DateGrid` |
+| Dates (2026-09-27 19:24 EDT) | `DateGrid` (`local/pins2-board-3/redo/b3/broadcast.js`) in the board's `.b3-datepop` (`local/pins2-board-3/redo/b3/board.css`, the `.b3-dp-*` rules): under Starts and Ends from a calendar button (`.pb-dbtn`, `local/pins2-board-3/redo/b4.css`), and in C6's Set end date, whose pop-up is fixed to the window (`place()`, 270 × 400). No quick picks; typed dates still parse. **To use it in another realm:** render `DateGrid` inside a `.b3-datepop` under any ancestor that sets `--realm-c` — nothing else; set `--dp-c` only to override one field. Hints "Goes live when you commit it" / "Stops showing <date>" in 12.5px sans. **Session 5:** this is the answer to pin group D's "a pop-up date picker on every date field portal-wide" (deferred list, group D) — Season's native `<input type=date>` fields (the kit's `local/pins2-board-3/redo/ui/season.js` lines 624 and 894, and their portal twins) move onto it |
 | Hover (2026-09-27 18:58 EDT) | the fields' hover now shows (it was out-specified by the resting rule, `b4/classes.css`); the Never ends switch and the calendar button have one |
 | Frame (2026-09-27 16:09 EDT) | the build drawer's: one height (`min(84vh, 860px)`), the body never scrolls; the form column (`.pb-col.b3-fady`) and the preview (`.pb-prevsc.b3-fady`) scroll on their own, no native bar; Before staging 16px over Cancel/Stage in every state; labels are the build drawer's field labels; an Optional chip after Starts, Ends and Banner while empty (`b4.css`, `b4/classes.css`, `ui/broadcast.js`) |
 | Never opened | the count row, the over states and Before staging in Edit and Post again, at narrow widths, and its rows' jump by click and keyboard · the one-curve edge on the Broadcast card chip and the filename chip's hover · the other two-segment meters (Broadcast card, shared E6, Armory coverage) · the dead-space wheel with the post drawer open |
@@ -225,6 +226,20 @@ For each gate: the kit files and the portal file each becomes (from [`file-map.m
 
 ---
 
+### D3 · The dropdown ground has no token
+
+**His question (2026-09-27 19:16 EDT, `intake:801`):** *"if it doesn't have a token, then that's something to let session 4 know/be aware of, correct?"* — it has none.
+
+| Fact | Where |
+|---|---|
+| The ground is written out as `color-mix(in srgb,#04070A N%,var(--sunk))` — a raw hex, no name | the dropdowns: `local/pins2-board-3/redo/b4/classes.css` (`.f-menu`); the date picker: `local/pins2-board-3/redo/b3/board.css` (`.b3-datepop`) |
+| **18 declarations, 5 files, nine different mixes:** 30 · 35 · 38 · 40 (×8) · 42 · 45 (×2) · 52 (×2) · 55 · 60 | `b4/classes.css` 7 · `b4/form.css` 6 · `b4/bulk.css` 3 · `b4/compare.css` 1 · `b3/board.css` 1 (counted 2026-09-27 19:24 EDT) |
+| The portal has **none** of it: 0 in `portal/ui/app.css` and `portal/ui/tokens.css` — it arrived with Board 4's form | — |
+| The nearest portal names are `--overlay`, `--overlay-62`, `--overlay-66` — scrims behind a drawer, a different job | `portal/ui/tokens.css` |
+| The menus' and the picker's shadow (`0 22px 44px -14px rgba(0,0,0,.75), 0 6px 14px -6px rgba(0,0,0,.5)`) and edge (`--ink` at 10%) are literals too | the same two rules |
+
+**The decision:** name the ground — one token for menus and pop-ups (and one for their shadow), and whether the nine mixes collapse into a few named steps (a field, a menu or pop-up, a well). Until then the dropdown and the date picker share the 40% mix by copy, not by name.
+
 ## What the data and the bot need — none of it is visible on the board
 
 A design port that stops at CSS ships a Capable badge nobody can save. Every item below is filed with its files and a verify condition in [`docs/db-deferred-list.md`](../../../../db-deferred-list.md); the entry names are exact.
@@ -244,4 +259,5 @@ A design port that stops at CSS ships a Capable badge nobody can save. Every ite
 
 - **Board 4's measured relations** — Board 3-E had `measure.cjs` (pixel relations); its selectors are board 3's, and Board 4 has no relations file. The values files are resolved declarations, not relations.
 - **Accessibility beyond keys** — focus order, ARIA roles and screen-reader announcements were never walked on Board 4. Keys that are handled are named per gate above; everything else is unrecorded.
+- **The date picker's values** (2026-09-27 19:26 EDT) — the generator walks each gate at rest, and the pop-up is closed at rest, so `C6`/`C7`/`states.md` hold no `.b3-dp-*` row (checked: 0). Its values are the `.b3-dp-*` and `.b3-datepop` rules in `local/pins2-board-3/redo/b3/board.css` and the open calendar button in `local/pins2-board-3/redo/b4.css`, as C7's Dates row says.
 - **The generator's own coverage holes** — the README lists every classed element no pass reached ("Not reached"), and every ⚠️ row is a winning declaration the computed value contradicts. Each is unexamined until opened.

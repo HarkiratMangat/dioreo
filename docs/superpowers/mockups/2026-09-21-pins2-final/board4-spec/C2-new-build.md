@@ -12,7 +12,7 @@ status: live
 
 ### C2 stage
 
-102 distinct signatures on screen; 95 not already specced above.
+103 distinct signatures on screen; 96 not already specced above.
 
 
 ### `div.on.scrim`
@@ -286,7 +286,7 @@ inside `.dw-nav` · 1 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .drawer .x · app.css:1398 |
 | transition | `gap 360ms cubic-bezier(.4,0,.2,1),padding 360ms cubic-bezier(.4,0,.2,1),color 200ms ease,background 200ms ease,border-color 200ms ease` | `` | .dw-h .dw-nav .x · gates.css:812 |
 | cursor | `pointer` | `pointer` | .dw-h .x · app.css:1383 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **::after**
 
@@ -461,7 +461,7 @@ inside `.x` · 3 on screen · **3 looks**
 
 #### look 3 of 3
 
-`C2-238` · rendered **61×13** · 1 instance look like this · text “New build”
+`C2-239` · rendered **61×13** · 1 instance look like this · text “New build”
 
 ```html
 <b>New build</b>
@@ -672,7 +672,7 @@ inside `.pb-bar` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
@@ -747,7 +747,7 @@ inside `.seg` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
@@ -770,7 +770,7 @@ inside `.—` · 25 on screen · **10 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3302 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3315 |
 | width | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | height | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -801,7 +801,7 @@ inside `.—` · 25 on screen · **10 looks**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `inline-block` | `block` | .ic · app.css:6457 |
-| flex | `none` | `` | .seg button > .ic · b3/board.css:3302 |
+| flex | `none` | `` | .seg button > .ic · b3/board.css:3315 |
 | width | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | height | `14px` | `14px` | .b3-nb .pb-seg .ic · b3/board.css:1073 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
@@ -840,7 +840,7 @@ inside `.—` · 25 on screen · **10 looks**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .b4-hint · b4/form.css:7 |
 | font-size | ↑ `` | `12px` | inherited · .b4 .b4-hint · b4/form.css:7 |
 | font-weight | ↑ `` | `600` | inherited · .b4 .b4-hint · b4/form.css:7 |
-| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .b4-hint · b4/form.css:7 |
 | line-height | ↑ `` | `12px` | inherited · .b4 .b4-hint · b4/form.css:7 |
 | letter-spacing | ↑ `0px` | `normal` | inherited · .b4 .b4-hint · b4/form.css:7 |
@@ -868,7 +868,7 @@ inside `.—` · 25 on screen · **10 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-pre · b4/form.css:55 |
@@ -894,7 +894,7 @@ inside `.—` · 25 on screen · **10 looks**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:158 |
 | font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:158 |
 | font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | ↑ `normal` | `normal` | inherited · .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:158 |
 | line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:158 |
 | letter-spacing | — | `normal` | initial |
@@ -1015,7 +1015,7 @@ inside `.f-add` · 1 on screen · **1 look**
 | row-gap | `16px` | `16px` | .b4 .f-form · b4/form.css:17 |
 | align-self | `stretch` | `stretch` | .b4 .dw-b .f-add > .b3-fady · b4.css:399 |
 | min-width | `0px` | `0px` | .b4 .f-form · b4/form.css:17 |
-| min-height | `0px` | `0px` | .b4 .f-form.b3-fady, .b4 .f-side.b3-fady · b4.css:410 |
+| min-height | `0px` | `0px` | .b4 .f-form.b3-fady · b4.css:410 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `6px 6px 12px` | `` | .b4 .f-form.b3-fady · b4/classes.css:150 |
 | padding-top | `6px` | `6px` | .b4 .f-form.b3-fady · b4/classes.css:150 |
@@ -1034,8 +1034,8 @@ inside `.f-add` · 1 on screen · **1 look**
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 | overflow-x | `hidden` | `hidden` | .b4 .f-form.b3-fady · b4.css:400 |
-| overflow-y | `auto` | `auto` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2364 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2364 |
+| overflow-y | `auto` | `auto` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
 
 
 ### `section.f-card`
@@ -1258,7 +1258,7 @@ inside `.f-h` · 7 on screen · **3 looks**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-h · b4/form.css:31 |
 | font-size | ↑ `` | `15px` | inherited · .b4 .f-h · b4/form.css:31 |
 | font-weight | ↑ `` | `600` | inherited · .b4 .f-h · b4/form.css:31 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-h · b4/form.css:31 |
 | line-height | ↑ `` | `15px` | inherited · .b4 .f-h · b4/form.css:31 |
 | letter-spacing | — | `normal` | initial |
@@ -1280,7 +1280,7 @@ inside `.f-h` · 7 on screen · **3 looks**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-empty · b4/form.css:158 |
 | font-size | ↑ `` | `11.5px` | inherited · .b4 .f-empty · b4/form.css:158 |
 | font-weight | ↑ `` | `500` | inherited · .b4 .f-empty · b4/form.css:158 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-empty · b4/form.css:158 |
 | line-height | ↑ `` | `14.95px` | inherited · .b4 .f-empty · b4/form.css:158 |
 | letter-spacing | — | `normal` | initial |
@@ -1302,7 +1302,7 @@ inside `.f-h` · 7 on screen · **3 looks**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-more · b4/form.css:194 |
 | font-size | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:194 |
 | font-weight | ↑ `` | `600` | inherited · .b4 .f-more · b4/form.css:194 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-more · b4/form.css:194 |
 | line-height | ↑ `` | `13.5px` | inherited · .b4 .f-more · b4/form.css:194 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -1348,7 +1348,7 @@ inside `.f-h` · 6 on screen · **2 looks**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b4-hint · b4/form.css:7 |
 | font-size | `` | `12px` | .b4 .b4-hint · b4/form.css:7 |
 | font-weight | `` | `600` | .b4 .b4-hint · b4/form.css:7 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .b4-hint · b4/form.css:7 |
 | line-height | `` | `12px` | .b4 .b4-hint · b4/form.css:7 |
 | letter-spacing | `0px` | `normal` | .b4 .b4-hint · b4/form.css:7 |
@@ -1389,7 +1389,7 @@ inside `.f-h` · 6 on screen · **2 looks**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b4-hint · b4/form.css:7 |
 | font-size | `` | `12px` | .b4 .b4-hint · b4/form.css:7 |
 | font-weight | `` | `600` | .b4 .b4-hint · b4/form.css:7 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .b4-hint · b4/form.css:7 |
 | line-height | `` | `12px` | .b4 .b4-hint · b4/form.css:7 |
 | letter-spacing | `0px` | `normal` | .b4 .b4-hint · b4/form.css:7 |
@@ -1624,7 +1624,7 @@ inside `.f-fld` · 2 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-pre · b4/form.css:55 |
@@ -1681,7 +1681,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1741,7 +1741,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `pointer` | `pointer` | .b4 .f-fld.closed, .b4 .f-fld.closed .f-in · b4/form.css:49 |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1800,7 +1800,7 @@ inside `.f-fld` · 3 on screen · **3 looks**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 **:hover** — changes nothing on the element itself
 
@@ -1862,7 +1862,7 @@ inside `.f-fld` · 3 on screen · **1 look**
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-suf · b4/form.css:65 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `pointer` | `pointer` | .b4 .f-suf · b4/form.css:65 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2031,7 +2031,7 @@ inside `.f-pre` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink3)` | `rgb(133, 147, 159)` | inherited · .b4 .f-pre · b4/form.css:55 |
@@ -2079,7 +2079,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | `var(--ink3)` | `rgb(133, 147, 159)` | .b4 .f-pre · b4/form.css:55 |
@@ -2164,7 +2164,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2267,7 +2267,7 @@ inside `.f-fld` · 2 on screen · **1 look**
 | overflow-x | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | overflow-y | `clip !important !important` | `clip` | input:not([type="range" i], [type="checkbox" i], [type="radio" i]) · user-agent:? |
 | cursor | `text` | `text` | input · user-agent:? |
-| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:4996 |
+| user-select | `text` | `text` | :is(.b3-xt-code, .b3-src, .b3-ent, .exs-f, .b3-xt-pwf, code, kbd, input, textarea), [data- · b3/board.css:5009 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2330,7 +2330,7 @@ inside `.f-fld` · 1 on screen · **1 look**
 | opacity | `0.35` | `0.35` | .b4 .f-suf:disabled · b4/form.css:69 |
 | transition | `color .15s,background-color .15s` | `` | .b4 .f-suf · b4/form.css:65 |
 | cursor | `default` | `default` | .b4 .f-suf:disabled · b4/form.css:69 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes nothing on the element itself
 
@@ -2425,7 +2425,7 @@ inside `.f-att` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
 | font-size | `` | `13px` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
 | font-weight | `` | `500` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
 | line-height | `` | `13px` | .b4 .f-lab label, .b4 .f-lab .f-rl, .b4 .f-slot · b4/classes.css:408 |
 | letter-spacing | — | `normal` | initial |
@@ -2511,11 +2511,11 @@ inside `.f-row` · 1 on screen · **1 look**
 | gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:668 |
+| flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:675 |
 | flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | justify-self | `start` | `start` | .b4 .f-bdgs, .b4 .f-tgrp · b4/classes.css:411 |
-| min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:668 |
+| min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:675 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -2577,7 +2577,7 @@ inside `.f-bdgs` · 9 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-bt · b4/form.css:115 |
 | cursor | `pointer` | `pointer` | .b4 .f-bt · b4/form.css:115 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -2639,7 +2639,7 @@ inside `.f-bt` · 13 on screen · **1 look**
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
 | font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -2679,7 +2679,7 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -2717,7 +2717,7 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -2755,7 +2755,7 @@ inside `.b3-tox` · 9 on screen · **3 looks**
 | font-family | ↑ `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | inherited · .b3-bdg · b3/board.css:150 |
 | font-size | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | font-weight | ↑ `` | `700` | inherited · .b3-bdg · b3/board.css:150 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b3-bdg · b3/board.css:150 |
 | line-height | ↑ `` | `9.5px` | inherited · .b3-bdg · b3/board.css:150 |
 | letter-spacing | ↑ `var(--b3-tr)` | `1.045px` | inherited · .b3-bdg · b3/board.css:150 |
@@ -2861,11 +2861,11 @@ inside `.f-tiers` · 1 on screen · **1 look**
 | height | `34px` | `34px` | .b4 .f-tier · b4/form.css:135 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 6px` | `` | .b4 .f-tier.none · b4/classes.css:587 |
+| padding | `0 6px` | `` | .b4 .f-tier.none · b4/classes.css:594 |
 | padding-top | `2px` | `2px` | .b4 .f-tiers .f-tier.none · b4/classes.css:467 |
-| padding-right | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:587 |
-| padding-bottom | `0px` | `0px` | .b4 .f-tier.none · b4/classes.css:587 |
-| padding-left | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:587 |
+| padding-right | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:594 |
+| padding-bottom | `0px` | `0px` | .b4 .f-tier.none · b4/classes.css:594 |
+| padding-left | `6px` | `6px` | .b4 .f-tier.none · b4/classes.css:594 |
 | border | `0` | `` | .b4 .f-tier · b4/form.css:135 |
 | border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:135 |
 | background | `color-mix(in srgb,var(--ink) 7%,var(--sunk))` | `` | .b4 .f-tier[aria-checked="true"] · b4/form.css:137 |
@@ -2885,7 +2885,7 @@ inside `.f-tiers` · 1 on screen · **1 look**
 | color | `var(--ink)` | `rgb(232, 237, 241)` | .b4 .f-tier.none[aria-checked="true"] · b4/form.css:143 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -2925,11 +2925,11 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | height | `34px` | `34px` | .b4 .f-tier · b4/form.css:135 |
 | min-height | `var(--ctl-min, 32px)` | `auto` | input, select, textarea, button · app.css:388 |
 | box-sizing | `border-box` | `border-box` | input, select, textarea, button · app.css:388 |
-| padding | `0 4px` | `` | .b4 .f-tier · b4/classes.css:586 |
-| padding-top | `0px` | `0px` | .b4 .f-tier · b4/classes.css:586 |
-| padding-right | `4px` | `4px` | .b4 .f-tier · b4/classes.css:586 |
-| padding-bottom | `0px` | `0px` | .b4 .f-tier · b4/classes.css:586 |
-| padding-left | `4px` | `4px` | .b4 .f-tier · b4/classes.css:586 |
+| padding | `0 4px` | `` | .b4 .f-tier · b4/classes.css:593 |
+| padding-top | `0px` | `0px` | .b4 .f-tier · b4/classes.css:593 |
+| padding-right | `4px` | `4px` | .b4 .f-tier · b4/classes.css:593 |
+| padding-bottom | `0px` | `0px` | .b4 .f-tier · b4/classes.css:593 |
+| padding-left | `4px` | `4px` | .b4 .f-tier · b4/classes.css:593 |
 | border | `0` | `` | .b4 .f-tier · b4/form.css:135 |
 | border-radius | `6px` | `` | .b4 .f-tier · b4/form.css:135 |
 | background | `none` | `` | .b4 .f-tier · b4/form.css:135 |
@@ -2948,7 +2948,7 @@ inside `.f-tiers` · 4 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-tier · b4/form.css:135 |
 | cursor | `pointer` | `pointer` | .b4 .f-tier · b4/form.css:135 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3004,7 +3004,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 2 of 7
 
-`C2-218` · rendered **39×14** · 1 instance look like this · text “Muzzle”
+`C2-219` · rendered **39×14** · 1 instance look like this · text “Muzzle”
 
 ```html
 <em>Muzzle</em>
@@ -3017,7 +3017,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
 | letter-spacing | `0.06em` | `0.57px` | .lc-att li em · app.css:3540 |
 | text-transform | `uppercase` | `uppercase` | .lc-att li em · app.css:3540 |
@@ -3025,7 +3025,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 3 of 7
 
-`C2-220` · rendered **38×14** · 1 instance look like this · text “Barrel”
+`C2-221` · rendered **38×14** · 1 instance look like this · text “Barrel”
 
 ```html
 <em>Barrel</em>
@@ -3038,7 +3038,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
 | letter-spacing | `0.06em` | `0.57px` | .lc-att li em · app.css:3540 |
 | text-transform | `uppercase` | `uppercase` | .lc-att li em · app.css:3540 |
@@ -3046,7 +3046,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 4 of 7
 
-`C2-222` · rendered **32×14** · 1 instance look like this · text “Stock”
+`C2-223` · rendered **32×14** · 1 instance look like this · text “Stock”
 
 ```html
 <em>Stock</em>
@@ -3059,7 +3059,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
 | letter-spacing | `0.06em` | `0.57px` | .lc-att li em · app.css:3540 |
 | text-transform | `uppercase` | `uppercase` | .lc-att li em · app.css:3540 |
@@ -3067,7 +3067,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 5 of 7
 
-`C2-224` · rendered **64×14** · 1 instance look like this · text “Ammunition”
+`C2-225` · rendered **64×14** · 1 instance look like this · text “Ammunition”
 
 ```html
 <em>Ammunition</em>
@@ -3080,7 +3080,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
 | letter-spacing | `0.06em` | `0.57px` | .lc-att li em · app.css:3540 |
 | text-transform | `uppercase` | `uppercase` | .lc-att li em · app.css:3540 |
@@ -3088,7 +3088,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 
 #### look 6 of 7
 
-`C2-226` · rendered **51×14** · 1 instance look like this · text “Rear Grip”
+`C2-227` · rendered **51×14** · 1 instance look like this · text “Rear Grip”
 
 ```html
 <em>Rear Grip</em>
@@ -3101,7 +3101,7 @@ inside `.b3-bdg` · 8 on screen · **7 looks**
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | `var(--t-micro)` | `9.5px` | .lc-att li em · app.css:3540 |
 | font-weight | — | `400` | initial |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | line-height | ↑ `1.5` | `14.25px` | inherited · body · app.css:614 |
 | letter-spacing | `0.06em` | `0.57px` | .lc-att li em · app.css:3540 |
 | text-transform | `uppercase` | `uppercase` | .lc-att li em · app.css:3540 |
@@ -3130,7 +3130,7 @@ inside `.f-sec` · 1 on screen · **1 look**
 | column-gap | `14px` | `14px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:405 |
 | row-gap | `8px` | `8px` | .b4 .f-sec > .f-row.f-rank, .b4 .f-att · b4/classes.css:405 |
 | flex-wrap | `wrap` | `wrap` | .b4 .f-sec > .f-row.f-rank · b4/classes.css:415 |
-| align-items | `flex-start` | `flex-start` | .b4 .f-sec > .f-row.f-rank:has(> .f-mds) · b4/classes.css:669 |
+| align-items | `flex-start` | `flex-start` | .b4 .f-sec > .f-row.f-rank:has(> .f-mds) · b4/classes.css:676 |
 | min-width | `0px` | `0px` | .b4 .f-rank · b4/form.css:112 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
@@ -3159,11 +3159,11 @@ inside `.f-row` · 1 on screen · **1 look**
 | gap | `8px` | `` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | column-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | row-gap | `8px` | `8px` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
-| flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:668 |
+| flex | `1 1 0` | `` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:675 |
 | flex-wrap | `wrap` | `wrap` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | align-items | `center` | `center` | .b4 .f-bdgs, .b4 .f-tiers · b4/form.css:114 |
 | justify-self | `start` | `start` | .b4 .f-bdgs, .b4 .f-tgrp · b4/classes.css:411 |
-| min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:668 |
+| min-width | `0px` | `0px` | .b4 .f-sec > .f-row.f-rank > .f-bdgs · b4/classes.css:675 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3303,7 +3303,7 @@ inside `.f-shot` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-empty · b4/form.css:158 |
 | font-size | `` | `11.5px` | .b4 .f-empty · b4/form.css:158 |
 | font-weight | `` | `500` | .b4 .f-empty · b4/form.css:158 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .f-empty · b4/form.css:158 |
 | line-height | `` | `14.95px` | .b4 .f-empty · b4/form.css:158 |
 | letter-spacing | — | `normal` | initial |
@@ -3410,7 +3410,7 @@ inside `.f-mcol` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-drop · b4/form.css:170 |
 | font-size | `` | `13px` | .b4 .f-drop · b4/form.css:170 |
 | font-weight | `` | `500` | .b4 .f-drop · b4/form.css:170 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .f-drop · b4/form.css:170 |
 | line-height | `` | `13px` | .b4 .f-drop · b4/form.css:170 |
 | letter-spacing | — | `normal` | initial |
@@ -3481,7 +3481,7 @@ inside `.f-drop` · 1 on screen · **1 look**
 | font-family | ↑ `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · .b4 .f-drop · b4/form.css:170 |
 | font-size | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:170 |
 | font-weight | ↑ `` | `500` | inherited · .b4 .f-drop · b4/form.css:170 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `` | `normal` | inherited · .b4 .f-drop · b4/form.css:170 |
 | line-height | ↑ `` | `13px` | inherited · .b4 .f-drop · b4/form.css:170 |
 | letter-spacing | — | `normal` | initial |
@@ -3543,7 +3543,7 @@ inside `.f-keyl` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-kl · b4/form.css:179 |
 | font-size | `` | `12.5px` | .b4 .f-kl · b4/form.css:179 |
 | font-weight | `` | `500` | .b4 .f-kl · b4/form.css:179 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .f-kl · b4/form.css:179 |
 | line-height | `` | `12.5px` | .b4 .f-kl · b4/form.css:179 |
 | letter-spacing | — | `normal` | initial |
@@ -3634,7 +3634,7 @@ inside `.f-form` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b4 .f-more · b4/form.css:194 |
 | transition | `color .15s,border-color .15s,background-color .15s` | `` | .b4 .f-more · b4/form.css:194 |
 | cursor | `pointer` | `pointer` | .b4 .f-more · b4/form.css:194 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -3677,7 +3677,7 @@ inside `.f-form` · 1 on screen · **1 look**
 | transform | `none` | `matrix(0.985, 0, 0, 0.985, 0, 1)` |
 
 
-### `aside.b3-fady.f-side`
+### `aside.f-side`
 
 inside `.f-add` · 1 on screen · **1 look**
 
@@ -3686,19 +3686,19 @@ inside `.f-add` · 1 on screen · **1 look**
 `C2-209` · rendered **333×596** · 1 instance look like this
 
 ```html
-<aside class="f-side b3-fady" style="--fo: 0px; --ft: 0px; --fb: 0px;"><div class="f-prev"><h5>In Discord</h5><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithi
+<aside class="f-side"><div class="f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unkn
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `flex` | `flex` | .b4 .f-side.b3-fady · b4/classes.css:502 |
-| position | `static` | `static` | .b4 .f-side.b3-fady · b4.css:412 |
-| flex-direction | `column` | `column` | .b4 .f-side.b3-fady · b4/classes.css:502 |
-| align-self | `stretch` | `stretch` | .b4 .dw-b .f-add > .b3-fady · b4.css:399 |
+| display | `flex` | `flex` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
+| position | `static` | `static` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
+| flex-direction | `column` | `column` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
+| align-self | `stretch` | `stretch` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
 | min-width | `0px` | `0px` | .b4 .f-side · b4/form.css:20 |
-| min-height | `0px` | `0px` | .b4 .f-form.b3-fady, .b4 .f-side.b3-fady · b4.css:410 |
+| min-height | `0px` | `0px` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| padding-bottom | `var(--f-foot)` | `56px` | .b4 .f-side.b3-fady · b4/classes.css:502 |
+| padding-bottom | `56px` | `56px` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
 | top | `0px` | `0px` | .b4 .f-side · b4/form.css:20 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
@@ -3706,8 +3706,9 @@ inside `.f-add` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| overflow-y | `auto` | `auto` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2364 |
-| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 100%, rgba(0, 0, 0, 0.78) 100%, rgba(0, 0, 0, 0.3) 100%, rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2364 |
+| overflow | `hidden` | `` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
+| overflow-x | `hidden` | `hidden` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
+| overflow-y | `hidden` | `hidden` | .b4 .dw-b .f-add > .f-side · b4/classes.css:506 |
 
 
 ### `div.f-prev`
@@ -3716,19 +3717,21 @@ inside `.f-side` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-210` · rendered **333×521** · 1 instance look like this
+`C2-210` · rendered **333×439** · 1 instance look like this
 
 ```html
-<div class="f-prev"><h5>In Discord</h5><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel
+<div class="f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolith
 ```
 
 | property | winning declaration | computed | from |
 |---|---|---|---|
-| display | `block` | `block` | div · user-agent:? |
+| display | `flex` | `flex` | .b4 .f-side .f-prev · b4/classes.css:507 |
 | position | `relative` | `relative` | .b4 .f-prev · b4/form.css:25 |
-| flex | `none` | `` | .b4 .f-side.b3-fady > * · b4/classes.css:503 |
+| flex | `1 1 auto` | `` | .b4 .f-side .f-prev · b4/classes.css:507 |
+| flex-direction | `column` | `column` | .b4 .f-side .f-prev · b4/classes.css:507 |
+| min-height | `0px` | `0px` | .b4 .f-side .f-prev · b4/classes.css:507 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
-| margin-bottom | `0px` | `0px` | .b4 .f-side .f-prev:has(.b4-ghostwrap) · b4/classes.css:505 |
+| margin-bottom | `0px` | `0px` | .b4 .f-side .f-prev:has(.b4-ghostwrap) · b4/classes.css:512 |
 | font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
 | font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
 | font-weight | — | `400` | initial |
@@ -3737,13 +3740,42 @@ inside `.f-side` · 1 on screen · **1 look**
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
 
 
-### `div.b4-ghostwrap`
+### `div.b3-fady.f-prevsc`
 
 inside `.f-prev` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-211` · rendered **333×499** · 1 instance look like this
+`C2-211` · rendered **333×417** · 1 instance look like this
+
+```html
+<div class="f-prevsc b3-fady" style="--fo: 0px; --ft: 0px; --fb: 28px;"><div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li
+```
+
+| property | winning declaration | computed | from |
+|---|---|---|---|
+| display | `block` | `block` | div · user-agent:? |
+| flex | `0 1 auto` | `` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
+| min-height | `0px` | `0px` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
+| box-sizing | `border-box` | `border-box` | * · app.css:612 |
+| font-family | ↑ `var(--ui)` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · body · app.css:614 |
+| font-size | ↑ `var(--t-base)` | `13px` | inherited · body · b2.css:9 |
+| font-weight | — | `400` | initial |
+| line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
+| letter-spacing | — | `normal` | initial |
+| color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
+| overflow-x | `hidden` | `hidden` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
+| overflow-y | `auto` | `auto` | .b4 .f-prevsc.b3-fady · b4/classes.css:510 |
+| mask-image | `linear-gradient(to bottom,#000 0,#000 var(--fo,0px),rgb(0 0 0/0) var(--fo,0px),rgb(0 0 0/.3) calc(var(--fo,0px) + var(--ft,0px)*.45),rgb(0 0 0/.78) calc(var(--fo,0px) + var(--ft,0px)*.8),#000 calc(var(--fo,0px) + var(--ft,0px)),#000 calc(100% - var(--fb,0px)),rgb(0 0 0/.78) calc(100% - var(--fb,0px)*.8),rgb(0 0 0/.3) calc(100% - var(--fb,0px)*.45),rgb(0 0 0/0) 100%)` | `linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 0px, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.78) 0px, rgb(0, 0, 0) 0px, rgb(0, 0, 0) calc(100% - 28px), rgba(0, 0, 0, 0.78) calc(100% - 22.4px), rgba(0, 0, 0, 0.3) calc(100% - 12.6px), rgba(0, 0, 0, 0) 100%)` | .b3-fady, .b3-sd-rows, .b3-cmdl, .b3dock-list, .b3dock-cur, .b3-sd-chips:has(.b3-sc ~ .b3- · b3/board.css:2377 |
+
+
+### `div.b4-ghostwrap`
+
+inside `.f-prevsc` · 1 on screen · **1 look**
+
+#### the one look
+
+`C2-212` · rendered **333×499** · 1 instance look like this
 
 ```html
 <div class="b4-ghostwrap"><div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extend
@@ -3768,7 +3800,7 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-212` · rendered **333×499** · 1 instance look like this · aria-hidden="true"
+`C2-213` · rendered **333×499** · 1 instance look like this · aria-hidden="true"
 
 ```html
 <div class="b4-ghostcard" aria-hidden="true"><div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>
@@ -3784,9 +3816,9 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 | line-height | ↑ `1.5` | `19.5px` | inherited · body · app.css:614 |
 | letter-spacing | — | `normal` | initial |
 | color | ↑ `var(--ink)` | `rgb(232, 237, 241)` | inherited · body · gates.css:6 |
-| opacity | `0.34` | `0.34` | .b4 .b4-ghostcard · b4.css:414 |
+| opacity | `0.34` | `0.34` | .b4 .b4-ghostcard · b4.css:413 |
 | mask-image | `var(--clear),linear-gradient(180deg,#000 35%,transparent 92%)` | `radial-gradient(60% 91.2px, rgba(0, 0, 0, 0) 40%, rgb(0, 0, 0) 100%), linear-gradient(rgb(0, 0, 0) 35%, rgba(0, 0, 0, 0) 92%)` | .b4 .b4-ghostwrap > .b4-ghostcard · b4/classes.css:91 |
-| pointer-events | `none` | `none` | .b4 .b4-ghostcard · b4.css:414 |
+| pointer-events | `none` | `none` | .b4 .b4-ghostcard · b4.css:413 |
 
 
 ### `div.dcard.lc`
@@ -3795,7 +3827,7 @@ inside `.b4-ghostcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-213` · rendered **333×499** · 1 instance look like this
+`C2-214` · rendered **333×499** · 1 instance look like this
 
 ```html
 <div class="dcard lc" style="--c: #ff3b5c;"><h6 role="heading" aria-level="3">AK117</h6><div class="lc-rule"></div><div class="lc-h">Attachments</div><ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>Barrel</em></li><li style="--sl: var(--sl-sto
@@ -3831,7 +3863,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-214` · rendered **303×1** · 1 instance look like this
+`C2-215` · rendered **303×1** · 1 instance look like this
 
 ```html
 <div class="lc-rule"></div>
@@ -3864,7 +3896,7 @@ inside `.dcard` · 2 on screen · **1 look**
 
 #### the one look
 
-`C2-215` · rendered **303×12** · 2 instances look like this · text “Attachments”
+`C2-216` · rendered **303×12** · 2 instances look like this · text “Attachments”
 
 ```html
 <div class="lc-h">Attachments</div>
@@ -3896,7 +3928,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-216` · rendered **303×111** · 1 instance look like this
+`C2-217` · rendered **303×111** · 1 instance look like this
 
 ```html
 <ul class="lc-att"><li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li><li style="--sl: var(--sl-barrel, var(--sl-unknown));"><code>MIP Extended Light Barrel</code><em>Barrel</em></li><li style="--sl: var(--sl-stock, var(--sl-unknown));"><code>No Stock</code><em>Stock</em></li><li style="--sl: var(--sl-ammunition, var(--sl-unknown));"><code>48 Round Extended Ma
@@ -3934,7 +3966,7 @@ inside `.lc-att` · 6 on screen · **2 looks**
 
 #### look 1 of 2
 
-`C2-217` · rendered **303×20** · 5 instances look like this
+`C2-218` · rendered **303×20** · 5 instances look like this
 
 ```html
 <li style="--sl: var(--sl-muzzle, var(--sl-unknown));"><code>Monolithic Suppressor</code><em>Muzzle</em></li>
@@ -3964,7 +3996,7 @@ inside `.lc-att` · 6 on screen · **2 looks**
 
 #### look 2 of 2
 
-`C2-233` · rendered **309×56** · 1 instance look like this
+`C2-234` · rendered **309×56** · 1 instance look like this
 
 ```html
 <li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button></li>
@@ -3988,7 +4020,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-228` · rendered **303×32** · 1 instance look like this · text “1C2B4A8B9A”
+`C2-229` · rendered **303×32** · 1 instance look like this · text “1C2B4A8B9A”
 
 ```html
 <div class="lc-code">1C2B4A8B9A</div>
@@ -4021,7 +4053,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-229` · rendered **303×212** · 1 instance look like this
+`C2-230` · rendered **303×212** · 1 instance look like this
 
 ```html
 <div class="lc-img"><img src="https://res.cloudinary.com/dr6dn61eh/image/upload/f_auto,q_auto/v1/AK117-1.png" alt="AK117 Build 1" loading="lazy"><span class="lc-imgfail">Cloudinary did not return this image — <code>AK117-1.png</code></span></div>
@@ -4058,7 +4090,7 @@ inside `.dcard` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-230` · rendered **303×14** · 1 instance look like this · text “AR • Build 1 of 1 • Updated 2026-04-08”
+`C2-231` · rendered **303×14** · 1 instance look like this · text “AR • Build 1 of 1 • Updated 2026-04-08”
 
 ```html
 <div class="lc-foot">AR • Build 1 of 1 • Updated 2026-04-08</div>
@@ -4083,7 +4115,7 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-231` · rendered **305×60** · 1 instance look like this · text “Pick a weapon and its card builds itself here.”
+`C2-232` · rendered **305×60** · 1 instance look like this · text “Pick a weapon and its card builds itself here.”
 
 ```html
 <p class="f-pe b4-overline">Pick a weapon and its card builds itself…</p>
@@ -4116,7 +4148,7 @@ inside `.b4-ghostwrap` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .b4-overline · b4/classes.css:83 |
 | font-size | `` | `13px` | .b4 .b4-overline · b4/classes.css:83 |
 | font-weight | `` | `500` | .b4 .b4-overline · b4/classes.css:83 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .b4-overline · b4/classes.css:83 |
 | line-height | `` | `18.85px` | .b4 .b4-overline · b4/classes.css:83 |
 | letter-spacing | — | `normal` | initial |
@@ -4131,7 +4163,7 @@ inside `.f-side` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-232` · rendered **333×101** · 1 instance look like this · role="status"
+`C2-233` · rendered **333×101** · 1 instance look like this · role="status"
 
 ```html
 <div class="f-stage" id="b4-stage-st" role="status" aria-live="polite"><h5>Before staging</h5><ul><li><button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a wea
@@ -4140,8 +4172,8 @@ inside `.f-side` · 1 on screen · **1 look**
 | property | winning declaration | computed | from |
 |---|---|---|---|
 | display | `block` | `block` | div · user-agent:? |
-| position | `sticky` | `sticky` | .b4 .f-stage · b4/classes.css:482 |
-| flex | `none` | `` | .b4 .f-side.b3-fady > * · b4/classes.css:503 |
+| position | `static` | `static` | .b4 .f-side > .f-stage · b4/classes.css:508 |
+| flex | `none` | `` | .b4 .f-side > .f-stage · b4/classes.css:508 |
 | box-sizing | `border-box` | `border-box` | * · app.css:612 |
 | padding | `12px` | `` | .b4 .f-stage · b4/classes.css:482 |
 | padding-top | `12px` | `12px` | .b4 .f-stage · b4/classes.css:482 |
@@ -4170,7 +4202,7 @@ inside `.—` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-234` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
+`C2-235` · rendered **309×56** · 1 instance look like this · aria-label="New build, build 1: needs a weapon and a" type="button"
 
 ```html
 <button type="button" class="f-st" aria-label="New build, build 1: needs a weapon and an attachment" style="--f-ch: var(--ink3);"><span class="f-stm" data-tone="warn">⟨svg.ic⟩</span><span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span><span class="f-stw">Needs a weapon and an attachment</span></button>
@@ -4209,7 +4241,7 @@ inside `.—` · 1 on screen · **1 look**
 | color | `inherit` | `rgb(232, 237, 241)` | button · app.css:621 |
 | transition | `box-shadow .15s,background-color .15s` | `` | .b4 .f-st · b4/classes.css:486 |
 | cursor | `pointer` | `pointer` | .b4 .f-st · b4/classes.css:486 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 
@@ -4237,7 +4269,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-235` · rendered **20×20** · 1 instance look like this
+`C2-236` · rendered **20×20** · 1 instance look like this
 
 ```html
 <span class="f-stm" data-tone="warn">⟨svg.ic⟩</span>
@@ -4260,7 +4292,7 @@ inside `.f-st` · 1 on screen · **1 look**
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
 | font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -4276,7 +4308,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-237` · rendered **259×20** · 1 instance look like this
+`C2-238` · rendered **259×20** · 1 instance look like this
 
 ```html
 <span class="f-stn"><b>New build</b><em>Build 1</em><span class="b3-xt-pm" data-arm="MP">MP</span></span>
@@ -4296,7 +4328,7 @@ inside `.f-st` · 1 on screen · **1 look**
 | font-family | ↑ `inherit` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | inherited · button · app.css:621 |
 | font-size | ↑ `inherit` | `13px` | inherited · button · app.css:621 |
 | font-weight | ↑ `inherit` | `400` | inherited · button · app.css:621 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | ↑ `inherit` | `normal` | inherited · button · app.css:621 |
 | line-height | ↑ `inherit` | `19.5px` | inherited · button · app.css:621 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -4312,7 +4344,7 @@ inside `.f-stn` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-240` · rendered **28×18** · 1 instance look like this · text “MP”
+`C2-241` · rendered **28×18** · 1 instance look like this · text “MP”
 
 ```html
 <span class="b3-xt-pm" data-arm="MP">MP</span>
@@ -4342,7 +4374,7 @@ inside `.f-stn` · 1 on screen · **1 look**
 | font-family | `` | `"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace` | .b4 .b3-xt-pm · b4.css:359 |
 | font-size | `` | `10px` | .b4 .b3-xt-pm · b4.css:359 |
 | font-weight | `` | `600` | .b4 .b3-xt-pm · b4.css:359 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .b3-xt-pm · b4.css:359 |
 | line-height | `` | `10px` | .b4 .b3-xt-pm · b4.css:359 |
 | letter-spacing | `0.08em` | `0.8px` | .b4 .b3-xt-pm · b4.css:359 |
@@ -4358,7 +4390,7 @@ inside `.f-st` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-241` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
+`C2-242` · rendered **259×16** · 1 instance look like this · text “Needs a weapon and an attachment”
 
 ```html
 <span class="f-stw">Needs a weapon and an attachment</span>
@@ -4373,7 +4405,7 @@ inside `.f-st` · 1 on screen · **1 look**
 | font-family | `` | `"Space Grotesk", -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif` | .b4 .f-stw · b4/classes.css:501 |
 | font-size | `` | `12.5px` | .b4 .f-stw · b4/classes.css:501 |
 | font-weight | `` | `500` | .b4 .f-stw · b4/classes.css:501 |
-| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:418 |
+| font-style | `normal` | `normal` | .b4 .drawer :is(label, span, em, i, small, p, b, input, textarea, select), .b4 .drawer :is · b4.css:417 |
 | font-variant-numeric | `` | `normal` | .b4 .f-stw · b4/classes.css:501 |
 | line-height | `` | `16.25px` | .b4 .f-stw · b4/classes.css:501 |
 | letter-spacing | ↑ `normal` | `normal` | inherited · input, textarea, select, button · user-agent:? |
@@ -4389,7 +4421,7 @@ inside `.drawer` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-242` · rendered **224×40** · 1 instance look like this
+`C2-243` · rendered **224×40** · 1 instance look like this
 
 ```html
 <footer class="dw-f"><button class="b3-btn2">Cancel</button><button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button></footer>
@@ -4413,7 +4445,7 @@ inside `.drawer` · 1 on screen · **1 look**
 | padding-bottom | `0px` | `0px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f · b4.css:265 |
 | padding-left | `0px` | `0px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f · b4.css:265 |
 | right | `var(--s5)` | `24px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f · b4.css:265 |
-| bottom | `20px` | `20px` | .b4 .drawer.wide:has(.b3-nb) .dw-f · b4/classes.css:603 |
+| bottom | `20px` | `20px` | .b4 .drawer.wide:has(.b3-nb) .dw-f · b4/classes.css:610 |
 | border | `0 !important !important` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f · b4.css:265 |
 | border-top | `1px solid var(--rule)` | `` | .dw-f · app.css:1393 |
 | background | `none !important !important` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f · b4.css:265 |
@@ -4435,7 +4467,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-243` · rendered **71×40** · 1 instance look like this · text “Cancel”
+`C2-244` · rendered **71×40** · 1 instance look like this · text “Cancel”
 
 ```html
 <button class="b3-btn2">Cancel</button>
@@ -4461,7 +4493,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | padding-left | `16px (as padding-inline-start)` | `16px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | padding-inline | `16px` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3324 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
 | background | `color-mix(in srgb,var(--sunk) 85%,transparent)` | `` | .b3-btn2 · b3/board.css:801 |
 | background-color | `` | `color(srgb 0.0431373 0.0588235 0.0705882 / 0.85)` | .b3-btn2 · b3/board.css:801 |
 | background-image | `` | `none` | .b3-btn2 · b3/board.css:801 |
@@ -4479,7 +4511,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | color | `var(--ink2)` | `rgb(157, 170, 180)` | .b3-btn2 · b3/board.css:801 |
 | transition | `background var(--dur-1) var(--ease),box-shadow var(--dur-1) var(--ease),color var(--dur-1) var(--ease)` | `` | .b3-btn2 · b3/board.css:801 |
 | cursor | `pointer` | `pointer` | .b3-btn2 · b3/board.css:801 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes; parts inside it respond (table below)
 
@@ -4517,7 +4549,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 
 #### the one look
 
-`C2-244` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
+`C2-245` · rendered **144×40** · 1 instance look like this · text “Stage this MP build”
 
 ```html
 <button class="b3-btn2 go" aria-disabled="true" aria-describedby="b4-stage-st">Stage this MP build</button>
@@ -4543,7 +4575,7 @@ inside `.dw-f` · 1 on screen · **1 look**
 | padding-left | `16px (as padding-inline-start)` | `16px` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | padding-inline | `16px` | `` | .b4 .drawer:is(:has(.b3-nb), .b1):not(.cfm) .dw-f :is(.b3-btn2, .btn) · b4.css:267 |
 | border | `0` | `` | .b3-btn2 · b3/board.css:801 |
-| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3324 |
+| border-radius | `var(--rad-box)` | `` | .b3-btn2 · b3/board.css:3337 |
 | background | `var(--ok)` | `` | .b3-btn2.go · b3/board.css:1355 |
 | background-color | `` | `rgb(123, 219, 99)` | .b3-btn2.go · b3/board.css:1355 |
 | background-image | `` | `none` | .b3-btn2.go · b3/board.css:1355 |
@@ -4560,9 +4592,9 @@ inside `.dw-f` · 1 on screen · **1 look**
 | white-space | `nowrap` | `` | .b3-btn2 · b3/board.css:801 |
 | color | `var(--on-ok)` | `rgb(7, 19, 10)` | .b3-btn2.go · b3/board.css:1355 |
 | opacity | `0.45` | `0.45` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4126 |
+| transition | `background var(--b3-d1) var(--ease),box-shadow var(--b3-d1) var(--ease),transform var(--b3-d1) var(--ease)` | `` | .b3-btn2.go · b3/board.css:4139 |
 | cursor | `default` | `default` | .b3-btn2:disabled, .b3-btn2[aria-disabled="true"] · b3/board.css:1357 |
-| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:4995 |
+| user-select | `none` | `none` | :is(button, [role="button"], [role="tab"], [role="checkbox"], [role="radio"], .b3-fc, .b3- · b3/board.css:5008 |
 
 **:hover** — changes
 

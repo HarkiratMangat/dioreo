@@ -5,7 +5,7 @@ status: live
 
 # Board 4: Collective — the exact changes to PORTAL code
 
-*Generated 2026-09-27T06:58:48.708Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `ae52c02`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
+*Generated 2026-09-27T23:26:08.128Z by `maps.cjs` from `local/pins2-board-3/redo/` at kit commit `5cf50ac`. The kit's copies of portal files (`ui/*.js` against `portal/ui/`, `app.css` against the built `portal/public/app.css`), as unified diffs: 10 files differ. Board chrome copies (`ui/app.js`, `ui/httpClient.js`, `ui/conform.js`) are left out — applying them would break the portal (Board 3-E's file-map). A `useB3()` branch collapses to the arm the board holds (`switches.md`).*
 
 ## `app.css` → `portal/public/app.css`
 
@@ -770,16 +770,26 @@ index 9fd1fbd9..ad67927e 100644
 
 ```diff
 diff --git aportal/ui/broadcast.js bkit/ui/broadcast.js
-index 68764342..dbf5da15 100644
+index 68764342..edaecb14 100644
 --- aportal/ui/broadcast.js	
 +++ bkit/ui/broadcast.js	
-@@ -14,45 +14,55 @@ import { useAsync, RealmShell, reportFailure } from './async.js';
+@@ -3,7 +3,7 @@
+ // buildBroadcastAddOp/buildBroadcastEditOp come from broadcast.logic.js, loaded as a plain CLASSIC <script> before this module -- see track.js's header comment for why a literal ESM import of a .logic.js sibling would fail in a real browser (found live in season.js's own prior version).
+ import { h } from '../vendor/preact.mjs';
+ import { html } from '../vendor/htm-preact.mjs';
+-import { useState, useEffect } from '../vendor/preact-hooks.mjs';
++import { useState, useEffect, useRef } from '../vendor/preact-hooks.mjs';
+ import { Shell, Masthead, MastheadNew } from './shell.js';
+ import { DiscordCard } from './v2Render.js';
+ import { Manifest } from './manifest.js';
+@@ -14,45 +14,56 @@ import { useAsync, RealmShell, reportFailure } from './async.js';
  import { stageOps } from './composeClient.js';
  import { useOverlay, Drawer } from './overlay.js';
  import { SmartDate } from './composer.js';
 +import { useB3 } from '../b3/state.js';
-+import { EndPicker, NeverChip, ForeverAhead, stagedEndOf } from '../b3/broadcast.js';
-+import { MediaWell } from '../b4/form.js';
++import { EndPicker, NeverChip, ForeverAhead, stagedEndOf, DateGrid } from '../b3/broadcast.js';
++import { isoLocal } from '../b3/state.js';
++import { MediaWell, Chip } from '../b4/form.js';
 +import { CharCount } from '../gates/lib.js';
  
  // 🔴 NO YEAR. toDateString().slice(4) yields "Aug 14 2026"; the design prints "Aug 14" and so does every other date on this page. Four columns wide, on every row, the year is the same digit repeated 16 times and it pushed the whole table's columns out of register against the design. No year and no leading zero: the design prints "Aug 4", toDateString gives "Aug 04 2026".
@@ -840,7 +850,7 @@ index 68764342..dbf5da15 100644
  
  // Now showing -- the live set in the order Discord delivers it.
  //
-@@ -67,7 +77,7 @@ const firstHeading = (t) => (String(t || '').match(/^#{1,3}\s+(.+)$/m) || [])[1]
+@@ -67,7 +78,7 @@ const firstHeading = (t) => (String(t || '').match(/^#{1,3}\s+(.+)$/m) || [])[1]
  const bodyOf = (t) => String(t || '').replace(/^#{1,3}\s+.+$/m, '').trim().slice(0, 110) || String(t || '').slice(0, 110);
  
  // 🔴 WHOLE DAYS BETWEEN TWO DATES, not hours divided by 24. The design counts from midnight to midnight, so an announcement posted at 18:41 twenty days ago is "19d" there and was "20d" here — every age on the page off by one, in a direction that depends on the time of day the fixture happens to carry. 🔴 FLOOR FROM TODAY'S MIDNIGHT TO THE ACTUAL TIMESTAMP, which is what the design's own days() does and what makes "up 19d" 19 rather than 20. Rounding date-to-date gives 20 for a post made at 18:41 twenty calendar days ago; the design counts ELAPSED days from the moment it was posted to the start of today, so a post nineteen-and-a-quarter days old is nineteen. Every age on this realm was one out until this was measured against the design rather than reasoned about.
@@ -849,7 +859,7 @@ index 68764342..dbf5da15 100644
      (new Date(new Date(b).toISOString().slice(0, 10) + 'T00:00:00Z') - new Date(a)) / 86400000));
  
  const relDay = (iso) => {
-@@ -76,7 +86,7 @@ const relDay = (iso) => {
+@@ -76,7 +87,7 @@ const relDay = (iso) => {
  };
  
  // 🔴 CHANGES AHEAD REPLACES "WHAT ONE PLAYER GETS" (plan pins batch 2 §10.4 G3 row 5, popup 2026-09-14 10:33 EDT). The composer now shows the Discord card itself, so this column answers the question the queue cannot: what is about to change. Every future start and every future end, soonest first, as a date tile and the announcement clamped to two lines.
@@ -858,7 +868,7 @@ index 68764342..dbf5da15 100644
      const now = Date.now();
      const events = [];
      for (const a of all) {
-@@ -89,17 +99,18 @@ function ChangesAhead({ all }) {
+@@ -89,17 +100,18 @@ function ChangesAhead({ all }) {
      return html`
          <div class="bchg" role="group" aria-label="Changes ahead">
              <h5>Changes ahead</h5>
@@ -879,7 +889,7 @@ index 68764342..dbf5da15 100644
      const now = Date.now();
      let lo = now, hi = now + 7 * 86400000;
      for (const a of live) {
-@@ -109,10 +120,11 @@ function queueWindow(live) {
+@@ -109,10 +121,11 @@ function queueWindow(live) {
      }
      return { lo, hi: Math.max(hi, lo + 86400000), now };
  }
@@ -892,7 +902,7 @@ index 68764342..dbf5da15 100644
      const toggleText = (id) => setOpenText((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
      return html`
          <div class="bqueue">
-@@ -128,11 +140,12 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
+@@ -128,11 +141,12 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
                          const text = String(a.text || '').replace(/^#{1,3}\s+/gm, '');
                          const start = new Date(a.startsAt || a.createdAt).getTime();
                          const end = a.expiresAt ? new Date(a.expiresAt).getTime() : null;
@@ -906,7 +916,7 @@ index 68764342..dbf5da15 100644
                               aria-label=${`Delivery position ${i + 1}${waiting ? `, waiting beyond the ${cap}-message cap` : ''}`}>
                              <span class="bnum">${i + 1}</span>
                              <div class="bbody">
-@@ -145,10 +158,10 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
+@@ -145,10 +159,10 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
                                      <span class="bend"><${Icon} name="calendar-days" />${fmtDay(a.startsAt || a.createdAt)}</span>
                                      <span class="qbar" aria-hidden="true">
                                          <span class="btrack"></span>
@@ -919,7 +929,7 @@ index 68764342..dbf5da15 100644
                                  </div>
                                  <div class="bmeta">
                                      <span class="bpill">up ${days}d</span>
-@@ -166,7 +179,7 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
+@@ -166,7 +180,7 @@ function NowShowing({ live, cap, onEdit, onEditDates, onRemove }) {
                      })}
                  </div>`}
              </div>
@@ -928,7 +938,7 @@ index 68764342..dbf5da15 100644
          </div>
      `;
  }
-@@ -192,7 +205,7 @@ function airtimeWindow(all, todayIso) {
+@@ -192,7 +206,7 @@ function airtimeWindow(all, todayIso) {
   * different strings truncated to the same string is still well-formed text. A shared opener is not
   * a seeding artefact either: a house style ("PSA:", "[Maintenance]") collides in exactly the same
   * way. Strip whatever prefix ALL of them share, back off to a word boundary, then truncate. */
@@ -937,7 +947,7 @@ index 68764342..dbf5da15 100644
      if (list.length < 2) return '';
      let n = 0;
      while (n < list[0].length && list.every((t) => t[n] === list[0][n])) n++;
-@@ -254,7 +267,7 @@ function Airtime({ all }) {
+@@ -254,7 +268,7 @@ function Airtime({ all }) {
  }
  
  // The proactive data-quality callout from 05-door-broadcast-ops.html. It names the specific announcement and the specific number rather than warning in the abstract -- an "announcements can stay up forever" notice teaches nothing, "this one has been up 19 days" is actionable.
@@ -946,7 +956,7 @@ index 68764342..dbf5da15 100644
      const forever = all.filter((a) => a.state === 'live' && !a.expiresAt)
          .map((a) => ({ ...a, days: daysBetween(a.createdAt, Date.now()) }))
          .sort((a, b) => b.days - a.days);
-@@ -278,10 +291,13 @@ function HeadsUp({ all, onSetEnd }) {
+@@ -278,12 +292,16 @@ function HeadsUp({ all, onSetEnd }) {
  
  // The shared 6,000-character embed budget every live post competes for (Discord's real limit on total embed content in one message, measured 2026-09-13; §10.3 row 10). Excludes whatever announcement is currently open in the composer, so editing one doesn't count its own old text against its new length.
  const EMBED_BUDGET = 6000;
@@ -960,8 +970,11 @@ index 68764342..dbf5da15 100644
 +        .reduce((sum, a) => sum + (a.text || '').length + POSTED_LINE, 0);
  }
  
++
  // The Show-each-player stepper's card glyphs (§10.3 row 3) — one small raised tile per showing.
-@@ -297,131 +313,153 @@ function RepeatGlyphs({ n }) {
+ function RepeatGlyphs({ n }) {
+     const count = Math.max(1, Number(n) || 1);
+@@ -297,131 +315,167 @@ function RepeatGlyphs({ n }) {
  // Mirrors /manage's real post-announcement modal (text/expiry) plus startsAt, a banner image and a repeat count (pins batch 2, spec §7/§10.3). The Discord-side fields stay authoritative for what the server accepts; this drawer is the richer web equivalent, built per the pins-2 design board (G8).
  //
  // ⚠️ EDIT AND POST SHARE ONE FORM. `initial` is the announcement object when opened from Broadcast's "Edit"/"Dates and repeats" buttons or HeadsUp's "Set an end date" (null when opened from "+ Post announcement") — pre-fills every field and switches submit() to an announcement.edit op that carries bannerImageUrl and repeatCount (row 8: an edit that omits them would silently wipe them, see core/ops/announcements.js's apply()).
@@ -1060,7 +1073,7 @@ index 68764342..dbf5da15 100644
 +                       <button class="b3-btn2" onClick=${onCancel}>Cancel</button>
 +                       <button class="b3-btn2 go" disabled=${!ready} onClick=${submit}>${busy ? 'Staging…' : (editing ? 'Stage this edit' : 'Stage post')}</button>`}>
 +            <div class="bed">
-+                <div class="pb-col">
++                <div class="pb-col b3-fady">
                      <div class="dwfield"><label for="post-text">Text</label>
                          <textarea id="post-text" rows="4" placeholder="Type a # heading on the first line if you want one."
                                    value=${text} onInput=${(e) => setText(e.target.value)}></textarea>
@@ -1098,7 +1111,8 @@ index 68764342..dbf5da15 100644
 +                            <span class=${'cmeter' + (overBudget ? ' bad' : '')}><i style=${`width:${pct(otherLen)}%`}></i><i style=${`width:${Math.min(100 - pct(otherLen), pct(thisLen))}%`}></i></span>
 +                            <span>${overBudget ? html`<b>${(totalLen - EMBED_BUDGET).toLocaleString()}</b> over ${EMBED_BUDGET.toLocaleString()}` : html`<b>${(EMBED_BUDGET - totalLen).toLocaleString()}</b> of ${EMBED_BUDGET.toLocaleString()} left`}</span></div></div></div>
 +                    <div class="dw-grid2" style="gap:0 16px">
-+                        <${BoardDate} id="post-starts" label="Starts" placeholder="in 3 days" dflt=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'now' : null} value=${startsAt} iso=${startsIso}
++                        <${BoardDate} id="post-starts" label="Starts" opt=${!startsAt.trim()} placeholder="Now" hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'Goes live when you commit it' : null}
++                                      min=${isoLocal()} value=${startsAt} iso=${startsIso}
                                        onChange=${(v, i) => { setStartsAt(v); setStartsIso(i); }} />
 -                        <div class="dwfield ends-field">
 -                            <label for="post-expires"><span>Ends</span>${' '}
@@ -1114,8 +1128,9 @@ index 68764342..dbf5da15 100644
 -                                                     value=${expiresAt} iso=${expiresIso}
 -                                                     onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }} />`}
 -                        </div>
-+                        <${BoardDate} id="post-expires" label="Ends" placeholder=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'Leave empty for 60 days' : 'Blank'}
-+                                      dflt=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? new Date(new Date(startsIso ? startsIso + 'T12:00:00Z' : Date.now()).getTime() + 60 * 864e5).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '') : null} value=${expiresAt} iso=${expiresIso} never=${neverEnds}
++                        <${BoardDate} id="post-expires" label="Ends" opt=${!expiresAt.trim() && !neverEnds} placeholder=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? 'In 60 days' : 'Blank'}
++                                      hint=${typeof window !== 'undefined' && window.B4_COLLECTIVE ? `Stops showing ${new Date(new Date(startsIso ? startsIso + 'T12:00:00Z' : Date.now()).getTime() + 60 * 864e5).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '')}` : null}
++                                      min=${startsIso || isoLocal()} value=${expiresAt} iso=${expiresIso} never=${neverEnds}
 +                                      onChange=${(v, i) => { setExpiresAt(v); setExpiresIso(i); }}
 +                                      right=${html`<button type="button" class="pb-sw" role="switch" aria-checked=${neverEnds ? 'true' : 'false'} onClick=${() => setNeverEnds(!neverEnds)}><span class="pb-swt"><i></i></span>Never ends</button>`} />
                      </div>
@@ -1138,7 +1153,7 @@ index 68764342..dbf5da15 100644
 +                            <div class="pb-cards" role="img" aria-label=${`Shown to each player up to ${shown} times, at most once a day`}>
 +                                ${Array.from({ length: Math.min(shown, 12) }, (_, i) => html`<span class="pb-mini" key=${i}></span>`)}
 +                                <span class="pb-gapday"><${Icon} name="clock" />1 a day max</span></div></div></div>
-+                    <div class="dwfield pb-bnf"><label>Banner</label>
++                    <div class="dwfield pb-bnf"><div class="pb-lrow"><label>Banner</label>${!bannerUrl ? html`<${Chip} tone="neutral">Optional<//>` : null}</div>
 +                        <${MediaWell} f=${bn} set=${setBanner} id="post-banner" sources=${['up', 'link']} keyed=${false} what="an image" /></div>
                  </div>
 -                <aside class="bed-side">
@@ -1152,7 +1167,7 @@ index 68764342..dbf5da15 100644
 -                            </div>` : html`<p class="empty">Type the announcement and the card builds itself here.</p>`}
 -                    </div>
 -                </aside>
-+                <aside class="bed-side pb-card"><div class="bed-sec"><h5>In Discord</h5>
++                <aside class="bed-side pb-card"><div class="bed-sec f-prev"><h5>In Discord</h5><div class="f-prevsc b3-fady">
 +                    ${text.trim() ? html`
 +                        <div class="dcard">${head ? html`<div class="pb-h">${head}</div>` : null}
 +                            ${body ? html`<p>${withCode(body)}</p>` : null}
@@ -1160,7 +1175,7 @@ index 68764342..dbf5da15 100644
 +                            <div class="pb-ts">${startsIso ? `Posted ${new Date(startsIso + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'Posted now'}</div></div>`
 +                        : (typeof window !== 'undefined' && window.B4_COLLECTIVE) ? html`<div class="b4-ghostcard" aria-hidden="true"><div class="dcard"><div class="pb-h">The first line becomes the title</div><p>Everything under it is the body, and <code>/draw prices</code> shows as a command.</p><div class="pb-ts">Posted now</div></div></div><p class="empty">Type the announcement and the card builds itself here.</p>`
 +                        : html`<p class="empty">Type the announcement and the card builds itself here.</p>`}
-+                </div>
++                </div></div>
 +                ${''/* 2026-09-26 20:03 EDT (harden): what stands between this post and Stage, as the build drawer says it — the side column's Before staging panel
 +                     (.f-stage, b4/form.js), one row per check with the same marks; a row jumps to its field. The footer holds only the buttons. */}
 +                <div class="f-stage pb-ready" role="status" aria-live="polite">
@@ -1177,11 +1192,18 @@ index 68764342..dbf5da15 100644
  
 +// A date field as board 1 · G8 draws it: the label row (with an optional control on its right), the input, and the echo of what the
 +// server resolved — ✓ and the day in the ok colour, or the default in dim. Same server parse and debounce as SmartDate.
-+function BoardDate({ id, label, placeholder, value, iso, onChange, right = null, never = false, dflt = null }) {
++function BoardDate({ id, label, placeholder, value, iso, onChange, right = null, never = false, dflt = null, opt = false, hint = null, min = '' }) {
 +    const latest = { current: value };
++    const [open, setOpen] = useState(false);
++    const picked = useRef('');
++    // 2026-09-27 18:52 EDT: a picked day writes its own words into the field AND its iso, so it is never sent back through the parser
++    const box = useRef(null);
++    useEffect(() => { if (!open) return undefined; const out = (e) => { if (box.current && !box.current.contains(e.target)) setOpen(false); }; document.addEventListener('pointerdown', out); return () => document.removeEventListener('pointerdown', out); }, [open]);
++    const pick = (s) => { setOpen(false); if (!s) { picked.current = ''; onChange('', null); return; } const t = new Date(`${s}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', ''); picked.current = t; onChange(t, s); };
 +    useEffect(() => {
 +        const raw = String(value || '').trim();
 +        if (!raw) { onChange(value, null); return undefined; }
++        if (raw === picked.current) return undefined;
 +        const t = setTimeout(() => { fetchJson(`/api/parse-date?q=${encodeURIComponent(raw)}`).then((d) => { if (latest.current === value) onChange(value, d.iso || null); }).catch(() => {}); }, 220);
 +        return () => clearTimeout(t);
 +    }, [value]);
@@ -1189,18 +1211,23 @@ index 68764342..dbf5da15 100644
 +    const day = (i) => new Date(i + 'T12:00:00Z').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '');
 +    return html`
 +        <div class=${'dwfield' + (right ? ' pb-endf' : '')} data-never=${never ? 'true' : 'false'}>
-+            <div class="pb-lrow"><label for=${id}>${label}</label>${right}</div>
++            <div class="pb-lrow"><label for=${id}>${label}</label>${opt ? html`<${Chip} tone="neutral">Optional<//>` : null}${right}</div>
 +            ${never ? html`<div class="pb-neverval" style="display:flex"><${Icon} name="infinity" />Stays up until you remove it</div>`
-+                : html`<input id=${id} type="text" autocomplete="off" spellcheck="false" placeholder=${placeholder} value=${value} onInput=${(e) => onChange(e.target.value, null)} />`}
-+            ${never ? null : !raw ? (right || dflt ? html`<span class="pb-echo pb-dim">${dflt ? `default · ${dflt}` : 'default'}</span>` : null)
-+                : iso ? html`<span class="pb-echo"><${Icon} name="check" cls="sm" />${day(iso)}</span>` : html`<span class="pb-echo pb-warn">not a date yet</span>`}
++                : html`<div class="pb-dfld" ref=${box}><input id=${id} type="text" autocomplete="off" spellcheck="false" placeholder=${placeholder} value=${value}
++                        onInput=${(e) => onChange(e.target.value, null)} onKeyDown=${(e) => { if (e.key === 'Escape' && open) { e.stopPropagation(); setOpen(false); } else if (e.key === 'ArrowDown' && !open) { e.preventDefault(); setOpen(true); } }} />
++                    <button type="button" class="pb-dbtn" aria-label=${`Pick the ${label.toLowerCase()} date`} aria-expanded=${open ? 'true' : 'false'} aria-haspopup="dialog" onClick=${() => setOpen(!open)}><${Icon} name="calendar-days" /></button>
++                    ${''/* 2026-09-27 18:55 EDT: the queue card's own date pop-up (.b3-datepop), opening DOWN from the field — the same month grid; the quick picks went 2026-09-27 19:16 EDT (his call) */}
++                    ${open ? html`<div class=${'b3-datepop pb-datepop' + (right ? ' end' : '')} role="dialog" aria-label=${`${label} date`} onKeyDown=${(e) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); document.getElementById(id)?.focus(); } }}>
++                        <${DateGrid} value=${iso || ''} min=${min} onPick=${pick} /></div>` : null}</div>`}
++            ${never ? null : !raw ? (hint ? html`<span class="pb-echo pb-dim">${hint}</span>` : null)
++                : iso ? html`<span class="pb-echo"><${Icon} name="check" cls="sm" />${day(iso)}</span>` : html`<span class="pb-echo pb-warn">Can't read that as a date yet — try “Friday” or “Oct 2”</span>`}
 +        </div>`;
 +}
 +
  // 🔴 AIRTIME PAINTS THREE BAR STATES AND NAMED NONE OF THEM. Solid is showing, hollow-dashed is scheduled, muted is over -- the same shape vocabulary the Track uses, and a reader met it with no key. ⚠️ Deliberately NOT the shared StateKey: that one teaches "dashed = staged", and here a dashed bar means an announcement that is written and simply has not started yet. Same shape, a neighbouring meaning, and the wrong word would be worse than no word.
  //
  // ⚠️ It names only states PRESENT on screen, the rule every key in this portal follows: a season with nothing scheduled should not send somebody hunting for a dashed bar that is not drawn.
-@@ -431,6 +469,7 @@ export function BroadcastRealm({ session }) {
+@@ -431,6 +485,7 @@ export function BroadcastRealm({ session }) {
      const [notice, setNotice] = useState('');
      const [view, setView] = useState('Delivery queue');
      const overlay = useOverlay();
@@ -1208,7 +1235,7 @@ index 68764342..dbf5da15 100644
  
  // 🔴 TWO REALMS COULD STAGE WORK AND NEITHER COULD TELL YOU IT HAD ANY. Season and Home both read /api/review to say how much is waiting — that is what feeds the rail's badge and the masthead's staged figure — and Armory and Broadcast, which stage on every edit, said nothing anywhere. You staged four builds, navigated away, and the console had no memory of it outside the Review screen.
  //
-@@ -546,13 +585,13 @@ export function BroadcastRealm({ session }) {
+@@ -546,13 +601,13 @@ export function BroadcastRealm({ session }) {
                                                                                onClick=${() => setShowAdd(true)} />`} />`}
                    viewSlot=${html`
                        ${notice ? html`<p style="color:var(--warn);padding:0 var(--gut)">${notice}</p>` : null}
